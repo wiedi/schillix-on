@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright (c) 1998-2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -491,7 +489,7 @@ public class DhcpMgrImpl implements DhcpMgr {
 		     * in the mix which uses serialization, such as RMI.
 		     */
 		    clients[i].setSignature(DhcpClientRecord.DEFAULT_SIGNATURE);
-		    mgr.deleteClient(clients[i], networkName, true);
+		    mgr.deleteClient(clients[i], networkName);
 		} catch (Throwable t) {
 		    // Ignore delete error, we'll probably have an error on add
 		}

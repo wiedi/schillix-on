@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright (c) 2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -363,7 +361,7 @@ public class ExportController {
 		    nets[0] = networks[i].toString();
 		    exporter.updateProgress(progress, form.format(nets));
 		    try {
-		    	server.getNetMgr().deleteNetwork(nets[0], false, true);
+			server.getNetMgr().deleteNetwork(nets[0], false);
 		    } catch (BridgeException e) {
 			errList.add(new ActionError(nets[0], e));
 		    }

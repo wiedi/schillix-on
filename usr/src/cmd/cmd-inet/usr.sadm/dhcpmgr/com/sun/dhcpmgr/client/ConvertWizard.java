@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 2001-2002 by Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -556,7 +554,7 @@ public class ConvertWizard extends DSWizard {
 			String netString = networks[i].toString();
 			args[0] = netString;
 			try {
-			    netServer.deleteNetwork(netString, false, false,
+			    netServer.deleteNetwork(netString, false,
 				oldDhcpDatastore);
 			    message = form.format(args);
 			} catch (Throwable e) {

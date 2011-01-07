@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 2001-2002 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -48,7 +46,6 @@ public class AddClientEntry extends PntAdmFunction {
 	PntAdm.COMMENT,
 	PntAdm.LEASE_EXPIRATION,
 	PntAdm.FLAGS,
-	PntAdm.HOST_NAME,
 	PntAdm.CLIENTID,
 	PntAdm.CONVERT_CLIENTID,
 	PntAdm.MACRO_NAME,
@@ -114,15 +111,6 @@ public class AddClientEntry extends PntAdmFunction {
 	    String flags = options.valueOf(PntAdm.FLAGS);
 	    if (flags != null) {
 		dhcpClientRecord.setFlags(flags);
-	    }
-
-	    String clientName = options.valueOf(PntAdm.HOST_NAME);
-	    if (clientName != null) {
-		if (isHostsManaged()) {
-		    dhcpClientRecord.setClientName(clientName);
-		} else {
-		    returnCode = PntAdm.WARNING;
-		}
 	    }
 
 	    String serverIP = options.valueOf(PntAdm.SERVER);

@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright (c) 1998-2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -29,8 +27,6 @@ package com.sun.dhcpmgr.server;
 
 import com.sun.dhcpmgr.bridge.*;
 import com.sun.dhcpmgr.data.*;
-
-import com.sun.wbem.utility.directorytable.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -131,52 +127,9 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
 	DhcpClientRecord newClient, String table, DhcpDatastore datastore)
 	throws BridgeException {
 
-	boolean nameChanged = !oldClient.getClientName().equals(
-	    newClient.getClientName());
-	boolean commentChanged = !oldClient.getComment().equals(
-	    newClient.getComment());
-	/*
-	 * If the name changed, need to update hosts.  If comment changed,
-	 * hosts is only updated if there was already a hosts record.
-	 */
-	if (nameChanged) {
-	    /*
-	     * If new name is empty, delete the hosts entry.  Otherwise
-	     * try to modify it.
-	     */
-	    if (newClient.getClientName().length() == 0) {
-		try {
-		    deleteHostsRecord(newClient.getClientIPAddress());
-		} catch (Throwable e) {
-		    throw new NoHostsEntryException(
-			newClient.getClientIPAddress());
-		}
-	    } else {
-		try {
-		    modifyHostsRecord(oldClient.getClientIPAddress(),
-			newClient.getClientIPAddress(),
-			newClient.getClientName(), newClient.getComment());
-		} catch (NoHostsEntryException e) {
-		    // Must not be one, so create it instead
-		    createHostsRecord(newClient.getClientIPAddress(),
-		   	newClient.getClientName(), newClient.getComment());
-		}
-	    }
-	} else if (commentChanged) {
-	    // Try to modify, but toss all exceptions as this isn't a big deal
-	    try {
-		modifyHostsRecord(oldClient.getClientIPAddress(),
-		    newClient.getClientIPAddress(), newClient.getClientName(),
-		    newClient.getComment());
-	    } catch (Throwable e) {
-		// Ignore
-	    }
-	}
-
 	// Update the network table record
 	bridge.modifyDhcpClientRecord(oldClient, newClient,
 	    table, datastore);
-
     }
     
     /**
@@ -199,16 +152,6 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
     public void addClient(DhcpClientRecord client, String table,
 	DhcpDatastore datastore) throws BridgeException {
 
-	/*
-	 * If a name was supplied and we can't resolve it to this address,
-	 * create a hosts record.
-	 */
-	if (client.getClientName().length() != 0
-	    && !client.getClientName().equals(client.getClientIPAddress())) {
-	    createHostsRecord(client.getClientIPAddress(),
-		client.getClientName(), client.getComment());
-	}
-
 	// Create the record in the per-network table
 	bridge.createDhcpClientRecord(client, table, datastore);
 
@@ -219,12 +162,11 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
      * record if requested.
      * @param client the client to delete
      * @param table the network to delete the client from
-     * @param deleteHosts true if the hosts record should be removed as well
      */
-    public void deleteClient(DhcpClientRecord client, String table,
-	boolean deleteHosts) throws BridgeException {
+    public void deleteClient(DhcpClientRecord client, String table)
+        throws BridgeException {
 
-		deleteClient(client, table, deleteHosts, null);
+		deleteClient(client, table, null);
 	}
 
     /**
@@ -232,24 +174,14 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
      * record if requested.
      * @param client the client to delete
      * @param table the network to delete the client from
-     * @param deleteHosts true if the hosts record should be removed as well
      * @param datastore user-supplied datastore attributes
      */
     public void deleteClient(DhcpClientRecord client, String table,
-	boolean deleteHosts, DhcpDatastore datastore)
+	DhcpDatastore datastore)
 	throws BridgeException {
 
 	// Delete the client record from the per-network table
 	bridge.deleteDhcpClientRecord(client, table, datastore);
-
-	// Delete hosts if requested
-	if (deleteHosts) {
-	    try {
-		deleteHostsRecord(client.getClientIPAddress());
-	    } catch (NoEntryException e) {
-		throw new NoEntryException("hosts");
-	    }
-	}
     }
     
 
@@ -305,11 +237,10 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
      * and optionally deleting the associated hosts records.
      * @param network the network number in dotted-decimal form.
      * @param deleteMacro true if the network macro should be deleted
-     * @param deleteHosts true if the associated hosts records should be deleted
      */
-    public void deleteNetwork(String network, boolean deleteMacro,
-	boolean deleteHosts) throws BridgeException {
-	deleteNetwork(network, deleteMacro, deleteHosts, null);
+    public void deleteNetwork(String network, boolean deleteMacro)
+        throws BridgeException {
+	deleteNetwork(network, deleteMacro, null);
     }
 
     /**
@@ -317,27 +248,11 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
      * and optionally deleting the associated hosts records.
      * @param network the network number in dotted-decimal form.
      * @param deleteMacro true if the network macro should be deleted
-     * @param deleteHosts true if the associated hosts records should be deleted
      * @param datastore user-supplied datastore attributes
      */
     public void deleteNetwork(String network, boolean deleteMacro,
-	boolean deleteHosts, DhcpDatastore datastore)
+	DhcpDatastore datastore)
 	throws BridgeException {
-
-	// If we're supposed to clean up hosts, do so
-	if (deleteHosts) {
-	    DhcpClientRecord [] recs =
-		bridge.loadNetwork(network, datastore);
-	    if (recs != null) {
-		for (int i = 0; i < recs.length; ++i) {
-		    try {
-			deleteHostsRecord(recs[i].getClientIPAddress());
-		    } catch (Throwable e) {
-			// Ignore errors here; they're not important
-		    }
-		}
-	    }
-	}
 
 	// Delete network table, then the macro for the network
 	bridge.deleteDhcpNetwork(network, datastore);
@@ -350,75 +265,4 @@ public class DhcpNetMgrImpl implements DhcpNetMgr {
 	    // All the errors here are ignorable
 	}
     }
-
-    /**
-     * Add a record to the hosts table.
-     * @param addr address of entry to add to the hosts table
-     * @param name alias for the entry
-     * @param comment comment for the entry
-     */
-    private void createHostsRecord(String addr, String name,
-	String comment)	throws BridgeException {
-
-	DhcpHostsTable hostsTable = null;
-	try {
-	    hostsTable = DhcpHostsTable.getCfgHostsTable(bridge);
-	    if (hostsTable != null) {
-		hostsTable.openTable();
-		hostsTable.createHostsRecord(addr, name, comment);
-	    }
-	} finally {
-	    if (hostsTable != null) {
-		hostsTable.closeTable();
-	    }
-	}
-
-    } // createHostsRecord
-
-    /**
-     * Delete a record from the hosts table.
-     * @param addr address of entry to remove from the hosts table
-     */
-    private void deleteHostsRecord(String addr)
-	throws BridgeException {
-
-	DhcpHostsTable hostsTable = null;
-	try {
-	    hostsTable = DhcpHostsTable.getCfgHostsTable(bridge);
-	    if (hostsTable != null) {
-		hostsTable.openTable();
-		hostsTable.deleteHostsRecord(addr);
-	    }
-	} finally {
-	    if (hostsTable != null) {
-		hostsTable.closeTable();
-	    }
-	}
-
-    } // deleteHostsRecord
-
-    /**
-     * Modify a record in the hosts table.
-     * @param oldAddr address of entry to modify in the hosts table
-     * @param newAddr new address of entry
-     * @param name alias for the entry
-     * @param comment comment for the entry
-     */
-    private void modifyHostsRecord(String oldAddr,
-	String newAddr, String name, String comment) throws BridgeException {
-
-	DhcpHostsTable hostsTable = null;
-	try {
-	    hostsTable = DhcpHostsTable.getCfgHostsTable(bridge);
-	    if (hostsTable != null) {
-		hostsTable.openTable();
-		hostsTable.modifyHostsRecord(oldAddr, newAddr, name, comment);
-	    }
-	} finally {
-	    if (hostsTable != null) {
-		hostsTable.closeTable();
-	    }
-	}
-
-    } // modifyHostsRecord
 }

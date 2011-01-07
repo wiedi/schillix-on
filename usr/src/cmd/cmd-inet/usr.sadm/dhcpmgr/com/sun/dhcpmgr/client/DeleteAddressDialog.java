@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 1998-2002 by Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -44,7 +42,6 @@ import com.sun.dhcpmgr.bridge.BridgeException;
  */
 
 public class DeleteAddressDialog extends MultipleOperationDialog {
-    private JCheckBox hostsBox;
     private DhcpClientRecord [] recs;
     private String table;
     
@@ -129,27 +126,6 @@ public class DeleteAddressDialog extends MultipleOperationDialog {
 	    new ExtendedCellRenderer());
 	mainPanel.add(scrollPane, BorderLayout.CENTER);
 	
-	// Allow user to specify if hosts records will be deleted, too
-	hostsBox = new JCheckBox(
-	    ResourceStrings.getString("delete_hosts_checkbox"), true);
-	hostsBox.setToolTipText(
-	    ResourceStrings.getString("delete_hosts_checkbox"));
-
-	hostsBox.setHorizontalAlignment(SwingConstants.CENTER);
-	mainPanel.add(hostsBox, BorderLayout.SOUTH);
-
-	hostsBox.setEnabled(true);
-	try {
-	    DhcpdOptions opts =
-	    DataManager.get().getDhcpServiceMgr().readDefaults();
-	    if (opts.getHostsResource() == null) {
-		hostsBox.setEnabled(false);
-		hostsBox.setSelected(false);
-	    }
-	} catch (BridgeException e) {
-	    // Assume set
-	}
-
 	buttonPanel.setOkEnabled(true);
 	return mainPanel;
     }
@@ -175,26 +151,18 @@ public class DeleteAddressDialog extends MultipleOperationDialog {
         return new Thread() {
 	    public void run() {
 		DhcpNetMgr server = DataManager.get().getDhcpNetMgr();
-		boolean deleteHosts = hostsBox.isSelected();
 		for (int i = 0; i < recs.length; ++i) {
 		    try {
-			server.deleteClient(recs[i], table, deleteHosts);
+			server.deleteClient(recs[i], table);
 			updateProgress(i+1, recs[i].getClientIPAddress());
 		    } catch (InterruptedException e) {
 			// User asked us to stop
 			closeDialog();
 			return;
 		    } catch (Throwable e) {
-			if (e.getMessage().equals("hosts")) {
-			    // Failure was in deleting hosts entry
-			    addError(recs[i].getClientIP(),
-				ResourceStrings.getString(
-				    "hosts_entry_missing"));
-			} else {
 			    addError(recs[i].getClientIP(), e.getMessage());
 			}
 		    }
-		}
 		// Errors occurred, display them
 		if (errorsOccurred()) {
 		    displayErrors(

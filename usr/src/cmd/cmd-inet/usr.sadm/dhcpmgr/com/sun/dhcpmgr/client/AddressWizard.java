@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -57,8 +55,6 @@ public class AddressWizard extends Wizard {
     private String server = DataManager.get().getShortServerName();
     private IPAddress serverIP;
     private IPAddress startAddress;
-    private boolean generateNames = false;
-    private String baseName = DataManager.get().getShortServerName();
     private String macro = DataManager.get().getShortServerName();
     private boolean unusable = false;
     private boolean dynamic = true;
@@ -190,14 +186,7 @@ public class AddressWizard extends Wizard {
 		}
 		if (searchAddress != address) {
 		    // found an empty slot; create the address
-		    Address addr;
-		    if (generateNames) {
-			addr  = new Address((int)address,
-			    baseName + "-" + String.valueOf(index));
-		    } else {
-			addr  = new Address((int)address, "");
-		    }
-		    addrs.addElement(addr);
+		    addrs.addElement(new Address((int)address, ""));
 		    ++count;
 		}
 		++index;
@@ -329,8 +318,6 @@ public class AddressWizard extends Wizard {
     class ServerStep implements WizardStep {
 	private Box stepBox;
 	private IPAddressField startField;
-	private HostnameField baseNameField;
-	private JCheckBox generateNamesBox;
 	private HostnameField serverField;
 	
 	public ServerStep() {
@@ -380,59 +367,6 @@ public class AddressWizard extends Wizard {
 	    box.add(startField);
 	    stepBox.add(box);
 	    
-	    // Add some more spacing, and an explanation of generating names
-	    stepBox.add(Box.createVerticalStrut(5));
-	    stepBox.add(Box.createVerticalGlue());
-	    stepBox.add(Wizard.createTextArea(
-		ResourceStrings.getString("add_wiz_generate_explain"), 4, 45));
-
-	    // Control to indicate whether names should be generated
-	    JPanel panel = new JPanel(new GridLayout(2, 1, 0, 0));
-	    generateNamesBox = new JCheckBox(
-		ResourceStrings.getString("add_wiz_generate_label"));
-	    generateNamesBox.setToolTipText(
-	        ResourceStrings.getString("add_wiz_generate_label"));
-	    panel.add(generateNamesBox);
-
-	    generateNamesBox.setEnabled(true);
-	    try {
-		DhcpdOptions opts =
-		    DataManager.get().getDhcpServiceMgr().readDefaults();
-		if (opts.getHostsResource() == null) {
-		    generateNamesBox.setEnabled(false);		
-		}
-	    } catch (BridgeException e) {
-		// Assume set
-	    }
-
-	    baseNameField = new HostnameField();
-	    baseNameField.setEnabled(false);
-	    baseNameField.setMaximumSize(baseNameField.getPreferredSize());
-	    box = Box.createHorizontalBox();
-	    box.add(Box.createHorizontalStrut(17));
-
-	    Mnemonic mnRoot =
-                new Mnemonic(ResourceStrings.getString(
-		    "add_wiz_rootname_label"));
-            JLabel rootNameLbl = new JLabel(mnRoot.getString());
-            box.add(rootNameLbl);
-            rootNameLbl.setLabelFor(baseNameField);
-            rootNameLbl.setToolTipText(mnRoot.getString());
-	    rootNameLbl.setDisplayedMnemonic(mnRoot.getMnemonic());
-
-	    box.add(Box.createHorizontalStrut(5));
-	    box.add(baseNameField);
-	    panel.add(box);
-	    stepBox.add(panel);
-	    stepBox.add(Box.createVerticalGlue());
-	    
-	    // Only enable the text input if name generation is requested
-	    generateNamesBox.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    baseNameField.setEnabled(generateNamesBox.isSelected());
-		}
-	    });
-	    
 	    DocumentListener docListener = new DocumentListener() {
 		public void insertUpdate(DocumentEvent e) {
 		    setForwardEnabled((startField.getText().length() != 0)
@@ -461,8 +395,6 @@ public class AddressWizard extends Wizard {
 	public void setActive(int direction) {
 	    serverField.setText(server);
 	    startField.setValue(startAddress);
-	    baseNameField.setText(baseName);
-	    generateNamesBox.setSelected(generateNames);
 	    setForwardEnabled(true);
 	}
 		
@@ -514,8 +446,6 @@ public class AddressWizard extends Wizard {
 	    }
 	    server = serverField.getText();
 	    startAddress = startField.getValue();
-	    generateNames = generateNamesBox.isSelected();
-	    baseName = baseNameField.getText();
 	    return true;
 	}
     }

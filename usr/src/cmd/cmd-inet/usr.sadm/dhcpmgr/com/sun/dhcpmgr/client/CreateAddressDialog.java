@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 1998-2002 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -103,7 +101,6 @@ public class CreateAddressDialog extends JDialog
     private int mode = EDIT;
     private Network network;
     private IPAddressField address;
-    private HostnameField name;
     private JTextField server;
     private JComboBox macro;
     private JTextField clientId;
@@ -174,35 +171,6 @@ public class CreateAddressDialog extends JDialog
 	bag.setConstraints(address, c);
 	mainPanel.add(address);
 	
-	// Label and text field for name
-	Mnemonic mnClient =
-            new Mnemonic(ResourceStrings.getString("hostname_label"));
-        l = new JLabel(mnClient.getString(), SwingConstants.RIGHT);
-        ++c.gridy;
-        c.gridx = 0;
-        bag.setConstraints(l, c);
-        mainPanel.add(l);
-        name = new HostnameField();
-
-        l.setLabelFor(name);
-        l.setToolTipText(mnClient.getString());
-	l.setDisplayedMnemonic(mnClient.getMnemonic());
-
-	++c.gridx;
-	bag.setConstraints(name, c);
-	mainPanel.add(name);
-	
-	name.setEditable(true);
-	try {
-	    DhcpdOptions opts =
-	    DataManager.get().getDhcpServiceMgr().readDefaults();
-	    if (opts.getHostsResource() == null) {
-		name.setEditable(false);
-	    }
-	} catch (BridgeException e) {
-	    // Assume set
-	}
-
 	// label and field for owning server
 	Mnemonic mnOwn =
             new Mnemonic(ResourceStrings.getString("owning_server_label"));
@@ -415,17 +383,8 @@ public class CreateAddressDialog extends JDialog
     private void resetValues() {
 	if (mode == DUPLICATE) {
 	    address.setText("");
-	    name.setText("");
 	} else {
-	    String a = client.getClientIPAddress();
-	    String n = client.getClientName();
-	    address.setText(a);
-	    if (a.equals(n)) {
-		// If name == address, there is no name, so leave it blank
-		name.setText("");
-	    } else {
-		name.setText(n);
-	    }
+	    address.setText(client.getClientIPAddress());
 	}
 	if (mode == CREATE && (client.getServerName() == null ||
 		client.getServerName().length() == 0)) {
@@ -489,18 +448,6 @@ public class CreateAddressDialog extends JDialog
 	        // This shouldn't happen, should have caught any problem already
 	    }
 
-	    // This logic is needed because if the original client name
-	    // was equal to its IP address, then this really means that
-	    // that the name was not set. If this is the case and the
-	    // name field is empty, then no change was made. In all other
-	    // cases we can be assured that the client name was changed
-	    // or is valid.
-	    //
-	    if (!(name.getText().length() == 0 &&
-		originalClient.getClientIPAddress().equals(
-		originalClient.getClientName()))) {
-		client.setClientName(name.getText());
-	    }
 	    try {
 		if (!server.getText().equals(client.getServerName())) {
 		    // Don't bother resetting if it hasn't changed
