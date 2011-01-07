@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 1998-2002 by Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -47,7 +45,7 @@ import com.sun.dhcpmgr.ui.*;
  * A dialog to confirm the user's request to unconfigure the service.
  */
 public class UnconfigureDialog extends MultipleOperationDialog {
-    private JCheckBox deleteTables, deleteHosts;
+    private JCheckBox deleteTables;
     private int networkCount = 0;
     private Network [] nets = new Network[0];
 
@@ -80,37 +78,6 @@ public class UnconfigureDialog extends MultipleOperationDialog {
 	    deleteTables.setAlignmentX(Component.LEFT_ALIGNMENT);
 	    box.add(deleteTables);
 	    box.add(Box.createVerticalStrut(10));
-	    deleteHosts = new JCheckBox(
-		ResourceStrings.getString("unconfigure_delete_hosts"), false);
-	    deleteHosts.setToolTipText(
-	        ResourceStrings.getString("unconfigure_delete_hosts"));
-	    deleteHosts.setAlignmentX(Component.LEFT_ALIGNMENT);
-	    deleteHosts.setEnabled(false);
-	    box.add(deleteHosts);
-	    deleteTables.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-
-		    if (!deleteTables.isSelected()) {
-			deleteHosts.setEnabled(false);
-			return;
-		    }
-
-		    // If the host resource is set in the configuration
-		    // file (or we can't tell), then enable the deleteHosts
-		    // checkbox.
-		    try {
-			DhcpServiceMgr serviceMgr =
-			    DataManager.get().getDhcpServiceMgr();
-			DhcpdOptions opts = serviceMgr.readDefaults();
-			if (opts.getHostsResource() != null) {
-			    deleteHosts.setEnabled(true);
-			}
-		    } catch (BridgeException ex) {
-			// Assume set
-			deleteHosts.setEnabled(true);
-		    }
-		}
-	    });
 	} else {
 	    JComponent c = Wizard.createTextArea(
 		ResourceStrings.getString("unconfigure_bootp"), 4, 30);
@@ -210,8 +177,7 @@ public class UnconfigureDialog extends MultipleOperationDialog {
 				args[0] = netString;
 				try {
 				    DataManager.get().getDhcpNetMgr().
-					deleteNetwork(netString, true,
-					deleteHosts.isSelected());
+					deleteNetwork(netString, true);
 				} catch (Throwable e) {
 				    addError(errForm.format(args),
 					e.getMessage());

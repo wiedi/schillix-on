@@ -20,8 +20,6 @@
  * CDDL HEADER END
  */
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * Copyright 1998-2002 by Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -85,7 +83,6 @@ public class DeleteNetworksDialog extends MultipleOperationDialog {
     }
     
     private JList keepNets, deleteNets;
-    private JCheckBox deleteHosts;
     private LeftButton leftButton;
     private RightButton rightButton;
     
@@ -150,26 +147,6 @@ public class DeleteNetworksDialog extends MultipleOperationDialog {
 	
 	mainPanel.add(netBox, BorderLayout.CENTER);
 	
-	deleteHosts = new JCheckBox(
-	    ResourceStrings.getString("delete_networks_delete_hosts"));
-	deleteHosts.setToolTipText(
-	    ResourceStrings.getString("delete_networks_delete_hosts"));
-
-	panel = new JPanel();
-	panel.add(deleteHosts);
-	mainPanel.add(panel, BorderLayout.SOUTH);
-
-	deleteHosts.setEnabled(true);
-	try {
-	    DhcpdOptions opts =
-	    DataManager.get().getDhcpServiceMgr().readDefaults();
-	    if (opts.getHostsResource() == null) {
-		deleteHosts.setEnabled(false);		
-	    }
-	} catch (BridgeException e) {
-	    // Assume set
-	}
-	
 	// Handle enable and disable of buttons based on selection state
 	keepNets.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent e) {
@@ -230,7 +207,6 @@ public class DeleteNetworksDialog extends MultipleOperationDialog {
     protected void doReset() {
 	try {
 	    buttonPanel.setOkEnabled(false);
-	    deleteHosts.setSelected(false);
 	    ((NetworkListModel)deleteNets.getModel()).setNetworks(null);
 	    ((NetworkListModel)keepNets.getModel()).setNetworks(
 		DataManager.get().getNetworks(false));
@@ -261,7 +237,7 @@ public class DeleteNetworksDialog extends MultipleOperationDialog {
 		    Network net = (Network)model.getElementAt(i);
 		    try {
 			DataManager.get().getDhcpNetMgr().deleteNetwork(
-			    net.toString(), true, deleteHosts.isSelected());
+			    net.toString(), true);
 			updateProgress(i+1, net.toString());
 		    } catch (InterruptedException e) {
 			// User asked us to stop
