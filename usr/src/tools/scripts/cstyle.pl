@@ -23,8 +23,10 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# @(#)cstyle	1.9 10/08/21 J. Schilling
+#
+#
 # @(#)cstyle 1.58 98/09/09 (from shannon)
-#ident	"%Z%%M%	%I%	%E% SMI"
 #
 # cstyle - check for some common stylistic errors.
 #
@@ -56,7 +58,7 @@ use Getopt::Std;
 use strict;
 
 my $usage =
-"usage: cstyle [-chpvCP] [-o constructs] file ...
+"usage: cstyle [-chpvCPbKB] [-o constructs] [-l #] file ...
 	-c	check continuation indentation inside functions
 	-h	perform heuristic checks that are sometimes wrong
 	-p	perform some of the more picky checks
@@ -67,11 +69,15 @@ my $usage =
 		allow a comma-seperated list of optional constructs:
 		    doxygen	allow doxygen-style block comments (/** /*!)
 		    splint	allow splint-style lint comments (/*@ ... @*/)
+	-l #	set maxline length (default is 80)
+	-b	do not check for blank after cpp #
+	-K	do not check for blank at /* */ comment bounds
+	-B	allow /*------- box comments
 ";
 
 my %opts;
 
-if (!getopts("cho:pvCP", \%opts)) {
+if (!getopts("cho:pvCPl:bKB", \%opts)) {
 	print $usage;
 	exit 2;
 }
@@ -82,6 +88,18 @@ my $picky = $opts{'p'};
 my $verbose = $opts{'v'};
 my $ignore_hdr_comment = $opts{'C'};
 my $check_posix_types = $opts{'P'};
+my $maxlinelen = $opts{'l'};
+my $blank_after_cpp = $opts{'b'};
+my $Kommentar = $opts{'K'};
+my $Boxcomment = $opts{'B'};
+
+if (!$maxlinelen) {
+	$maxlinelen = 80;
+}
+# printf "linelen %d\n", $maxlinelen;
+
+my $toolong = sprintf("line > %d characters", $maxlinelen);
+# printf "%s\n", $toolong;
 
 my $doxygen_comments = 0;
 my $splint_comments = 0;
@@ -317,14 +335,14 @@ line: while (<$filehandle>) {
 
 	# check length of line.
 	# first, a quick check to see if there is any chance of being too long.
-	if (($line =~ tr/\t/\t/) * 7 + length($line) > 80) {
+	if (($line =~ tr/\t/\t/) * 7 + length($line) > $maxlinelen) {
 		# yes, there is a chance.
 		# replace tabs with spaces and check again.
 		my $eline = $line;
 		1 while $eline =~
 		    s/\t+/' ' x (length($&) * 8 - length($`) % 8)/e;
-		if (length($eline) > 80) {
-			err("line > 80 characters");
+		if (length($eline) > $maxlinelen) {
+			err($toolong);
 		}
 	}
 
@@ -458,7 +476,10 @@ line: while (<$filehandle>) {
 		next line;
 	}
 	if (/^\s*\/\*./ && !/^\s*\/\*.*\*\// && !/$hdr_comment_start/) {
-		err("improper first line of block comment");
+		if (!$Boxcomment ||
+		    !/^\s*\/\*----------------------------------------------------------------------/) {
+			err("improper first line of block comment");
+		}
 	}
 
 	if ($in_comment) {	# still in comment, don't do further checks
@@ -468,11 +489,15 @@ line: while (<$filehandle>) {
 
 	if ((/[^(]\/\*\S/ || /^\/\*\S/) &&
 	    !(/$lint_re/ || ($splint_comments && /$splint_re/))) {
-		err("missing blank after open comment");
+		if (!$Kommentar) {
+			err("missing blank after open comment");
+		}
 	}
 	if (/\S\*\/[^)]|\S\*\/$/ &&
 	    !(/$lint_re/ || ($splint_comments && /$splint_re/))) {
-		err("missing blank before close comment");
+		if (!$Kommentar) {
+			err("missing blank before close comment");
+		}
 	}
 	if (/\/\/\S/) {		# C++ comments
 		err("missing blank after start comment");
@@ -502,6 +527,13 @@ line: while (<$filehandle>) {
 			}
 		}
 		next line;
+	}
+
+	if ($blank_after_cpp) {
+		if (/^#[ 	]*(else|endif|include)/) {
+			$prev = $line;
+			next line;
+		}
 	}
 
 	#
@@ -627,7 +659,9 @@ line: while (<$filehandle>) {
 		err("preprocessor statement not in column 1");
 	}
 	if (/^#\s/) {
-		err("blank after preprocessor #");
+		if (!$blank_after_cpp) {
+			err("blank after preprocessor #");
+		}
 	}
 	if (/!\s*(strcmp|strncmp|bcmp)\s*\(/) {
 		err("don't use boolean ! with comparison functions");
