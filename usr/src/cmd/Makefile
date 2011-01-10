@@ -375,6 +375,7 @@ COMMON_SUBDIRS=		\
 	srptadm		\
 	srptsvc		\
 	ssh		\
+	star		\
 	stat		\
 	stmfadm		\
 	stmfproxy	\

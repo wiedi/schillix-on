@@ -76,6 +76,10 @@ SUBDIRS += \
 	libw			.WAIT	\
 	libintl			.WAIT	\
 	../cmd/sgs/librtld_db	\
+	libschily		.WAIT	\
+	libdeflt		\
+	libfind			\
+	librmt			\
 	libaio			\
 	libast			\
 	libdll			\
@@ -450,6 +454,7 @@ HDRSUBDIRS=		\
 	librsm		\
 	librstp		\
 	libsasl		\
+	libschily	\
 	libsec		\
 	libshell	\
 	libslp		\
@@ -671,6 +676,8 @@ libreparse:	libnvpair
 libhotplug:	libnvpair
 cfgadm_plugins:	libhotplug
 libilb:		libsocket
+libfind:	libschily
+librmt:		libschily libsocket
 $(INTEL_BUILD)libdiskmgt:libfdisk
 
 #
