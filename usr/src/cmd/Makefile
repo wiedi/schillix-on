@@ -97,6 +97,7 @@ COMMON_SUBDIRS=		\
 	coreadm		\
 	cpio		\
 	cpc		\
+	cpp		\
 	cron		\
 	crypt		\
 	csh		\
