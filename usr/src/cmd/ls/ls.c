@@ -3042,7 +3042,7 @@ ls_color_compare(const void *p1, const void *p2)
 static void
 ls_color_init()
 {
-	static char *default_colorstr = "no=00:fi=00:di=01;34:ln=01;36:po=01;35"
+	static char default_colorstr[] = "no=00:fi=00:di=01;34:ln=01;36:po=01;35"
 	    ":pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01"
 	    ":su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31"
 	    ":*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31"
