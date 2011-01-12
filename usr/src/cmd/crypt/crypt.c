@@ -115,7 +115,7 @@ main(int argc, char **argv)
 	int kflag = 0;
 	char *buf;
 	char key[8];
-	char *keyvar = "CrYpTkEy=XXXXXXXX";
+	char keyvar[] = "CrYpTkEy=XXXXXXXX";
 	char *s;
 
 	if (argc < 2) {
