@@ -180,7 +180,7 @@ _isterminfo (type, parent)
 #endif
 {
 	char			*path,
-				*type_letter	= "X";
+				type_letter[]	= "X";
 
 	int			ret;
 
