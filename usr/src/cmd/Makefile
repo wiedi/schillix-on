@@ -188,6 +188,7 @@ COMMON_SUBDIRS=		\
 	gss		\
 	hal		\
 	halt		\
+	hdump		\
 	head		\
 	hostid		\
 	hostname	\
@@ -469,7 +470,6 @@ $(CLOSED_BUILD)COMMON_SUBDIRS += \
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
 	$(CLOSED)/cmd/mtst	\
-	$(CLOSED)/cmd/od	\
 	$(CLOSED)/cmd/patch	\
 	$(CLOSED)/cmd/pax	\
 	$(CLOSED)/cmd/printf	\
@@ -601,6 +601,7 @@ MSGSUBDIRS=		\
 	grpck		\
 	gss		\
 	halt		\
+	hdump		\
 	head		\
 	hostname	\
 	hotplug		\
@@ -755,7 +756,6 @@ $(CLOSED_BUILD)MSGSUBDIRS += \
 	$(CLOSED)/cmd/llc2	\
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
-	$(CLOSED)/cmd/od	\
 	$(CLOSED)/cmd/patch	\
 	$(CLOSED)/cmd/pax	\
 	$(CLOSED)/cmd/printf	\
