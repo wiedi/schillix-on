@@ -26,6 +26,8 @@
 
 include		../../Makefile.cmd
 
+CPPFLAGS +=	-DUSE_MANDOC	# Add support for BSD doc format
+
 BINPROG =	man
 LIBPROG =	getNAME
 LIBSHELL =	makewhatis
