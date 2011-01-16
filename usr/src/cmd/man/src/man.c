@@ -61,8 +61,14 @@
 #include <limits.h>
 #include <wchar.h>
 
+#ifdef	USE_MANDOC			/* Support for BSD doc format */
+#define	MDOCROF	"tmac.andoc"		/* name of <locale> macro file */
 #define	MACROF 	"tmac.an"		/* name of <locale> macro file */
-#define	TMAC_AN	"-man"		/* default macro file */
+#define	TMAC_AN	"-mandoc"		/* default macro file */
+#else
+#define	MACROF 	"tmac.an"		/* name of <locale> macro file */
+#define	TMAC_AN	"-man"			/* default macro file */
+#endif
 
 /*
  * The default search path for man subtrees.
@@ -2634,6 +2640,10 @@ so_again:	if (++socount > SOLIMIT) {
 
 		if (! Tflag) {
 			if (*localedir != '\0') {
+#ifdef	MDOCROF
+				(void) sprintf(macros, "%s/%s", path, MDOCROF);
+				if (stat(macros, &statb) < 0)
+#endif
 				(void) sprintf(macros, "%s/%s", path, MACROF);
 /*
  * TRANSLATION_NOTE - message for man -d or catman -p
