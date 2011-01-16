@@ -31,8 +31,10 @@ include 	../../../Makefile.cmd
 
 ROOTTMAC =	$(ROOTSHLIB)/tmac
 
-FILES =		acm.me an ansun ansun.tbl bib \
-		chars.me deltext.me e eqn.me  \
+FILES =		acm.me an andoc ansun ansun.tbl bib \
+		chars.me deltext.me \
+		doc doc-common doc-ditroff doc-nroff doc-syms \
+		e eqn.me  \
 		float.me footnote.me index.me local.me m \
 		mmn mmt ms.acc ms.cov ms.eqn ms.ref ms.tbl \
 		ms.ths ms.toc null.me refer.me s sh.me \
