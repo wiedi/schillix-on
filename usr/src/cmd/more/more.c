@@ -189,6 +189,7 @@ char            obuf[BUFSIZ];   /* stdout buffer */
 char            Line[LINSIZ];   /* Line buffer */
 int             Lpp = 24;       /* lines per page */
 char            *ULenter, *ULexit;      /* enter and exit underline mode */
+char            *BLDenter, *BLDexit;    /* enter and exit bold mode */
 int             Mcol = 80;      /* number of columns */
 int             Wrap = 1;       /* set if automargins */
 int		fseeko();
@@ -890,29 +891,43 @@ prbuf(register char *s, register int n)
 {
     char c;                             /* next ouput character */
     register int state = 0;             /* next output char's UL state */
+    register int bstate = 0;            /* next output char's SO state */
     static int pstate = 0;              /* current terminal UL state (off) */
+    static int pbstate = 0;             /* current terminal SO state (off) */
 
     while (--n >= 0)
         if (!ul_opt)
             putchar (*s++);
         else {
-            if (n >= 2 && s[0] == '_' && s[1] == '\b') {
+            if (n >= 2 && s[1] == '\b' && s[0] == s[2]) {
+                n -= 2;
+                s += 2;
+                c = *s++;
+                bstate = 1;
+            } else if (n >= 2 && s[0] == '_' && s[1] == '\b') {
                 n -= 2;
                 s += 2;
                 c = *s++;
                 state = 1;
+                bstate = 0;
             } else if (n >= 2 && s[1] == '\b' && s[2] == '_') {
                 n -= 2;
                 c = *s++;
                 s += 2;
                 state = 1;
+                bstate = 0;
             } else {
                 c = *s++;
                 state = 0;
+                bstate = 0;
             }
             if (state != pstate)
                 putp(state ? ULenter : ULexit);
             pstate = state;
+            if (bstate != pbstate &&
+                BLDenter && BLDexit)
+                putp(bstate ? BLDenter : BLDexit);
+            pbstate = bstate;
             putchar(c);
             if (state && underline_char) {
                 putp(cursor_left);
@@ -929,6 +944,10 @@ prbuf(register char *s, register int n)
             putp(ULexit);                    /*M002*/
             pstate = 0;                                 /*M002*/
     }                                                   /*M002*/
+    if (bstate && BLDexit) {
+            putp(BLDexit);
+            pbstate = 0;
+    }
 }
 
 /*
@@ -1546,6 +1565,15 @@ initterm(void)
             if ((ULexit = tigetstr("rmul")) == NULL &&
                 (!underline_char) && (ULexit = tigetstr("rmso")) == NULL)
                 ULexit = "";
+
+            if ((BLDenter = tigetstr("bold")) == NULL &&
+                (BLDenter = tigetstr("smso")) == NULL)
+                BLDenter = NULL;
+            if ((BLDexit = tigetstr("sgr0")) == NULL &&
+                (BLDexit = tigetstr("rmso")) == NULL)
+                BLDexit = NULL;
+            if (hard)
+                BLDenter = BLDexit = NULL;
         }
         if ((shell = getenv("SHELL")) == NULL)
             shell = "/usr/bin/sh";

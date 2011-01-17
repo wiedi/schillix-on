@@ -2775,7 +2775,7 @@ so_again:	if (++socount > SOLIMIT) {
 					    tmpdir, manpname_sgml);
 				else
 	(void) sprintf(cmdbuf, " cat %s | tbl | eqn | %s %s - %s > %s",
-	    tmpdir, troffit ? troffcmd : "nroff -u0 -Tlp",
+	    tmpdir, troffit ? troffcmd : "nroff -u1 -Tlp",
 	    macros, troffit ? "" : " | col -x", tmpname);
 			} else
 				if (catmando && compargs)
@@ -2783,12 +2783,12 @@ so_again:	if (++socount > SOLIMIT) {
 					    manpname_sgml);
 				else
 	(void) sprintf(cbp, " | tbl | eqn | %s %s - %s > %s",
-	    troffit ? troffcmd : "nroff -u0 -Tlp",
+	    troffit ? troffcmd : "nroff -u1 -Tlp",
 	    macros, troffit ? "" : " | col -x", tmpname);
 
 		} else
 	(void) sprintf(cbp, "%s %s %s%s > %s",
-	    troffit ? troffcmd : "nroff -u0 -Tlp",
+	    troffit ? troffcmd : "nroff -u1 -Tlp",
 	    macros, pipestage == 0 ? manpname : "-",
 	    troffit ? "" : " | col -x", tmpname);
 
