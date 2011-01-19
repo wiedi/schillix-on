@@ -745,7 +745,15 @@ kbd_defaults(int kbd)
 		(void) fprintf(stderr, "Can not get LAYOUT\n");
 	}
 
-	if (*val_layout != '\0') {
+	/*
+	 * Permit both: '' and 'none' as values for "unconfigured". Set with:
+	 *	svccfg -s keymap:default setprop 'keymap/layout=""'
+	 * or
+	 *	svccfg -s keymap:default setprop keymap/layout=none
+	 * to define the same default state as previously defined in
+	 * /etc/default/kbd.
+	 */
+	if (*val_layout != '\0' && strcmp(val_layout, "none") != 0) {
 		/*
 		 * LAYOUT must be one of the layouts supported in kbd_layouts
 		 */
