@@ -78,6 +78,8 @@ install: all $(ROOTPROG)
 	$(SYMLINK) star $(ROOTBIN)/suntar
 	$(RM) $(ROOTBIN)/gnutar
 	$(SYMLINK) star $(ROOTBIN)/gnutar
+	$(RM) $(ROOTBIN)/pax
+	$(SYMLINK) star $(ROOTBIN)/pax
 	$(RM) $(ROOTBIN)/spax
 	$(SYMLINK) star $(ROOTBIN)/spax
 	$(RM) $(ROOTBIN)/scpio
