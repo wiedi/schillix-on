@@ -290,6 +290,7 @@ COMMON_SUBDIRS=		\
 	pagesize	\
 	passmgmt	\
 	passwd		\
+	patch		\
 	pathchk		\
 	pbind		\
 	pcidr		\
@@ -472,7 +473,6 @@ $(CLOSED_BUILD)COMMON_SUBDIRS += \
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
 	$(CLOSED)/cmd/mtst	\
-	$(CLOSED)/cmd/patch	\
 	$(CLOSED)/cmd/printf	\
 	$(CLOSED)/cmd/sed	\
 	$(CLOSED)/cmd/sed_xpg4	\
@@ -648,6 +648,7 @@ MSGSUBDIRS=		\
 	pack		\
 	passwd		\
 	passmgmt	\
+	patch		\
 	pathchk		\
 	pfexec		\
 	pg		\
@@ -757,7 +758,6 @@ $(CLOSED_BUILD)MSGSUBDIRS += \
 	$(CLOSED)/cmd/llc2	\
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
-	$(CLOSED)/cmd/patch	\
 	$(CLOSED)/cmd/printf	\
 	$(CLOSED)/cmd/sed	\
 	$(CLOSED)/cmd/sed_xpg4	\
