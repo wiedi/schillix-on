@@ -183,6 +183,7 @@ i386_XMODS= \
 	SUNWlsimega
 
 COMMON_SUBDIRS= \
+	SUNW0on \
 	SUNW1394h \
 	SUNW1394 \
 	SUNWaac \

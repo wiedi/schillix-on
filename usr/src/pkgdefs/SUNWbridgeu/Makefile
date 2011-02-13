@@ -27,7 +27,7 @@
 include ../Makefile.com
 
 DATAFILES += depend
-LICENSEFILES = ../../lib/librstp/THIRDPARTYLICENSE
+LICENSEFILES = ../../lib/librstp/common/COPYING
 CDDL=
 
 .KEEP_STATE:

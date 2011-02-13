@@ -10,7 +10,8 @@ include ../Makefile.com
 DATAFILES +=	depend
 LICENSEFILES += copyright.in \
 	../../cmd/cmd-inet/usr.sbin/in.rdisc/THIRDPARTYLICENSE \
-	../../cmd/cmd-inet/usr.sbin/in.routed/THIRDPARTYLICENSE
+	../../cmd/cmd-inet/usr.sbin/in.routed/THIRDPARTYLICENSE.bsd \
+	../../cmd/cmd-inet/usr.sbin/in.routed/THIRDPARTYLICENSE.freebsd
 
 .KEEP_STATE:
 
