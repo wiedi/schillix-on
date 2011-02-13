@@ -227,6 +227,7 @@ COMMON_SUBDIRS= \
 	SUNWcnsr \
 	SUNWcnsu \
 	SUNWcpcu \
+	SUNWcrypto-ca-certificates \
 	SUNWcsd  \
 	SUNWcsr  \
 	SUNWcsu  \
