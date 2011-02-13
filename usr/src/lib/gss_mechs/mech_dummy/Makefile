@@ -69,6 +69,10 @@ clean clobber:  $(SUBDIRS)
 
 check: $(CHECKHDRS)
 
+do_pkg:
+	cd pkg ; pwd ; $(MAKE) install
+
+
 # include library targets
 # include ../../Makefile.targ
 

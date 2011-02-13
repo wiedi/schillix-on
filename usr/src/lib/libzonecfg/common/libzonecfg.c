@@ -83,6 +83,7 @@
 #define	DTD_ELEM_DEVICE		(const xmlChar *) "device"
 #define	DTD_ELEM_FS		(const xmlChar *) "filesystem"
 #define	DTD_ELEM_FSOPTION	(const xmlChar *) "fsoption"
+#define	DTD_ELEM_IPD		(const xmlChar *) "inherited-pkg-dir"
 #define	DTD_ELEM_NET		(const xmlChar *) "network"
 #define	DTD_ELEM_RCTL		(const xmlChar *) "rctl"
 #define	DTD_ELEM_RCTLVALUE	(const xmlChar *) "rctl-value"
@@ -4729,6 +4730,48 @@ zonecfg_getfsent(zone_dochandle_t handle, struct zone_fstab *tabptr)
 
 int
 zonecfg_endfsent(zone_dochandle_t handle)
+{
+	return (zonecfg_endent(handle));
+}
+
+int
+zonecfg_setipdent(zone_dochandle_t handle)
+{
+	return (zonecfg_setent(handle));
+}
+
+int
+zonecfg_getipdent(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	xmlNodePtr cur;
+	int err;
+
+	if (handle == NULL)
+		return (Z_INVAL);
+
+	if ((cur = handle->zone_dh_cur) == NULL)
+		return (Z_NO_ENTRY);
+
+	for (; cur != NULL; cur = cur->next)
+		if (!xmlStrcmp(cur->name, DTD_ELEM_IPD))
+			break;
+	if (cur == NULL) {
+		handle->zone_dh_cur = handle->zone_dh_top;
+		return (Z_NO_ENTRY);
+	}
+
+	if ((err = fetchprop(cur, DTD_ATTR_DIR, tabptr->zone_fs_dir,
+	    sizeof (tabptr->zone_fs_dir))) != Z_OK) {
+		handle->zone_dh_cur = handle->zone_dh_top;
+		return (err);
+	}
+
+	handle->zone_dh_cur = cur->next;
+	return (Z_OK);
+}
+
+int
+zonecfg_endipdent(zone_dochandle_t handle)
 {
 	return (zonecfg_endent(handle));
 }
