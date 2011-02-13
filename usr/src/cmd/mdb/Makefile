@@ -54,14 +54,17 @@ dmods install: install_h $(SUBDIRS)
 install_h: FRC
 	@cd common/mdb; pwd; $(MAKE) install_h
 
-clean.lint clean: $(SUBDIRS)
+clean.lint clean: $(SUBDIRS) packages
 
-clobber: $(SUBDIRS)
+clobber: $(SUBDIRS) packages
 
 $($(MACH)_SUBDIRS): tools
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
+
+pkg: install tools
+	@cd packages; pwd; $(MAKE) install
 
 FRC:
 

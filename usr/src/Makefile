@@ -86,11 +86,12 @@ check :=		TARGET= check
 .KEEP_STATE:
 
 #
-# Note: install does not cause a build in pkg.  To build packages,
+# Note: install does not cause a build in pkg/pkgdefs.  To build packages,
 #	cd pkg and do a 'make install'
+#	cd pkgdefs and do a 'make install'
 #
 
-all: mapfiles closedbins sgs .WAIT $(SUBDIRS) pkg
+all: mapfiles closedbins sgs .WAIT $(SUBDIRS) pkg pkgdefs
 
 #
 # The _msg build is a two-step process.  First, the _msg dependency
@@ -104,12 +105,15 @@ all: mapfiles closedbins sgs .WAIT $(SUBDIRS) pkg
 # packaging to be pulled from $(SRC) and $(CLOSED) and staged in
 # $(ROOT)/licenses.
 #
-install: install1 install2 _msg stage-licenses
+install: install1 install2 _msg stage-licenses pkgdefs_all
 	@cd msg; pwd; $(MAKE) _msg
 	@rm -rf "$(ROOT)/catalog"
 
 stage-licenses: install2
 	@cd pkg; pwd; $(MAKE) stage-licenses
+
+pkgdefs_all:
+	@cd pkgdefs; pwd; $(MAKE) all
 
 install1: mapfiles closedbins sgs
 
@@ -123,7 +127,7 @@ _msg: _msgdirs rootdirs install2 FRC
 mapfiles: bldtools
 	@cd common/mapfiles; pwd; $(MAKE) install
 
-clean clobber: $(SUBDIRS) head pkg
+clean clobber: $(SUBDIRS) head pkg pkgdefs
 
 closedbins: FRC $(ROOTDIRS)
 	@CLOSED_ROOT="$$ON_CLOSED_BINS/root_$(MACH)$${RELEASE_BUILD+-nd}"; \
@@ -148,7 +152,7 @@ closedbins: FRC $(ROOTDIRS)
 .PARALLEL: $(PARALLEL_HEADERS) DUMMY
 .PARALLEL: $(PARALLEL_DIRS) DUMMY
 
-$(SUBDIRS) head pkg: FRC
+$(SUBDIRS) head pkg pkgdefs: FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 # librpcsvc has a dependency on headers installed by
@@ -215,7 +219,7 @@ check:	$(CHKHDRSUBDIRS) $(CHKMFSTSUBDIRS)
 # don't contain actual source code.
 #
 $(CLOSED_BUILD)XRDIRS += ../closed
-XRPRUNE = pkg prototypes xmod
+XRPRUNE = pkg pkgdefs prototypes xmod
 XRINCDIRS = uts/common head ucbhead
 $(CLOSED_BUILD)XRINCDIRS = uts/common ../closed/uts/common head ucbhead
 
@@ -275,6 +279,7 @@ EXPORT_SRC:
 	@cd $(CLOSED)/uts/sun4v/io/ncp;	pwd;	$(MAKE) EXPORT_SRC
 	@cd $(CLOSED)/uts/sun4v/io/n2cp; pwd;	$(MAKE) EXPORT_SRC
 	@cd pkg; pwd;	$(MAKE) EXPORT_SRC
+	@cd pkgdefs; pwd;	$(MAKE) EXPORT_SRC
 	$(RM) -r $(XMOD_DELETE_FILES)
 	$(RM) Targetdirs+
 	sed -e "/^# EXPORT DELETE START/,/^# EXPORT DELETE END/d" \
@@ -312,6 +317,7 @@ CRYPT_SRC:
 	@cd uts/common/gssapi/mechs/dummy;        pwd; $(MAKE) CRYPT_SRC
 	@cd uts/common/gssapi/mechs/krb5; pwd; $(MAKE) CRYPT_SRC
 	@cd pkg;    pwd; $(MAKE) CRYPT_SRC
+	@cd pkgdefs;    pwd; $(MAKE) CRYPT_SRC
 	$(RM) Makefile+
 	sed -e "/^# EXPORT DELETE START/,/^# EXPORT DELETE END/d" \
 			< Makefile > Makefile+
