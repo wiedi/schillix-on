@@ -82,7 +82,7 @@ clean:
 		[ -f Makefile ] && mf=Makefile; \
 		[ ! -z "$$mf" ] && $(MAKE) -f $$mf clean; \
 		) \
-	done
+	done || true
 
 clobber:
 	-@ $(PERL_MM_ENV); \
@@ -93,7 +93,7 @@ clobber:
 		[ -f Makefile ] && mf=Makefile; \
 		[ ! -z "$$mf" ] && $(MAKE) -f $$mf realclean; \
 		) \
-	done
+	done || true
 
 EOF
 
