@@ -314,7 +314,7 @@ clean :: clean_subdirs
     push @m, "\t-\$(RM_RF) @otherfiles\n";
     # See realclean and ext/utils/make_ext for usage of Makefile.old
     push(@m,
-	 "\t-\$(MV) \$(FIRST_MAKEFILE) \$(MAKEFILE_OLD) \$(DEV_NULL)\n");
+	 "\t-\$(MV) \$(FIRST_MAKEFILE) \$(MAKEFILE_OLD) \$(DEV_NULL) \$(NO_ERR)\n");
     push(@m,
 	 "\t$attribs{POSTOP}\n")   if $attribs{POSTOP};
     join("", @m);
@@ -1979,6 +1979,7 @@ CODE
 
     $self->{UMASK_NULL}         ||= "umask 0";
     $self->{DEV_NULL}           ||= "> /dev/null 2>&1";
+    $self->{NO_ERR}           ||= "|| true";
 
     return 1;
 }
@@ -3556,8 +3557,8 @@ NOOP_FRAG
 
     foreach my $dir (@{$self->{DIR}}){
         $rclean .= sprintf <<'RCLEAN', $dir, $dir;
-	-cd %s && $(TEST_F) $(MAKEFILE_OLD) && $(MAKE) -f $(MAKEFILE_OLD) realclean
-	-cd %s && $(TEST_F) $(FIRST_MAKEFILE) && $(MAKE) realclean
+	-cd %s && $(TEST_F) $(MAKEFILE_OLD) && $(MAKE) -f $(MAKEFILE_OLD) realclean $(NO_ERR)
+	-cd %s && $(TEST_F) $(FIRST_MAKEFILE) && $(MAKE) realclean $(NO_ERR)
 RCLEAN
 
     }
@@ -3919,7 +3920,7 @@ sub tools_other {
     my @m;
 
     for my $tool (qw{ SHELL CHMOD CP MV NOOP NOECHO RM_F RM_RF TEST_F TOUCH 
-                      UMASK_NULL DEV_NULL MKPATH EQUALIZE_TIMESTAMP 
+                      UMASK_NULL DEV_NULL NO_ERR MKPATH EQUALIZE_TIMESTAMP 
                       ECHO ECHO_N
                       UNINST VERBINST
                       MOD_INSTALL DOC_INSTALL UNINSTALL
