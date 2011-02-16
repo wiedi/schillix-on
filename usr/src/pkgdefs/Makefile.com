@@ -55,6 +55,8 @@ DO_BUILDPKGCR=$(KSH93) -p $(BUILDPKGCR) $(LICENSEFILES)
 CMN_LIC_DIR=$(PKGDEFS)/license_files
 ATT=$(CMN_LIC_DIR)/cr_ATT
 SUN=$(CMN_LIC_DIR)/cr_Sun
+SCHILLIX=$(CMN_LIC_DIR)/cr_Schillix
+SCHILY=$(CMN_LIC_DIR)/cr_Schily
 CDDL=$(CMN_LIC_DIR)/lic_CDDL
 GPLV2=$(CMN_LIC_DIR)/lic_GPLv2
 OSBL =	$(CMN_LIC_DIR)/lic_OSBL_preamble \
@@ -70,7 +72,7 @@ LIC_IN_HDRS=$(CMN_LIC_DIR)/license_in_headers
 #
 # Most package Makefiles should append to this macro, rather than reset it.
 #
-LICENSEFILES=$(SUN) $(CDDL)
+LICENSEFILES=$(SCHILLIX) $(SUN) $(CDDL)
 
 CHKINSTALLSRC=
 CHKINSTALL=$(CHKINSTALLSRC:%=checkinstall)
