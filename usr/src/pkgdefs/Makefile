@@ -183,7 +183,10 @@ i386_XMODS= \
 	SUNWlsimega
 
 COMMON_SUBDIRS= \
+	SCHILYcpp \
 	SCHILYsystem-header-hdr-schily \
+	SCHILYsystem-library-schily \
+	SCHILYsystem-star \
 	SUNW0on \
 	SUNW1394h \
 	SUNW1394 \
@@ -228,6 +231,7 @@ COMMON_SUBDIRS= \
 	SUNWcnsr \
 	SUNWcnsu \
 	SUNWcpcu \
+	SUNWcpp \
 	SUNWcrypto-ca-certificates \
 	SUNWcsd  \
 	SUNWcsr  \
