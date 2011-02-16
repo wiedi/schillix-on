@@ -183,6 +183,7 @@ i386_XMODS= \
 	SUNWlsimega
 
 COMMON_SUBDIRS= \
+	SCHILYsystem-header-hdr-schily \
 	SUNW0on \
 	SUNW1394h \
 	SUNW1394 \
