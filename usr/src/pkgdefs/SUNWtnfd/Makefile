@@ -28,6 +28,7 @@
 include ../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
 
 ACTION_all=grep tnfc depend > /dev/null || \
 	( chmod 666 depend; \

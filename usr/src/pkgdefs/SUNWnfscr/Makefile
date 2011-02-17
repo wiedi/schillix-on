@@ -28,6 +28,7 @@
 include ../Makefile.com
 
 DATAFILES += depend i.nfssecconf i.defnfs i.manifest r.manifest
+CLOBBERFILES += action
 
 ACTION_SUNWrsgk=grep SUNWrsgk depend > /dev/null || \
 	( chmod 666 depend; \

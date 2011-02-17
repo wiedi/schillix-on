@@ -28,6 +28,7 @@
 include	../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
 
 LICENSEFILES = ../../uts/common/gssapi/mechs/krb5/THIRDPARTYLICENSE
 

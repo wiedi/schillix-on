@@ -26,6 +26,7 @@
 include ../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
  
 .KEEP_STATE:
  

@@ -27,6 +27,8 @@
 include ../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
+
 LICENSEFILES += ../../cmd/agents/snmp/THIRDPARTYLICENSE
 
 ACTION_all=grep SUNWter depend > /dev/null || \

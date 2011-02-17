@@ -25,6 +25,7 @@
 include ../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
 
 ACTION= \
 	( chmod 666 depend; \

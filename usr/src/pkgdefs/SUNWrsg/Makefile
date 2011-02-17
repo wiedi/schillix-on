@@ -29,6 +29,7 @@
 include	../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
 
 ACTION_SUNWgss=grep SUNWgss depend > /dev/null || \
 	( chmod 666 depend; \

@@ -26,6 +26,7 @@ include ../Makefile.com
 
 TMPLFILES += postinstall preremove
 DATAFILES += depend
+CLOBBERFILES += action_$(MACH)
 
 ACTION=grep SUNWrmodr depend > /dev/null || \
 	(chmod 666 depend; \
