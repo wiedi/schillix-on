@@ -39,6 +39,7 @@ LICENSEFILES += \
 	../../cmd/refer/THIRDPARTYLICENSE \
 	../../cmd/soelim/THIRDPARTYLICENSE \
 	../../cmd/tbl/THIRDPARTYLICENSE \
+	../../cmd/troff/troff.d/tmac.d/THIRDPARTYLICENSE.docmacs \
 	../../cmd/ul/THIRDPARTYLICENSE \
 	../../cmd/vgrind/THIRDPARTYLICENSE
 
