@@ -28,6 +28,7 @@ include ../Makefile.com
 
 TMPLFILES += preremove
 DATAFILES += depend
+CLOBBERFILES += action
 
 ACTION=grep SUNWlpu depend > /dev/null || \
 	( chmod 666 depend; \

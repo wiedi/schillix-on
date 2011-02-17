@@ -31,6 +31,7 @@ include ../Makefile.com
 DATAFILES += depend i.devpolicy i.drvalias i.initd i.iuap i.nametomajor i.preserve i.manifest r.manifest
 MACHDATAFILES = i.devlinktab i.kclasses i.minorperm
 CLOBBERFILES += $(MACHDATAFILES)
+CLOBBERFILES += action
 
 .KEEP_STATE:
 

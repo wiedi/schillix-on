@@ -28,6 +28,8 @@
 include ../Makefile.com
 
 DATAFILES += depend i.initd i.preserve i.manifest r.manifest
+CLOBBERFILES += action
+
 CHKINSTALLSRC=checkinstall.initd
 LICENSEFILES += $(OSBL)
 

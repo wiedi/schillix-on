@@ -29,6 +29,7 @@ include	../Makefile.com
 
 TMPLFILES += preremove
 DATAFILES += depend
+CLOBBERFILES += action
 
 LICENSEFILES += gss_license ../../lib/libgss/THIRDPARTYLICENSE
 CDDL=

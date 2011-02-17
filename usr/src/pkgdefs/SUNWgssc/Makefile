@@ -29,6 +29,7 @@
 include	../Makefile.com
 
 DATAFILES += depend i.tiservices i.preserve i.manifest r.manifest
+CLOBBERFILES += action
 
 .KEEP_STATE:
 
