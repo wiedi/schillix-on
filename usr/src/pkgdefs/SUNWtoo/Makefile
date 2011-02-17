@@ -28,12 +28,24 @@
 include ../Makefile.com
 
 DATAFILES += depend
+CLOBBERFILES += action
+
+ACTION_SCHILYsystem-library-schily=grep SCHILYsystem-library-schily depend > /dev/null || \
+	( chmod 666 depend; \
+	echo "P SCHILYsystem-library-schily	Schily System Libraries" >> depend; \
+	chmod 444 depend );
+
 
 .KEEP_STATE:
 
 LICENSEFILES += $(ATT) $(OSBL)
 
-all: $(FILES)
+all: $(FILES) action
 install: all pkg
+
+# action is a pseudotarget denoting completed work on the depend file
+action: depend
+	$(ACTION_SCHILYsystem-library-schily)
+	touch $@
 
 include ../Makefile.targ
