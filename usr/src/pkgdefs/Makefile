@@ -25,6 +25,16 @@
 #
 
 include $(SRC)/Makefile.master
+include $(SRC)/Makefile.buildnum
+
+#
+# To get these defaults, manifests should simply refer to PKGVERS.
+# See ../pkg/Makefile, keep in sync.
+#
+PKGVERS_COMPONENT= 0.$(RELEASE)
+PKGVERS_BUILTON= $(RELEASE)
+PKGVERS_BRANCH= 0.$(ONNV_BUILDNUM)
+PKGVERS= $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
 
 sparc_SUBDIRS= \
 	SUNWbcp  \
@@ -612,7 +622,8 @@ $(XMODS):       FRC
 	fi
 
 awk_pkginfo: bld_awk_pkginfo
-	./bld_awk_pkginfo -m $(MACH) -p "$(RELEASE)/$(VERSION)" -o $@ -v \
+	./bld_awk_pkginfo -m $(MACH) -p "$(RELEASE)/$(VERSION)" -P $(PKGVERS) \
+	-o $@ -v \
 	$(ONVERS)
 
 FRC:

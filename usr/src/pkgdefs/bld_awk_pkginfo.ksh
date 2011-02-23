@@ -33,7 +33,7 @@
 usage()
 {
    cat <<-EOF
-usage: bld_awk_pkginfo -p <prodver> -m <mach> -o <awk_script> [-v <version>]
+usage: bld_awk_pkginfo -p <prodver> -P <pkgvers> -m <mach> -o <awk_script> [-v <version>]
 EOF
 }
 
@@ -49,16 +49,18 @@ PRODVERS="^SUNW_PRODVERS="
 ARCH='ARCH=\"ISA\"'
 ARCHCLASSES="^CLASSES_"
 ALLCLASSES="^CLASSES=" 
+PKGNAME="^SCHILY_PKGNAME="
 
 #
 # parse command line
 #
 mach=""
 prodver=""
+pkgvers=""
 awk_script=""
 version="ONVERS"
 
-while getopts o:p:m:v: c
+while getopts o:p:P:m:v: c
 do
    case $c in
    o)
@@ -70,6 +72,9 @@ do
    p)
       prodver=$OPTARG
       ;;
+   P)
+      pkgvers=$OPTARG
+      ;;
    v)
       version=$OPTARG
       ;;
@@ -80,7 +85,7 @@ do
    esac
 done
 
-if [[ ( -z $prodver ) || ( -z $mach ) || ( -z $awk_script ) ]]
+if [[ ( -z $prodver ) || ( -z $pkgvers ) || ( -z $mach ) || ( -z $awk_script ) ]]
 then
    usage
    exit 1
@@ -95,6 +100,11 @@ fi
 # Build REV= field based on date
 #
 rev=$(date "+%Y.%m.%d.%H.%M")
+
+#
+# Build IPS TIME field based on date
+#
+ipsrev=$(date -u "+%Y%m%dT%H%M%SZ")
 
 #
 # Build awk script which will process all the
@@ -136,5 +146,11 @@ cat << EOF > $awk_script
       print
       next
    } 
+/$PKGNAME/ {
+      sub(/@PKGVERS/,"@$pkgvers")
+      sub(/:TIME/,":$ipsrev")
+      print
+      next
+   }
 { print }
 EOF
