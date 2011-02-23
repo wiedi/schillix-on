@@ -127,6 +127,8 @@ i386_SUBDIRS= \
 	SUNWgrub \
 	SUNWgrubS \
 	SUNWdcopy \
+	SUNWdynamic-reconfiguration-i86r \
+	SUNWdynamic-reconfiguration-i86k \
 	SUNWelxl \
 	SUNWfipe \
 	SUNWfruip.i \
@@ -210,6 +212,8 @@ COMMON_SUBDIRS= \
 	SUNWastdev \
 	SUNWav1394 \
 	SUNWbart  \
+	SUNWbeadmr \
+	SUNWbeadmu \
 	SUNWbge \
 	SUNWbip \
 	SUNWbipr \
@@ -248,6 +252,12 @@ COMMON_SUBDIRS= \
 	SUNWdmfe \
 	SUNWdmgtr \
 	SUNWdmgtu \
+	SUNWdriver-network-eoib \
+	SUNWdriver-network-ibp \
+	SUNWdriver-network-ofk \
+	SUNWdriver-network-rdsv3r \
+	SUNWdriver-network-rdsv3u \
+	SUNWdriver-network-usbecm \
 	SUNWdsdr  \
 	SUNWdsdu  \
 	SUNWdoc  \
@@ -308,6 +318,8 @@ COMMON_SUBDIRS= \
 	SUNWimac \
 	SUNWimar \
 	SUNWimacr \
+	SUNWinstall-beadmr \
+	SUNWinstall-beadmu \
 	SUNWinstallint \
 	SUNWintgige \
 	SUNWiotu  \
@@ -339,6 +351,7 @@ COMMON_SUBDIRS= \
 	SUNWlatencytop \
 	SUNWldskint \
 	SUNWlibsasl \
+	SUNWlib-crypto-pkcs11-kms \
 	SUNWllc \
 	SUNWllcr\
 	SUNWlldap \
@@ -381,6 +394,10 @@ COMMON_SUBDIRS= \
 	SUNWonzfsr \
 	SUNWonzfs \
 	SUNWosdem \
+	SUNWsmf-smtp-notifyr \
+	SUNWsmf-smtp-notifyu \
+	SUNWsmf-snmp-notifyr \
+	SUNWsmf-snmp-notifyu \
 	SUNWypr \
 	SUNWypu \
 	SUNWpacketh \
@@ -445,6 +462,7 @@ COMMON_SUBDIRS= \
 	SUNWrsm	\
 	SUNWrsmo \
 	SUNWrtls \
+	SUNWruntime-perl-510-module-sol \
 	SUNWs10brandr \
 	SUNWs10brandu \
 	SUNWsacom \
@@ -488,6 +506,7 @@ COMMON_SUBDIRS= \
 	SUNWsshdr \
 	SUNWsshdu \
 	SUNWstmf \
+	SUNWdriver-storage-blkdev \
 	SUNWstmfu \
 	SUNWtavor \
 	SUNWtcpd \
