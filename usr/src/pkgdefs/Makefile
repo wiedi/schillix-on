@@ -196,6 +196,7 @@ i386_XMODS= \
 
 COMMON_SUBDIRS= \
 	SCHILYcpp \
+	SCHILYcppr \
 	SCHILYsystem-header-hdr-schily \
 	SCHILYsystem-library-schily \
 	SCHILYsystem-star \
@@ -411,6 +412,7 @@ COMMON_SUBDIRS= \
 	SUNWypr \
 	SUNWypu \
 	SUNWpacketh \
+	SUNWpacketr \
 	SUNWpacketu \
 	SUNWpapi \
 	SUNWpcan \
