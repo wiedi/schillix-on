@@ -30,7 +30,7 @@ CDDL=
 
 .KEEP_STATE:
 
-all: $(FILES)
+all: $(FILES) depend
 install: all pkg
 
 include ../Makefile.targ
