@@ -1,0 +1,220 @@
+#!/bin/sh
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
+#
+
+#
+# Copyright 2011 Jörg Schilling.  All rights reserved.
+#
+LC_ALL=C; export LC_ALL
+
+arch=`uname -p`
+allpkgs=FALSE
+found_pkglist=FALSE
+scriptpath=""
+
+if [ "$PKGARCHIVE" = "" ]; then
+	PKGARCHIVE=../../../packages/$arch/nightly/
+fi
+PKGDIR="$PKGARCHIVE"
+
+usage() {
+	echo "Usage: pkgcvt -dir <pkgdir> [[pkgname] ...]"
+	echo "Options:"
+	echo "	-all		Convert all packages in <pkgdir>"
+	echo "	-dir	pkgdir	Chdir to <pkgdir> bfore converting packages"
+	echo "	-script-path path Set path to look for i.* scripts"
+	echo
+	echo "pkgcvt converts packages from filesytem format into a compressed datastream"
+}
+
+# Check for $1 in file $3. This is used to add tags to the
+# pkginfo file.
+#
+add_to_file()
+{
+	if [ -f "$3" ]; then
+		grep -s "$1" "$3" > /dev/null || echo "$1 $2" >> "$3"
+	fi
+}
+
+# Make sure that the tags:
+#	PKG_SRC_NOVERIFY= none
+#	PKG_DST_QKVERIFY= none
+#	PKG_CAS_PASSRELATIVE= none
+# appear in the pkginfo file
+#
+prepare_pkginfo()
+{
+	echo "pkginfo: osize $osize osum $osum otime $otime"
+
+	add_to_file PKG_SRC_NOVERIFY= none	pkginfo
+	add_to_file PKG_DST_QKVERIFY= none	pkginfo
+	add_to_file PKG_CAS_PASSRELATIVE= none	pkginfo
+
+	nsum=`sum pkginfo | awk '{ print $1 }'`
+	nsize=`ls -l pkginfo | awk '{ print $5 }'`
+	ntime=`stat -c "%Y" pkginfo`
+	echo "pkginfo: nsize $nsize nsum $nsum ntime $ntime"
+
+	sed <pkgmap "/i pkginfo / {
+			s/$osize $osum $otime/$nsize $nsum $ntime/
+		}" > pkgmap.new
+	chmod 644 pkgmap.new
+	mv -f pkgmap.new pkgmap
+}
+
+rm_archived_files()
+{
+	rm -f ` cat /tmp/f.$$ `
+	find * -type d | tail -r | xargs rmdir 2> /dev/null
+	rm -rf /tmp/f.$$ /tmp/fp.$$
+}
+
+# Convert a relocatable package
+#
+cvt_reloc()
+{
+	cp -p $scriptpath/i.none install/i.none
+	mkdir archive
+	cd reloc || exit 1
+	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 }' > /tmp/f.$$
+	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 " ? root root" }' > /tmp/fp.$$
+	star -cP H=asc pkglist=/tmp/fp.$$ >../archive/reloc || exit 1
+	xz -9 ../archive/reloc || exit 1
+	rm_archived_files
+}
+
+
+# Convert a non-relocatable package
+#
+cvt_root()
+{
+	cp -p $scriptpath/i.none install/i.none
+	mkdir archive
+	cd root || exit 1
+	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 }' | sed 's,^/,,' > /tmp/f.$$
+	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 " ? root root" }' | sed 's,^/,,' > /tmp/fp.$$
+	star -cP H=asc pkglist=/tmp/fp.$$ >../archive/root || exit 1
+	xz -9 ../archive/root || exit 1
+	rm_archived_files
+}
+
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-help)
+		usage
+		exit 0
+		;;
+
+	-all)
+		allpkgs=TRUE
+		shift
+		;;
+
+	-dir)
+		PKGDIR="$2"
+		shift 2
+		;;
+
+	-script-path)
+		scriptpath="$2"
+		shift 2
+		;;
+
+	-*)
+		echo "Illegal option $1"
+		usage
+		exit 0
+		;;
+
+	*)
+		found_pkglist=TRUE
+		#echo "arg:  $1"
+		#echo "args: $@"
+		break
+		;;
+	esac
+done
+
+owd=`pwd`
+cd "$PKGDIR" || (usage; exit 1)
+wd=`pwd`
+
+if [ "$scriptpath" = "" ]; then
+	if [ -f "$owd"/i.none ]; then
+		scriptpath="$owd"
+	elif [ -f "$owd"/common_files/i.none ]; then
+		scriptpath="$owd"/common_files
+	fi
+fi
+if [ ! -f $scriptpath/i.none ]; then
+	echo "Cannot find '$scriptpath/i.none'."
+	exit 1
+fi
+
+ND=`echo ND.$$`
+trap "cd $wd; rm -rf $ND /tmp/f.$$ /tmp/fp.$$; trap 0 1 2 3 15" 0 1 2 3 15
+#echo $ND
+mkdir $ND
+
+list=""
+if [ "$allpkgs" = TRUE ]; then
+	list=`echo *`
+elif [ "$found_pkglist" = TRUE ]; then
+	list="$@"
+fi
+if [ "$list" = "" ]; then
+	echo "No packages to convert"
+	usage
+	exit
+fi
+for i in $list; do
+	if [ ! -f $i/pkginfo ]; then	# Not a package directory
+		continue
+	fi
+	is_reloc=FALSE
+	is_root=FALSE
+	pkg_type="unknown"
+	if [ -d $i/reloc ]; then
+		is_reloc=TRUE
+		pkg_type=relocatable
+	fi
+	if [ -d $i/root ]; then
+		is_root=TRUE
+		pkg_type=non-relocatable
+	fi
+	if [ "$is_reloc" = TRUE -a "$is_root" = TRUE ]; then
+		echo "Unknown package type with 'reloc' and 'root' directory."
+		exit 1
+	fi
+	if [ "$is_reloc" = FALSE -a "$is_root" = FALSE ]; then
+		echo "$i: Empty package without reloc/root tree"
+		pkgtrans -s $wd $i.pkg $i
+		continue
+	fi
+	echo "Converting $pkg_type package '$i'."
+	star -copy -p -no-fsync -no-statistics -C . $i $ND || exit 1
+	(grep "i pkginfo " $i/pkgmap  | while read a b c osize osum otime; do
+		cd $ND/$i || exit 1
+
+		prepare_pkginfo || exit 1
+
+		if [ "$is_reloc" = TRUE ]; then
+			cvt_reloc || exit 1
+		else
+			cvt_root  || exit 1
+		fi
+
+		cd "$wd" || exit 1
+		pkgtrans -s $ND ../$i.pkg $i
+	done)
+done

@@ -1,0 +1,119 @@
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# See: http://www.opensource.org/licenses/cddl1.txt
+
+# Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2011 Jörg Schilling.  All rights reserved.
+#
+NAME="i.none"
+FILELIST=${PKGSAV:?undefined}/filelist
+BD=${BASEDIR:-/}
+IR=${PKG_INSTALL_ROOT:-/}
+
+is_an_archive=0
+is_a_filelist=0
+list_empty=1
+Rm_alt_sav=0
+
+CPIO_xpath=/usr/bin
+CPIO_cmd=$CPIO_xpath/cpio
+XZ_xpath=/usr/bin
+XZ_cmd=$XZ_xpath/xz
+RM_xpath=/usr/bin
+RM_cmd=$RM_xpath/rm
+Tmp_spath=/usr/tmp$$dir
+
+eval_pkg() {
+	read path
+	if [ ${path:-NULL} != NULL ]; then # get the package source directory
+		PKGSRC=${path:?undefined}
+
+		if [ -r $PKGSRC/archive/reloc.xz ]; then
+			is_an_archive=1
+			Arch=$PKGSRC/archive/reloc.xz
+		elif [ -r $PKGSRC/archive/root.xz ]; then
+			is_an_archive=2		
+			Arch=$PKGSRC/archive/root.xz
+		fi
+	else
+		exit 0	# empty pipe, we're done
+	fi
+}
+
+# main
+
+eval_pkg
+
+if [ $is_an_archive -eq 0 ]; then
+	echo "ERROR : $NAME Cannot find archived files in $PKGSRC/archive/."
+	exit 1
+fi
+
+if [ ! -d "$PKGSAV" ]; then
+	echo "WARNING : $NAME Cannot find save directory $PKGSAV."
+	PKGSAV=$Tmp_spath/$PKG.sav
+
+	if [ ! -d "$PKGSAV" ]; then
+		/usr/bin/mkdir $PKGSAV
+	fi
+
+	if [ $? -eq 0 ]; then
+		echo "  Using alternate save directory" $PKGSAV
+		FILELIST=$PKGSAV/filelist
+		Rm_alt_sav=1
+	else
+		echo "ERROR : Cannot create alternate save directory" $PKGSAV
+		exit 1
+	fi
+fi
+
+if [ "$is_an_archive" -eq 2 ]; then
+	cd $IR
+else
+	cd $BD
+fi
+
+if [ ${PKG_INIT_INSTALL:-null} = null ]; then
+	is_a_filelist=1
+	$RM_cmd -f $FILELIST
+	(while	read path
+	do
+		echo $path
+		list_empty=0
+	done) | sed 's,^/,,' >> $FILELIST
+fi
+
+if [ -x /usr/bin/xz ]; then
+	XZ_cmd=/usr/bin/xz
+elif [ -x /opt/schily/bin/xz ]; then
+	XZ_cmd=/opt/schily/bin/xz
+fi
+if [ ! -x "$XZ_cmd" ]; then
+	echo "Cannot find executable $XZ_cmd"
+	exit 1
+fi
+if [ $is_a_filelist -eq 1 ]; then
+	$XZ_cmd -d < "$Arch" 2> /dev/null | $CPIO_cmd -C 512 -idukm -E $FILELIST
+	status=$?
+	if [ "$status" -ne 0 ]; then
+		echo "Extracting $Arch failed with error $status"
+		exit 1
+	fi
+else
+	$XZ_cmd -d < "$Arch" 2> /dev/null | $CPIO_cmd -C 512 -idukm
+	status=$?
+	if [ "$status" -ne 0 ]; then
+		echo "Extracting $Arch failed with error $status"
+		exit 1
+	fi
+fi
+
+if [ -f $FILELIST ]; then
+	$RM_cmd $FILELIST
+fi
+
+if [ $Rm_alt_sav -eq 1 ]; then
+	$RM_cmd -r $PKGSAV
+fi
+
+exit 0
