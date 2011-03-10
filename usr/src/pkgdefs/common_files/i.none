@@ -2,8 +2,8 @@
 # Common Development and Distribution License ("CDDL"), version 1.0.
 # See: http://www.opensource.org/licenses/cddl1.txt
 
-# Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
-# Copyright 2011 Jörg Schilling.  All rights reserved.
+# Copyright 2005 Sun Microsystems, Inc.
+# Copyright 2011 Jörg Schilling.
 #
 NAME="i.none"
 FILELIST=${PKGSAV:?undefined}/filelist
@@ -25,19 +25,47 @@ Tmp_spath=/usr/tmp$$dir
 
 eval_pkg() {
 	read path
-	if [ ${path:-NULL} != NULL ]; then # get the package source directory
+	if [ ${path:-NULL} != NULL ]; then # package src directory
 		PKGSRC=${path:?undefined}
+		PA=$PKGSRC/archive
 
-		if [ -r $PKGSRC/archive/reloc.xz ]; then
+		if [ -r $PA/reloc.xz ]; then
 			is_an_archive=1
-			Arch=$PKGSRC/archive/reloc.xz
-		elif [ -r $PKGSRC/archive/root.xz ]; then
-			is_an_archive=2		
-			Arch=$PKGSRC/archive/root.xz
+			Arch=$PA/reloc.xz
+		fi
+		if [ -r $PA/root.xz ]; then
+			is_an_archive=1
+			Arch_r=$PA/root.xz
 		fi
 	else
 		exit 0	# empty pipe, we're done
 	fi
+}
+
+xtr_ar()
+{
+	Ar=$1
+	shift
+	if [ -z "$Ar" -o ! -f "$Ar" ]; then
+		return 0
+	fi
+	cd $1 || exit 1
+	shift
+	$XZ_cmd -d < "$Ar" 2> /dev/null | $CPIO_cmd -C 512 -idukm $@
+	status=$?
+	if [ "$status" -ne 0 ]; then
+		echo "Extracting $Ar failed with error $status"
+		exit 1
+	fi
+}
+
+do_rm()
+{
+	for i in $@; do
+		if [ -f "$i" ]; then
+			$RM_cmd -f "$i"
+		fi
+	done
 }
 
 # main
@@ -45,7 +73,7 @@ eval_pkg() {
 eval_pkg
 
 if [ $is_an_archive -eq 0 ]; then
-	echo "ERROR : $NAME Cannot find archived files in $PKGSRC/archive/."
+	echo "ERROR : $NAME Cannot find archived files in $PA."
 	exit 1
 fi
 
@@ -67,50 +95,36 @@ if [ ! -d "$PKGSAV" ]; then
 	fi
 fi
 
-if [ "$is_an_archive" -eq 2 ]; then
-	cd $IR
-else
-	cd $BD
-fi
-
 if [ ${PKG_INIT_INSTALL:-null} = null ]; then
 	is_a_filelist=1
-	$RM_cmd -f $FILELIST
+	do_rm ${FILELIST} ${FILELIST}_r ${FILELIST}_o
 	(while	read path
 	do
 		echo $path
 		list_empty=0
-	done) | sed 's,^/,,' >> $FILELIST
+	done) > ${FILELIST}_o
+	sed -n '/^\//s,^/,,p' < ${FILELIST}_o > ${FILELIST}_r
+	sed -n '/^[^/]/p'     < ${FILELIST}_o > ${FILELIST}
 fi
 
-if [ -x /usr/bin/xz ]; then
-	XZ_cmd=/usr/bin/xz
+if [ -x $XZ_cmd ]; then
+	:
 elif [ -x /opt/schily/bin/xz ]; then
 	XZ_cmd=/opt/schily/bin/xz
 fi
 if [ ! -x "$XZ_cmd" ]; then
-	echo "Cannot find executable $XZ_cmd"
+	echo "Cannot exec $XZ_cmd"
 	exit 1
 fi
 if [ $is_a_filelist -eq 1 ]; then
-	$XZ_cmd -d < "$Arch" 2> /dev/null | $CPIO_cmd -C 512 -idukm -E $FILELIST
-	status=$?
-	if [ "$status" -ne 0 ]; then
-		echo "Extracting $Arch failed with error $status"
-		exit 1
-	fi
+	xtr_ar "$Arch_r" $IR -E ${FILELIST}_r || exit 1
+	xtr_ar "$Arch"   $BD -E ${FILELIST}   || exit 1
 else
-	$XZ_cmd -d < "$Arch" 2> /dev/null | $CPIO_cmd -C 512 -idukm
-	status=$?
-	if [ "$status" -ne 0 ]; then
-		echo "Extracting $Arch failed with error $status"
-		exit 1
-	fi
+	xtr_ar "$Arch_r" $IR || exit 1
+	xtr_ar "$Arch"   $BD || exit 1
 fi
 
-if [ -f $FILELIST ]; then
-	$RM_cmd $FILELIST
-fi
+do_rm ${FILELIST} ${FILELIST}_r ${FILELIST}_o
 
 if [ $Rm_alt_sav -eq 1 ]; then
 	$RM_cmd -r $PKGSAV
