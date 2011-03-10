@@ -73,7 +73,7 @@ prepare_pkginfo()
 
 rm_archived_files()
 {
-	rm -f ` cat /tmp/f.$$ `
+	xargs rm -f < /tmp/f.$$
 	find * -type d | tail -r | xargs rmdir 2> /dev/null
 	rm -rf /tmp/f.$$ /tmp/fp.$$
 }
@@ -82,11 +82,10 @@ rm_archived_files()
 #
 cvt_reloc()
 {
-	cp -p $scriptpath/i.none install/i.none
-	mkdir archive
+	mkdir -p archive
 	cd reloc || exit 1
-	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 }' > /tmp/f.$$
-	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 " ? root root" }' > /tmp/fp.$$
+	grep "^[0-9]* [efv] none [^/]" ../pkgmap | awk '{ print $4 }' > /tmp/f.$$
+	grep "^[0-9]* [efv] none [^/]" ../pkgmap | awk '{ print $4 " ? root root" }' > /tmp/fp.$$
 	star -cP H=asc pkglist=/tmp/fp.$$ >../archive/reloc || exit 1
 	xz -9 ../archive/reloc || exit 1
 	rm_archived_files
@@ -97,11 +96,10 @@ cvt_reloc()
 #
 cvt_root()
 {
-	cp -p $scriptpath/i.none install/i.none
-	mkdir archive
+	mkdir -p archive
 	cd root || exit 1
-	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 }' | sed 's,^/,,' > /tmp/f.$$
-	grep "^[0-9]* [efv] none " ../pkgmap | awk '{ print $4 " ? root root" }' | sed 's,^/,,' > /tmp/fp.$$
+	grep "^[0-9]* [efv] none /" ../pkgmap | awk '{ print $4 }' | sed 's,^/,,' > /tmp/f.$$
+	grep "^[0-9]* [efv] none /" ../pkgmap | awk '{ print $4 " ? root root" }' | sed 's,^/,,' > /tmp/fp.$$
 	star -cP H=asc pkglist=/tmp/fp.$$ >../archive/root || exit 1
 	xz -9 ../archive/root || exit 1
 	rm_archived_files
@@ -192,9 +190,14 @@ for i in $list; do
 		is_root=TRUE
 		pkg_type=non-relocatable
 	fi
+	if [ -d $i/archive ]; then
+		echo "$i: Package with archive tree is not modified"
+		pkgtrans -s $wd $i.pkg $i
+		continue
+	fi
 	if [ "$is_reloc" = TRUE -a "$is_root" = TRUE ]; then
-		echo "Unknown package type with 'reloc' and 'root' directory."
-		exit 1
+		echo "$i: Package type with 'reloc' and 'root' directory."
+		pkg_type=hybrid
 	fi
 	if [ "$is_reloc" = FALSE -a "$is_root" = FALSE ]; then
 		echo "$i: Empty package without reloc/root tree"
@@ -208,10 +211,13 @@ for i in $list; do
 
 		prepare_pkginfo || exit 1
 
+		cp -p $scriptpath/i.none install/i.none || exit 1
+
 		if [ "$is_reloc" = TRUE ]; then
-			cvt_reloc || exit 1
-		else
-			cvt_root  || exit 1
+			(cvt_reloc) || exit 1
+		fi
+		if [ "$is_root" = TRUE ]; then
+			(cvt_root) || exit 1
 		fi
 
 		cd "$wd" || exit 1
