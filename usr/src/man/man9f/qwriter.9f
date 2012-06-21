@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 1993, Sun Microsystems, Inc., All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH qwriter 9F "1 Mar 1993" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 qwriter \- asynchronous STREAMS perimeter upgrade
@@ -10,7 +25,7 @@ qwriter \- asynchronous STREAMS perimeter upgrade
 .LP
 .nf
 #include <sys/stream.h>
-#include <sys/ddi.h> 
+#include <sys/ddi.h>
 
 
 
@@ -29,7 +44,7 @@ Solaris DDI specific (Solaris DDI).
 \fB\fIqp\fR \fR
 .ad
 .RS 14n
-.rt  
+.rt
 Pointer to the queue.
 .RE
 
@@ -40,7 +55,7 @@ Pointer to the queue.
 \fB\fImp\fR \fR
 .ad
 .RS 14n
-.rt  
+.rt
 Pointer to a message that will be passed in to the callback function.
 .RE
 
@@ -51,8 +66,9 @@ Pointer to a message that will be passed in to the callback function.
 \fB\fIfunc\fR \fR
 .ad
 .RS 14n
-.rt  
-A function that will be called when exclusive (writer) access has been acquired at the specified perimeter.
+.rt
+A function that will be called when exclusive (writer) access has been
+acquired at the specified perimeter.
 .RE
 
 .sp
@@ -62,14 +78,17 @@ A function that will be called when exclusive (writer) access has been acquired 
 \fB\fIperimeter\fR \fR
 .ad
 .RS 14n
-.rt  
-Either \fBPERIM_INNER\fR or \fBPERIM_OUTER\fR. 
+.rt
+Either \fBPERIM_INNER\fR or \fBPERIM_OUTER\fR.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBqwriter()\fR is used to upgrade the access at either the inner or the outer perimeter from shared to exclusive and call the specified callback function when the upgrade has succeeded. See \fBmt-streams\fR(9F). The callback function is called as:
+\fBqwriter()\fR is used to upgrade the access at either the inner or the
+outer perimeter from shared to exclusive and call the specified callback
+function when the upgrade has succeeded. See \fBmt-streams\fR(9F). The
+callback function is called as:
 .sp
 .in +2
 .nf
@@ -79,21 +98,35 @@ Either \fBPERIM_INNER\fR or \fBPERIM_OUTER\fR.
 
 .sp
 .LP
-\fBqwriter()\fR will acquire exclusive access immediately if possible, in which case the specified callback function will be executed before \fBqwriter()\fR returns. If this is not possible, \fBqwriter()\fR will defer the upgrade until later and return before the callback function has been executed. Modules should not assume that the callback function has been executed when \fBqwriter()\fR returns. One way to avoid dependencies on the execution of the callback function is to immediately return after calling \fBqwriter()\fR and let the callback function finish the processing of the message.
+\fBqwriter()\fR will acquire exclusive access immediately if possible, in
+which case the specified callback function will be executed before
+\fBqwriter()\fR returns. If this is not possible, \fBqwriter()\fR will defer
+the upgrade until later and return before the callback function has been
+executed. Modules should not assume that the callback function has been
+executed when \fBqwriter()\fR returns. One way to avoid dependencies on the
+execution of the callback function is to immediately return after calling
+\fBqwriter()\fR and let the callback function finish the processing of the
+message.
 .sp
 .LP
-When \fBqwriter()\fR defers calling the callback function, the STREAMS framework will prevent other messages from entering the inner perimeter associated with the queue until the upgrade has completed and the callback function has finished executing.
+When \fBqwriter()\fR defers calling the callback function, the STREAMS
+framework will prevent other messages from entering the inner perimeter
+associated with the queue until the upgrade has completed and the callback
+function has finished executing.
 .SH CONTEXT
 .sp
 .LP
-\fBqwriter()\fR can only be called from an \fBput\fR(9E) or \fBsrv\fR(9E) routine, or from a \fBqwriter()\fR, \fBqtimeout\fR(9F), or \fBqbufcall\fR(9F) callback function.
+\fBqwriter()\fR can only be called from an \fBput\fR(9E) or \fBsrv\fR(9E)
+routine, or from a \fBqwriter()\fR, \fBqtimeout\fR(9F), or
+\fBqbufcall\fR(9F) callback function.
 .SH SEE ALSO
 .sp
 .LP
-\fBput\fR(9E), \fBsrv\fR(9E), \fBmt-streams\fR(9F), \fBqbufcall\fR(9F), \fBqtimeout\fR(9F) 
+\fBput\fR(9E), \fBsrv\fR(9E), \fBmt-streams\fR(9F), \fBqbufcall\fR(9F),
+\fBqtimeout\fR(9F) 
 .sp
 .LP
-\fISTREAMS Programming Guide\fR 
+\fISTREAMS Programming Guide\fR
 .sp
 .LP
-\fIWriting Device Drivers\fR 
+\fIWriting Device Drivers\fR

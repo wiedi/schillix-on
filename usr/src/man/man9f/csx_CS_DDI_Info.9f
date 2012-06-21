@@ -1,15 +1,30 @@
 '\" te
-.\"  Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH csx_CS_DDI_Info 9F "19 Jul 1996" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 csx_CS_DDI_Info \- obtain DDI information
 .SH SYNOPSIS
 .LP
 .nf
-#include <sys/pccard.h> 
+#include <sys/pccard.h>
 
 
 
@@ -28,14 +43,17 @@ Solaris \fBDDI \fRSpecific (Solaris \fBDDI) \fR
 \fB\fIcdi\fR \fR
 .ad
 .RS 8n
-.rt  
+.rt
 Pointer to a \fBcs_ddi_info_t\fR structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-This function is a Solaris-specific extension that is used by clients that need to provide the \fIxx_getinfo\fR driver entry point (see \fBgetinfo\fR(9E)). It provides a method for clients to obtain \fBDDI \fRinformation based on their socket number and client driver name.
+This function is a Solaris-specific extension that is used by clients that
+need to provide the \fIxx_getinfo\fR driver entry point (see
+\fBgetinfo\fR(9E)). It provides a method for clients to obtain \fBDDI
+\fRinformation based on their socket number and client driver name.
 .SH STRUCTURE MEMBERS
 .sp
 .LP
@@ -60,8 +78,9 @@ The fields are defined as follows:
 \fB\fBSocket\fR \fR
 .ad
 .RS 16n
-.rt  
-This field must be set to the physical socket number that the client is interested in getting information about.
+.rt
+This field must be set to the physical socket number that the client is
+interested in getting information about.
 .RE
 
 .sp
@@ -71,16 +90,22 @@ This field must be set to the physical socket number that the client is interest
 \fB\fBdriver_name\fR \fR
 .ad
 .RS 16n
-.rt  
-This field must be set to a string containing the name of the client driver to get information about.
+.rt
+This field must be set to a string containing the name of the client driver
+to get information about.
 .RE
 
 .sp
 .LP
-If \fBcsx_CS_DDI_Info()\fR is used in a client's \fIxx_getinfo\fR function, then the client will typically extract the \fBSocket\fR value from the \fB*\fR\fIarg\fR argument and it \fImust\fR set the \fBdriver_name\fR field to the same string used with \fBcsx_RegisterClient\fR(9F). 
+If \fBcsx_CS_DDI_Info()\fR is used in a client's \fIxx_getinfo\fR function,
+then the client will typically extract the \fBSocket\fR value from the
+\fB*\fR\fIarg\fR argument and it \fImust\fR set the \fBdriver_name\fR field
+to the same string used with \fBcsx_RegisterClient\fR(9F).
 .sp
 .LP
-If the \fBdriver_name\fR is found on the \fBSocket\fR, the \fBcsx_CS_DDI_Info()\fR function returns both the \fBdev_info\fR pointer and the \fBinstance\fR fields for the requested driver instance.
+If the \fBdriver_name\fR is found on the \fBSocket\fR, the
+\fBcsx_CS_DDI_Info()\fR function returns both the \fBdev_info\fR pointer and
+the \fBinstance\fR fields for the requested driver instance.
 .SH RETURN VALUES
 .sp
 .ne 2
@@ -89,7 +114,7 @@ If the \fBdriver_name\fR is found on the \fBSocket\fR, the \fBcsx_CS_DDI_Info()\
 \fB\fBCS_SUCCESS\fR \fR
 .ad
 .RS 28n
-.rt  
+.rt
 Successful operation.
 .RE
 
@@ -100,8 +125,8 @@ Successful operation.
 \fB\fBCS_BAD_SOCKET\fR \fR
 .ad
 .RS 28n
-.rt  
-Client not found on \fBSocket\fR. 
+.rt
+Client not found on \fBSocket\fR.
 .RE
 
 .sp
@@ -111,7 +136,7 @@ Client not found on \fBSocket\fR.
 \fB\fBCS_UNSUPPORTED_FUNCTION\fR \fR
 .ad
 .RS 28n
-.rt  
+.rt
 No \fBPCMCIA \fRhardware installed.
 .RE
 
@@ -124,7 +149,9 @@ This function may be called from user or kernel context.
 \fBExample 1 \fR: Using csx_CS_DDI_Info
 .sp
 .LP
-The following example shows how a client might call the \fBcsx_CS_DDI_Info()\fR in the client's \fIxx_getinfo\fR function to return the dip or the instance number:
+The following example shows how a client might call the
+\fBcsx_CS_DDI_Info()\fR in the client's \fIxx_getinfo\fR function to return
+the dip or the instance number:
 
 .sp
 .in +2
@@ -138,7 +165,7 @@ pcepp_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg,
 	   cs_ddi_info_t                cs_ddi_info;
 
    switch (cmd) {
- 
+
 	   case DDI_INFO_DEVT2DEVINFO:
           cs_ddi_info.Socket = getminor((dev_t)arg) & 0x3f;
           cs_ddi_info.driver_name = pcepp_name;
@@ -174,7 +201,8 @@ pcepp_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg,
 .SH SEE ALSO
 .sp
 .LP
-\fBgetinfo\fR(9E), \fBcsx_RegisterClient\fR(9F), \fBddi_get_instance\fR(9F) 
+\fBgetinfo\fR(9E), \fBcsx_RegisterClient\fR(9F), \fBddi_get_instance\fR(9F)
+
 .sp
 .LP
 \fIPC Card 95 Standard, PCMCIA/JEIDA\fR

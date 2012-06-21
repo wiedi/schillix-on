@@ -1,5 +1,8 @@
 '\" te
-.\"  Copyright (c) 1980 Regents of the University of California.  All rights reserved.  The Berkeley software License Agreement  specifies the terms and conditions for redistribution. Copyright (c) 2003, Sun Microsystems, Inc. All Rights Reserved.
+.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved. The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\" Copyright (c) 2003, Sun Microsystems, Inc. All Rights Reserved.
 .TH ufsdump 4 "9 Apr 2003" "SunOS 5.11" "File Formats"
 .SH NAME
 ufsdump, dumpdates \- incremental dump format
@@ -54,13 +57,14 @@ a group of records describing files
 .RE
 .sp
 .LP
-The format of the header record and the format of the first record of each description in the \fB<protocols/dumprestore.h>\fR include file are:
+The format of the header record and the format of the first record of each
+description in the \fB<protocols/dumprestore.h>\fR include file are:
 .sp
 .in +2
 .nf
 #define TP_BSIZE_MAX    65536
 #define TP_BSIZE_MIN    1024
-#define ESIZE_SHIFT_MAX 6 
+#define ESIZE_SHIFT_MAX 6
 
 #ifdef SUPPORTS_MTB_TAPE_FORMAT
 #define TP_BUFSIZE      TP_BSIZE_MAX
@@ -105,24 +109,24 @@ union u_shadow {
 union u_spcl {
         char dummy[TP_BUFSIZE];
         struct  s_spcl {
-                int32_t c_type; 
-                time32_t c_date; 
-                time32_t c_ddate; 
+                int32_t c_type;
+                time32_t c_date;
+                time32_t c_ddate;
                 int32_t c_volume;
                 daddr32_t c_tapea;
-                ino32_t c_inumber; 
-                int32_t c_magic; 
+                ino32_t c_inumber;
+                int32_t c_magic;
                 int32_t c_checksum;
                 struct  dinode  c_dinode;
-                int32_t c_count;  
-                union   u_data c_data; 
+                int32_t c_count;
+                union   u_data c_data;
                 char    c_label[LBLSIZE];
-                union   u_shadow c_shadow; 
-                int32_t c_flags;    
-                int32_t c_firstrec;        
+                union   u_shadow c_shadow;
+                int32_t c_flags;
+                int32_t c_firstrec;
 #ifdef SUPPORTS_MTB_TAPE_FORMAT
-                int32_t c_tpbsize;  
-                int32_t c_spare[31]; 
+                int32_t c_tpbsize;
+                int32_t c_spare[31];
 #else
                 int32_t c_spare[32];
 #endif /* SUPPORTS_MTB_TAPE_FORMAT */
@@ -195,24 +199,31 @@ int32_t                    c_spare[32];
 
 .sp
 .LP
-This header describes three formats for the \fBufsdump\fR/\fBufsrestore\fR interface:
+This header describes three formats for the \fBufsdump\fR/\fBufsrestore\fR
+interface:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-An old format, non-MTB, that supports dump sizes of less than 2 terabytes. This format is represented by \fBNFS_MAGIC\fR.
+An old format, non-MTB, that supports dump sizes of less than 2 terabytes.
+This format is represented by \fBNFS_MAGIC\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A new format, MTB, that supports dump sizes of greater than 2 terabytes using a variable block size and 2 new constants: \fBTP_BSIZE_MIN\fR and \fBTP_BSIZE_MAX\fR. This format is represented by \fBMTB_MAGIC\fR.
+A new format, MTB, that supports dump sizes of greater than 2 terabytes
+using a variable block size and 2 new constants: \fBTP_BSIZE_MIN\fR and
+\fBTP_BSIZE_MAX\fR. This format is represented by \fBMTB_MAGIC\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A much older format that might be found on existing backup tapes. The \fBufsrestore\fR command can restore tapes of this format, but no longer generates tapes of this format. Backups in this format have the \fBOFS_MAGIC\fR magic number in their tape headers.
+A much older format that might be found on existing backup tapes. The
+\fBufsrestore\fR command can restore tapes of this format, but no longer
+generates tapes of this format. Backups in this format have the
+\fBOFS_MAGIC\fR magic number in their tape headers.
 .RE
 .sp
 .LP
@@ -224,8 +235,11 @@ The constants are described as follows:
 \fB\fBTP_BSIZE\fR\fR
 .ad
 .RS 20n
-.rt  
-Size of file blocks on the dump tapes for the old format. Note that \fBTP_BSIZE\fR must be a multiple of \fBDEV_BSIZE\fR This is applicable for dumps of type \fBNFS_MAGIC\fR or \fBOFS_MAGIC\fR, but is not applicable for dumps of type \fBMTB_MAGIC\fR.
+.rt
+Size of file blocks on the dump tapes for the old format. Note that
+\fBTP_BSIZE\fR must be a multiple of \fBDEV_BSIZE\fR This is applicable for
+dumps of type \fBNFS_MAGIC\fR or \fBOFS_MAGIC\fR, but is not applicable for
+dumps of type \fBMTB_MAGIC\fR.
 .RE
 
 .sp
@@ -235,8 +249,9 @@ Size of file blocks on the dump tapes for the old format. Note that \fBTP_BSIZE\
 \fB\fBTP_BSIZE_MIN\fR\fR
 .ad
 .RS 20n
-.rt  
-Minimum size of file blocks on the dump tapes for the new MTB format (\fBMTB_MAGIC\fR) only.
+.rt
+Minimum size of file blocks on the dump tapes for the new MTB format
+(\fBMTB_MAGIC\fR) only.
 .RE
 
 .sp
@@ -246,8 +261,9 @@ Minimum size of file blocks on the dump tapes for the new MTB format (\fBMTB_MAG
 \fB\fBTP_BSIZE_MAX\fR\fR
 .ad
 .RS 20n
-.rt  
-Maximum size of file blocks on the dump tapes for the new MTB format (\fBMTB_MAGIC\fR) only.
+.rt
+Maximum size of file blocks on the dump tapes for the new MTB format
+(\fBMTB_MAGIC\fR) only.
 .RE
 
 .sp
@@ -257,7 +273,7 @@ Maximum size of file blocks on the dump tapes for the new MTB format (\fBMTB_MAG
 \fB\fBNTREC\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Number of \fBTP_BSIZE\fR blocks that are written in each tape record.
 .RE
 
@@ -268,8 +284,9 @@ Number of \fBTP_BSIZE\fR blocks that are written in each tape record.
 \fB\fBHIGHDENSITYNTREC\fR\fR
 .ad
 .RS 20n
-.rt  
-Number of \fBTP_BSIZE\fR blocks that are written in each tape record on  6250 BPI or higher density tapes.
+.rt
+Number of \fBTP_BSIZE\fR blocks that are written in each tape record on
+6250 BPI or higher density tapes.
 .RE
 
 .sp
@@ -279,8 +296,9 @@ Number of \fBTP_BSIZE\fR blocks that are written in each tape record on  6250 BP
 \fB\fBCARTRIDGETREC\fR\fR
 .ad
 .RS 20n
-.rt  
-Number of \fBTP_BSIZE\fR blocks that are written in each tape record on cartridge tapes.
+.rt
+Number of \fBTP_BSIZE\fR blocks that are written in each tape record on
+cartridge tapes.
 .RE
 
 .sp
@@ -290,8 +308,9 @@ Number of \fBTP_BSIZE\fR blocks that are written in each tape record on cartridg
 \fB\fBTP_NINDIR\fR\fR
 .ad
 .RS 20n
-.rt  
-Number of indirect pointers in a \fBTS_INODE\fR or \fBTS_ADDR\fR record. It must be a power of 2.
+.rt
+Number of indirect pointers in a \fBTS_INODE\fR or \fBTS_ADDR\fR record. It
+must be a power of 2.
 .RE
 
 .sp
@@ -301,7 +320,7 @@ Number of indirect pointers in a \fBTS_INODE\fR or \fBTS_ADDR\fR record. It must
 \fB\fBTP_NINOS\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 The maximum number of volumes on a tape.
 .RE
 
@@ -312,7 +331,7 @@ The maximum number of volumes on a tape.
 \fB\fBLBLSIZE\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 The maximum size of a volume label.
 .RE
 
@@ -323,7 +342,7 @@ The maximum size of a volume label.
 \fB\fBNAMELEN\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 The maximum size of a host's name.
 .RE
 
@@ -334,7 +353,7 @@ The maximum size of a host's name.
 \fB\fBOFS_MAGIC\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Magic number that is used for the very old format.
 .RE
 
@@ -345,7 +364,7 @@ Magic number that is used for the very old format.
 \fB\fBNFS_MAGIC\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Magic number that is used for the non-MTB format.
 .RE
 
@@ -356,7 +375,7 @@ Magic number that is used for the non-MTB format.
 \fB\fBMTB_MAGIC\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Magic number that is used for the MTB format.
 .RE
 
@@ -367,13 +386,14 @@ Magic number that is used for the MTB format.
 \fB\fBCHECKSUM\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Header records checksum to this value.
 .RE
 
 .sp
 .LP
-The \fBTS_\fR entries are used in the \fBc_type\fR field to indicate what sort of header this is. The types and their meanings are as follows:
+The \fBTS_\fR entries are used in the \fBc_type\fR field to indicate what
+sort of header this is. The types and their meanings are as follows:
 .sp
 .ne 2
 .mk
@@ -381,7 +401,7 @@ The \fBTS_\fR entries are used in the \fBc_type\fR field to indicate what sort o
 \fB\fBTS_TAPE\fR\fR
 .ad
 .RS 12n
-.rt  
+.rt
 Tape volume label.
 .RE
 
@@ -392,8 +412,9 @@ Tape volume label.
 \fB\fBTS_INODE\fR\fR
 .ad
 .RS 12n
-.rt  
-A file or directory follows. The \fBc_dinode\fR field is a copy of the disk inode and contains bits telling what sort of file this is.
+.rt
+A file or directory follows. The \fBc_dinode\fR field is a copy of the disk
+inode and contains bits telling what sort of file this is.
 .RE
 
 .sp
@@ -403,7 +424,7 @@ A file or directory follows. The \fBc_dinode\fR field is a copy of the disk inod
 \fB\fBTS_ADDR\fR\fR
 .ad
 .RS 12n
-.rt  
+.rt
 A subrecord of a file description. See \fBs_addrs\fR below.
 .RE
 
@@ -414,8 +435,9 @@ A subrecord of a file description. See \fBs_addrs\fR below.
 \fB\fBTS_BITS\fR\fR
 .ad
 .RS 12n
-.rt  
-A bit map follows. This bit map has a one bit for each inode that was dumped.
+.rt
+A bit map follows. This bit map has a one bit for each inode that was
+dumped.
 .RE
 
 .sp
@@ -425,8 +447,9 @@ A bit map follows. This bit map has a one bit for each inode that was dumped.
 \fB\fBTS_CLRI\fR\fR
 .ad
 .RS 12n
-.rt  
-A bit map follows. This bit map contains a zero bit for all inodes that were empty on the file system when dumped.
+.rt
+A bit map follows. This bit map contains a zero bit for all inodes that
+were empty on the file system when dumped.
 .RE
 
 .sp
@@ -436,7 +459,7 @@ A bit map follows. This bit map contains a zero bit for all inodes that were emp
 \fB\fBTS_END\fR\fR
 .ad
 .RS 12n
-.rt  
+.rt
 End of tape record.
 .RE
 
@@ -447,7 +470,7 @@ End of tape record.
 \fB\fBTS_EOM\fR\fR
 .ad
 .RS 12n
-.rt  
+.rt
 diskette  \fBEOM\fRindicates that the restore is compatible with old dump
 .RE
 
@@ -461,7 +484,7 @@ The flags are described as follows:
 \fB\fBDR_NEWHEADER\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 New format tape header.
 .RE
 
@@ -472,7 +495,7 @@ New format tape header.
 \fB\fBDR_INFODEINFO\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Header contains starting inode info.
 .RE
 
@@ -483,7 +506,7 @@ Header contains starting inode info.
 \fB\fBDR_REDUMP\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Dump contains recopies of active files.
 .RE
 
@@ -494,7 +517,7 @@ Dump contains recopies of active files.
 \fB\fBDR_TRUEINC\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Dump is a "true incremental".
 .RE
 
@@ -505,7 +528,7 @@ Dump is a "true incremental".
 \fB\fBDR_HASMETA\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The metadata in this header.
 .RE
 
@@ -516,7 +539,7 @@ The metadata in this header.
 \fB\fBDUMPOUTFMT\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Name, incon, and ctime (date) for printf.
 .RE
 
@@ -527,7 +550,7 @@ Name, incon, and ctime (date) for printf.
 \fB\fBDUMPINFMT\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Inverse for scanf.
 .RE
 
@@ -541,8 +564,14 @@ The fields of the header structure are as follows:
 \fB\fBs_addrs\fR\fR
 .ad
 .RS 17n
-.rt  
-An array of bytes describing the blocks of the dumped file.  A byte is  zero if the block associated with that byte was not present on the file system; otherwise, the byte is non-zero.  If the block was not present on the file lsystem, no block was dumped; the block will be stored as a   hole in the file.  If there is not sufficient space in this record to  describe all the blocks in a file,  \fBTS_ADDR\fR records will be scattered through the file, each one picking up where the  last left off
+.rt
+An array of bytes describing the blocks of the dumped file.  A byte is
+zero if the block associated with that byte was not present on the file
+system; otherwise, the byte is non-zero.  If the block was not present on
+the file lsystem, no block was dumped; the block will be stored as a   hole
+in the file.  If there is not sufficient space in this record to  describe
+all the blocks in a file,  \fBTS_ADDR\fR records will be scattered through
+the file, each one picking up where the  last left off
 .RE
 
 .sp
@@ -552,7 +581,7 @@ An array of bytes describing the blocks of the dumped file.  A byte is  zero if 
 \fB\fBs_inos\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The starting inodes on tape.
 .RE
 
@@ -563,7 +592,7 @@ The starting inodes on tape.
 \fB\fBc_type\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The type of the record.
 .RE
 
@@ -574,7 +603,7 @@ The type of the record.
 \fB\fBc_date\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The date of the previous dump.
 .RE
 
@@ -585,7 +614,7 @@ The date of the previous dump.
 \fB\fBc_ddate\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The date of this dump.
 .RE
 
@@ -596,7 +625,7 @@ The date of this dump.
 \fB\fBc_volume\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The current volume number of the dump.
 .RE
 
@@ -607,7 +636,7 @@ The current volume number of the dump.
 \fB\fBc_tapea\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The logical block of this record.
 .RE
 
@@ -618,7 +647,7 @@ The logical block of this record.
 \fB\fBc_inumber\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The number of the inode being dumped if this is of type \fBTS_INODE\fR.
 .RE
 
@@ -629,7 +658,7 @@ The number of the inode being dumped if this is of type \fBTS_INODE\fR.
 \fB\fBc_magic\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 This contains the value \fBMAGIC\fR above, truncated as needed.
 .RE
 
@@ -640,8 +669,9 @@ This contains the value \fBMAGIC\fR above, truncated as needed.
 \fB\fBc_checksum\fR\fR
 .ad
 .RS 17n
-.rt  
-This contains whatever value is needed to make the record sum to \fBCHECKSUM\fR.
+.rt
+This contains whatever value is needed to make the record sum to
+\fBCHECKSUM\fR.
 .RE
 
 .sp
@@ -651,7 +681,7 @@ This contains whatever value is needed to make the record sum to \fBCHECKSUM\fR.
 \fB\fBc_dinode\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 This is a copy of the inode as it appears on the file system.
 .RE
 
@@ -662,7 +692,7 @@ This is a copy of the inode as it appears on the file system.
 \fB\fBc_count\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 The count of bytes in \fBs_addrs\fR.
 .RE
 
@@ -673,8 +703,9 @@ The count of bytes in \fBs_addrs\fR.
 \fB\fBu_data c_data\fR\fR
 .ad
 .RS 17n
-.rt  
-The union of either  \fBu_data c_data\fR The union of either  \fBs_addrs\fR or  \fBs_inos\fR.
+.rt
+The union of either  \fBu_data c_data\fR The union of either  \fBs_addrs\fR
+or \fBs_inos\fR.
 .RE
 
 .sp
@@ -684,7 +715,7 @@ The union of either  \fBu_data c_data\fR The union of either  \fBs_addrs\fR or  
 \fB\fBc_label\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Label for this dump.
 .RE
 
@@ -695,7 +726,7 @@ Label for this dump.
 \fB\fBc_level\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Level of this dump.
 .RE
 
@@ -706,7 +737,7 @@ Level of this dump.
 \fB\fBc_filesys\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Name of dumped file system.
 .RE
 
@@ -717,7 +748,7 @@ Name of dumped file system.
 \fB\fBc_dev\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Name of dumped service.
 .RE
 
@@ -728,7 +759,7 @@ Name of dumped service.
 \fB\fBc_host\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Name of dumped host.
 .RE
 
@@ -739,7 +770,7 @@ Name of dumped host.
 \fB\fBc_flags\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Additional information.
 .RE
 
@@ -750,7 +781,7 @@ Additional information.
 \fB\fBc_firstrec\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 First record on volume.
 .RE
 
@@ -761,7 +792,7 @@ First record on volume.
 \fB\fBc_spare\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Reserved for future uses.
 .RE
 
@@ -772,16 +803,18 @@ Reserved for future uses.
 \fB\fBc_tpbsize\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Tape block size for MTB format only.
 .RE
 
 .sp
 .LP
-Each volume except the last ends with a tapemark (read as an end of file). The last volume ends with a \fBTS_END\fR record and then the tapemark.
+Each volume except the last ends with a tapemark (read as an end of file).
+The last volume ends with a \fBTS_END\fR record and then the tapemark.
 .sp
 .LP
-The dump history is kept in the file \fB/etc/dumpdates\fR. It is an \fBASCII\fR file with three fields separated by white space:
+The dump history is kept in the file \fB/etc/dumpdates\fR. It is an
+\fBASCII\fR file with three fields separated by white space:
 .RS +4
 .TP
 .ie t \(bu
@@ -798,11 +831,14 @@ The level number of the dump tape; see \fBufsdump\fR(1M).
 .TP
 .ie t \(bu
 .el o
-The date of the incremental dump in the format generated by \fBctime\fR(3C).
+The date of the incremental dump in the format generated by
+\fBctime\fR(3C).
 .RE
 .sp
 .LP
-\fBDUMPOUTFMT\fR is the format to use when using \fBprintf\fR(3C) to write an entry to \fB/etc/dumpdates\fR; \fBDUMPINFMT\fR is the format to use when using \fBscanf\fR(3C) to read an entry from \fB/etc/dumpdates\fR.
+\fBDUMPOUTFMT\fR is the format to use when using \fBprintf\fR(3C) to write
+an entry to \fB/etc/dumpdates\fR; \fBDUMPINFMT\fR is the format to use when
+using \fBscanf\fR(3C) to read an entry from \fB/etc/dumpdates\fR.
 .SH ATTRIBUTES
 .sp
 .LP
@@ -812,8 +848,8 @@ See \fBattributes\fR(5) for a description of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -823,4 +859,5 @@ Stability LevelUnstable
 .SH SEE ALSO
 .sp
 .LP
-\fBufsdump\fR(1M), \fBufsrestore\fR(1M), \fBctime\fR(3C), \fBprintf\fR(3C), \fBscanf\fR(3C), \fBtypes.h\fR(3HEAD), \fBattributes\fR(5), 
+\fBufsdump\fR(1M), \fBufsrestore\fR(1M), \fBctime\fR(3C), \fBprintf\fR(3C),
+\fBscanf\fR(3C), \fBtypes.h\fR(3HEAD), \fBattributes\fR(5),

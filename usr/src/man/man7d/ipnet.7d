@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2009, Sun Microsystems, Inc. All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License"). You may not use this file except in compliance with the License. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.
-.\"  See the License for the specific language governing permissions and limitations under the License. When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE. If applicable, add the following below this CDDL HEADER, with the
-.\" fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ipnet 7D "8 Apr 2009" "SunOS 5.11" "Devices"
 .SH NAME
 ipnet, lo0 \- ipnet device driver
@@ -15,15 +30,24 @@ ipnet, lo0 \- ipnet device driver
 .SH DESCRIPTION
 .sp
 .LP
-The \fBipnet\fR device driver creates, removes and manages nodes in the \fB/dev/ipnet/\fR namespace. 
+The \fBipnet\fR device driver creates, removes and manages nodes in the
+\fB/dev/ipnet/\fR namespace.
 .sp
 .LP
-A node is created in \fB/dev/ipnet\fR for every IP interface on the system, including interfaces that exist only in software and for which there is no hardware device. The \fBipnet\fR device also provides access to all IP traffic to and from the system. To provide access to packets that are internally looped-back in IP, the \fBipnet\fR driver creates a \fB/dev/lo0\fR DLPI device.
+A node is created in \fB/dev/ipnet\fR for every IP interface on the system,
+including interfaces that exist only in software and for which there is no
+hardware device. The \fBipnet\fR device also provides access to all IP
+traffic to and from the system. To provide access to packets that are
+internally looped-back in IP, the \fBipnet\fR driver creates a
+\fB/dev/lo0\fR DLPI device.
 .SH APPLICATION PROGRAMMING INTERFACE
 .SS "ipnet and DLPI"
 .sp
 .LP
-Device nodes created in \fB/dev/ipnet\fR are DLPI style-1 devices. All \fBM_PROTO\fR and \fBM_PCPROTO\fR-type messages are interpreted as DLPI primitives. Because the device is read-only and packets can only be observed by opening them, the following subset of DLPI primitives is supported:
+Device nodes created in \fB/dev/ipnet\fR are DLPI style-1 devices. All
+\fBM_PROTO\fR and \fBM_PCPROTO\fR-type messages are interpreted as DLPI
+primitives. Because the device is read-only and packets can only be observed
+by opening them, the following subset of DLPI primitives is supported:
 .sp
 .in +2
 .nf
@@ -38,7 +62,8 @@ DLIOCRAW
 
 .sp
 .LP
-The values returned by the driver in the \fBDL_INFO_ACK\fR primitive in response to the \fBDL_INFO_REQ\fR are:
+The values returned by the driver in the \fBDL_INFO_ACK\fR primitive in
+response to the \fBDL_INFO_REQ\fR are:
 .RS +4
 .TP
 .ie t \(bu
@@ -79,7 +104,8 @@ Service mode is \fBDL_CLDLS\fR.
 .TP
 .ie t \(bu
 .el o
-No optional quality of service (QOS) support is provided. Accordingly, the QOS fields are 0.
+No optional quality of service (QOS) support is provided. Accordingly, the
+QOS fields are 0.
 .RE
 .RS +4
 .TP
@@ -95,17 +121,34 @@ Version is \fBDL_VERSION_2\fR.
 .RE
 .sp
 .LP
-The \fB/dev/ipnet/*\fR and \fB/dev/lo0\fR devices only accept \fBDL_BIND_REQ\fR requests for SAPs 4 (IPv4 packets), 6 (IPv6 packets), or 0 (all IP packets). \fBDL_BIND_REQ\fR requests for other SAP values result in a \fBDL_ERROR_ACK\fR of \fBDL_BADSAP\fR. 
+The \fB/dev/ipnet/*\fR and \fB/dev/lo0\fR devices only accept
+\fBDL_BIND_REQ\fR requests for SAPs 4 (IPv4 packets), 6 (IPv6 packets), or 0
+(all IP packets). \fBDL_BIND_REQ\fR requests for other SAP values result in
+a \fBDL_ERROR_ACK\fR of \fBDL_BADSAP\fR.
 .SS "ipnet primitives"
 .sp
 .LP
-For \fB/dev/ipnet/*\fR devices, the \fBDL_PROMISCON_REQ\fR and \fBDL_PROMISCOFF_REQ\fR primitives with the \fBDL_PROMISC_PHYS\fR flag set in the \fBdl_level\fR field enables/disables the reception of all packets. When disabled, only packets with addresses matching any of the configured addresses on the IP interface are received. When used with the \fBDL_PROMISC_MULTI\fR flag set, reception of all multicast group addresses can be enabled/disabled. \fBDL_PROMISC_PHYS\fR and \fBDL_PROMISC_MULTI\fR have no effect for \fB/dev/lo0\fR. When the \fBDL_PROMISC_SAP\fR flag is set, reception of all IPv4/IPv6 can be enabled/disabled.
+For \fB/dev/ipnet/*\fR devices, the \fBDL_PROMISCON_REQ\fR and
+\fBDL_PROMISCOFF_REQ\fR primitives with the \fBDL_PROMISC_PHYS\fR flag set
+in the \fBdl_level\fR field enables/disables the reception of all packets.
+When disabled, only packets with addresses matching any of the configured
+addresses on the IP interface are received. When used with the
+\fBDL_PROMISC_MULTI\fR flag set, reception of all multicast group addresses
+can be enabled/disabled. \fBDL_PROMISC_PHYS\fR and \fBDL_PROMISC_MULTI\fR
+have no effect for \fB/dev/lo0\fR. When the \fBDL_PROMISC_SAP\fR flag is
+set, reception of all IPv4/IPv6 can be enabled/disabled.
 .sp
 .LP
-The \fBDLIOCRAW\fR ioctl is supported but has no effect on the data returned from the device.
+The \fBDLIOCRAW\fR ioctl is supported but has no effect on the data
+returned from the device.
 .sp
 .LP
-The \fBDL_IOC_IPNET_INFO\fR ioctl enables/disables the inclusion of a \fBdl_ipnetinfo_t\fR structure that is prepended to the IP header when receiving packet data. When enabled, a non-zero integer is returned reflecting the current \fBDL_IOC_IPNET_INFO\fR version. The \fBdl_ipnetinfo_t\fR data structure is defined in \fB<sys/dlpi.h>\fR and includes the following fields:
+The \fBDL_IOC_IPNET_INFO\fR ioctl enables/disables the inclusion of a
+\fBdl_ipnetinfo_t\fR structure that is prepended to the IP header when
+receiving packet data. When enabled, a non-zero integer is returned
+reflecting the current \fBDL_IOC_IPNET_INFO\fR version. The
+\fBdl_ipnetinfo_t\fR data structure is defined in \fB<sys/dlpi.h>\fR and
+includes the following fields:
 .sp
 .in +2
 .nf
@@ -119,7 +162,10 @@ uint64_t dli_dstzone;  /* packet dest zone ID (if any) */
 
 .sp
 .LP
-The current \fBdli_version\fR is 1. To robustly support future \fBdl_ipnetinfo_t\fR versions, consumers should check that \fBdli_version\fR is a value they recognize, and must use the \fBdli_len\fR field to advance past the \fBdl_ipnetinfo_t\fR header.
+The current \fBdli_version\fR is 1. To robustly support future
+\fBdl_ipnetinfo_t\fR versions, consumers should check that \fBdli_version\fR
+is a value they recognize, and must use the \fBdli_len\fR field to advance
+past the \fBdl_ipnetinfo_t\fR header.
 .SH FILES
 .sp
 .ne 2
@@ -128,7 +174,7 @@ The current \fBdli_version\fR is 1. To robustly support future \fBdl_ipnetinfo_t
 \fB\fB/dev/ipnet/*, /dev/lo0\fR\fR
 .ad
 .RS 26n
-.rt  
+.rt
 Special character devices.
 .RE
 
@@ -139,7 +185,7 @@ Special character devices.
 \fB\fB/kernel/drv/ipnet.conf\fR\fR
 .ad
 .RS 26n
-.rt  
+.rt
 Configuration file.
 .RE
 
@@ -152,8 +198,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-lw(2.75i) lw(2.75i) 
-lw(2.75i) lw(2.75i) 
+lw(2.75i) lw(2.75i)
+lw(2.75i) lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 AvailabilitySUNWckr

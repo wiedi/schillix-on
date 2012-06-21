@@ -1,11 +1,27 @@
 '\" te
 .\" Copyright (c) 2003, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH rcmscript 4 "18 Feb 2003" "SunOS 5.11" "File Formats"
 .SH NAME
-rcmscript \- script interface specification for the Reconfiguration and Coordination Manager 
+rcmscript \- script interface specification for the Reconfiguration and
+Coordination Manager
 .SH SYNOPSIS
 .LP
 .nf
@@ -45,10 +61,18 @@ rcmscript \- script interface specification for the Reconfiguration and Coordina
 .SH DESCRIPTION
 .sp
 .LP
-Reconfiguration and Coordination Manager (RCM) is a framework designed to coordinate device consumers during Solaris Dynamic Reconfiguration (DR). The interfaces specified in this man page allow device consumers, such as application vendors or site administrators, to act before and after DR operations take place by providing RCM scripts. You can write your own RCM scripts to shut down your applications, or to cleanly release the devices from your applications during dynamic remove operations. 
+Reconfiguration and Coordination Manager (RCM) is a framework designed to
+coordinate device consumers during Solaris Dynamic Reconfiguration (DR). The
+interfaces specified in this man page allow device consumers, such as
+application vendors or site administrators, to act before and after DR
+operations take place by providing RCM scripts. You can write your own RCM
+scripts to shut down your applications, or to cleanly release the devices
+from your applications during dynamic remove operations.
 .sp
 .LP
-An RCM script is an executable perl script, a shell script or a binary. Perl is the recommended language. Each script is run in its own address space using the user-id of the script file owner.
+An RCM script is an executable perl script, a shell script or a binary.
+Perl is the recommended language. Each script is run in its own address
+space using the user-id of the script file owner.
 .sp
 .LP
 An RCM script is invoked on demand in response to DR as follows:
@@ -70,7 +94,7 @@ Every script must implement the following RCM commands:
 \fB\fBscriptinfo\fR\fR
 .ad
 .RS 16n
-.rt  
+.rt
 Get script information.
 .RE
 
@@ -81,7 +105,7 @@ Get script information.
 \fB\fBregister\fR\fR
 .ad
 .RS 16n
-.rt  
+.rt
 Register devices the script handles.
 .RE
 
@@ -92,7 +116,7 @@ Register devices the script handles.
 \fB\fBresourceinfo\fR\fR
 .ad
 .RS 16n
-.rt  
+.rt
 Get resource information.
 .RE
 
@@ -106,7 +130,7 @@ A script might include some or all the of the following commands:
 \fB\fBqueryremove\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Queries whether the resource can be released.
 .RE
 
@@ -117,7 +141,7 @@ Queries whether the resource can be released.
 \fB\fBpreremove\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Releases the resource.
 .RE
 
@@ -128,7 +152,7 @@ Releases the resource.
 \fB\fBpostremove\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Provides post-resource removal notification.
 .RE
 
@@ -139,20 +163,26 @@ Provides post-resource removal notification.
 \fB\fBundoremove\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Undo the actions done in preremove.
 .RE
 
 .sp
 .LP
-When a script's \fBregister\fR command is run, the script should supply, in return data, all resource names the script or its application handles that could potentially be removed by DR. A resource name refers to a name in \fB/dev\fR path name.
+When a script's \fBregister\fR command is run, the script should supply, in
+return data, all resource names the script or its application handles that
+could potentially be removed by DR. A resource name refers to a name in
+\fB/dev\fR path name.
 .sp
 .LP
-Below is a high-level overview of the sequence of script invocations that occurs when dynamic removal of a script's registered resource is attempted. See the COMMANDS section for a detailed description of the commands.
+Below is a high-level overview of the sequence of script invocations that
+occurs when dynamic removal of a script's registered resource is attempted.
+See the COMMANDS section for a detailed description of the commands.
 .RS +4
 .TP
 1.
-Prior to removing the resource from the system during DR, the script's \fBqueryremove\fR command is run:
+Prior to removing the resource from the system during DR, the script's
+\fBqueryremove\fR command is run:
 .sp
 .in +2
 .nf
@@ -161,12 +191,14 @@ Prior to removing the resource from the system during DR, the script's \fBqueryr
 .in -2
 .sp
 
-The script should check for obvious reasons why the resource can not be removed from the perspective of its service or application.
+The script should check for obvious reasons why the resource can not be
+removed from the perspective of its service or application.
 .RE
 .RS +4
 .TP
 2.
-If the script indicates that the resource can be removed in the \fBqueryremove\fR command. The script's \fBpreremove\fR command is run:
+If the script indicates that the resource can be removed in the
+\fBqueryremove\fR command. The script's \fBpreremove\fR command is run:
 .sp
 .in +2
 .nf
@@ -175,7 +207,10 @@ If the script indicates that the resource can be removed in the \fBqueryremove\f
 .in -2
 .sp
 
-The script releases the resource from the service or application represented by the script and prepares for the resource removal. Releasing the resource includes closing the resource if the resource is currently opened by its application.
+The script releases the resource from the service or application
+represented by the script and prepares for the resource removal. Releasing
+the resource includes closing the resource if the resource is currently
+opened by its application.
 .RE
 .RS +4
 .TP
@@ -185,7 +220,8 @@ The system then proceeds to remove the resource.
 .RS +4
 .TP
 4.
-If the system has removed the resource successfully the script's \fBpostremove\fR command is run:
+If the system has removed the resource successfully the script's
+\fBpostremove\fR command is run:
 .sp
 .in +2
 .nf
@@ -206,7 +242,9 @@ Otherwise the script's \fBundoremove\fR command is run:
 .RE
 .sp
 .LP
-For any commands the script does not implement, it must exit with exit status of 2. RCM silently returns success for the script's unimplemented commands.
+For any commands the script does not implement, it must exit with exit
+status of 2. RCM silently returns success for the script's unimplemented
+commands.
 .sp
 .LP
 A script performs the following basic steps:
@@ -214,7 +252,8 @@ A script performs the following basic steps:
 .TP
 .ie t \(bu
 .el o
-Takes RCM command and additional arguments from the command line and environment parameters.
+Takes RCM command and additional arguments from the command line and
+environment parameters.
 .RE
 .RS +4
 .TP
@@ -226,7 +265,10 @@ Processes the command.
 .TP
 .ie t \(bu
 .el o
-Writes the expected return data to stdout as \fIname=value\fR pairs delimited by newlines, where \fIname\fR is the name of the return data item that RCM expects and \fIvalue\fR is the value associated with the data item. 
+Writes the expected return data to stdout as \fIname=value\fR pairs
+delimited by newlines, where \fIname\fR is the name of the return data item
+that RCM expects and \fIvalue\fR is the value associated with the data item.
+
 .RE
 .SS "Environment"
 .sp
@@ -278,13 +320,14 @@ File descriptor 0 (stdin) is set to \fB/dev/null\fR
 .TP
 .ie t \(bu
 .el o
-Environment variable \fBRCM_ENV_DEBUG_LEVEL\fR is set to the debug level. Logging is discussed below.
+Environment variable \fBRCM_ENV_DEBUG_LEVEL\fR is set to the debug level.
+Logging is discussed below.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
- The following environment variables are also set where possible: 
+ The following environment variables are also set where possible:
 .RS +4
 .TP
 .ie t \(bu
@@ -339,19 +382,24 @@ Environment variable \fBRCM_ENV_DEBUG_LEVEL\fR is set to the debug level. Loggin
 .el o
 \fBTZ\fR
 .RE
-See \fBenviron\fR(5) for a description of these variables. See \fBgettext\fR(1) for details on retrieving localized messages.
+See \fBenviron\fR(5) for a description of these variables. See
+\fBgettext\fR(1) for details on retrieving localized messages.
 .RE
 .sp
 .LP
-All environment variable names beginning with \fBRCM_ENV_\fR are reserved for use by the RCM.
+All environment variable names beginning with \fBRCM_ENV_\fR are reserved
+for use by the RCM.
 .sp
 .LP
-The character encoding used by the RCM and RCM scripts to exchange RCM commands, environment parameters, and name-value pairs is ASCII unless the controlling environment variables are specified otherwise.
+The character encoding used by the RCM and RCM scripts to exchange RCM
+commands, environment parameters, and name-value pairs is ASCII unless the
+controlling environment variables are specified otherwise.
 .SS "Commands"
 .SS "\fBscriptinfo\fR"
 .sp
 .LP
-The \fBscriptinfo\fR command is invoked to gather information about the script.
+The \fBscriptinfo\fR command is invoked to gather information about the
+script.
 .sp
 .ne 2
 .mk
@@ -359,8 +407,9 @@ The \fBscriptinfo\fR command is invoked to gather information about the script.
 \fBReturn data:\fR
 .ad
 .RS 16n
-.rt  
-If successful, the script must write the following name-value pairs to stdout and exit with status 0:
+.rt
+If successful, the script must write the following name-value pairs to
+stdout and exit with status 0:
 .RS +4
 .TP
 .ie t \(bu
@@ -379,19 +428,35 @@ If successful, the script must write the following name-value pairs to stdout an
 .el o
 \fBrcm_cmd_timeout=\fR\fIcommand_timeout_value\fR
 .RE
-where \fIscript_func_info\fR is a localized human-readable message describing the functionality of the script.
+where \fIscript_func_info\fR is a localized human-readable message
+describing the functionality of the script.
 .sp
-The RCM monitors the execution time of RCM commands by RCM scripts. \fIcommand_timeout_value\fR is the maximum time in seconds the script is expected to take to process any RCM command except the \fBscriptinfo\fR command itself. If an RCM script does not process the RCM command and exit within this time, RCM sends a \fBSIGABRT\fR signal to the script process. RCM then waits for a few seconds for the script to finish the processing of the current RCM command and exit. If the script does not exit within this time, RCM sends a \fBSIGKILL\fR signal to the script.
+The RCM monitors the execution time of RCM commands by RCM scripts.
+\fIcommand_timeout_value\fR is the maximum time in seconds the script is
+expected to take to process any RCM command except the \fBscriptinfo\fR
+command itself. If an RCM script does not process the RCM command and exit
+within this time, RCM sends a \fBSIGABRT\fR signal to the script process.
+RCM then waits for a few seconds for the script to finish the processing of
+the current RCM command and exit. If the script does not exit within this
+time, RCM sends a \fBSIGKILL\fR signal to the script.
 .sp
-The \fBrcm_cmd_timeout\fR name-value pair is optional. It is only needed if the script is expected to take more than a few seconds to process any RCM command. Setting this name to a value of 0 (zero) disables the timer. If this name-value pair is not supplied, a default value is assigned by the RCM.
+The \fBrcm_cmd_timeout\fR name-value pair is optional. It is only needed if
+the script is expected to take more than a few seconds to process any RCM
+command. Setting this name to a value of 0 (zero) disables the timer. If
+this name-value pair is not supplied, a default value is assigned by the
+RCM.
 .sp
-Upon failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon failure, the script must specify the failure reason using the
+name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "\fBregister\fR"
 .sp
 .LP
-The \fBregister\fR command is invoked to allow a script to specify the resources that it or its application handles that could potentially be removed by DR. The script has to supply all its resource names to RCM using the name-value pair \fBrcm_resource_name\fR. 
+The \fBregister\fR command is invoked to allow a script to specify the
+resources that it or its application handles that could potentially be
+removed by DR. The script has to supply all its resource names to RCM using
+the name-value pair \fBrcm_resource_name\fR.
 .sp
 .ne 2
 .mk
@@ -399,8 +464,9 @@ The \fBregister\fR command is invoked to allow a script to specify the resources
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If successful, the script must write the following name-value pairs to stdout and exit with status 0:
+.rt
+If successful, the script must write the following name-value pairs to
+stdout and exit with status 0:
 .sp
 .in +2
 .nf
@@ -413,15 +479,18 @@ rcm_resource_name=\fIresourcename\fR
 .in -2
 .sp
 
-where \fIresourcename\fR is the name of the resource the script is interested in.
+where \fIresourcename\fR is the name of the resource the script is
+interested in.
 .sp
-Upon failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon failure, the script must specify the failure reason using the
+name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "\fBresourceinfo\fR \fIresourcename\fR"
 .sp
 .LP
-The \fBresourceinfo\fR command is invoked to get the usage information about \fIresourcename\fR.
+The \fBresourceinfo\fR command is invoked to get the usage information
+about \fIresourcename\fR.
 .sp
 .ne 2
 .mk
@@ -429,8 +498,9 @@ The \fBresourceinfo\fR command is invoked to get the usage information about \fI
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If successful, the script must write the following name-value pair to stdout and exit with status 0:
+.rt
+If successful, the script must write the following name-value pair to
+stdout and exit with status 0:
 .sp
 .in +2
 .nf
@@ -439,15 +509,22 @@ rcm_resource_usage_info=\fIresource_usage\fR
 .in -2
 .sp
 
-where \fIresource_usage\fR is a localized human readable message describing the usage of the resource by the script.
+where \fIresource_usage\fR is a localized human readable message describing
+the usage of the resource by the script.
 .sp
-Upon failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon failure, the script must specify the failure reason using the
+name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "\fBqueryremove\fR \fIresourcename\fR"
 .sp
 .LP
-Prior to removing the resource from the system, the \fBqueryremove\fR command is invoked to query the script to determine whether the script can release the given resource successfully from the service or application it represents. The script does not actually release the resource. The script might indicate that it is not able to release the resource if the resource is critical for its service or application.
+Prior to removing the resource from the system, the \fBqueryremove\fR
+command is invoked to query the script to determine whether the script can
+release the given resource successfully from the service or application it
+represents. The script does not actually release the resource. The script
+might indicate that it is not able to release the resource if the resource
+is critical for its service or application.
 .sp
 .LP
 Additional environment parameter:
@@ -458,7 +535,7 @@ Additional environment parameter:
 \fB\fBRCM_ENV_FORCE\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Can be one of:
 .sp
 .ne 2
@@ -467,7 +544,7 @@ Can be one of:
 \fB\fBFALSE\fR\fR
 .ad
 .RS 9n
-.rt  
+.rt
 Normal request.
 .RE
 
@@ -478,8 +555,10 @@ Normal request.
 \fB\fBTRUE\fR\fR
 .ad
 .RS 9n
-.rt  
-Request is urgent. The script should check whether the resource can be released successfully by force, such as by using the force option to unmount a file system.
+.rt
+Request is urgent. The script should check whether the resource can be
+released successfully by force, such as by using the force option to unmount
+a file system.
 .RE
 
 .RE
@@ -491,18 +570,27 @@ Request is urgent. The script should check whether the resource can be released 
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If the command succeeds, the script must return no data and exit with status 0.
+.rt
+If the command succeeds, the script must return no data and exit with
+status 0.
 .sp
-If the script would not be able to release the resource, it must specify the reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 3.
+If the script would not be able to release the resource, it must specify
+the reason using the name-value pair \fBrcm_failure_reason\fR and exit with
+status 3.
 .sp
-Upon any other failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon any other failure, the script must specify the failure reason using
+the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "\fBpreremove\fR \fIresourcename\fR"
 .sp
 .LP
-The \fBpreremove\fR command is invoked prior to an attempt to remove the given \fIresourcename\fR. In response to this command the script can either release the resource (including closing the device if the device is currently opened) from the service or application it represents or indicate that it can not release the resource if the resource is critical for its service or application.
+The \fBpreremove\fR command is invoked prior to an attempt to remove the
+given \fIresourcename\fR. In response to this command the script can either
+release the resource (including closing the device if the device is
+currently opened) from the service or application it represents or indicate
+that it can not release the resource if the resource is critical for its
+service or application.
 .sp
 .LP
 Additional environment parameter:
@@ -513,7 +601,7 @@ Additional environment parameter:
 \fB\fBRCM_ENV_FORCE\fR\fR
 .ad
 .RS 17n
-.rt  
+.rt
 Can be one of:
 .sp
 .ne 2
@@ -522,7 +610,7 @@ Can be one of:
 \fB\fBFALSE\fR\fR
 .ad
 .RS 9n
-.rt  
+.rt
 Normal request.
 .RE
 
@@ -533,8 +621,9 @@ Normal request.
 \fB\fBTRUE\fR\fR
 .ad
 .RS 9n
-.rt  
-Request is urgent. The script should make extra effort to release the resource, such as by using the force option to unmount a file system.
+.rt
+Request is urgent. The script should make extra effort to release the
+resource, such as by using the force option to unmount a file system.
 .RE
 
 .RE
@@ -546,18 +635,22 @@ Request is urgent. The script should make extra effort to release the resource, 
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If the command succeeds, the script must return no data and exit with status 0.
+.rt
+If the command succeeds, the script must return no data and exit with
+status 0.
 .sp
-If the script cannot release the resource, it must specify the reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 3.
+If the script cannot release the resource, it must specify the reason using
+the name-value pair \fBrcm_failure_reason\fR and exit with status 3.
 .sp
-Upon any other failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon any other failure, the script must specify the failure reason using
+the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "\fBpostremove\fR \fIresourcename\fR"
 .sp
 .LP
-The \fBpostremove\fR command is invoked after the given \fIresourcename\fR has been removed.
+The \fBpostremove\fR command is invoked after the given \fIresourcename\fR
+has been removed.
 .sp
 .ne 2
 .mk
@@ -565,10 +658,12 @@ The \fBpostremove\fR command is invoked after the given \fIresourcename\fR has b
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If the command succeeds, the script must return no data and exit with status 0.
+.rt
+If the command succeeds, the script must return no data and exit with
+status 0.
 .sp
-Upon failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon failure, the script must specify the failure reason using the
+name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .sp
@@ -576,7 +671,10 @@ Upon failure, the script must specify the failure reason using the name-value pa
 \fBundoremove\fR \fIresourcename\fR
 .sp
 .LP
-The \fBundoremove\fR command is invoked to undo what was done in the previous \fBpreremove\fR command for the given \fIresourcename\fR. The script can bring the state of the resource to the same state it was in when the script received the \fBpreremove\fR command for that resource.
+The \fBundoremove\fR command is invoked to undo what was done in the
+previous \fBpreremove\fR command for the given \fIresourcename\fR. The
+script can bring the state of the resource to the same state it was in when
+the script received the \fBpreremove\fR command for that resource.
 .sp
 .ne 2
 .mk
@@ -584,16 +682,21 @@ The \fBundoremove\fR command is invoked to undo what was done in the previous \f
 \fBReturn Data:\fR
 .ad
 .RS 16n
-.rt  
-If the command succeeds, the script must return no data and exit with status 0.
+.rt
+If the command succeeds, the script must return no data and exit with
+status 0.
 .sp
-Upon failure, the script must specify the failure reason using the name-value pair \fBrcm_failure_reason\fR and exit with status 1.
+Upon failure, the script must specify the failure reason using the
+name-value pair \fBrcm_failure_reason\fR and exit with status 1.
 .RE
 
 .SS "Logging"
 .sp
 .LP
-A script must log all error and debug messages by writing to stdout the name-value pairs listed below. The logged messages go to \fBsyslogd\fR(1M) with the \fBsyslog\fR facility of \fBLOG_DAEMON\fR. See \fBsyslog.conf\fR(4).
+A script must log all error and debug messages by writing to stdout the
+name-value pairs listed below. The logged messages go to \fBsyslogd\fR(1M)
+with the \fBsyslog\fR facility of \fBLOG_DAEMON\fR. See
+\fBsyslog.conf\fR(4).
 .sp
 .ne 2
 .mk
@@ -601,7 +704,7 @@ A script must log all error and debug messages by writing to stdout the name-val
 \fB\fBrcm_log_err=\fR\fImessage\fR\fR
 .ad
 .RS 25n
-.rt  
+.rt
 Logs the \fImessage\fR with the syslog level of \fBLOG_ERR\fR.
 .RE
 
@@ -612,7 +715,7 @@ Logs the \fImessage\fR with the syslog level of \fBLOG_ERR\fR.
 \fB\fBrcm_log_warn=\fR\fImessage\fR\fR
 .ad
 .RS 25n
-.rt  
+.rt
 Logs the \fImessage\fR with the syslog level of \fBLOG_WARNING\fR.
 .RE
 
@@ -623,7 +726,7 @@ Logs the \fImessage\fR with the syslog level of \fBLOG_WARNING\fR.
 \fB\fBrcm_log_info=\fR\fImessage\fR\fR
 .ad
 .RS 25n
-.rt  
+.rt
 Logs the \fImessage\fR with the syslog level of \fBLOG_INFO\fR.
 .RE
 
@@ -634,13 +737,16 @@ Logs the \fImessage\fR with the syslog level of \fBLOG_INFO\fR.
 \fB\fBrcm_log_debug=\fR\fImessage\fR\fR
 .ad
 .RS 25n
-.rt  
+.rt
 Logs the \fImessage\fR with the syslog level of \fBLOG_DEBUG\fR.
 .RE
 
 .sp
 .LP
-A script can use the environment variable \fBRCM_ENV_DEBUG_LEVEL\fR to control the amount of information to log. \fBRCM_ENV_DEBUG_LEVEL\fR is a numeric value ranging from 0 to 9, with 0 meaning log the least amount of information and 9 meaning log the most.
+A script can use the environment variable \fBRCM_ENV_DEBUG_LEVEL\fR to
+control the amount of information to log. \fBRCM_ENV_DEBUG_LEVEL\fR is a
+numeric value ranging from 0 to 9, with 0 meaning log the least amount of
+information and 9 meaning log the most.
 .SS "Installing or Removing RCM Scripts"
 .sp
 .LP
@@ -655,13 +761,16 @@ You must use the following format to name a script:
 
 .sp
 .LP
-where \fIvendor\fR is the stock symbol (or any distinctive name) of the vendor providing the script and \fIservice\fR is the name of service the script represents.
+where \fIvendor\fR is the stock symbol (or any distinctive name) of the
+vendor providing the script and \fIservice\fR is the name of service the
+script represents.
 .sp
 .LP
 You must be a superuser (root) to install or remove an RCM script.
 .sp
 .LP
-Select one of the following directories where you want to place the script:
+Select one of the following directories where you want to place the
+script:
 .sp
 .ne 2
 .mk
@@ -709,7 +818,9 @@ Scripts for any hardware
 .SS "Installing a Script"
 .sp
 .LP
-To install a script, copy the script to the appropriate directory from the list above, change the userid and the groupid of the script to the desired values, and send \fBSIGHUP\fR to \fBrcm_daemon\fR. For example:
+To install a script, copy the script to the appropriate directory from the
+list above, change the userid and the groupid of the script to the desired
+values, and send \fBSIGHUP\fR to \fBrcm_daemon\fR. For example:
 .sp
 .in +2
 .nf
@@ -723,7 +834,8 @@ To install a script, copy the script to the appropriate directory from the list 
 .SS "Removing a script"
 .sp
 .LP
-Remove the script from the appropriate directory from the list above and send \fBSIGHUP\fR to \fBrcm_daemon\fR. For example:
+Remove the script from the appropriate directory from the list above and
+send \fBSIGHUP\fR to \fBrcm_daemon\fR. For example:
 .sp
 .in +2
 .nf
@@ -750,16 +862,16 @@ Remove the script from the appropriate directory from the list above and send \f
 #   - if the tape drive is not being used for backup, it allows the
 #     DR to continue.
 #   - if the tape drive is being used for backup, and when DR is not
-#     forced (RCM_ENV_FORCE=FALSE) it indicates that it cannot release 
+#     forced (RCM_ENV_FORCE=FALSE) it indicates that it cannot release
 #     the tape drive with appropriate error message. When forced
 #     (RCM_ENV_FORCE=TRUE) it kills the tape backup application in
 #     order to allow the DR to continue.
 #
 # This script does not implement the postremove and undoremove commands
-# since there is nothing to cleanup after DR remove operation is 
-# completed or failed. If any cleanup is needed after the DR removal 
-# completed, postremove command needs to implemented. If any cleanup is 
-# needed in the event of DR removal failure, undoremove command needs  
+# since there is nothing to cleanup after DR remove operation is
+# completed or failed. If any cleanup is needed after the DR removal
+# completed, postremove command needs to implemented. If any cleanup is
+# needed in the event of DR removal failure, undoremove command needs
 # to be implemented.
 #
 
@@ -775,7 +887,7 @@ $cmd = shift(@ARGV);
     "register"      =>      \&do_register,
     "resourceinfo"  =>      \&do_resourceinfo,
     "queryremove"   =>      \&do_preremove,
-    "preremove"     =>      \&do_preremove   
+    "preremove"     =>      \&do_preremove
 );
 
 if (defined($dispatch{$cmd})) {
@@ -875,8 +987,10 @@ A script must exit with following exit status values:
 \fB\fB0\fR\fR
 .ad
 .RS 5n
-.rt  
-Operation specified by the given RCM command has been executed successfully by the script. For \fBqueryremove\fR command it also means that the script can successfully release the resource.
+.rt
+Operation specified by the given RCM command has been executed successfully
+by the script. For \fBqueryremove\fR command it also means that the script
+can successfully release the resource.
 .RE
 
 .sp
@@ -886,8 +1000,10 @@ Operation specified by the given RCM command has been executed successfully by t
 \fB\fB1\fR\fR
 .ad
 .RS 5n
-.rt  
-An error occurred while processing the RCM command. The script should provide the error message to RCM using the name-value pair \fBrcm_failure_reason\fR before exiting.
+.rt
+An error occurred while processing the RCM command. The script should
+provide the error message to RCM using the name-value pair
+\fBrcm_failure_reason\fR before exiting.
 .RE
 
 .sp
@@ -897,8 +1013,9 @@ An error occurred while processing the RCM command. The script should provide th
 \fB\fB2\fR\fR
 .ad
 .RS 5n
-.rt  
-The script does not support the given RCM command. A script must exit with this status if it cannot understand the given RCM command.
+.rt
+The script does not support the given RCM command. A script must exit with
+this status if it cannot understand the given RCM command.
 .RE
 
 .sp
@@ -908,14 +1025,20 @@ The script does not support the given RCM command. A script must exit with this 
 \fB\fB3\fR\fR
 .ad
 .RS 5n
-.rt  
-Indicates that the script cannot release the resource for \fBpreremove\fR and \fBqueryremove\fR commands. The script should provide a message to RCM specifying the reason for not being able to release the resource using the name-value pair \fBrcm_failure_reason\fR before exiting.
+.rt
+Indicates that the script cannot release the resource for \fBpreremove\fR
+and \fBqueryremove\fR commands. The script should provide a message to RCM
+specifying the reason for not being able to release the resource using the
+name-value pair \fBrcm_failure_reason\fR before exiting.
 .RE
 
 .SH ERRORS
 .sp
 .LP
-If a script cannot successfully process an RCM command, it must supply to the RCM a message indicating the reason for failure by writing a name-value pair, in the form shown below, to stdout and exiting with the appropriate exit status.
+If a script cannot successfully process an RCM command, it must supply to
+the RCM a message indicating the reason for failure by writing a name-value
+pair, in the form shown below, to stdout and exiting with the appropriate
+exit status.
 .sp
 .in +2
 .nf
@@ -926,7 +1049,8 @@ rcm_failure_reason=\fIfailure_reason\fR
 
 .sp
 .LP
-where \fIfailure_reason\fR is a localized human readable message describing the reason for failure of the RCM command.
+where \fIfailure_reason\fR is a localized human readable message describing
+the reason for failure of the RCM command.
 .SH ATTRIBUTES
 .sp
 .LP
@@ -936,8 +1060,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -947,11 +1071,18 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBgettext\fR(1), \fBcfgadm\fR(1M), \fBcfgadm_scsi\fR(1M), \fBcfgadm_pci\fR(1M), \fBsyslog\fR(3C), \fBsignal.h\fR(3HEAD), \fBsyslog.conf\fR(4), \fBattributes\fR(5), \fBenviron\fR(5)
+\fBgettext\fR(1), \fBcfgadm\fR(1M), \fBcfgadm_scsi\fR(1M),
+\fBcfgadm_pci\fR(1M), \fBsyslog\fR(3C), \fBsignal.h\fR(3HEAD),
+\fBsyslog.conf\fR(4), \fBattributes\fR(5), \fBenviron\fR(5)
 .SH NOTES
 .sp
 .LP
-RCM scripts are expected to properly handle all RCM commands that the script implements and to log all errors. Only root has permission to add or remove an RCM script. An ill-behaved RCM script can cause unexpected DR failures.
+RCM scripts are expected to properly handle all RCM commands that the
+script implements and to log all errors. Only root has permission to add or
+remove an RCM script. An ill-behaved RCM script can cause unexpected DR
+failures.
 .sp
 .LP
-RCM commands are invoked only for the resources whose subsystems participate within the RCM framework. Currently, not all susbsystems participate within the RCM framework.
+RCM commands are invoked only for the resources whose subsystems
+participate within the RCM framework. Currently, not all susbsystems
+participate within the RCM framework.

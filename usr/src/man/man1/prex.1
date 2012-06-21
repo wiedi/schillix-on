@@ -1,15 +1,31 @@
 '\" te
-.\"  Copyright (c) 2004, Sun Microsystems, Inc.  All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 2004, Sun Microsystems, Inc.  All Rights Reserved.
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH prex 1 "1 Mar 2004" "SunOS 5.11" "User Commands"
 .SH NAME
-prex \- control tracing and manipulate probe points in a process or the kernel
+prex \- control tracing and manipulate probe points in a process or the
+kernel
 .SH SYNOPSIS
 .LP
 .nf
-\fBprex\fR [\fB-o\fR \fItrace_file_name\fR] [\fB-l\fR \fIlibraries\fR] [\fB-s\fR \fIkbytes_size\fR] \fIcmd\fR 
+\fBprex\fR [\fB-o\fR \fItrace_file_name\fR] [\fB-l\fR \fIlibraries\fR] [\fB-s\fR \fIkbytes_size\fR] \fIcmd\fR
      [\fIcmd-args\fR]...
 .fi
 
@@ -26,13 +42,24 @@ prex \- control tracing and manipulate probe points in a process or the kernel
 .SH DESCRIPTION
 .sp
 .LP
-The \fBprex\fR command is the part of the Solaris tracing architecture that controls probes in a process or the kernel. See \fBtracing\fR(3TNF) for an overview of this tracing architecture, including example source code using it.
+The \fBprex\fR command is the part of the Solaris tracing architecture that
+controls probes in a process or the kernel. See \fBtracing\fR(3TNF) for an
+overview of this tracing architecture, including example source code using
+it.
 .sp
 .LP
-\fBprex\fR is the application used for external control of probes. It automatically preloads the \fBlibtnfprobe\fR library. \fBprex\fR locates all the probes in a target executable or the kernel and provides an interface for the user to manipulate them. It allows a probe to be turned on for tracing, debugging, or both. Tracing generates a \fBTNF\fR (Trace Normal Form) trace file that can be converted to \fBASCII\fR by \fBtnfdump\fR(1) and used for performance analysis. Debugging generates a line to standard error whenever the probe is hit at run time.
+\fBprex\fR is the application used for external control of probes. It
+automatically preloads the \fBlibtnfprobe\fR library. \fBprex\fR locates all
+the probes in a target executable or the kernel and provides an interface
+for the user to manipulate them. It allows a probe to be turned on for
+tracing, debugging, or both. Tracing generates a \fBTNF\fR (Trace Normal
+Form) trace file that can be converted to \fBASCII\fR by \fBtnfdump\fR(1)
+and used for performance analysis. Debugging generates a line to standard
+error whenever the probe is hit at run time.
 .sp
 .LP
-\fBprex\fR does not work on static executables. It only works on dynamic executables.
+\fBprex\fR does not work on static executables. It only works on dynamic
+executables.
 .SS "Invoking prex"
 .sp
 .LP
@@ -40,22 +67,36 @@ There are three ways to invoke \fBprex\fR:
 .RS +4
 .TP
 1.
-Use \fBprex\fR to start the target application \fIcmd\fR. In this case, the target application need not be built with a dependency on \fBlibtnfprobe\fR. See \fBTNF_PROBE\fR(3TNF). \fBprex\fR sets the environment variable \fBLD_PRELOAD\fR to load \fBlibtnfprobe\fR into the target process. See \fBld\fR(1). \fBprex\fR then uses the environment variable \fBPATH\fR to find the target application.
+Use \fBprex\fR to start the target application \fIcmd\fR. In this case, the
+target application need not be built with a dependency on \fBlibtnfprobe\fR.
+See \fBTNF_PROBE\fR(3TNF). \fBprex\fR sets the environment variable
+\fBLD_PRELOAD\fR to load \fBlibtnfprobe\fR into the target process. See
+\fBld\fR(1). \fBprex\fR then uses the environment variable \fBPATH\fR to
+find the target application.
 .RE
 .RS +4
 .TP
 2.
-Attach \fBprex\fR to a running application. In this case, the running target application should have \fBlibtnfprobe\fR already linked in. Alternatively, the user may manually set \fBLD_PRELOAD\fR to include \fBlibtnfprobe.so.1\fR prior to invoking the target.
+Attach \fBprex\fR to a running application. In this case, the running
+target application should have \fBlibtnfprobe\fR already linked in.
+Alternatively, the user may manually set \fBLD_PRELOAD\fR to include
+\fBlibtnfprobe.so.1\fR prior to invoking the target.
 .RE
 .RS +4
 .TP
 3.
-Use \fBprex\fR with the \fB-k\fR option to set \fBprex\fR to \fBkernel mode\fR. \fBprex\fR can then be used to control probes in the Solaris kernel. In kernel mode, additional commands are defined, and some commands that are valid in other modes are invalid. See \fBKernel\fR \fBMode\fR below.
+Use \fBprex\fR with the \fB-k\fR option to set \fBprex\fR to \fBkernel
+mode\fR. \fBprex\fR can then be used to control probes in the Solaris
+kernel. In kernel mode, additional commands are defined, and some commands
+that are valid in other modes are invalid. See \fBKernel\fR \fBMode\fR
+below.
 .RE
 .SS "Control File Format and Command Language"
 .sp
 .LP
-In a future release of \fBprex\fR, the command language may be moved to a syntax that is supported by an existing scripting language like \fBksh\fR(1). In the meantime, the interface to \fBprex\fR is uncommitted.
+In a future release of \fBprex\fR, the command language may be moved to a
+syntax that is supported by an existing scripting language like
+\fBksh\fR(1). In the meantime, the interface to \fBprex\fR is uncommitted.
 .RS +4
 .TP
 .ie t \(bu
@@ -72,13 +113,15 @@ Each command is terminated with the NEWLINE character.
 .TP
 .ie t \(bu
 .el o
-A command can be continued onto the next line by ending the previous line with the backslash ("\fB\e\fR") character.
+A command can be continued onto the next line by ending the previous line
+with the backslash ("\fB\e\fR") character.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Tokens in a command must be separated by whitespace (one or more spaces or tabs).
+Tokens in a command must be separated by whitespace (one or more spaces or
+tabs).
 .RE
 .RS +4
 .TP
@@ -92,8 +135,8 @@ The "\fB#\fR" character implies that the rest of the line is a comment.
 .sp
 .TS
 tab();
-cw(2.75i) cw(2.75i) 
-lw(2.75i) lw(2.75i) 
+cw(2.75i) cw(2.75i)
+lw(2.75i) lw(2.75i)
 .
 CommandResult
 _
@@ -114,7 +157,10 @@ There are two different methods of communicating with \fBprex\fR:
 .TP
 .ie t \(bu
 .el o
-By specifications in a control file. During start-up, \fBprex\fR searches for a file named  \fB\&.prexrc\fR in the directories specified below. \fBprex\fR does not stop at the first one it finds. This way a user can override any defaults that are set up. The search order is:
+By specifications in a control file. During start-up, \fBprex\fR searches
+for a file named  \fB\&.prexrc\fR in the directories specified below.
+\fBprex\fR does not stop at the first one it finds. This way a user can
+override any defaults that are set up. The search order is:
 .sp
 .in +2
 .nf
@@ -133,10 +179,21 @@ By typing commands at the \fBprex\fR prompt.
 .RE
 .sp
 .LP
-The command language for both methods is the same and is specified in USAGE. The commands that return output will not make sense in a control file. The output will go to standard output.
+The command language for both methods is the same and is specified in
+USAGE. The commands that return output will not make sense in a control
+file. The output will go to standard output.
 .sp
 .LP
-When using \fBprex\fR on a target process, the target will be in one of two states, running or stopped. This can be detected by the presence or absence of the \fBprex>\fR prompt. If the prompt is absent, it means that the target process is running. Typing Control-C will stop the target pr ocess and return the user to the prompt. There is no guarantee that Control-C will return to a \fBprex\fR prompt immediately. For example, if the target process is stopped on a job control stop (\fBSIGSTOP\fR), then Control-C in \fBprex\fR will wait until the target has been continued (\fBSIGCONT\fR). See \fBSignals to Target Program\fR below for more information on signals and the target process.
+When using \fBprex\fR on a target process, the target will be in one of two
+states, running or stopped. This can be detected by the presence or absence
+of the \fBprex>\fR prompt. If the prompt is absent, it means that the target
+process is running. Typing Control-C will stop the target pr ocess and
+return the user to the prompt. There is no guarantee that Control-C will
+return to a \fBprex\fR prompt immediately. For example, if the target
+process is stopped on a job control stop (\fBSIGSTOP\fR), then Control-C in
+\fBprex\fR will wait until the target has been continued (\fBSIGCONT\fR).
+See \fBSignals to Target Program\fR below for more information on signals
+and the target process.
 .SH OPTIONS
 .sp
 .LP
@@ -148,8 +205,10 @@ The following options are supported:
 \fB\fB-k\fR\fR
 .ad
 .RS 22n
-.rt  
-\fBkernel mode\fR: \fBprex\fR is used to control probes in the Solaris kernel. In kernel mode, additional commands are defined, and some commands valid in other modes are invalid. See \fBKernel Mode\fR  below.
+.rt
+\fBkernel mode\fR: \fBprex\fR is used to control probes in the Solaris
+kernel. In kernel mode, additional commands are defined, and some commands
+valid in other modes are invalid. See \fBKernel Mode\fR  below.
 .RE
 
 .sp
@@ -159,8 +218,13 @@ The following options are supported:
 \fB\fB-l\fR \fIlibraries\fR\fR
 .ad
 .RS 22n
-.rt  
-The \fIlibraries\fR mentioned are linked in to the target application using \fBLD_PRELOAD\fR (see \fBld\fR(1)). This option cannot be used when attaching to a running process. The argument to the \fB-l\fR option should be a space-separated string enclosed in double quotes. Each token in the string is a library name. It follows the \fBLD_PRELOAD\fR rules on how libraries should be specified and where they will be found.
+.rt
+The \fIlibraries\fR mentioned are linked in to the target application using
+\fBLD_PRELOAD\fR (see \fBld\fR(1)). This option cannot be used when
+attaching to a running process. The argument to the \fB-l\fR option should
+be a space-separated string enclosed in double quotes. Each token in the
+string is a library name. It follows the \fBLD_PRELOAD\fR rules on how
+libraries should be specified and where they will be found.
 .RE
 
 .sp
@@ -170,10 +234,16 @@ The \fIlibraries\fR mentioned are linked in to the target application using \fBL
 \fB\fB-o\fR \fItrace_file_name\fR\fR
 .ad
 .RS 22n
-.rt  
-File to be used for the trace output. \fItrace_file_name\fR is assumed to be relative to the current working directory of \fBprex\fR (that is, the directory that the user was in when \fBprex\fR was started).
+.rt
+File to be used for the trace output. \fItrace_file_name\fR is assumed to
+be relative to the current working directory of \fBprex\fR (that is, the
+directory that the user was in when \fBprex\fR was started).
 .sp
-If \fBprex\fR attaches to a process that is already tracing, the new \fItrace_file_name\fR (if provided) will not be used. If no \fItrace_file_name\fR is specified, the default is \fB/$TMPDIR/trace-\fR\fIpid\fR where \fIpid\fR is the process id of the target program. If \fBTMPDIR\fR is not set, \fB/tmp\fR is used.
+If \fBprex\fR attaches to a process that is already tracing, the new
+\fItrace_file_name\fR (if provided) will not be used. If no
+\fItrace_file_name\fR is specified, the default is
+\fB/$TMPDIR/trace-\fR\fIpid\fR where \fIpid\fR is the process id of the
+target program. If \fBTMPDIR\fR is not set, \fB/tmp\fR is used.
 .RE
 
 .sp
@@ -183,8 +253,13 @@ If \fBprex\fR attaches to a process that is already tracing, the new \fItrace_fi
 \fB\fB-s\fR \fIkbytes_size\fR\fR
 .ad
 .RS 22n
-.rt  
-Maximum size of the output trace file in Kbytes. The default size of the trace \fIkbytes_size\fR is \fB4096\fR (2^10) bytes or \fB4\fR Mbytes for normal usage, and \fB384\fR or \fB384\fR kbytes in kernel mode. The minimum size that can be specified is \fB128\fR Kbytes. The trace file can be thought of as a least recently used circular buffer. Once the file has been filled, newer events will overwrite the older ones.
+.rt
+Maximum size of the output trace file in Kbytes. The default size of the
+trace \fIkbytes_size\fR is \fB4096\fR (2^10) bytes or \fB4\fR Mbytes for
+normal usage, and \fB384\fR or \fB384\fR kbytes in kernel mode. The minimum
+size that can be specified is \fB128\fR Kbytes. The trace file can be
+thought of as a least recently used circular buffer. Once the file has been
+filled, newer events will overwrite the older ones.
 .RE
 
 .SH USAGE
@@ -194,7 +269,8 @@ This section describes the usage of the \fBprex\fR utility.
 .SS "Grammar"
 .sp
 .LP
-Probes are specified by a list of space-separated selectors. Selectors are of the form:
+Probes are specified by a list of space-separated selectors. Selectors are
+of the form:
 .sp
 .in +2
 .nf
@@ -204,10 +280,12 @@ Probes are specified by a list of space-separated selectors. Selectors are of th
 
 .sp
 .LP
-(See \fBTNF_PROBE\fR(3TNF)). The "\fIattribute\fR=" is optional. If it is not specified, it defaults to "\fBkeys=\fR".
+(See \fBTNF_PROBE\fR(3TNF)). The "\fIattribute\fR=" is optional. If it is
+not specified, it defaults to "\fBkeys=\fR".
 .sp
 .LP
-The \fIattribute\fR or \fIvalue\fR (generically called "spec") can be any of the following:
+The \fIattribute\fR or \fIvalue\fR (generically called "spec") can be any
+of the following:
 .sp
 .ne 2
 .mk
@@ -215,8 +293,9 @@ The \fIattribute\fR or \fIvalue\fR (generically called "spec") can be any of the
 \fB\fBIDENT\fR\fR
 .ad
 .RS 14n
-.rt  
-Any sequence of letters, digits, _\|, \e\|, ., % not beginning with a digit. \fBIDENT\fR implies an exact match.
+.rt
+Any sequence of letters, digits, _\|, \e\|, ., % not beginning with a
+digit. \fBIDENT\fR implies an exact match.
 .RE
 
 .sp
@@ -226,8 +305,10 @@ Any sequence of letters, digits, _\|, \e\|, ., % not beginning with a digit. \fB
 \fB\fBQUOTED_STR\fR\fR
 .ad
 .RS 14n
-.rt  
-Usually used to escape reserved words (any commands in the command language). \fBQUOTED_STR\fR implies an exact match and has to be enclosed in single quotes (' ').
+.rt
+Usually used to escape reserved words (any commands in the command
+language). \fBQUOTED_STR\fR implies an exact match and has to be enclosed in
+single quotes (' ').
 .RE
 
 .sp
@@ -237,8 +318,10 @@ Usually used to escape reserved words (any commands in the command language). \f
 \fB\fBREGEXP\fR\fR
 .ad
 .RS 14n
-.rt  
-An \fBed\fR(1) regular expression pattern match. \fBREGEXP\fR has to be enclosed in slashes (/ /), A / can be included in a \fBREGEXP\fR by escaping it with a backslash \e\|.
+.rt
+An \fBed\fR(1) regular expression pattern match. \fBREGEXP\fR has to be
+enclosed in slashes (/ /), A / can be included in a \fBREGEXP\fR by escaping
+it with a backslash \e\|.
 .RE
 
 .sp
@@ -271,7 +354,8 @@ REGEXP =      /[^\en/]*/   /* regexp's have to be in / / */
 
 .sp
 .LP
-This is a list of the remaining grammar that is needed to understand the syntax of the command language (defined in next subsection):
+This is a list of the remaining grammar that is needed to understand the
+syntax of the command language (defined in next subsection):
 .sp
 .in +2
 .nf
@@ -297,7 +381,9 @@ list     sets          # list the defined sets\fR
 .in -2
 .sp
 
-\fBcreate\fR can be used to define a set which contains probes that match the \fIselector_list\fR. The set \fB$all\fR is pre-defined as /.*/ and it matches all the probes.
+\fBcreate\fR can be used to define a set which contains probes that match
+the \fIselector_list\fR. The set \fB$all\fR is pre-defined as /.*/ and it
+matches all the probes.
 .RE
 .RS +4
 .TP
@@ -311,7 +397,9 @@ Function Listing
 .in -2
 .sp
 
-The user can list the different functions that can be connected to probe points. Currently, only the debug function called \fB&debug\fR is available.
+The user can list the different functions that can be connected to probe
+points. Currently, only the debug function called \fB&debug\fR is
+available.
 .RE
 .RS +4
 .TP
@@ -328,9 +416,14 @@ clear \fIselector_list\fR\fR
 .in -2
 .sp
 
-The \fBconnect\fR command is used to connect probe functions (which must be prefixed by `\fB&\fR\&') to probes. The probes are specified either as a single set (with a `\fB$\fR'), or by explicitly listing the probe selectors in the command. The probe function has to be one that is listed by the \fBlist fcns\fR command. This command does not enable the probes.
+The \fBconnect\fR command is used to connect probe functions (which must be
+prefixed by `\fB&\fR\&') to probes. The probes are specified either as a
+single set (with a `\fB$\fR'), or by explicitly listing the probe selectors
+in the command. The probe function has to be one that is listed by the
+\fBlist fcns\fR command. This command does not enable the probes.
 .sp
-The \fBclear\fR command is used to disconnect all connected probe functions from the specified probes.
+The \fBclear\fR command is used to disconnect all connected probe functions
+from the specified probes.
 .RE
 .RS +4
 .TP
@@ -347,7 +440,13 @@ untrace \fIselector_list\fR\fR
 .in -2
 .sp
 
-The \fBtrace\fR and \fBuntrace\fR commands are used to toggle the tracing action of a probe point (that is, whether a probe will emit a trace record or not if it is hit). This command does not enable the probes specified. Probes have tracing on by default. The most efficient way to turn off tracing is by using the \fBdisable\fR command. \fBuntrace\fR is useful if you want debug output but no tracing.  If so, set the state of the probe to enabled, untraced, and the debug function connected.
+The \fBtrace\fR and \fBuntrace\fR commands are used to toggle the tracing
+action of a probe point (that is, whether a probe will emit a trace record
+or not if it is hit). This command does not enable the probes specified.
+Probes have tracing on by default. The most efficient way to turn off
+tracing is by using the \fBdisable\fR command. \fBuntrace\fR is useful if
+you want debug output but no tracing.  If so, set the state of the probe to
+enabled, untraced, and the debug function connected.
 .RE
 .RS +4
 .TP
@@ -364,9 +463,18 @@ disable \fIselector_list\fR\fR
 .in -2
 .sp
 
-The \fBenable\fR and \fBdisable\fR commands are used to control whether the probes perform the action that they have been set up for. To trace a probe, it has to be both enabled and traced (using the \fBtrace\fR command). Probes are disabled by default. The \fBlist history\fR command is used to list the probe control commands issued: \fBconnect\fR, \fBclear\fR, \fBtrace\fR, \fBuntrace\fR, \fBenable\fR, and  \fBdisable\fR. These are the commands that are executed whenever a new shared object is brought in to the target program by \fBdlopen\fR(3C). See the subsection, \fBdlopen'ed Libraries\fR, below for more information.
+The \fBenable\fR and \fBdisable\fR commands are used to control whether the
+probes perform the action that they have been set up for. To trace a probe,
+it has to be both enabled and traced (using the \fBtrace\fR command). Probes
+are disabled by default. The \fBlist history\fR command is used to list the
+probe control commands issued: \fBconnect\fR, \fBclear\fR, \fBtrace\fR,
+\fBuntrace\fR, \fBenable\fR, and  \fBdisable\fR. These are the commands that
+are executed whenever a new shared object is brought in to the target
+program by \fBdlopen\fR(3C). See the subsection, \fBdlopen'ed Libraries\fR,
+below for more information.
 .sp
-The following table shows the actions that result from specific combinations of tracing, enabling, and connecting:
+The following table shows the actions that result from specific
+combinations of tracing, enabling, and connecting:
 .sp
 .in +2
 .nf
@@ -406,7 +514,11 @@ List History
 .in -2
 .sp
 
-The \fBlist history\fR command displays a list of the probe control commands previously issued in the tracing session, for example, \fBconnect\fR, \fBclear\fR, \fBtrace\fR, \fBdisable\fR. Commands in the history list are executed wherever a new shared object is  brought into the target program by \fBdlopen\fR(3C).
+The \fBlist history\fR command displays a list of the probe control
+commands previously issued in the tracing session, for example,
+\fBconnect\fR, \fBclear\fR, \fBtrace\fR, \fBdisable\fR. Commands in the
+history list are executed wherever a new shared object is  brought into the
+target program by \fBdlopen\fR(3C).
 .RE
 .RS +4
 .TP
@@ -423,7 +535,10 @@ list tracefile  # list tracefile\fR
 .in -2
 .sp
 
-The first two commands list the selected attributes and values of the specified probes. They can be used to check the state of a probe. The third command lists the various values associated with the selected attributes. The fourth command lists the current tracefile.
+The first two commands list the selected attributes and values of the
+specified probes. They can be used to check the state of a probe. The third
+command lists the various values associated with the selected attributes.
+The fourth command lists the current tracefile.
 .RE
 .RS +4
 .TP
@@ -437,7 +552,9 @@ Help Command
 .in -2
 .sp
 
-To get a list of the help topics that are available, invoke the \fBhelp\fR command with no arguments. If a \fItopic\fR argument is specified, help is printed for that topic.
+To get a list of the help topics that are available, invoke the \fBhelp\fR
+command with no arguments. If a \fItopic\fR argument is specified, help is
+printed for that topic.
 .RE
 .RS +4
 .TP
@@ -451,7 +568,9 @@ Source a File
 .in -2
 .sp
 
-The \fBsource\fR command can be used to source a file of \fBprex\fR commands. \fBsource\fR can be nested (that is, a file can source another file). \fIfilename\fR is a quoted string.
+The \fBsource\fR command can be used to source a file of \fBprex\fR
+commands. \fBsource\fR can be nested (that is, a file can source another
+file). \fIfilename\fR is a quoted string.
 .RE
 .RS +4
 .TP
@@ -469,50 +588,103 @@ quit               # quit prex (continue or kill target)\fR
 .in -2
 .sp
 
-The default \fBquit\fR will continue the target process if \fBprex\fR attached to it. Instead, if \fBprex\fR had started the target program, \fBquit\fR will kill the target process.
+The default \fBquit\fR will continue the target process if \fBprex\fR
+attached to it. Instead, if \fBprex\fR had started the target program,
+\fBquit\fR will kill the target process.
 .RE
 .SS "dlopen'ed Libraries"
 .sp
 .LP
-Probes in shared objects that are brought in by \fBdlopen\fR(3C) are automatically set up according to the command history of \fBprex\fR. When a shared object is removed by a \fBdlclose\fR(3C), \fBprex\fR again needs to refresh its understanding of the probes in the target program. This implies that there is more work to do for \fBdlopen\fR(3C) and \fBdlclose\fR(3C) \(emso they will take slightly longer. If a user is not interested in this feature and doesn't want to interfere with \fBdlopen\fR(3C) and \fBdlclose\fR(3C), detach \fBprex\fR from the target to inhibit this feature.
+Probes in shared objects that are brought in by \fBdlopen\fR(3C) are
+automatically set up according to the command history of \fBprex\fR. When a
+shared object is removed by a \fBdlclose\fR(3C), \fBprex\fR again needs to
+refresh its understanding of the probes in the target program. This implies
+that there is more work to do for \fBdlopen\fR(3C) and \fBdlclose\fR(3C)
+\(emso they will take slightly longer. If a user is not interested in this
+feature and doesn't want to interfere with \fBdlopen\fR(3C) and
+\fBdlclose\fR(3C), detach \fBprex\fR from the target to inhibit this
+feature.
 .SS "Signals to Target Program"
 .sp
 .LP
-\fBprex\fR does not interfere with signals that are delivered directly to the target program. However, \fBprex\fR receives all signals normally generated from the terminal, for example, Control-C (\fBSIGINT\fR), and Control-Z (\fBSIGSTOP\fR), and does not forward them to the target program. To signal the target program, use the \fBkill\fR(1) command from a shell.
+\fBprex\fR does not interfere with signals that are delivered directly to
+the target program. However, \fBprex\fR receives all signals normally
+generated from the terminal, for example, Control-C (\fBSIGINT\fR), and
+Control-Z (\fBSIGSTOP\fR), and does not forward them to the target program.
+To signal the target program, use the \fBkill\fR(1) command from a shell.
 .SS "Interactions with Other Applications"
 .sp
 .LP
-Process managing applications like \fBdbx\fR, \fBtruss\fR(1), and \fBprex\fR cannot operate on the same target program simultaneously. \fBprex\fR will not be able to attach to a target which is being controlled by another application. A user can trace and debug a program serially by the following method: first attach \fBprex\fR to target (or start target through \fBprex\fR), set up the probes using the command language, and then type \fBquit suspend\fR. The user can then attach \fBdbx\fR to the suspended process and debug it. A user can also suspend the target by sending it a \fBSIGSTOP\fR signal, and then by typing \fBquit resume\fR to \fBprex\fR. In this case, the user should also send a \fBSIGCONT\fR signal after invoking \fBdbx\fR on the stopped process (else \fBdbx\fR will be hung).
+Process managing applications like \fBdbx\fR, \fBtruss\fR(1), and
+\fBprex\fR cannot operate on the same target program simultaneously.
+\fBprex\fR will not be able to attach to a target which is being controlled
+by another application. A user can trace and debug a program serially by the
+following method: first attach \fBprex\fR to target (or start target through
+\fBprex\fR), set up the probes using the command language, and then type
+\fBquit suspend\fR. The user can then attach \fBdbx\fR to the suspended
+process and debug it. A user can also suspend the target by sending it a
+\fBSIGSTOP\fR signal, and then by typing \fBquit resume\fR to \fBprex\fR. In
+this case, the user should also send a \fBSIGCONT\fR signal after invoking
+\fBdbx\fR on the stopped process (else \fBdbx\fR will be hung).
 .SS "Failure of Event Writing Operations"
 .sp
 .LP
-There are a few failure points that are possible when writing out events to a trace file, for example, system call failures. These failures result in a failure code being set in the target process. The target process continues normally, but no trace records are written. Whenever a user enters Control-C to \fBprex\fR to get to a \fBprex\fR prompt, \fBprex\fR will check the failure code in the target and inform the user if there was a tracing failure.
+There are a few failure points that are possible when writing out events to
+a trace file, for example, system call failures. These failures result in a
+failure code being set in the target process. The target process continues
+normally, but no trace records are written. Whenever a user enters Control-C
+to \fBprex\fR to get to a \fBprex\fR prompt, \fBprex\fR will check the
+failure code in the target and inform the user if there was a tracing
+failure.
 .SS "Target Executing a Fork or exec"
 .sp
 .LP
-If the target program does a \fBfork\fR(2), any probes that the child encounters will cause events to be logged to the same trace file. Events are annotated with a process id, so it will be possible to determine which process a particular event came from. In multi-threaded programs, there is a race condition with a thread doing a fork while the other threads are still running.  For the trace file not to get corrupted, the user should either use \fBfork1\fR(2), or make sure that all other threads are quiescent when doing a \fBfork\fR(2),
+If the target program does a \fBfork\fR(2), any probes that the child
+encounters will cause events to be logged to the same trace file. Events are
+annotated with a process id, so it will be possible to determine which
+process a particular event came from. In multi-threaded programs, there is a
+race condition with a thread doing a fork while the other threads are still
+running. For the trace file not to get corrupted, the user should either use
+\fBfork1\fR(2), or make sure that all other threads are quiescent when doing
+a \fBfork\fR(2),
 .sp
 .LP
-If the target program itself (not any children it may \fBfork\fR(2)) does an \fBexec\fR(2), \fBprex\fR detaches from the target and exits. The user can reconnect \fBprex\fR with \fBprex\fR \fB-p\fR \fIpid\fR.
+If the target program itself (not any children it may \fBfork\fR(2)) does
+an \fBexec\fR(2), \fBprex\fR detaches from the target and exits. The user
+can reconnect \fBprex\fR with \fBprex\fR \fB-p\fR \fIpid\fR.
 .sp
 .LP
-A \fBvfork\fR(2) is generally followed quickly by an  \fBexec\fR(2) in the child, and in the interim, the child borrows the parent's process while the parent waits for the \fBexec\fR(2). Any events logged by the child from the parent process will appear to have been logged by the parent.
+A \fBvfork\fR(2) is generally followed quickly by an  \fBexec\fR(2) in the
+child, and in the interim, the child borrows the parent's process while the
+parent waits for the \fBexec\fR(2). Any events logged by the child from the
+parent process will appear to have been logged by the parent.
 .SS "Kernel Mode"
 .sp
 .LP
-Invoking \fBprex\fR with the \fB-k\fR flag causes \fBprex\fR to run in \fBkernel mode\fR. In kernel mode, \fBprex\fR controls probes in the Solaris kernel. See \fBtnf_kernel_probes\fR(4) for a list of available probes in the Solaris kernel. A few \fBprex\fR commands are unavailable in kernel mode; many other commands are valid in kernel mode only.
+Invoking \fBprex\fR with the \fB-k\fR flag causes \fBprex\fR to run in
+\fBkernel mode\fR. In kernel mode, \fBprex\fR controls probes in the Solaris
+kernel. See \fBtnf_kernel_probes\fR(4) for a list of available probes in the
+Solaris kernel. A few \fBprex\fR commands are unavailable in kernel mode;
+many other commands are valid in kernel mode only.
 .sp
 .LP
-The \fB-l\fR, \fB-o\fR, and \fB-p\fR command-line options are not valid in kernel mode (that is, they may not be combined with the \fB-k\fR flag).
+The \fB-l\fR, \fB-o\fR, and \fB-p\fR command-line options are not valid in
+kernel mode (that is, they may not be combined with the \fB-k\fR flag).
 .sp
 .LP
-The rest of this section describes the differences in the \fBprex\fR command language when running \fBprex\fR in kernel mode.
+The rest of this section describes the differences in the \fBprex\fR
+command language when running \fBprex\fR in kernel mode.
 .RS +4
 .TP
 1.
 \fBprex\fR will not stop the kernel
 .sp
-When \fBprex\fR attaches to a running user program, it stops the user program. Obviously, it cannot do this when attaching to the kernel.  Instead, \fBprex\fR provides a ``tracing master switch'': no probes will have any effect unless the tracing master switch is on.  This allows the user to iteratively select probes to enable, then enable them all at once by turning on the master switch.
+When \fBprex\fR attaches to a running user program, it stops the user
+program. Obviously, it cannot do this when attaching to the kernel.
+Instead, \fBprex\fR provides a ``tracing master switch'': no probes will
+have any effect unless the tracing master switch is on.  This allows the
+user to iteratively select probes to enable, then enable them all at once by
+turning on the master switch.
 .sp
 The command
 .sp
@@ -523,7 +695,8 @@ The command
 .in -2
 .sp
 
-is used to inspect and set the value of the master switch. Without an argument, \fBprex\fR reports the current state of the master switch.
+is used to inspect and set the value of the master switch. Without an
+argument, \fBprex\fR reports the current state of the master switch.
 .sp
 Since \fBprex\fR will not stop or kill the kernel, the
 .sp
@@ -557,9 +730,13 @@ In particular, the debug function is unavailable in kernel mode.
 3.
 Trace output is written to an in-core buffer
 .sp
-In kernel mode, a trace output file is not generated directly, in order to allow probes to be placed in time-critical code. Instead, trace output is written to an in-core buffer, and copied out by a separate program, \fBtnfxtract\fR(1).
+In kernel mode, a trace output file is not generated directly, in order to
+allow probes to be placed in time-critical code. Instead, trace output is
+written to an in-core buffer, and copied out by a separate program,
+\fBtnfxtract\fR(1).
 .sp
-The in-core buffer is not automatically created. The following \fBprex\fR command controls buffer allocation and deallocation:
+The in-core buffer is not automatically created. The following \fBprex\fR
+command controls buffer allocation and deallocation:
 .sp
 .in +2
 .nf
@@ -568,28 +745,51 @@ The in-core buffer is not automatically created. The following \fBprex\fR comman
 .in -2
 .sp
 
-Without an argument, the \fBbuffer\fR command reports the size of the currently allocated buffer, if any. With an argument of \fBalloc\fR [\fIsize\fR], \fBprex\fR allocates a buffer of the given size. \fIsize\fR is in bytes, with an optional suffix of '\fBk\fR' or '\fBm\fR' specifying a multiplier of \fB1024\fR or \fB1048576\fR, respectively. If no  \fIsize\fR is specified, the  \fIsize\fR specified on the command line with the \fB-s\fR option is used as a default. If the \fB-s\fR command line option was not used, the ``default default'' is 384 kilobytes.
+Without an argument, the \fBbuffer\fR command reports the size of the
+currently allocated buffer, if any. With an argument of \fBalloc\fR
+[\fIsize\fR], \fBprex\fR allocates a buffer of the given size. \fIsize\fR is
+in bytes, with an optional suffix of '\fBk\fR' or '\fBm\fR' specifying a
+multiplier of \fB1024\fR or \fB1048576\fR, respectively. If no  \fIsize\fR
+is specified, the  \fIsize\fR specified on the command line with the
+\fB-s\fR option is used as a default. If the \fB-s\fR command line option
+was not used, the ``default default'' is 384 kilobytes.
 .sp
-With an argument of \fBdealloc\fR, \fBprex\fR deallocates the trace buffer in the kernel.
+With an argument of \fBdealloc\fR, \fBprex\fR deallocates the trace buffer
+in the kernel.
 .sp
-\fBprex\fR will reject attempts to turn the tracing master switch on when no buffer is allocated, and to deallocate the buffer when the tracing master switch is on. \fBprex\fR will refuse to allocate a buffer when one is already allocated; use \fBbuffer dealloc\fR first.
+\fBprex\fR will reject attempts to turn the tracing master switch on when
+no buffer is allocated, and to deallocate the buffer when the tracing master
+switch is on. \fBprex\fR will refuse to allocate a buffer when one is
+already allocated; use \fBbuffer dealloc\fR first.
 .sp
-\fBprex\fR will not allocate a buffer larger than one-half of a machine's physical memory.
+\fBprex\fR will not allocate a buffer larger than one-half of a machine's
+physical memory.
 .RE
 .RS +4
 .TP
 4.
 \fBprex\fR supports per-process probe enabling in the kernel
 .sp
-In kernel mode, it is possible to select a set of processes for which probes are enabled. No trace output will be written when other processes traverse these probe points. This is called "process filter mode". By default, process filter mode is off, and all processes cause the generation of trace records when they hit an enabled probe.
+In kernel mode, it is possible to select a set of processes for which
+probes are enabled. No trace output will be written when other processes
+traverse these probe points. This is called "process filter mode". By
+default, process filter mode is off, and all processes cause the generation
+of trace records when they hit an enabled probe.
 .sp
-Some kernel events such as interrupts cannot be associated with a particular user process.  By convention, these events are considered to be generated by process id 0.
+Some kernel events such as interrupts cannot be associated with a
+particular user process.  By convention, these events are considered to be
+generated by process id 0.
 .sp
-\fBprex\fR provides commands to turn process filter mode on and off, to get the current status of the process filter mode switch, to add and delete processes (by process id) from the process filter set, and to list the current process filter set.
+\fBprex\fR provides commands to turn process filter mode on and off, to get
+the current status of the process filter mode switch, to add and delete
+processes (by process id) from the process filter set, and to list the
+current process filter set.
 .sp
-The process filter set is maintained even when process filter mode is off, but has no effect unless process filter mode is on.
+The process filter set is maintained even when process filter mode is off,
+but has no effect unless process filter mode is on.
 .sp
-When a process in the process filter set exits, its process id is automatically deleted from the process filter set.
+When a process in the process filter set exits, its process id is
+automatically deleted from the process filter set.
 .sp
 The command:
 .sp
@@ -600,7 +800,9 @@ The command:
 .in -2
 .sp
 
-controls the process filter switch, and process filter set membership. With no arguments, \fBpfilter\fR prints the current process filter set and the state of the process filter mode switch:
+controls the process filter switch, and process filter set membership. With
+no arguments, \fBpfilter\fR prints the current process filter set and the
+state of the process filter mode switch:
 .sp
 .ne 2
 .mk
@@ -608,7 +810,7 @@ controls the process filter switch, and process filter set membership. With no a
 \fB\fBon\fR or \fBoff\fR\fR
 .ad
 .RS 18n
-.rt  
+.rt
 set the state of the process filter mode switch.
 .RE
 
@@ -623,15 +825,17 @@ set the state of the process filter mode switch.
 \fB\fBdelete\fR \fIpidlist\fR\fR
 .ad
 .RS 18n
-.rt  
-add or delete processes from the process filter set. \fIpidlist\fR is a comma-separated list of one or more process ids.
+.rt
+add or delete processes from the process filter set. \fIpidlist\fR is a
+comma-separated list of one or more process ids.
 .RE
 
 .RE
 .SH EXAMPLES
 .sp
 .LP
-See \fBtracing\fR(3TNF) for complete examples showing, among other things, the use of \fBprex\fR to do simple probe control.
+See \fBtracing\fR(3TNF) for complete examples showing, among other things,
+the use of \fBprex\fR to do simple probe control.
 .sp
 .LP
 When either the process or kernel is started, all probes are disabled.
@@ -715,7 +919,7 @@ ktrace on                  # turn tracing on
 \fB\fB\&.prexrc\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 local \fBprex\fR initialization file
 .RE
 
@@ -726,7 +930,7 @@ local \fBprex\fR initialization file
 \fB\fB~/.prexrc\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 user's \fBprex\fR initialization file
 .RE
 
@@ -737,7 +941,7 @@ user's \fBprex\fR initialization file
 \fB\fB/proc/\fInnnnn\fR\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 process files
 .RE
 
@@ -750,8 +954,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -761,11 +965,19 @@ AvailabilitySUNWtnfc
 .SH SEE ALSO
 .sp
 .LP
-\fBed\fR(1), \fBkill\fR(1), \fBksh\fR(1), \fBld\fR(1), \fBtnfdump\fR(1), \fBtnfxtract\fR(1), \fBtruss\fR(1), \fBexec\fR(2), \fBfork\fR(2), \fBfork1\fR(2), \fBvfork\fR(2), \fBTNF_DECLARE_RECORD\fR(3TNF), \fBTNF_PROBE\fR(3TNF), \fBdlclose\fR(3C), \fBdlopen\fR(3C), \fBgethrtime\fR(3C), \fBlibtnfctl\fR(3TNF), \fBtnf_process_disable\fR(3TNF), \fBtracing\fR(3TNF), \fBtnf_kernel_probes\fR(4), \fBattributes\fR(5)
+\fBed\fR(1), \fBkill\fR(1), \fBksh\fR(1), \fBld\fR(1), \fBtnfdump\fR(1),
+\fBtnfxtract\fR(1), \fBtruss\fR(1), \fBexec\fR(2), \fBfork\fR(2),
+\fBfork1\fR(2), \fBvfork\fR(2), \fBTNF_DECLARE_RECORD\fR(3TNF),
+\fBTNF_PROBE\fR(3TNF), \fBdlclose\fR(3C), \fBdlopen\fR(3C),
+\fBgethrtime\fR(3C), \fBlibtnfctl\fR(3TNF), \fBtnf_process_disable\fR(3TNF),
+\fBtracing\fR(3TNF), \fBtnf_kernel_probes\fR(4), \fBattributes\fR(5)
 .SH NOTES
 .sp
 .LP
-Currently, the only probe function that is available is the \fB&debug\fR function. When this function is executed, it prints out the arguments sent in to the probe as well as the value associated with the \fBsunw%debug\fR attribute in the detail field (if any) to \fBstderr\fR.
+Currently, the only probe function that is available is the \fB&debug\fR
+function. When this function is executed, it prints out the arguments sent
+in to the probe as well as the value associated with the \fBsunw%debug\fR
+attribute in the detail field (if any) to \fBstderr\fR.
 .sp
 .LP
 For example, for the following probe point:
@@ -782,7 +994,8 @@ TNF_PROBE_2(input_values, "testapp main",
 
 .sp
 .LP
-If \fIx\fR was 100 and \fIinput\fR was the string "success", then the output of the debug probe function would be:
+If \fIx\fR was 100 and \fIinput\fR was the string "success", then the
+output of the debug probe function would be:
 .sp
 .in +2
 .nf
@@ -794,7 +1007,12 @@ int_input=100; string_input="success";
 
 .sp
 .LP
-Some non-SPARC hardware lacks a true high-resolution timer, causing \fBgethrtime()\fR to return the same value multiple times in succession. This can lead to problems in how some tools interpret the trace file. This situation can be improved by interposing a version of \fBgethrtime()\fR, which causes these successive values to be artificially incremented by one nanosecond:
+Some non-SPARC hardware lacks a true high-resolution timer, causing
+\fBgethrtime()\fR to return the same value multiple times in succession.
+This can lead to problems in how some tools interpret the trace file. This
+situation can be improved by interposing a version of \fBgethrtime()\fR,
+which causes these successive values to be artificially incremented by one
+nanosecond:
 .sp
 .in +2
 .nf
@@ -828,14 +1046,18 @@ gethrtime()
 
 .sp
 .LP
-Of course, this does not increase the resolution of the timer, so timestamps for individual events are still relatively inaccurate. But this technique maintains ordering, so that if event A causes event B, B never appears to happen before or at the same time as A.
+Of course, this does not increase the resolution of the timer, so
+timestamps for individual events are still relatively inaccurate. But this
+technique maintains ordering, so that if event A causes event B, B never
+appears to happen before or at the same time as A.
 .sp
 .LP
 \fBdbx\fR is available with the Sun Workshop Products.
 .SH BUGS
 .sp
 .LP
-\fBprex\fR should issue a notification when a process id has been automatically deleted from the filter set.
+\fBprex\fR should issue a notification when a process id has been
+automatically deleted from the filter set.
 .sp
 .LP
 There is a known bug in \fBprex\fR which can result in this message:
@@ -850,7 +1072,13 @@ error - Please restart prex and target
 
 .sp
 .LP
-When \fBprex\fR runs as root, and the target process is not root, and the tracefile is placed in a directory where it cannot be removed and re-created (a directory with the sticky bit on, like \fB/tmp\fR),mm then the target process will not be able to open the tracefile when it needs to. This results in tracing being disabled.
+When \fBprex\fR runs as root, and the target process is not root, and the
+tracefile is placed in a directory where it cannot be removed and re-created
+(a directory with the sticky bit on, like \fB/tmp\fR),mm then the target
+process will not be able to open the tracefile when it needs to. This
+results in tracing being disabled.
 .sp
 .LP
-Changing any of the circumstances listed above should fix the problem. Either don't run \fBprex\fR as root, or run the target process as root, or specify the tracefile in a directory other than \fB/tmp\fR.
+Changing any of the circumstances listed above should fix the problem.
+Either don't run \fBprex\fR as root, or run the target process as root, or
+specify the tracefile in a directory other than \fB/tmp\fR.

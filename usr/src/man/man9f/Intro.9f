@@ -1,18 +1,35 @@
 '\" te
 .\" Copyright (c) 2005, Sun Microsystems, Inc., All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH Intro 9F "11 Mar 2008" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 Intro, intro \- introduction to DDI/DKI functions
 .SH DESCRIPTION
 .sp
 .LP
-Section 9F describes the kernel functions available for use by device drivers. See \fBIntro\fR(9E) for an overview of device driver interfaces.
+Section 9F describes the kernel functions available for use by device
+drivers. See \fBIntro\fR(9E) for an overview of device driver interfaces.
 .sp
 .LP
-In this section, the information for each driver function is organized under the following headings:
+In this section, the information for each driver function is organized
+under the following headings:
 .RS +4
 .TP
 .ie t \(bu
@@ -23,7 +40,8 @@ In this section, the information for each driver function is organized under the
 .TP
 .ie t \(bu
 .el o
-\fBSYNOPSIS\fR shows the syntax of the function's entry point in the source code. \fB#include\fR directives are shown for required headers.
+\fBSYNOPSIS\fR shows the syntax of the function's entry point in the source
+code. \fB#include\fR directives are shown for required headers.
 .RE
 .RS +4
 .TP
@@ -47,45 +65,68 @@ In this section, the information for each driver function is organized under the
 .TP
 .ie t \(bu
 .el o
-\fBRETURN\fR \fBVALUES\fR describes the return values and messages that can result from invoking the function.
+\fBRETURN\fR \fBVALUES\fR describes the return values and messages that can
+result from invoking the function.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBCONTEXT\fR indicates from which driver context (user, kernel, interrupt, or high-level interrupt) the function can be called.
+\fBCONTEXT\fR indicates from which driver context (user, kernel, interrupt,
+or high-level interrupt) the function can be called.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A driver function has \fIuser context\fR if it was directly invoked because of a user thread. The \fBread\fR(9E) entry point of the driver, invoked by a \fBread\fR(2) system call, has user context.
+A driver function has \fIuser context\fR if it was directly invoked because
+of a user thread. The \fBread\fR(9E) entry point of the driver, invoked by a
+\fBread\fR(2) system call, has user context.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A driver function has \fIkernel context\fR if was invoked by some other part of the kernel. In a block device driver, the \fBstrategy\fR(9E) entry point may be called by the page daemon to write pages to the device. The page daemon has no relation to the current user thread, so in this case \fBstrategy\fR(9E) has kernel context.
+A driver function has \fIkernel context\fR if was invoked by some other
+part of the kernel. In a block device driver, the \fBstrategy\fR(9E) entry
+point may be called by the page daemon to write pages to the device. The
+page daemon has no relation to the current user thread, so in this case
+\fBstrategy\fR(9E) has kernel context.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fIInterrupt context\fR is kernel context, but also has an interrupt level associated with it. Driver interrupt routines have interrupt context.
+\fIInterrupt context\fR is kernel context, but also has an interrupt level
+associated with it. Driver interrupt routines have interrupt context.
 .sp
-Note that a mutex acquired in user or kernel context that can also be acquired in interrupt context means that the user or kernel context thread holding that mutex is subject to all the restrictions imposed by interrupt context, for the duration of the ownership of that mutex. Please see the \fBmutex\fR(9F) man page for a more complete discussion of proper mutex handling for drivers.
+Note that a mutex acquired in user or kernel context that can also be
+acquired in interrupt context means that the user or kernel context thread
+holding that mutex is subject to all the restrictions imposed by interrupt
+context, for the duration of the ownership of that mutex. Please see the
+\fBmutex\fR(9F) man page for a more complete discussion of proper mutex
+handling for drivers.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fIHigh-level interrupt context\fR is a more restricted form of interrupt context. If a driver interrupt priority returned from \fBddi_intr_get_pri\fR(9F) is greater than the priority returned from \fBddi_intr_get_hilevel_pri\fR(9F) this indicates the interrupt handler will run in high-level interrupt context. These interrupt routines are only allowed to call \fBddi_intr_trigger_softint\fR(9F), \fBmutex_enter\fR(9F), and \fBmutex_exit\fR(9F). Furthermore, \fBmutex_enter\fR(9F) and \fBmutex_exit\fR(9F) may only be called on mutexes initialized with the interrupt priority returned by \fBddi_intr_get_pri\fR(9F).
+\fIHigh-level interrupt context\fR is a more restricted form of interrupt
+context. If a driver interrupt priority returned from
+\fBddi_intr_get_pri\fR(9F) is greater than the priority returned from
+\fBddi_intr_get_hilevel_pri\fR(9F) this indicates the interrupt handler will
+run in high-level interrupt context. These interrupt routines are only
+allowed to call \fBddi_intr_trigger_softint\fR(9F), \fBmutex_enter\fR(9F),
+and \fBmutex_exit\fR(9F). Furthermore, \fBmutex_enter\fR(9F) and
+\fBmutex_exit\fR(9F) may only be called on mutexes initialized with the
+interrupt priority returned by \fBddi_intr_get_pri\fR(9F).
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBSEE ALSO\fR indicates functions that are related by usage and sources, and which can be referred to for further information.
+\fBSEE ALSO\fR indicates functions that are related by usage and sources,
+and which can be referred to for further information.
 .RE
 .RS +4
 .TP
@@ -95,18 +136,20 @@ Note that a mutex acquired in user or kernel context that can also be acquired i
 .RE
 .sp
 .LP
-Every driver MUST include <\fBsys/ddi.h\fR> and <\fBsys/sunddi.h\fR>, in that order, and as the last files the driver includes.
+Every driver MUST include <\fBsys/ddi.h\fR> and <\fBsys/sunddi.h\fR>, in
+that order, and as the last files the driver includes.
 .SH STREAMS KERNEL FUNCTION SUMMARY
 .sp
 .LP
-The following table summarizes the STREAMS functions described in this section.
+The following table summarizes the STREAMS functions described in this
+section.
 .sp
 
 .sp
 .TS
 tab();
-cw(2.75i) cw(2.75i) 
-lw(2.75i) lw(2.75i) 
+cw(2.75i) cw(2.75i)
+lw(2.75i) lw(2.75i)
 .
 RoutineType
 _
@@ -205,8 +248,8 @@ The following table summarizes the functions not specific to STREAMS.
 .sp
 .TS
 tab();
-cw(2.75i) cw(2.75i) 
-lw(2.75i) lw(2.75i) 
+cw(2.75i) cw(2.75i)
+lw(2.75i) lw(2.75i)
 .
 RoutineType
 _

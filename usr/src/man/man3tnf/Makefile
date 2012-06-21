@@ -1,0 +1,120 @@
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
+#
+
+#
+# Copyright 2012 Jörg Schilling.  All rights reserved.
+#
+
+#
+# Definitions common to section subdirectories for manual pages.
+#
+# include global definitions; SRC should be defined in the shell.
+# SRC is needed until RFE 1026993 is implemented.
+
+MANSECT=	3tnf
+
+MANFILES=				\
+	libtnfctl.3tnf			\
+	TNF_DECLARE_RECORD.3tnf		\
+	TNF_PROBE.3tnf			\
+	tnf_process_disable.3tnf	\
+	tnfctl_buffer_alloc.3tnf	\
+	tnfctl_close.3tnf		\
+	tnfctl_indirect_open.3tnf	\
+	tnfctl_internal_open.3tnf	\
+	tnfctl_kernel_open.3tnf		\
+	tnfctl_pid_open.3tnf		\
+	tnfctl_probe_apply.3tnf		\
+	tnfctl_probe_state_get.3tnf	\
+	tnfctl_register_funcs.3tnf	\
+	tnfctl_strerror.3tnf		\
+	tnfctl_trace_attrs_get.3tnf	\
+	tnfctl_trace_state_set.3tnf	\
+	tracing.3tnf
+
+MANSO=					\
+	TNF_DEBUG.3tnf			\
+	TNF_DEFINE_RECORD_1.3tnf	\
+	TNF_DEFINE_RECORD_2.3tnf	\
+	TNF_DEFINE_RECORD_3.3tnf	\
+	TNF_DEFINE_RECORD_4.3tnf	\
+	TNF_DEFINE_RECORD_5.3tnf	\
+	TNF_PROBE_0_DEBUG.3tnf		\
+	TNF_PROBE_0.3tnf		\
+	TNF_PROBE_1_DEBUG.3tnf		\
+	TNF_PROBE_1.3tnf		\
+	TNF_PROBE_2_DEBUG.3tnf		\
+	TNF_PROBE_2.3tnf		\
+	TNF_PROBE_3_DEBUG.3tnf		\
+	TNF_PROBE_3.3tnf		\
+	TNF_PROBE_4_DEBUG.3tnf		\
+	TNF_PROBE_4.3tnf		\
+	TNF_PROBE_5_DEBUG.3tnf		\
+	TNF_PROBE_5.3tnf		\
+	tnf_process_enable.3tnf		\
+	tnf_thread_disable.3tnf		\
+	tnf_thread_enable.3tnf		\
+	tnfctl_buffer_dealloc.3tnf	\
+	tnfctl_check_libs.3tnf		\
+	tnfctl_continue.3tnf		\
+	tnfctl_exec_open.3tnf		\
+	tnfctl_filter_list_add.3tnf	\
+	tnfctl_filter_list_delete.3tnf	\
+	tnfctl_filter_list_get.3tnf	\
+	tnfctl_filter_state_set.3tnf	\
+	tnfctl_probe_apply_ids.3tnf	\
+	tnfctl_probe_connect.3tnf	\
+	tnfctl_probe_disable.3tnf	\
+	tnfctl_probe_disconnect_all.3tnf\
+	tnfctl_probe_enable.3tnf	\
+	tnfctl_probe_trace.3tnf		\
+	tnfctl_probe_untrace.3tnf
+
+TNF_DEBUG.3tnf				:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_DEFINE_RECORD_1.3tnf		:= SOFILE = man3tnf/TNF_DECLARE_RECORD.3tnf
+TNF_DEFINE_RECORD_2.3tnf		:= SOFILE = man3tnf/TNF_DECLARE_RECORD.3tnf
+TNF_DEFINE_RECORD_3.3tnf		:= SOFILE = man3tnf/TNF_DECLARE_RECORD.3tnf
+TNF_DEFINE_RECORD_4.3tnf		:= SOFILE = man3tnf/TNF_DECLARE_RECORD.3tnf
+TNF_DEFINE_RECORD_5.3tnf		:= SOFILE = man3tnf/TNF_DECLARE_RECORD.3tnf
+TNF_PROBE_0_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_0.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_1_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_1.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_2_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_2.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_3_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_3.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_4_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_4.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_5_DEBUG.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+TNF_PROBE_5.3tnf			:= SOFILE = man3tnf/TNF_PROBE.3tnf
+tnf_process_enable.3tnf			:= SOFILE = man3tnf/tnf_process_disable.3tnf
+tnf_thread_disable.3tnf			:= SOFILE = man3tnf/tnf_process_disable.3tnf
+tnf_thread_enable.3tnf			:= SOFILE = man3tnf/tnf_process_disable.3tnf
+tnfctl_buffer_dealloc.3tnf		:= SOFILE = man3tnf/tnfctl_buffer_alloc.3tnf
+tnfctl_check_libs.3tnf			:= SOFILE = man3tnf/tnfctl_indirect_open.3tnf
+tnfctl_continue.3tnf			:= SOFILE = man3tnf/tnfctl_pid_open.3tnf
+tnfctl_exec_open.3tnf			:= SOFILE = man3tnf/tnfctl_pid_open.3tnf
+tnfctl_filter_list_add.3tnf		:= SOFILE = man3tnf/tnfctl_trace_state_set.3tnf
+tnfctl_filter_list_delete.3tnf		:= SOFILE = man3tnf/tnfctl_trace_state_set.3tnf
+tnfctl_filter_list_get.3tnf		:= SOFILE = man3tnf/tnfctl_trace_state_set.3tnf
+tnfctl_filter_state_set.3tnf		:= SOFILE = man3tnf/tnfctl_trace_state_set.3tnf
+tnfctl_probe_apply_ids.3tnf		:= SOFILE = man3tnf/tnfctl_probe_apply.3tnf
+tnfctl_probe_connect.3tnf		:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+tnfctl_probe_disable.3tnf		:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+tnfctl_probe_disconnect_all.3tnf	:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+tnfctl_probe_enable.3tnf		:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+tnfctl_probe_trace.3tnf			:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+tnfctl_probe_untrace.3tnf		:= SOFILE = man3tnf/tnfctl_probe_state_get.3tnf
+
+include ../Makefile.man
+
+install: $(ROOTMANFILES)

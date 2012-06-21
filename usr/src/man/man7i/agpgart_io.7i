@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH agpgart_io 7I "25 Sep 2008" "SunOS 5.11" "Ioctl Requests"
 .SH NAME
 agpgart_io \- Solaris agpgart driver I/O control operations
@@ -15,10 +30,21 @@ agpgart_io \- Solaris agpgart driver I/O control operations
 .SH DESCRIPTION
 .sp
 .LP
-The Accelerated Graphics Port (AGP) is a PCI bus technology enhancement that improves 3D graphics performance by using low-cost system memory. AGP chipsets use the Graphics Address Remapping Table (GART) to map discontiguous system memory into a contiguous PCI memory range (known as the AGP Aperture), enabling the graphics card to utilize the mapped aperture range as video memory.
+The Accelerated Graphics Port (AGP) is a PCI bus technology enhancement
+that improves 3D graphics performance by using low-cost system memory. AGP
+chipsets use the Graphics Address Remapping Table (GART) to map
+discontiguous system memory into a contiguous PCI memory range (known as the
+AGP Aperture), enabling the graphics card to utilize the mapped aperture
+range as video memory.
 .sp
 .LP
-The \fBagpgart\fR driver creates a pseudo device node at \fB/dev/agpgart\fR and provides a set of ioctls for managing  allocation/deallocation of system memory, setting mappings between system memory and aperture range, and setting up AGP devices. The \fBagpgart\fR driver manages both pseudo and real device nodes, but to initiate AGP-related operations you operate only on the \fB/dev/agpgart\fR pseudo device node. To do this, open \fB/dev/agpgart\fR. The macro defined for the pseudo device node name is:
+The \fBagpgart\fR driver creates a pseudo device node at \fB/dev/agpgart\fR
+and provides a set of ioctls for managing  allocation/deallocation of system
+memory, setting mappings between system memory and aperture range, and
+setting up AGP devices. The \fBagpgart\fR driver manages both pseudo and
+real device nodes, but to initiate AGP-related operations you operate only
+on the \fB/dev/agpgart\fR pseudo device node. To do this, open
+\fB/dev/agpgart\fR. The macro defined for the pseudo device node name is:
 .sp
 .in +2
 .nf
@@ -28,16 +54,32 @@ The \fBagpgart\fR driver creates a pseudo device node at \fB/dev/agpgart\fR and 
 
 .sp
 .LP
-The \fBagpgart_io\fR driver implementation is AGP architecture-dependent and  cannot be made generic. Currently, the \fBagpgart_io\fR driver only supports specific AGP  systems. To determine if a system is supported, run an \fBopen\fR(2) system  call on the AGP_DEVICE node. (Note that  \fBopen\fR(2) fails if a system is not supported). After the AGP_DEVICE is opened, you can use \fBkstat\fR(1M) to  read the system architecture  type.
+The \fBagpgart_io\fR driver implementation is AGP architecture-dependent
+and cannot be made generic. Currently, the \fBagpgart_io\fR driver only
+supports specific AGP  systems. To determine if a system is supported, run
+an \fBopen\fR(2) system  call on the AGP_DEVICE node. (Note that
+\fBopen\fR(2) fails if a system is not supported). After the AGP_DEVICE is
+opened, you can use \fBkstat\fR(1M) to  read the system architecture
+type.
 .sp
 .LP
-In addition to AGP system support, the \fBagpgart\fR ioctls can also be used on Intel integrated graphics devices (IGD). IGD devices usually have no dedicated video memory and must  use system memory as video memory. IGD devices contain translation tables (referred to as \fBGTT\fR tables) that are similar to the GART translation table for address mapping purposes.
+In addition to AGP system support, the \fBagpgart\fR ioctls can also be
+used on Intel integrated graphics devices (IGD). IGD devices usually have no
+dedicated video memory and must  use system memory as video memory. IGD
+devices contain translation tables (referred to as \fBGTT\fR tables) that
+are similar to the GART translation table for address mapping purposes.
 .sp
 .LP
-Processes must open the \fBagpgart_io\fR driver utilizing a GRAPHICS_ACCESS privilege. Then all the ioctls  can be called  by this processes with the saved file descriptor. With the exception of AGPIOC_INFO, the AGPIOC_ACQUIRE ioctl must be called before any other ioctl. Once a process has acquired GART, it cannot be acquired by another process until the former process calls AGPIOC_RELEASE.
+Processes must open the \fBagpgart_io\fR driver utilizing a GRAPHICS_ACCESS
+privilege. Then all the ioctls  can be called  by this processes with the
+saved file descriptor. With the exception of AGPIOC_INFO, the AGPIOC_ACQUIRE
+ioctl must be called before any other ioctl. Once a process has acquired
+GART, it cannot be acquired by another process until the former process
+calls AGPIOC_RELEASE.
 .sp
 .LP
-If the AGP_DEVICE fails to open, it may be due to one of the following reasons:
+If the AGP_DEVICE fails to open, it may be due to one of the following
+reasons:
 .sp
 .ne 2
 .mk
@@ -85,10 +127,13 @@ Without enough privilege.
 .SH IOCTLS
 .sp
 .LP
-With the exception of GPIOC_INFO, all ioctls shown in this section are protected by GRAPHICS_ACCESS privilege. (Only processes with GRAPHICS_ACCESS privilege in its effective set can access the privileged ioctls). 
+With the exception of GPIOC_INFO, all ioctls shown in this section are
+protected by GRAPHICS_ACCESS privilege. (Only processes with GRAPHICS_ACCESS
+privilege in its effective set can access the privileged ioctls).
 .sp
 .LP
-Common ioctl error codes are shown below. (Additional error codes may be displayed by individual ioctls.)
+Common ioctl error codes are shown below. (Additional error codes may be
+displayed by individual ioctls.)
 .sp
 .ne 2
 .mk
@@ -119,15 +164,16 @@ Process not privileged.
 .ad
 .sp .6
 .RS 4n
-Get system wide AGP or IGD hardware information. This command can be called by any process from user or kernel context.
+Get system wide AGP or IGD hardware information. This command can be called
+by any process from user or kernel context.
 .sp
 .in +2
 .nf
 The argument is a pointer to agp_info_t structure.
-     
+
  typedef struct  _agp_info {
        agp_version_t agpi_version; /* OUT: AGP version supported */
-       uint32_t agpi_devid;    /* OUT: bridge vendor + device */    
+       uint32_t agpi_devid;    /* OUT: bridge vendor + device */
        uint32_t agpi_mode;     /* OUT: mode of bridge */
        ulong_t  agpi_aperbase; /* OUT: base of aperture */
        size_t   agpi_apersize; /* OUT: aperture size in MB */
@@ -135,21 +181,21 @@ The argument is a pointer to agp_info_t structure.
        uint32_t agpi_pgsystem; /* OUT: same as pg_total */
        uint32_t agpi_pgused; /* OUT: no. of currently used pages */
  } agp_info_t;
-          
+
 agpi_version  The version of AGP protocol the bridge device is
               compatible with, for example, major 3 and minor 0
               means AGP version 3.0.
-                
+
               typedef struct _agp_version {
                       uint16_t   agpv_major;
                       uint16_t   agpv_minor;
               } agp_version_t;
-                  
+
 agpi_devid    AGP bridge vendor and device ID.
 agpi_mode     Current AGP mode, read from AGP status register of
               target device. The main bits are defined as below.
               /* AGP status register bits definition */
-                        
+
                 #define AGPSTAT_RQ_MASK         0xff000000
                 #define AGPSTAT_SBA             (0x1 << 9)
                 #define AGPSTAT_OVER4G          (0x1 << 5)
@@ -167,29 +213,29 @@ agpi_mode     Current AGP mode, read from AGP status register of
                 /* rate for 3.0 mode */
                 #define AGP3_RATE_4X                    0x1
                 #define AGP3_RATE_8X                    0x2
-                    
+
 agpi_aperbase   The base address of aperture in PCI memory space.
 agpi_apersize   The size of the aperture in megabytes.
-agpi_pgtotal    Represents the maximum memory 
-                pages the system can allocate 
-                according to aperture size and  
-                system memory size (which may differ 
-                from the maximum locked memory a process 
+agpi_pgtotal    Represents the maximum memory
+                pages the system can allocate
+                according to aperture size and
+                system memory size (which may differ
+                from the maximum locked memory a process
                 can have. The latter  is subject
-                to the memory resource limit imposed 
-                by the  resource_controls(5) for each 
+                to the memory resource limit imposed
+                by the  resource_controls(5) for each
                 project(4)):
 
                   project.max-device-locked-memory
-                        
-                This value can be modified through system 
+
+                This value can be modified through system
                 utilities like prctl(1).
 
 agpi_pgsystem  Same as pg_total.
 agpi_pgused    System pages already allocated by the driver.
-     
+
 Return Values:
-     
+
            EFAULT  Argument copy out error
            EINVAL  Command invalid
            0       Success
@@ -206,7 +252,13 @@ Return Values:
 .ad
 .sp .6
 .RS 4n
-Acquire control of GART. With the exception of AGPIOC_INFO, a process must acquire GART before can it call other agpgart ioctl commands. Additionally, only processes with GRAPHICS_ACCESS privilege may access this ioctl. In the current agpgart implementation, GART access is exclusive, meaning that only one process can perform GART operations at a time. To release control over GART, call AGPIOC_RELEASE. This command can be called from user or kernel context. 
+Acquire control of GART. With the exception of AGPIOC_INFO, a process must
+acquire GART before can it call other agpgart ioctl commands. Additionally,
+only processes with GRAPHICS_ACCESS privilege may access this ioctl. In the
+current agpgart implementation, GART access is exclusive, meaning that only
+one process can perform GART operations at a time. To release control over
+GART, call AGPIOC_RELEASE. This command can be called from user or kernel
+context. 
 .sp
 The argument should be NULL.
 .sp
@@ -218,7 +270,7 @@ Return values:
 \fBEBUSY\fR
 .ad
 .RS 9n
-.rt  
+.rt
 GART has been acquired
 .RE
 
@@ -229,7 +281,7 @@ GART has been acquired
 \fB0\fR
 .ad
 .RS 9n
-.rt  
+.rt
 Success.
 .RE
 
@@ -243,7 +295,12 @@ Success.
 .ad
 .sp .6
 .RS 4n
-Release GART control. If a process releases GART control, it cannot perform additional GART operations until GART is reacquired. Note that this command does not free allocated memory or clear GART entries. (All clear jobs are done by direct calls or by closing the device). When a process exits without making this ioctl, the final \fBclose\fR(2) performs this automatically. This command can be called from user or kernel context.
+Release GART control. If a process releases GART control, it cannot perform
+additional GART operations until GART is reacquired. Note that this command
+does not free allocated memory or clear GART entries. (All clear jobs are
+done by direct calls or by closing the device). When a process exits without
+making this ioctl, the final \fBclose\fR(2) performs this automatically.
+This command can be called from user or kernel context.
 .sp
 The argument should be NULL.
 .sp
@@ -255,7 +312,7 @@ Return values:
 \fBEPERM\fR
 .ad
 .RS 9n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -266,7 +323,7 @@ Not owner of GART.
 \fB0\fR
 .ad
 .RS 9n
-.rt  
+.rt
 Success.
 .RE
 
@@ -280,7 +337,10 @@ Success.
 .ad
 .sp .6
 .RS 4n
-Setup AGPCMD register. An AGPCMD register resides in both  the  AGP master and target devices. The AGPCMD register controls the working mode of the AGP master and target devices. Each device must be  configured  using the same mode. This command can be called from user or kernel context.
+Setup AGPCMD register. An AGPCMD register resides in both  the  AGP master
+and target devices. The AGPCMD register controls the working mode of the AGP
+master and target devices. Each device must be  configured  using the same
+mode. This command can be called from user or kernel context.
 .sp
 .in +2
 .nf
@@ -289,10 +349,10 @@ The argument is a pointer to agp_setup_t structure:
      typedef struct _agp_setup {
            uint32_t agps_mode; /* IN: value to be set for AGPCMD */
      } agp_setup_t;
-          
+
 agps_mode  Specifying the mode to be set. Each bit of the value may have
            a specific meaning, please refer to AGP 2.0/3.0 specification
-           or hardware datasheets for details. 
+           or hardware datasheets for details.
 
                /* AGP command register bits definition */
                #define     AGPCMD_RQ_MASK          0xff000000
@@ -308,7 +368,9 @@ agps_mode  Specifying the mode to be set. Each bit of the value may have
 .fi
 .in -2
 
-The final values set to the AGPCMD register of the master/target devices are decided by the agps_mode value and AGPSTAT of the master and target devices.
+The final values set to the AGPCMD register of the master/target devices
+are decided by the agps_mode value and AGPSTAT of the master and target
+devices.
 .sp
 Return Values:
 .sp
@@ -318,7 +380,7 @@ Return Values:
 \fBEPERM\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -329,7 +391,7 @@ Not owner of GART.
 \fBEFAULT\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Argument copy in error.
 .RE
 
@@ -340,7 +402,7 @@ Argument copy in error.
 \fBEINVAL\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Command invalid for non-AGP system.
 .RE
 
@@ -351,7 +413,7 @@ Command invalid for non-AGP system.
 \fBEIO\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Hardware setup error.
 .RE
 
@@ -362,7 +424,7 @@ Hardware setup error.
 \fB0\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Success.
 .RE
 
@@ -376,7 +438,15 @@ Success.
 .ad
 .sp .6
 .RS 4n
-Allocate system memory for graphics device. This command returns a unique ID which can be used in subsequent operations to represent the allocated memory. The memory is made up of discontiguous physical pages. In rare cases, special memory types may be required. The allocated memory must be bound to the GART table before it can be used by graphics device. Graphics applications can also \fBmmap\fR(2) the memory to userland for data storing. Memory should be freed when it is no longer used by calling AGPIOC_DEALLOCATE or simply by closing the device. This command can be called from user or kernel context.
+Allocate system memory for graphics device. This command returns a unique
+ID which can be used in subsequent operations to represent the allocated
+memory. The memory is made up of discontiguous physical pages. In rare
+cases, special memory types may be required. The allocated memory must be
+bound to the GART table before it can be used by graphics device. Graphics
+applications can also \fBmmap\fR(2) the memory to userland for data storing.
+Memory should be freed when it is no longer used by calling
+AGPIOC_DEALLOCATE or simply by closing the device. This command can be
+called from user or kernel context.
 .sp
 .in +2
 .nf
@@ -398,7 +468,7 @@ The argument is a pointer to agp_allocate_t structure.
 \fBagpa_key\fR
 .ad
 .RS 21n
-.rt  
+.rt
 Unique ID of the allocated memory.
 .RE
 
@@ -409,8 +479,14 @@ Unique ID of the allocated memory.
 \fBagpa_pgcount\fR
 .ad
 .RS 21n
-.rt  
-Number of pages to be allocated. The driver currently supports only 4K pages. The value cannot exceed the agpi_pgtotal value returned by AGPIOC_INFO ioct and is subject to the limit of project.max-device-locked-memory. If the memory needed is larger than the resource limit but not larger than agpi_pgtotal, use \fBprctl\fR(1) or other system utilities to change the default value of memory resource limit beforehand.
+.rt
+Number of pages to be allocated. The driver currently supports only 4K
+pages. The value cannot exceed the agpi_pgtotal value returned by
+AGPIOC_INFO ioct and is subject to the limit of
+project.max-device-locked-memory. If the memory needed is larger than the
+resource limit but not larger than agpi_pgtotal, use \fBprctl\fR(1) or other
+system utilities to change the default value of memory resource limit
+beforehand.
 .RE
 
 .sp
@@ -420,8 +496,9 @@ Number of pages to be allocated. The driver currently supports only 4K pages. Th
 \fBagpa_type\fR
 .ad
 .RS 21n
-.rt  
-Type of memory to be allocated. The valid value of agpa_type should be AGP_NORMAL. It is defined as:
+.rt
+Type of memory to be allocated. The valid value of agpa_type should be
+AGP_NORMAL. It is defined as:
 .sp
 .in +2
 .nf
@@ -429,7 +506,9 @@ Type of memory to be allocated. The valid value of agpa_type should be AGP_NORMA
 .fi
 .in -2
 
-Above, AGP_NORMAL represents the discontiguous non-cachable physical memory which doesn't consume kernel virtual space but can be mapped to user space by \fBmmap\fR(2). This command may support more type values in the future.
+Above, AGP_NORMAL represents the discontiguous non-cachable physical memory
+which doesn't consume kernel virtual space but can be mapped to user space
+by \fBmmap\fR(2). This command may support more type values in the future.
 .RE
 
 .sp
@@ -439,7 +518,7 @@ Above, AGP_NORMAL represents the discontiguous non-cachable physical memory whic
 \fBagpa_physical\fR
 .ad
 .RS 21n
-.rt  
+.rt
 Reserved for special uses. In normal operations, the value is undefined.
 .sp
 Return Values:
@@ -450,7 +529,7 @@ Return Values:
 \fBEPERM\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -461,7 +540,7 @@ Not owner of GART.
 \fBEINVAL\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Argument not valid.
 .RE
 
@@ -472,7 +551,7 @@ Argument not valid.
 \fBEFAULT\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Argument copy in/out error.
 .RE
 
@@ -483,7 +562,7 @@ Argument copy in/out error.
 \fBENOMEM\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Memory allocation error.
 .RE
 
@@ -494,7 +573,7 @@ Memory allocation error.
 \fB0\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Success.
 .RE
 
@@ -507,8 +586,14 @@ Success.
 \fBAGPIOC_DEALLOCATE\fR
 .ad
 .RS 21n
-.rt  
-Deallocate the memory identified by a key assigned in a previous allocation. If the memory isn't unbound from GART, this command unbinds it automatically. The memory should no longer be used and those still in mapping to userland cannot be deallocated. Always call AGPIOC_DEALLOCATE explicitly (instead of deallocating  implicitly by closing the device), as the system won't carry out the job until the last reference to the device file is dropped. This command from user or kernel context.
+.rt
+Deallocate the memory identified by a key assigned in a previous
+allocation. If the memory isn't unbound from GART, this command unbinds it
+automatically. The memory should no longer be used and those still in
+mapping to userland cannot be deallocated. Always call AGPIOC_DEALLOCATE
+explicitly (instead of deallocating  implicitly by closing the device), as
+the system won't carry out the job until the last reference to the device
+file is dropped. This command from user or kernel context.
 .sp
 The input argument is a key of type int32_t, no output argument.
 .sp
@@ -520,7 +605,7 @@ Return Values:
 \fBEPERM\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -531,7 +616,7 @@ Not owner of GART.
 \fBEINVAL\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Key not valid or memory in use.
 .RE
 
@@ -542,7 +627,7 @@ Key not valid or memory in use.
 \fB0\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Success.
 .RE
 
@@ -555,8 +640,15 @@ Success.
 \fBAGPIOC_BIND\fR
 .ad
 .RS 21n
-.rt  
-Bind allocated memory.  This  command binds the allocated   memory  identified by a key to  a specific offset of the GART table, which enables GART   to  translate the aperture  range at the offset to system memory. Each GART entry represents one physical page. If the GART range is previously bound to other  system memory, it returns an error. Once the memory is bound, it cannot be bound to other offsets unless it is unbound. To unbind the memory, call AGPIOC_UNBIND or deallocate the memory. This command can be called from user or kernel context.
+.rt
+Bind allocated memory.  This  command binds the allocated   memory
+identified by a key to  a specific offset of the GART table, which enables
+GART to  translate the aperture  range at the offset to system memory. Each
+GART entry represents one physical page. If the GART range is previously
+bound to other  system memory, it returns an error. Once the memory is
+bound, it cannot be bound to other offsets unless it is unbound. To unbind
+the memory, call AGPIOC_UNBIND or deallocate the memory. This command can be
+called from user or kernel context.
 .sp
 .in +2
 .nf
@@ -576,8 +668,9 @@ The argument is a pointer to agp_bind_t structure:
 \fBagpb_key\fR
 .ad
 .RS 20n
-.rt  
-The unique ID of the memory to be bound, which is previously allocated by calling AGPIOC_ALLOCATE.
+.rt
+The unique ID of the memory to be bound, which is previously allocated by
+calling AGPIOC_ALLOCATE.
 .RE
 
 .sp
@@ -587,7 +680,7 @@ The unique ID of the memory to be bound, which is previously allocated by callin
 \fBagpb_pgstart\fR
 .ad
 .RS 20n
-.rt  
+.rt
 The starting page offset to be bound in aperture space.
 .RE
 
@@ -599,7 +692,7 @@ Return Values:
 \fBEPERM\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -610,7 +703,7 @@ Not owner of GART.
 \fBEFAULT\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Argument copy in error.
 .RE
 
@@ -621,7 +714,7 @@ Argument copy in error.
 \fBEINVAL\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Argument not valid.
 .RE
 
@@ -632,7 +725,7 @@ Argument not valid.
 \fBEIO\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Binding to the GTT table of IGD devices failed.
 .RE
 
@@ -643,7 +736,7 @@ Binding to the GTT table of IGD devices failed.
 \fB0\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Success.
 .RE
 
@@ -656,8 +749,10 @@ Success.
 \fBAGPIOC_UNBIND\fR
 .ad
 .RS 21n
-.rt  
-Unbind memory identified by a key from the GART. This command clears the corresponding entries in the GART table. Only the memory not in mapping to userland is allowed to be unbound.
+.rt
+Unbind memory identified by a key from the GART. This command clears the
+corresponding entries in the GART table. Only the memory not in mapping to
+userland is allowed to be unbound.
 .sp
 This ioctl command can be called from user or kernel context.
 .sp
@@ -679,8 +774,9 @@ The argument is a pointer to agp_unbind_t structure.
 \fBagpu_key\fR
 .ad
 .RS 20n
-.rt  
-Unique ID of the memory to be unbound which was previously bound by calling AGPIOC_BIND.
+.rt
+Unique ID of the memory to be unbound which was previously bound by calling
+AGPIOC_BIND.
 .RE
 
 .sp
@@ -690,7 +786,7 @@ Unique ID of the memory to be unbound which was previously bound by calling AGPI
 \fBagpu_pri\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Reserved for compatibility with X.org/XFree86, not used.
 .RE
 
@@ -702,7 +798,7 @@ Return Values:
 \fBEPERM\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Not owner of GART.
 .RE
 
@@ -713,7 +809,7 @@ Not owner of GART.
 \fBEFAULT\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Argument copy in error.
 .RE
 
@@ -724,7 +820,7 @@ Argument copy in error.
 \fBEINVAL\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Argument not valid or memory in use.
 .RE
 
@@ -735,7 +831,7 @@ Argument not valid or memory in use.
 \fBEIO\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Unbinding from the GTT table of IGD devices failed.
 .RE
 
@@ -746,7 +842,7 @@ Unbinding from the GTT table of IGD devices failed.
 \fB0\fR
 .ad
 .RS 20n
-.rt  
+.rt
 Success
 .RE
 
@@ -783,13 +879,13 @@ int main(int argc, char *argv[])
         int *p = NULL;
         off_t mapoff;
         size_t maplen;
-        
+
         if((fd = open(AGP_DEVICE, O_RDWR))== -1) {
                 printf("open AGP_DEVICE error with %d\en", errno);\e
                 exit(-1);
         }
         printf("device opened\en");
-                        
+
         ret = ioctl(fd, AGPIOC_INFO, &agpinfo);
         if(ret == -1) {
                 printf("Get info error %d\n", errno);
@@ -799,20 +895,20 @@ int main(int argc, char *argv[])
         printf("APBASE is %x\en", agpinfo.agpi_aperbase);
         printf("APSIZE is %dMB\en", agpinfo.agpi_apersize);
         printf("pg_total is %d\en", agpinfo.agpi_pgtotal);
-        
+
         ret = ioctl(fd, AGPIOC_ACQUIRE);
         if(ret == -1) {
                 printf(" Acquire GART error %d\en", errno);
                 exit(-1);
         }
-                        
+
         modesetup.agps_mode = agpinfo.agpi_mode;
         ret = ioctl(fd, AGPIOC_SETUP, &modesetup);
         if(ret == -1) {
                 printf("set up AGP mode error\en", errno);
                 exit(-1);
         }
-                        
+
         printf("Please input the number of pages you want to allocate\en");
         scanf("%d", &alloc.agpa_pgcount);
         alloc.agpa_type = AGP_NORMAL;
@@ -821,7 +917,7 @@ int main(int argc, char *argv[])
                 printf("Allocate memory error %d\en", errno);
                 exit(-1);
         }
-        
+
         printf("Please input the aperture page offset to bind\en");
         scanf("%d", &bindinfo.agpb_pgstart);
         bindinfo.agpb_key = alloc.agpa_key;
@@ -831,14 +927,14 @@ int main(int argc, char *argv[])
                 exit(-1);
         }
         printf("Bind successful\en");
-        
+
         /*
          * Now gart aperture space from (bindinfo.agpb_pgstart) to
          * (bindinfo.agpb_pgstart + alloc.agpa_pgcount) can be used for
          * AGP graphics transactions
          */
         ...
-         
+
         /*
          * mmap can allow user processes to store graphics data
          * to the aperture space
@@ -853,14 +949,14 @@ int main(int argc, char *argv[])
         }
         printf("Mmap successful\en");
         ...
-        
+
         /*
          * When user processes finish access to the aperture space,
          * unmap the memory range
          */
         munmap((void *)p, maplen);
         ...
-                 
+
         /*
          * After finishing AGP transactions, the resources can be freed
          * step by step or simply by close device.
@@ -870,13 +966,13 @@ int main(int argc, char *argv[])
                 printf(" Deallocate memory error %d\en", errno);
                 exit(-1);
         }
-         
+
         ret = ioctl(fd, AGPIOC_RELEASE);
         if(ret == -1) {
                 printf(" Release GART error %d\en", errno);
                 exit(-1);
         }
-        
+
         close(fd);
 }
 .fi
@@ -925,8 +1021,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(1.83i) |cw(3.67i) 
-lw(1.83i) |lw(3.67i) 
+cw(1.83i) |cw(3.67i)
+lw(1.83i) |lw(3.67i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -940,4 +1036,6 @@ Stability levelUnstable
 .SH SEE ALSO
 .sp
 .LP
-\fBprctl\fR(1), \fBkstat\fR(1M), \fBclose\fR(2), \fBioctl\fR(2), \fBopen\fR(2), \fBmmap\fR(2), \fBproject\fR(4), \fBprivileges\fR(5), \fBattributes\fR(5), \fBresource_controls\fR(5)
+\fBprctl\fR(1), \fBkstat\fR(1M), \fBclose\fR(2), \fBioctl\fR(2),
+\fBopen\fR(2), \fBmmap\fR(2), \fBproject\fR(4), \fBprivileges\fR(5),
+\fBattributes\fR(5), \fBresource_controls\fR(5)

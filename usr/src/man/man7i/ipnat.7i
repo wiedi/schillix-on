@@ -1,23 +1,49 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ipnat 7I "22 May 2008" "SunOS 5.11" "Ioctl Requests"
 .SH NAME
 ipnat \- IP Filter/NAT module interface
 .SH DESCRIPTION
 .sp
 .LP
-The \fBipnat\fR device provides interfaction with the NAT features of the Solaris IPFilter.
+The \fBipnat\fR device provides interfaction with the NAT features of the
+Solaris IPFilter.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
 .LP
-The NAT features programming model is a component of the Solaris IP Filter and is accessed via the NAT device file \fB/dev/ipnat\fR.  Opening the device for reading or writing determines which ioctl calls can be successfully made.
+The NAT features programming model is a component of the Solaris IP Filter
+and is accessed via the NAT device file \fB/dev/ipnat\fR.  Opening the
+device for reading or writing determines which ioctl calls can be
+successfully made.
 .SH IOCTLS
 .sp
 .LP
-The caller must construct a \fBipfobj\fR structure when issuing a \fBSIOCGNATL\fR or \fBSIOCSTPUT\fR. The \fBipfobj\fR structure is then passed to the ioctl call and is filled out with ipfo_type set to \fBIPFOBJ_value\fR. \fBIPFOBJ_ value\fR provides a matching name for the structure, while ipfo_size is set to the total size of the structure being passed and ipfo_ptr is set to the structure address. The ipfo_rev structure should be set to the current value of IPFILTER_VERSION, while ipfo_offset and ipfo_xxxpad should be set to 0.
+The caller must construct a \fBipfobj\fR structure when issuing a
+\fBSIOCGNATL\fR or \fBSIOCSTPUT\fR. The \fBipfobj\fR structure is then
+passed to the ioctl call and is filled out with ipfo_type set to
+\fBIPFOBJ_value\fR. \fBIPFOBJ_ value\fR provides a matching name for the
+structure, while ipfo_size is set to the total size of the structure being
+passed and ipfo_ptr is set to the structure address. The ipfo_rev structure
+should be set to the current value of IPFILTER_VERSION, while ipfo_offset
+and ipfo_xxxpad should be set to 0.
 .sp
 .in +2
 .nf
@@ -44,7 +70,11 @@ The caller must construct a \fBipfobj\fR structure when issuing a \fBSIOCGNATL\f
 
 .sp
 .LP
-The following ioctl() calls may be used to manipulate the ipnat sub-system inside of ipf. Note that the ipnat driver only accept calls from applications using the same data model as the kernel. In other words, 64-bit kernels can only accept calls from 64-bit applications. Calls from 32-bit applications fail with \fBEINVAL\fR.
+The following ioctl() calls may be used to manipulate the ipnat sub-system
+inside of ipf. Note that the ipnat driver only accept calls from
+applications using the same data model as the kernel. In other words, 64-bit
+kernels can only accept calls from 64-bit applications. Calls from 32-bit
+applications fail with \fBEINVAL\fR.
 .sp
 .ne 2
 .mk
@@ -52,8 +82,9 @@ The following ioctl() calls may be used to manipulate the ipnat sub-system insid
 \fB\fBSIOCSTLCK\fR\fR
 .ad
 .RS 13n
-.rt  
-Set or clear the NAT lock to prevent table updates attributable to packet flow-through.
+.rt
+Set or clear the NAT lock to prevent table updates attributable to packet
+flow-through.
 .RE
 
 .sp
@@ -63,10 +94,21 @@ Set or clear the NAT lock to prevent table updates attributable to packet flow-t
 \fB\fBSIOCGNATL\fR\fR
 .ad
 .RS 13n
-.rt  
-Search the NAT table for the rdr entry that matches the fields in the natlookup structure. The caller must populate the structure with the address/port  information of the accepted TCP connection (nl_inip, nl_inport)  and the address/port information of the peer (nl_outip, nl_outport). The nl_flags field must have the IPN_TCP option set. All other fields must be set to  0. If the  call  succeeds, nl_realip  and nl_realport are set to the  real destination address and port, respectively. The nl_inport and  nl_outport fields must be in host byte order.
+.rt
+Search the NAT table for the rdr entry that matches the fields in the
+natlookup structure. The caller must populate the structure with the
+address/port information of the accepted TCP connection (nl_inip, nl_inport)
+and the address/port information of the peer (nl_outip, nl_outport). The
+nl_flags field must have the IPN_TCP option set. All other fields must be
+set to  0. If the  call  succeeds, nl_realip  and nl_realport are set to the
+real destination address and port, respectively. The nl_inport and
+nl_outport fields must be in host byte order.
 .sp
-If \fBIPN_FINDFORWARD\fR is set in nl_flags, a check is made to see if it is possible to create an outgoing NAT session by checking if a packet coming from (nl_realip,nl_realport) and destined for (nl_outip,nl_outport) can be translated.  If translation is possible, the flag remains set, otherwise it is cleared in the structure returned to the caller.
+If \fBIPN_FINDFORWARD\fR is set in nl_flags, a check is made to see if it
+is possible to create an outgoing NAT session by checking if a packet coming
+from (nl_realip,nl_realport) and destined for (nl_outip,nl_outport) can be
+translated. If translation is possible, the flag remains set, otherwise it
+is cleared in the structure returned to the caller.
 .sp
 .in +2
 .nf
@@ -77,7 +119,7 @@ If \fBIPN_FINDFORWARD\fR is set in nl_flags, a check is made to see if it is pos
           i6addr_t  nl_inipaddr;
           i6addr_t  nl_outipaddr;
           i6addr_t  nl_realipaddr;
-          int       nl_v;          
+          int       nl_v;
           int       nl_flags;
           u_short   nl_inport;
           u_short   nl_outport;
@@ -90,7 +132,7 @@ If \fBIPN_FINDFORWARD\fR is set in nl_flags, a check is made to see if it is pos
     #define nl_inip6      nl_inipaddr.in6
     #define nl_outip6     nl_outipaddr.in6
     #define nl_realip6    nl_realipaddr.in6
- 
+
      /*
       * Accepted values for nl_flags
       */
@@ -108,27 +150,38 @@ If \fBIPN_FINDFORWARD\fR is set in nl_flags, a check is made to see if it is pos
 \fB\fBSIOCSTPUT\fR\fR
 .ad
 .RS 13n
-.rt  
-Move a NAT mapping  structure from user space into the kernel. This ioctl is used by \fBipfs\fR(1M) to restore NAT sessions saved in \fB/var/db/ipf/ipnat.ipf\fR. The nat_save structure must have its ipn_nat and ipn_ipnat structures filled out correctly. Fields not assigned a value must be initialised to  0. All pointer fields are adjusted, as appropriate, once the structure is passed into the kernel and none are preserved.
+.rt
+Move a NAT mapping  structure from user space into the kernel. This ioctl
+is used by \fBipfs\fR(1M) to restore NAT sessions saved in
+\fB/var/db/ipf/ipnat.ipf\fR. The nat_save structure must have its ipn_nat
+and ipn_ipnat structures filled out correctly. Fields not assigned a value
+must be initialised to  0. All pointer fields are adjusted, as appropriate,
+once the structure is passed into the kernel and none are preserved.
 .sp
 To create a translation, the following fields must be set:
 .br
 .in +2
-Interface name - The interface name on which the host is to be exited must be set in nat_ifnames[0].
+Interface name - The interface name on which the host is to be exited must
+be set in nat_ifnames[0].
 .in -2
 .br
 .in +2
-Local IP address and port number - The connection's local IP address and port number are stored in network byte order using  nat_inip/nat_inport.
+Local IP address and port number - The connection's local IP address and
+port number are stored in network byte order using  nat_inip/nat_inport.
 .in -2
 .br
 .in +2
-Destination address/port - The destination address/port  are stored in nat_oip/nat_oport.
+Destination address/port - The destination address/port  are stored in
+nat_oip/nat_oport.
 .in -2
 .br
 .in +2
-Target address/port - The translation's target address/port is stored in nat_outip/nat_outport.
+Target address/port - The translation's target address/port is stored in
+nat_outip/nat_outport.
 .in -2
-The caller must also precalculate the checksum adjustments necessary to complete the translation and store those values in nat_sumd (delta required for TCP  header) and nat_ipsumd (delta required for IP header). 
+The caller must also precalculate the checksum adjustments necessary to
+complete the translation and store those values in nat_sumd (delta required
+for TCP  header) and nat_ipsumd (delta required for IP header).
 .sp
 .in +2
 .nf
@@ -208,15 +261,21 @@ The caller must also precalculate the checksum adjustments necessary to complete
 .SH EXAMPLES
 .sp
 .LP
-The following example shows how to prepare and use \fBSIOCSTPUT\fR to insert a NAT session directly into the table. Note that the usual TCP/IP code is omitted is this example.
+The following example shows how to prepare and use \fBSIOCSTPUT\fR to
+insert a NAT session directly into the table. Note that the usual TCP/IP
+code is omitted is this example.
 .sp
 .LP
-In the code segment below, incoming_fd is the TCP connection file descriptor that is accepted as part of the redirect process, while remote_fd is the outgoing TCP connection to the remote server being translated back to  the original IP address/port pair.
+In the code segment below, incoming_fd is the TCP connection file
+descriptor that is accepted as part of the redirect process, while remote_fd
+is the outgoing TCP connection to the remote server being translated back to
+the original IP address/port pair.
 .LP
-Note - 
+Note -
 .sp
 .RS 2
-The following ipnat headers must be included before you can use the code shown in this example:
+The following ipnat headers must be included before you can use the code
+shown in this example:
 .sp
 .in +2
 .nf
@@ -234,10 +293,11 @@ The following ipnat headers must be included before you can use the code shown i
 
 .RE
 .LP
-Note - 
+Note -
 .sp
 .RS 2
-In the example below, various code fragments have been excluded to enhance clarity.
+In the example below, various code fragments have been excluded to enhance
+clarity.
 .RE
 .sp
 .in +2
@@ -338,8 +398,11 @@ int
 \fBEPERM\fR
 .ad
 .RS 10n
-.rt  
-The device has been opened for reading only. To succeed, the ioctl call must be opened for both reading and writing. The call may be returned if it is privileged and the calling process did not assert  {\fBPRIV_SYS_NET_CONFIG\fR} in the effective set.
+.rt
+The device has been opened for reading only. To succeed, the ioctl call
+must be opened for both reading and writing. The call may be returned if it
+is privileged and the calling process did not assert
+{\fBPRIV_SYS_NET_CONFIG\fR} in the effective set.
 .RE
 
 .sp
@@ -349,8 +412,10 @@ The device has been opened for reading only. To succeed, the ioctl call must be 
 \fBENOMEM\fR
 .ad
 .RS 10n
-.rt  
-More memory was allocated than the kernel can provide. The call may also be returned if the application inserts a NAT entry that exceeds the hash bucket chain's maximum length.
+.rt
+More memory was allocated than the kernel can provide. The call may also be
+returned if the application inserts a NAT entry that exceeds the hash bucket
+chain's maximum length.
 .RE
 
 .sp
@@ -360,7 +425,7 @@ More memory was allocated than the kernel can provide. The call may also be retu
 \fBEFAULT\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The calling process specified an invalid pointer in the ipfobj structure.
 .RE
 
@@ -371,8 +436,9 @@ The calling process specified an invalid pointer in the ipfobj structure.
 \fBEINVAL\fR
 .ad
 .RS 10n
-.rt  
-The calling process detected a parameter or field set to an unacceptable value.
+.rt
+The calling process detected a parameter or field set to an unacceptable
+value.
 .RE
 
 .sp
@@ -382,8 +448,9 @@ The calling process detected a parameter or field set to an unacceptable value.
 \fBEEXIST\fR
 .ad
 .RS 10n
-.rt  
-The calling process, via \fBSIOCSTPUT\fR, attempted to add a NAT entry that already exists in the NAT table.
+.rt
+The calling process, via \fBSIOCSTPUT\fR, attempted to add a NAT entry that
+already exists in the NAT table.
 .RE
 
 .sp
@@ -393,8 +460,10 @@ The calling process, via \fBSIOCSTPUT\fR, attempted to add a NAT entry that alre
 \fBESRCH\fR
 .ad
 .RS 10n
-.rt  
-The calling process called \fBSIOCSTPUT\fR before setting the SI_NEWFR flag and providing a pointer in the nat_fr  field that cannot  be found in the current rule set.
+.rt
+The calling process called \fBSIOCSTPUT\fR before setting the SI_NEWFR flag
+and providing a pointer in the nat_fr  field that cannot  be found in the
+current rule set.
 .RE
 
 .sp
@@ -404,7 +473,7 @@ The calling process called \fBSIOCSTPUT\fR before setting the SI_NEWFR flag and 
 \fBEACESS\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The calling process issued a \fBSIOCSTPUT\fR before issuing a SIOCSTLCK.
 .RE
 
@@ -417,8 +486,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _

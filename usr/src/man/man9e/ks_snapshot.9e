@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright (c) 2002, Sun Microsystems, Inc. All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 2002, Sun Microsystems, Inc. All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ks_snapshot 9E "4 Dec 2002" "SunOS 5.11" "Driver Entry Points"
 .SH NAME
 ks_snapshot \- take a snapshot of kstat data
@@ -31,7 +46,7 @@ Solaris DDI specific (Solaris DDI).
 \fB\fIksp\fR \fR
 .ad
 .RS 8n
-.rt  
+.rt
 Pointer to a \fBkstat\fR(9S) structure.
 .RE
 
@@ -42,7 +57,7 @@ Pointer to a \fBkstat\fR(9S) structure.
 \fB\fIbuf\fR \fR
 .ad
 .RS 8n
-.rt  
+.rt
 Pointer to a buffer to copy the snapshot into.
 .RE
 
@@ -53,7 +68,7 @@ Pointer to a buffer to copy the snapshot into.
 \fB\fIrw\fR \fR
 .ad
 .RS 8n
-.rt  
+.rt
 Read/Write flag. Possible values are:
 .sp
 .ne 2
@@ -62,7 +77,7 @@ Read/Write flag. Possible values are:
 \fB\fBKSTAT_READ\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Copy driver statistics from the driver to the buffer.
 .RE
 
@@ -73,7 +88,7 @@ Copy driver statistics from the driver to the buffer.
 \fB\fBKSTAT_WRITE\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Copy statistics from the buffer to the driver.
 .RE
 
@@ -82,7 +97,12 @@ Copy statistics from the buffer to the driver.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBkstat\fR mechanism allows for an optional \fBks_snapshot()\fR function to copy \fBkstat\fR data. This is the routine that is called to marshall the \fBkstat\fR data to be copied to user-land. A driver can opt to use a custom snapshot routine rather than the default snapshot routine; to take advantage of this feature, set the \fBks_snapshot\fR field before calling \fBkstat_install\fR(9F).
+The \fBkstat\fR mechanism allows for an optional \fBks_snapshot()\fR function
+to copy \fBkstat\fR data. This is the routine that is called to marshall the
+\fBkstat\fR data to be copied to user-land. A driver can opt to use a custom
+snapshot routine rather than the default snapshot routine; to take advantage of
+this feature, set the \fBks_snapshot\fR field before calling
+\fBkstat_install\fR(9F).
 .sp
 .LP
 The \fBks_snapshot()\fR function must have the following structure:
@@ -106,19 +126,26 @@ xx_kstat_snapshot(kstat_t *ksp, void *buf, int rw)
 
 .sp
 .LP
-In general, the \fBks_snapshot()\fR routine might need to refer to provider-private data; for example, it might need a pointer to the provider's raw statistics. The \fBks_private\fR field is available for this purpose. Its use is entirely at the provider's discretion.
+In general, the \fBks_snapshot()\fR routine might need to refer to
+provider-private data; for example, it might need a pointer to the provider's
+raw statistics. The \fBks_private\fR field is available for this purpose. Its
+use is entirely at the provider's discretion.
 .sp
 .LP
-No \fBkstat\fR locking should be done inside the \fBks_update()\fR routine. The caller will already be holding the \fBkstat\fR's \fBks_lock\fR (to ensure consistent data) and will prevent the \fBkstat\fR from being removed.
+No \fBkstat\fR locking should be done inside the \fBks_update()\fR routine. The
+caller will already be holding the \fBkstat\fR's \fBks_lock\fR (to ensure
+consistent data) and will prevent the \fBkstat\fR from being removed.
 .RS +4
 .TP
 1.
-\fBks_snaptime\fR must be set (via \fBgethrtime\fR(9F)) to timestamp the data.
+\fBks_snaptime\fR must be set (via \fBgethrtime\fR(9F)) to timestamp the
+data.
 .RE
 .RS +4
 .TP
 2.
-Data gets copied from the \fBkstat\fR to the buffer on \fBKSTAT_READ\fR, and from the buffer to the \fBkstat\fR on \fBKSTAT_WRITE\fR.
+Data gets copied from the \fBkstat\fR to the buffer on \fBKSTAT_READ\fR, and
+from the buffer to the \fBkstat\fR on \fBKSTAT_WRITE\fR.
 .RE
 .SH RETURN VALUES
 .sp
@@ -128,7 +155,7 @@ Data gets copied from the \fBkstat\fR to the buffer on \fBKSTAT_READ\fR, and fro
 \fB\fB0\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Success
 .RE
 
@@ -139,7 +166,7 @@ Success
 \fB\fBEACCES\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 If \fBKSTAT_WRITE\fR is not allowed
 .RE
 
@@ -150,7 +177,7 @@ If \fBKSTAT_WRITE\fR is not allowed
 \fB\fBEIO\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 For any other error
 .RE
 
@@ -160,7 +187,8 @@ For any other error
 This function is called from user context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRNamed \fBkstat\fRs with Long Strings (\fBKSTAT_DATA_STRING\fR)
+\fBExample 1 \fRNamed \fBkstat\fRs with Long Strings
+(\fBKSTAT_DATA_STRING\fR)
 .sp
 .in +2
 .nf
@@ -187,7 +215,7 @@ xxx_kstat_snapshot(kstat_t *ksp, void *buf, int rw)
                                  KSTAT_NAMED_STR_BUFLEN(knp));
                          KSTAT_NAMED_STR_PTR(knp) = end;
                          end += KSTAT_NAMED_STR_BUFLEN(knp);
-                 } 
+                 }
     }
     return (0);
 }
@@ -198,7 +226,8 @@ xxx_kstat_snapshot(kstat_t *ksp, void *buf, int rw)
 .SH SEE ALSO
 .sp
 .LP
-\fBks_update\fR(9E), \fBkstat_create\fR(9F), \fBkstat_install\fR(9F), \fBkstat\fR(9S)
+\fBks_update\fR(9E), \fBkstat_create\fR(9F), \fBkstat_install\fR(9F),
+\fBkstat\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR 
+\fIWriting Device Drivers\fR

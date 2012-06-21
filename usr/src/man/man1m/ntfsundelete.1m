@@ -4,9 +4,20 @@
 .\" Copyright (c) 2002-2005 Anton Altaparmakov
 .\" Copyright (c) 2002-2003 Richard Russon
 .\" Copyright (c) 2007 Yura Pakhuchiy
-.\" This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation ; either version 2 of the License, or (at your option) any later version.  This program is distributed
-.\" in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.  You should have received a copy of the GNU General Public License along with this program
-.\" (in the main directory of the Linux-NTFS distribution in the file COPYING);  if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 11-1307 USA
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation ; either version 2 of the License, or (at your option)
+.\" any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License along with this
+.\" program (in the main directory of the Linux-NTFS distribution in the file COPYING);
+.\" if not, write to the Free Software Foundation, Inc.,
+.\" 59 Temple Place, Suite 330, Boston, MA 11-1307 USA
 .TH ntfsundelete 1M "22 May 2009" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 ntfsundelete \- recover a deleted file from an NTFS volume
@@ -19,7 +30,9 @@ ntfsundelete \- recover a deleted file from an NTFS volume
 .SH DESCRIPTION
 .sp
 .LP
-The \fBntfsundelete\fR utility can, under the right circumstances, recover a deleted file from an NTFS volume. The command has three modes of operation:
+The \fBntfsundelete\fR utility can, under the right circumstances, recover
+a deleted file from an NTFS volume. The command has three modes of
+operation:
 .sp
 .ne 2
 .mk
@@ -28,7 +41,9 @@ The \fBntfsundelete\fR utility can, under the right circumstances, recover a del
 .ad
 .sp .6
 .RS 4n
-The default mode, \fBscan\fR simply reads an NTFS Volume and looks for files that have been deleted. It then displays a list, giving the inode number, name, and size of each deleted file.
+The default mode, \fBscan\fR simply reads an NTFS Volume and looks for
+files that have been deleted. It then displays a list, giving the inode
+number, name, and size of each deleted file.
 .RE
 
 .sp
@@ -39,7 +54,9 @@ The default mode, \fBscan\fR simply reads an NTFS Volume and looks for files tha
 .ad
 .sp .6
 .RS 4n
-The undelete mode takes the files either matching the regular expression (option \fB-m\fR) or specified by the \fIinode-expressions\fR and recovers as much of the data as possible. It saves the result to another location.
+The undelete mode takes the files either matching the regular expression
+(option \fB-m\fR) or specified by the \fIinode-expressions\fR and recovers
+as much of the data as possible. It saves the result to another location.
 .RE
 
 .sp
@@ -50,34 +67,62 @@ The undelete mode takes the files either matching the regular expression (option
 .ad
 .sp .6
 .RS 4n
-The "wizard's" option. Saves a portion of the MFT to a file, which can be useful when debugging \fBntfsundelete\fR.
+The "wizard's" option. Saves a portion of the MFT to a file, which can be
+useful when debugging \fBntfsundelete\fR.
 .RE
 
 .sp
 .LP
-There are many circumstances under which \fBntfsundelete\fR is unable to recover a file. For example, consider the following scenario. When a file is deleted the MFT Record is marked as not in use and the bitmap representing the disk usage is updated. If the power is not turned off immediately, the free space, where the file used to reside might get overwritten. Worse, the MFT Record might be reused for another file. If this happens, it is impossible to tell where the file was on disk.
+There are many circumstances under which \fBntfsundelete\fR is unable to
+recover a file. For example, consider the following scenario. When a file is
+deleted the MFT Record is marked as not in use and the bitmap representing
+the disk usage is updated. If the power is not turned off immediately, the
+free space, where the file used to reside might get overwritten. Worse, the
+MFT Record might be reused for another file. If this happens, it is
+impossible to tell where the file was on disk.
 .sp
 .LP
-Even if all the clusters of a file are not in use, there is no guarantee that they have not been overwritten by some short-lived file.
+Even if all the clusters of a file are not in use, there is no guarantee
+that they have not been overwritten by some short-lived file.
 .sp
 .LP
-\fBntfsundelete\fR cannot recover compressed or encrypted files. During a scan, it will display such a file as being 0% recoverable.
+\fBntfsundelete\fR cannot recover compressed or encrypted files. During a
+scan, it will display such a file as being 0% recoverable.
 .SS "Locale"
 .sp
 .LP
-In NTFS, all filenames are stored as Unicode. A filename is converted into the current locale for display by \fBntfsundelete\fR. The utility has successfully displayed Chinese pictogram filenames and then correctly recovered them.
+In NTFS, all filenames are stored as Unicode. A filename is converted into
+the current locale for display by \fBntfsundelete\fR. The utility has
+successfully displayed Chinese pictogram filenames and then correctly
+recovered them.
 .SS "Extended MFT Records"
 .sp
 .LP
-In rare circumstances, a single MFT Record will not be large enough to hold the metadata describing a file (a file would have to be in hundreds of fragments for this to happen). In these cases, one MFT record might hold the filename, while another will hold the information about the data. \fBntfsundelete\fR will not try and piece together such records. It will simply list unnamed files with data.
+In rare circumstances, a single MFT Record will not be large enough to hold
+the metadata describing a file (a file would have to be in hundreds of
+fragments for this to happen). In these cases, one MFT record might hold the
+filename, while another will hold the information about the data.
+\fBntfsundelete\fR will not try and piece together such records. It will
+simply list unnamed files with data.
 .SS "Recovered File's Size and Creation Date"
 .sp
 .LP
-To recover a file, \fBntfsundelete\fR has to read the file's metadata. Unfortunately, when a file is deleted, the metadata can be left in an inconsistent state. For example, the file size might be recorded as zero; the creation date of a file might be set to the time it was deleted or to a random time. In such situations, \fBntfsundelete\fR picks the largest file size it finds and writes that to disk. It also tries to set the file's creation date to the last-modified date. This date might be the correct last modified date, or something unexpected.
+To recover a file, \fBntfsundelete\fR has to read the file's metadata.
+Unfortunately, when a file is deleted, the metadata can be left in an
+inconsistent state. For example, the file size might be recorded as zero;
+the creation date of a file might be set to the time it was deleted or to a
+random time. In such situations, \fBntfsundelete\fR picks the largest file
+size it finds and writes that to disk. It also tries to set the file's
+creation date to the last-modified date. This date might be the correct last
+modified date, or something unexpected.
 .SH OPTIONS
 .sp
 .LP
-Supported options are listed below. Most options have both single-letter and full-name forms. Multiple single-letter options that do not take an argument can be combined. For example, \fB-fv\fR is the equivalent of \fB-f\fR \fB-v\fR. A full-name option can be abbreviated to a unique prefix of its name.
+Supported options are listed below. Most options have both single-letter
+and full-name forms. Multiple single-letter options that do not take an
+argument can be combined. For example, \fB-fv\fR is the equivalent of
+\fB-f\fR \fB-v\fR. A full-name option can be abbreviated to a unique prefix
+of its name.
 .sp
 .ne 2
 .mk
@@ -86,7 +131,8 @@ Supported options are listed below. Most options have both single-letter and ful
 .ad
 .sp .6
 .RS 4n
-Fill in the parts of unrecoverable file clusters with byte represented by \fInum\fR. The default is zeros.
+Fill in the parts of unrecoverable file clusters with byte represented by
+\fInum\fR. The default is zeros.
 .RE
 
 .sp
@@ -97,7 +143,8 @@ Fill in the parts of unrecoverable file clusters with byte represented by \fInum
 .ad
 .sp .6
 .RS 4n
-Make filename search, when attempting a match with the \fB--match\fR option, case-sensitive. The default filename search is case-insensitive.
+Make filename search, when attempting a match with the \fB--match\fR
+option, case-sensitive. The default filename search is case-insensitive.
 .RE
 
 .sp
@@ -108,7 +155,10 @@ Make filename search, when attempting a match with the \fB--match\fR option, cas
 .ad
 .sp .6
 .RS 4n
-This "wizard" option writes a block of MFT FILE records to a file. The default file is mft which will be created in the current directory. This option can be combined with the \fB--output\fR and \fB--destination\fR options.
+This "wizard" option writes a block of MFT FILE records to a file. The
+default file is mft which will be created in the current directory. This
+option can be combined with the \fB--output\fR and \fB--destination\fR
+options.
 .RE
 
 .sp
@@ -119,7 +169,8 @@ This "wizard" option writes a block of MFT FILE records to a file. The default f
 .ad
 .sp .6
 .RS 4n
-Specify the location of the output file for the \fB--copy\fR and \fB--undelete\fR options.
+Specify the location of the output file for the \fB--copy\fR and
+\fB--undelete\fR options.
 .RE
 
 .sp
@@ -130,7 +181,8 @@ Specify the location of the output file for the \fB--copy\fR and \fB--undelete\f
 .ad
 .sp .6
 .RS 4n
-Overrides some sensible defaults, such as not overwriting an existing file. Use this option with caution.
+Overrides some sensible defaults, such as not overwriting an existing file.
+Use this option with caution.
 .RE
 
 .sp
@@ -152,7 +204,9 @@ Show a list of options with a brief description of each one.
 .ad
 .sp .6
 .RS 4n
-Recover the files within the specified range of inode numbers.  \fIrange\fR can be a single inode number, several numbers separated by commas, or a range separated by a dash (\fB-\fR).
+Recover the files within the specified range of inode numbers.  \fIrange\fR
+can be a single inode number, several numbers separated by commas, or a
+range separated by a dash (\fB-\fR).
 .RE
 
 .sp
@@ -163,7 +217,11 @@ Recover the files within the specified range of inode numbers.  \fIrange\fR can 
 .ad
 .sp .6
 .RS 4n
-Filter the output by looking only for filenames that match \fIpattern\fR. The pattern can include the wildcards \fB?\fR, matching exactly one character, or \fB*\fR, matching zero or more characters. By default, the matching is case-insensitive. To make the search case-sensitive, use the \fB--case\fR option.
+Filter the output by looking only for filenames that match \fIpattern\fR.
+The pattern can include the wildcards \fB?\fR, matching exactly one
+character, or \fB*\fR, matching zero or more characters. By default, the
+matching is case-insensitive. To make the search case-sensitive, use the
+\fB--case\fR option.
 .RE
 
 .sp
@@ -185,7 +243,8 @@ Recover parts of the file even if they are currently marked as in use.
 .ad
 .sp .6
 .RS 4n
-Set the name of the output file created by the \fB--copy\fR or \fB--undelete\fR options.
+Set the name of the output file created by the \fB--copy\fR or
+\fB--undelete\fR options.
 .RE
 
 .sp
@@ -207,7 +266,8 @@ Display the parent directory of a deleted file.
 .ad
 .sp .6
 .RS 4n
-Filter the output of the \fB--scan\fR option by matching only files with \fInum\fR percent of recoverable content.
+Filter the output of the \fB--scan\fR option by matching only files with
+\fInum\fR percent of recoverable content.
 .RE
 
 .sp
@@ -218,7 +278,8 @@ Filter the output of the \fB--scan\fR option by matching only files with \fInum\
 .ad
 .sp .6
 .RS 4n
-Reduce the amount of output to a minimum. This option is not useful with the \fB--scan\fR option.
+Reduce the amount of output to a minimum. This option is not useful with
+the \fB--scan\fR option.
 .RE
 
 .sp
@@ -229,9 +290,14 @@ Reduce the amount of output to a minimum. This option is not useful with the \fB
 .ad
 .sp .6
 .RS 4n
-Search through an NTFS volume and display a list of files that could be recovered. This is the default action of \fBntfsundelete\fR.  This list can be filtered by filename, size, percentage recoverable, or last modification time, using  the  \fB--match\fR, \fB--size\fR,  \fB--percent\fR,  and \fB--time\fR options, respectively.
+Search through an NTFS volume and display a list of files that could be
+recovered. This is the default action of \fBntfsundelete\fR.  This list can
+be filtered by filename, size, percentage recoverable, or last modification
+time, using  the  \fB--match\fR, \fB--size\fR,  \fB--percent\fR,  and
+\fB--time\fR options, respectively.
 .sp
-In the output from this option, the \fB%age\fR (percentage) field displays how much of a file can potentially be recovered.
+In the output from this option, the \fB%age\fR (percentage) field displays
+how much of a file can potentially be recovered.
 .RE
 
 .sp
@@ -242,7 +308,11 @@ In the output from this option, the \fB%age\fR (percentage) field displays how m
 .ad
 .sp .6
 .RS 4n
-Filter the output of the \fB--scan\fR option by looking for a particular range of file sizes. \fIrange\fR can be specified as two numbers separated by a hyphen (\fB-\fR). A unit of size can be abbreviated using the suffixes \fBk\fR, \fBm\fR, \fBg\fR, and \fBt\fR, for kilobytes, megabytes, gigabytes, and terabytes respectively.
+Filter the output of the \fB--scan\fR option by looking for a particular
+range of file sizes. \fIrange\fR can be specified as two numbers separated
+by a hyphen (\fB-\fR). A unit of size can be abbreviated using the suffixes
+\fBk\fR, \fBm\fR, \fBg\fR, and \fBt\fR, for kilobytes, megabytes, gigabytes,
+and terabytes respectively.
 .RE
 
 .sp
@@ -253,7 +323,10 @@ Filter the output of the \fB--scan\fR option by looking for a particular range o
 .ad
 .sp .6
 .RS 4n
-Filter the output of the \fB--scan\fR option. Match only  files that have been altered since this time. The time must be given as number and a suffix of \fBd\fR,  \fBw\fR,  \fBm\fR,  or \fBy\fR for, respectively, days, weeks, months, or years.
+Filter the output of the \fB--scan\fR option. Match only  files that have
+been altered since this time. The time must be given as number and a suffix
+of \fBd\fR,  \fBw\fR,  \fBm\fR,  or \fBy\fR for, respectively, days, weeks,
+months, or years.
 .RE
 
 .sp
@@ -264,7 +337,10 @@ Filter the output of the \fB--scan\fR option. Match only  files that have been a
 .ad
 .sp .6
 .RS 4n
-The default behavior of \fBntfsundelete\fR is to round \fBup\fR a file's size to the nearest cluster (which will be a multiple of 512 bytes). In cases where the utility has complete data about the size of a file, this option restores the file to exactly that size.
+The default behavior of \fBntfsundelete\fR is to round \fBup\fR a file's
+size to the nearest cluster (which will be a multiple of 512 bytes). In
+cases where the utility has complete data about the size of a file, this
+option restores the file to exactly that size.
 .RE
 
 .sp
@@ -275,9 +351,12 @@ The default behavior of \fBntfsundelete\fR is to round \fBup\fR a file's size to
 .ad
 .sp .6
 .RS 4n
-Specifies undelete mode. You can specify the files to be recovered using by using \fB--match\fR or \fB--inodes\fR options. This option can be combined with \fB--output\fR, \fB--destination\fR, and \fB--byte\fR.
+Specifies undelete mode. You can specify the files to be recovered using by
+using \fB--match\fR or \fB--inodes\fR options. This option can be combined
+with \fB--output\fR, \fB--destination\fR, and \fB--byte\fR.
 .sp
-When the file is recovered it will be given its original name, unless the \fB--output\fR option is used.
+When the file is recovered it will be given its original name, unless the
+\fB--output\fR option is used.
 .RE
 
 .sp
@@ -299,7 +378,8 @@ Increase the amount of output that \fBntfsundelete\fR displays.
 .ad
 .sp .6
 .RS 4n
-Display the version number, copyright, and license for \fBntfsundelete\fR.
+Display the version number, copyright, and license for
+\fBntfsundelete\fR.
 .RE
 
 .SH EXAMPLES
@@ -335,7 +415,9 @@ The following command searches for deleted files that match \fB*.doc\fR.
 \fBExample 3 \fRSearching for Files of a Certain Size
 .sp
 .LP
-The following command looks for deleted files between 5000 and 6000000 bytes, with at least 90% of the data recoverable, on \fB/dev/dsk/c0d0p1\fR.
+The following command looks for deleted files between 5000 and 6000000
+bytes, with at least 90% of the data recoverable, on
+\fB/dev/dsk/c0d0p1\fR.
 
 .sp
 .in +2
@@ -349,7 +431,8 @@ The following command looks for deleted files between 5000 and 6000000 bytes, wi
 \fBExample 4 \fRSearching for Recently Changed Files
 .sp
 .LP
-The following command searches for deleted files altered in the last two days.
+The following command searches for deleted files altered in the last two
+days.
 
 .sp
 .in +2
@@ -363,7 +446,8 @@ The following command searches for deleted files altered in the last two days.
 \fBExample 5 \fRSpecifying an Inode Range
 .sp
 .LP
-The following command undeletes inodes 2, 5 and 100 to 131 of device \fB/dev/sda1\fR.
+The following command undeletes inodes 2, 5 and 100 to 131 of device
+\fB/dev/sda1\fR.
 
 .sp
 .in +2
@@ -377,7 +461,8 @@ The following command undeletes inodes 2, 5 and 100 to 131 of device \fB/dev/sda
 \fBExample 6 \fRSpecifying an Output File and Directory
 .sp
 .LP
-The following command undeletes inode number 3689, names the file \fBwork.doc\fR, and stores it in the user's home directory.
+The following command undeletes inode number 3689, names the file
+\fBwork.doc\fR, and stores it in the user's home directory.
 
 .sp
 .in +2
@@ -391,7 +476,8 @@ The following command undeletes inode number 3689, names the file \fBwork.doc\fR
 \fBExample 7 \fRSaving MFT Records
 .sp
 .LP
-The following command saves MFT records 3689 to 3690 to a file \fBdebug\fR.
+The following command saves MFT records 3689 to 3690 to a file
+\fBdebug\fR.
 
 .sp
 .in +2
@@ -410,8 +496,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -423,11 +509,13 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBntfsclone\fR(1M), \fBntfsresize\fR(1M), \fBparted\fR(1M), \fBattributes\fR(5)
+\fBntfsclone\fR(1M), \fBntfsresize\fR(1M), \fBparted\fR(1M),
+\fBattributes\fR(5)
 .sp
 .LP
 http://wiki.linux-ntfs.org
 .SH AUTHORS
 .sp
 .LP
-\fBntfsundelete\fR was written by Richard Russon and Holger Ohmacht, with contributions from Anton Altaparmakov.
+\fBntfsundelete\fR was written by Richard Russon and Holger Ohmacht, with
+contributions from Anton Altaparmakov.

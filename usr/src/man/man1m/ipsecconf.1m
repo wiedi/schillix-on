@@ -1,15 +1,30 @@
 '\" te
 .\" Copyright (C) 2008, Sun Microsystems, Inc. All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.
-.\"  See the License for the specific language governing permissions and limitations under the License. When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with
-.\" the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ipsecconf 1M "28 Sep 2009" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 ipsecconf \- configure system wide IPsec policy
 .SH SYNOPSIS
 .LP
 .nf
-\fB/usr/sbin/ipsecconf\fR 
+\fB/usr/sbin/ipsecconf\fR
 .fi
 
 .LP
@@ -50,34 +65,67 @@ ipsecconf \- configure system wide IPsec policy
 .SH DESCRIPTION
 .sp
 .LP
-The \fBipsecconf\fR utility configures the IPsec policy for a host or for one of its tunnels. Once the policy is configured, all outbound and inbound datagrams are subject to policy checks as they exit and enter the host or tunnel. For the host policy, if no entry is found, no policy checks will be completed, and all the traffic will pass through. For a tunnel, if no entry is found and there is at least one entry for the tunnel, the traffic will automatically drop. The difference in behavior is because of the assumptions about IPsec tunnels made in many implementations. Datagrams that are being forwarded will not be subjected to policy checks that are added using this command.  See \fBifconfig\fR(1M) and \fBdladm\fR(1M) for information on how to protect forwarded packets.  Depending upon the match of the policy entry, a specific action will be taken.
+The \fBipsecconf\fR utility configures the IPsec policy for a host or for
+one of its tunnels. Once the policy is configured, all outbound and inbound
+datagrams are subject to policy checks as they exit and enter the host or
+tunnel. For the host policy, if no entry is found, no policy checks will be
+completed, and all the traffic will pass through. For a tunnel, if no entry
+is found and there is at least one entry for the tunnel, the traffic will
+automatically drop. The difference in behavior is because of the assumptions
+about IPsec tunnels made in many implementations. Datagrams that are being
+forwarded will not be subjected to policy checks that are added using this
+command. See \fBifconfig\fR(1M) and \fBdladm\fR(1M) for information on how
+to protect forwarded packets.  Depending upon the match of the policy entry,
+a specific action will be taken.
 .sp
 .LP
 This command can be run only by superuser.
 .sp
 .LP
-Each entry can protect traffic in either one direction (requiring a pair of entries) or by a single policy entry which installs the needed symmetric \fBsadb\fR rules.
+Each entry can protect traffic in either one direction (requiring a pair of
+entries) or by a single policy entry which installs the needed symmetric
+\fBsadb\fR rules.
 .sp
 .LP
-When the command is issued without any arguments, the list of file policy entries loaded are shown. To display the (\fBspd p.e.\fRs) use the \fB-l\fR option. Both will display the index number for the entry. To specify a single tunnel's SPD, use the \fB-i\fR option in combination with \fB-l\fR. To specify all SPDs, both host and for all tunnels, use \fB-L\fR.
+When the command is issued without any arguments, the list of file policy
+entries loaded are shown. To display the (\fBspd p.e.\fRs) use the \fB-l\fR
+option. Both will display the index number for the entry. To specify a
+single tunnel's SPD, use the \fB-i\fR option in combination with \fB-l\fR.
+To specify all SPDs, both host and for all tunnels, use \fB-L\fR.
 .sp
 .LP
-Note, since one file policy entry (\fBFPE\fR) can generate multiple SPD pol entries (\fBSPE\fRs), the list of FPEs may not show all the actual entries. However, it is still useful in determining what what rules have been added to get the spd into its current state.
+Note, since one file policy entry (\fBFPE\fR) can generate multiple SPD pol
+entries (\fBSPE\fRs), the list of FPEs may not show all the actual entries.
+However, it is still useful in determining what what rules have been added
+to get the spd into its current state.
 .sp
 .LP
-You can use the \fB-d\fR option with the index to delete a given policy in the system. If the \fB-d\fR option removes an FPE entry that produces multiple SPEs, only then SPD with the same policy index as the FPE will be removed. This can produce a situation where there may be SPEs when there are no FPEs.
+You can use the \fB-d\fR option with the index to delete a given policy in
+the system. If the \fB-d\fR option removes an FPE entry that produces
+multiple SPEs, only then SPD with the same policy index as the FPE will be
+removed. This can produce a situation where there may be SPEs when there are
+no FPEs.
 .sp
 .LP
-As with \fB-l\fR, \fB-d\fR can use the \fB-i\fR flag to indicate a tunnel. An alternate syntax is to specify a tunnel name, followed by a comma (\fB,\fR), followed by an index. For example, \fBip.tun0,1\fR.
+As with \fB-l\fR, \fB-d\fR can use the \fB-i\fR flag to indicate a tunnel.
+An alternate syntax is to specify a tunnel name, followed by a comma
+(\fB,\fR), followed by an index. For example, \fBip.tun0,1\fR.
 .sp
 .LP
-With no options, the entries are displayed in the order that they were added, which is not necessarily the order in which the traffic match takes place.
+With no options, the entries are displayed in the order that they were
+added, which is not necessarily the order in which the traffic match takes
+place.
 .sp
 .LP
-To view the order in which the traffic match will take place, use the \fB-l\fR option. The rules are ordered such that all bypass rules are checked first, then ESP rules, then AH rules. After that, they are checked in the order entered.
+To view the order in which the traffic match will take place, use the
+\fB-l\fR option. The rules are ordered such that all bypass rules are
+checked first, then ESP rules, then AH rules. After that, they are checked
+in the order entered.
 .sp
 .LP
-Policy entries are not preserved across system restarts. Permanent policy entries should be added to \fB/etc/inet/ipsecinit.conf\fR. This file is read by the following \fBsmf\fR(5) service:
+Policy entries are not preserved across system restarts. Permanent policy
+entries should be added to \fB/etc/inet/ipsecinit.conf\fR. This file is read
+by the following \fBsmf\fR(5) service:
 .sp
 .in +2
 .nf
@@ -88,7 +136,8 @@ svc:/network/ipsec/policy
 
 .sp
 .LP
-See \fBNOTES\fR for more information on managing IPsec security policy and \fBSECURITY\fR for issues in securing \fB/etc/inet/ipsecinit.conf\fR.
+See \fBNOTES\fR for more information on managing IPsec security policy and
+\fBSECURITY\fR for issues in securing \fB/etc/inet/ipsecinit.conf\fR.
 .SH OPTIONS
 .sp
 .LP
@@ -101,13 +150,23 @@ See \fBNOTES\fR for more information on managing IPsec security policy and \fBSE
 .ad
 .sp .6
 .RS 4n
-Add the IPsec policy to the system as specified by each entry in the file. An IPsec configuration file contains one or more entries that specify the configuration. Once the policy is added, all outbound and inbound datagrams are subject to policy checks.
+Add the IPsec policy to the system as specified by each entry in the file.
+An IPsec configuration file contains one or more entries that specify the
+configuration. Once the policy is added, all outbound and inbound datagrams
+are subject to policy checks.
 .sp
-Entries in the files are described in the  section below. Examples can be found in the  section below.
+Entries in the files are described in the  section below. Examples can be
+found in the  section below.
 .sp
-Policy is latched for TCP/UDP sockets on which a \fBconnect\fR(3SOCKET) or \fBaccept\fR(3SOCKET) is issued. So, the addition of new policy entries may not affect such endpoints or sockets. However, the policy will be latched for a socket with an existing non-null policy. Thus, make sure that there are no preexisting connections that will be subject to checks by the new policy entries.
+Policy is latched for TCP/UDP sockets on which a \fBconnect\fR(3SOCKET) or
+\fBaccept\fR(3SOCKET) is issued. So, the addition of new policy entries may
+not affect such endpoints or sockets. However, the policy will be latched
+for a socket with an existing non-null policy. Thus, make sure that there
+are no preexisting connections that will be subject to checks by the new
+policy entries.
 .sp
-The feature of policy latching explained above may change in the future. It is not advisable to depend upon this feature.
+The feature of policy latching explained above may change in the future. It
+is not advisable to depend upon this feature.
 .RE
 
 .sp
@@ -118,7 +177,10 @@ The feature of policy latching explained above may change in the future. It is n
 .ad
 .sp .6
 .RS 4n
-Check the syntax of the configuration file and report any errors without making any changes to the policy. This option is useful when debugging configurations and when \fBsmf\fR(5) reports a configuration error. See \fBSECURITY\fR.
+Check the syntax of the configuration file and report any errors without
+making any changes to the policy. This option is useful when debugging
+configurations and when \fBsmf\fR(5) reports a configuration error. See
+\fBSECURITY\fR.
 .RE
 
 .sp
@@ -129,7 +191,14 @@ Check the syntax of the configuration file and report any errors without making 
 .ad
 .sp .6
 .RS 4n
-Delete the host policy denoted by the index. The index is obtained by invoking \fBipsecconf\fR without any arguments, or with the \fB-l\fR option. See DESCRIPTION for more information. Once the entry is deleted, all outbound and inbound datagrams affected by this policy entry will not be subjected to policy checks. Be advised that with connections for which the policy has been latched, packets will continue to go out with the same policy, even if it has been deleted. It is advisable to use the \fB-l\fR option to find the correct policy index.
+Delete the host policy denoted by the index. The index is obtained by
+invoking \fBipsecconf\fR without any arguments, or with the \fB-l\fR option.
+See DESCRIPTION for more information. Once the entry is deleted, all
+outbound and inbound datagrams affected by this policy entry will not be
+subjected to policy checks. Be advised that with connections for which the
+policy has been latched, packets will continue to go out with the same
+policy, even if it has been deleted. It is advisable to use the \fB-l\fR
+option to find the correct policy index.
 .RE
 
 .sp
@@ -140,7 +209,10 @@ Delete the host policy denoted by the index. The index is obtained by invoking \
 .ad
 .sp .6
 .RS 4n
-Delete the policy entry denoted by \fIindex\fR on a tunnel denoted by \fIname\fR. Since tunnels affect traffic that might originate off-node, latching does not apply as it does in the host policy case. Equivalent to: \fB-d\fR \fIindex\fR \fB-i\fR \fIname\fR.
+Delete the policy entry denoted by \fIindex\fR on a tunnel denoted by
+\fIname\fR. Since tunnels affect traffic that might originate off-node,
+latching does not apply as it does in the host policy case. Equivalent to:
+\fB-d\fR \fIindex\fR \fB-i\fR \fIname\fR.
 .RE
 
 .sp
@@ -151,7 +223,9 @@ Delete the policy entry denoted by \fIindex\fR on a tunnel denoted by \fIname\fR
 .ad
 .sp .6
 .RS 4n
-Flush all the policies in the system. Constraints are similar to the \fB-d\fR option with respect to latching and host versus per-tunnel behavior.
+Flush all the policies in the system. Constraints are similar to the
+\fB-d\fR option with respect to latching and host versus per-tunnel
+behavior.
 .RE
 
 .sp
@@ -173,7 +247,8 @@ Flush all policies on all tunnels and also flush all host policies.
 .ad
 .sp .6
 .RS 4n
-Specify a tunnel interface name for use with the \fB-d\fR, \fB-f\fR, or \fB-l\fR flags.
+Specify a tunnel interface name for use with the \fB-d\fR, \fB-f\fR, or
+\fB-l\fR flags.
 .RE
 
 .sp
@@ -184,7 +259,16 @@ Specify a tunnel interface name for use with the \fB-d\fR, \fB-f\fR, or \fB-l\fR
 .ad
 .sp .6
 .RS 4n
-Listing of a single policy table, defaulting to the host policy. When \fBipsecconf\fR is invoked without any arguments, a complete list of policy entries with indexes added by the user since boot is displayed. The current table can differ from the previous one if, for example, a multi-homed entry was added or policy reordering occurred, or if a single rule entry generates two \fBspd\fR rules In the case of a multi-homed entry, all the addresses are listed explicitly. If a mask was not specified earlier but was instead inferred from the address, it will be explicitly listed here. This option is used to view policy entries in the correct order. The outbound and inbound policy entries are listed separately.
+Listing of a single policy table, defaulting to the host policy. When
+\fBipsecconf\fR is invoked without any arguments, a complete list of policy
+entries with indexes added by the user since boot is displayed. The current
+table can differ from the previous one if, for example, a multi-homed entry
+was added or policy reordering occurred, or if a single rule entry generates
+two \fBspd\fR rules In the case of a multi-homed entry, all the addresses
+are listed explicitly. If a mask was not specified earlier but was instead
+inferred from the address, it will be explicitly listed here. This option is
+used to view policy entries in the correct order. The outbound and inbound
+policy entries are listed separately.
 .RE
 
 .sp
@@ -195,9 +279,11 @@ Listing of a single policy table, defaulting to the host policy. When \fBipsecco
 .ad
 .sp .6
 .RS 4n
-Lists all policy tables, including host policy and all tunnel instances (including configured but unplumbed).
+Lists all policy tables, including host policy and all tunnel instances
+(including configured but unplumbed).
 .sp
-If \fB-i\fR is specified, \fB-L\fR lists the policy table for a specific tunnel interface.
+If \fB-i\fR is specified, \fB-L\fR lists the policy table for a specific
+tunnel interface.
 .RE
 
 .sp
@@ -208,7 +294,8 @@ If \fB-i\fR is specified, \fB-L\fR lists the policy table for a specific tunnel 
 .ad
 .sp .6
 .RS 4n
-Show network addresses, ports, protocols in numbers. The \fB-n\fR option may only be used with the \fB-l\fR option.
+Show network addresses, ports, protocols in numbers. The \fB-n\fR option
+may only be used with the \fB-l\fR option.
 .RE
 
 .sp
@@ -219,7 +306,8 @@ Show network addresses, ports, protocols in numbers. The \fB-n\fR option may onl
 .ad
 .sp .6
 .RS 4n
-Quiet mode. Suppresses the warning message generated when adding policies.
+Quiet mode. Suppresses the warning message generated when adding
+policies.
 .RE
 
 .SH OPERANDS
@@ -245,25 +333,42 @@ or
 
 .sp
 .LP
-Every policy entry begins on a new line and can span multiple lines. If an entry exceeds the length of a line, you should split it only within a "braced" section or immediately before the first (left-hand) brace of a braced section. Avoid using the backslash character (\e). See EXAMPLES.
+Every policy entry begins on a new line and can span multiple lines. If an
+entry exceeds the length of a line, you should split it only within a
+"braced" section or immediately before the first (left-hand) brace of a
+braced section. Avoid using the backslash character (\e). See EXAMPLES.
 .sp
 .LP
-The \fIpattern\fR section, as shown in the syntax above, specifies the traffic pattern that should be matched against the outbound and inbound datagrams. If there is a match, a specific \fIaction\fR determined by the second argument will be taken, depending upon the \fIproperties\fR of the policy entry. 
+The \fIpattern\fR section, as shown in the syntax above, specifies the
+traffic pattern that should be matched against the outbound and inbound
+datagrams. If there is a match, a specific \fIaction\fR determined by the
+second argument will be taken, depending upon the \fIproperties\fR of the
+policy entry.
 .sp
 .LP
-If there is an \fBor\fR in the rule (multiple action-properties for a given pattern), a transmitter will use the first action-property pair that works, while a receiver will use any that are acceptable. 
+If there is an \fBor\fR in the rule (multiple action-properties for a given
+pattern), a transmitter will use the first action-property pair that works,
+while a receiver will use any that are acceptable.
 .sp
 .LP
-\fIpattern\fR and \fIproperties\fR are name-value pairs where name and value are separated by a <space>, <tab> or <newline>. Multiple name-value pairs should be separated by <space>, <tab> or <newline>. The beginning and end of the pattern and properties are marked by \fB{\fR and \fB}\fR respectively. 
+\fIpattern\fR and \fIproperties\fR are name-value pairs where name and
+value are separated by a <space>, <tab> or <newline>. Multiple name-value
+pairs should be separated by <space>, <tab> or <newline>. The beginning and
+end of the pattern and properties are marked by \fB{\fR and \fB}\fR
+respectively. 
 .sp
 .LP
-Files can contain multiple policy entries. An unspecified name-value pair in the \fIpattern\fR will be considered as a wildcard. Wildcard entries match any corresponding entry in the datagram. 
+Files can contain multiple policy entries. An unspecified name-value pair
+in the \fIpattern\fR will be considered as a wildcard. Wildcard entries
+match any corresponding entry in the datagram.
 .sp
 .LP
-One thing to remember is that UDP port 500 is always bypassed regardless of any policy entries. This is a requirement for \fBin.iked\fR(1M) to work. 
+One thing to remember is that UDP port 500 is always bypassed regardless of
+any policy entries. This is a requirement for \fBin.iked\fR(1M) to work.
 .sp
 .LP
-File can be commented by using a \fB#\fR as the first character. Comments may be inserted either at the beginning or the end of a line.
+File can be commented by using a \fB#\fR as the first character. Comments
+may be inserted either at the beginning or the end of a line.
 .sp
 .LP
 The complete syntax of a policy entry is:
@@ -271,13 +376,13 @@ The complete syntax of a policy entry is:
 .in +2
 .nf
 policy ::= { <pattern1> } <action1> { <properties1> } |
-     { <pattern2> } <action2> { <properties2> } 
+     { <pattern2> } <action2> { <properties2> }
      [ 'or' <action2> { <properties2>} ]*
 
      pattern1 ::=  <pattern_name_value_pair1>*
 
      pattern2 ::=  <pattern_name_value_pair2>*
- 
+
      action1 ::= apply | permit | bypass | pass
      action2 ::=  bypass | pass | drop | ipsec
 
@@ -288,7 +393,7 @@ policy ::= { <pattern1> } <action1> { <properties1> } |
      pattern_name_value_pair1 ::=
         saddr <address>/<prefix> |
         src  <address>/<prefix> |
-        srcaddr <address>/<prefix> |      
+        srcaddr <address>/<prefix> |
         smask <mask> |
         sport <port> |
         daddr <address>/<prefix> |
@@ -349,14 +454,14 @@ policy ::= { <pattern1> } <action1> { <properties1> } |
           sa <sa_val>
 
      auth_alg ::=  <auth_algname> ['(' <keylen> ')']
-     auth_algname ::= any | md5 | hmac-md5 | sha | sha1 | hmac-sha | 
-                      hmac-sha1 | hmac-sha256 | hmac-sha384 | 
+     auth_algname ::= any | md5 | hmac-md5 | sha | sha1 | hmac-sha |
+                      hmac-sha1 | hmac-sha256 | hmac-sha384 |
                       hmac-sha512 |<number>
 
      encr_alg ::= <encr_algname> ['(' <keylen> ')']
-     encr_algname ::= any | aes | aes-cbc | des | des-cbc | 3des | 
+     encr_algname ::= any | aes | aes-cbc | des | des-cbc | 3des |
                       3des-cbc | blowfish | blowfish-cbc | <number>
-     
+
      keylen ::= <number> | <number>'..' | '..'<number> | <number>'..' \e
      <number>
 
@@ -385,7 +490,9 @@ policy ::= { <pattern1> } <action1> { <properties1> } |
 
 .sp
 .LP
-Policy entries may contain the following (name value) pairs in the \fIpattern\fR field. Each (name value) pair may appear only once in given policy entry.
+Policy entries may contain the following (name value) pairs in the
+\fIpattern\fR field. Each (name value) pair may appear only once in given
+policy entry.
 .sp
 .ne 2
 .mk
@@ -398,7 +505,16 @@ Policy entries may contain the following (name value) pairs in the \fIpattern\fR
 .ad
 .sp .6
 .RS 4n
-The value that follows is the local address of the datagram with the prefix length. Only plen leading bits of the source address of the packet will be matched. plen is optional. Local means destination on incoming and source on outgoing packets. The source address value can be a hostname as described in getaddrinfo(3SOCKET) or a network name as described in \fBgetnetbyname\fR(3XNET) or a host address or network address in the Internet standard dot notation. See \fBinet_addr\fR(3XNET). If a hostname is given and getaddrinfo(3SOCKET) returns multiple addresses for the host, then policy will be added for each of the addresses with other entries remaining the same.
+The value that follows is the local address of the datagram with the prefix
+length. Only plen leading bits of the source address of the packet will be
+matched. plen is optional. Local means destination on incoming and source on
+outgoing packets. The source address value can be a hostname as described in
+getaddrinfo(3SOCKET) or a network name as described in
+\fBgetnetbyname\fR(3XNET) or a host address or network address in the
+Internet standard dot notation. See \fBinet_addr\fR(3XNET). If a hostname is
+given and getaddrinfo(3SOCKET) returns multiple addresses for the host, then
+policy will be added for each of the addresses with other entries remaining
+the same.
 .RE
 
 .sp
@@ -413,7 +529,16 @@ The value that follows is the local address of the datagram with the prefix leng
 .ad
 .sp .6
 .RS 4n
-The value that follows is the remote address of the datagram with the prefix length. Only plen leading bits of the remote address of the packet will be matched. plen is optional. Remote means source on incoming packets and destination on outgoing packets. The remote address value can be a hostname as described in \fBgetaddrinfo\fR(3SOCKET) or a network name as described in \fBgetnetbyname\fR(3XNET) or a host address or network address in the Internet standard dot notation. See \fBinet_addr\fR(3XNET). If a hostname is given and \fBgetaddrinfo\fR(3SOCKET) returns multiple addresses for the host, then policy will be added for each of the addresses with other entries remaining the same.
+The value that follows is the remote address of the datagram with the
+prefix length. Only plen leading bits of the remote address of the packet
+will be matched. plen is optional. Remote means source on incoming packets
+and destination on outgoing packets. The remote address value can be a
+hostname as described in \fBgetaddrinfo\fR(3SOCKET) or a network name as
+described in \fBgetnetbyname\fR(3XNET) or a host address or network address
+in the Internet standard dot notation. See \fBinet_addr\fR(3XNET). If a
+hostname is given and \fBgetaddrinfo\fR(3SOCKET) returns multiple addresses
+for the host, then policy will be added for each of the addresses with other
+entries remaining the same.
 .RE
 
 .sp
@@ -432,11 +557,18 @@ The value that follows is the remote address of the datagram with the prefix len
 .ad
 .sp .6
 .RS 4n
-The value that follows is the source address of the datagram with the prefix length. Only \fIplen\fR leading bits of the source address of the packet will be matched. \fIplen\fR is optional.
+The value that follows is the source address of the datagram with the
+prefix length. Only \fIplen\fR leading bits of the source address of the
+packet will be matched. \fIplen\fR is optional.
 .sp
-The source address value can be a hostname as described in \fBgetaddrinfo\fR(3SOCKET) or a network name as described in \fBgetnetbyname\fR(3XNET) or a host address or network address in the Internet standard dot notation. See \fBinet_addr\fR(3XNET).
+The source address value can be a hostname as described in
+\fBgetaddrinfo\fR(3SOCKET) or a network name as described in
+\fBgetnetbyname\fR(3XNET) or a host address or network address in the
+Internet standard dot notation. See \fBinet_addr\fR(3XNET).
 .sp
-If a hostname is given and \fBgetaddrinfo\fR(3SOCKET) returns multiple addresses for the host, then policy will be added for each of the addresses with other entries remaining the same.
+If a hostname is given and \fBgetaddrinfo\fR(3SOCKET) returns multiple
+addresses for the host, then policy will be added for each of the addresses
+with other entries remaining the same.
 .RE
 
 .sp
@@ -455,9 +587,13 @@ If a hostname is given and \fBgetaddrinfo\fR(3SOCKET) returns multiple addresses
 .ad
 .sp .6
 .RS 4n
-The value that follows is the destination address of the datagram with the prefix length. Only \fIplen\fR leading bits of the destination address of the packet will be matched. \fIplen\fR is optional.
+The value that follows is the destination address of the datagram with the
+prefix length. Only \fIplen\fR leading bits of the destination address of
+the packet will be matched. \fIplen\fR is optional.
 .sp
-See \fIsaddr\fR for valid values that can be given. If multiple source and destination addresses are found, then a policy entry that covers each source address-destination address pair will be added to the system.
+See \fIsaddr\fR for valid values that can be given. If multiple source and
+destination addresses are found, then a policy entry that covers each source
+address-destination address pair will be added to the system.
 .RE
 
 .sp
@@ -468,11 +604,18 @@ See \fIsaddr\fR for valid values that can be given. If multiple source and desti
 .ad
 .sp .6
 .RS 4n
-For IPv4 only. The value that follows is the source mask. If prefix length is given with \fIsaddr\fR, this should not be given. This can be represented either in hexadecimal number with a leading \fB0x\fR or \fB0X\fR, for example, \fB0xffff0000\fR, \fB0Xffff0000\fR or in the Internet decimal dot notation, for example, \fB255.255.0.0\fR and \fB255.255.255.0\fR. The mask should be contiguous and the behavior is not defined for non-contiguous masks.
+For IPv4 only. The value that follows is the source mask. If prefix length
+is given with \fIsaddr\fR, this should not be given. This can be represented
+either in hexadecimal number with a leading \fB0x\fR or \fB0X\fR, for
+example, \fB0xffff0000\fR, \fB0Xffff0000\fR or in the Internet decimal dot
+notation, for example, \fB255.255.0.0\fR and \fB255.255.255.0\fR. The mask
+should be contiguous and the behavior is not defined for non-contiguous
+masks.
 .sp
 \fIsmask\fR is considered only when \fIsaddr\fR is given.
 .sp
-For both IPv4 and IPv6 addresses, the same information can be specified as a \fIslen\fR value attached to the \fIsaddr\fR parameter.
+For both IPv4 and IPv6 addresses, the same information can be specified as
+a \fIslen\fR value attached to the \fIsaddr\fR parameter.
 .RE
 
 .sp
@@ -494,7 +637,9 @@ Analogous to \fIsmask.\fR
 .ad
 .sp .6
 .RS 4n
-The value that follows is the local port of the datagram. This can be either a port number or a string searched with a NULL proto argument, as described in getservbyname(3XNET) 
+The value that follows is the local port of the datagram. This can be
+either a port number or a string searched with a NULL proto argument, as
+described in getservbyname(3XNET)
 .RE
 
 .sp
@@ -505,7 +650,9 @@ The value that follows is the local port of the datagram. This can be either a p
 .ad
 .sp .6
 .RS 4n
-The value that follows is the remote port of the datagram. This can be either a port number or a string searched with a NULL proto argument, as described in getservbyname(3XNET)
+The value that follows is the remote port of the datagram. This can be
+either a port number or a string searched with a NULL proto argument, as
+described in getservbyname(3XNET)
 .RE
 
 .sp
@@ -516,7 +663,9 @@ The value that follows is the remote port of the datagram. This can be either a 
 .ad
 .sp .6
 .RS 4n
-The value that follows is the source port of the datagram. This can be either a port number or a string searched with a \fBNULL\fR proto argument, as described in \fBgetservbyname\fR(3XNET) 
+The value that follows is the source port of the datagram. This can be
+either a port number or a string searched with a \fBNULL\fR proto argument,
+as described in \fBgetservbyname\fR(3XNET)
 .RE
 
 .sp
@@ -527,7 +676,9 @@ The value that follows is the source port of the datagram. This can be either a 
 .ad
 .sp .6
 .RS 4n
-The value that follows is the destination port of the datagram. This can be either a port number or a string as described in \fBgetservbyname\fR(3XNET) searched with \fBNULL\fR proto argument.
+The value that follows is the destination port of the datagram. This can be
+either a port number or a string as described in \fBgetservbyname\fR(3XNET)
+searched with \fBNULL\fR proto argument.
 .RE
 
 .sp
@@ -538,7 +689,12 @@ The value that follows is the destination port of the datagram. This can be eith
 .ad
 .sp .6
 .RS 4n
-The value that follows is the Upper Layer Protocol that this entry should be matched against. It could be a number or a string as described in \fBgetprotobyname\fR(3XNET). If no smask or plen is specified, a plen of 32 for IPv4 or 128 for IPv6 will be used, meaning a host. If the \fIulp\fR is \fBicmp\fR or \fBipv6-icmp\fR, any action applying IPsec must be the same for all \fBicmp\fR rules.
+The value that follows is the Upper Layer Protocol that this entry should
+be matched against. It could be a number or a string as described in
+\fBgetprotobyname\fR(3XNET). If no smask or plen is specified, a plen of 32
+for IPv4 or 128 for IPv6 will be used, meaning a host. If the \fIulp\fR is
+\fBicmp\fR or \fBipv6-icmp\fR, any action applying IPsec must be the same
+for all \fBicmp\fR rules.
 .RE
 
 .sp
@@ -549,7 +705,11 @@ The value that follows is the Upper Layer Protocol that this entry should be mat
 .ad
 .sp .6
 .RS 4n
-The value that follows is the ICMP type that this entry should be matched against. \fBtype\fR must be a number from 0 to 255, or one of the appropriate \fBicmp-type\fR keywords. Also, \fIulp\fR must be present and must specify either \fBicmp\fR or \fBipv6-icmp\fR. A range of types can be specified with a hyphen separating numbers.
+The value that follows is the ICMP type that this entry should be matched
+against. \fBtype\fR must be a number from 0 to 255, or one of the
+appropriate \fBicmp-type\fR keywords. Also, \fIulp\fR must be present and
+must specify either \fBicmp\fR or \fBipv6-icmp\fR. A range of types can be
+specified with a hyphen separating numbers.
 .RE
 
 .sp
@@ -560,7 +720,11 @@ The value that follows is the ICMP type that this entry should be matched agains
 .ad
 .sp .6
 .RS 4n
-The value that follows is the ICMP code that this entry should be matched against. The value following the keyword \fBcode\fR must be a number from 0 to 254 or one of the appropriate \fBicmp-code\fR keywords. Also, \fBtype\fR must be present. A range of codes can be specified with a hyphen separating numbers.
+The value that follows is the ICMP code that this entry should be matched
+against. The value following the keyword \fBcode\fR must be a number from 0
+to 254 or one of the appropriate \fBicmp-code\fR keywords. Also, \fBtype\fR
+must be present. A range of codes can be specified with a hyphen separating
+numbers.
 .RE
 
 .sp
@@ -571,7 +735,10 @@ The value that follows is the ICMP code that this entry should be matched agains
 .ad
 .sp .6
 .RS 4n
-Specifies a tunnel network interface, as configured with \fBifconfig\fR(1M). If a tunnel of \fIname\fR does not yet exist, the policy entries are added anyway, and joined with the tunnel state when it is created. If a tunnel is unplumbed, its policy entries disappear.
+Specifies a tunnel network interface, as configured with
+\fBifconfig\fR(1M). If a tunnel of \fIname\fR does not yet exist, the policy
+entries are added anyway, and joined with the tunnel state when it is
+created. If a tunnel is unplumbed, its policy entries disappear.
 .RE
 
 .sp
@@ -586,12 +753,19 @@ Specifies a tunnel network interface, as configured with \fBifconfig\fR(1M). If 
 .ad
 .sp .6
 .RS 4n
-For per-tunnel security, specify whether the IPsec SAs protecting the traffic should be tunnel-mode SAs or transport-mode SAs. If transport-mode SAs are specified, no addresses can appear in the policy entry. Transport-mode is backward compatible with Solaris 9, and tunnel IPsec policies configured with \fBifconfig\fR(1M) will show up as transport mode entries here.
+For per-tunnel security, specify whether the IPsec SAs protecting the
+traffic should be tunnel-mode SAs or transport-mode SAs. If transport-mode
+SAs are specified, no addresses can appear in the policy entry.
+Transport-mode is backward compatible with Solaris 9, and tunnel IPsec
+policies configured with \fBifconfig\fR(1M) will show up as transport mode
+entries here.
 .RE
 
 .sp
 .LP
-Policy entries may contain the following (name-value) pairs in the properties field. Each (name-value) pair may appear only once in a given policy entry.
+Policy entries may contain the following (name-value) pairs in the
+properties field. Each (name-value) pair may appear only once in a given
+policy entry.
 .sp
 .ne 2
 .mk
@@ -600,9 +774,13 @@ Policy entries may contain the following (name-value) pairs in the properties fi
 .ad
 .sp .6
 .RS 4n
-An acceptable value following this implies that IPsec \fBAH\fR header will be present in the outbound datagram. Values following this describe the authentication algorithms that will be used while applying the IPsec \fBAH\fR on outbound datagrams and verified to be present on inbound datagrams. See \fIRFC 2402\fR. 
+An acceptable value following this implies that IPsec \fBAH\fR header will
+be present in the outbound datagram. Values following this describe the
+authentication algorithms that will be used while applying the IPsec
+\fBAH\fR on outbound datagrams and verified to be present on inbound
+datagrams. See \fIRFC 2402\fR.
 .sp
-This entry can contain either a string or a decimal number. 
+This entry can contain either a string or a decimal number.
 .sp
 .ne 2
 .mk
@@ -611,9 +789,16 @@ This entry can contain either a string or a decimal number.
 .ad
 .sp .6
 .RS 4n
-This should be either \fBMD5\fR or \fBHMAC-MD5\fR denoting the \fBHMAC-MD5\fR algorithm as described in \fIRFC 2403\fR, and \fBSHA1\fR, or \fBHMAC-SHA1\fR or \fBSHA\fR or \fBHMAC-SHA\fR denoting the \fBHMAC-SHA\fR algorithm described in \fIRFC 2404\fR. You can use the \fBipsecalgs\fR(1M) command to obtain the complete list of authentication algorithms.
+This should be either \fBMD5\fR or \fBHMAC-MD5\fR denoting the
+\fBHMAC-MD5\fR algorithm as described in \fIRFC 2403\fR, and \fBSHA1\fR, or
+\fBHMAC-SHA1\fR or \fBSHA\fR or \fBHMAC-SHA\fR denoting the \fBHMAC-SHA\fR
+algorithm described in \fIRFC 2404\fR. You can use the \fBipsecalgs\fR(1M)
+command to obtain the complete list of authentication algorithms.
 .sp
-The string can also be \fBANY\fR, which denotes no-preference for the algorithm. Default algorithms will be chosen based upon the \fBSA\fRs available at this time for manual \fBSA\fRs and the key negotiating daemon for automatic \fBSA\fRs. Strings are not case-sensitive.
+The string can also be \fBANY\fR, which denotes no-preference for the
+algorithm. Default algorithms will be chosen based upon the \fBSA\fRs
+available at this time for manual \fBSA\fRs and the key negotiating daemon
+for automatic \fBSA\fRs. Strings are not case-sensitive.
 .RE
 
 .sp
@@ -624,10 +809,13 @@ The string can also be \fBANY\fR, which denotes no-preference for the algorithm.
 .ad
 .sp .6
 .RS 4n
-A number in the range 1-255. This is useful when new algorithms can be dynamically loaded.
+A number in the range 1-255. This is useful when new algorithms can be
+dynamically loaded.
 .RE
 
-If \fIauth_algs\fR is not present, the \fBAH\fR header will not be present in the outbound datagram, and the same will be verified for the inbound datagram.
+If \fIauth_algs\fR is not present, the \fBAH\fR header will not be present
+in the outbound datagram, and the same will be verified for the inbound
+datagram.
 .RE
 
 .sp
@@ -638,9 +826,14 @@ If \fIauth_algs\fR is not present, the \fBAH\fR header will not be present in th
 .ad
 .sp .6
 .RS 4n
-An acceptable value following this implies that IPsec \fBESP\fR header will be present in the outbound datagram. The value following this describes the encryption algorithms that will be used to apply the IPsec \fBESP\fR protocol to outbound datagrams and verify it to be present on inbound datagrams. See \fIRFC 2406\fR. 
+An acceptable value following this implies that IPsec \fBESP\fR header will
+be present in the outbound datagram. The value following this describes the
+encryption algorithms that will be used to apply the IPsec \fBESP\fR
+protocol to outbound datagrams and verify it to be present on inbound
+datagrams. See \fIRFC 2406\fR.
 .sp
-This entry can contain either a string or a decimal number. Strings are not case-sensitive.
+This entry can contain either a string or a decimal number. Strings are not
+case-sensitive.
 .sp
 .ne 2
 .mk
@@ -655,8 +848,8 @@ Can be one of the following:
 .sp
 .TS
 tab();
-cw(1.83i) cw(1.83i) cw(1.83i) 
-lw(1.83i) lw(1.83i) lw(1.83i) 
+cw(1.83i) cw(1.83i) cw(1.83i)
+lw(1.83i) lw(1.83i) lw(1.83i)
 .
 string value:Algorithm Used:See RFC:
 _
@@ -666,9 +859,15 @@ BLOWFISH or BLOWFISH-CBCBLOWFISH-CBC2451
 AES or AES-CBCAES-CBC2451
 .TE
 
-You can use the \fBipsecalgs\fR(1M) command to obtain the complete list of authentication algorithms.
+You can use the \fBipsecalgs\fR(1M) command to obtain the complete list of
+authentication algorithms.
 .sp
-The value can be \fBNULL\fR, which implies a \fBNULL\fR encryption, pursuant to \fIRFC 2410\fR. This means that the payload will not be encrypted. The string can also be \fBANY\fR, which indicates no-preference for the algorithm. Default algorithms will be chosen depending upon the SAs available at the time for manual SAs and upon the key negotiating daemon for automatic SAs. Strings are not case-sensitive.
+The value can be \fBNULL\fR, which implies a \fBNULL\fR encryption,
+pursuant to \fIRFC 2410\fR. This means that the payload will not be
+encrypted. The string can also be \fBANY\fR, which indicates no-preference
+for the algorithm. Default algorithms will be chosen depending upon the SAs
+available at the time for manual SAs and upon the key negotiating daemon for
+automatic SAs. Strings are not case-sensitive.
 .RE
 
 .sp
@@ -679,7 +878,8 @@ The value can be \fBNULL\fR, which implies a \fBNULL\fR encryption, pursuant to 
 .ad
 .sp .6
 .RS 4n
-A decimal number in the range 1-255. This is useful when new algorithms can be dynamically loaded.
+A decimal number in the range 1-255. This is useful when new algorithms can
+be dynamically loaded.
 .RE
 
 .RE
@@ -692,7 +892,13 @@ A decimal number in the range 1-255. This is useful when new algorithms can be d
 .ad
 .sp .6
 .RS 4n
-An acceptable value following \fBencr_auth_algs\fR implies that the IPsec \fBESP\fR header will be present in the outbound datagram. The values following \fBencr_auth_algs\fR describe the authentication algorithms that will be used while applying the IPsec \fBESP\fR protocol on outbound datagrams and verified to be present on inbound datagrams. See \fIRFC 2406\fR. This entry can contain either a string or a number. Strings are case-insensitive. 
+An acceptable value following \fBencr_auth_algs\fR implies that the IPsec
+\fBESP\fR header will be present in the outbound datagram. The values
+following \fBencr_auth_algs\fR describe the authentication algorithms that
+will be used while applying the IPsec \fBESP\fR protocol on outbound
+datagrams and verified to be present on inbound datagrams. See \fIRFC
+2406\fR. This entry can contain either a string or a number. Strings are
+case-insensitive. 
 .sp
 .ne 2
 .mk
@@ -701,7 +907,8 @@ An acceptable value following \fBencr_auth_algs\fR implies that the IPsec \fBESP
 .ad
 .sp .6
 .RS 4n
-Valid values are the same as the ones described for \fBauth_algs\fR above.
+Valid values are the same as the ones described for \fBauth_algs\fR
+above.
 .RE
 
 .sp
@@ -712,18 +919,31 @@ Valid values are the same as the ones described for \fBauth_algs\fR above.
 .ad
 .sp .6
 .RS 4n
-This should be a decimal number in the range 1-255. This is useful when new algorithms can be dynamically loaded.
+This should be a decimal number in the range 1-255. This is useful when new
+algorithms can be dynamically loaded.
 .RE
 
-If \fBencr_algs\fR is present and \fBencr_auth_algs\fR is not present in a policy entry, the system will use an \fBESP\fR \fBSA\fR regardless of whether the \fBSA\fR has an authentication algorithm or not. 
+If \fBencr_algs\fR is present and \fBencr_auth_algs\fR is not present in a
+policy entry, the system will use an \fBESP\fR \fBSA\fR regardless of
+whether the \fBSA\fR has an authentication algorithm or not.
 .sp
-If \fBencr_algs\fR is not present and \fBencr_auth_algs\fR is present in a policy entry, null encryption will be provided, which is equivalent to \fBencr_algs\fR with \fBNULL\fR, for outbound and inbound datagrams. 
+If \fBencr_algs\fR is not present and \fBencr_auth_algs\fR is present in a
+policy entry, null encryption will be provided, which is equivalent to
+\fBencr_algs\fR with \fBNULL\fR, for outbound and inbound datagrams.
 .sp
-If both \fBencr_algs\fR and \fBencr_auth_algs\fR are not present in a policy entry, \fBESP\fR header will not be present for outbound datagrams and the same will be verified for inbound datagrams.
+If both \fBencr_algs\fR and \fBencr_auth_algs\fR are not present in a
+policy entry, \fBESP\fR header will not be present for outbound datagrams
+and the same will be verified for inbound datagrams.
 .sp
-If both \fBencr_algs\fR and \fBencr_auth_algs\fR are present in a policy entry, \fBESP\fR header with integrity checksum will be present on outbound datagrams and the same will be verified for inbound datagrams.
+If both \fBencr_algs\fR and \fBencr_auth_algs\fR are present in a policy
+entry, \fBESP\fR header with integrity checksum will be present on outbound
+datagrams and the same will be verified for inbound datagrams.
 .sp
-For \fBencr_algs\fR, \fBencr_auth_algs\fR, and \fBauth_algs\fR a key length specification may be present. This is either a single value specifying the only valid key length for the algorithm or a range specifying the valid minimum and/or maximum key lengths. Minimum or maximum lengths may be omitted.
+For \fBencr_algs\fR, \fBencr_auth_algs\fR, and \fBauth_algs\fR a key length
+specification may be present. This is either a single value specifying the
+only valid key length for the algorithm or a range specifying the valid
+minimum and/or maximum key lengths. Minimum or maximum lengths may be
+omitted.
 .RE
 
 .sp
@@ -734,7 +954,8 @@ For \fBencr_algs\fR, \fBencr_auth_algs\fR, and \fBauth_algs\fR a key length spec
 .ad
 .sp .6
 .RS 4n
-Values following this decides whether this entry is for outbound or inbound datagram. Valid values are strings that should be one of the following: 
+Values following this decides whether this entry is for outbound or inbound
+datagram. Valid values are strings that should be one of the following:
 .sp
 .ne 2
 .mk
@@ -743,7 +964,8 @@ Values following this decides whether this entry is for outbound or inbound data
 .ad
 .sp .6
 .RS 4n
-This means that this policy entry should be considered only for outbound datagrams.
+This means that this policy entry should be considered only for outbound
+datagrams.
 .RE
 
 .sp
@@ -754,7 +976,8 @@ This means that this policy entry should be considered only for outbound datagra
 .ad
 .sp .6
 .RS 4n
-This means that this policy entry should be considered only for inbound datagrams. 
+This means that this policy entry should be considered only for inbound
+datagrams. 
 .RE
 
 .sp
@@ -765,10 +988,13 @@ This means that this policy entry should be considered only for inbound datagram
 .ad
 .sp .6
 .RS 4n
-This means that this policy entry should be considered for both inbound and outbound datagrams
+This means that this policy entry should be considered for both inbound and
+outbound datagrams
 .RE
 
-This entry is not needed when the action is "apply", "permit" or "ipsec". But if it is given while the action is "apply" or "permit", it should be "out" or "in" respectively. This is mandatory when the action is "bypass".
+This entry is not needed when the action is "apply", "permit" or "ipsec".
+But if it is given while the action is "apply" or "permit", it should be
+"out" or "in" respectively. This is mandatory when the action is "bypass".
 .RE
 
 .sp
@@ -779,7 +1005,13 @@ This entry is not needed when the action is "apply", "permit" or "ipsec". But if
 .ad
 .sp .6
 .RS 4n
-Values following this decide the attribute of the security association. Value indicates whether a unique security association should be used or any existing \fBSA\fR can be used. If there is a policy requirement, \fBSA\fRs are created dynamically on the first outbound datagram using the key management daemon. Static \fBSA\fRs can be created using \fBipseckey\fR(1M). The values used here determine whether a new \fBSA\fR will be used/obtained. Valid values are strings that could be one of the following: 
+Values following this decide the attribute of the security association.
+Value indicates whether a unique security association should be used or any
+existing \fBSA\fR can be used. If there is a policy requirement, \fBSA\fRs
+are created dynamically on the first outbound datagram using the key
+management daemon. Static \fBSA\fRs can be created using \fBipseckey\fR(1M).
+The values used here determine whether a new \fBSA\fR will be used/obtained.
+Valid values are strings that could be one of the following:
 .sp
 .ne 2
 .mk
@@ -788,9 +1020,18 @@ Values following this decide the attribute of the security association. Value in
 .ad
 .sp .6
 .RS 4n
-Unique Association. A new/unused association will be obtained/used for packets matching this policy entry. If an \fBSA\fR that was previously used by the same 5 tuples, that is, {Source address, Destination address, Source port, Destination Port, Protocol (for example, \fBTCP\fR/\fBUDP\fR)} exists, it will be reused. Thus uniqueness is expressed by the 5 tuples given above. The security association used by the above 5 tuples will not be used by any other socket. For inbound datagrams, uniqueness will not be verified.
+Unique Association. A new/unused association will be obtained/used for
+packets matching this policy entry. If an \fBSA\fR that was previously used
+by the same 5 tuples, that is, {Source address, Destination address, Source
+port, Destination Port, Protocol (for example, \fBTCP\fR/\fBUDP\fR)} exists,
+it will be reused. Thus uniqueness is expressed by the 5 tuples given above.
+The security association used by the above 5 tuples will not be used by any
+other socket. For inbound datagrams, uniqueness will not be verified.
 .sp
-For tunnel-mode tunnels, \fBunique\fR is ignored. SAs are assigned per-rule in tunnel-mode tunnels. For transport-mode tunnels, \fBunique\fR is implicit, because the enforcement happens only on the outer-packet addresses and protocol value of either IPv4-in-IP or IPv6-in-IP.
+For tunnel-mode tunnels, \fBunique\fR is ignored. SAs are assigned per-rule
+in tunnel-mode tunnels. For transport-mode tunnels, \fBunique\fR is
+implicit, because the enforcement happens only on the outer-packet addresses
+and protocol value of either IPv4-in-IP or IPv6-in-IP.
 .RE
 
 .sp
@@ -801,15 +1042,21 @@ For tunnel-mode tunnels, \fBunique\fR is ignored. SAs are assigned per-rule in t
 .ad
 .sp .6
 .RS 4n
-Shared association. If an \fBSA\fR exists already for this source-destination pair, it will be used. Otherwise a new \fBSA\fR will be obtained. This is the default.
+Shared association. If an \fBSA\fR exists already for this
+source-destination pair, it will be used. Otherwise a new \fBSA\fR will be
+obtained. This is the default.
 .RE
 
-This is mandatory only for outbound policy entries and should not be given for entries whose action is "bypass". If this entry is not given for inbound entries, for example, when "dir" is in or "action" is permit, it will be assumed to be shared.
+This is mandatory only for outbound policy entries and should not be given
+for entries whose action is "bypass". If this entry is not given for inbound
+entries, for example, when "dir" is in or "action" is permit, it will be
+assumed to be shared.
 .RE
 
 .sp
 .LP
-Action follows the pattern and should be given before properties. It should be one of the following and this field is mandatory.
+Action follows the pattern and should be given before properties. It should
+be one of the following and this field is mandatory.
 .sp
 .ne 2
 .mk
@@ -818,7 +1065,9 @@ Action follows the pattern and should be given before properties. It should be o
 .ad
 .sp .6
 .RS 4n
-Use IPsec for the datagram as described by the properties, if the pattern matches the datagram. If ipsec is given without a dir spec , the pattern is matched to incoming and outgoing datagrams. 
+Use IPsec for the datagram as described by the properties, if the pattern
+matches the datagram. If ipsec is given without a dir spec , the pattern is
+matched to incoming and outgoing datagrams.
 .RE
 
 .sp
@@ -829,7 +1078,9 @@ Use IPsec for the datagram as described by the properties, if the pattern matche
 .ad
 .sp .6
 .RS 4n
-Apply IPsec to the datagram as described by the properties, if the pattern matches the datagram. If \fBapply\fR is given, the pattern is matched only on the outbound datagram.
+Apply IPsec to the datagram as described by the properties, if the pattern
+matches the datagram. If \fBapply\fR is given, the pattern is matched only
+on the outbound datagram.
 .RE
 
 .sp
@@ -840,7 +1091,10 @@ Apply IPsec to the datagram as described by the properties, if the pattern match
 .ad
 .sp .6
 .RS 4n
-Permit the datagram if the pattern matches the incoming datagram and satisfies the constraints described by the properties. If it does not satisfy the properties, discard the datagram. If \fBpermit\fR is given, the pattern is matched only for inbound datagrams.
+Permit the datagram if the pattern matches the incoming datagram and
+satisfies the constraints described by the properties. If it does not
+satisfy the properties, discard the datagram. If \fBpermit\fR is given, the
+pattern is matched only for inbound datagrams.
 .RE
 
 .sp
@@ -855,7 +1109,12 @@ Permit the datagram if the pattern matches the incoming datagram and satisfies t
 .ad
 .sp .6
 .RS 4n
-Bypass any policy checks if the pattern matches the datagram. \fBdir\fR in the properties decides whether the check is done on outbound or inbound datagrams. All the \fBbypass\fR entries are checked before checking with any other policy entry in the system. This has the highest precedence over any other entries. \fBdir\fR is the only field that should be present when action is \fBbypass\fR.
+Bypass any policy checks if the pattern matches the datagram. \fBdir\fR in
+the properties decides whether the check is done on outbound or inbound
+datagrams. All the \fBbypass\fR entries are checked before checking with any
+other policy entry in the system. This has the highest precedence over any
+other entries. \fBdir\fR is the only field that should be present when
+action is \fBbypass\fR.
 .RE
 
 .sp
@@ -871,7 +1130,11 @@ Drop any packets that match the pattern.
 
 .sp
 .LP
-If the file contains multiple policy entries, for example, they are assumed to be listed in the order in which they are to be applied. In cases of multiple entries matching the outbound and inbound datagram, the first match will be taken. The system will reorder the policy entry, that is, add the new entry before the old entry, only when:
+If the file contains multiple policy entries, for example, they are assumed
+to be listed in the order in which they are to be applied. In cases of
+multiple entries matching the outbound and inbound datagram, the first match
+will be taken. The system will reorder the policy entry, that is, add the
+new entry before the old entry, only when:
 .sp
 .LP
 The level of protection is "stronger" than the old level of protection.
@@ -888,53 +1151,100 @@ AH and ESP > ESP > AH
 
 .sp
 .LP
-The standard uses of \fBAH\fR and \fBESP\fR were what drove this ranking of "stronger". There are flaws with this. \fBESP \fR can be used either without authentication, which will allow cut-and-paste or replay attacks, or without encryption, which makes it equivalent or slightly weaker than \fBAH\fR. An administrator should take care to use \fBESP\fR properly. See \fBipsecesp\fR(7P) for more details.
+The standard uses of \fBAH\fR and \fBESP\fR were what drove this ranking of
+"stronger". There are flaws with this. \fBESP \fR can be used either without
+authentication, which will allow cut-and-paste or replay attacks, or without
+encryption, which makes it equivalent or slightly weaker than \fBAH\fR. An
+administrator should take care to use \fBESP\fR properly. See
+\fBipsecesp\fR(7P) for more details.
 .sp
 .LP
-If the new entry has \fBbypass\fR as action, \fBbypass\fR has the highest precedence. It can be added in any order, and the system will still match all the \fBbypass\fR entries before matching any other entries. This is useful for key management daemons which can use this feature to bypass IPsec as it protects its own traffic.
+If the new entry has \fBbypass\fR as action, \fBbypass\fR has the highest
+precedence. It can be added in any order, and the system will still match
+all the \fBbypass\fR entries before matching any other entries. This is
+useful for key management daemons which can use this feature to bypass IPsec
+as it protects its own traffic.
 .sp
 .LP
-Entries with both \fBAH\fR (\fBauth_algs\fR present in the policy entry) and \fBESP\fR (\fBencr_auth_algs\fR or \fBencr_auth_algs\fR present in the policy entry) protection are ordered after all the entries with \fBAH\fR and \fBESP\fR and before any \fBAH\fR-only and \fBESP\fR-only entries. In all other cases the order specified by the user is not modified, that is, newer entries are added at the end of all the old entries. See .
+Entries with both \fBAH\fR (\fBauth_algs\fR present in the policy entry)
+and \fBESP\fR (\fBencr_auth_algs\fR or \fBencr_auth_algs\fR present in the
+policy entry) protection are ordered after all the entries with \fBAH\fR and
+\fBESP\fR and before any \fBAH\fR-only and \fBESP\fR-only entries. In all
+other cases the order specified by the user is not modified, that is, newer
+entries are added at the end of all the old entries. See .
 .sp
 .LP
-A new entry is considered duplicate of the old entry if an old entry matches the same traffic pattern as the new entry. See  for information on duplicates.
+A new entry is considered duplicate of the old entry if an old entry
+matches the same traffic pattern as the new entry. See  for information on
+duplicates.
 .SH SECURITY
 .sp
 .LP
-If, for example, the policy file comes over the wire from an \fBNFS\fR mounted file system, an adversary can modify the data contained in the file, thus changing the policy configured on the machine to suit his needs. Administrators should be cautious about transmitting a copy of the policy file over a network.
+If, for example, the policy file comes over the wire from an \fBNFS\fR
+mounted file system, an adversary can modify the data contained in the file,
+thus changing the policy configured on the machine to suit his needs.
+Administrators should be cautious about transmitting a copy of the policy
+file over a network.
 .sp
 .LP
-To prevent non-privileged users from modifying the security policy, ensure that the configuration file is writable only by trusted users.
+To prevent non-privileged users from modifying the security policy, ensure
+that the configuration file is writable only by trusted users.
 .sp
 .LP
-The configuration file is defined by a property of the \fBpolicy\fR \fBsmf\fR(5) service. The default configuration file, is \fB/etc/inet/ipsecinit.conf\fR. This can be changed using the \fBsvcprop\fR(1) command. See \fBNOTES\fR for more details.
+The configuration file is defined by a property of the \fBpolicy\fR
+\fBsmf\fR(5) service. The default configuration file, is
+\fB/etc/inet/ipsecinit.conf\fR. This can be changed using the
+\fBsvcprop\fR(1) command. See \fBNOTES\fR for more details.
 .sp
 .LP
-The policy description language supports the use of tokens that can be resolved by means of a name service, using functions such as \fBgethostbyname\fR(3NSL). While convenient, these functions are only secure as the name service the system is configured to use. Great care should be taken to secure the name service if it is used to resolve elements of the security policy.
+The policy description language supports the use of tokens that can be
+resolved by means of a name service, using functions such as
+\fBgethostbyname\fR(3NSL). While convenient, these functions are only secure
+as the name service the system is configured to use. Great care should be
+taken to secure the name service if it is used to resolve elements of the
+security policy.
 .sp
 .LP
-If your source address is a host that can be looked up over the network and your naming system itself is compromised, then any names used will no longer be trustworthy.
+If your source address is a host that can be looked up over the network and
+your naming system itself is compromised, then any names used will no longer
+be trustworthy.
 .sp
 .LP
-If the name switch is configured to use a name service that is not local to the system, bypass policy entries might be required to prevent the policy from preventing communication to the name service. See \fBnsswitch.conf\fR(4).
+If the name switch is configured to use a name service that is not local to
+the system, bypass policy entries might be required to prevent the policy
+from preventing communication to the name service. See
+\fBnsswitch.conf\fR(4).
 .sp
 .LP
-Policy is latched for \fBTCP/UDP\fR sockets on which a \fBconnect\fR(3SOCKET) or \fBaccept\fR(3SOCKET) has been issued. Adding new policy entries will not have any effect on them. This feature of latching may change in the future. It is not advisable to depend upon this feature.
+Policy is latched for \fBTCP/UDP\fR sockets on which a
+\fBconnect\fR(3SOCKET) or \fBaccept\fR(3SOCKET) has been issued. Adding new
+policy entries will not have any effect on them. This feature of latching
+may change in the future. It is not advisable to depend upon this feature.
 .sp
 .LP
-The \fBipsecconf\fR command can only be run by a user who has sufficient privilege to open the \fBpf_key\fR(7P) socket. The appropriate privilege can be assigned to a user with the Network IPsec Management profile. See \fBprofiles\fR(1), \fBrbac\fR(5), \fBprof_attr\fR(4).
+The \fBipsecconf\fR command can only be run by a user who has sufficient
+privilege to open the \fBpf_key\fR(7P) socket. The appropriate privilege can
+be assigned to a user with the Network IPsec Management profile. See
+\fBprofiles\fR(1), \fBrbac\fR(5), \fBprof_attr\fR(4).
 .sp
 .LP
-Make sure to set up the policies before starting any communications, as existing connections may be affected by the addition of new policy entries. Similarly, do not change policies in the middle of a communication. 
+Make sure to set up the policies before starting any communications, as
+existing connections may be affected by the addition of new policy entries.
+Similarly, do not change policies in the middle of a communication.
 .sp
 .LP
-Note that certain \fBndd\fR tunables affect how policies configured with this tool are enforced; see \fBipsecesp\fR(7P) for more details.
+Note that certain \fBndd\fR tunables affect how policies configured with
+this tool are enforced; see \fBipsecesp\fR(7P) for more details.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRProtecting Outbound \fBTCP\fR Traffic With \fBESP\fR and the \fBAES\fR Algorithm
+\fBExample 1 \fRProtecting Outbound \fBTCP\fR Traffic With \fBESP\fR and
+the \fBAES\fR Algorithm
 .sp
 .LP
-The following example specified that any \fBTCP\fR packet from spiderweb to arachnid should be encrypted with \fBAES\fR, and the \fB SA\fR could be a shared one. It does not verify whether or not the inbound traffic is encrypted. 
+The following example specified that any \fBTCP\fR packet from spiderweb to
+arachnid should be encrypted with \fBAES\fR, and the \fB SA\fR could be a
+shared one. It does not verify whether or not the inbound traffic is
+encrypted. 
 
 .sp
 .in +2
@@ -958,7 +1268,8 @@ The following example specified that any \fBTCP\fR packet from spiderweb to arac
 \fBExample 2 \fRVerifying Whether or Not Inbound Traffic is Encrypted
 .sp
 .LP
-Example 1 does not verify whether or not the inbound traffic is encrypted. The entry in this example protects inbound traffic: 
+Example 1 does not verify whether or not the inbound traffic is encrypted.
+The entry in this example protects inbound traffic:
 
 .sp
 .in +2
@@ -980,7 +1291,12 @@ Example 1 does not verify whether or not the inbound traffic is encrypted. The e
 
 .sp
 .LP
-\fBsa\fR can be absent for inbound policy entries as it implies that it can be a shared one. Uniqueness is not verified on inbound. Note that in both the above entries, authentication was never specified. This can lead to cut and paste attacks. As mentioned previously, though the authentication is not specified, the system will still use an \fBESP\fR \fBSA\fR with \fBencr_auth_alg\fR specified, if it was found in the \fBSA\fR tables.
+\fBsa\fR can be absent for inbound policy entries as it implies that it can
+be a shared one. Uniqueness is not verified on inbound. Note that in both
+the above entries, authentication was never specified. This can lead to cut
+and paste attacks. As mentioned previously, though the authentication is not
+specified, the system will still use an \fBESP\fR \fBSA\fR with
+\fBencr_auth_alg\fR specified, if it was found in the \fBSA\fR tables.
 
 .LP
 \fBExample 3 \fRProtecting All Traffic Between Two Hosts
@@ -1005,7 +1321,13 @@ The following example protects both directions at once:
 \fBExample 4 \fRAuthenticating All Inbound Traffic to the Telnet Port
 .sp
 .LP
-This entry specifies that any inbound datagram to telnet port should come in authenticated with the SHA1 algorithm. Otherwise the datagram should not be permitted. Without this entry, traffic destined to port number 23 can come in clear. \fBsa\fR is not specified, which implies that it is shared. This can be done only for inbound entries. You need to have an equivalent entry to protect outbound traffic so that the outbound traffic is authenticated as well, remove the dir.
+This entry specifies that any inbound datagram to telnet port should come
+in authenticated with the SHA1 algorithm. Otherwise the datagram should not
+be permitted. Without this entry, traffic destined to port number 23 can
+come in clear. \fBsa\fR is not specified, which implies that it is shared.
+This can be done only for inbound entries. You need to have an equivalent
+entry to protect outbound traffic so that the outbound traffic is
+authenticated as well, remove the dir.
 
 .sp
 .in +2
@@ -1027,7 +1349,15 @@ This entry specifies that any inbound datagram to telnet port should come in aut
 \fBExample 5 \fRVerifying Inbound Traffic is Null-Encrypted
 .sp
 .LP
-The first entry specifies that any packet with address host-B should not be checked against any policies. The second entry specifies that all inbound traffic from network-B should be encrypted with a \fBNULL\fR encryption algorithm and the \fBMD5\fR authentication algorithm. \fBNULL\fR encryption implies that \fBESP\fR header will be used without encrypting the datagram. As the first entry is \fBbypass\fR it need not be given first in order, as \fBbypass\fR entries have the highest precedence. Thus any inbound traffic will be matched against all \fBbypass\fR entries before any other policy entries.
+The first entry specifies that any packet with address host-B should not be
+checked against any policies. The second entry specifies that all inbound
+traffic from network-B should be encrypted with a \fBNULL\fR encryption
+algorithm and the \fBMD5\fR authentication algorithm. \fBNULL\fR encryption
+implies that \fBESP\fR header will be used without encrypting the datagram.
+As the first entry is \fBbypass\fR it need not be given first in order, as
+\fBbypass\fR entries have the highest precedence. Thus any inbound traffic
+will be matched against all \fBbypass\fR entries before any other policy
+entries.
 
 .sp
 .in +2
@@ -1056,7 +1386,11 @@ encr_auth_algs md5
 \fBExample 6 \fREntries to Bypass Traffic from IPsec
 .sp
 .LP
-The first two entries provide that any datagram leaving the machine with source port 53 or coming into port number 53 should not be subjected to IPsec policy checks, irrespective of any other policy entry in the system. Thus the latter two entries will be considered only for ports other than port number 53.
+The first two entries provide that any datagram leaving the machine with
+source port 53 or coming into port number 53 should not be subjected to
+IPsec policy checks, irrespective of any other policy entry in the system.
+Thus the latter two entries will be considered only for ports other than
+port number 53.
 
 .sp
 .in +2
@@ -1084,22 +1418,28 @@ The first two entries provide that any datagram leaving the machine with source 
 
 .sp
 .LP
-If the \fBgethostbyname\fR(3XNET) call for spiderweb yields multiple addresses, multiple policy entries will be added for all the source address with the same properties.
+If the \fBgethostbyname\fR(3XNET) call for spiderweb yields multiple
+addresses, multiple policy entries will be added for all the source address
+with the same properties.
 
 .sp
 .in +2
 .nf
-{ 
-    laddr arachnid 
-    raddr spiderweb 
-    dir in 
+{
+    laddr arachnid
+    raddr spiderweb
+    dir in
 } ipsec {auth_algs any sa unique}
 .fi
 .in -2
 
 .sp
 .LP
-If the \fBgethostbyname\fR(3XNET) call for spiderweb and the \fBgethostbyname\fR(3XNET) call for arachnid yield multiple addresses, multiple policy entries will be added for each (\fBsaddr\fR \fBdaddr\fR) pair with the same properties. Use \fBipsecconf\fR \fB-l\fR to view all the policy entries added.
+If the \fBgethostbyname\fR(3XNET) call for spiderweb and the
+\fBgethostbyname\fR(3XNET) call for arachnid yield multiple addresses,
+multiple policy entries will be added for each (\fBsaddr\fR \fBdaddr\fR)
+pair with the same properties. Use \fBipsecconf\fR \fB-l\fR to view all the
+policy entries added.
 
 .LP
 \fBExample 8 \fRBypassing Unauthenticated Traffic
@@ -1119,13 +1459,18 @@ If the \fBgethostbyname\fR(3XNET) call for spiderweb and the \fBgethostbyname\fR
 
 .sp
 .LP
-Note that \fBbypass\fR can be given anywhere and it will take precedence over all other entries. \fBNULL\fR pattern matches all the traffic.
+Note that \fBbypass\fR can be given anywhere and it will take precedence
+over all other entries. \fBNULL\fR pattern matches all the traffic.
 
 .LP
 \fBExample 9 \fREncrypting IPv6 Traffic with 3DES and MD5
 .sp
 .LP
-The following entry on the host with the link local address \fBfe80::a00:20ff:fe21:4483\fR specifies that any outbound traffic between the hosts wtih IPv6 link-local addresses \fBfe80::a00:20ff:fe21:4483\fR and \fBfe80::a00:20ff:felf:e346\fR must be encrypted with \fB3DES\fR and \fBMD5.\fR
+The following entry on the host with the link local address
+\fBfe80::a00:20ff:fe21:4483\fR specifies that any outbound traffic between
+the hosts wtih IPv6 link-local addresses \fBfe80::a00:20ff:fe21:4483\fR and
+\fBfe80::a00:20ff:felf:e346\fR must be encrypted with \fB3DES\fR and
+\fBMD5.\fR
 
 .sp
 .in +2
@@ -1145,7 +1490,9 @@ The following entry on the host with the link local address \fBfe80::a00:20ff:fe
 \fBExample 10 \fRVerifying IPv6 Traffic is Authenticated with SHA1
 .sp
 .LP
-The following two entries require that all IPv6 traffic to and from the IPv6 site-local network \fBfec0:abcd::0/32\fR be authenticated with \fBSHA1\fR.
+The following two entries require that all IPv6 traffic to and from the
+IPv6 site-local network \fBfec0:abcd::0/32\fR be authenticated with
+\fBSHA1\fR.
 
 .sp
 .in +2
@@ -1228,13 +1575,16 @@ sha1 sa shared}
 
 .sp
 .LP
-In the preceding, incorrect entry, note that the third line begins with "\fBor ipsec\fR". Such an entry causes \fBipsecconf\fR to return an error.
+In the preceding, incorrect entry, note that the third line begins with
+"\fBor ipsec\fR". Such an entry causes \fBipsecconf\fR to return an error.
 
 .LP
 \fBExample 13 \fRAllowing Neighbor Discovery to Occur in the Clear
 .sp
 .LP
-The following two entries require that all IPv6 traffic to and from the IPv6 site-local network \fBfec0:abcd::0/32\fR be authenticated with SHA1. The second entry allows neighbor discovery to operate correctly.
+The following two entries require that all IPv6 traffic to and from the
+IPv6 site-local network \fBfec0:abcd::0/32\fR be authenticated with SHA1.
+The second entry allows neighbor discovery to operate correctly.
 
 .sp
 .in +2
@@ -1249,7 +1599,8 @@ The following two entries require that all IPv6 traffic to and from the IPv6 sit
 \fBExample 14 \fRUsing "or"
 .sp
 .LP
-The following entry allows traffic using the AES or Blowfish algorithms from the remote machine spiderweb:
+The following entry allows traffic using the AES or Blowfish algorithms
+from the remote machine spiderweb:
 
 .sp
 .in +2
@@ -1259,10 +1610,12 @@ The following entry allows traffic using the AES or Blowfish algorithms from the
 .in -2
 
 .LP
-\fBExample 15 \fRConfiguring a Tunnel to be Backward-Compatible with Solaris 9
+\fBExample 15 \fRConfiguring a Tunnel to be Backward-Compatible with
+Solaris 9
 .sp
 .LP
-The following example is equivalent to "\fBencr_algs aes encr_auth_algs md5\fR" in \fBifconfig\fR(1M):
+The following example is equivalent to "\fBencr_algs aes encr_auth_algs
+md5\fR" in \fBifconfig\fR(1M):
 
 .sp
 .in +2
@@ -1273,10 +1626,12 @@ The following example is equivalent to "\fBencr_algs aes encr_auth_algs md5\fR" 
 .in -2
 
 .LP
-\fBExample 16 \fRConfiguring a Tunnel to a VPN client with an Assigned Address
+\fBExample 16 \fRConfiguring a Tunnel to a VPN client with an Assigned
+Address
 .sp
 .LP
-The following example assumes a distinct "inside" network with its own topology, such that a client's default route goes "inside".
+The following example assumes a distinct "inside" network with its own
+topology, such that a client's default route goes "inside".
 
 .sp
 .in +2
@@ -1288,10 +1643,14 @@ laddr 0.0.0.0/0} ipsec {encr_algs aes encr_auth_algs sha1}
 .in -2
 
 .LP
-\fBExample 17 \fRTransit VPN router between Two Tunnelled Subnets and a Third
+\fBExample 17 \fRTransit VPN router between Two Tunnelled Subnets and a
+Third
 .sp
 .LP
-The following example specifies a configuration for a VPN router that routes between two tunnelled subnets and a third subnet that is on-link. Consider remote-site A, remote-site B, and local site C, each with a \fB/24\fR address allocation.
+The following example specifies a configuration for a VPN router that
+routes between two tunnelled subnets and a third subnet that is on-link.
+Consider remote-site A, remote-site B, and local site C, each with a
+\fB/24\fR address allocation.
 
 .sp
 .in +2
@@ -1325,7 +1684,8 @@ C-prefix/24} ipsec {encr_algs aes encr_auth_algs md5}
 .ad
 .sp .6
 .RS 4n
-Cache of IPsec policies currently configured for the system, maintained by \fBipsecconf\fR command. Do not edit this file.
+Cache of IPsec policies currently configured for the system, maintained by
+\fBipsecconf\fR command. Do not edit this file.
 .RE
 
 .sp
@@ -1336,7 +1696,8 @@ Cache of IPsec policies currently configured for the system, maintained by \fBip
 .ad
 .sp .6
 .RS 4n
-File containing IPsec policies to be installed at system restart by the \fBpolicy\fR \fBsmf\fR(5) service. See \fBNOTES\fR for more information.
+File containing IPsec policies to be installed at system restart by the
+\fBpolicy\fR \fBsmf\fR(5) service. See \fBNOTES\fR for more information.
 .RE
 
 .sp
@@ -1359,8 +1720,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -1372,31 +1733,48 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBauths\fR(1), \fBprofiles\fR(1), \fBsvcprop\fR(1), \fBsvcs\fR(1), \fBin.iked\fR(1M), \fBinit\fR(1M), \fBifconfig\fR(1M), \fBipsecalgs\fR(1M), \fBipseckey\fR(1M), \fBsvcadm\fR(1M), \fBsvccfg\fR(1M), \fBgethostbyname\fR(3NSL), \fBaccept\fR(3SOCKET), \fBconnect\fR(3SOCKET), \fBgethostbyname\fR(3XNET), \fBgetnetbyname\fR(3XNET), \fBgetprotobyname\fR(3XNET), \fBgetservbyname\fR(3XNET), \fBgetaddrinfo\fR(3SOCKET), \fBsocket\fR(3SOCKET), \fBike.config\fR(4), \fBnsswitch.conf\fR(4), \fBprof_attr\fR(4), \fBuser_attr\fR(4), \fBattributes\fR(5), \fBrbac\fR(5), \fBsmf\fR(5), \fBipsecah\fR(7P), \fBipsecesp\fR(7P), \fBpf_key\fR(7P)
+\fBauths\fR(1), \fBprofiles\fR(1), \fBsvcprop\fR(1), \fBsvcs\fR(1),
+\fBin.iked\fR(1M), \fBinit\fR(1M), \fBifconfig\fR(1M), \fBipsecalgs\fR(1M),
+\fBipseckey\fR(1M), \fBsvcadm\fR(1M), \fBsvccfg\fR(1M),
+\fBgethostbyname\fR(3NSL), \fBaccept\fR(3SOCKET), \fBconnect\fR(3SOCKET),
+\fBgethostbyname\fR(3XNET), \fBgetnetbyname\fR(3XNET),
+\fBgetprotobyname\fR(3XNET), \fBgetservbyname\fR(3XNET),
+\fBgetaddrinfo\fR(3SOCKET), \fBsocket\fR(3SOCKET), \fBike.config\fR(4),
+\fBnsswitch.conf\fR(4), \fBprof_attr\fR(4), \fBuser_attr\fR(4),
+\fBattributes\fR(5), \fBrbac\fR(5), \fBsmf\fR(5), \fBipsecah\fR(7P),
+\fBipsecesp\fR(7P), \fBpf_key\fR(7P)
 .sp
 .LP
-Glenn, R. and Kent, S. \fIRFC 2410, The NULL Encryption Algorithm and Its Use With IPsec\fR. The Internet Society. 1998.
+Glenn, R. and Kent, S. \fIRFC 2410, The NULL Encryption Algorithm and Its
+Use With IPsec\fR. The Internet Society. 1998.
 .sp
 .LP
-Kent, S. and Atkinson, R. \fIRFC 2402, IP Authentication Header\fR.The Internet Society. 1998.
+Kent, S. and Atkinson, R. \fIRFC 2402, IP Authentication Header\fR.The
+Internet Society. 1998.
 .sp
 .LP
-Kent, S. and Atkinson, R. \fIRFC 2406, IP Encapsulating Security Payload (ESP)\fR. The Internet Society. 1998.
+Kent, S. and Atkinson, R. \fIRFC 2406, IP Encapsulating Security Payload
+(ESP)\fR. The Internet Society. 1998.
 .sp
 .LP
-Madsen, C. and Glenn, R. \fIRFC 2403, The Use of HMAC-MD5-96 within ESP and AH\fR. The Internet Society. 1998.
+Madsen, C. and Glenn, R. \fIRFC 2403, The Use of HMAC-MD5-96 within ESP and
+AH\fR. The Internet Society. 1998.
 .sp
 .LP
-Madsen, C. and Glenn, R. \fIRFC 2404, The Use of HMAC-SHA-1-96 within ESP and AH\fR. The Internet Society. 1998.
+Madsen, C. and Glenn, R. \fIRFC 2404, The Use of HMAC-SHA-1-96 within ESP
+and AH\fR. The Internet Society. 1998.
 .sp
 .LP
-Madsen, C. and Doraswamy, N. \fIRFC 2405, The ESP DES-CBC Cipher Algorithm With Explicit IV\fR. The Internet Society. 1998.
+Madsen, C. and Doraswamy, N. \fIRFC 2405, The ESP DES-CBC Cipher Algorithm
+With Explicit IV\fR. The Internet Society. 1998.
 .sp
 .LP
-Pereira, R. and Adams, R. \fIRFC 2451, The ESP CBC-Mode Cipher Algorithms\fR. The Internet Society. 1998.
+Pereira, R. and Adams, R. \fIRFC 2451, The ESP CBC-Mode Cipher
+Algorithms\fR. The Internet Society. 1998.
 .sp
 .LP
-Frankel, S. and Kelly, R. Glenn, \fIThe AES Cipher Algorithm and Its Use With IPsec\fR. 2001.
+Frankel, S. and Kelly, R. Glenn, \fIThe AES Cipher Algorithm and Its Use
+With IPsec\fR. 2001.
 .SH DIAGNOSTICS
 .sp
 .ne 2
@@ -1410,7 +1788,10 @@ Frankel, S. and Kelly, R. Glenn, \fIThe AES Cipher Algorithm and Its Use With IP
 .ad
 .sp .6
 .RS 4n
-\fIstring\fR refers to one of the names in pattern or properties. A Bad string indicates that an argument is malformed; a Duplicate string indicates that there are multiple arguments of a similar type, for example, multiple Source Address arguments.
+\fIstring\fR refers to one of the names in pattern or properties. A Bad
+string indicates that an argument is malformed; a Duplicate string indicates
+that there are multiple arguments of a similar type, for example, multiple
+Source Address arguments.
 .RE
 
 .sp
@@ -1454,13 +1835,16 @@ Reported when the \fIindex\fR for delete is not a valid one.
 .ad
 .sp .6
 .RS 4n
-Reported when there is already a policy entry that matches the traffic of this new entry. 
+Reported when there is already a policy entry that matches the traffic of
+this new entry.
 .RE
 
 .SH NOTES
 .sp
 .LP
-IPsec manual keys are managed by the service management facility, \fBsmf\fR(5). The services listed below manage the components of IPsec. These services are delivered as follows:
+IPsec manual keys are managed by the service management facility,
+\fBsmf\fR(5). The services listed below manage the components of IPsec.
+These services are delivered as follows:
 .sp
 .in +2
 .nf
@@ -1474,22 +1858,33 @@ svc:/network/ipsec/ike:default (disabled)
 
 .sp
 .LP
-The manual-key service is delivered disabled. The system administrator must create manual IPsec Security Associations (SAs), as described in \fBipseckey\fR(1M), before enabling that service.
+The manual-key service is delivered disabled. The system administrator must
+create manual IPsec Security Associations (SAs), as described in
+\fBipseckey\fR(1M), before enabling that service.
 .sp
 .LP
-The policy service is delivered enabled, but without a configuration file, so that, as a starting condition, packets are not protected by IPsec. After you create the configuration file \fB/etc/inet/ipsecinit.conf\fR, as described in this man page, and refresh the service (\fBsvcadm refresh\fR, see below), the policy contained in the configuration file is applied. If there is an error in this file, the service enters maintenance mode.
+The policy service is delivered enabled, but without a configuration file,
+so that, as a starting condition, packets are not protected by IPsec. After
+you create the configuration file \fB/etc/inet/ipsecinit.conf\fR, as
+described in this man page, and refresh the service (\fBsvcadm refresh\fR,
+see below), the policy contained in the configuration file is applied. If
+there is an error in this file, the service enters maintenance mode.
 .sp
 .LP
-Services that are delivered disabled are delivered that way because the system administrator must create configuration files for those services before enabling them. See \fBike.config\fR(4) for the \fBike\fR service.
+Services that are delivered disabled are delivered that way because the
+system administrator must create configuration files for those services
+before enabling them. See \fBike.config\fR(4) for the \fBike\fR service.
 .sp
 .LP
 See \fBipsecalgs\fR(1M) for the \fBipsecalgs\fR service.
 .sp
 .LP
-The correct administrative procedure is to create the configuration file for each service, then enable each service using \fBsvcadm\fR(1M).
+The correct administrative procedure is to create the configuration file
+for each service, then enable each service using \fBsvcadm\fR(1M).
 .sp
 .LP
-If the configuration needs to be changed, edit the configuration file then refresh the service, as follows:
+If the configuration needs to be changed, edit the configuration file then
+refresh the service, as follows:
 .sp
 .in +2
 .nf
@@ -1500,7 +1895,9 @@ example# \fBsvcadm refresh policy\fR
 
 .sp
 .LP
-The \fBsmf\fR(5) framework will record any errors in the service-specific log file. Use any of the following commands to examine the \fBlogfile\fR property:
+The \fBsmf\fR(5) framework will record any errors in the service-specific
+log file. Use any of the following commands to examine the \fBlogfile\fR
+property:
 .sp
 .in +2
 .nf
@@ -1524,7 +1921,8 @@ config/config_file
 
 .sp
 .LP
-This property can be modified using \fBsvccfg\fR(1M) by users who have been assigned the following authorization:
+This property can be modified using \fBsvccfg\fR(1M) by users who have been
+assigned the following authorization:
 .sp
 .in +2
 .nf
@@ -1538,7 +1936,9 @@ solaris.smf.value.ipsec
 See \fBauths\fR(1), \fBuser_attr\fR(4), \fBrbac\fR(5).
 .sp
 .LP
-The service needs to be refreshed using \fBsvcadm\fR(1M) before the new property is effective. General non-modifiable properties can be viewed with the \fBsvcprop\fR(1) command.
+The service needs to be refreshed using \fBsvcadm\fR(1M) before the new
+property is effective. General non-modifiable properties can be viewed with
+the \fBsvcprop\fR(1) command.
 .sp
 .in +2
 .nf
@@ -1550,7 +1950,10 @@ The service needs to be refreshed using \fBsvcadm\fR(1M) before the new property
 
 .sp
 .LP
-Administrative actions on this service, such as enabling, disabling, refreshing, and requesting restart can be performed using \fBsvcadm\fR(1M). A user who has been assigned the authorization shown below can perform these actions:
+Administrative actions on this service, such as enabling, disabling,
+refreshing, and requesting restart can be performed using \fBsvcadm\fR(1M).
+A user who has been assigned the authorization shown below can perform these
+actions:
 .sp
 .in +2
 .nf
@@ -1564,4 +1967,8 @@ solaris.smf.manage.ipsec
 The service's status can be queried using the \fBsvcs\fR(1) command.
 .sp
 .LP
-The \fBipsecconf\fR command is designed to be managed by the \fBpolicy\fR \fBsmf\fR(5) service. While the \fBipsecconf\fR command can be run from the command line, this is discouraged. If the \fBipsecconf\fR command is to be run from the command line, the \fBpolicy\fR \fBsmf\fR(5) service should be disabled first. See \fBsvcadm\fR(1M).
+The \fBipsecconf\fR command is designed to be managed by the \fBpolicy\fR
+\fBsmf\fR(5) service. While the \fBipsecconf\fR command can be run from the
+command line, this is discouraged. If the \fBipsecconf\fR command is to be
+run from the command line, the \fBpolicy\fR \fBsmf\fR(5) service should be
+disabled first. See \fBsvcadm\fR(1M).

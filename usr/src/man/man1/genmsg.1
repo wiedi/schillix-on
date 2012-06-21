@@ -1,34 +1,55 @@
 '\" te
 .\"  Portions Copyright (c) 2004, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH genmsg 1 "14 May 2004" "SunOS 5.11" "User Commands"
 .SH NAME
-genmsg \- generate a message source file by extracting messages from source files
+genmsg \- generate a message source file by extracting messages from source
+files
 .SH SYNOPSIS
 .LP
 .nf
-\fBgenmsg\fR [\fB-abdfrntx\fR] [\fB-c\fR \fImessage-tag\fR] [\fB-g\fR \fIproject-file\fR] 
-     [\fB-l\fR \fIproject-file\fR] [\fB-m\fR \fIprefix\fR] [\fB-M\fR \fIsuffix\fR] 
+\fBgenmsg\fR [\fB-abdfrntx\fR] [\fB-c\fR \fImessage-tag\fR] [\fB-g\fR \fIproject-file\fR]
+     [\fB-l\fR \fIproject-file\fR] [\fB-m\fR \fIprefix\fR] [\fB-M\fR \fIsuffix\fR]
      [\fB-o\fR \fImessage-file\fR] [\fB-p\fR \fIpreprocessor\fR] [\fB-s\fR \fIset-tags\fR] \fI file\fR...
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgenmsg\fR utility extracts message strings with calls to \fBcatgets\fR(3C) from source files and writes them in a format suitable for input to \fBgencat\fR(1).
+The \fBgenmsg\fR utility extracts message strings with calls to
+\fBcatgets\fR(3C) from source files and writes them in a format suitable for
+input to \fBgencat\fR(1).
 .SS "Invocation"
 .sp
 .LP
-\fBgenmsg\fR reads one or more input files and, by default, generates a message source file whose name is composed of the first input file name with \fB\&.msg\fR. If the \fB-o\fR option is specified, \fBgenmsg\fR uses the option argument for its output file.
+\fBgenmsg\fR reads one or more input files and, by default, generates a
+message source file whose name is composed of the first input file name with
+\fB\&.msg\fR. If the \fB-o\fR option is specified, \fBgenmsg\fR uses the
+option argument for its output file.
 .sp
 
 .sp
 .TS
 tab() box;
-lw(3.58i) |lw(1.92i) 
-lw(3.58i) |lw(1.92i) 
+lw(3.58i) |lw(1.92i)
+lw(3.58i) |lw(1.92i)
 .
 \fICommand\fR\fIOutput File\fR
 _
@@ -39,14 +60,21 @@ _
 
 .sp
 .LP
-\fBgenmsg\fR also allows you to invoke a preprocessor to solve the dependencies of macros and define statements for the \fBcatgets\fR(3C) calls.
+\fBgenmsg\fR also allows you to invoke a preprocessor to solve the
+dependencies of macros and define statements for the \fBcatgets\fR(3C)
+calls.
 .SS "Auto Message Numbering"
 .sp
 .LP
-\fBgenmsg\fR replaces message numbers with the calculated numbers based upon the project file if the message numbers are \fB-1\fR, and it generates copies of the input files with the new message numbers and a copy of the project file with the new maximum message numbers.
+\fBgenmsg\fR replaces message numbers with the calculated numbers based upon
+the project file if the message numbers are \fB-1\fR, and it generates copies
+of the input files with the new message numbers and a copy of the project
+file with the new maximum message numbers.
 .sp
 .LP
-A project file is a database that stores a list of set numbers with their maximum message numbers. Each line in a project file is composed of a set number and its maximum message number:
+A project file is a database that stores a list of set numbers with their
+maximum message numbers. Each line in a project file is composed of a set
+number and its maximum message number:
 .sp
 .ne 2
 .mk
@@ -54,24 +82,34 @@ A project file is a database that stores a list of set numbers with their maximu
 \fB\fISet_number\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 \fIMaximum_message_number\fR
 .RE
 
 .sp
 .LP
-In a project file, a line beginning with a number sign (\fB#\fR) or an \fBASCII\fR space is considered as a comment and ignored.
+In a project file, a line beginning with a number sign (\fB#\fR) or an
+\fBASCII\fR space is considered as a comment and ignored.
 .sp
 .LP
-\fBgenmsg\fR also has the reverse operation to replace all message numbers with \fB-1\fR.
+\fBgenmsg\fR also has the reverse operation to replace all message numbers
+with \fB-1\fR.
 .SS "Comment Extraction"
 .sp
 .LP
-\fBgenmsg\fR allows you to comment about messages and set numbers to inform the translator how the messages should be translated. It extracts the comment, which is surrounded with the comment indicators and has the specified tag inside the comment, from the input file and writes it with a dollar (\fB$\fR) prefix in the output file. \fBgenmsg\fR supports the C and C++ comment indicators, '\fB/*\fR', '\fB*/\fR', and '\fB//\fR'.
+\fBgenmsg\fR allows you to comment about messages and set numbers to inform
+the translator how the messages should be translated. It extracts the
+comment, which is surrounded with the comment indicators and has the
+specified tag inside the comment, from the input file and writes it with a
+dollar (\fB$\fR) prefix in the output file. \fBgenmsg\fR supports the C and
+C++ comment indicators, '\fB/*\fR', '\fB*/\fR', and '\fB//\fR'.
 .SS "Testing"
 .sp
 .LP
-\fBgenmsg\fR generates two kinds of messages for testing, prefixed messages and long messages. Prefixed messages allow you to check that your program is retrieving the messages from the message catalog. Long messages allow you to check the appearance of your window program's initial size and position.
+\fBgenmsg\fR generates two kinds of messages for testing, prefixed messages
+and long messages. Prefixed messages allow you to check that your program is
+retrieving the messages from the message catalog. Long messages allow you to
+check the appearance of your window program's initial size and position.
 .SH OPTIONS
 .sp
 .LP
@@ -83,8 +121,11 @@ The following options are supported:
 \fB\fB-a\fR\fR
 .ad
 .RS 19n
-.rt  
-Append the output into the message file \fImessage-file\fR that is specified by the \fB-o\fR option. If two different messages that have the same set and message number are found, the message in the specified message file is kept and the other message in the input file is discarded.
+.rt
+Append the output into the message file \fImessage-file\fR that is specified
+by the \fB-o\fR option. If two different messages that have the same set and
+message number are found, the message in the specified message file is kept
+and the other message in the input file is discarded.
 .RE
 
 .sp
@@ -94,8 +135,10 @@ Append the output into the message file \fImessage-file\fR that is specified by 
 \fB\fB-b\fR\fR
 .ad
 .RS 19n
-.rt  
-Place the extracted comment after the corresponding message in the output file. This option changes the placement behavior of the \fB-s\fR or \fB-c\fR option.
+.rt
+Place the extracted comment after the corresponding message in the output
+file. This option changes the placement behavior of the \fB-s\fR or \fB-c\fR
+option.
 .RE
 
 .sp
@@ -105,8 +148,10 @@ Place the extracted comment after the corresponding message in the output file. 
 \fB\fB-c\fR\fI message-tag\fR\fR
 .ad
 .RS 19n
-.rt  
-Extract message comments having \fImessage-tag\fR inside them from the input files and write them with a '\fB$\fR' prefix as a comment in the output file.
+.rt
+Extract message comments having \fImessage-tag\fR inside them from the input
+files and write them with a '\fB$\fR' prefix as a comment in the output
+file.
 .RE
 
 .sp
@@ -116,8 +161,10 @@ Extract message comments having \fImessage-tag\fR inside them from the input fil
 \fB\fB-d\fR\fR
 .ad
 .RS 19n
-.rt  
-Include an original text of a message as a comment to be preserved along with its translations. With this option, the translator can see the original messages even after they are replaced with their translations.
+.rt
+Include an original text of a message as a comment to be preserved along
+with its translations. With this option, the translator can see the original
+messages even after they are replaced with their translations.
 .RE
 
 .sp
@@ -127,8 +174,10 @@ Include an original text of a message as a comment to be preserved along with it
 \fB\fB-f\fR\fR
 .ad
 .RS 19n
-.rt  
-Overwrite the input files and the project file when used with the \fB-l\fR or \fB-r\fR option. With the \fB-r\fR option, \fBgenmsg\fR overwrites only the input files.
+.rt
+Overwrite the input files and the project file when used with the \fB-l\fR
+or \fB-r\fR option. With the \fB-r\fR option, \fBgenmsg\fR overwrites only
+the input files.
 .RE
 
 .sp
@@ -138,8 +187,9 @@ Overwrite the input files and the project file when used with the \fB-l\fR or \f
 \fB\fB-g\fR\fI project-file\fR\fR
 .ad
 .RS 19n
-.rt  
-Generate \fIproject-file\fR that has a list of set numbers and their maximum message numbers in the input files.
+.rt
+Generate \fIproject-file\fR that has a list of set numbers and their maximum
+message numbers in the input files.
 .RE
 
 .sp
@@ -149,8 +199,13 @@ Generate \fIproject-file\fR that has a list of set numbers and their maximum mes
 \fB\fB-l\fR\fI project-file\fR\fR
 .ad
 .RS 19n
-.rt  
-Replace message numbers with the calculated numbers based upon \fIproject-file\fR if the message numbers are \fB-1\fR in the input files, and then generate copies of the input files with the new message numbers and a copy of \fIproject-file\fR with the new maximum message numbers. If \fIproject-file\fR is not found, \fBgenmsg\fR uses the maximum message number in the input file as a base number and generates \fIproject-file\fR.
+.rt
+Replace message numbers with the calculated numbers based upon
+\fIproject-file\fR if the message numbers are \fB-1\fR in the input files,
+and then generate copies of the input files with the new message numbers and
+a copy of \fIproject-file\fR with the new maximum message numbers. If
+\fIproject-file\fR is not found, \fBgenmsg\fR uses the maximum message number
+in the input file as a base number and generates \fIproject-file\fR.
 .RE
 
 .sp
@@ -160,7 +215,7 @@ Replace message numbers with the calculated numbers based upon \fIproject-file\f
 \fB\fB-m\fR\fI prefix\fR\fR
 .ad
 .RS 19n
-.rt  
+.rt
 Fill in the message with \fIprefix\fR. This option is useful for testing.
 .RE
 
@@ -171,7 +226,7 @@ Fill in the message with \fIprefix\fR. This option is useful for testing.
 \fB\fB-M\fR\fI suffix\fR\fR
 .ad
 .RS 19n
-.rt  
+.rt
 Fill in the message with \fIsuffix\fR. This option is useful for testing.
 .RE
 
@@ -182,8 +237,9 @@ Fill in the message with \fIsuffix\fR. This option is useful for testing.
 \fB\fB-n\fR\fR
 .ad
 .RS 19n
-.rt  
-Add comment lines to the output file indicating the file name and line number in the input files where each extracted string is encountered.
+.rt
+Add comment lines to the output file indicating the file name and line
+number in the input files where each extracted string is encountered.
 .RE
 
 .sp
@@ -193,7 +249,7 @@ Add comment lines to the output file indicating the file name and line number in
 \fB\fB-o\fR\fI message-file\fR\fR
 .ad
 .RS 19n
-.rt  
+.rt
 Write the output to \fImessage-file\fR.
 .RE
 
@@ -204,8 +260,11 @@ Write the output to \fImessage-file\fR.
 \fB\fB-p\fR\fI preprocessor\fR\fR
 .ad
 .RS 19n
-.rt  
-Invoke \fIpreprocessor\fR to preprocess macros and define statements for the \fBcatgets\fR(3C) calls. \fBgenmsg\fR first invokes the option argument as a preprocesser and then starts the normal process against the output from the preprocessor. \fBgenmsg\fR initiates this process for all the input files.
+.rt
+Invoke \fIpreprocessor\fR to preprocess macros and define statements for the
+\fBcatgets\fR(3C) calls. \fBgenmsg\fR first invokes the option argument as a
+preprocesser and then starts the normal process against the output from the
+preprocessor. \fBgenmsg\fR initiates this process for all the input files.
 .RE
 
 .sp
@@ -215,8 +274,9 @@ Invoke \fIpreprocessor\fR to preprocess macros and define statements for the \fB
 \fB\fB-r\fR\fR
 .ad
 .RS 19n
-.rt  
-Replace message numbers with \fB-1\fR. This is the reverse operation of the \fB-l\fR option.
+.rt
+Replace message numbers with \fB-1\fR. This is the reverse operation of the
+\fB-l\fR option.
 .RE
 
 .sp
@@ -226,8 +286,11 @@ Replace message numbers with \fB-1\fR. This is the reverse operation of the \fB-
 \fB\fB-s\fR\fI set-tag\fR\fR
 .ad
 .RS 19n
-.rt  
-Extract set number comments having \fIset-tag\fR inside them from the input files and write them with a '\fB$\fR' prefix as a comment in the output file. If multiple comments are specified for one set number, the first one is extracted and the rest of them are discarded.
+.rt
+Extract set number comments having \fIset-tag\fR inside them from the input
+files and write them with a '\fB$\fR' prefix as a comment in the output file.
+If multiple comments are specified for one set number, the first one is
+extracted and the rest of them are discarded.
 .RE
 
 .sp
@@ -237,8 +300,9 @@ Extract set number comments having \fIset-tag\fR inside them from the input file
 \fB\fB-t\fR\fR
 .ad
 .RS 19n
-.rt  
-Generate a message that is three times as long as the original message. This option is useful for testing.
+.rt
+Generate a message that is three times as long as the original message. This
+option is useful for testing.
 .RE
 
 .sp
@@ -248,8 +312,9 @@ Generate a message that is three times as long as the original message. This opt
 \fB\fB-x\fR\fR
 .ad
 .RS 19n
-.rt  
-Suppress warning messages about message and set number range checks and conflicts.
+.rt
+Suppress warning messages about message and set number range checks and
+conflicts.
 .RE
 
 .SH OPERANDS
@@ -260,7 +325,7 @@ Suppress warning messages about message and set number range checks and conflict
 \fB\fIfile\fR\fR
 .ad
 .RS 8n
-.rt  
+.rt
 An input source file.
 .RE
 
@@ -299,7 +364,8 @@ example% genmsg \fB-l\fR proj test.c
 
 .sp
 .LP
-would assign the calculated message numbers based upon \fBproj\fR and generate the following files:
+would assign the calculated message numbers based upon \fBproj\fR and
+generate the following files:
 
 .sp
 .ne 2
@@ -308,7 +374,7 @@ would assign the calculated message numbers based upon \fBproj\fR and generate t
 \fB\fBtest.c.msg\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Message file
 .RE
 
@@ -319,7 +385,7 @@ Message file
 \fB\fBproj.new\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Updated project file
 .RE
 
@@ -330,7 +396,7 @@ Updated project file
 \fB\fBtest.c.new\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 New source file
 .RE
 
@@ -463,7 +529,8 @@ example% genmsg \fB-p\fR "cc \fB-E\fR" \fB-o\fR example.msg example.c
 
 .sp
 .LP
-would parse the \fBMSG\fR macros and write the extracted messages in  \fBexample.msg\fR.
+would parse the \fBMSG\fR macros and write the extracted messages in
+\fBexample.msg\fR.
 
 .LP
 \fBExample 5 \fRAssigning Calculated Message Numbers
@@ -492,7 +559,7 @@ example % proj
 
 .sp
 .LP
-The command 
+The command
 
 .sp
 .in +2
@@ -505,12 +572,17 @@ example% genmsg \fB-f\fR -p "cc \fB-E\fR \fB-I\fR../inc" \fB-l\fR proj \e
 
 .sp
 .LP
-would assign each of the \fB-1\fR message numbers a calculated number based upon  \fBproj\fR and would overwrite the results to \fBexample.c\fR and \fBproj\fR. Also, this command writes the extracted messages in \fBexample.msg\fR.
+would assign each of the \fB-1\fR message numbers a calculated number based
+upon \fBproj\fR and would overwrite the results to \fBexample.c\fR and
+\fBproj\fR. Also, this command writes the extracted messages in
+\fBexample.msg\fR.
 
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-See \fBenviron\fR(5) for descriptions of the following environment variables that affect the execution of \fBgenmsg\fR: \fBLC_MESSAGES\fR and \fBNLSPATH\fR.  
+See \fBenviron\fR(5) for descriptions of the following environment variables
+that affect the execution of \fBgenmsg\fR: \fBLC_MESSAGES\fR and
+\fBNLSPATH\fR. 
 .SH EXIT STATUS
 .sp
 .LP
@@ -522,7 +594,7 @@ The following exit values are returned:
 \fB\fB0\fR\fR
 .ad
 .RS 6n
-.rt  
+.rt
 Successful completion.
 .RE
 
@@ -533,7 +605,7 @@ Successful completion.
 \fB\fB>0\fR\fR
 .ad
 .RS 6n
-.rt  
+.rt
 An error occurred.
 .RE
 
@@ -546,8 +618,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -557,15 +629,17 @@ AvailabilitySUNWloc
 .SH SEE ALSO
 .sp
 .LP
-\fBgencat\fR(1), \fBcatgets\fR(3C), \fBcatopen\fR(3C), \fBattributes\fR(5), \fBenviron\fR(5)
+\fBgencat\fR(1), \fBcatgets\fR(3C), \fBcatopen\fR(3C), \fBattributes\fR(5),
+\fBenviron\fR(5)
 .SH NOTES
 .sp
 .LP
-\fBgenmsg\fR does not handle pointers or variables in the \fBcatgets\fR(3C) call. For example:
+\fBgenmsg\fR does not handle pointers or variables in the \fBcatgets\fR(3C)
+call. For example:
 .sp
 .in +2
 .nf
-   
+
 const int set_num = 1;
 extern int msg_num(const char *);
 const char *msg = "Hello";
@@ -576,7 +650,10 @@ catgets(catd, set_num, msg_num(msg), msg);
 
 .sp
 .LP
-When the auto message numbering is turned on with a preprocessor, if there are multiple \fB-1's\fR in the \fBcatgets\fR(3C) line, \fBgenmsg\fR replaces all of the \fB-1's\fR in the line with a calculated number. For example, given the input:
+When the auto message numbering is turned on with a preprocessor, if there
+are multiple \fB-1's\fR in the \fBcatgets\fR(3C) line, \fBgenmsg\fR replaces
+all of the \fB-1's\fR in the line with a calculated number. For example,
+given the input:
 .sp
 .in +2
 .nf

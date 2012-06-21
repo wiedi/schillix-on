@@ -1,24 +1,62 @@
 '\" te
 .\" Copyright (c) 2007, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH fsattr 5 "10 Oct 2007" "SunOS 5.11" "Standards, Environments, and Macros"
 .SH NAME
 fsattr \- extended file attributes
 .SH DESCRIPTION
 .sp
 .LP
-Attributes are logically supported as files within the file system.  The file system is therefore augmented with an orthogonal name space of file attributes. Any file (including attribute files) can have an arbitrarily deep attribute tree associated with it. Attribute values are accessed by file descriptors obtained through a special attribute interface.  This logical view of "attributes as files" allows the leveraging of existing file system interface functionality to support the construction, deletion, and manipulation of attributes.
+Attributes are logically supported as files within the file system.  The
+file system is therefore augmented with an orthogonal name space of file
+attributes. Any file (including attribute files) can have an arbitrarily
+deep attribute tree associated with it. Attribute values are accessed by
+file descriptors obtained through a special attribute interface.  This
+logical view of "attributes as files" allows the leveraging of existing file
+system interface functionality to support the construction, deletion, and
+manipulation of attributes.
 .sp
 .LP
-The special files "." and ".\|." retain their accustomed semantics within the attribute hierarchy.  The "." attribute file refers to the current directory and the ".\|." attribute file refers to the parent directory.  The unnamed directory at the head of each attribute tree is considered the "child" of the file it is associated with and the ".\|." file refers to the associated file. For any non-directory file with attributes, the ".\|." entry in the unnamed directory refers to a file that is not a directory.
+The special files "." and ".\|." retain their accustomed semantics within
+the attribute hierarchy.  The "." attribute file refers to the current
+directory and the ".\|." attribute file refers to the parent directory.  The
+unnamed directory at the head of each attribute tree is considered the
+"child" of the file it is associated with and the ".\|." file refers to the
+associated file. For any non-directory file with attributes, the ".\|."
+entry in the unnamed directory refers to a file that is not a directory.
 .sp
 .LP
-Conceptually, the attribute model is fully general. Extended attributes can be any type of file (doors, links, directories, and so forth) and can even have their own attributes (fully recursive).  As a result, the attributes associated with a file could be an arbitrarily deep directory hierarchy where each attribute could have an equally complex attribute tree associated with it.  Not all implementations are able to, or want to, support the full model. Implementation are therefore permitted to reject operations that are not supported.  For example, the implementation for the UFS file system allows only regular files as attributes (for example, no sub-directories) and rejects attempts to place attributes on attributes.
+Conceptually, the attribute model is fully general. Extended attributes can
+be any type of file (doors, links, directories, and so forth) and can even
+have their own attributes (fully recursive).  As a result, the attributes
+associated with a file could be an arbitrarily deep directory hierarchy
+where each attribute could have an equally complex attribute tree associated
+with it.  Not all implementations are able to, or want to, support the full
+model. Implementation are therefore permitted to reject operations that are
+not supported.  For example, the implementation for the UFS file system
+allows only regular files as attributes (for example, no sub-directories)
+and rejects attempts to place attributes on attributes.
 .sp
 .LP
-The following list details the operations that are rejected in the current implementation:
+The following list details the operations that are rejected in the current
+implementation:
 .sp
 .ne 2
 .mk
@@ -26,8 +64,10 @@ The following list details the operations that are rejected in the current imple
 \fB\fBlink\fR\fR
 .ad
 .RS 25n
-.rt  
-Any attempt to create links between attribute and non-attribute space is rejected to prevent security-related or otherwise sensitive attributes from being exposed, and therefore manipulable, as regular files.
+.rt
+Any attempt to create links between attribute and non-attribute space is
+rejected to prevent security-related or otherwise sensitive attributes from
+being exposed, and therefore manipulable, as regular files.
 .RE
 
 .sp
@@ -37,8 +77,10 @@ Any attempt to create links between attribute and non-attribute space is rejecte
 \fB\fBrename\fR\fR
 .ad
 .RS 25n
-.rt  
-Any attempt to rename between attribute and non-attribute space is rejected to prevent an already linked file from being renamed and thereby circumventing the \fBlink\fR restriction above.
+.rt
+Any attempt to rename between attribute and non-attribute space is rejected
+to prevent an already linked file from being renamed and thereby
+circumventing the \fBlink\fR restriction above.
 .RE
 
 .sp
@@ -48,23 +90,40 @@ Any attempt to rename between attribute and non-attribute space is rejected to p
 \fB\fBmkdir\fR, \fBsymlink\fR, \fBmknod\fR\fR
 .ad
 .RS 25n
-.rt  
-Any attempt to create a "non-regular" file in attribute space is rejected to reduce the functionality, and therefore exposure and risk, of the initial implementation.
+.rt
+Any attempt to create a "non-regular" file in attribute space is rejected
+to reduce the functionality, and therefore exposure and risk, of the initial
+implementation.
 .RE
 
 .sp
 .LP
-The entire available name space has been allocated to "general use" to bring the implementation in line with the NFSv4 draft standard [NFSv4]. That standard defines "named attributes" (equivalent to Solaris Extended Attributes) with no naming restrictions.  All Sun applications making use of opaque extended attributes will use the prefix "SUNW".
+The entire available name space has been allocated to "general use" to
+bring the implementation in line with the NFSv4 draft standard [NFSv4]. That
+standard defines "named attributes" (equivalent to Solaris Extended
+Attributes) with no naming restrictions.  All Sun applications making use of
+opaque extended attributes will use the prefix "SUNW".
 .SS "Shell-level API"
 .sp
 .LP
-The command interface for extended attributes is the set of applications provided by Solaris for the manipulation of attributes from the command line. This interface consists of a set of existing utilities that have been extended to be "attribute-aware", plus the \fBrunat\fR utility designed to "expose" the extended attribute space so that extended attributes can be manipulated as regular files.
+The command interface for extended attributes is the set of applications
+provided by Solaris for the manipulation of attributes from the command
+line. This interface consists of a set of existing utilities that have been
+extended to be "attribute-aware", plus the \fBrunat\fR utility designed to
+"expose" the extended attribute space so that extended attributes can be
+manipulated as regular files.
 .sp
 .LP
-The \fB-@\fR option enable utilities to manipulate extended attributes. As a rule, this option enables the utility to enter into attribute space when the utility is performing a recursive traversal of file system space. This is a fully recursive concept. If the underlying file system supports recursive attributes and directory structures, the \fB-@\fR option opens these spaces to the file tree-walking algorithms.
+The \fB-@\fR option enable utilities to manipulate extended attributes. As
+a rule, this option enables the utility to enter into attribute space when
+the utility is performing a recursive traversal of file system space. This
+is a fully recursive concept. If the underlying file system supports
+recursive attributes and directory structures, the \fB-@\fR option opens
+these spaces to the file tree-walking algorithms.
 .sp
 .LP
-The following utilities accommodate extended attributes (see the individual manual pages for details):
+The following utilities accommodate extended attributes (see the individual
+manual pages for details):
 .sp
 .ne 2
 .mk
@@ -72,8 +131,12 @@ The following utilities accommodate extended attributes (see the individual manu
 \fB\fBcp\fR\fR
 .ad
 .RS 8n
-.rt  
-By default, \fBcp\fR ignores attributes and copies only file data.  This is intended to maintain the semantics implied by \fBcp\fR currently, where attributes (such as owner and mode) are not copied unless the \fB-p\fR option is specified. With the \fB-@\fR (or \fB-p\fR) option, \fBcp\fR attempts to copy all attributes along with the file data.
+.rt
+By default, \fBcp\fR ignores attributes and copies only file data.  This is
+intended to maintain the semantics implied by \fBcp\fR currently, where
+attributes (such as owner and mode) are not copied unless the \fB-p\fR
+option is specified. With the \fB-@\fR (or \fB-p\fR) option, \fBcp\fR
+attempts to copy all attributes along with the file data.
 .RE
 
 .sp
@@ -83,8 +146,10 @@ By default, \fBcp\fR ignores attributes and copies only file data.  This is inte
 \fB\fBcpio\fR\fR
 .ad
 .RS 8n
-.rt  
-The \fB-@\fR option informs \fBcpio\fR to archive attributes, but by default \fBcpio\fR ignores extended attributes. See \fBExtended Archive Formats\fR below for a description of the new archive records.
+.rt
+The \fB-@\fR option informs \fBcpio\fR to archive attributes, but by
+default \fBcpio\fR ignores extended attributes. See \fBExtended Archive
+Formats\fR below for a description of the new archive records.
 .RE
 
 .sp
@@ -94,8 +159,9 @@ The \fB-@\fR option informs \fBcpio\fR to archive attributes, but by default \fB
 \fB\fBdu\fR\fR
 .ad
 .RS 8n
-.rt  
-File sizes computed include the space allocated for any extended attributes present.
+.rt
+File sizes computed include the space allocated for any extended attributes
+present.
 .RE
 
 .sp
@@ -105,8 +171,10 @@ File sizes computed include the space allocated for any extended attributes pres
 \fB\fBfind\fR\fR
 .ad
 .RS 8n
-.rt  
-By default, \fBfind\fR ignores attributes.  The \fB-xattr\fR expression provides support for searches involving attribute space. It returns true if extended attributes are present on the current file.
+.rt
+By default, \fBfind\fR ignores attributes.  The \fB-xattr\fR expression
+provides support for searches involving attribute space. It returns true if
+extended attributes are present on the current file.
 .RE
 
 .sp
@@ -116,8 +184,17 @@ By default, \fBfind\fR ignores attributes.  The \fB-xattr\fR expression provides
 \fB\fBfsck\fR\fR
 .ad
 .RS 8n
-.rt  
-The \fBfsck\fR utility manages extended attribute data on the disk. A file system with extended attributes can be mounted on versions of Solaris that are not attribute-aware (versions prior to Solaris 9), but the attributes will not be accessible and \fBfsck\fR will strip them from the files and place them in \fBlost+found\fR. Once the attributes have been stripped the file system is completely stable on Solaris versions that are not attribute-aware, but would now be considered corrupted on attribute-aware versions of Solaris. The attribute-aware \fBfsck\fR utility should be run to stabilize the file system before using it in an attribute-aware environment.
+.rt
+The \fBfsck\fR utility manages extended attribute data on the disk. A file
+system with extended attributes can be mounted on versions of Solaris that
+are not attribute-aware (versions prior to Solaris 9), but the attributes
+will not be accessible and \fBfsck\fR will strip them from the files and
+place them in \fBlost+found\fR. Once the attributes have been stripped the
+file system is completely stable on Solaris versions that are not
+attribute-aware, but would now be considered corrupted on attribute-aware
+versions of Solaris. The attribute-aware \fBfsck\fR utility should be run to
+stabilize the file system before using it in an attribute-aware
+environment.
 .RE
 
 .sp
@@ -127,8 +204,9 @@ The \fBfsck\fR utility manages extended attribute data on the disk. A file syste
 \fB\fBfsdb\fR\fR
 .ad
 .RS 8n
-.rt  
-This \fBfsdb\fR utility is able to find the inode for the "hidden" extended attribute directory.
+.rt
+This \fBfsdb\fR utility is able to find the inode for the "hidden" extended
+attribute directory.
 .RE
 
 .sp
@@ -138,8 +216,13 @@ This \fBfsdb\fR utility is able to find the inode for the "hidden" extended attr
 \fB\fBls\fR\fR
 .ad
 .RS 8n
-.rt  
-The \fBls\fR \fB-@\fR command displays an "@" following the mode information when extended attributes are present.  More precisely, the output line for a given file contains an "@" character following the mode characters if the \fBpathconf\fR(2) variable \fBXATTR_EXISTS\fR is set to true. See the \fBpathconf()\fR section below.  The \fB-@\fR option uses the same general output format as the \fB-l\fR option.
+.rt
+The \fBls\fR \fB-@\fR command displays an "@" following the mode
+information when extended attributes are present.  More precisely, the
+output line for a given file contains an "@" character following the mode
+characters if the \fBpathconf\fR(2) variable \fBXATTR_EXISTS\fR is set to
+true. See the \fBpathconf()\fR section below.  The \fB-@\fR option uses the
+same general output format as the \fB-l\fR option.
 .RE
 
 .sp
@@ -149,8 +232,12 @@ The \fBls\fR \fB-@\fR command displays an "@" following the mode information whe
 \fB\fBmv\fR\fR
 .ad
 .RS 8n
-.rt  
-When a file is moved, all attributes are carried along with the file rename. When a file is moved across a file system boundary, the copy command invoked is similar to the \fBcp\fR \fB-p\fR variant described above and extended attributes are "moved". If the extended file attributes cannot be replicated, the move operation fails and the source file is not removed.
+.rt
+When a file is moved, all attributes are carried along with the file
+rename. When a file is moved across a file system boundary, the copy command
+invoked is similar to the \fBcp\fR \fB-p\fR variant described above and
+extended attributes are "moved". If the extended file attributes cannot be
+replicated, the move operation fails and the source file is not removed.
 .RE
 
 .sp
@@ -160,8 +247,12 @@ When a file is moved, all attributes are carried along with the file rename. Whe
 \fB\fBpax\fR\fR
 .ad
 .RS 8n
-.rt  
-The \fB-@\fR option informs \fBpax\fR to archive attributes, but by default \fBpax\fR ignores extended attributes.  The \fBpax\fR(1) utility is a generic replacement for both \fBtar\fR(1) and \fBcpio\fR(1) and is able to produce either output format in its archive.  See \fBExtended Archive Formats\fR below for a description of the new archive records.
+.rt
+The \fB-@\fR option informs \fBpax\fR to archive attributes, but by default
+\fBpax\fR ignores extended attributes.  The \fBpax\fR(1) utility is a
+generic replacement for both \fBtar\fR(1) and \fBcpio\fR(1) and is able to
+produce either output format in its archive.  See \fBExtended Archive
+Formats\fR below for a description of the new archive records.
 .RE
 
 .sp
@@ -171,13 +262,31 @@ The \fB-@\fR option informs \fBpax\fR to archive attributes, but by default \fBp
 \fB\fBtar\fR\fR
 .ad
 .RS 8n
-.rt  
-In the default case, \fBtar\fR does not attempt to place attributes in the archive.  If the \fB-@\fR option is specified, however, \fBtar\fR traverses into the attribute space of all files being placed in the archive and attempts to add the attributes to the archive. A new record type has been introduced for extended attribute entries in \fBtar\fR archive files (the same is true for \fBpax\fR and \fBcpio\fR archives) similar to the way ACLs records were defined. See \fBExtended Archive Formats\fR below for a description of the new archive records.
+.rt
+In the default case, \fBtar\fR does not attempt to place attributes in the
+archive. If the \fB-@\fR option is specified, however, \fBtar\fR traverses
+into the attribute space of all files being placed in the archive and
+attempts to add the attributes to the archive. A new record type has been
+introduced for extended attribute entries in \fBtar\fR archive files (the
+same is true for \fBpax\fR and \fBcpio\fR archives) similar to the way ACLs
+records were defined. See \fBExtended Archive Formats\fR below for a
+description of the new archive records.
 .RE
 
 .sp
 .LP
-There is a class of utilities (\fBchmod\fR, \fBchown\fR, \fBchgrp\fR) that one might expect to be modified in a manner similar to those listed above. For example, one might expect that performing \fBchmod\fR on a file would not only affect the file itself but would also affect at least the extended attribute directory if not any existing extended attribute files.  This is not the case.  The model chosen for extended attributes implies that the attribute directory and the attributes themselves are all file objects in their own right, and can therefore have independent file status attributes associated with them  (a given implementation cannot support this, for example, for intrinsic attributes).  The relationship is left undefined and a fine-grained control mechanism (\fBrunat\fR(1)) is provided to allow manipulation of extended attribute status attributes as necessary.
+There is a class of utilities (\fBchmod\fR, \fBchown\fR, \fBchgrp\fR) that
+one might expect to be modified in a manner similar to those listed above.
+For example, one might expect that performing \fBchmod\fR on a file would
+not only affect the file itself but would also affect at least the extended
+attribute directory if not any existing extended attribute files.  This is
+not the case.  The model chosen for extended attributes implies that the
+attribute directory and the attributes themselves are all file objects in
+their own right, and can therefore have independent file status attributes
+associated with them  (a given implementation cannot support this, for
+example, for intrinsic attributes).  The relationship is left undefined and
+a fine-grained control mechanism (\fBrunat\fR(1)) is provided to allow
+manipulation of extended attribute status attributes as necessary.
 .sp
 .LP
 The \fBrunat\fR utility has the following syntax:
@@ -191,17 +300,43 @@ runat \fIfilename\fR [\fIcommand\fR]
 
 .sp
 .LP
-The \fBrunat\fR utility executes the supplied command in the context of the "attribute space" associated with the indicated file.  If no command argument is supplied, a shell is invoked. See \fBrunat\fR(1) for details.
+The \fBrunat\fR utility executes the supplied command in the context of the
+"attribute space" associated with the indicated file.  If no command
+argument is supplied, a shell is invoked. See \fBrunat\fR(1) for details.
 .SS "Application-level API"
 .sp
 .LP
-The primary interface required to access extended attributes at the programmatic level is the \fBopenat\fR(2) function. Once a file descriptor has been obtained for an attribute file by an \fBopenat()\fR call, all normal file system semantics apply. There is no attempt to place special semantics on \fBread\fR(2), \fBwrite\fR(2), \fBftruncate\fR(3C), or other functions when applied to attribute file descriptors relative to "normal" file descriptors.
+The primary interface required to access extended attributes at the
+programmatic level is the \fBopenat\fR(2) function. Once a file descriptor
+has been obtained for an attribute file by an \fBopenat()\fR call, all
+normal file system semantics apply. There is no attempt to place special
+semantics on \fBread\fR(2), \fBwrite\fR(2), \fBftruncate\fR(3C), or other
+functions when applied to attribute file descriptors relative to "normal"
+file descriptors.
 .sp
 .LP
-The set of existing attributes can be browsed by calling \fBopenat()\fR with "." as the file name and the \fBO_XATTR\fR flag set, resulting in a file descriptor for the attribute directory.  The list of attributes is obtained by calls to \fBgetdents\fR(2) on the returned file descriptor.  If the target file did not previously have any attributes associated with it, an empty top-level attribute directory is created for the file and subsequent \fBgetdents()\fR calls will return only "." and ".\|.".  While the owner of the parent file owns the extended attribute directory, it is not charged against its quota if the directory is empty.  Attribute files themselves, however, are charged against the user quota as any other regular file.
+The set of existing attributes can be browsed by calling \fBopenat()\fR
+with "." as the file name and the \fBO_XATTR\fR flag set, resulting in a
+file descriptor for the attribute directory.  The list of attributes is
+obtained by calls to \fBgetdents\fR(2) on the returned file descriptor.  If
+the target file did not previously have any attributes associated with it,
+an empty top-level attribute directory is created for the file and
+subsequent \fBgetdents()\fR calls will return only "." and ".\|.".  While
+the owner of the parent file owns the extended attribute directory, it is
+not charged against its quota if the directory is empty.  Attribute files
+themselves, however, are charged against the user quota as any other regular
+file.
 .sp
 .LP
-Additional system calls have been provided as convenience functions. These include the \fBfchownat\fR(2), \fBfstatat\fR(2), \fBfutimesat\fR(2), \fBrenameat\fR(2), \fBunlinkat\fR(2). These new functions, along with \fBopenat()\fR, provide a mechanism to access files relative to an arbitrary point in the file system, rather than only the current working directory.  This mechanism is particularly useful in situations when a file descriptor is available with no path. The \fBopenat()\fR function, in particular, can be used in many contexts where \fBchdir()\fR or \fBfchdir()\fR is currently required. See \fBchdir\fR(2). 
+Additional system calls have been provided as convenience functions. These
+include the \fBfchownat\fR(2), \fBfstatat\fR(2), \fBfutimesat\fR(2),
+\fBrenameat\fR(2), \fBunlinkat\fR(2). These new functions, along with
+\fBopenat()\fR, provide a mechanism to access files relative to an arbitrary
+point in the file system, rather than only the current working directory.
+This mechanism is particularly useful in situations when a file descriptor
+is available with no path. The \fBopenat()\fR function, in particular, can
+be used in many contexts where \fBchdir()\fR or \fBfchdir()\fR is currently
+required. See \fBchdir\fR(2).
 .SS "Open a file relative to a file descriptor"
 .sp
 .in +2
@@ -212,7 +347,13 @@ int openat (int \fIfd\fR, const char *\fIpath\fR, int \fIoflag\fR [, mode_t \fIm
 
 .sp
 .LP
-The \fBopenat\fR(2) function behaves exactly as \fBopen\fR(2) except when given a relative path.  Where \fBopen()\fR resolves a relative path from the current working directory, \fBopenat()\fR resolves the path based on the vnode indicated by the supplied file descriptor. When \fIoflag\fR is \fBO_XATTR\fR, \fBopenat()\fR interprets the \fIpath\fR argument as an extended attribute reference. The following code fragment uses \fBopenat()\fR to examine the attributes of some already opened file:
+The \fBopenat\fR(2) function behaves exactly as \fBopen\fR(2) except when
+given a relative path.  Where \fBopen()\fR resolves a relative path from the
+current working directory, \fBopenat()\fR resolves the path based on the
+vnode indicated by the supplied file descriptor. When \fIoflag\fR is
+\fBO_XATTR\fR, \fBopenat()\fR interprets the \fIpath\fR argument as an
+extended attribute reference. The following code fragment uses
+\fBopenat()\fR to examine the attributes of some already opened file:
 .sp
 .in +2
 .nf
@@ -223,7 +364,12 @@ dfd = openat(fd, ".", O_RDONLY|O_XATTR);
 
 .sp
 .LP
-If \fBopenat()\fR is passed the special value \fBAT_FDCWD\fR as its first (\fIfd\fR) argument, its behavior is identical to \fBopen()\fR and the relative path arguments are interpreted relative to the current working directory. If the \fBO_XATTR\fR flag is provided to \fBopenat()\fR or to \fBopen()\fR, the supplied path is interpreted as a reference to an extended attribute on the current working directory.
+If \fBopenat()\fR is passed the special value \fBAT_FDCWD\fR as its first
+(\fIfd\fR) argument, its behavior is identical to \fBopen()\fR and the
+relative path arguments are interpreted relative to the current working
+directory. If the \fBO_XATTR\fR flag is provided to \fBopenat()\fR or to
+\fBopen()\fR, the supplied path is interpreted as a reference to an extended
+attribute on the current working directory.
 .SS "Unlink a file relative to a directory file descriptor"
 .sp
 .in +2
@@ -234,7 +380,17 @@ int unlinkat (int \fIdirfd\fR, const char *path\fIflag\fR, int flag\fIflag\fR)
 
 .sp
 .LP
-The \fBunlinkat\fR(2) function deletes an entry from a directory.  The \fIpath\fR argument indicates the name of the entry to remove. If \fIpath\fR an absolute path, the \fIdirfd\fR argument is ignored. If it is a relative path, it is interpreted relative to the directory indicated by the \fIdirfd\fR argument. If \fIdirfd\fR does not refer to a valid directory, the function returns \fBENOTDIR\fR.  If the special value \fBAT_FDCWD\fR is specified for \fIdirfd\fR, a relative path argument is resolved relative to the current working directory.  If the \fIflag\fR argument is 0, all other semantics of this function are equivalent to \fBunlink\fR(2).  If \fIflag\fR is set to \fBAT_REMOVEDIR\fR, all other semantics of this function are equivalent to \fBrmdir\fR(2).
+The \fBunlinkat\fR(2) function deletes an entry from a directory.  The
+\fIpath\fR argument indicates the name of the entry to remove. If \fIpath\fR
+an absolute path, the \fIdirfd\fR argument is ignored. If it is a relative
+path, it is interpreted relative to the directory indicated by the
+\fIdirfd\fR argument. If \fIdirfd\fR does not refer to a valid directory,
+the function returns \fBENOTDIR\fR.  If the special value \fBAT_FDCWD\fR is
+specified for \fIdirfd\fR, a relative path argument is resolved relative to
+the current working directory.  If the \fIflag\fR argument is 0, all other
+semantics of this function are equivalent to \fBunlink\fR(2).  If \fIflag\fR
+is set to \fBAT_REMOVEDIR\fR, all other semantics of this function are
+equivalent to \fBrmdir\fR(2).
 .SS "Rename a file relative to directories"
 .sp
 .in +2
@@ -245,13 +401,30 @@ int renameat (int \fIfromfd\fR, const char *\fIold\fR, int \fItofd\fR, const cha
 
 .sp
 .LP
-The \fBrenameat\fR(2) function renames an entry in a directory, possibly moving the entry into a different directory.  The \fIold\fR argument indicates the name of the entry to rename.  If this argument is a relative path, it is interpreted relative to the directory indicated by the \fIfd\fR argument. If it is an absolute path, the \fIfromfd\fR argument is ignored.  The \fInew\fR argument indicates the new name for the entry.  If this argument is a relative path, it is interpreted relative to the directory indicated by the \fItofd\fR argument. If it is an absolute path, the \fItofd\fR argument is ignored.
+The \fBrenameat\fR(2) function renames an entry in a directory, possibly
+moving the entry into a different directory.  The \fIold\fR argument
+indicates the name of the entry to rename.  If this argument is a relative
+path, it is interpreted relative to the directory indicated by the \fIfd\fR
+argument. If it is an absolute path, the \fIfromfd\fR argument is ignored.
+The \fInew\fR argument indicates the new name for the entry.  If this
+argument is a relative path, it is interpreted relative to the directory
+indicated by the \fItofd\fR argument. If it is an absolute path, the
+\fItofd\fR argument is ignored.
 .sp
 .LP
-In the relative path cases, if the directory file descriptor arguments do not refer to a valid directory, the function returns \fBENOTDIR\fR.  All other semantics of this function are equivalent to \fBrename\fR(2).
+In the relative path cases, if the directory file descriptor arguments do
+not refer to a valid directory, the function returns \fBENOTDIR\fR.  All
+other semantics of this function are equivalent to \fBrename\fR(2).
 .sp
 .LP
-If a special value \fBAT_FDCWD\fR is specified for either the \fIfromfd\fR or \fItofd\fR arguments, their associated path arguments (\fIold\fR and \fInew\fR) are interpreted relative to the current working directory if they are not specified as absolute paths. Any attempt to use \fBrenameat()\fR to move a file that is not an extended attribute into an extended attribute directory (so that it becomes an extended attribute) will fail. The same is true for an attempt to move a file that is an extended attribute into a directory that is not an extended attribute directory.
+If a special value \fBAT_FDCWD\fR is specified for either the \fIfromfd\fR
+or \fItofd\fR arguments, their associated path arguments (\fIold\fR and
+\fInew\fR) are interpreted relative to the current working directory if they
+are not specified as absolute paths. Any attempt to use \fBrenameat()\fR to
+move a file that is not an extended attribute into an extended attribute
+directory (so that it becomes an extended attribute) will fail. The same is
+true for an attempt to move a file that is an extended attribute into a
+directory that is not an extended attribute directory.
 .SS "Obtain information about a file"
 .sp
 .in +2
@@ -262,16 +435,35 @@ int fstatat (int \fIfd\fR, const char *\fIpath\fR, struct stat* \fIbuf\fR, int \
 
 .sp
 .LP
-The \fBfstatat\fR(2) function obtains information about a file.  If the \fIpath\fR argument is relative, it is resolved relative to the \fIfd\fR argument file descriptor, otherwise the \fIfd\fR argument is ignored.  If the \fIfd\fR argument is a special value \fBAT_FDCWD\fR the path is resolved relative to the current working directory.  If the \fIpath\fR argument is a null pointer, the function returns information about the file referenced by the \fIfd\fR argument.  In all other relative path cases, if the \fIfd\fR argument does not refer to a valid directory, the function returns \fBENOTDIR\fR. If \fBAT_SYMLINK_NOFOLLOW\fR is set in the \fIflag\fR argument, the function will not automatically traverse a symbolic link at the position of the path. If \fB_AT_TRIGGER\fR is set in the \fIflag\fR argument and the vnode is a trigger mount point, the mount is performed and the function returns the attributes of the root of the mounted filesystem. The \fBfstatat()\fR function is a multipurpose function that can be used in place of \fBstat()\fR, \fBlstat()\fR, or \fBfstat()\fR. See \fBstat\fR(2)
+The \fBfstatat\fR(2) function obtains information about a file.  If the
+\fIpath\fR argument is relative, it is resolved relative to the \fIfd\fR
+argument file descriptor, otherwise the \fIfd\fR argument is ignored.  If
+the \fIfd\fR argument is a special value \fBAT_FDCWD\fR the path is resolved
+relative to the current working directory.  If the \fIpath\fR argument is a
+null pointer, the function returns information about the file referenced by
+the \fIfd\fR argument.  In all other relative path cases, if the \fIfd\fR
+argument does not refer to a valid directory, the function returns
+\fBENOTDIR\fR. If \fBAT_SYMLINK_NOFOLLOW\fR is set in the \fIflag\fR
+argument, the function will not automatically traverse a symbolic link at
+the position of the path. If \fB_AT_TRIGGER\fR is set in the \fIflag\fR
+argument and the vnode is a trigger mount point, the mount is performed and
+the function returns the attributes of the root of the mounted filesystem.
+The \fBfstatat()\fR function is a multipurpose function that can be used in
+place of \fBstat()\fR, \fBlstat()\fR, or \fBfstat()\fR. See \fBstat\fR(2)
 .sp
 .LP
-The function call \fBstat(\fR\fIpath\fR\fB,\fR \fIbuf\fR\fB)\fR is identical to \fBfstatat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIbuf\fR\fB, 0)\fR.
+The function call \fBstat(\fR\fIpath\fR\fB,\fR \fIbuf\fR\fB)\fR is
+identical to \fBfstatat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIbuf\fR\fB,
+0)\fR.
 .sp
 .LP
-The function call \fBlstat(\fR\fIpath\fR\fB,\fR \fIbuf\fR\fB)\fR is identical to \fBfstatat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIbuf\fR, \fBAT_SYMLINK_NOFOLLOW)\fR
+The function call \fBlstat(\fR\fIpath\fR\fB,\fR \fIbuf\fR\fB)\fR is
+identical to \fBfstatat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIbuf\fR,
+\fBAT_SYMLINK_NOFOLLOW)\fR
 .sp
 .LP
-The function call \fBfstat(\fR\fIfildes\fR\fB,\fR \fIbuf\fR\fB)\fR is identical to \fBfstatat(\fR\fIfildes\fR, \fBNULL\fR, \fIbuf\fR, \fB0)\fR.
+The function call \fBfstat(\fR\fIfildes\fR\fB,\fR \fIbuf\fR\fB)\fR is
+identical to \fBfstatat(\fR\fIfildes\fR, \fBNULL\fR, \fIbuf\fR, \fB0)\fR.
 .SS "Set owner and group ID"
 .sp
 .in +2
@@ -283,13 +475,30 @@ int fchownat (int \fIfd\fR, const char *\fIpath\fR, uid_t \fIowner\fR, gid_t \fI
 
 .sp
 .LP
-The \fBfchownat\fR(2) function sets the owner ID and group ID for a file. If the \fIpath\fR argument is relative, it is resolved relative to the \fIfd\fR argument file descriptor, otherwise the \fIfd\fR argument is ignored.  If the \fIfd\fR argument is a special value \fBAT_FDCWD\fR the path is resolved relative to the current working directory.  If the path argument is a null pointer, the function sets the owner and group ID of the file referenced by the \fIfd\fR argument.  In all other relative path cases, if the \fIfd\fR argument does not refer to a valid directory, the function returns \fBENOTDIR\fR. If the \fIflag\fR argument is set to \fBAT_SYMLINK_NOFOLLOW\fR, the function will not automatically traverse a symbolic link at the position of the path. The \fBfchownat()\fR function is a multi-purpose function that can be used in place of \fBchown()\fR, \fBlchown()\fR, or \fBfchown()\fR. See \fBchown\fR(2).
+The \fBfchownat\fR(2) function sets the owner ID and group ID for a file.
+If the \fIpath\fR argument is relative, it is resolved relative to the
+\fIfd\fR argument file descriptor, otherwise the \fIfd\fR argument is
+ignored. If the \fIfd\fR argument is a special value \fBAT_FDCWD\fR the path
+is resolved relative to the current working directory.  If the path argument
+is a null pointer, the function sets the owner and group ID of the file
+referenced by the \fIfd\fR argument.  In all other relative path cases, if
+the \fIfd\fR argument does not refer to a valid directory, the function
+returns \fBENOTDIR\fR. If the \fIflag\fR argument is set to
+\fBAT_SYMLINK_NOFOLLOW\fR, the function will not automatically traverse a
+symbolic link at the position of the path. The \fBfchownat()\fR function is
+a multi-purpose function that can be used in place of \fBchown()\fR,
+\fBlchown()\fR, or \fBfchown()\fR. See \fBchown\fR(2).
 .sp
 .LP
-The function call \fBchown(\fR\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB)\fR is equivalent to \fBfchownat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB, 0)\fR.
+The function call \fBchown(\fR\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR
+\fIgroup\fR\fB)\fR is equivalent to \fBfchownat(AT_FDCWD\fR,
+\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB, 0)\fR.
 .sp
 .LP
-The function call \fBlchown(\fR\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB)\fR is equivalent to \fBfchownat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB, AT_SYMLINK_NOFOLLOW)\fR.
+The function call \fBlchown(\fR\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR
+\fIgroup\fR\fB)\fR is equivalent to \fBfchownat(AT_FDCWD\fR,
+\fIpath\fR\fB,\fR \fIowner\fR\fB,\fR \fIgroup\fR\fB,
+AT_SYMLINK_NOFOLLOW)\fR.
 .SS "Set file access and modification times"
 .sp
 .in +2
@@ -301,10 +510,21 @@ int futimesat (int \fIfd\fR, const char *\fIpath\fR, const struct timeval \e
 
 .sp
 .LP
-The \fBfutimesat\fR(2) function sets the access and modification times for a file.  If the \fIpath\fR argument is relative, it is resolved relative to the \fIfd\fR argument file descriptor; otherwise the \fIfd\fR argument is ignored.  If the \fIfd\fR argument is the special value \fBAT_FDCWD\fR, the path is resolved relative to the current working directory.  If the \fIpath\fR argument is a null pointer, the function sets the access and modification times of the file referenced by the \fIfd\fR argument. In all other relative path cases, if the \fIfd\fR argument does not refer to a valid directory, the function returns \fBENOTDIR\fR.  The \fBfutimesat()\fR function can be used in place of \fButimes\fR(2).
+The \fBfutimesat\fR(2) function sets the access and modification times for
+a file.  If the \fIpath\fR argument is relative, it is resolved relative to
+the \fIfd\fR argument file descriptor; otherwise the \fIfd\fR argument is
+ignored. If the \fIfd\fR argument is the special value \fBAT_FDCWD\fR, the
+path is resolved relative to the current working directory.  If the
+\fIpath\fR argument is a null pointer, the function sets the access and
+modification times of the file referenced by the \fIfd\fR argument. In all
+other relative path cases, if the \fIfd\fR argument does not refer to a
+valid directory, the function returns \fBENOTDIR\fR.  The \fBfutimesat()\fR
+function can be used in place of \fButimes\fR(2).
 .sp
 .LP
-The function call \fButimes(\fR\fIpath\fR\fB,\fR \fItimes\fR\fB)\fR is equivalent to \fBfutimesat(AT_FDCWD\fR, \fIpath\fR\fB,\fR \fItimes\fR\fB)\fR.
+The function call \fButimes(\fR\fIpath\fR\fB,\fR \fItimes\fR\fB)\fR is
+equivalent to \fBfutimesat(AT_FDCWD\fR, \fIpath\fR\fB,\fR
+\fItimes\fR\fB)\fR.
 .SS "New pathconf() functionality"
 .sp
 .in +2
@@ -315,7 +535,12 @@ long int pathconf(const char *\fIpath\fR, int \fIname\fR)
 
 .sp
 .LP
-Two variables have been added to \fBpathconf\fR(2) to provide enhanced support for extended attribute manipulation. The \fBXATTR_ENABLED\fR variable allows an application to determine if attribute support is currently enabled for the file in question. The \fBXATTR_EXISTS\fR variable allows an application to determine whether there are any extended attributes associated with the supplied path.
+Two variables have been added to \fBpathconf\fR(2) to provide enhanced
+support for extended attribute manipulation. The \fBXATTR_ENABLED\fR
+variable allows an application to determine if attribute support is
+currently enabled for the file in question. The \fBXATTR_EXISTS\fR variable
+allows an application to determine whether there are any extended attributes
+associated with the supplied path.
 .SS "Open/Create an attribute file"
 .sp
 .in +2
@@ -327,7 +552,14 @@ int attropen (const char *\fIpath\fR, const char *\fIattrpath\fR, int \fIoflag\f
 
 .sp
 .LP
-The \fBattropen\fR(3C) function returns a file descriptor for the named attribute, \fIattrpath\fR, of the file indicated by \fIpath\fR. The \fIoflag\fR and \fImode\fR arguments are identical to the \fBopen\fR(2) arguments and are applied to the open operation on the attribute file (for example, using the \fBO_CREAT\fR flag creates a new attribute).  Once opened, all normal file system operations can be used on the attribute file descriptor.  The \fBattropen()\fR function is a convenience function and is equivalent to the following sequence of operations:
+The \fBattropen\fR(3C) function returns a file descriptor for the named
+attribute, \fIattrpath\fR, of the file indicated by \fIpath\fR. The
+\fIoflag\fR and \fImode\fR arguments are identical to the \fBopen\fR(2)
+arguments and are applied to the open operation on the attribute file (for
+example, using the \fBO_CREAT\fR flag creates a new attribute).  Once
+opened, all normal file system operations can be used on the attribute file
+descriptor. The \fBattropen()\fR function is a convenience function and is
+equivalent to the following sequence of operations:
 .sp
 .in +2
 .nf
@@ -339,7 +571,10 @@ close(fd);
 
 .sp
 .LP
-The set of existing attributes can be browsed by calling \fBattropen()\fR with "." as the attribute name.  The list of attributes is obtained by calling \fBgetdents\fR(2) (or \fBfdopendir\fR(3C) followed by \fBreaddir\fR(3C), see below) on the returned file descriptor.
+The set of existing attributes can be browsed by calling \fBattropen()\fR
+with "." as the attribute name.  The list of attributes is obtained by
+calling \fBgetdents\fR(2) (or \fBfdopendir\fR(3C) followed by
+\fBreaddir\fR(3C), see below) on the returned file descriptor.
 .SS "Convert an open file descriptor for a directory into a directory descriptor"
 .sp
 .in +2
@@ -350,11 +585,19 @@ DIR * fdopendir (const int \fIfd\fR)
 
 .sp
 .LP
-The \fBfdopendir\fR(3C) function promotes a file descriptor for a directory to a directory pointer suitable for use with the \fBreaddir\fR(3C) function. The originating file descriptor should not be used again following the call to \fBfdopendir()\fR. The directory pointer should be closed with a call to \fBclosedir\fR(3C). If the provided file descriptor does not reference a directory, the function returns \fBENOTDIR\fR. This function is useful in circumstances where the only available handle on a directory is a file descriptor. See \fBattropen\fR(3C) and \fBopenat\fR(2).
+The \fBfdopendir\fR(3C) function promotes a file descriptor for a directory
+to a directory pointer suitable for use with the \fBreaddir\fR(3C) function.
+The originating file descriptor should not be used again following the call
+to \fBfdopendir()\fR. The directory pointer should be closed with a call to
+\fBclosedir\fR(3C). If the provided file descriptor does not reference a
+directory, the function returns \fBENOTDIR\fR. This function is useful in
+circumstances where the only available handle on a directory is a file
+descriptor. See \fBattropen\fR(3C) and \fBopenat\fR(2).
 .SS "Using the API"
 .sp
 .LP
-The following examples demonstrate how the API might be used to perform basic operations on extended attributes:
+The following examples demonstrate how the API might be used to perform
+basic operations on extended attributes:
 .LP
 \fBExample 1 \fRList extended attributes on a file.
 .sp
@@ -437,22 +680,32 @@ error = unlinkat(attrdirfd, "attr");
 
 .sp
 .LP
-Applications intending to access the interfaces defined here as well as the POSIX and X/Open specification-conforming interfaces should define the macro \fB_ATFILE_SOURCE\fR to be 1 and set whichever feature test macros are appropriate to obtain the desired environment. See \fBstandards\fR(5).
+Applications intending to access the interfaces defined here as well as the
+POSIX and X/Open specification-conforming interfaces should define the macro
+\fB_ATFILE_SOURCE\fR to be 1 and set whichever feature test macros are
+appropriate to obtain the desired environment. See \fBstandards\fR(5).
 .SS "Extended Archive Formats"
 .sp
 .LP
-As noted above in the description of command utilities modified to provide support for extended attributes, the archive formats for \fBtar\fR(1) and \fBcpio\fR(1) have been extended to provide support for archiving extended attributes. This section describes the specifics of the archive format extensions.
+As noted above in the description of command utilities modified to provide
+support for extended attributes, the archive formats for \fBtar\fR(1) and
+\fBcpio\fR(1) have been extended to provide support for archiving extended
+attributes. This section describes the specifics of the archive format
+extensions.
 .SS "Extended tar format"
 .sp
 .LP
-The \fBtar\fR archive is made up of a series of 512 byte blocks. Each archived file is represented by a header block and zero or more data blocks containing the file contents. The header block is structured as shown in the following table.
+The \fBtar\fR archive is made up of a series of 512 byte blocks. Each
+archived file is represented by a header block and zero or more data blocks
+containing the file contents. The header block is structured as shown in the
+following table.
 .sp
 
 .sp
 .TS
 tab();
-cw(1.83i) cw(1.83i) cw(1.83i) 
-lw(1.83i) lw(1.83i) lw(1.83i) 
+cw(1.83i) cw(1.83i) cw(1.83i)
+lw(1.83i) lw(1.83i) lw(1.83i)
 .
 Field NameLength (in Octets)Description
 Name100File name string
@@ -475,18 +728,32 @@ Prefix155Path prefix string for file
 
 .sp
 .LP
-The extended attribute project extends the above header format by defining a new header type (for the \fBTypeflag\fR field). The type 'E' is defined to be used for all extended attribute files. Attribute files are stored in the \fBtar\fR archive as a sequence of two \fB<header ,data>\fR pairs. The first file contains the data necessary to locate and name the extended attribute in the file system. The second file contains the actual attribute file data.  Both files use an 'E' type header. The prefix and name fields in extended attribute headers are ignored, though they should be set to meaningful values for the benefit of archivers that do not process these headers. Solaris archivers set the prefix field to "\fB/dev/null\fR" to prevent archivers that do not understand the type 'E' header from trying to restore extended attribute files in inappropriate places.
+The extended attribute project extends the above header format by defining
+a new header type (for the \fBTypeflag\fR field). The type 'E' is defined to
+be used for all extended attribute files. Attribute files are stored in the
+\fBtar\fR archive as a sequence of two \fB<header ,data>\fR pairs. The first
+file contains the data necessary to locate and name the extended attribute
+in the file system. The second file contains the actual attribute file data.
+Both files use an 'E' type header. The prefix and name fields in extended
+attribute headers are ignored, though they should be set to meaningful
+values for the benefit of archivers that do not process these headers.
+Solaris archivers set the prefix field to "\fB/dev/null\fR" to prevent
+archivers that do not understand the type 'E' header from trying to restore
+extended attribute files in inappropriate places.
 .SS "Extended cpio format"
 .sp
 .LP
-The \fBcpio\fR archive format is octet-oriented rather than block-oriented.  Each file entry in the archive includes a header that describes the file, followed by the file name, followed by the contents of the file.  These data are arranged as described in the following table.
+The \fBcpio\fR archive format is octet-oriented rather than block-oriented.
+Each file entry in the archive includes a header that describes the file,
+followed by the file name, followed by the contents of the file.  These data
+are arranged as described in the following table.
 .sp
 
 .sp
 .TS
 tab();
-cw(1.83i) cw(1.83i) cw(1.83i) 
-lw(1.83i) lw(1.83i) lw(1.83i) 
+cw(1.83i) cw(1.83i) cw(1.83i)
+lw(1.83i) lw(1.83i) lw(1.83i)
 .
 \fBField Name\fRLength (in Octets)Description
 \fBc_magic\fR670707
@@ -506,18 +773,41 @@ lw(1.83i) lw(1.83i) lw(1.83i)
 
 .sp
 .LP
-The basic archive file structure is not changed for extended attributes. The file type bits stored in the \fBc_mode\fR field for an attribute file are set to \fB0xB000\fR. As with the \fBtar\fR archive format, extended attributes are stored in \fBcpio\fR archives as two consecutive file entries. The first file describes the location/name for the extended attribute. The second file contains the actual attribute file content. The \fBc_name\fR field in extended attribute headers is ignored, though it should be set to a meaningful value for the benefit of archivers that do not process these headers.  Solaris archivers start the pathname with "\fB/dev/null/\fR"to prevent archivers that do not understand the type 'E' header from trying to restore extended attribute files in inappropriate places.
+The basic archive file structure is not changed for extended attributes.
+The file type bits stored in the \fBc_mode\fR field for an attribute file
+are set to \fB0xB000\fR. As with the \fBtar\fR archive format, extended
+attributes are stored in \fBcpio\fR archives as two consecutive file
+entries. The first file describes the location/name for the extended
+attribute. The second file contains the actual attribute file content. The
+\fBc_name\fR field in extended attribute headers is ignored, though it
+should be set to a meaningful value for the benefit of archivers that do not
+process these headers.  Solaris archivers start the pathname with
+"\fB/dev/null/\fR"to prevent archivers that do not understand the type 'E'
+header from trying to restore extended attribute files in inappropriate
+places.
 .SS "Attribute identification data format"
 .sp
 .LP
-Both the \fBtar\fR and \fBcpio\fR archive formats can contain the special files described above, always paired with the extended attribute data record, for identifying the precise location of the extended attribute.  These special data files are necessary because there is no simple naming mechanism for extended attribute files. Extended attributes are not visible in the file system name space. The extended attribute name space must be "tunneled into" using the \fBopenat()\fR function. The attribute identification data must support not only the flat naming structure for extended attributes, but also the possibility of future extensions allowing for attribute directory hierarchies and recursive attributes. The data file is therefore composed of a sequence of records. It begins with a fixed length header describing  the content. The following table describes the format of this data file.
+Both the \fBtar\fR and \fBcpio\fR archive formats can contain the special
+files described above, always paired with the extended attribute data
+record, for identifying the precise location of the extended attribute.
+These special data files are necessary because there is no simple naming
+mechanism for extended attribute files. Extended attributes are not visible
+in the file system name space. The extended attribute name space must be
+"tunneled into" using the \fBopenat()\fR function. The attribute
+identification data must support not only the flat naming structure for
+extended attributes, but also the possibility of future extensions allowing
+for attribute directory hierarchies and recursive attributes. The data file
+is therefore composed of a sequence of records. It begins with a fixed
+length header describing  the content. The following table describes the
+format of this data file.
 .sp
 
 .sp
 .TS
 tab();
-cw(1.7i) cw(1.76i) cw(2.04i) 
-lw(1.7i) lw(1.76i) lw(2.04i) 
+cw(1.7i) cw(1.76i) cw(2.04i)
+lw(1.7i) lw(1.76i) lw(2.04i)
 .
 Field NameLength (in Octets)Description
 \fBh_version\fR7Name file version
@@ -530,14 +820,21 @@ Field NameLength (in Octets)Description
 
 .sp
 .LP
-As demonstrated above, the header is followed by a record describing the "path" to the attribute file. This path is composed of two or more path segments separated by a null character. Each segment describes a path rooted at the hidden extended attribute directory of the leaf file of the previous segment, making it possible to name attributes on attributes.  The first segment is always the path to the parent file that roots the entire sequence in the normal name space. The following table describes the format of each segment.
+As demonstrated above, the header is followed by a record describing the
+"path" to the attribute file. This path is composed of two or more path
+segments separated by a null character. Each segment describes a path rooted
+at the hidden extended attribute directory of the leaf file of the previous
+segment, making it possible to name attributes on attributes.  The first
+segment is always the path to the parent file that roots the entire sequence
+in the normal name space. The following table describes the format of each
+segment.
 .sp
 
 .sp
 .TS
 tab();
-cw(1.57i) cw(1.74i) cw(2.19i) 
-lw(1.57i) lw(1.74i) lw(2.19i) 
+cw(1.57i) cw(1.74i) cw(2.19i)
+lw(1.57i) lw(1.74i) lw(2.19i)
 .
 Field NameLength (in Octets)Description
 _
@@ -548,8 +845,14 @@ _
 
 .sp
 .LP
-If the attribute file is linked to another file, the path record is followed by a second record describing the location of the referencing file.  The structure of this record is identical to the record described above.
+If the attribute file is linked to another file, the path record is
+followed by a second record describing the location of the referencing file.
+The structure of this record is identical to the record described above.
 .SH SEE ALSO
 .sp
 .LP
-\fBcp\fR(1), \fBcpio\fR(1), \fBfind\fR(1), \fBls\fR(1), \fBmv\fR(1), \fBpax\fR(1), \fBrunat\fR(1), \fBtar\fR(1), \fBdu\fR(1), \fBfsck\fR(1M), \fBchown\fR(2), \fBlink\fR(2), \fBopen\fR(2), \fBpathconf\fR(2), \fBrename\fR(2), \fBstat\fR(2), \fBunlink\fR(2), \fButimes\fR(2), \fBattropen\fR(3C), \fBstandards\fR(5)
+\fBcp\fR(1), \fBcpio\fR(1), \fBfind\fR(1), \fBls\fR(1), \fBmv\fR(1),
+\fBpax\fR(1), \fBrunat\fR(1), \fBtar\fR(1), \fBdu\fR(1), \fBfsck\fR(1M),
+\fBchown\fR(2), \fBlink\fR(2), \fBopen\fR(2), \fBpathconf\fR(2),
+\fBrename\fR(2), \fBstat\fR(2), \fBunlink\fR(2), \fButimes\fR(2),
+\fBattropen\fR(3C), \fBstandards\fR(5)

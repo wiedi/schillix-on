@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2003 Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH cfgadm_scsi 1M "6 Jun 2006" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 cfgadm_scsi \- SCSI hardware specific commands for cfgadm
@@ -38,13 +53,28 @@ cfgadm_scsi \- SCSI hardware specific commands for cfgadm
 .SH DESCRIPTION
 .sp
 .LP
-The \fBSCSI\fR hardware specific library \fB/usr/lib/cfgadm/scsi.so.1\fR provides the functionality for \fBSCSI\fR hot-plugging through the \fBcfgadm\fR(1M) command. \fBcfgadm\fR operates on attachment points, which are locations in the system where hardware resources can be dynamically reconfigured. Refer to \fBcfgadm\fR(1M) for information regarding attachment points.
+The \fBSCSI\fR hardware specific library \fB/usr/lib/cfgadm/scsi.so.1\fR
+provides the functionality for \fBSCSI\fR hot-plugging through the
+\fBcfgadm\fR(1M) command. \fBcfgadm\fR operates on attachment points, which
+are locations in the system where hardware resources can be dynamically
+reconfigured. Refer to \fBcfgadm\fR(1M) for information regarding attachment
+points.
 .sp
 .LP
-For \fBSCSI\fR hot-plugging, each \fBSCSI\fR controller is represented by an attachment point in the device tree. In addition, each \fBSCSI \fRdevice is represented by a dynamic attachment point. Attachment points are named through \fBap_ids\fR. Two types of \fBap_ids\fR are defined: logical and physical. The physical \fBap_id\fR is based on the physical pathname, whereas the logical \fBap_id\fR is a shorter more user-friendly name. For \fBSCSI \fRcontrollers, the logical \fBap_id\fR is usually the corresponding disk controller number. For example, a typical logical \fBap_id\fR would be \fBc0\fR. 
+For \fBSCSI\fR hot-plugging, each \fBSCSI\fR controller is represented by
+an attachment point in the device tree. In addition, each \fBSCSI \fRdevice
+is represented by a dynamic attachment point. Attachment points are named
+through \fBap_ids\fR. Two types of \fBap_ids\fR are defined: logical and
+physical. The physical \fBap_id\fR is based on the physical pathname,
+whereas the logical \fBap_id\fR is a shorter more user-friendly name. For
+\fBSCSI \fRcontrollers, the logical \fBap_id\fR is usually the corresponding
+disk controller number. For example, a typical logical \fBap_id\fR would be
+\fBc0\fR. 
 .sp
 .LP
-\fBSCSI\fR devices are named relative to the controller \fBap_id\fR. Thus if a disk device is attached to controller \fBc0\fR, its \fBap_id\fR can be: 
+\fBSCSI\fR devices are named relative to the controller \fBap_id\fR. Thus
+if a disk device is attached to controller \fBc0\fR, its \fBap_id\fR can be:
+
 .sp
 .in +2
 .nf
@@ -55,10 +85,22 @@ c0::dsk/c0t0d0
 
 .sp
 .LP
-where \fBdsk/c0t0d0\fR identifies the specific device. In general, the device identifier is derived from the corresponding logical link for the device in \fB/dev\fR. For example, a \fBSCSI\fR tape drive logical \fBap_id\fR could be \fBc0::rmt/0\fR. Here \fBc0\fR is the logical \fBap_id\fR for the \fBSCSI\fR controller and \fBrmt/0\fR is derived from the logical link for the tape drive in \fB/dev/rmt\fR. If an identifier can not be derived from the link in \fB/dev\fR, a unique identifier will be assigned to it. For example, if the tape device has no link in \fB/dev\fR, it can be assigned an \fBap_id\fR of the form \fBc0::st3\fR where \fBst3\fR is a unique internally generated identifier. 
+where \fBdsk/c0t0d0\fR identifies the specific device. In general, the
+device identifier is derived from the corresponding logical link for the
+device in \fB/dev\fR. For example, a \fBSCSI\fR tape drive logical
+\fBap_id\fR could be \fBc0::rmt/0\fR. Here \fBc0\fR is the logical
+\fBap_id\fR for the \fBSCSI\fR controller and \fBrmt/0\fR is derived from
+the logical link for the tape drive in \fB/dev/rmt\fR. If an identifier can
+not be derived from the link in \fB/dev\fR, a unique identifier will be
+assigned to it. For example, if the tape device has no link in \fB/dev\fR,
+it can be assigned an \fBap_id\fR of the form \fBc0::st3\fR where \fBst3\fR
+is a unique internally generated identifier.
 .sp
 .LP
-A simple listing of attachment points in the system will include attachment points at \fBSCSI \fRcontrollers but not \fBSCSI\fR devices. Use the \fB-a\fR flag to the list option (\fB-l\fR) to list \fBSCSI\fR devices as well. For example: 
+A simple listing of attachment points in the system will include attachment
+points at \fBSCSI \fRcontrollers but not \fBSCSI\fR devices. Use the
+\fB-a\fR flag to the list option (\fB-l\fR) to list \fBSCSI\fR devices as
+well. For example:
 .sp
 .in +2
 .nf
@@ -94,7 +136,9 @@ sysctrl0:slot1       sbus-upa     connected    configured   ok
 
 .sp
 .LP
-Refer to \fBcfgadm\fR(1M) for more information regarding listing attachment points. The receptacle and occupant state for attachment points at the \fBSCSI\fR controller have the following meanings: 
+Refer to \fBcfgadm\fR(1M) for more information regarding listing attachment
+points. The receptacle and occupant state for attachment points at the
+\fBSCSI\fR controller have the following meanings:
 .sp
 .ne 2
 .mk
@@ -102,7 +146,7 @@ Refer to \fBcfgadm\fR(1M) for more information regarding listing attachment poin
 \fBempty\fR
 .ad
 .RS 16n
-.rt  
+.rt
 not applicable
 .RE
 
@@ -113,7 +157,7 @@ not applicable
 \fBdisconnected\fR
 .ad
 .RS 16n
-.rt  
+.rt
 bus quiesced (\fBI/O\fR activity on bus is suspended)
 .RE
 
@@ -124,7 +168,7 @@ bus quiesced (\fBI/O\fR activity on bus is suspended)
 \fBconnected\fR
 .ad
 .RS 16n
-.rt  
+.rt
 bus active
 .RE
 
@@ -135,8 +179,8 @@ bus active
 \fBconfigured\fR
 .ad
 .RS 16n
-.rt  
-one or more devices on the bus is configured 
+.rt
+one or more devices on the bus is configured
 .RE
 
 .sp
@@ -146,13 +190,13 @@ one or more devices on the bus is configured
 \fBunconfigured\fR
 .ad
 .RS 16n
-.rt  
+.rt
 no device on the bus is configured
 .RE
 
 .sp
 .LP
-The corresponding states for individual \fBSCSI\fR devices are: 
+The corresponding states for individual \fBSCSI\fR devices are:
 .sp
 .ne 2
 .mk
@@ -160,7 +204,7 @@ The corresponding states for individual \fBSCSI\fR devices are:
 \fBempty\fR
 .ad
 .RS 16n
-.rt  
+.rt
 not applicable
 .RE
 
@@ -171,7 +215,7 @@ not applicable
 \fBdisconnected\fR
 .ad
 .RS 16n
-.rt  
+.rt
 bus to which the device is attached is quiesced
 .RE
 
@@ -182,7 +226,7 @@ bus to which the device is attached is quiesced
 \fBconnected\fR
 .ad
 .RS 16n
-.rt  
+.rt
 bus to which device is attached is active
 .RE
 
@@ -193,8 +237,8 @@ bus to which device is attached is active
 \fBconfigured\fR
 .ad
 .RS 16n
-.rt  
-device is configured 
+.rt
+device is configured
 .RE
 
 .sp
@@ -204,14 +248,18 @@ device is configured
 \fBunconfigured\fR
 .ad
 .RS 16n
-.rt  
+.rt
 device is not configured
 .RE
 
 .SH OPTIONS
 .sp
 .LP
-\fBcfgadm\fR defines several types of operations besides listing (\fB-l\fR).These operations include testing, (\fB-t\fR), invoking configuration state changes, (\fB-c\fR), invoking hardware specific functions (\fB-x\fR), and obtaining configuration administration help messages (\fB-h\fR).
+\fBcfgadm\fR defines several types of operations besides listing
+(\fB-l\fR).These operations include testing, (\fB-t\fR), invoking
+configuration state changes, (\fB-c\fR), invoking hardware specific
+functions (\fB-x\fR), and obtaining configuration administration help
+messages (\fB-h\fR).
 .sp
 .ne 2
 .mk
@@ -219,10 +267,12 @@ device is not configured
 \fB\fB-c\fR \fIfunction\fR\fR
 .ad
 .RS 24n
-.rt  
-The following generic commands are defined for the \fBSCSI \fRhardware specific library: 
+.rt
+The following generic commands are defined for the \fBSCSI \fRhardware
+specific library:
 .sp
-For \fBSCSI\fR controller attachment points, the following configuration state change operations are supported: 
+For \fBSCSI\fR controller attachment points, the following configuration
+state change operations are supported:
 .sp
 .ne 2
 .mk
@@ -230,7 +280,7 @@ For \fBSCSI\fR controller attachment points, the following configuration state c
 \fBconnect\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Unquiesce the \fBSCSI\fR bus.
 .RE
 
@@ -241,10 +291,11 @@ Unquiesce the \fBSCSI\fR bus.
 \fBdisconnect\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Quiesce the bus (suspend \fBI/O\fR activity on bus).
 .sp
-Incorrect use of this command can cause the system to hang. See \fBNOTES\fR.
+Incorrect use of this command can cause the system to hang. See
+\fBNOTES\fR.
 .RE
 
 .sp
@@ -254,7 +305,7 @@ Incorrect use of this command can cause the system to hang. See \fBNOTES\fR.
 \fBconfigure\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Configure new devices on \fBSCSI\fR bus.
 .RE
 
@@ -265,11 +316,11 @@ Configure new devices on \fBSCSI\fR bus.
 \fBunconfigure\fR
 .ad
 .RS 15n
-.rt  
+.rt
 Unconfigure all devices connected to bus.
 .RE
 
-The following generic commands are defined for \fBSCSI\fR devices: 
+The following generic commands are defined for \fBSCSI\fR devices:
 .sp
 .ne 2
 .mk
@@ -277,7 +328,7 @@ The following generic commands are defined for \fBSCSI\fR devices:
 \fBconfigure\fR
 .ad
 .RS 15n
-.rt  
+.rt
 configure a specific device
 .RE
 
@@ -288,7 +339,7 @@ configure a specific device
 \fBunconfigure\fR
 .ad
 .RS 15n
-.rt  
+.rt
 unconfigure a specific device
 .RE
 
@@ -301,10 +352,12 @@ unconfigure a specific device
 \fB\fB-f\fR\fR
 .ad
 .RS 24n
-.rt  
-When used with the \fBdisconnect\fR command, forces a quiesce of the \fBSCSI\fR bus, if supported by hardware.
+.rt
+When used with the \fBdisconnect\fR command, forces a quiesce of the
+\fBSCSI\fR bus, if supported by hardware.
 .sp
-Incorrect use of this command can cause the system to hang. See \fBNOTES\fR.
+Incorrect use of this command can cause the system to hang. See
+\fBNOTES\fR.
 .RE
 
 .sp
@@ -314,8 +367,9 @@ Incorrect use of this command can cause the system to hang. See \fBNOTES\fR.
 \fB\fB-h\fR \fIap_id\fR\fR
 .ad
 .RS 24n
-.rt  
-SCSI specific help can be obtained by using the help option with any SCSI attachment point.
+.rt
+SCSI specific help can be obtained by using the help option with any SCSI
+attachment point.
 .RE
 
 .sp
@@ -325,7 +379,7 @@ SCSI specific help can be obtained by using the help option with any SCSI attach
 \fB\fB-o\fR \fIhardware_option\fR\fR
 .ad
 .RS 24n
-.rt  
+.rt
 No hardware specific options are currently defined.
 .RE
 
@@ -336,8 +390,10 @@ No hardware specific options are currently defined.
 \fB\fB-s\fR \fIlisting_option\fR\fR
 .ad
 .RS 24n
-.rt  
-Attachment points of class \fBscsi\fR can be listed by using the \fBselect\fR sub-option. Refer to the \fBcfgadm\fR(1M) man page for additional information. 
+.rt
+Attachment points of class \fBscsi\fR can be listed by using the
+\fBselect\fR sub-option. Refer to the \fBcfgadm\fR(1M) man page for
+additional information.
 .RE
 
 .sp
@@ -347,7 +403,7 @@ Attachment points of class \fBscsi\fR can be listed by using the \fBselect\fR su
 \fB\fB-t\fR \fIap_id\fR\fR
 .ad
 .RS 24n
-.rt  
+.rt
 No test commands are available at present.
 .RE
 
@@ -358,10 +414,13 @@ No test commands are available at present.
 \fB\fB-x\fR \fIhardware_function\fR\fR
 .ad
 .RS 24n
-.rt  
-Some of the following commands can only be used with SCSI controllers and some only with SCSI devices. 
+.rt
+Some of the following commands can only be used with SCSI controllers and
+some only with SCSI devices.
 .sp
-In the following, \fIcontroller_ap_id\fR refers to an \fBap_id\fR for a SCSI controller, for example, \fBc0\fR. \fIdevice_ap_id\fR refers to an \fBap_id\fR for a \fBSCSI\fR device, for example: \fBc0::dsk/c0dt3d0\fR.
+In the following, \fIcontroller_ap_id\fR refers to an \fBap_id\fR for a
+SCSI controller, for example, \fBc0\fR. \fIdevice_ap_id\fR refers to an
+\fBap_id\fR for a \fBSCSI\fR device, for example: \fBc0::dsk/c0dt3d0\fR.
 .sp
 The following hardware specific functions are defined:
 .sp
@@ -398,7 +457,8 @@ This command is intended for interactive use only.
 .ad
 .sp .6
 .RS 4n
-Remove device \fIdevice_ap_id\fR and replace it with another device of the same kind.
+Remove device \fIdevice_ap_id\fR and replace it with another device of the
+same kind.
 .sp
 This command is intended for interactive use only.
 .RE
@@ -422,7 +482,8 @@ Reset \fIdevice_ap_id\fR.
 .ad
 .sp .6
 .RS 4n
-Reset bus \fIcontroller_ap_id\fR without resetting any devices attached to the bus.
+Reset bus \fIcontroller_ap_id\fR without resetting any devices attached to
+the bus.
 .RE
 
 .sp
@@ -444,7 +505,9 @@ Reset bus \fIcontroller_ap_id\fR and all devices on the bus.
 .ad
 .sp .6
 .RS 4n
-Sets or gets the hard disk locator \fBLED\fR, if it is provided by the platform. If the [on|off] suboption is not set, the state of the hard disk locator is printed.
+Sets or gets the hard disk locator \fBLED\fR, if it is provided by the
+platform. If the [on|off] suboption is not set, the state of the hard disk
+locator is printed.
 .RE
 
 .sp
@@ -455,7 +518,9 @@ Sets or gets the hard disk locator \fBLED\fR, if it is provided by the platform.
 .ad
 .sp .6
 .RS 4n
-If no sub-arguments are set, this function print a list of the current \fBLED\fR settings. If sub-arguments are set, this function sets the mode of a specific \fBLED\fR for a slot.
+If no sub-arguments are set, this function print a list of the current
+\fBLED\fR settings. If sub-arguments are set, this function sets the mode of
+a specific \fBLED\fR for a slot.
 .RE
 
 .RE
@@ -465,7 +530,7 @@ If no sub-arguments are set, this function print a list of the current \fBLED\fR
 \fBExample 1 \fRConfiguring a Disk
 .sp
 .LP
-The following command configures a disk attached to controller \fBc0\fR: 
+The following command configures a disk attached to controller \fBc0\fR:
 
 .sp
 .in +2
@@ -479,7 +544,8 @@ The following command configures a disk attached to controller \fBc0\fR:
 \fBExample 2 \fRUnconfiguring a Disk
 .sp
 .LP
-The following command unconfigures a disk attached to controller \fBc0\fR:
+The following command unconfigures a disk attached to controller
+\fBc0\fR:
 
 .sp
 .in +2
@@ -505,21 +571,21 @@ The following command adds a new device to controller \fBc0\fR:
 
 .sp
 .LP
-The system responds with the following: 
+The system responds with the following:
 
 .sp
 .in +2
 .nf
 Adding device to SCSI HBA: /devices/sbus@1f,0/SUNW,fas@e,8800000
 This operation will suspend activity on SCSI bus c0
-Continue (yes/no)? 
+Continue (yes/no)?
 .fi
 .in -2
 .sp
 
 .sp
 .LP
-Enter: 
+Enter:
 
 .sp
 .in +2
@@ -531,12 +597,12 @@ Enter:
 
 .sp
 .LP
-The system responds with the following: 
+The system responds with the following:
 
 .sp
 .in +2
 .nf
-SCSI bus quiesced successfully. 
+SCSI bus quiesced successfully.
 It is now safe to proceed with hotplug operation.
 Enter y if operation is complete or n to abort (yes/no)?
 .fi
@@ -545,7 +611,7 @@ Enter y if operation is complete or n to abort (yes/no)?
 
 .sp
 .LP
-Enter: 
+Enter:
 
 .sp
 .in +2
@@ -571,7 +637,7 @@ The following command replaces a device attached to controller \fBc0\fR:
 
 .sp
 .LP
-The system responds with the following: 
+The system responds with the following:
 
 .sp
 .in +2
@@ -585,7 +651,7 @@ Continue (yes/no)?
 
 .sp
 .LP
-Enter: 
+Enter:
 
 .sp
 .in +2
@@ -597,12 +663,12 @@ Enter:
 
 .sp
 .LP
-The system responds with the following: 
+The system responds with the following:
 
 .sp
 .in +2
 .nf
-SCSI bus quiesced successfully. 
+SCSI bus quiesced successfully.
 It is now safe to proceed with hotplug operation.
 Enter y if operation is complete or n to abort (yes/no)?
 .fi
@@ -611,7 +677,7 @@ Enter y if operation is complete or n to abort (yes/no)?
 
 .sp
 .LP
-Enter: 
+Enter:
 
 .sp
 .in +2
@@ -622,10 +688,12 @@ Enter:
 .sp
 
 .LP
-\fBExample 5 \fREncountering a Mounted File System While Unconfiguring a Disk
+\fBExample 5 \fREncountering a Mounted File System While Unconfiguring a
+Disk
 .sp
 .LP
-The following command illustrates encountering a mounted file system while unconfiguring a disk:
+The following command illustrates encountering a mounted file system while
+unconfiguring a disk:
 
 .sp
 .in +2
@@ -655,7 +723,8 @@ cfgadm: Component system is busy, try again: failed to offline:
 \fBExample 6 \fRDisplay the Value of the Locator for a Disk
 .sp
 .LP
-The following command displays the value of the locator for a disk. This example is specific to the \fBSPARC\fR Enterprise Server family:
+The following command displays the value of the locator for a disk. This
+example is specific to the \fBSPARC\fR Enterprise Server family:
 
 .sp
 .in +2
@@ -682,7 +751,8 @@ c0t6d0                  locator=on
 \fBExample 7 \fRSet the Value of the Locator for a Disk
 .sp
 .LP
-The following command sets the value of the locator for a disk. This example is specific to the \fBSPARC\fR Enterprise Server family:
+The following command sets the value of the locator for a disk. This
+example is specific to the \fBSPARC\fR Enterprise Server family:
 
 .sp
 .in +2
@@ -728,8 +798,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -739,18 +809,33 @@ AvailabilitySUNWcsl
 .SH SEE ALSO
 .sp
 .LP
-\fBcfgadm\fR(1M), \fBluxadm\fR(1M), \fBconfig_admin\fR(3CFGADM), \fBlibcfgadm\fR(3LIB), \fBattributes\fR(5)
+\fBcfgadm\fR(1M), \fBluxadm\fR(1M), \fBconfig_admin\fR(3CFGADM),
+\fBlibcfgadm\fR(3LIB), \fBattributes\fR(5)
 .SH NOTES
 .sp
 .LP
-The \fBdisconnect\fR (quiesce) operation is not supported on controllers which control disks containing critical partitions such as \fBroot\fR (\fB/\fR), \fB/usr\fR, \fBswap\fR, or \fB/var\fR. The \fBdisconnect\fR operation should not be attempted on such controllers. Incorrect usage can result in a system hang and require a reboot.
+The \fBdisconnect\fR (quiesce) operation is not supported on controllers
+which control disks containing critical partitions such as \fBroot\fR
+(\fB/\fR), \fB/usr\fR, \fBswap\fR, or \fB/var\fR. The \fBdisconnect\fR
+operation should not be attempted on such controllers. Incorrect usage can
+result in a system hang and require a reboot.
 .sp
 .LP
-When a controller is in the disconnected (quiesced) state, there is a potential for deadlocks occurring in the system. The \fBdisconnect\fR operation should be used with caution. A controller should be kept in the disconnected state for the minimum period of time required to accomplish the \fBDR\fR operation. The \fBdisconnect\fR command is provided only to allow the replacement of  the \fBSCSI\fR cables while the system is running. It should not be used for any other purpose. The only fix for a deadlock (if it occurs) is to reboot the system.
+When a controller is in the disconnected (quiesced) state, there is a
+potential for deadlocks occurring in the system. The \fBdisconnect\fR
+operation should be used with caution. A controller should be kept in the
+disconnected state for the minimum period of time required to accomplish the
+\fBDR\fR operation. The \fBdisconnect\fR command is provided only to allow
+the replacement of  the \fBSCSI\fR cables while the system is running. It
+should not be used for any other purpose. The only fix for a deadlock (if it
+occurs) is to reboot the system.
 .sp
 .LP
 Hotplugging operations are not supported by all \fBSCSI\fR controllers.
 .SH WARNINGS
 .sp
 .LP
-The connectors on some \fBSCSI\fR devices do not conform to \fBSCSI\fR hotplug specifications. Performing hotplug operations on such devices can cause damage to the hardware on the \fBSCSI\fR bus. Refer to your hardware manual for additional information.
+The connectors on some \fBSCSI\fR devices do not conform to \fBSCSI\fR
+hotplug specifications. Performing hotplug operations on such devices can
+cause damage to the hardware on the \fBSCSI\fR bus. Refer to your hardware
+manual for additional information.

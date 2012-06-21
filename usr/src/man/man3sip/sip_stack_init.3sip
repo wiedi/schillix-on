@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright (c) 2007, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 2007, Sun Microsystems, Inc.  All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH sip_stack_init 3SIP "23 Jan 2007" "SunOS 5.11" "Session Initiation Protocol Library Functions"
 .SH NAME
 sip_stack_init \- initializes SIP stack
@@ -18,7 +33,11 @@ sip_stack_init \- initializes SIP stack
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsip_stack_init()\fR function is used to initialize the \fBSIP\fR stack. The stack can be initialized by a process only once. Any shared library that is linked with a main program or another library that has already initialized the stack will encounter a failure when trying to initialize the stack.
+The \fBsip_stack_init()\fR function is used to initialize the \fBSIP\fR
+stack. The stack can be initialized by a process only once. Any shared
+library that is linked with a main program or another library that has
+already initialized the stack will encounter a failure when trying to
+initialize the stack.
 .sp
 .LP
 The initialization structure is given by:
@@ -42,7 +61,7 @@ typedef struct sip_stack_init_s {
 \fBsip_version\fR
 .ad
 .RS 19n
-.rt  
+.rt
 This must be set to \fBSIP_STACK_VERSION\fR.
 .RE
 
@@ -53,17 +72,25 @@ This must be set to \fBSIP_STACK_VERSION\fR.
 \fBsip_stack_flags\fR
 .ad
 .RS 19n
-.rt  
-If the application wants the \fBSIP\fR stack to maintain dialogs, this flag must be set to \fBSIP_STACK_DIALOGS\fR. Otherwise, it must be set to \fB0\fR. If \fBSIP_STACK_DIALOGS\fR is not set, the stack does not deal with dialogs at all.
+.rt
+If the application wants the \fBSIP\fR stack to maintain dialogs, this flag
+must be set to \fBSIP_STACK_DIALOGS\fR. Otherwise, it must be set to
+\fB0\fR. If \fBSIP_STACK_DIALOGS\fR is not set, the stack does not deal with
+dialogs at all.
 .RE
 
 .SS "Upper Layer Registrations"
 .sp
 .LP
-These include callbacks that are invoked to deliver incoming messages or error notification.
+These include callbacks that are invoked to deliver incoming messages or
+error notification.
 .sp
 .LP
-The callback functions should not create a thread and invoke a function that could recursively invoke the callback. For example, the callback function for a transition state change notification should not create a thread to send a \fBSIP\fR message that results in a change in the state of the transaction, which would again invoke the callback function.
+The callback functions should not create a thread and invoke a function
+that could recursively invoke the callback. For example, the callback
+function for a transition state change notification should not create a
+thread to send a \fBSIP\fR message that results in a change in the state of
+the transaction, which would again invoke the callback function.
 .sp
 .LP
 The registration structure is supplied by:
@@ -73,7 +100,7 @@ The registration structure is supplied by:
 typedef struct sip_ulp_pointers_s {
      void      (*sip_ulp_recv)(const sip_conn_object_t,
                      sip_msg_t, const sip_dialog_t);
-     uint_t    (*sip_ulp_timeout)(void *, 
+     uint_t    (*sip_ulp_timeout)(void *,
                      void (*func)(void *),
                      struct timeval *);
      boolean_t (*sip_ulp_untimeout)(uint_t);
@@ -97,10 +124,17 @@ typedef struct sip_ulp_pointers_s {
 \fBsip_ulp_recv\fR
 .ad
 .RS 26n
-.rt  
-This is a mandatory routine that the application registers for the stack to deliver an inbound \fBSIP\fR message. The \fBSIP\fR stack invokes the function with the connection object on which the message arrived, the \fBSIP\fR message, and any associated dialog.
+.rt
+This is a mandatory routine that the application registers for the stack to
+deliver an inbound \fBSIP\fR message. The \fBSIP\fR stack invokes the
+function with the connection object on which the message arrived, the
+\fBSIP\fR message, and any associated dialog.
 .sp
-The \fBSIP\fR message is freed once the function returns. If the application wishes to use the message beyond that, it has to hold a reference on the message using \fBsip_hold_msg()\fR. Similarly, if the application wishes to cache the dialog, it must hold a reference on the dialog using \fBsip_hold_msg()\fR.
+The \fBSIP\fR message is freed once the function returns. If the
+application wishes to use the message beyond that, it has to hold a
+reference on the message using \fBsip_hold_msg()\fR. Similarly, if the
+application wishes to cache the dialog, it must hold a reference on the
+dialog using \fBsip_hold_msg()\fR.
 .RE
 
 .sp
@@ -114,10 +148,16 @@ The \fBSIP\fR message is freed once the function returns. If the application wis
 \fBsip_ulp_untimeout\fR
 .ad
 .RS 26n
-.rt  
-An application can register these two routines to implement its own routines for the stack timers. Typically, an application should allow the stack to use its own built-in timer routines. The built-in timer routines are used only by the stack and are not available to applications. If the application registers one routine, it must also register the other.
+.rt
+An application can register these two routines to implement its own
+routines for the stack timers. Typically, an application should allow the
+stack to use its own built-in timer routines. The built-in timer routines
+are used only by the stack and are not available to applications. If the
+application registers one routine, it must also register the other.
 .sp
-These functions must be registered for single-threaded application. Otherwise, the timer thread provided by the stack could result in invoking a registered callback function.
+These functions must be registered for single-threaded application.
+Otherwise, the timer thread provided by the stack could result in invoking a
+registered callback function.
 .RE
 
 .sp
@@ -127,8 +167,12 @@ These functions must be registered for single-threaded application. Otherwise, t
 \fBsip_ulp_trans_error\fR
 .ad
 .RS 26n
-.rt  
-The application can register this routine to be notified of a transaction error. An error can occur when the transaction layer tries to send a message using a cached connection object which results in a failure. If this routine is not registered the transaction is terminated on such a failure. The final argument is for future use. It is always set to \fBNULL\fR.
+.rt
+The application can register this routine to be notified of a transaction
+error. An error can occur when the transaction layer tries to send a message
+using a cached connection object which results in a failure. If this routine
+is not registered the transaction is terminated on such a failure. The final
+argument is for future use. It is always set to \fBNULL\fR.
 .RE
 
 .sp
@@ -138,8 +182,11 @@ The application can register this routine to be notified of a transaction error.
 \fBsip_ulp_dlg_del\fR
 .ad
 .RS 26n
-.rt  
-An application can register this routine to be notified when a dialog is deleted. The dialog to be deleted is passed along with the \fBSIP\fR message which caused the dialog to be deleted. The final argument is for future use. It is always set to \fBNULL\fR.
+.rt
+An application can register this routine to be notified when a dialog is
+deleted. The dialog to be deleted is passed along with the \fBSIP\fR message
+which caused the dialog to be deleted. The final argument is for future use.
+It is always set to \fBNULL\fR.
 .RE
 
 .sp
@@ -153,14 +200,23 @@ An application can register this routine to be notified when a dialog is deleted
 \fBsip_ulp_dlg_state_cb\fR
 .ad
 .RS 26n
-.rt  
-If these callback routines are registered, the stack invokes \fBsip_ulp_trans_state_cb\fR when a transaction changes states and \fBsip_ulp_dlg_state_cb\fR when a dialog changes states.
+.rt
+If these callback routines are registered, the stack invokes
+\fBsip_ulp_trans_state_cb\fR when a transaction changes states and
+\fBsip_ulp_dlg_state_cb\fR when a dialog changes states.
 .RE
 
 .SS "Connection Manager Interface"
 .sp
 .LP
-The connection manager interfaces must be registered by the application to provide I/O related functionality to the stack. These interfaces act on a connection object that is defined by the application. The application registers the interfaces for the stack to work with the connection object. The connection object is application defined, but the stack requires that the first member of the connection object is a void *, used by the stack to store connection object specific information which is private to the stack.
+The connection manager interfaces must be registered by the application to
+provide I/O related functionality to the stack. These interfaces act on a
+connection object that is defined by the application. The application
+registers the interfaces for the stack to work with the connection object.
+The connection object is application defined, but the stack requires that
+the first member of the connection object is a void *, used by the stack to
+store connection object specific information which is private to the
+stack.
 .sp
 .LP
 The connection manager structure is supplied by:
@@ -193,8 +249,12 @@ typedef struct sip_io_pointers_s {
 \fBsip_conn_send\fR
 .ad
 .RS 27n
-.rt  
-This function is invoked by the stack after processing an outbound \fBSIP\fR message. This function is responsible for sending the \fBSIP\fR message to the peer. A return of \fB0\fR indicates success. The \fBSIP\fR message is passed to the function as a string, along with the length information and the associated connection object.
+.rt
+This function is invoked by the stack after processing an outbound
+\fBSIP\fR message. This function is responsible for sending the \fBSIP\fR
+message to the peer. A return of \fB0\fR indicates success. The \fBSIP\fR
+message is passed to the function as a string, along with the length
+information and the associated connection object.
 .RE
 
 .sp
@@ -208,8 +268,14 @@ This function is invoked by the stack after processing an outbound \fBSIP\fR mes
 \fBsip_rel_conn_object\fR
 .ad
 .RS 27n
-.rt  
-The application provides a mechanism for the stack to indicate that a connection object is in use by the stack and must not be freed. The stack uses \fBsip_hold_conn_object\fR to indicate that the connection object is in use and \fBsip_rel_conn_object\fR to indicate that it has been released. The connection object is passed as the argument to these functions. The stack expects that the application will not free the connection object if it is in use by the stack.
+.rt
+The application provides a mechanism for the stack to indicate that a
+connection object is in use by the stack and must not be freed. The stack
+uses \fBsip_hold_conn_object\fR to indicate that the connection object is in
+use and \fBsip_rel_conn_object\fR to indicate that it has been released. The
+connection object is passed as the argument to these functions. The stack
+expects that the application will not free the connection object if it is in
+use by the stack.
 .RE
 
 .sp
@@ -219,8 +285,10 @@ The application provides a mechanism for the stack to indicate that a connection
 \fBsip_conn_is_stream\fR
 .ad
 .RS 27n
-.rt  
-The stack uses this to determine whether the connection object, passed as the argument, is byte-stream oriented. Byte-stream protocols include \fBTCP\fR while message-based protocols include \fBSCTP\fR and \fBUDP\fR.
+.rt
+The stack uses this to determine whether the connection object, passed as
+the argument, is byte-stream oriented. Byte-stream protocols include
+\fBTCP\fR while message-based protocols include \fBSCTP\fR and \fBUDP\fR.
 .RE
 
 .sp
@@ -230,8 +298,10 @@ The stack uses this to determine whether the connection object, passed as the ar
 \fBsip_conn_is_reliable\fR
 .ad
 .RS 27n
-.rt  
-The stack uses this to determine whether the connection object, passed as the argument, is reliable. Reliable protocols include \fBTCP\fR and \fBSCTP\fR. Unreliable protocols include \fBUDP\fR.
+.rt
+The stack uses this to determine whether the connection object, passed as
+the argument, is reliable. Reliable protocols include \fBTCP\fR and
+\fBSCTP\fR. Unreliable protocols include \fBUDP\fR.
 .RE
 
 .sp
@@ -245,8 +315,13 @@ The stack uses this to determine whether the connection object, passed as the ar
 \fBsip_conn_remote_address\fR
 .ad
 .RS 27n
-.rt  
-These two interfaces are used by the stack to obtain endpoint information for a connection object. The \fBsip_conn_local_address\fR provides the local address/port information. The \fBsip_conn_remote_address\fR provides the address/port information of the peer. The caller allocates the buffer and passes its associated length along with it. On return, the length is updated to reflect the actual length.
+.rt
+These two interfaces are used by the stack to obtain endpoint information
+for a connection object. The \fBsip_conn_local_address\fR provides the local
+address/port information. The \fBsip_conn_remote_address\fR provides the
+address/port information of the peer. The caller allocates the buffer and
+passes its associated length along with it. On return, the length is updated
+to reflect the actual length.
 .RE
 
 .sp
@@ -256,8 +331,10 @@ These two interfaces are used by the stack to obtain endpoint information for a 
 \fBsip_conn_transport\fR
 .ad
 .RS 27n
-.rt  
-The stack uses this to determine the transport used by the connection object, passed as the argument. The transport could be \fBTCP\fR, \fBUDP\fR, \fBSCTP\fR.
+.rt
+The stack uses this to determine the transport used by the connection
+object, passed as the argument. The transport could be \fBTCP\fR, \fBUDP\fR,
+\fBSCTP\fR.
 .RE
 
 .sp
@@ -279,16 +356,28 @@ The stack uses this to determine the transport used by the connection object, pa
 \fBsip_conn_timerd\fR
 .ad
 .RS 27n
-.rt  
-These four interfaces may be registered by an application to provide connection object specific timer information. If these are not registered the stack uses default values.
+.rt
+These four interfaces may be registered by an application to provide
+connection object specific timer information. If these are not registered
+the stack uses default values.
 .sp
-The interfaces provide the timer values for \fBTimer 1\fR (\fBRTT\fR estimate - default \fB500\fR \fBmsec\fR), \fBTimer 2\fR (maximum retransmit interval for non-\fBINVITE\fR request and \fBINVITE\fR response - default \fB4\fR \fBsecs\fR), \fBTimer 4\fR (maximum duration a message will remain in the network - default \fB5\fR \fBsecs\fR) and \fBTimer D\fR (wait time for response retransmit interval - default \fB32\fR \fBsecs\fR).
+The interfaces provide the timer values for \fBTimer 1\fR (\fBRTT\fR
+estimate - default \fB500\fR \fBmsec\fR), \fBTimer 2\fR (maximum retransmit
+interval for non-\fBINVITE\fR request and \fBINVITE\fR response - default
+\fB4\fR \fBsecs\fR), \fBTimer 4\fR (maximum duration a message will remain
+in the network - default \fB5\fR \fBsecs\fR) and \fBTimer D\fR (wait time
+for response retransmit interval - default \fB32\fR \fBsecs\fR).
 .RE
 
 .SS "Custom \fBSIP\fR headers"
 .sp
 .LP
-In addition to the \fBSIP\fR headers supported by the stack, an application can optionally provide a table of custom headers and associated parsing functions. The table is an array with an entry for each header. If the table includes headers supported by the stack, parsing functions or other application-specific table entries take precedence over \fBlibsip\fR supported headers. The header table structure is supplied by:
+In addition to the \fBSIP\fR headers supported by the stack, an application
+can optionally provide a table of custom headers and associated parsing
+functions. The table is an array with an entry for each header. If the table
+includes headers supported by the stack, parsing functions or other
+application-specific table entries take precedence over \fBlibsip\fR
+supported headers. The header table structure is supplied by:
 .sp
 .in +2
 .nf
@@ -316,8 +405,10 @@ typedef struct header_function_table {
 \fBheader_name\fR
 .ad
 .RS 27n
-.rt  
-The full name of the header. The application must ensure that he name does not conflict with existing headers. If it does, the one registered by the application takes precedence.
+.rt
+The full name of the header. The application must ensure that he name does
+not conflict with existing headers. If it does, the one registered by the
+application takes precedence.
 .RE
 
 .sp
@@ -327,7 +418,7 @@ The full name of the header. The application must ensure that he name does not c
 \fBheader_short_name\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Compact name, if any, for the header.
 .RE
 
@@ -338,8 +429,10 @@ Compact name, if any, for the header.
 \fBheader_parse_func\fR
 .ad
 .RS 27n
-.rt  
-The parsing function for the header. The parser will set the second argument to the resulting parsed structure. A return value of \fB0\fR indicates success.
+.rt
+The parsing function for the header. The parser will set the second
+argument to the resulting parsed structure. A return value of \fB0\fR
+indicates success.
 .RE
 
 .sp
@@ -349,7 +442,7 @@ The parsing function for the header. The parser will set the second argument to 
 \fBheader_free\fR
 .ad
 .RS 27n
-.rt  
+.rt
 The function that frees the parsed header
 .RE
 
@@ -360,8 +453,10 @@ The function that frees the parsed header
 \fBheader_check_compliance\fR
 .ad
 .RS 27n
-.rt  
-An application can optionally provide this function that will check if the header is compliant or not. The compliance for a custom header will be defined by the application.
+.rt
+An application can optionally provide this function that will check if the
+header is compliant or not. The compliance for a custom header will be
+defined by the application.
 .RE
 
 .sp
@@ -371,21 +466,26 @@ An application can optionally provide this function that will check if the heade
 \fBheader_is_equal\fR
 .ad
 .RS 27n
-.rt  
-An application can optionally provide this function to determine whether two input headers are equivalent. The equivalence criteria is defined by the application.
+.rt
+An application can optionally provide this function to determine whether
+two input headers are equivalent. The equivalence criteria is defined by the
+application.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-On success \fBsip_stack_init()\fR returns \fB0\fR. Otherwise, the function returns the error value.
+On success \fBsip_stack_init()\fR returns \fB0\fR. Otherwise, the function
+returns the error value.
 .sp
 .LP
-The value of \fBerrno\fR is not changed by these calls in the event of an error.
+The value of \fBerrno\fR is not changed by these calls in the event of an
+error.
 .SH ERRORS
 .sp
 .LP
-On failure, the \fBsip_stack_init()\fR function returns the following error value:
+On failure, the \fBsip_stack_init()\fR function returns the following error
+value:
 .sp
 .ne 2
 .mk
@@ -393,8 +493,9 @@ On failure, the \fBsip_stack_init()\fR function returns the following error valu
 \fB\fBEINVAL\fR\fR
 .ad
 .RS 10n
-.rt  
-If the stack version is incorrect, or if any of the mandatory functions is missing.
+.rt
+If the stack version is incorrect, or if any of the mandatory functions is
+missing.
 .RE
 
 .SH ATTRIBUTES
@@ -406,8 +507,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _

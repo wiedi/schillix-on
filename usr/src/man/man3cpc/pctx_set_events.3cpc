@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (C) 2003, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH pctx_set_events 3CPC "13 May 2003" "SunOS 5.11" "CPU Performance Counters Library Functions"
 .SH NAME
 pctx_set_events \- associate callbacks with process events
@@ -71,20 +86,34 @@ typedef	enum {
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpctx_set_events()\fR function allows the caller (the controlling process) to express interest in various events in the controlled process.  See \fBpctx_capture\fR(3CPC) for information about how the controlling process is able to create, capture and manipulate the controlled process.
+The \fBpctx_set_events()\fR function allows the caller (the controlling
+process) to express interest in various events in the controlled process.
+See \fBpctx_capture\fR(3CPC) for information about how the controlling
+process is able to create, capture and manipulate the controlled process.
 .sp
 .LP
-The \fBpctx_set_events()\fR function takes a \fBpctx_t\fR handle, followed by a variable length list of pairs of \fBpctx_event_t\fR tags and their corresponding handlers, terminated by a \fBPCTX_NULL_EVENT\fR tag.
+The \fBpctx_set_events()\fR function takes a \fBpctx_t\fR handle, followed
+by a variable length list of pairs of \fBpctx_event_t\fR tags and their
+corresponding handlers, terminated by a \fBPCTX_NULL_EVENT\fR tag.
 .sp
 .LP
-Most of the events correspond closely to various classes of system calls, though two additional pseudo-events (\fIinit_lwp\fR and \fIfini_lwp\fR) are provided to allow callers to perform various housekeeping tasks.  The \fIinit_lwp\fR handler is called as soon as the library identifies a new \fBLWP\fR, while \fIfini_lwp\fR is called just before the \fBLWP\fR disappears. Thus the classic "hello world" program would see an \fIinit_lwp\fR event, a  \fIfini_lwp\fR event and (process) \fIexit\fR event, in that order.   The table below displays the interactions between the states of the controlled process and the handlers executed by users of the library.
+Most of the events correspond closely to various classes of system calls,
+though two additional pseudo-events (\fIinit_lwp\fR and \fIfini_lwp\fR) are
+provided to allow callers to perform various housekeeping tasks.  The
+\fIinit_lwp\fR handler is called as soon as the library identifies a new
+\fBLWP\fR, while \fIfini_lwp\fR is called just before the \fBLWP\fR
+disappears. Thus the classic "hello world" program would see an
+\fIinit_lwp\fR event, a  \fIfini_lwp\fR event and (process) \fIexit\fR
+event, in that order.   The table below displays the interactions between
+the states of the controlled process and the handlers executed by users of
+the library.
 .sp
 
 .sp
 .TS
 tab() box;
-cw(1.02i) |cw(1.14i) |cw(3.34i) 
-cw(1.02i) |cw(1.14i) |cw(3.34i) 
+cw(1.02i) |cw(1.14i) |cw(3.34i)
+cw(1.02i) |cw(1.14i) |cw(3.34i)
 .
 System Calls and pctx Handlers
 _
@@ -110,17 +139,30 @@ _
 
 .sp
 .LP
-Each of the handlers is passed the caller's opaque handle, a \fBpctx_t\fR handle, the pid, and lwpid of the process and lwp generating the event. The \fIlwp_exit\fR, and (process) \fBexit\fR events are delivered \fIbefore\fR the underlying system calls begin, while the \fBexec\fR, \fIfork\fR, and \fIlwp_create\fR events are only delivered after the relevant system calls complete successfully. The \fBexec\fR handler is passed a string that describes the command being executed. Catching the \fIfork\fR event causes the calling process to \fBfork\fR(2), then capture the child of the controlled process using \fBpctx_capture\fR(\|) before handing control to the \fIfork\fR handler.  The process is released on return from the handler.
+Each of the handlers is passed the caller's opaque handle, a \fBpctx_t\fR
+handle, the pid, and lwpid of the process and lwp generating the event. The
+\fIlwp_exit\fR, and (process) \fBexit\fR events are delivered \fIbefore\fR
+the underlying system calls begin, while the \fBexec\fR, \fIfork\fR, and
+\fIlwp_create\fR events are only delivered after the relevant system calls
+complete successfully. The \fBexec\fR handler is passed a string that
+describes the command being executed. Catching the \fIfork\fR event causes
+the calling process to \fBfork\fR(2), then capture the child of the
+controlled process using \fBpctx_capture\fR(\|) before handing control to
+the \fIfork\fR handler.  The process is released on return from the
+handler.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBpctx_set_events\fR(\|) returns 0.  Otherwise, the function returns -1.
+Upon successful completion, \fBpctx_set_events\fR(\|) returns 0.
+Otherwise, the function returns -1.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRHandleExec example.
 .sp
 .LP
-This example captures an existing process whose process identifier is \fIpid\fR, and arranges to call the \fIHandleExec\fR routine when the process performs an \fBexec\fR(2). 
+This example captures an existing process whose process identifier is
+\fIpid\fR, and arranges to call the \fIHandleExec\fR routine when the
+process performs an \fBexec\fR(2).
 
 .sp
 .in +2
@@ -154,8 +196,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -167,4 +209,6 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2), \fBvfork\fR(2), \fBfork1\fR(2), \fBcpc\fR(3CPC), \fBlibpctx\fR(3LIB), \fBproc\fR(4), \fBattributes\fR(5)
+\fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2), \fBvfork\fR(2),
+\fBfork1\fR(2), \fBcpc\fR(3CPC), \fBlibpctx\fR(3LIB), \fBproc\fR(4),
+\fBattributes\fR(5)

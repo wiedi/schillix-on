@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2004, Sun Microsystems, Inc., All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH usb_request_attributes 9S "5 Jan 2004" "SunOS 5.11" "Data Structures for Drivers"
 .SH NAME
 usb_request_attributes \- Definition of USB request attributes
@@ -19,7 +34,9 @@ Solaris DDI specific (Solaris DDI)
 .SH DESCRIPTION
 .sp
 .LP
-Request attributes specify how the USBA framework handles request execution. Request attributes are specified in the request's *_attributes field and belong to the enumerated type usb_req_attrs_t.
+Request attributes specify how the USBA framework handles request
+execution. Request attributes are specified in the request's *_attributes
+field and belong to the enumerated type usb_req_attrs_t.
 .sp
 .LP
 Supported request attributes are:
@@ -30,8 +47,11 @@ Supported request attributes are:
 \fBUSB_ATTRS_SHORT_XFER_OK\fR
 .ad
 .RS 30n
-.rt  
-Use this attribute when the  maximum transfer  size is known,  but it is possible for the request to receive a smaller amount of data. This attribute tells the USBA framework to accept  without error transfers which are shorter than expected.
+.rt
+Use this attribute when the  maximum transfer  size is known,  but it is
+possible for the request to receive a smaller amount of data. This attribute
+tells the USBA framework to accept  without error transfers which are
+shorter than expected.
 .RE
 
 .sp
@@ -41,8 +61,12 @@ Use this attribute when the  maximum transfer  size is known,  but it is possibl
 \fBUSB_ATTRS_PIPE_RESET\fR
 .ad
 .RS 30n
-.rt  
-Have the USB framework reset the pipe automatically if an error     occurs during the transfer. Do not attempt to clear any stall. The USB_CB_RESET_PIPE callback flag is passed to the client driver's exception handler to show the pipe has been reset. Pending requests on pipes which are reset are flushed unless the pipe is the default pipe.
+.rt
+Have the USB framework reset the pipe automatically if an error     occurs
+during the transfer. Do not attempt to clear any stall. The
+USB_CB_RESET_PIPE callback flag is passed to the client driver's exception
+handler to show the pipe has been reset. Pending requests on pipes which are
+reset are flushed unless the pipe is the default pipe.
 .RE
 
 .sp
@@ -52,16 +76,29 @@ Have the USB framework reset the pipe automatically if an error     occurs durin
 \fBUSB_ATTRS_AUTOCLEARING\fR
 .ad
 .RS 30n
-.rt  
-Have the USB framework reset the pipe and clear functional stalls automatically if an error occurs during the transfer. The callback flags passed to the client driver's exception handler show the status after the attempt to clear the stall.
+.rt
+Have the USB framework reset the pipe and clear functional stalls
+automatically if an error occurs during the transfer. The callback flags
+passed to the client driver's exception handler show the status after the
+attempt to clear the stall.
 .sp
-USB_CB_FUNCTIONAL_STALL is set in the callback flags to indicate that a functional stall occurred. USB_CB_STALL_CLEARED is also set if the stall is cleared. The default pipe never shows a functional stall if the USB_ATTRS_AUTOCLEARING attribute is set. If USB_CB_FUNCTIONAL_STALL is seen when autoclearing is enabled, the device has a fatal error.
+USB_CB_FUNCTIONAL_STALL is set in the callback flags to indicate that a
+functional stall occurred. USB_CB_STALL_CLEARED is also set if the stall is
+cleared. The default pipe never shows a functional stall if the
+USB_ATTRS_AUTOCLEARING attribute is set. If USB_CB_FUNCTIONAL_STALL is seen
+when autoclearing is enabled, the device has a fatal error.
 .sp
-USB_CB_PROTOCOL_STALL is set without USB_CB_STALL_CLEARED in the callback flags to indicate that a protocol stall was seen but was not explicitly cleared. Protocol stalls are cleared automatically when a subsequent command is issued.
+USB_CB_PROTOCOL_STALL is set without USB_CB_STALL_CLEARED in the callback
+flags to indicate that a protocol stall was seen but was not explicitly
+cleared. Protocol stalls are cleared automatically when a subsequent command
+is issued.
 .sp
-Autoclearing a stalled default pipe is not allowed. The USB_CB_PROTOCOL_STALL callback flag is set in the callback flags to indicate the default pipe is stalled.
+Autoclearing a stalled default pipe is not allowed. The
+USB_CB_PROTOCOL_STALL callback flag is set in the callback flags to indicate
+the default pipe is stalled.
 .sp
-Autoclearing is not allowed when the request is USB_REQ_GET_STATUS on the default pipe.
+Autoclearing is not allowed when the request is USB_REQ_GET_STATUS on the
+default pipe.
 .RE
 
 .sp
@@ -71,8 +108,11 @@ Autoclearing is not allowed when the request is USB_REQ_GET_STATUS on the defaul
 \fBUSB_ATTRS_ONE_XFER\fR
 .ad
 .RS 30n
-.rt  
-Applies only to interrupt-IN requests. Without this flag, interrupt-IN requests start periodic polling of the interrupt pipe. This flag specifies to perform only a single transfer.  Do not start periodic transfers with this request.
+.rt
+Applies only to interrupt-IN requests. Without this flag, interrupt-IN
+requests start periodic polling of the interrupt pipe. This flag specifies
+to perform only a single transfer.  Do not start periodic transfers with
+this request.
 .RE
 
 .sp
@@ -82,10 +122,20 @@ Applies only to interrupt-IN requests. Without this flag, interrupt-IN requests 
 \fBUSB_ATTRS_ISOC_START_FRAME\fR
 .ad
 .RS 30n
-.rt  
-Applies only to isochronous requests and specifies that a request be started at a given frame number. The starting frame number is provided in the isoc_frame_no field of the usb_isoc_req_t. Please see \fBusb_isoc_request\fR(9S) for more information about isochronous requests.
+.rt
+Applies only to isochronous requests and specifies that a request be
+started at a given frame number. The starting frame number is provided in
+the isoc_frame_no field of the usb_isoc_req_t. Please see
+\fBusb_isoc_request\fR(9S) for more information about isochronous
+requests.
 .sp
-USB_ATTRS_ISOC_START_FRAME can be used to delay a transfer by a few frames, allowing transfers to an endpoint to sync up with another source.  (For example, synching up audio endpoints to a video source.) The number of a suitable starting frame in the near future can be found by adding an offset number of frames (usually between four and ten) to the current frame number returned from \fBusb_get_current_frame_number\fR(9F). Note that requests with starting frames which have passed are rejected.
+USB_ATTRS_ISOC_START_FRAME can be used to delay a transfer by a few frames,
+allowing transfers to an endpoint to sync up with another source.  (For
+example, synching up audio endpoints to a video source.) The number of a
+suitable starting frame in the near future can be found by adding an offset
+number of frames (usually between four and ten) to the current frame number
+returned from \fBusb_get_current_frame_number\fR(9F). Note that requests
+with starting frames which have passed are rejected.
 .RE
 
 .sp
@@ -95,8 +145,13 @@ USB_ATTRS_ISOC_START_FRAME can be used to delay a transfer by a few frames, allo
 \fBUSB_ATTRS_ISOC_XFER_ASAP\fR
 .ad
 .RS 30n
-.rt  
-Applies only to isochronous requests and specifies that a request start as soon as possible. The host controller driver picks a starting frame number which immediately follows the last frame of the last queued request. The isoc_frame_no of the usb_isoc_req_t is ignored. Please see \fBusb_isoc_request\fR(9S) for more information about isochronous requests.
+.rt
+Applies only to isochronous requests and specifies that a request start as
+soon as possible. The host controller driver picks a starting frame number
+which immediately follows the last frame of the last queued request. The
+isoc_frame_no of the usb_isoc_req_t is ignored. Please see
+\fBusb_isoc_request\fR(9S) for more information about isochronous
+requests.
 .RE
 
 .SH EXAMPLES
@@ -151,14 +206,14 @@ Applies only to isochronous requests and specifies that a request start as soon 
 .SH ATTRIBUTES
 .sp
 .LP
-See attributes(5) for descriptions of the following attributes: 
+See attributes(5) for descriptions of the following attributes:
 .sp
 
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -172,4 +227,9 @@ AvailabilitySUNWusb, SUNWusbu
 .SH SEE ALSO
 .sp
 .LP
-\fBusb_alloc_request\fR(9F), \fBusb_get_current_frame_number\fR(9F), \fBusb_pipe_bulk_xfer\fR(9F), \fBusb_pipe_ctrl_xfer\fR(9F), \fBusb_pipe_intr_xfer\fR(9F), \fBusb_pipe_isoc_xfer\fR(9F), \fBusb_bulk_request\fR(9S), \fBusb_callback_flags\fR(9S), \fBusb_ctrl_request\fR(9S), \fBusb_intr_request\fR(9S), \fBusb_isoc_request\fR(9S), \fBusb_completion_reason\fR(9S)
+\fBusb_alloc_request\fR(9F), \fBusb_get_current_frame_number\fR(9F),
+\fBusb_pipe_bulk_xfer\fR(9F), \fBusb_pipe_ctrl_xfer\fR(9F),
+\fBusb_pipe_intr_xfer\fR(9F), \fBusb_pipe_isoc_xfer\fR(9F),
+\fBusb_bulk_request\fR(9S), \fBusb_callback_flags\fR(9S),
+\fBusb_ctrl_request\fR(9S), \fBusb_intr_request\fR(9S),
+\fBusb_isoc_request\fR(9S), \fBusb_completion_reason\fR(9S)
