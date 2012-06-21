@@ -1,31 +1,63 @@
 '\" te
 .\" Copyright (c) 2003, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH md 7D "29 Aug 2003" "SunOS 5.11" "Devices"
 .SH NAME
 md \- user configurable pseudo device driver
 .SH DESCRIPTION
 .sp
 .LP
-\fBmd\fR is a user configurable pseudo device driver that provides disk concatenation, striping, mirroring, RAID5 metadevices, trans metadevices, and hot spare utilities. Trans devices are no longer supported and have been replaced by UFS logging. See \fBmount_ufs\fR(1M).
+\fBmd\fR is a user configurable pseudo device driver that provides disk
+concatenation, striping, mirroring, RAID5 metadevices, trans metadevices,
+and hot spare utilities. Trans devices are no longer supported and have been
+replaced by UFS logging. See \fBmount_ufs\fR(1M).
 .sp
 .LP
-The block devices access the disk using the system's normal buffering mechanism and are read and written without regard to physical disk records. There is also a ``raw'' device which provides for direct transmission between the disk and the user's read or write buffer. A single read or write call usually results in one I/O operation; raw I/O is therefore considerably more efficient when many bytes are transmitted. The names of the block devices are found in \fB/dev/md/dsk\fR; the names of the raw devices are found in \fB/dev/md/rdsk\fR. Metadevices have the appearance of whole disks; there are no slices (partitions).
+The block devices access the disk using the system's normal buffering
+mechanism and are read and written without regard to physical disk records.
+There is also a ``raw'' device which provides for direct transmission
+between the disk and the user's read or write buffer. A single read or write
+call usually results in one I/O operation; raw I/O is therefore considerably
+more efficient when many bytes are transmitted. The names of the block
+devices are found in \fB/dev/md/dsk\fR; the names of the raw devices are
+found in \fB/dev/md/rdsk\fR. Metadevices have the appearance of whole disks;
+there are no slices (partitions).
 .sp
 .LP
-I/O requests (such as \fBlseek\fR(2)) to the metadevices must have an offset that is a multiple of 512 bytes (DEV_BSIZE), or the driver returns an EINVAL error. If the transfer length is not a multiple of 512 bytes, the tranfer count is rounded up by the driver.
+I/O requests (such as \fBlseek\fR(2)) to the metadevices must have an
+offset that is a multiple of 512 bytes (DEV_BSIZE), or the driver returns an
+EINVAL error. If the transfer length is not a multiple of 512 bytes, the
+tranfer count is rounded up by the driver.
 .sp
 .LP
-The \fBmd\fR pseudo device drivers support all disk devices on all Solaris 2.4 or later Solaris systems.
+The \fBmd\fR pseudo device drivers support all disk devices on all Solaris
+2.4 or later Solaris systems.
 .SH IOCTLS
 .sp
 .LP
-This section provides a list of the ioctls supported by the metadisk driver.
+This section provides a list of the ioctls supported by the metadisk
+driver.
 .sp
 .LP
-The following ioctls are valid when issued to the raw metadevice, such as \fB/dev/md/rdsk/d0\fR. See \fBdkio\fR(7I) for additional information.
+The following ioctls are valid when issued to the raw metadevice, such as
+\fB/dev/md/rdsk/d0\fR. See \fBdkio\fR(7I) for additional information.
 .sp
 .ne 2
 .mk
@@ -33,8 +65,19 @@ The following ioctls are valid when issued to the raw metadevice, such as \fB/de
 \fB\fBDKIOCGGEOM\fR\fR
 .ad
 .RS 14n
-.rt  
-This ioctl is used to get the disk geometry. The metadisk driver fills in the \fBdkg_nhead\fR, \fBdkg_nsect\fR, \fBdkg_rpm\fR, \fBdkg_write_reinstruct\fR and \fBdkg_read_reinstruct\fR from the first component of the metadevice (at \fBmetainit\fR time). \fBdkg_ncyl\fR is calculated using the size of the metadevice (reported by \fBmetastat\fR) divided by (dkg_nhead * dkg_nsect). The total size is always a multiple of (dkg_nhead * dkg_nsect). If the first component of a metadevice \fIdoes not\fR start on cylinder number 0, then the dkg_ncyl is increased by one cylinder; because DKIOCGVTOC reports the metadevice as starting on cylinder 1. The side effect here is that it looks like cylinder 0 is not being used, but all the arithmetic works out correctly. If the metadevice is not set up, then ENXIO is returned.
+.rt
+This ioctl is used to get the disk geometry. The metadisk driver fills in
+the \fBdkg_nhead\fR, \fBdkg_nsect\fR, \fBdkg_rpm\fR,
+\fBdkg_write_reinstruct\fR and \fBdkg_read_reinstruct\fR from the first
+component of the metadevice (at \fBmetainit\fR time). \fBdkg_ncyl\fR is
+calculated using the size of the metadevice (reported by \fBmetastat\fR)
+divided by (dkg_nhead * dkg_nsect). The total size is always a multiple of
+(dkg_nhead * dkg_nsect). If the first component of a metadevice \fIdoes
+not\fR start on cylinder number 0, then the dkg_ncyl is increased by one
+cylinder; because DKIOCGVTOC reports the metadevice as starting on cylinder
+1. The side effect here is that it looks like cylinder 0 is not being used,
+but all the arithmetic works out correctly. If the metadevice is not set up,
+then ENXIO is returned.
 .RE
 
 .sp
@@ -44,8 +87,11 @@ This ioctl is used to get the disk geometry. The metadisk driver fills in the \f
 \fB\fBDKIOCINFO\fR\fR
 .ad
 .RS 14n
-.rt  
-When issued to the administrative device or metadevice, this ioctl sets \fBdki_unit\fR to the unit number of the metadevice, \fBdki_ctype\fR to a value of DKC_MD, and \fBdki_partition\fR to 0, because there are no slices.
+.rt
+When issued to the administrative device or metadevice, this ioctl sets
+\fBdki_unit\fR to the unit number of the metadevice, \fBdki_ctype\fR to a
+value of DKC_MD, and \fBdki_partition\fR to 0, because there are no
+slices.
 .RE
 
 .sp
@@ -55,8 +101,13 @@ When issued to the administrative device or metadevice, this ioctl sets \fBdki_u
 \fB\fBDKIOCGVTOC\fR\fR
 .ad
 .RS 14n
-.rt  
-This ioctl returns the current vtoc. If one has not been written, then a default vtoc is returned. \fBv_nparts\fR is always 1. \fBv_part[0].p_start\fR is 0 if the first component of the metadevice starts on cylinder 0. Otherwise, the \fBp_start\fR field is the starting sector of cylinder 1. \fBv_part[0].p_size\fR is the same as the total size reported by \fBmetastat\fR.
+.rt
+This ioctl returns the current vtoc. If one has not been written, then a
+default vtoc is returned. \fBv_nparts\fR is always 1.
+\fBv_part[0].p_start\fR is 0 if the first component of the metadevice starts
+on cylinder 0. Otherwise, the \fBp_start\fR field is the starting sector of
+cylinder 1. \fBv_part[0].p_size\fR is the same as the total size reported by
+\fBmetastat\fR.
 .RE
 
 .sp
@@ -66,8 +117,9 @@ This ioctl returns the current vtoc. If one has not been written, then a default
 \fB\fBDKIOCSVTOC\fR\fR
 .ad
 .RS 14n
-.rt  
-This ioctl stores the vtoc in the metadevice state database so it is persistent across reboots.
+.rt
+This ioctl stores the vtoc in the metadevice state database so it is
+persistent across reboots.
 .RE
 
 .SH DIAGNOSTICS
@@ -84,7 +136,8 @@ md: d\fInum\fR: Hotspared device \fIdev\fR with \fIdev\fR
 
 .sp
 .LP
-The first device name listed has been hot spare replaced with the second device name listed.
+The first device name listed has been hot spare replaced with the second
+device name listed.
 .sp
 .in +2
 .nf
@@ -94,7 +147,8 @@ md: d\fInum\fR: Hotspared device dev(\fInum\fR,\fInum\fR) with dev(\fInum\fR,\fI
 
 .sp
 .LP
-The first device number listed has been hot spare replaced with the second device number listed.
+The first device number listed has been hot spare replaced with the second
+device number listed.
 .sp
 .in +2
 .nf
@@ -104,7 +158,8 @@ md: Could not load misc /\fIdev\fR
 
 .sp
 .LP
-The named \fBmisc\fR module is not loadable. It is possibly missing, or something else has been copied over it.
+The named \fBmisc\fR module is not loadable. It is possibly missing, or
+something else has been copied over it.
 .sp
 .in +2
 .nf
@@ -118,32 +173,39 @@ Memory could not be allocated in the \fBprop_op\fR entry point.
 .sp
 .in +2
 .nf
-md: db: Parsing error on '\fIdev\fR' 
-  
+md: db: Parsing error on '\fIdev\fR'
+
 .fi
 .in -2
 .sp
 
 .sp
 .LP
-Set command in \fB/kernel/drv/md.conf\fR for the \fBmddb.bootlist\fR \fI<number>\fR is not in the correct format. \fBmetadb\fR \fB-p\fR can be run to put the correct set commands into the \fB/kernel/drv/md.conf\fR file.
+Set command in \fB/kernel/drv/md.conf\fR for the \fBmddb.bootlist\fR
+\fI<number>\fR is not in the correct format. \fBmetadb\fR \fB-p\fR can be
+run to put the correct set commands into the \fB/kernel/drv/md.conf\fR
+file.
 .sp
 .in +2
 .nf
-md: d\fInum\fR: \fIdev\fR(\fInum\fR,\fInum\fR) needs maintenance 
+md: d\fInum\fR: \fIdev\fR(\fInum\fR,\fInum\fR) needs maintenance
 md: d\fInum\fR: \fIdev\fR needs maintenance
 .fi
 .in -2
 
 .sp
 .LP
-An I/O or open error has occurred on a device within a mirror causing a component in the mirror to change to the Maintenance state.
+An I/O or open error has occurred on a device within a mirror causing a
+component in the mirror to change to the Maintenance state.
 .sp
 .LP
-\fBmd: d\fR\fInum\fR\fB: \fR\fIdev\fR\fB(\fR\fInum\fR\fB,\fR\fInum\fR\fB) last erred\fR \fBmd: d\fR\fInum\fR\fB: \fR\fIdev\fR\fB last erred\fR 
+\fBmd: d\fR\fInum\fR\fB: \fR\fIdev\fR\fB(\fR\fInum\fR\fB,\fR\fInum\fR\fB)
+last erred\fR \fBmd: d\fR\fInum\fR\fB: \fR\fIdev\fR\fB last erred\fR
 .sp
 .LP
-An I/O or open error has occurred on a device within a mirror and the data is not replicated elsewhere in the mirror. This is causing the component in the mirror to change to the Last Erred state.
+An I/O or open error has occurred on a device within a mirror and the data
+is not replicated elsewhere in the mirror. This is causing the component in
+the mirror to change to the Last Erred state.
 .SS "Warning Log Messages"
 .sp
 .LP
@@ -157,7 +219,10 @@ md: State database is stale
 
 .sp
 .LP
-This error message comes when there are not enough usable replicas for the state database to be able to update records in the database. All accesses to the metadevice driver will fail. To fix this problem, more replicas need to be added or inaccessible replicas need to be deleted.
+This error message comes when there are not enough usable replicas for the
+state database to be able to update records in the database. All accesses to
+the metadevice driver will fail. To fix this problem, more replicas need to
+be added or inaccessible replicas need to be deleted.
 .sp
 .in +2
 .nf
@@ -167,7 +232,9 @@ md: d\fInum\fR: read error on \fIdev\fRmd: d\fInum\fR: write error on \fIdev\fR
 
 .sp
 .LP
-A read or write error has occurred on the specified submirror, at the specified device name. This happens if any read or write errors occur on a submirror.
+A read or write error has occurred on the specified submirror, at the
+specified device name. This happens if any read or write errors occur on a
+submirror.
 .sp
 .in +2
 .nf
@@ -178,7 +245,9 @@ md: d\fInum\fR: read error on dev(\fInum\fR,\fInum\fR)md: d\fInum\fR: write erro
 
 .sp
 .LP
-A read or write error has occurred on the specified submirror, at the specified device number. This happens if any read or write errors occur on a submirror.
+A read or write error has occurred on the specified submirror, at the
+specified device number. This happens if any read or write errors occur on a
+submirror.
 .sp
 .in +2
 .nf
@@ -189,7 +258,14 @@ md: State database delete failed
 
 .sp
 .LP
-These messages occur when there have been device errors on components where the state database replicas reside. These errors only occur when more than half of the replicas have had device errors returned to them. For instance, if you have three components with state database replicas and two of the components report errors, then these errors may occur. The state database commit or delete is retried periodically. If a replica is added, then the commit or delete will finish and the system will be operational. Otherwise the system will timeout and panic.
+These messages occur when there have been device errors on components where
+the state database replicas reside. These errors only occur when more than
+half of the replicas have had device errors returned to them. For instance,
+if you have three components with state database replicas and two of the
+components report errors, then these errors may occur. The state database
+commit or delete is retried periodically. If a replica is added, then the
+commit or delete will finish and the system will be operational. Otherwise
+the system will timeout and panic.
 .sp
 .in +2
 .nf
@@ -200,7 +276,9 @@ md: d\fInum\fR: Cannot load \fIdev\fR driver
 
 .sp
 .LP
-Underlying named driver module is not loadable (for example, \fBsd\fR, \fBid\fR, \fBxy\fR, or a third-party driver). This could indicate that the driver module has been removed.
+Underlying named driver module is not loadable (for example, \fBsd\fR,
+\fBid\fR, \fBxy\fR, or a third-party driver). This could indicate that the
+driver module has been removed.
 .sp
 .in +2
 .nf
@@ -234,7 +312,8 @@ md: State database problem
 
 .sp
 .LP
-Failed metadevice state database commit or delete has been retried the default 100 times.
+Failed metadevice state database commit or delete has been retried the
+default 100 times.
 .SH FILES
 .sp
 .ne 2
@@ -243,7 +322,7 @@ Failed metadevice state database commit or delete has been retried the default 1
 \fB\fB/dev/md/dsk/\fR\fBd\fIn\fR\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 block device (where \fIn\fR is the device number)
 .RE
 
@@ -254,7 +333,7 @@ block device (where \fIn\fR is the device number)
 \fB\fB/dev/md/rdsk/\fR\fBd\fIn\fR\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 raw device (where \fIn\fR is the device number)
 .RE
 
@@ -265,8 +344,9 @@ raw device (where \fIn\fR is the device number)
 \fB\fB/dev/md/\fIsetname\fR/dsk/\fR\fBd\fIn\fR\fR \fR
 .ad
 .RS 30n
-.rt  
-block device (where \fIsetname\fR is the name of the diskset and \fIn\fR is the device number)
+.rt
+block device (where \fIsetname\fR is the name of the diskset and \fIn\fR is
+the device number)
 .RE
 
 .sp
@@ -276,8 +356,9 @@ block device (where \fIsetname\fR is the name of the diskset and \fIn\fR is the 
 \fB\fB/dev/md/\fIsetname\fR/rdsk/\fR\fBd\fIn\fR\fR \fR
 .ad
 .RS 30n
-.rt  
-raw device (where \fIsetname\fR is the name of the diskset and \fIn\fR is the device number)
+.rt
+raw device (where \fIsetname\fR is the name of the diskset and \fIn\fR is
+the device number)
 .RE
 
 .sp
@@ -287,7 +368,7 @@ raw device (where \fIsetname\fR is the name of the diskset and \fIn\fR is the de
 \fB\fB/dev/md/admin\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 administrative device
 .RE
 
@@ -298,7 +379,7 @@ administrative device
 \fB\fB/kernel/drv/md\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 driver module
 .RE
 
@@ -309,7 +390,7 @@ driver module
 \fB\fB/kernel/drv/md.conf\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 driver configuration file
 .RE
 
@@ -320,7 +401,7 @@ driver configuration file
 \fB\fB/kernel/misc/md_stripe\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 stripe driver misc module
 .RE
 
@@ -331,7 +412,7 @@ stripe driver misc module
 \fB\fB/kernel/misc/md_mirror\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 mirror driver misc module
 .RE
 
@@ -342,7 +423,7 @@ mirror driver misc module
 \fB\fB/kernel/misc/md_hotspares\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 hotspares driver misc module
 .RE
 
@@ -353,7 +434,7 @@ hotspares driver misc module
 \fB\fB/kernel/misc/md_trans\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 metatrans driver for UFS logging
 .RE
 
@@ -364,18 +445,26 @@ metatrans driver for UFS logging
 \fB\fB/kernel/misc/md_raid\fR \fR
 .ad
 .RS 30n
-.rt  
+.rt
 RAID5 driver misc module
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBmdmonitord\fR(1M), \fBmetaclear\fR(1M), \fBmetadb\fR(1M), \fBmetadetach\fR(1M), \fBmetahs\fR(1M), \fBmetainit\fR(1M), \fBmetaoffline\fR(1M), \fBmetaonline\fR(1M), \fBmetaparam\fR(1M), \fBmetarecover\fR(1M), \fBmetarename\fR(1M), \fBmetareplace\fR(1M), \fBmetaroot\fR(1M), \fBmetassist\fR(1M), \fBmetaset\fR(1M), \fBmetastat\fR(1M), \fBmetasync\fR(1M), \fBmetattach\fR(1M), \fBmd.cf\fR(4), \fBmd.tab\fR(4), \fBattributes\fR(5), 
+\fBmdmonitord\fR(1M), \fBmetaclear\fR(1M), \fBmetadb\fR(1M),
+\fBmetadetach\fR(1M), \fBmetahs\fR(1M), \fBmetainit\fR(1M),
+\fBmetaoffline\fR(1M), \fBmetaonline\fR(1M), \fBmetaparam\fR(1M),
+\fBmetarecover\fR(1M), \fBmetarename\fR(1M), \fBmetareplace\fR(1M),
+\fBmetaroot\fR(1M), \fBmetassist\fR(1M), \fBmetaset\fR(1M),
+\fBmetastat\fR(1M), \fBmetasync\fR(1M), \fBmetattach\fR(1M), \fBmd.cf\fR(4),
+\fBmd.tab\fR(4), \fBattributes\fR(5),
 .sp
 .LP
 \fISolaris Volume Manager Administration Guide\fR
 .SH NOTES
 .sp
 .LP
-Trans metadevices have been replaced by UFS logging. Existing trans devices are \fBnot\fR logging--they pass data directly through to the underlying device. See \fBmount_ufs\fR(1M) for more information about UFS logging.
+Trans metadevices have been replaced by UFS logging. Existing trans devices
+are \fBnot\fR logging--they pass data directly through to the underlying
+device. See \fBmount_ufs\fR(1M) for more information about UFS logging.

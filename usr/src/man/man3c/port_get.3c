@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2007, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH port_get 3C "31 Jan 2007" "SunOS 5.11" "Standard C Library Functions"
 .SH NAME
 port_get, port_getn \- retrieve event information from a port
@@ -24,10 +39,14 @@ port_get, port_getn \- retrieve event information from a port
 .SH DESCRIPTION
 .sp
 .LP
-The \fBport_get()\fR and \fBport_getn()\fR functions retrieve events from a port. The \fBport_get()\fR function retrieves at most a single event. The \fBport_getn()\fR function can retrieve multiple events.
+The \fBport_get()\fR and \fBport_getn()\fR functions retrieve events from a
+port. The \fBport_get()\fR function retrieves at most a single event. The
+\fBport_getn()\fR function can retrieve multiple events.
 .sp
 .LP
-The \fIpe\fR argument points to an uninitialized \fBport_event_t\fR structure that is filled in by the system when the \fBport_get()\fR function returns successfully.
+The \fIpe\fR argument points to an uninitialized \fBport_event_t\fR
+structure that is filled in by the system when the \fBport_get()\fR function
+returns successfully.
 .sp
 .LP
 The \fBport_event_t\fR structure contains the following members:
@@ -43,29 +62,58 @@ void      *portev_user;    /* user defined cookie       */
 
 .sp
 .LP
-The \fBportev_events\fR and \fBportev_object\fR members are specific to the event source. The \fBportev_events\fR denotes the delivered events. The \fBportev_object\fR refers to the associated object (see \fBport_create\fR(3C)). The \fBportev_source\fR member specifies the source of the event. The \fBportev_user\fR member is a user-specified value.
+The \fBportev_events\fR and \fBportev_object\fR members are specific to the
+event source. The \fBportev_events\fR denotes the delivered events. The
+\fBportev_object\fR refers to the associated object (see
+\fBport_create\fR(3C)). The \fBportev_source\fR member specifies the source
+of the event. The \fBportev_user\fR member is a user-specified value.
 .sp
 .LP
-If the \fItimeout\fR pointer is \fINULL\fR, the \fBport_get()\fR function blocks until an event is available. To poll for an event without waiting, \fItimeout\fR should point to a zeroed \fBtimespec\fR. A non-zeroed \fBtimespec\fR specifies the desired time to wait for events. The \fBport_get()\fR function returns before the timeout elapses if an event is available, a signal occurs, a port is closed by another thread, or the port is in or enters alert mode. See \fBport_alert\fR(3C) for details on alert mode.
+If the \fItimeout\fR pointer is \fINULL\fR, the \fBport_get()\fR function
+blocks until an event is available. To poll for an event without waiting,
+\fItimeout\fR should point to a zeroed \fBtimespec\fR. A non-zeroed
+\fBtimespec\fR specifies the desired time to wait for events. The
+\fBport_get()\fR function returns before the timeout elapses if an event is
+available, a signal occurs, a port is closed by another thread, or the port
+is in or enters alert mode. See \fBport_alert\fR(3C) for details on alert
+mode.
 .sp
 .LP
-The \fBport_getn()\fR function can retrieve multiple events from a port. The \fIlist\fR argument is an array of uninitialized \fBport_event_t\fR structures that is filled in by the system when the \fBport_getn()\fR function returns succesfully. The \fInget\fR argument points to the desired number of events to be retrieved. The \fImax\fR parameter specifies the maximum number of events that can be returned in \fIlist\fR[]. If \fImax\fR is 0, the value pointed to by \fInget\fR is set to the number of events available on the port. The \fBport_getn()\fR function returns immediately but no events are retrieved.
+The \fBport_getn()\fR function can retrieve multiple events from a port.
+The \fIlist\fR argument is an array of uninitialized \fBport_event_t\fR
+structures that is filled in by the system when the \fBport_getn()\fR
+function returns succesfully. The \fInget\fR argument points to the desired
+number of events to be retrieved. The \fImax\fR parameter specifies the
+maximum number of events that can be returned in \fIlist\fR[]. If \fImax\fR
+is 0, the value pointed to by \fInget\fR is set to the number of events
+available on the port. The \fBport_getn()\fR function returns immediately
+but no events are retrieved.
 .sp
 .LP
-The \fBport_getn()\fR function block until the desired number of events are available, the timeout elapses, a signal occurs, a port is closed by another thread, or the port is in or enters alert mode.
+The \fBport_getn()\fR function block until the desired number of events are
+available, the timeout elapses, a signal occurs, a port is closed by another
+thread, or the port is in or enters alert mode.
 .sp
 .LP
-On return, the value pointed to by \fInget\fR is updated to the actual number of events retrieved in list.
+On return, the value pointed to by \fInget\fR is updated to the actual
+number of events retrieved in list.
 .sp
 .LP
-Threads calling the \fBport_get()\fR function might starve threads waiting in the \fBport_getn()\fR function for more than one event.  Similarly, threads calling the \fBport_getn()\fR function for \fIn\fR events might starve threads waiting in the \fBport_getn()\fR function for more than \fIn\fR events.
+Threads calling the \fBport_get()\fR function might starve threads waiting
+in the \fBport_getn()\fR function for more than one event.  Similarly,
+threads calling the \fBport_getn()\fR function for \fIn\fR events might
+starve threads waiting in the \fBport_getn()\fR function for more than
+\fIn\fR events.
 .sp
 .LP
-The \fBport_get()\fR and the \fBport_getn()\fR functions ignore non-shareable events (see \fBport_create\fR(3C)) generated by other processes.
+The \fBport_get()\fR and the \fBport_getn()\fR functions ignore
+non-shareable events (see \fBport_create\fR(3C)) generated by other
+processes.
 .SH RETURN VALUES
 .sp
 .LP
-Upon succesful completion, 0 is returned. Otherwise, -1 is returned and errno is set to indicate the error.
+Upon succesful completion, 0 is returned. Otherwise, -1 is returned and
+errno is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -77,7 +125,7 @@ The \fBport_get()\fR and \fBport_getn()\fR functions will fail if:
 \fB\fBEBADF\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The \fIport\fR identifier is not valid.
 .RE
 
@@ -88,7 +136,7 @@ The \fIport\fR identifier is not valid.
 \fB\fBEBADFD\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The \fIport\fR argument is not an event port file descriptor.
 .RE
 
@@ -99,8 +147,10 @@ The \fIport\fR argument is not an event port file descriptor.
 \fB\fBEFAULT\fR\fR
 .ad
 .RS 10n
-.rt  
-Event or event list can not be delivered (\fIlist\fR[] pointer and/or user space reserved to accomodate the list of events is not reasonable), or the \fItimeout\fR argument is not reasonable.
+.rt
+Event or event list can not be delivered (\fIlist\fR[] pointer and/or user
+space reserved to accomodate the list of events is not reasonable), or the
+\fItimeout\fR argument is not reasonable.
 .RE
 
 .sp
@@ -110,7 +160,7 @@ Event or event list can not be delivered (\fIlist\fR[] pointer and/or user space
 \fB\fBEINTR\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 A signal was caught during the execution of the function.
 .RE
 
@@ -121,8 +171,9 @@ A signal was caught during the execution of the function.
 \fB\fBEINVAL\fR\fR
 .ad
 .RS 10n
-.rt  
-The \fItimeout\fR element \fBtv_sec\fR is < 0 or the \fItimeout\fR element \fBtv_nsec\fR is < 0 or > 1000000000.
+.rt
+The \fItimeout\fR element \fBtv_sec\fR is < 0 or the \fItimeout\fR element
+\fBtv_nsec\fR is < 0 or > 1000000000.
 .RE
 
 .sp
@@ -132,8 +183,9 @@ The \fItimeout\fR element \fBtv_sec\fR is < 0 or the \fItimeout\fR element \fBtv
 \fB\fBETIME\fR\fR
 .ad
 .RS 10n
-.rt  
-The time interval expired before the expected number of events have been posted to the port.
+.rt
+The time interval expired before the expected number of events have been
+posted to the port.
 .RE
 
 .sp
@@ -146,8 +198,10 @@ The \fBport_getn()\fR function will fail if:
 \fB\fBEINVAL\fR\fR
 .ad
 .RS 10n
-.rt  
-The \fIlist\fR[] argument is \fINULL\fR, the \fInget\fR argument is \fINULL\fR, or the content of \fInget\fR is > \fImax\fR and \fImax\fR is > 0.
+.rt
+The \fIlist\fR[] argument is \fINULL\fR, the \fInget\fR argument is
+\fINULL\fR, or the content of \fInget\fR is > \fImax\fR and \fImax\fR is >
+0.
 .RE
 
 .sp
@@ -157,7 +211,7 @@ The \fIlist\fR[] argument is \fINULL\fR, the \fInget\fR argument is \fINULL\fR, 
 \fB\fBEFAULT\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The \fItimeout\fR argument is not reasonable.
 .RE
 
@@ -168,16 +222,23 @@ The \fItimeout\fR argument is not reasonable.
 \fB\fBETIME\fR\fR
 .ad
 .RS 10n
-.rt  
-The time interval expired before the expected number of events have been posted to the port (original value in \fInget\fR), or \fInget\fR is updated with the number of returned \fBport_event_t\fR structures in \fIlist\fR[].
+.rt
+The time interval expired before the expected number of events have been
+posted to the port (original value in \fInget\fR), or \fInget\fR is updated
+with the number of returned \fBport_event_t\fR structures in \fIlist\fR[].
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRSend a user event (PORT_SOURCE_USER) to a port and retrieve it with \fBport_get()\fR.
+\fBExample 1 \fRSend a user event (PORT_SOURCE_USER) to a port and retrieve
+it with \fBport_get()\fR.
 .sp
 .LP
-The following example sends a user event (\fBPORT_SOURCE_USER\fR) to a port and retrieves it with \fBport_get()\fR. The \fBportev_user\fR and \fBportev_events\fR members of the \fBport_event_t\fR structure are the same as the corresponding user and events arguments of the \fBport_send\fR(3C) function.
+The following example sends a user event (\fBPORT_SOURCE_USER\fR) to a port
+and retrieves it with \fBport_get()\fR. The \fBportev_user\fR and
+\fBportev_events\fR members of the \fBport_event_t\fR structure are the same
+as the corresponding user and events arguments of the \fBport_send\fR(3C)
+function.
 
 .sp
 .in +2
@@ -247,8 +308,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -264,4 +325,5 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBport_alert\fR(3C), \fBport_associate\fR(3C), \fBport_create\fR(3C), \fBport_send\fR(3C), \fBattributes\fR(5)
+\fBport_alert\fR(3C), \fBport_associate\fR(3C), \fBport_create\fR(3C),
+\fBport_send\fR(3C), \fBattributes\fR(5)

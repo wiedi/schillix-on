@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ssd 7D "9 Aug 2008" "SunOS 5.11" "Devices"
 .SH NAME
 ssd \- Fibre Channel Arbitrated Loop disk device driver
@@ -18,26 +33,52 @@ ssd \- Fibre Channel Arbitrated Loop disk device driver
  The \fBssd\fR driver supports Fibre Channel disk devices.
 .sp
 .LP
-The specific type of each disk is determined by the \fBSCSI\fR inquiry command and reading the volume label stored on block 0 of the drive. The volume label describes the disk geometry and partitioning; it must be present or the disk cannot be mounted by the system.
+The specific type of each disk is determined by the \fBSCSI\fR inquiry
+command and reading the volume label stored on block 0 of the drive. The
+volume label describes the disk geometry and partitioning; it must be
+present or the disk cannot be mounted by the system.
 .sp
 .LP
-The block-files access the disk using the system's normal buffering mechanism and are read and written without regard to physical disk records. A "raw" interface provides for direct transmission between the disk and the read or write buffer. A single read or write call usually results in one I/O operation; raw I/O is therefore more efficient when many bytes are transmitted. Block file names are found in \fB/dev/dsk\fR; the names of the raw files are found in \fB/dev/rdsk\fR.
+The block-files access the disk using the system's normal buffering
+mechanism and are read and written without regard to physical disk records.
+A "raw" interface provides for direct transmission between the disk and the
+read or write buffer. A single read or write call usually results in one I/O
+operation; raw I/O is therefore more efficient when many bytes are
+transmitted. Block file names are found in \fB/dev/dsk\fR; the names of the
+raw files are found in \fB/dev/rdsk\fR.
 .sp
 .LP
-I/O requests (such as \fBlseek\fR(2)) to the \fBSCSI\fR disk must have an offset that is a multiple of 512 bytes (\fBDEV_BSIZE\fR), or the driver returns an \fBEINVAL\fR error. If the transfer length is not a multiple of 512 bytes, the transfer count is rounded up by the driver.
+I/O requests (such as \fBlseek\fR(2)) to the \fBSCSI\fR disk must have an
+offset that is a multiple of 512 bytes (\fBDEV_BSIZE\fR), or the driver
+returns an \fBEINVAL\fR error. If the transfer length is not a multiple of
+512 bytes, the transfer count is rounded up by the driver.
 .sp
 .LP
-Partition 0 is normally used for the root file system on a disk, with partition 1 as a paging area (for example, \fBswap\fR). Partition 2 is used to back up the entire disk. Partition 2 normally maps the entire disk and may also be used as the mount point for secondary disks in the system. The rest of the disk is normally partition 6. For the primary disk, the user file system is located here.
+Partition 0 is normally used for the root file system on a disk, with
+partition 1 as a paging area (for example, \fBswap\fR). Partition 2 is used
+to back up the entire disk. Partition 2 normally maps the entire disk and
+may also be used as the mount point for secondary disks in the system. The
+rest of the disk is normally partition 6. For the primary disk, the user
+file system is located here.
 .sp
 .LP
-The device has associated error statistics. These must include counters for hard errors, soft errors and transport errors. Other data may be implemented as required.
+The device has associated error statistics. These must include counters for
+hard errors, soft errors and transport errors. Other data may be implemented
+as required.
 .SH DEVICE STATISTICS SUPPORT
 .sp
 .LP
-The device maintains I/O statistics for the device and for partitions allocated for that device. For each device/partition, the  driver accumulates reads, writes, bytes read, and bytes written. The driver also initiates hi-resolution time stamps at queue entry and exit points to enable monitoring of residence time and cumulative residence-length product for each queue.  
+The device maintains I/O statistics for the device and for partitions
+allocated for that device. For each device/partition, the  driver
+accumulates reads, writes, bytes read, and bytes written. The driver also
+initiates hi-resolution time stamps at queue entry and exit points to enable
+monitoring of residence time and cumulative residence-length product for
+each queue.
 .sp
 .LP
-Not all device drivers make per-partition IO statistics available for reporting. \fBssd\fR and \fBsd\fR(7D) per-partition statistics are  enabled by default but may be disabled in their configuration files.
+Not all device drivers make per-partition IO statistics available for
+reporting. \fBssd\fR and \fBsd\fR(7D) per-partition statistics are  enabled
+by default but may be disabled in their configuration files.
 .SH IOCTLS
 .sp
 .LP
@@ -50,7 +91,7 @@ Refer to  \fBdkio\fR(7I).
 \fB\fBEACCES\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Permission denied.
 .RE
 
@@ -61,7 +102,7 @@ Permission denied.
 \fB\fBEBUSY\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The partition was opened exclusively by another thread.
 .RE
 
@@ -72,7 +113,7 @@ The partition was opened exclusively by another thread.
 \fB\fBEFAULT\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The argument was a bad address.
 .RE
 
@@ -83,7 +124,7 @@ The argument was a bad address.
 \fB\fBEINVAL\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 Invalid argument.
 .RE
 
@@ -94,7 +135,7 @@ Invalid argument.
 \fB\fBEIO\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 An I/O error occurred.
 .RE
 
@@ -105,7 +146,7 @@ An I/O error occurred.
 \fB\fBENOTTY\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The device does not support the requested ioctl function.
 .RE
 
@@ -116,8 +157,9 @@ The device does not support the requested ioctl function.
 \fB\fBENXIO\fR\fR
 .ad
 .RS 10n
-.rt  
-When returned during  \fBopen\fR(2), this error indicates the device does not exist.
+.rt
+When returned during  \fBopen\fR(2), this error indicates the device does
+not exist.
 .RE
 
 .sp
@@ -127,14 +169,16 @@ When returned during  \fBopen\fR(2), this error indicates the device does not ex
 \fB\fBEROFS\fR\fR
 .ad
 .RS 10n
-.rt  
+.rt
 The device is a read-only device.
 .RE
 
 .SH CONFIGURATION
 .sp
 .LP
-You configure the \fBssd\fR driver by defining  properties in the \fBssd.conf\fR file. The \fBssd\fR driver supports the following properties:
+You configure the \fBssd\fR driver by defining  properties in the
+\fBssd.conf\fR file. The \fBssd\fR driver supports the following
+properties:
 .sp
 .ne 2
 .mk
@@ -142,23 +186,31 @@ You configure the \fBssd\fR driver by defining  properties in the \fBssd.conf\fR
 \fB\fBenable-partition-kstats\fR\fR
 .ad
 .RS 27n
-.rt  
-The default value is 1, which causes partition IO statistics to be maintained. Set this value to zero to prevent the driver from recording partition statistics. This slightly reduces the CPU overhead for IO, mimimizes the amount of \fBsar\fR(1) data collected and makes these statistics unavailable for reporting by \fBiostat\fR(1M) even though the \fB-p\fR/\fB-P\fR option is specified.  Regardless of this setting, disk IO statistics are always maintained.
+.rt
+The default value is 1, which causes partition IO statistics to be
+maintained. Set this value to zero to prevent the driver from recording
+partition statistics. This slightly reduces the CPU overhead for IO,
+mimimizes the amount of \fBsar\fR(1) data collected and makes these
+statistics unavailable for reporting by \fBiostat\fR(1M) even though the
+\fB-p\fR/\fB-P\fR option is specified.  Regardless of this setting, disk IO
+statistics are always maintained.
 .RE
 
 .sp
 .LP
-In addition to the above properties, some device-specific tunables can be configured in \fBssd.conf\fR using the 'ssd-config-list' global property. The value of this property is a list of duplets. The formal syntax is:
+In addition to the above properties, some device-specific tunables can be
+configured in \fBssd.conf\fR using the 'ssd-config-list' global property.
+The value of this property is a list of duplets. The formal syntax is:
 .sp
 .in +2
 .nf
 ssd-config-list = 	<duplet> [, <duplet> ]* ;
 
-where 
+where
 
 <duplet>:=        "<vid+pid>" , "<tunable-list>"
 
-and 
+and
 
 <tunable-list>:=   <tunable>  [, <tunable> ]*;
 <tunable> =        <name> : <value>
@@ -171,9 +223,9 @@ all target devices with the specified <vid+pid>.
 
 Each <tunable> is a <name> : <value> pair. Supported
 tunable names are:
-  
+
    delay-busy:	when busy, nsecs of delay before retry.
-   
+
    retries-timeout:	retries to perform on an IO timeout.
 .fi
 .in -2
@@ -183,7 +235,7 @@ tunable names are:
 .in +2
 .nf
 The following is an example of a global ssd-config-list property:
-  
+
    ssd-config-list =
       "SUN     T4", "delay-busy:600, retries-timeout:6",
       "SUN     StorEdge_3510", "retries-timeout:3";
@@ -198,7 +250,7 @@ The following is an example of a global ssd-config-list property:
 \fBssd.conf\fR
 .ad
 .RS 22n
-.rt  
+.rt
 Driver configuration file
 .RE
 
@@ -209,7 +261,7 @@ Driver configuration file
 \fB/dev/dsk/c\fIn\fR\fBt\fR\fIn\fR\fBd\fR\fIn\fR\fBs\fR\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 block files
 .RE
 
@@ -220,7 +272,7 @@ block files
 \fB/dev/rdsk/c\fIn\fR\fBt\fR\fIn\fR\fBd\fR\fIn\fR\fBs\fR\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 raw files
 .RE
 
@@ -231,7 +283,7 @@ raw files
 \fBc\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 is the controller number on the system.
 .RE
 
@@ -242,7 +294,7 @@ is the controller number on the system.
 \fBt\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 7-bit disk loop identifier, such as switch setting
 .RE
 
@@ -253,7 +305,7 @@ is the controller number on the system.
 \fBd\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 SCSI lun  \fIn\fR
 .RE
 
@@ -264,20 +316,22 @@ SCSI lun  \fIn\fR
 \fB\fBs\fR\fIn\fR\fR
 .ad
 .RS 22n
-.rt  
+.rt
 partition \fIn\fR (0-7)
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBsar\fR(1), \fBformat\fR(1M), \fBiostat\fR(1M), \fBioctl\fR(2), \fBlseek\fR(2), \fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2), \fBscsi\fR(4)\fBdriver.conf\fR(4), \fBcdio\fR(7I), \fBdkio\fR(7I)
+\fBsar\fR(1), \fBformat\fR(1M), \fBiostat\fR(1M), \fBioctl\fR(2),
+\fBlseek\fR(2), \fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2),
+\fBscsi\fR(4)\fBdriver.conf\fR(4), \fBcdio\fR(7I), \fBdkio\fR(7I)
 .sp
 .LP
 \fIANSI Small Computer System Interface-2 (SCSI-2)\fR
 .sp
 .LP
-\fIANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)\fR 
+\fIANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)\fR
 .sp
 .LP
 \fIFibre Channel - Private Loop SCSI Direct Attach (FC-PLDA)\fR
@@ -285,8 +339,8 @@ partition \fIn\fR (0-7)
 .sp
 .in +2
 .nf
-Error for command '<command name>' Error Level: Fatal Requested Block <n>, 
-Error  Block: <m>, Sense Key: <sense key name>, Vendor '<vendor name>': 
+Error for command '<command name>' Error Level: Fatal Requested Block <n>,
+Error  Block: <m>, Sense Key: <sense key name>, Vendor '<vendor name>':
 ASC = 0x<a> (<ASC name>), ASCQ = 0x<b>, FRU = 0x<c>
 .fi
 .in -2
@@ -294,7 +348,10 @@ ASC = 0x<a> (<ASC name>), ASCQ = 0x<b>, FRU = 0x<c>
 
 .sp
 .LP
-The command indicated by <command name> failed. The Requested Block is the block where the transfer started and the Error Block is the block that caused the error. Sense Key, ASC, and ASCQ information is returned by the target in response to a request sense command.
+The command indicated by <command name> failed. The Requested Block is the
+block where the transfer started and the Error Block is the block that
+caused the error. Sense Key, ASC, and ASCQ information is returned by the
+target in response to a request sense command.
 .sp
 .in +2
 .nf
@@ -305,7 +362,8 @@ Check Condition on REQUEST SENSE
 
 .sp
 .LP
-A REQUEST SENSE command completed with a check condition. The original command will be retried a number of times.
+A REQUEST SENSE command completed with a check condition. The original
+command will be retried a number of times.
 .sp
 .in +2
 .nf
@@ -316,7 +374,8 @@ Label says <m> blocks Drive says <\fIn\fR> blocks
 
 .sp
 .LP
-There is a discrepancy between the label and what the drive returned on the READ CAPACITY command.
+There is a discrepancy between the label and what the drive returned on the
+READ CAPACITY command.
 .sp
 .in +2
 .nf
@@ -353,14 +412,16 @@ The drive was reserved by another initiator.
 .sp
 .in +2
 .nf
-SCSI transport failed: reason 'xxxx' : {retrying|giving up} 
+SCSI transport failed: reason 'xxxx' : {retrying|giving up}
 .fi
 .in -2
 .sp
 
 .sp
 .LP
-The host adapter has failed to transport a command to the target for the  reason stated. The driver will either retry the command or, ultimately, give up.
+The host adapter has failed to transport a command to the target for the
+reason stated. The driver will either retry the command or, ultimately, give
+up.
 .sp
 .in +2
 .nf

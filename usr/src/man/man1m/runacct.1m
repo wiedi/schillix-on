@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright 1989 AT&T  Copyright (c) 1999 Sun Microsystems, Inc.  All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright 1989 AT&T  Copyright (c) 1999 Sun Microsystems, Inc.  All Rights Reserved.
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH runacct 1M "11 May 1999" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 runacct \- run daily accounting
@@ -15,13 +30,29 @@ runacct \- run daily accounting
 .SH DESCRIPTION
 .sp
 .LP
-\fBrunacct\fR is the main daily accounting shell procedure. It is normally initiated using  \fBcron\fR. \fBrunacct\fR processes connect, fee, disk, and process accounting files. It also prepares summary files for \fBprdaily\fR or billing purposes. \fBrunacct\fR is distributed only to source code licensees.
+\fBrunacct\fR is the main daily accounting shell procedure. It is normally
+initiated using  \fBcron\fR. \fBrunacct\fR processes connect, fee, disk, and
+process accounting files. It also prepares summary files for \fBprdaily\fR
+or billing purposes. \fBrunacct\fR is distributed only to source code
+licensees.
 .sp
 .LP
-\fBrunacct\fR takes care not to damage active accounting files or summary files in the event of errors. It records its progress by writing descriptive diagnostic messages into \fBactive\fR. When an error is detected, a message is written to \fB/dev/console\fR, mail (see \fBmail\fR(1)) is sent to \fBroot\fR and \fBadm\fR, and \fBrunacct\fR terminates. \fBrunacct\fR uses a series of lock files to protect against re-invocation. The files \fBlock\fR and \fBlock1\fR are used to prevent simultaneous invocation, and \fBlastdate\fR is used to prevent more than one invocation per day.
+\fBrunacct\fR takes care not to damage active accounting files or summary
+files in the event of errors. It records its progress by writing descriptive
+diagnostic messages into \fBactive\fR. When an error is detected, a message
+is written to \fB/dev/console\fR, mail (see \fBmail\fR(1)) is sent to
+\fBroot\fR and \fBadm\fR, and \fBrunacct\fR terminates. \fBrunacct\fR uses a
+series of lock files to protect against re-invocation. The files \fBlock\fR
+and \fBlock1\fR are used to prevent simultaneous invocation, and
+\fBlastdate\fR is used to prevent more than one invocation per day.
 .sp
 .LP
-\fBrunacct\fR breaks its processing into separate, restartable \fIstates\fR using \fBstatefile\fR to remember the last \fIstate\fR completed. It accomplishes this by writing the \fIstate\fR name into \fBstatefile\fR. \fBrunacct\fR then looks in \fBstatefile\fR to see what it has done and to determine what to process next. \fIstates\fR are executed in the following order:
+\fBrunacct\fR breaks its processing into separate, restartable \fIstates\fR
+using \fBstatefile\fR to remember the last \fIstate\fR completed. It
+accomplishes this by writing the \fIstate\fR name into \fBstatefile\fR.
+\fBrunacct\fR then looks in \fBstatefile\fR to see what it has done and to
+determine what to process next. \fIstates\fR are executed in the following
+order:
 .sp
 .ne 2
 .mk
@@ -29,7 +60,7 @@ runacct \- run daily accounting
 \fB\fBSETUP\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Move active accounting files into working files.
 .RE
 
@@ -40,8 +71,9 @@ Move active accounting files into working files.
 \fB\fBWTMPFIX\fR\fR
 .ad
 .RS 14n
-.rt  
-Verify integrity of \fBwtmpx\fR file, correcting date changes if necessary.
+.rt
+Verify integrity of \fBwtmpx\fR file, correcting date changes if
+necessary.
 .RE
 
 .sp
@@ -51,7 +83,7 @@ Verify integrity of \fBwtmpx\fR file, correcting date changes if necessary.
 \fB\fBCONNECT\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Produce connect session records in \fBtacct.h\fR format.
 .RE
 
@@ -62,7 +94,7 @@ Produce connect session records in \fBtacct.h\fR format.
 \fB\fBPROCESS\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Convert process accounting records into \fBtacct.h\fR format.
 .RE
 
@@ -73,7 +105,7 @@ Convert process accounting records into \fBtacct.h\fR format.
 \fB\fBMERGE\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Merge the connect and process accounting records.
 .RE
 
@@ -84,8 +116,9 @@ Merge the connect and process accounting records.
 \fB\fBFEES\fR\fR
 .ad
 .RS 14n
-.rt  
-Convert output of \fBchargefee\fR into \fBtacct.h\fR format, merge with connect, and process accounting records.
+.rt
+Convert output of \fBchargefee\fR into \fBtacct.h\fR format, merge with
+connect, and process accounting records.
 .RE
 
 .sp
@@ -95,8 +128,9 @@ Convert output of \fBchargefee\fR into \fBtacct.h\fR format, merge with connect,
 \fB\fBDISK\fR\fR
 .ad
 .RS 14n
-.rt  
-Merge disk accounting records with connect, process, and fee accounting records.
+.rt
+Merge disk accounting records with connect, process, and fee accounting
+records.
 .RE
 
 .sp
@@ -106,8 +140,9 @@ Merge disk accounting records with connect, process, and fee accounting records.
 \fB\fBMERGETACCT\fR\fR
 .ad
 .RS 14n
-.rt  
-Merge the daily total accounting records in \fBdaytacct\fR with the summary total accounting records in \fB/var/adm/acct/sum/tacct\fR.
+.rt
+Merge the daily total accounting records in \fBdaytacct\fR with the summary
+total accounting records in \fB/var/adm/acct/sum/tacct\fR.
 .RE
 
 .sp
@@ -117,7 +152,7 @@ Merge the daily total accounting records in \fBdaytacct\fR with the summary tota
 \fB\fBCMS\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Produce command summaries.
 .RE
 
@@ -128,7 +163,7 @@ Produce command summaries.
 \fB\fBUSEREXIT\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Any installation dependent accounting programs can be included here.
 .RE
 
@@ -139,8 +174,17 @@ Any installation dependent accounting programs can be included here.
 \fB\fBCLEANUP\fR\fR
 .ad
 .RS 14n
-.rt  
-Clean up temporary files and exit. To restart \fBrunacct\fR after a failure,  first check the \fBactive\fR file for diagnostics, then fix any corrupted data files, such as \fBpacct\fR or \fBwtmpx\fR. The \fBlock\fR, \fBlock1\fR, and \fBlastdate\fR files must be removed  before \fBrunacct\fR can be restarted. The argument \fImmdd\fR is necessary if \fBrunacct\fR is being restarted. \fImmdd\fR specifies the month and day for which \fBrunacct\fR will rerun the accounting. The entry point for processing is based on the contents of \fB statefile\fR; to override this, include the desired \fIstate\fR on the command line to designate where processing should begin.
+.rt
+Clean up temporary files and exit. To restart \fBrunacct\fR after a
+failure, first check the \fBactive\fR file for diagnostics, then fix any
+corrupted data files, such as \fBpacct\fR or \fBwtmpx\fR. The \fBlock\fR,
+\fBlock1\fR, and \fBlastdate\fR files must be removed  before \fBrunacct\fR
+can be restarted. The argument \fImmdd\fR is necessary if \fBrunacct\fR is
+being restarted. \fImmdd\fR specifies the month and day for which
+\fBrunacct\fR will rerun the accounting. The entry point for processing is
+based on the contents of \fB statefile\fR; to override this, include the
+desired \fIstate\fR on the command line to designate where processing should
+begin.
 .RE
 
 .SH EXAMPLES
@@ -206,7 +250,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -217,7 +261,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -228,7 +272,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -239,7 +283,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -250,7 +294,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -261,7 +305,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .sp
@@ -272,7 +316,7 @@ History of user access and administration information
 .ad
 .sp .6
 .RS 4n
- 
+
 .RE
 
 .SH ATTRIBUTES
@@ -284,8 +328,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -295,17 +339,22 @@ AvailabilitySUNWaccu
 .SH SEE ALSO
 .sp
 .LP
-\fBacctcom\fR(1), \fBmail\fR(1), \fBacct\fR(1M), \fBacctcms\fR(1M), \fBacctcon\fR(1M), \fBacctmerg\fR(1M), \fBacctprc\fR(1M), \fBacctsh\fR(1M), \fBcron\fR(1M), \fBfwtmp\fR(1M), \fBacct\fR(2), \fBacct.h\fR(3HEAD), \fButmpx\fR(4), \fBattributes\fR(5)
+\fBacctcom\fR(1), \fBmail\fR(1), \fBacct\fR(1M), \fBacctcms\fR(1M),
+\fBacctcon\fR(1M), \fBacctmerg\fR(1M), \fBacctprc\fR(1M), \fBacctsh\fR(1M),
+\fBcron\fR(1M), \fBfwtmp\fR(1M), \fBacct\fR(2), \fBacct.h\fR(3HEAD),
+\fButmpx\fR(4), \fBattributes\fR(5)
 .SH NOTES
 .sp
 .LP
-It is not recommended to restart \fBrunacct\fR in the \fBSETUP\fR \fIstate\fR. Run \fBSETUP\fR manually and restart using:
+It is not recommended to restart \fBrunacct\fR in the \fBSETUP\fR
+\fIstate\fR. Run \fBSETUP\fR manually and restart using:
 .sp
 .LP
 \fBrunacct\fR \fImmdd\fR \fBWTMPFIX\fR
 .sp
 .LP
-If \fBrunacct\fR failed in the \fBPROCESS\fR \fIstate,\fR remove the last \fBptacct\fR file because it will not be complete.
+If \fBrunacct\fR failed in the \fBPROCESS\fR \fIstate,\fR remove the last
+\fBptacct\fR file because it will not be complete.
 .sp
 .LP
 The \fBrunacct\fR command can process a maximum of
@@ -329,7 +378,11 @@ The \fBrunacct\fR command can process a maximum of
 .RE
 .sp
 .LP
-during a single invocation of the command.  If at some point the actual number of any one of these items exceeds the maximum, the command will not succeed.
+during a single invocation of the command.  If at some point the actual
+number of any one of these items exceeds the maximum, the command will not
+succeed.
 .sp
 .LP
-Do not invoke \fBrunacct\fR at the same time as \fBckpacct\fR, as there may be a conflict if both scripts attempt to execute \fBturnacct switch\fR simultaneously.
+Do not invoke \fBrunacct\fR at the same time as \fBckpacct\fR, as there may
+be a conflict if both scripts attempt to execute \fBturnacct switch\fR
+simultaneously.

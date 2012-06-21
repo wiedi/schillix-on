@@ -1,8 +1,23 @@
 '\" te
-.\" Copyright (c) 2007, Sun Microsystems, Inc.  All Rights Reserved 
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 2007, Sun Microsystems, Inc.  All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH mlib_ImageGridWarp 3MLIB "12 Sep 2007" "SunOS 5.11" "mediaLib Library Functions"
 .SH NAME
 mlib_ImageGridWarp \- grid-based image warp
@@ -23,19 +38,34 @@ cc [ \fIflag\fR... ] \fIfile\fR... \fB-lmlib\fR [ \fIlibrary\fR... ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmlib_ImageGridWarp()\fR function performs a regular grid-based image warp. The images must have the same type, and the same number of channels. The images can have 1, 2, 3, or 4 channels. The data type of the images can be \fBMLIB_BYTE\fR, \fBMLIB_SHORT\fR, \fBMLIB_USHORT\fR, or \fBMLIB_INT\fR. The two images may have different sizes.
+The \fBmlib_ImageGridWarp()\fR function performs a regular grid-based image
+warp. The images must have the same type, and the same number of channels. The
+images can have 1, 2, 3, or 4 channels. The data type of the images can be
+\fBMLIB_BYTE\fR, \fBMLIB_SHORT\fR, \fBMLIB_USHORT\fR, or \fBMLIB_INT\fR. The two
+images may have different sizes.
 .sp
 .LP
-The image pixels are assumed to be centered at \fB\&.5\fR coordinate points. For example, the upper-left corner pixel of an image is located at \fB(0.5, 0.5)\fR.
+The image pixels are assumed to be centered at \fB\&.5\fR coordinate points. For
+example, the upper-left corner pixel of an image is located at \fB(0.5,
+0.5)\fR.
 .sp
 .LP
-For each pixel in the destination image, its center point \fBD\fR is, first, backward mapped to a point \fBS\fR in the source image; then the source pixels with their centers surrounding point \fBS\fR are selected to do one of the interpolations specified by the filter parameter to generate the pixel value for point \fBD\fR.
+For each pixel in the destination image, its center point \fBD\fR is, first,
+backward mapped to a point \fBS\fR in the source image; then the source pixels
+with their centers surrounding point \fBS\fR are selected to do one of the
+interpolations specified by the filter parameter to generate the pixel value for
+point \fBD\fR.
 .sp
 .LP
-The mapping from destination pixels to source positions is described by bilinear interpolation between a rectilinear grid of points with known mappings.
+The mapping from destination pixels to source positions is described by bilinear
+interpolation between a rectilinear grid of points with known mappings.
 .sp
 .LP
-Given a destination pixel coordinate \fB(x, y)\fR that lies within a cell having corners at \fB(x0, y0)\fR, \fB(x1, y0)\fR, \fB(x0, y1)\fR and \fB(x1, y1)\fR, with source coordinates defined at each respective corner equal to \fB(sx0, sy0)\fR, \fB(sx1, sy1)\fR, \fB(sx2, sy2)\fR and \fB(sx3, sy3)\fR, the source position \fB(sx, sy)\fR that maps onto \fB(x, y)\fR is given by the formulas:
+Given a destination pixel coordinate \fB(x, y)\fR that lies within a cell having
+corners at \fB(x0, y0)\fR, \fB(x1, y0)\fR, \fB(x0, y1)\fR and \fB(x1, y1)\fR,
+with source coordinates defined at each respective corner equal to \fB(sx0,
+sy0)\fR, \fB(sx1, sy1)\fR, \fB(sx2, sy2)\fR and \fB(sx3, sy3)\fR, the source
+position \fB(sx, sy)\fR that maps onto \fB(x, y)\fR is given by the formulas:
 .sp
 .in +2
 .nf
@@ -55,7 +85,9 @@ Given a destination pixel coordinate \fB(x, y)\fR that lies within a cell having
 
 .sp
 .LP
-In other words, the source \fBx\fR and \fBy\fR values are interpolated horizontally along the top and bottom edges of the grid cell, and the results are interpolated vertically:
+In other words, the source \fBx\fR and \fBy\fR values are interpolated
+horizontally along the top and bottom edges of the grid cell, and the results are
+interpolated vertically:
 .sp
 .in +2
 .nf
@@ -82,16 +114,28 @@ In other words, the source \fBx\fR and \fBy\fR values are interpolated horizonta
 
 .sp
 .LP
-The results of above interpolation are shifted by \fB(-postShiftX, -postShiftY)\fR to produce the source pixel coordinates.
+The results of above interpolation are shifted by \fB(-postShiftX,
+-postShiftY)\fR to produce the source pixel coordinates.
 .sp
 .LP
-The destination pixels that lie outside of any grid cells are kept intact. The grid is defined by a set of equal-sized cells. The grid starts at \fB(xStart, yStart)\fR. Each cell has width equal to \fBxStep\fR and height equal to \fByStep\fR, and there are \fBxNumCells\fR cells horizontally and \fByNumCells\fR cells vertically.
+The destination pixels that lie outside of any grid cells are kept intact. The
+grid is defined by a set of equal-sized cells. The grid starts at \fB(xStart,
+yStart)\fR. Each cell has width equal to \fBxStep\fR and height equal to
+\fByStep\fR, and there are \fBxNumCells\fR cells horizontally and \fByNumCells\fR
+cells vertically.
 .sp
 .LP
-The degree of warping within each cell is defined by the values in \fBxWarpPos\fR and \fByWarpPos\fR parameters. Each of these parameters must contain \fB(xNumCells + 1)*(yNumCells + 1)\fR values, which, respectively, contain the source X and source Y coordinates that map to the upper-left corner of each cell in the destination image. The cells are enumerated in row-major order. That is, all the grid points along a row are enumerated first, then the grid points for the next row are enumerated, and so on.
+The degree of warping within each cell is defined by the values in
+\fBxWarpPos\fR and \fByWarpPos\fR parameters. Each of these parameters must
+contain \fB(xNumCells + 1)*(yNumCells + 1)\fR values, which, respectively,
+contain the source X and source Y coordinates that map to the upper-left corner
+of each cell in the destination image. The cells are enumerated in row-major
+order. That is, all the grid points along a row are enumerated first, then the
+grid points for the next row are enumerated, and so on.
 .sp
 .LP
-For example, suppose \fBxNumCells\fR is equal to \fB2\fR and \fByNumCells\fR is equal to \fB1\fR. Then the order of the data in the \fBxWarpPos\fR would be:
+For example, suppose \fBxNumCells\fR is equal to \fB2\fR and \fByNumCells\fR is
+equal to \fB1\fR. Then the order of the data in the \fBxWarpPos\fR would be:
 .sp
 .in +2
 .nf
@@ -123,7 +167,7 @@ The function takes the following arguments:
 \fB\fIdst\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Pointer to destination image.
 .RE
 
@@ -134,7 +178,7 @@ Pointer to destination image.
 \fB\fIsrc\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Pointer to source image.
 .RE
 
@@ -145,8 +189,9 @@ Pointer to source image.
 \fB\fIxWarpPos\fR\fR
 .ad
 .RS 14n
-.rt  
-A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing horizontal warp positions at the grid points, in row-major order.
+.rt
+A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing
+horizontal warp positions at the grid points, in row-major order.
 .RE
 
 .sp
@@ -156,8 +201,9 @@ A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing horizon
 \fB\fIyWarpPos\fR\fR
 .ad
 .RS 14n
-.rt  
-A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing vertical warp positions at the grid points, in row-major order.
+.rt
+A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing
+vertical warp positions at the grid points, in row-major order.
 .RE
 
 .sp
@@ -167,7 +213,7 @@ A float array of length \fB(xNumCells + 1)*(yNumCells + 1)\fR containing vertica
 \fB\fIpostShiftX\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The displacement to apply to source X positions.
 .RE
 
@@ -178,7 +224,7 @@ The displacement to apply to source X positions.
 \fB\fIpostShiftY\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The displacement to apply to source Y positions.
 .RE
 
@@ -189,7 +235,7 @@ The displacement to apply to source Y positions.
 \fB\fIxStart\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The minimum X coordinate of the grid.
 .RE
 
@@ -200,7 +246,7 @@ The minimum X coordinate of the grid.
 \fB\fIxStep\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The horizontal spacing between grid cells.
 .RE
 
@@ -211,7 +257,7 @@ The horizontal spacing between grid cells.
 \fB\fIxNumCells\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The number of grid cell columns.
 .RE
 
@@ -222,7 +268,7 @@ The number of grid cell columns.
 \fB\fIyStart\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The minimum Y coordinate of the grid.
 .RE
 
@@ -233,7 +279,7 @@ The minimum Y coordinate of the grid.
 \fB\fIyStep\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The vertical spacing between grid cells.
 .RE
 
@@ -244,7 +290,7 @@ The vertical spacing between grid cells.
 \fB\fIyNumCells\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 The number of grid cell rows.
 .RE
 
@@ -255,7 +301,7 @@ The number of grid cell rows.
 \fB\fIfilter\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Type of resampling filter. It can be one of the following:
 .sp
 .in +2
@@ -276,7 +322,7 @@ MLIB_BICUBIC2
 \fB\fIedge\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 Type of edge condition. It can be one of the following:
 .sp
 .in +2
@@ -291,7 +337,8 @@ MLIB_EDGE_SRC_PADDED
 .SH RETURN VALUES
 .sp
 .LP
-The function returns \fBMLIB_SUCCESS\fR if successful. Otherwise it returns \fBMLIB_FAILURE\fR.
+The function returns \fBMLIB_SUCCESS\fR if successful. Otherwise it returns
+\fBMLIB_FAILURE\fR.
 .SH ATTRIBUTES
 .sp
 .LP
@@ -301,8 +348,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -314,4 +361,5 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBmlib_ImageGridWarp_Fp\fR(3MLIB), \fBmlib_ImageGridWarpTable\fR(3MLIB), \fBmlib_ImageGridWarpTable_Fp\fR(3MLIB), \fBattributes\fR(5)
+\fBmlib_ImageGridWarp_Fp\fR(3MLIB), \fBmlib_ImageGridWarpTable\fR(3MLIB),
+\fBmlib_ImageGridWarpTable_Fp\fR(3MLIB), \fBattributes\fR(5)

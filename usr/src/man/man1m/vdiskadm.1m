@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2009, Sun Microsystems, Inc. All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.
-.\"  See the License for the specific language governing permissions and limitations under the License. When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with
-.\" the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH vdiskadm 1M "2 Apr 2009" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 vdiskadm \- create and manage virtual disks
@@ -103,25 +118,43 @@ vdiskadm \- create and manage virtual disks
 .SH DESCRIPTION
 .sp
 .LP
-The \fBvdiskadm\fR command manages virtual disks within \fBdom0\fR. In the SYNOPSIS above, \fIvdname\fR is the pathname of the virtual disk; it has a maximum length of \fBMAXPATHLEN\fR (1024 bytes).
+The \fBvdiskadm\fR command manages virtual disks within \fBdom0\fR. In the
+SYNOPSIS above, \fIvdname\fR is the pathname of the virtual disk; it has a
+maximum length of \fBMAXPATHLEN\fR (1024 bytes).
 .sp
 .LP
-\fBvdiskadm\fR is implemented as a set of subcommands, many with their own options and operands. These subcommands are described under "Subcommands," below.
+\fBvdiskadm\fR is implemented as a set of subcommands, many with their own
+options and operands. These subcommands are described under "Subcommands,"
+below.
 .sp
 .LP
 The following subsections describe concepts related to virtual disks.
 .SS "Snapshots"
 .sp
 .LP
-A snapshot is a read-only copy of a virtual disk. Snapshots can be created extremely quickly and initially consume little space. As data  within the active virtual disk changes, the snapshot consumes more data than would otherwise be shared with the active virtual disk.
+A snapshot is a read-only copy of a virtual disk. Snapshots can be created
+extremely quickly and initially consume little space. As data  within the
+active virtual disk changes, the snapshot consumes more data than would
+otherwise be shared with the active virtual disk.
 .SS "Clones"
 .sp
 .LP
-A clone is a writable copy of a virtual disk. The default type of clone is a merged (that is, coalesced) copy of the original virtual disk. An example of a merged clone occurs when a virtual disk is comprised of several snapshots; a subsequent clone operation results in a new virtual disk containing no snapshots. A clone will be of the same type as the original virtual disk (that is, \fBvmdk:fixed\fR). When a merged clone is created there is no linkage back to the original virtual disk or to any of its snapshots. This lack of linkage allows the merged clone to be moved to another physical machine.
+A clone is a writable copy of a virtual disk. The default type of clone is
+a merged (that is, coalesced) copy of the original virtual disk. An example
+of a merged clone occurs when a virtual disk is comprised of several
+snapshots; a subsequent clone operation results in a new virtual disk
+containing no snapshots. A clone will be of the same type as the original
+virtual disk (that is, \fBvmdk:fixed\fR). When a merged clone is created
+there is no linkage back to the original virtual disk or to any of its
+snapshots. This lack of linkage allows the merged clone to be moved to
+another physical machine.
 .SS "Numeric Values"
 .sp
 .LP
-The values of numeric properties can be specified using human-readable suffixes, such as \fBk\fR, \fBKB\fR, \fBM\fR, \fBGb\fR, and so forth, up to \fBZ\fR for zettabyte).  The  following are all valid (and equal) specifications:
+The values of numeric properties can be specified using human-readable
+suffixes, such as \fBk\fR, \fBKB\fR, \fBM\fR, \fBGb\fR, and so forth, up to
+\fBZ\fR for zettabyte).  The  following are all valid (and equal)
+specifications:
 .sp
 .in +2
 .nf
@@ -178,20 +211,35 @@ The following types and options of virtual disks are supported:
 .RE
 .sp
 .LP
-where \fBvmdk\fR is the native VMware format, \fBvdi\fR is the native VirtualBox format, \fBvhd\fR is the native Microsoft format, and \fBraw\fR describes a file that looks like a raw disk. A \fBraw\fR disk is always in fixed format so that option can be explicitly set or implicitly understood.
+where \fBvmdk\fR is the native VMware format, \fBvdi\fR is the native
+VirtualBox format, \fBvhd\fR is the native Microsoft format, and \fBraw\fR
+describes a file that looks like a raw disk. A \fBraw\fR disk is always in
+fixed format so that option can be explicitly set or implicitly
+understood.
 .sp
 .LP
-If the type is not specified, the default value is \fBvmdk\fR. If the option is not specified, the default value is \fBfixed\fR for type \fBraw\fR and \fBsparse\fR for types \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR.
+If the type is not specified, the default value is \fBvmdk\fR. If the
+option is not specified, the default value is \fBfixed\fR for type \fBraw\fR
+and \fBsparse\fR for types \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR.
 .SS "Native and User-defined Properties"
 .sp
 .LP
-Properties are divided into two types, native and user defined. Native properties either export internal statistics or control \fBvdiskadm\fR behavior. In addition, native properties are either editable or read-only. User-defined properties are arbitrary strings that have no effect on \fBvdiskadm\fR behavior. You can use them to annotate virtual disks in a way that is meaningful in your environment. User-defined property names must contain a colon (\fB:\fR) character, to distinguish them from native properties.
+Properties are divided into two types, native and user defined. Native
+properties either export internal statistics or control \fBvdiskadm\fR
+behavior. In addition, native properties are either editable or read-only.
+User-defined properties are arbitrary strings that have no effect on
+\fBvdiskadm\fR behavior. You can use them to annotate virtual disks in a way
+that is meaningful in your environment. User-defined property names must
+contain a colon (\fB:\fR) character, to distinguish them from native
+properties.
 .sp
 .LP
-Properties are associated only with the virtual disk and not with individual snapshots.
+Properties are associated only with the virtual disk and not with
+individual snapshots.
 .sp
 .LP
-Every virtual disk has a set of native properties that export statistics about the virtual disk, as well as control various behaviors.
+Every virtual disk has a set of native properties that export statistics
+about the virtual disk, as well as control various behaviors.
 .sp
 .LP
 The following are the native properties for a virtual disk:
@@ -225,7 +273,8 @@ Boolean property that is true if the virtual disk is a removable media.
 .ad
 .sp .6
 .RS 4n
-Boolean property that is true if the virtual disk is read-only. This property is read-only.
+Boolean property that is true if the virtual disk is read-only. This
+property is read-only.
 .RE
 
 .sp
@@ -236,7 +285,8 @@ Boolean property that is true if the virtual disk is read-only. This property is
 .ad
 .sp .6
 .RS 4n
-Numeric property containing the number of disk sectors in the given virtual disk. This property is read-only.
+Numeric property containing the number of disk sectors in the given virtual
+disk. This property is read-only.
 .RE
 
 .sp
@@ -247,7 +297,8 @@ Numeric property containing the number of disk sectors in the given virtual disk
 .ad
 .sp .6
 .RS 4n
-String property that is the name of the virtual disk. This property is read-only.
+String property that is the name of the virtual disk. This property is
+read-only.
 .RE
 
 .sp
@@ -258,7 +309,8 @@ String property that is the name of the virtual disk. This property is read-only
 .ad
 .sp .6
 .RS 4n
-Numeric property containing the maximum size of the virtual disk in bytes. This property is read-only.
+Numeric property containing the maximum size of the virtual disk in bytes.
+This property is read-only.
 .RE
 
 .sp
@@ -269,7 +321,10 @@ Numeric property containing the maximum size of the virtual disk in bytes. This 
 .ad
 .sp .6
 .RS 4n
-Numeric property containing the effective size of the virtual disk, in bytes. The effective size includes  the size of the data file and all snapshots. The effective size can exceed the maximum size. This property is read-only.
+Numeric property containing the effective size of the virtual disk, in
+bytes. The effective size includes  the size of the data file and all
+snapshots. The effective size can exceed the maximum size. This property is
+read-only.
 .RE
 
 .sp
@@ -280,7 +335,8 @@ Numeric property containing the effective size of the virtual disk, in bytes. Th
 .ad
 .sp .6
 .RS 4n
-String property containing the date and time that the virtual disk was created. This property is read-only.
+String property containing the date and time that the virtual disk was
+created. This property is read-only.
 .RE
 
 .sp
@@ -291,7 +347,9 @@ String property containing the date and time that the virtual disk was created. 
 .ad
 .sp .6
 .RS 4n
-Numeric property describing the creation-time property in seconds since the epoch (seconds since 00:00:00 UTC, Jan. 1, 1970). This property is read-only.
+Numeric property describing the creation-time property in seconds since the
+epoch (seconds since 00:00:00 UTC, Jan. 1, 1970). This property is
+read-only.
 .RE
 
 .sp
@@ -302,7 +360,8 @@ Numeric property describing the creation-time property in seconds since the epoc
 .ad
 .sp .6
 .RS 4n
-String property containing the date and time of last modification to virtual disk. This property is read-only.
+String property containing the date and time of last modification to
+virtual disk. This property is read-only.
 .RE
 
 .sp
@@ -313,7 +372,9 @@ String property containing the date and time of last modification to virtual dis
 .ad
 .sp .6
 .RS 4n
-Numeric property describing the modification-time property in seconds since the epoch (seconds since 00:00:00 UTC, Jan. 1, 1970). This property is read-only.
+Numeric property describing the modification-time property in seconds since
+the epoch (seconds since 00:00:00 UTC, Jan. 1, 1970). This property is
+read-only.
 .RE
 
 .sp
@@ -324,7 +385,8 @@ Numeric property describing the modification-time property in seconds since the 
 .ad
 .sp .6
 .RS 4n
-String property that contains the comment given when the virtual disk was created or cloned. This property is read-only.
+String property that contains the comment given when the virtual disk was
+created or cloned. This property is read-only.
 .RE
 
 .sp
@@ -335,7 +397,8 @@ String property that contains the comment given when the virtual disk was create
 .ad
 .sp .6
 .RS 4n
-String property that contains the type of virtual disk: \fBvmdk\fR, \fBvhd\fR, \fBvdi\fR, or \fBraw\fR. This property is read-only.
+String property that contains the type of virtual disk: \fBvmdk\fR,
+\fBvhd\fR, \fBvdi\fR, or \fBraw\fR. This property is read-only.
 .RE
 
 .sp
@@ -346,7 +409,8 @@ String property that contains the type of virtual disk: \fBvmdk\fR, \fBvhd\fR, \
 .ad
 .sp .6
 .RS 4n
-Boolean property that is true if the virtual disk is in \fBsparse\fR format. This property is read-only.
+Boolean property that is true if the virtual disk is in \fBsparse\fR
+format. This property is read-only.
 .RE
 
 .sp
@@ -357,13 +421,15 @@ Boolean property that is true if the virtual disk is in \fBsparse\fR format. Thi
 .ad
 .sp .6
 .RS 4n
-String property that contains the user name of the owner of the virtual disk. This property is editable.
+String property that contains the user name of the owner of the virtual
+disk. This property is editable.
 .RE
 
 .SH SUB-COMMANDS
 .sp
 .LP
-The \fBvdiskadm\fR subcommands and their arguments are described in the following subsections.
+The \fBvdiskadm\fR subcommands and their arguments are described in the
+following subsections.
 .SS "\fBvdiskadm create\fR"
 .sp
 .in +2
@@ -376,7 +442,11 @@ vdiskadm create \fB-s\fR \fIsize\fR [\fB-t\fR \fItype\fR[:\fIopt\fR],[\fIopt\fR]
 
 .sp
 .LP
-Creates a new virtual disk of the specified size and at the location specified by \fIvdname\fR. If \fIvdname\fR includes a path to the virtual disk, the directories that follow from that path will be created during creation of the virtual disk. This subcommand has the options listed below.
+Creates a new virtual disk of the specified size and at the location
+specified by \fIvdname\fR. If \fIvdname\fR includes a path to the virtual
+disk, the directories that follow from that path will be created during
+creation of the virtual disk. This subcommand has the options listed
+below.
 .sp
 .ne 2
 .mk
@@ -385,7 +455,9 @@ Creates a new virtual disk of the specified size and at the location specified b
 .ad
 .sp .6
 .RS 4n
-Specifies the type of virtual disk to be created. The default type is \fBvmdk\fR. For \fBvmdk\fR and \fBvdi\fR types the default option is \fBsparse\fR. For type \fBraw\fR the default option is \fBfixed\fR.
+Specifies the type of virtual disk to be created. The default type is
+\fBvmdk\fR. For \fBvmdk\fR and \fBvdi\fR types the default option is
+\fBsparse\fR. For type \fBraw\fR the default option is \fBfixed\fR.
 .RE
 
 .sp
@@ -410,7 +482,9 @@ vdiskadm destroy [\fB-r\fR] \fIvdname\fR|\fIsnapshot\fR
 
 .sp
 .LP
-Destroys the specified virtual disk or snapshot. By default, the destroy operation fails if the specified virtual disk contains snapshots. This subcommand has the option listed below.
+Destroys the specified virtual disk or snapshot. By default, the destroy
+operation fails if the specified virtual disk contains snapshots. This
+subcommand has the option listed below.
 .sp
 .ne 2
 .mk
@@ -419,7 +493,8 @@ Destroys the specified virtual disk or snapshot. By default, the destroy operati
 .ad
 .sp .6
 .RS 4n
-Recursively destroys the virtual disk, including all snapshots associated with the virtual disk.
+Recursively destroys the virtual disk, including all snapshots associated
+with the virtual disk.
 .RE
 
 .SS "\fBvdiskadm snapshot\fR"
@@ -433,7 +508,8 @@ vdiskadm snapshot \fIvdname\fR@\fIsnapname\fR
 
 .sp
 .LP
-Creates a snapshot of the virtual disk with the specified \fIsnapname\fR. This subcommand has no options.
+Creates a snapshot of the virtual disk with the specified \fIsnapname\fR.
+This subcommand has no options.
 .SS "\fBvdiskadm rollback\fR"
 .sp
 .in +2
@@ -445,7 +521,13 @@ vdiskadm rollback [\fB-r\fR] \fIsnapshot\fR
 
 .sp
 .LP
-Roll back the virtual disk to a previous snapshot. When a virtual disk is rolled back, all data that has changed since the snapshot is discarded, and the virtual disk reverts to the state at the time of the snapshot. By default, the command refuses to roll back to a snapshot other than the most recent one. In order to roll back further, all intermediate snapshots must be destroyed by specifying the \fB-r\fR option. This subcommand has the option listed below.
+Roll back the virtual disk to a previous snapshot. When a virtual disk is
+rolled back, all data that has changed since the snapshot is discarded, and
+the virtual disk reverts to the state at the time of the snapshot. By
+default, the command refuses to roll back to a snapshot other than the most
+recent one. In order to roll back further, all intermediate snapshots must
+be destroyed by specifying the \fB-r\fR option. This subcommand has the
+option listed below.
 .sp
 .ne 2
 .mk
@@ -468,7 +550,12 @@ vdiskadm [\fB-c\fR \fIcomment\fR] \fIvdname\fR|\fIsnapshot\fR \fIclone_vdname\fR
 
 .sp
 .LP
-Creates a clone of the specified snapshot or virtual disk. The clone is created with the type and option and the size of the virtual disk being cloned. If \fIclone_vdname\fR includes a path the directories that flow from that path will be created during creation of the cloned virtual disk. By default, a merged clone image is created. This subcommand has the option listed below.
+Creates a clone of the specified snapshot or virtual disk. The clone is
+created with the type and option and the size of the virtual disk being
+cloned. If \fIclone_vdname\fR includes a path the directories that flow from
+that path will be created during creation of the cloned virtual disk. By
+default, a merged clone image is created. This subcommand has the option
+listed below.
 .sp
 .ne 2
 .mk
@@ -491,7 +578,9 @@ vdiskadm move \fIvdname\fR \fIdir\fR
 
 .sp
 .LP
-Moves a specified virtual disk into the specified directory. The virtual disk maintains the same name. The new directory must exist. This subcommand has no options.
+Moves a specified virtual disk into the specified directory. The virtual
+disk maintains the same name. The new directory must exist. This subcommand
+has no options.
 .SS "\fBvdiskadm rename\fR"
 .sp
 .in +2
@@ -515,7 +604,8 @@ vdiskadm list [\fB-fp\fR]\fIvdname\fR
 
 .sp
 .LP
-Lists a specified virtual disk and its snapshots. This subcommand has the options listed below.
+Lists a specified virtual disk and its snapshots. This subcommand has the
+options listed below.
 .sp
 .ne 2
 .mk
@@ -524,7 +614,8 @@ Lists a specified virtual disk and its snapshots. This subcommand has the option
 .ad
 .sp .6
 .RS 4n
-Gives a list of all files associated with the virtual disk. This list includes the store file and the extents.
+Gives a list of all files associated with the virtual disk. This list
+includes the store file and the extents.
 .RE
 
 .sp
@@ -535,7 +626,8 @@ Gives a list of all files associated with the virtual disk. This list includes t
 .ad
 .sp .6
 .RS 4n
-Lists the files in an easily parsable format, prefixing the files with a label of \fBfile:\fR, \fBsnapshot:\fR, or \fBstore\fR.
+Lists the files in an easily parsable format, prefixing the files with a
+label of \fBfile:\fR, \fBsnapshot:\fR, or \fBstore\fR.
 .RE
 
 .SS "\fBvdiskadm verify\fR"
@@ -549,7 +641,8 @@ vdiskadm verify \fIvdname\fR
 
 .sp
 .LP
-Returns an error if the virtual disk cannot be recognized or opened by Solaris xVM. This subcommand has no options.
+Returns an error if the virtual disk cannot be recognized or opened by
+Solaris xVM. This subcommand has no options.
 .SS "\fBvdiskadm prop-get\fR"
 .sp
 .in +2
@@ -561,7 +654,9 @@ vdiskadm prop-get [\fB-l\fR] \fB-p\fR \fIproperty\fR \fIvdname\fR
 
 .sp
 .LP
-Returns the value of the property for the specified virtual disk. A property value of \fBall\fR displays all native and user-defined properties for the virtual disk. This subcommand has the options listed below.
+Returns the value of the property for the specified virtual disk. A
+property value of \fBall\fR displays all native and user-defined properties
+for the virtual disk. This subcommand has the options listed below.
 .sp
 .ne 2
 .mk
@@ -570,7 +665,8 @@ Returns the value of the property for the specified virtual disk. A property val
 .ad
 .sp .6
 .RS 4n
-Gives additional property information, such as the writeable status of property.
+Gives additional property information, such as the writeable status of
+property.
 .RE
 
 .sp
@@ -581,7 +677,9 @@ Gives additional property information, such as the writeable status of property.
 .ad
 .sp .6
 .RS 4n
-Specifies the property being queried and displays the value of the property. For the property \fBall\fR, the name of the property, a colon, and a space are displayed before the value of the property.
+Specifies the property being queried and displays the value of the
+property. For the property \fBall\fR, the name of the property, a colon, and
+a space are displayed before the value of the property.
 .RE
 
 .SS "\fBvdiskadm prop-set\fR"
@@ -595,7 +693,10 @@ vdiskadm prop-set \fB-p\fR \fIproperty\fR=\fIvalue\fR \fIvdname\fR
 
 .sp
 .LP
-Sets the value of the specified property for the specified virtual disk. \fIproperty\fR can be a native or a user-defined property, but must be writable. Can be used to change the value of a property added with the \fBprop-add\fR subcommand. This subcommand has the option listed below.
+Sets the value of the specified property for the specified virtual disk.
+\fIproperty\fR can be a native or a user-defined property, but must be
+writable. Can be used to change the value of a property added with the
+\fBprop-add\fR subcommand. This subcommand has the option listed below.
 .sp
 .ne 2
 .mk
@@ -618,7 +719,10 @@ vdiskadm \fB-p\fR \fIproperty\fR=\fIvalue\fR \fIvdname\fR
 
 .sp
 .LP
-Adds the user-defined property with the specified value to the specified virtual disk. Returns an error if the property already exists. The user-defined property name must contain a colon character (\fB:\fR). This subcommand has the option listed below.
+Adds the user-defined property with the specified value to the specified
+virtual disk. Returns an error if the property already exists. The
+user-defined property name must contain a colon character (\fB:\fR). This
+subcommand has the option listed below.
 .sp
 .ne 2
 .mk
@@ -641,7 +745,8 @@ vdiskadm prop-del \fB-p\fR \fIproperty\fR \fIvdname\fR
 
 .sp
 .LP
-Deletes a user-defined property from the specified virtual disk. This subcommand has the option listed below.
+Deletes a user-defined property from the specified virtual disk. This
+subcommand has the option listed below.
 .sp
 .ne 2
 .mk
@@ -665,7 +770,10 @@ vdiskadm import [-fnpqm] [-x \fItype\fR] -d file|zvol|dsk \e
 
 .sp
 .LP
-Creates a new virtual disk using data from a file or block device. The file may be in \fBvdi\fR, \fBvhd\fR, \fBvmdk\fR, or \fBraw\fR format. A block device is always assumed to be in raw format. This subcommand has the following options.
+Creates a new virtual disk using data from a file or block device. The file
+may be in \fBvdi\fR, \fBvhd\fR, \fBvmdk\fR, or \fBraw\fR format. A block
+device is always assumed to be in raw format. This subcommand has the
+following options.
 .sp
 .ne 2
 .mk
@@ -729,7 +837,8 @@ Move the imported file to virtual disk without copying the data.
 .ad
 .sp .6
 .RS 4n
-Specifies the type of virtual disk data being imported. If \fBvdiskadm\fR is unable to detect the imported file type, \fB-x\fR must be specified.
+Specifies the type of virtual disk data being imported. If \fBvdiskadm\fR
+is unable to detect the imported file type, \fB-x\fR must be specified.
 .RE
 
 .sp
@@ -751,7 +860,10 @@ File or block device containing data to be imported.
 .ad
 .sp .6
 .RS 4n
-Specifies the type of virtual disk to be created on import. The default type is \fBvmdk\fR. For \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types the default \fIopt\fR is \fBsparse\fR. For type \fBraw\fR the default \fIopt\fR is \fBfixed\fR.
+Specifies the type of virtual disk to be created on import. The default
+type is \fBvmdk\fR. For \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types the
+default \fIopt\fR is \fBsparse\fR. For type \fBraw\fR the default \fIopt\fR
+is \fBfixed\fR.
 .RE
 
 .SS "\fBvdiskadm export\fR"
@@ -765,7 +877,8 @@ vdiskadm export -x \fItype\fR[:\fIopt\fR] -d file|zvol|dsk \fIvdname\fR
 
 .sp
 .LP
-Exports data from a virtual disk to a file or block device. This subcommand has the following options.
+Exports data from a virtual disk to a file or block device. This subcommand
+has the following options.
 .sp
 .ne 2
 .mk
@@ -799,7 +912,8 @@ vdiskadm convert [-t \fItype\fR[:\fIopt\fR]] \fIvdname\fR
 
 .sp
 .LP
-Converts a virtual disk into a different type virtual disk. This subcommand has the following option.
+Converts a virtual disk into a different type virtual disk. This subcommand
+has the following option.
 .sp
 .ne 2
 .mk
@@ -808,7 +922,10 @@ Converts a virtual disk into a different type virtual disk. This subcommand has 
 .ad
 .sp .6
 .RS 4n
-Specifies the type of virtual disk to be created upon conversion. The default type is \fBvmdk\fR. For \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types the default \fIopt\fR is \fBsparse\fR. For type \fBraw\fR the default \fIopt\fR is \fBfixed\fR.
+Specifies the type of virtual disk to be created upon conversion. The
+default type is \fBvmdk\fR. For \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types
+the default \fIopt\fR is \fBsparse\fR. For type \fBraw\fR the default
+\fIopt\fR is \fBfixed\fR.
 .RE
 
 .SS "\fBvdiskadm translate\fR"
@@ -823,7 +940,8 @@ vdiskadm translate [-i \fItype\fR[:\fIopt\fR]] -I \fIinput_file\fR \e
 
 .sp
 .LP
-Translate data from one virtual disk data type to another without creating a virtual disk. This subcommand has the following options.
+Translate data from one virtual disk data type to another without creating
+a virtual disk. This subcommand has the following options.
 .sp
 .ne 2
 .mk
@@ -832,7 +950,9 @@ Translate data from one virtual disk data type to another without creating a vir
 .ad
 .sp .6
 .RS 4n
-Specifies the input type of virtual disk data being translated. If \fBvdiskadm\fR is unable to detect the input file type, \fB-i\fR must be specified.
+Specifies the input type of virtual disk data being translated. If
+\fBvdiskadm\fR is unable to detect the input file type, \fB-i\fR must be
+specified.
 .RE
 
 .sp
@@ -854,7 +974,9 @@ File or block device containing data being translated.
 .ad
 .sp .6
 .RS 4n
-Specifies the output type of virtual disk data being translated. For \fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types the default \fIopt\fR is \fBsparse\fR. For type \fBraw\fR the default \fIopt\fR is \fBfixed\fR.
+Specifies the output type of virtual disk data being translated. For
+\fBvmdk\fR, \fBvdi\fR, and \fBvhd\fR types the default \fIopt\fR is
+\fBsparse\fR. For type \fBraw\fR the default \fIopt\fR is \fBfixed\fR.
 .RE
 
 .sp
@@ -865,7 +987,8 @@ Specifies the output type of virtual disk data being translated. For \fBvmdk\fR,
 .ad
 .sp .6
 .RS 4n
-File or block device receiving data being translated. \fIoutput_file\fR must not exist. The file will be created during translation.
+File or block device receiving data being translated. \fIoutput_file\fR
+must not exist. The file will be created during translation.
 .RE
 
 .SS "\fBvdiskadm help\fR"
@@ -879,13 +1002,15 @@ vdiskadm help [\fIcommand\fR]
 
 .sp
 .LP
-Displays a general or command-specific help message. This subcommand has only the command name optional argument.
+Displays a general or command-specific help message. This subcommand has
+only the command name optional argument.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRCreating a \fBvmdk\fR Sparse File
 .sp
 .LP
-The following command creates a virtual disk named \fBdisk1\fR of size 8 GB in the directory \fB/guests/disks\fR.
+The following command creates a virtual disk named \fBdisk1\fR of size 8 GB
+in the directory \fB/guests/disks\fR.
 
 .sp
 .in +2
@@ -899,7 +1024,8 @@ The following command creates a virtual disk named \fBdisk1\fR of size 8 GB in t
 \fBExample 2 \fRCreating a Snapshot
 .sp
 .LP
-The following command creates a snapshot of the virtual disk located at \fB/guests/disks/disk1\fR. The snapshot is named \fBinstall\fR.
+The following command creates a snapshot of the virtual disk located at
+\fB/guests/disks/disk1\fR. The snapshot is named \fBinstall\fR.
 
 .sp
 .in +2
@@ -913,7 +1039,9 @@ The following command creates a snapshot of the virtual disk located at \fB/gues
 \fBExample 3 \fRCreating and Destroying Snapshots
 .sp
 .LP
-The following commands create two snapshots, named \fBinstall\fR and \fBbfu\fR, of the virtual disk located at \fB/guests/disks/disk1\fR. The third command destroys the newly created snapshot \fBinstall\fR.
+The following commands create two snapshots, named \fBinstall\fR and
+\fBbfu\fR, of the virtual disk located at \fB/guests/disks/disk1\fR. The
+third command destroys the newly created snapshot \fBinstall\fR.
 
 .sp
 .in +2
@@ -929,7 +1057,8 @@ The following commands create two snapshots, named \fBinstall\fR and \fBbfu\fR, 
 \fBExample 4 \fRRolling Back a Virtual Disk
 .sp
 .LP
-The following command reverts the contents of the virtual disk to the snapshot named \fBinstall\fR, deleting all intermediate snapshots.
+The following command reverts the contents of the virtual disk to the
+snapshot named \fBinstall\fR, deleting all intermediate snapshots.
 
 .sp
 .in +2
@@ -943,7 +1072,8 @@ The following command reverts the contents of the virtual disk to the snapshot n
 \fBExample 5 \fRListing a Virtual Disk and Snapshots
 .sp
 .LP
-The following command lists all of the images associated with the virtual disk \fB/guests/disks/disk1\fR.
+The following command lists all of the images associated with the virtual
+disk \fB/guests/disks/disk1\fR.
 
 .sp
 .in +2
@@ -960,7 +1090,9 @@ disk1
 \fBExample 6 \fRCreating a Clone
 .sp
 .LP
-The following command creates a new virtual disk that is a coalesced copy of the virtual disk \fB/guests/disks/disk1\fR. The clone is created in the same format (that is, \fBvmdk:sparse\fR) as the original virtual disk.
+The following command creates a new virtual disk that is a coalesced copy
+of the virtual disk \fB/guests/disks/disk1\fR. The clone is created in the
+same format (that is, \fBvmdk:sparse\fR) as the original virtual disk.
 
 .sp
 .in +2
@@ -974,7 +1106,10 @@ The following command creates a new virtual disk that is a coalesced copy of the
 \fBExample 7 \fRAdding a User-defined Property
 .sp
 .LP
-The following command adds a user-defined property to the virtual disk and assigns it the specified value. This property name was chosen to represent the source and requirements of this virtual disk data using the required colon to delineate the fields.
+The following command adds a user-defined property to the virtual disk and
+assigns it the specified value. This property name was chosen to represent
+the source and requirements of this virtual disk data using the required
+colon to delineate the fields.
 
 .sp
 .in +2
@@ -988,7 +1123,8 @@ The following command adds a user-defined property to the virtual disk and assig
 \fBExample 8 \fRImporting Existing \fBvmdk\fR Format File
 .sp
 .LP
-The following command takes an existing \fBvmdk\fR format file and imports it to a virtual disk.
+The following command takes an existing \fBvmdk\fR format file and imports
+it to a virtual disk.
 
 .sp
 .in +2
@@ -1002,7 +1138,8 @@ The following command takes an existing \fBvmdk\fR format file and imports it to
 \fBExample 9 \fRImporting \fBvmdk\fR File and Converting to \fBvhd\fR
 .sp
 .LP
-The following command takes an existing \fBvmdk\fR format file and, upon import, converts it to a \fBvhd\fR-type virtual disk.
+The following command takes an existing \fBvmdk\fR format file and, upon
+import, converts it to a \fBvhd\fR-type virtual disk.
 
 .sp
 .in +2
@@ -1017,7 +1154,8 @@ The following command takes an existing \fBvmdk\fR format file and, upon import,
 \fBExample 10 \fRImporting Data from \fBzvol\fR
 .sp
 .LP
-The following command imports virtual disk data from a \fBzvol\fR and, upon import, converts it to a \fBvmdk:fixed\fR type virtual disk.
+The following command imports virtual disk data from a \fBzvol\fR and, upon
+import, converts it to a \fBvmdk:fixed\fR type virtual disk.
 
 .sp
 .in +2
@@ -1032,7 +1170,8 @@ The following command imports virtual disk data from a \fBzvol\fR and, upon impo
 \fBExample 11 \fRExporting Data to Block Device
 .sp
 .LP
-The following command takes an existing virtual disk and, upon export, converts it to a disk slice, of \fBraw\fR type.
+The following command takes an existing virtual disk and, upon export,
+converts it to a disk slice, of \fBraw\fR type.
 
 .sp
 .in +2
@@ -1046,7 +1185,8 @@ The following command takes an existing virtual disk and, upon export, converts 
 \fBExample 12 \fRConverting Virtual Disk Type
 .sp
 .LP
-The following command takes an existing virtual disk and converts it (in place) to a different format type.
+The following command takes an existing virtual disk and converts it (in
+place) to a different format type.
 
 .sp
 .in +2
@@ -1060,7 +1200,8 @@ The following command takes an existing virtual disk and converts it (in place) 
 \fBExample 13 \fRTranslating Data from One Type to Another
 .sp
 .LP
-The following command translates data from a virtual disk format file to raw data written to a \fBzvol\fR without creating a virtual disk.
+The following command translates data from a virtual disk format file to
+raw data written to a \fBzvol\fR without creating a virtual disk.
 
 .sp
 .in +2
@@ -1080,8 +1221,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -1093,4 +1234,5 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBvirsh\fR(1M), \fBvirt-install\fR(1M), \fBattributes\fR(5), \fBxVM\fR(5)
+\fBvirsh\fR(1M), \fBvirt-install\fR(1M), \fBattributes\fR(5),
+\fBxVM\fR(5)

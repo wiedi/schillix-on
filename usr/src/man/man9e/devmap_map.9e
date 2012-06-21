@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH devmap_map 9E "7 Jan 1997" "SunOS 5.11" "Driver Entry Points"
 .SH NAME
 devmap_map \- device mapping create entry point
@@ -14,7 +29,7 @@ devmap_map \- device mapping create entry point
 
 
 
-\fBint prefix\fR\fBdevmap_map\fR(\fBdevmap_cookie_t\fR \fIdhp\fR, \fBdev_t\fR \fIdev\fR, 
+\fBint prefix\fR\fBdevmap_map\fR(\fBdevmap_cookie_t\fR \fIdhp\fR, \fBdev_t\fR \fIdev\fR,
      \fBuint_t\fR \fIflags\fR, \fBoffset_t\fR \fIoff\fR, \fBsize_t\fR \fIlen\fR, \fBvoid **\fR\fIpvtp\fR);
 .fi
 
@@ -30,8 +45,9 @@ Solaris DDI specific (Solaris DDI).
 \fB\fIdhp\fR \fR
 .ad
 .RS 10n
-.rt  
-An opaque mapping handle that the system uses to describe the mapping currently being created.
+.rt
+An opaque mapping handle that the system uses to describe the mapping
+currently being created.
 .RE
 
 .sp
@@ -41,7 +57,7 @@ An opaque mapping handle that the system uses to describe the mapping currently 
 \fB\fIdev\fR \fR
 .ad
 .RS 10n
-.rt  
+.rt
 The device whose memory is to be mapped.
 .RE
 
@@ -52,8 +68,8 @@ The device whose memory is to be mapped.
 \fB\fIflags\fR \fR
 .ad
 .RS 10n
-.rt  
-Flags indicating type of mapping. Possible values are: 
+.rt
+Flags indicating type of mapping. Possible values are:
 .sp
 .ne 2
 .mk
@@ -61,7 +77,7 @@ Flags indicating type of mapping. Possible values are:
 \fB\fBMAP_PRIVATE\fR \fR
 .ad
 .RS 16n
-.rt  
+.rt
 Changes are private.
 .RE
 
@@ -72,7 +88,7 @@ Changes are private.
 \fB\fBMAP_SHARED\fR \fR
 .ad
 .RS 16n
-.rt  
+.rt
 Changes should be shared.
 .RE
 
@@ -85,7 +101,7 @@ Changes should be shared.
 \fB\fIoff\fR \fR
 .ad
 .RS 10n
-.rt  
+.rt
 User offset within the logical device memory at which the mapping begins.
 .RE
 
@@ -96,7 +112,7 @@ User offset within the logical device memory at which the mapping begins.
 \fB\fIlen\fR \fR
 .ad
 .RS 10n
-.rt  
+.rt
 Length (in bytes) of the memory to be mapped.
 .RE
 
@@ -107,26 +123,49 @@ Length (in bytes) of the memory to be mapped.
 \fB\fIpvtp\fR \fR
 .ad
 .RS 10n
-.rt  
-A pointer to be filled in by device drivers with the driver private mapping data.
+.rt
+A pointer to be filled in by device drivers with the driver private mapping
+data.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdevmap_map()\fR entry point is an optional routine that allows drivers to perform additional processing or to allocate private resources during the mapping setup time.  For example, in order for device drivers to support context switching, the drivers allocate private mapping data and associate the private data with the mapping parameters in the \fBdevmap_map()\fR entry point.
+The \fBdevmap_map()\fR entry point is an optional routine that allows
+drivers to perform additional processing or to allocate private resources
+during the mapping setup time.  For example, in order for device drivers to
+support context switching, the drivers allocate private mapping data and
+associate the private data with the mapping parameters in the
+\fBdevmap_map()\fR entry point.
 .sp
 .LP
-The system calls \fBdevmap_map()\fR after the user mapping to device physical memory has been established. (For example, after the  \fBdevmap\fR(9E) entry point is called.)
+The system calls \fBdevmap_map()\fR after the user mapping to device
+physical memory has been established. (For example, after the
+\fBdevmap\fR(9E) entry point is called.)
 .sp
 .LP
-\fBdevmap_map()\fR receives a pointer to the driver private data  for this mapping in \fIpvtp\fR. The system expects the driver to allocate its private data and set  \fI*pvtp\fR to the allocated data.  The driver must store \fIoff\fR and \fIlen\fR, which define the range of the mapping, in its private data.  Later, when the system calls \fBdevmap_unmap\fR(9E), the driver will use the \fIoff\fR and  \fIlen\fR stored in \fIpvtp\fR to check if the entire mapping, or just a part of it, is being unmapped. If only a part of the mapping is being unmapped, the driver must allocate  a new private data for the remaining mapping before freeing the old private data.  The driver will receive \fI*pvtp\fR in subsequent event notification callbacks.
+\fBdevmap_map()\fR receives a pointer to the driver private data  for this
+mapping in \fIpvtp\fR. The system expects the driver to allocate its private
+data and set  \fI*pvtp\fR to the allocated data.  The driver must store
+\fIoff\fR and \fIlen\fR, which define the range of the mapping, in its
+private data.  Later, when the system calls \fBdevmap_unmap\fR(9E), the
+driver will use the \fIoff\fR and  \fIlen\fR stored in \fIpvtp\fR to check
+if the entire mapping, or just a part of it, is being unmapped. If only a
+part of the mapping is being unmapped, the driver must allocate  a new
+private data for the remaining mapping before freeing the old private data.
+The driver will receive \fI*pvtp\fR in subsequent event notification
+callbacks.
 .sp
 .LP
-If the driver support context switching,  it should store the mapping handle  \fIdhp\fR in its private data \fI*pvtp\fR for later use in \fBdevmap_unload\fR(9F). 
+If the driver support context switching,  it should store the mapping
+handle \fIdhp\fR in its private data \fI*pvtp\fR for later use in
+\fBdevmap_unload\fR(9F). 
 .sp
 .LP
-For a driver that supports context switching, \fIflags\fR indicates whether or not the driver should allocate a private context  for the mapping.  For example, a driver may allocate a memory region to store the device context if \fIflags\fR is set to  \fBMAP_PRIVATE\fR. 
+For a driver that supports context switching, \fIflags\fR indicates whether
+or not the driver should allocate a private context  for the mapping.  For
+example, a driver may allocate a memory region to store the device context
+if \fIflags\fR is set to  \fBMAP_PRIVATE\fR.
 .SH RETURN VALUES
 .sp
 .LP
@@ -138,7 +177,7 @@ For a driver that supports context switching, \fIflags\fR indicates whether or n
 \fB\fB0\fR \fR
 .ad
 .RS 12n
-.rt  
+.rt
 Successful completion.
 .RE
 
@@ -149,7 +188,7 @@ Successful completion.
 \fBNon-zero\fR
 .ad
 .RS 12n
-.rt  
+.rt
 An error occurred.
 .RE
 
@@ -189,7 +228,8 @@ xxdevmap_map(devmap_cookie_t dhp, dev_t dev, uint_t flags, \e
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap_unmap\fR(9E), \fBdevmap_unload\fR(9F), \fBdevmap_callback_ctl\fR(9S) 
+\fBdevmap_unmap\fR(9E), \fBdevmap_unload\fR(9F),
+\fBdevmap_callback_ctl\fR(9S) 
 .sp
 .LP
-\fIWriting Device Drivers\fR 
+\fIWriting Device Drivers\fR

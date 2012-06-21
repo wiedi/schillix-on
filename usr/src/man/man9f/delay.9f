@@ -1,9 +1,24 @@
 '\" te
 .\" Copyright (c) 2001, Sun Microsystems, Inc.  All Rights Reserved.
 .\" Copyright 1989 AT&T
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH delay 9F "15 Oct 2001" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 delay \- delay execution for a specified number of clock ticks
@@ -29,20 +44,28 @@ Architecture independent level 1 (DDI/DKI).
 \fB\fIticks\fR \fR
 .ad
 .RS 10n
-.rt  
+.rt
 The number of clock cycles to delay.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBdelay()\fR provides a mechanism for a driver to delay its execution for a given period of time. Since the speed of the clock varies among systems, drivers should base their time values on microseconds and use \fBdrv_usectohz\fR(9F) to convert microseconds into clock ticks.
+\fBdelay()\fR provides a mechanism for a driver to delay its execution for
+a given period of time. Since the speed of the clock varies among systems,
+drivers should base their time values on microseconds and use
+\fBdrv_usectohz\fR(9F) to convert microseconds into clock ticks.
 .sp
 .LP
-\fBdelay()\fR uses \fBtimeout\fR(9F) to schedule an internal function to be called after the specified amount of time has elapsed. \fBdelay()\fR then waits until the function is called. Because \fBtimeout()\fR is subject to priority inversion, drivers waiting on behalf of processes with real-time constraints should use \fBcv_timedwait\fR(9F) rather than \fBdelay()\fR.
+\fBdelay()\fR uses \fBtimeout\fR(9F) to schedule an internal function to be
+called after the specified amount of time has elapsed. \fBdelay()\fR then
+waits until the function is called. Because \fBtimeout()\fR is subject to
+priority inversion, drivers waiting on behalf of processes with real-time
+constraints should use \fBcv_timedwait\fR(9F) rather than \fBdelay()\fR.
 .sp
 .LP
-\fBdelay()\fR does not busy-wait. If busy-waiting is required, use \fBdrv_usecwait\fR(9F). 
+\fBdelay()\fR does not busy-wait. If busy-waiting is required, use
+\fBdrv_usecwait\fR(9F). 
 .SH CONTEXT
 .sp
 .LP
@@ -52,7 +75,11 @@ The number of clock cycles to delay.
 \fBExample 1 \fR\fBdelay()\fR Example
 .sp
 .LP
-Before a driver I/O routine allocates buffers and stores any user data in them, it checks the status of the device (line 12). If the device needs manual intervention (such as, needing to be refilled with paper), a message is displayed on the system console (line 14). The driver waits an allotted time (line 17) before repeating the procedure.
+Before a driver I/O routine allocates buffers and stores any user data in
+them, it checks the status of the device (line 12). If the device needs
+manual intervention (such as, needing to be refilled with paper), a message
+is displayed on the system console (line 14). The driver waits an allotted
+time (line 17) before repeating the procedure.
 
 .sp
 .in +2
@@ -63,7 +90,7 @@ Before a driver I/O routine allocates buffers and stores any user data in them, 
  4          short    xmit_char;	/* transmit character to device */
  5  };
  6
- 7 
+ 7
        . . .
  9	/* get device registers  */
 10      register struct device *rp = ...
@@ -82,7 +109,9 @@ Before a driver I/O routine allocates buffers and stores any user data in them, 
 .SH SEE ALSO
 .sp
 .LP
-\fBbiodone\fR(9F), \fBbiowait\fR(9F), \fBcv_timedwait\fR(9F), \fBddi_in_panic\fR(9F), \fBdrv_hztousec\fR(9F), \fBdrv_usectohz\fR(9F), \fBdrv_usecwait\fR(9F), \fBtimeout\fR(9F), \fBuntimeout\fR(9F) 
+\fBbiodone\fR(9F), \fBbiowait\fR(9F), \fBcv_timedwait\fR(9F),
+\fBddi_in_panic\fR(9F), \fBdrv_hztousec\fR(9F), \fBdrv_usectohz\fR(9F),
+\fBdrv_usecwait\fR(9F), \fBtimeout\fR(9F), \fBuntimeout\fR(9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR 
+\fIWriting Device Drivers\fR

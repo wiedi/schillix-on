@@ -1,15 +1,36 @@
 '\" te
 .\" Copyright (c) 2009, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License. You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.
-.\"  See the License for the specific language governing permissions and limitations under the License. When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with
-.\" the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH scf_pg_create 3SCF "29 Jun 2009" "SunOS 5.11" "Service Configuration Facility Library Functions"
 .SH NAME
-scf_pg_create, scf_pg_handle, scf_pg_destroy, scf_pg_get_parent_service, scf_pg_get_parent_instance, scf_pg_get_parent_snaplevel, scf_pg_get_name, scf_pg_get_type, scf_pg_get_flags, scf_pg_update, scf_service_get_pg, scf_service_add_pg, scf_instance_get_pg, scf_instance_get_pg_composed, scf_instance_add_pg, scf_snaplevel_get_pg, scf_pg_delete, scf_pg_get_underlying_pg \- create and manipulate property group handles and property groups in the Service Configuration Facility
+scf_pg_create, scf_pg_handle, scf_pg_destroy, scf_pg_get_parent_service,
+scf_pg_get_parent_instance, scf_pg_get_parent_snaplevel, scf_pg_get_name,
+scf_pg_get_type, scf_pg_get_flags, scf_pg_update, scf_service_get_pg,
+scf_service_add_pg, scf_instance_get_pg, scf_instance_get_pg_composed,
+scf_instance_add_pg, scf_snaplevel_get_pg, scf_pg_delete,
+scf_pg_get_underlying_pg \- create and manipulate property group handles and
+property groups in the Service Configuration Facility
 .SH SYNOPSIS
 .LP
 .nf
-cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.\|. ] 
+cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.\|. ]
 #include <libscf.h>
 
 \fBscf_propertygroup_t *\fR\fBscf_pg_create\fR(\fBscf_handle_t *\fR\fIhandle\fR);
@@ -118,68 +139,126 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.
 .SH DESCRIPTION
 .sp
 .LP
-Property groups are an atomically-updated group of typed properties. Property groups of services (see \fBscf_service_create\fR(3SCF)) or instances (see \fBscf_instance_create\fR(3SCF)) are modifiable. Property groups of snaplevels (see \fBscf_snaplevel_create\fR(3SCF)) are not modifiable.
+Property groups are an atomically-updated group of typed properties.
+Property groups of services (see \fBscf_service_create\fR(3SCF)) or
+instances (see \fBscf_instance_create\fR(3SCF)) are modifiable. Property
+groups of snaplevels (see \fBscf_snaplevel_create\fR(3SCF)) are not
+modifiable.
 .sp
 .LP
-An \fBscf_propertygroup_t\fR is an opaque handle that can be set to a single property group at any given time. When an \fBscf_propertygroup_t\fR is set, it references a frozen-in-time version of the property group to which it is set. Updates to the property group will not be visible until either \fBscf_pg_update()\fR is called or the property group is set again.
+An \fBscf_propertygroup_t\fR is an opaque handle that can be set to a
+single property group at any given time. When an \fBscf_propertygroup_t\fR
+is set, it references a frozen-in-time version of the property group to
+which it is set. Updates to the property group will not be visible until
+either \fBscf_pg_update()\fR is called or the property group is set again.
 .sp
 .LP
-This static view is propagated to the \fBscf_property_t\fRs set to children of the property group. They will not see updates, even if the \fBscf_propertygroup_t\fR is updated.
+This static view is propagated to the \fBscf_property_t\fRs set to children
+of the property group. They will not see updates, even if the
+\fBscf_propertygroup_t\fR is updated.
 .sp
 .LP
-The \fBscf_pg_create()\fR function allocates and initializes a new \fBscf_propertygroup_t\fR bound to \fIhandle\fR. The \fBscf_pg_destroy()\fR function destroys and frees \fIpg\fR.
+The \fBscf_pg_create()\fR function allocates and initializes a new
+\fBscf_propertygroup_t\fR bound to \fIhandle\fR. The \fBscf_pg_destroy()\fR
+function destroys and frees \fIpg\fR.
 .sp
 .LP
-The \fBscf_pg_handle()\fR function retrieves the handle to which \fIpg\fR is bound.
+The \fBscf_pg_handle()\fR function retrieves the handle to which \fIpg\fR
+is bound.
 .sp
 .LP
-The \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_instance()\fR, and \fBscf_pg_get_parent_snaplevel()\fR functions retrieve the property group's parent, if it is of the requested type.
+The \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_instance()\fR,
+and \fBscf_pg_get_parent_snaplevel()\fR functions retrieve the property
+group's parent, if it is of the requested type.
 .sp
 .LP
-The \fBscf_pg_get_name()\fR and \fBscf_pg_get_type()\fR functions retrieve the name and type, respectively, of the property group to which \fIpg\fR is set.
+The \fBscf_pg_get_name()\fR and \fBscf_pg_get_type()\fR functions retrieve
+the name and type, respectively, of the property group to which \fIpg\fR is
+set.
 .sp
 .LP
-The \fBscf_pg_get_flags()\fR function retrieves the flags for the property group to which \fIpg\fR is set. If \fBSCF_PG_FLAG_NONPERSISTENT\fR is set, the property group is not included in snapshots and will lose its contents upon system shutdown or reboot. Non-persistent property groups are mainly used for smf-internal state. See \fBsmf\fR(5).
+The \fBscf_pg_get_flags()\fR function retrieves the flags for the property
+group to which \fIpg\fR is set. If \fBSCF_PG_FLAG_NONPERSISTENT\fR is set,
+the property group is not included in snapshots and will lose its contents
+upon system shutdown or reboot. Non-persistent property groups are mainly
+used for smf-internal state. See \fBsmf\fR(5).
 .sp
 .LP
-The \fBscf_pg_update()\fR function ensures that \fIpg\fR is attached to the most recent version of the \fIpg\fR to which it is set.
+The \fBscf_pg_update()\fR function ensures that \fIpg\fR is attached to the
+most recent version of the \fIpg\fR to which it is set.
 .sp
 .LP
-The \fBscf_service_get_pg()\fR, \fBscf_instance_get_pg()\fR, and \fBscf_snaplevel_get_pg()\fR functions set \fIpg\fR to the property group specified by \fIname\fR in the service specified by \fIsvc\fR, the instance specified by \fIinst\fR, or the snaplevel specified by \fIlevel\fR, respectively.
+The \fBscf_service_get_pg()\fR, \fBscf_instance_get_pg()\fR, and
+\fBscf_snaplevel_get_pg()\fR functions set \fIpg\fR to the property group
+specified by \fIname\fR in the service specified by \fIsvc\fR, the instance
+specified by \fIinst\fR, or the snaplevel specified by \fIlevel\fR,
+respectively.
 .sp
 .LP
-The \fBscf_instance_get_pg_composed()\fR function sets \fIpg\fR to the property group specified by \fIname\fR in the composed view of \fIinst\fR at the time \fIsnapshot\fR was taken. If \fIsnapshot\fR is \fINULL\fR, the current properties are used. The composed view of an instance's properties is the union of the properties of the instance and its ancestors. Properties of the instance take precedence over properties of the service with the same name (including the property group name). After a successful call to \fBscf_instance_get_pg_composed()\fR, the parent of \fIpg\fR might not be \fIinst\fR, and the parents of properties obtained from \fIpg\fR might not be \fIpg\fR. If \fIinst\fR and its parent have property groups with the same name but different types, the properties in the property group of the parent are excluded.
+The \fBscf_instance_get_pg_composed()\fR function sets \fIpg\fR to the
+property group specified by \fIname\fR in the composed view of \fIinst\fR at
+the time \fIsnapshot\fR was taken. If \fIsnapshot\fR is \fINULL\fR, the
+current properties are used. The composed view of an instance's properties
+is the union of the properties of the instance and its ancestors. Properties
+of the instance take precedence over properties of the service with the same
+name (including the property group name). After a successful call to
+\fBscf_instance_get_pg_composed()\fR, the parent of \fIpg\fR might not be
+\fIinst\fR, and the parents of properties obtained from \fIpg\fR might not
+be \fIpg\fR. If \fIinst\fR and its parent have property groups with the same
+name but different types, the properties in the property group of the parent
+are excluded.
 .sp
 .LP
-The \fBscf_service_add_pg()\fR and \fBscf_instance_add_pg()\fR functions create a new property group specified by \fIname\fR whose type is \fIgroup_type\fR, and attach the \fIpg\fR handle (if non-null) to the new object. The \fIflags\fR argument must be either 0 or \fBSCF_PG_FLAG_NONPERSISTENT\fR.
+The \fBscf_service_add_pg()\fR and \fBscf_instance_add_pg()\fR functions
+create a new property group specified by \fIname\fR whose type is
+\fIgroup_type\fR, and attach the \fIpg\fR handle (if non-null) to the new
+object. The \fIflags\fR argument must be either 0 or
+\fBSCF_PG_FLAG_NONPERSISTENT\fR.
 .sp
 .LP
-The \fBscf_pg_delete()\fR function deletes the property group. Versions of the property group in snapshots are not affected.
+The \fBscf_pg_delete()\fR function deletes the property group. Versions of
+the property group in snapshots are not affected.
 .sp
 .LP
-The \fBscf_pg_get_underlying_pg()\fR function gets the first existing underlying property group. If the property group specified by \fIpg\fR is an instance property group, \fIout\fR is set to the property group of the same name in the instance's parent.
+The \fBscf_pg_get_underlying_pg()\fR function gets the first existing
+underlying property group. If the property group specified by \fIpg\fR is an
+instance property group, \fIout\fR is set to the property group of the same
+name in the instance's parent.
 .sp
 .LP
-Applications can use a transaction to modify a property group. See \fBscf_transaction_create\fR(3SCF).
+Applications can use a transaction to modify a property group. See
+\fBscf_transaction_create\fR(3SCF).
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBscf_pg_create()\fR returns a new \fBscf_propertygroup_t\fR. Otherwise, it returns \fINULL\fR.
+Upon successful completion, \fBscf_pg_create()\fR returns a new
+\fBscf_propertygroup_t\fR. Otherwise, it returns \fINULL\fR.
 .sp
 .LP
-Upon successful completion, \fBscf_pg_handle()\fR returns a pointer to the handle to which \fIpg\fR is bound. Otherwise, it returns NULL.
+Upon successful completion, \fBscf_pg_handle()\fR returns a pointer to the
+handle to which \fIpg\fR is bound. Otherwise, it returns NULL.
 .sp
 .LP
-Upon successful completion, \fBscf_instance_handle()\fR returns the handle instance with which it is associated. Otherwise, it returns \fINULL\fR.
+Upon successful completion, \fBscf_instance_handle()\fR returns the handle
+instance with which it is associated. Otherwise, it returns \fINULL\fR.
 .sp
 .LP
-Upon successful completion, \fBscf_pg_get_name()\fR and \fBscf_pg_get_type()\fR return the length of the string written, not including the terminating null byte. Otherwise, they return -1.
+Upon successful completion, \fBscf_pg_get_name()\fR and
+\fBscf_pg_get_type()\fR return the length of the string written, not
+including the terminating null byte. Otherwise, they return -1.
 .sp
 .LP
-The \fBscf_pg_update()\fR function returns 1 if the object was updated, 0 if the object was already up to date, and -1 on failure.
+The \fBscf_pg_update()\fR function returns 1 if the object was updated, 0
+if the object was already up to date, and -1 on failure.
 .sp
 .LP
-Upon successful completion, \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_snaplevel()\fR, \fBscf_pg_get_flags()\fR, \fBscf_service_get_pg()\fR, \fBscf_service_add_pg()\fR, \fBscf_pg_get_parent_instance()\fR, \fBscf_instance_get_pg()\fR, \fBscf_instance_get_pg_composed()\fR, \fBscf_instance_add_pg()\fR, \fBscf_snaplevel_get_pg()\fR, \fBscf_pg_delete()\fR, and \fBscf_pg_get_underlying_pg()\fR return 0. Otherwise, they return -1.
+Upon successful completion, \fBscf_pg_get_parent_service()\fR,
+\fBscf_pg_get_parent_snaplevel()\fR, \fBscf_pg_get_flags()\fR,
+\fBscf_service_get_pg()\fR, \fBscf_service_add_pg()\fR,
+\fBscf_pg_get_parent_instance()\fR, \fBscf_instance_get_pg()\fR,
+\fBscf_instance_get_pg_composed()\fR, \fBscf_instance_add_pg()\fR,
+\fBscf_snaplevel_get_pg()\fR, \fBscf_pg_delete()\fR, and
+\fBscf_pg_get_underlying_pg()\fR return 0. Otherwise, they return -1.
 .SH ERRORS
 .sp
 .LP
@@ -214,7 +293,8 @@ There is not enough memory to allocate an \fBscf_propertygroup_t\fR.
 .ad
 .sp .6
 .RS 4n
-The server does not have adequate resources for a new property group handle.
+The server does not have adequate resources for a new property group
+handle.
 .RE
 
 .sp
@@ -264,7 +344,8 @@ An ancestor of the property group specified by \fIpg\fR has been deleted.
 .ad
 .sp .6
 .RS 4n
-An internal error occurred. This can happen if \fIpg\fR has been corrupted.
+An internal error occurred. This can happen if \fIpg\fR has been
+corrupted.
 .RE
 
 .sp
@@ -302,7 +383,9 @@ The property group specified by \fIpg\fR is not set.
 
 .sp
 .LP
-The \fBscf_service_get_pg()\fR, \fBscf_instance_get_pg()\fR, \fBscf_instance_get_pg_composed()\fR, \fBscf_snaplevel_get_pg()\fR, and \fBscf_pg_get_underlying_pg()\fR functions will fail if:
+The \fBscf_service_get_pg()\fR, \fBscf_instance_get_pg()\fR,
+\fBscf_instance_get_pg_composed()\fR, \fBscf_snaplevel_get_pg()\fR, and
+\fBscf_pg_get_underlying_pg()\fR functions will fail if:
 .sp
 .ne 2
 .mk
@@ -311,7 +394,8 @@ The \fBscf_service_get_pg()\fR, \fBscf_instance_get_pg()\fR, \fBscf_instance_get
 .ad
 .sp .6
 .RS 4n
-The  storage  mechanism  that  the   repository server (\fBsvc.configd\fR(1M)) chose for the operation denied access.
+The  storage  mechanism  that  the   repository server
+(\fBsvc.configd\fR(1M)) chose for the operation denied access.
 .RE
 
 .sp
@@ -338,7 +422,10 @@ The server does not have the resources to complete the request.
 
 .sp
 .LP
-The \fBscf_pg_get_name()\fR, \fBscf_pg_get_type()\fR, \fBscf_pg_get_flags()\fR, \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_snaplevel()\fR, and \fBscf_pg_get_parent_instance()\fR functions will fail if:
+The \fBscf_pg_get_name()\fR, \fBscf_pg_get_type()\fR,
+\fBscf_pg_get_flags()\fR, \fBscf_pg_get_parent_service()\fR,
+\fBscf_pg_get_parent_snaplevel()\fR, and \fBscf_pg_get_parent_instance()\fR
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -385,7 +472,8 @@ The connection to the repository was lost.
 
 .sp
 .LP
-The \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_snaplevel()\fR, and \fBscf_pg_get_parent_instance()\fR functions will fail if:
+The \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_snaplevel()\fR,
+and \fBscf_pg_get_parent_instance()\fR functions will fail if:
 .sp
 .ne 2
 .mk
@@ -394,7 +482,8 @@ The \fBscf_pg_get_parent_service()\fR, \fBscf_pg_get_parent_snaplevel()\fR, and 
 .ad
 .sp .6
 .RS 4n
-The requested parent type does not match the actual type of the parent of the property group specified by \fIpg\fR.
+The requested parent type does not match the actual type of the parent of
+the property group specified by \fIpg\fR.
 .RE
 
 .sp
@@ -405,12 +494,15 @@ The requested parent type does not match the actual type of the parent of the pr
 .ad
 .sp .6
 .RS 4n
-The property group and either the instance, the service, or the snaplevel are not derived from the same handle.
+The property group and either the instance, the service, or the snaplevel
+are not derived from the same handle.
 .RE
 
 .sp
 .LP
-The \fBscf_instance_get_pg()\fR, \fBscf_instance_get_pg_composed()\fR, \fBscf_service_get_pg()\fR, \fBscf_pg_get_underlying_pg()\fR, and \fBscf_snaplevel_get_pg()\fR functions will fail if:
+The \fBscf_instance_get_pg()\fR, \fBscf_instance_get_pg_composed()\fR,
+\fBscf_service_get_pg()\fR, \fBscf_pg_get_underlying_pg()\fR, and
+\fBscf_snaplevel_get_pg()\fR functions will fail if:
 .sp
 .ne 2
 .mk
@@ -424,7 +516,10 @@ The property group specified by \fIname\fR was not found.
 
 .sp
 .LP
-The \fBscf_service_add_pg()\fR, \fBscf_service_get_pg()\fR, \fBscf_instance_add_pg()\fR, \fBscf_instance_get_pg()\fR, \fBscf_instance_get_pg_composed()\fR, and \fBscf_snaplevel_get_pg()\fR functions will fail if:
+The \fBscf_service_add_pg()\fR, \fBscf_service_get_pg()\fR,
+\fBscf_instance_add_pg()\fR, \fBscf_instance_get_pg()\fR,
+\fBscf_instance_get_pg_composed()\fR, and \fBscf_snaplevel_get_pg()\fR
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -466,7 +561,8 @@ The value of the \fIname\fR argument is not a valid property group name.
 .ad
 .sp .6
 .RS 4n
-The property group and either the instance, the service, or the level are not derived from the same handle.
+The property group and either the instance, the service, or the level are
+not derived from the same handle.
 .RE
 
 .sp
@@ -493,7 +589,8 @@ The connection to the repository was lost.
 
 .sp
 .LP
-The \fBscf_service_add_pg()\fR and \fBscf_instance_add_pg()\fR functions will fail if:
+The \fBscf_service_add_pg()\fR and \fBscf_instance_add_pg()\fR functions
+will fail if:
 .sp
 .ne 2
 .mk
@@ -502,7 +599,8 @@ The \fBscf_service_add_pg()\fR and \fBscf_instance_add_pg()\fR functions will fa
 .ad
 .sp .6
 .RS 4n
-The caller does not have permission to create the requested property group.
+The caller does not have permission to create the requested property
+group.
 .RE
 
 .sp
@@ -604,7 +702,8 @@ The property group has been deleted by someone else.
 .ad
 .sp .6
 .RS 4n
-The server does not have adequate resources for a new property group handle.
+The server does not have adequate resources for a new property group
+handle.
 .RE
 
 .sp
@@ -711,7 +810,8 @@ The property group has not been set.
 
 .sp
 .LP
-The \fBscf_error\fR(3SCF) function can be used to retrieve the error value.
+The \fBscf_error\fR(3SCF) function can be used to retrieve the error
+value.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRPerform a layered lookup of \fIname\fR in \fIpg\fR.
@@ -759,8 +859,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -772,4 +872,8 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibscf\fR(3LIB), \fBscf_error\fR(3SCF), \fBscf_handle_decode_fmri\fR(3SCF), \fBscf_instance_create\fR(3SCF), \fBscf_pg_to_fmri\fR(3SCF), \fBscf_service_create\fR(3SCF), \fBscf_snaplevel_create\fR(3SCF), \fBscf_transaction_create\fR(3SCF), \fBattributes\fR(5), \fBsmf\fR(5)
+\fBlibscf\fR(3LIB), \fBscf_error\fR(3SCF),
+\fBscf_handle_decode_fmri\fR(3SCF), \fBscf_instance_create\fR(3SCF),
+\fBscf_pg_to_fmri\fR(3SCF), \fBscf_service_create\fR(3SCF),
+\fBscf_snaplevel_create\fR(3SCF), \fBscf_transaction_create\fR(3SCF),
+\fBattributes\fR(5), \fBsmf\fR(5)

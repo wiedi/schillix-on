@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 1996, Sun Microsystems, Inc.  All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH csx_RequestConfiguration 9F "19 Jul 1996" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 csx_RequestConfiguration \- configure the PC Card and socket
@@ -28,7 +43,7 @@ Solaris \fBDDI\fR Specific (Solaris \fBDDI\fR)
 \fB\fIch\fR\fR
 .ad
 .RS 6n
-.rt  
+.rt
 Client handle returned from \fBcsx_RegisterClient\fR(9F).
 .RE
 
@@ -39,17 +54,26 @@ Client handle returned from \fBcsx_RegisterClient\fR(9F).
 \fB\fIcr\fR\fR
 .ad
 .RS 6n
-.rt  
+.rt
 Pointer to a \fBconfig_req_t\fR structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-This function configures the \fBPC\fR Card and socket. It must be used by clients that require \fBI/O\fR or \fBIRQ\fR resources for their \fBPC\fR Card.
+This function configures the \fBPC\fR Card and socket. It must be used by
+clients that require \fBI/O\fR or \fBIRQ\fR resources for their \fBPC\fR
+Card.
 .sp
 .LP
-\fBcsx_RequestIO\fR(9F) and \fBcsx_RequestIRQ\fR(9F) must be used before calling this function to specify the \fBI/O\fR and \fBIRQ\fR requirements for the \fBPC\fR Card and socket if necessary. \fBcsx_RequestConfiguration()\fR establishes the configuration in the socket adapter and \fBPC\fR Card, and it programs the Base and Limit registers of multi-function \fBPC\fR Cards if these registers exist. The values programmed into these registers depend on the \fBIO\fR requirements of this configuration.
+\fBcsx_RequestIO\fR(9F) and \fBcsx_RequestIRQ\fR(9F) must be used before
+calling this function to specify the \fBI/O\fR and \fBIRQ\fR requirements
+for the \fBPC\fR Card and socket if necessary.
+\fBcsx_RequestConfiguration()\fR establishes the configuration in the socket
+adapter and \fBPC\fR Card, and it programs the Base and Limit registers of
+multi-function \fBPC\fR Cards if these registers exist. The values
+programmed into these registers depend on the \fBIO\fR requirements of this
+configuration.
 .SH STRUCTURE MEMBERS
 .sp
 .LP
@@ -84,7 +108,8 @@ The fields are defined as follows:
 .ad
 .sp .6
 .RS 4n
-Not used in Solaris, but for portability with other Card Services implementations, it should be set to the logical socket number.
+Not used in Solaris, but for portability with other Card Services
+implementations, it should be set to the logical socket number.
 .RE
 
 .sp
@@ -95,7 +120,9 @@ Not used in Solaris, but for portability with other Card Services implementation
 .ad
 .sp .6
 .RS 4n
-This field is bit-mapped. It indicates whether the client wishes the \fBIRQ\fR resources to be enabled and whether Card Services should ignore the \fBVS\fR bits on the socket interface. The following bits are defined:
+This field is bit-mapped. It indicates whether the client wishes the
+\fBIRQ\fR resources to be enabled and whether Card Services should ignore
+the \fBVS\fR bits on the socket interface. The following bits are defined:
 .sp
 .ne 2
 .mk
@@ -104,7 +131,12 @@ This field is bit-mapped. It indicates whether the client wishes the \fBIRQ\fR r
 .ad
 .sp .6
 .RS 4n
-Enable IRQ Steering. Set to connect the \fBPC\fR Card \fBIREQ\fR line to a system interrupt previously selected by a call to \fBcsx_RequestIRQ\fR(9F). If \fBCONF_ENABLE_IRQ_STEERING\fR is set, once \fBcsx_RequestConfiguration()\fR has successfully returned, the client may start receiving \fBIRQ\fR callbacks at the \fBIRQ\fR callback handler established in the call to \fBcsx_RequestIRQ\fR(9F). 
+Enable IRQ Steering. Set to connect the \fBPC\fR Card \fBIREQ\fR line to a
+system interrupt previously selected by a call to \fBcsx_RequestIRQ\fR(9F).
+If \fBCONF_ENABLE_IRQ_STEERING\fR is set, once
+\fBcsx_RequestConfiguration()\fR has successfully returned, the client may
+start receiving \fBIRQ\fR callbacks at the \fBIRQ\fR callback handler
+established in the call to \fBcsx_RequestIRQ\fR(9F).
 .RE
 
 .sp
@@ -115,7 +147,14 @@ Enable IRQ Steering. Set to connect the \fBPC\fR Card \fBIREQ\fR line to a syste
 .ad
 .sp .6
 .RS 4n
-Override VS pins. After card insertion and prior to the first successful \fBcsx_RequestConfiguration()\fR, the voltage levels applied to the card shall be those indicated by the card's physical key and/or the VS[2:1] voltage sense pins. For Low Voltage capable host systems (hosts which are capable of \fBVS\fR pin decoding), if a client desires to apply a voltage not indicated by the \fBVS\fR pin decoding, then \fBCONF_VSOVERRIDE\fR must be set in the \fBAttributes\fR field; otherwise, \fBCS_BAD_VCC\fR shall be returned.
+Override VS pins. After card insertion and prior to the first successful
+\fBcsx_RequestConfiguration()\fR, the voltage levels applied to the card
+shall be those indicated by the card's physical key and/or the VS[2:1]
+voltage sense pins. For Low Voltage capable host systems (hosts which are
+capable of \fBVS\fR pin decoding), if a client desires to apply a voltage
+not indicated by the \fBVS\fR pin decoding, then \fBCONF_VSOVERRIDE\fR must
+be set in the \fBAttributes\fR field; otherwise, \fBCS_BAD_VCC\fR shall be
+returned.
 .RE
 
 .RE
@@ -128,7 +167,15 @@ Override VS pins. After card insertion and prior to the first successful \fBcsx_
 .ad
 .sp .6
 .RS 4n
-These fields all represent voltages expressed in tenths of a volt. Values from zero (\fB0\fR) to \fB25.5\fR volts may be set. To be valid, the exact voltage must be available from the system.  \fBPC\fR Cards indicate multiple \fBVcc\fR voltage capability in their \fBCIS\fR via the \fBCISTPL_CFTABLE_ENTRY\fR tuple. After card insertion, Card Services processes the \fBCIS\fR, and when multiple \fBVcc\fR voltage capability is indicated, Card Services will allow the client to apply \fBVcc\fR voltage levels which are contrary to the \fBVS\fR pin decoding without requiring the client to set \fBCONF_VSOVERRIDE.\fR 
+These fields all represent voltages expressed in tenths of a volt. Values
+from zero (\fB0\fR) to \fB25.5\fR volts may be set. To be valid, the exact
+voltage must be available from the system.  \fBPC\fR Cards indicate multiple
+\fBVcc\fR voltage capability in their \fBCIS\fR via the
+\fBCISTPL_CFTABLE_ENTRY\fR tuple. After card insertion, Card Services
+processes the \fBCIS\fR, and when multiple \fBVcc\fR voltage capability is
+indicated, Card Services will allow the client to apply \fBVcc\fR voltage
+levels which are contrary to the \fBVS\fR pin decoding without requiring the
+client to set \fBCONF_VSOVERRIDE.\fR
 .RE
 
 .sp
@@ -139,7 +186,8 @@ These fields all represent voltages expressed in tenths of a volt. Values from z
 .ad
 .sp .6
 .RS 4n
-This field is bit-mapped. It indicates how the socket should be configured. The following bits are defined:
+This field is bit-mapped. It indicates how the socket should be configured.
+The following bits are defined:
 .sp
 .ne 2
 .mk
@@ -148,7 +196,7 @@ This field is bit-mapped. It indicates how the socket should be configured. The 
 .ad
 .sp .6
 .RS 4n
-Memory only interface. 
+Memory only interface.
 .RE
 
 .sp
@@ -159,7 +207,7 @@ Memory only interface.
 .ad
 .sp .6
 .RS 4n
-Memory and I/O interface. 
+Memory and I/O interface.
 .RE
 
 .RE
@@ -172,7 +220,8 @@ Memory and I/O interface.
 .ad
 .sp .6
 .RS 4n
-This field is the offset in bytes from the beginning of attribute memory of the configuration registers. 
+This field is the offset in bytes from the beginning of attribute memory of
+the configuration registers.
 .RE
 
 .sp
@@ -183,7 +232,9 @@ This field is the offset in bytes from the beginning of attribute memory of the 
 .ad
 .sp .6
 .RS 4n
-This field identifies which of the configuration registers are present. If present, the corresponding bit is set. This field is bit-mapped as follows:
+This field identifies which of the configuration registers are present. If
+present, the corresponding bit is set. This field is bit-mapped as
+follows:
 .sp
 .ne 2
 .mk
@@ -191,7 +242,7 @@ This field identifies which of the configuration registers are present. If prese
 \fB\fBCONFIG_OPTION_REG_PRESENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 Configuration Option Register (COR) present
 .RE
 
@@ -202,7 +253,7 @@ Configuration Option Register (COR) present
 \fB\fBCONFIG_STATUS_REG_PRESENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 Configuration Status Register (CCSR) present
 .RE
 
@@ -213,7 +264,7 @@ Configuration Status Register (CCSR) present
 \fB\fBCONFIG_PINREPL_REG_PRESENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 Pin Replacement Register (PRR) present
 .RE
 
@@ -224,7 +275,7 @@ Pin Replacement Register (PRR) present
 \fB\fBCONFIG_COPY_REG_PRESENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 Socket and Copy Register (SCR) present
 .RE
 
@@ -235,7 +286,7 @@ Socket and Copy Register (SCR) present
 \fB\fBCONFIG_ESR_REG_PRESENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 Extended Status Register (ESR) present
 .RE
 
@@ -249,9 +300,16 @@ Extended Status Register (ESR) present
 .ad
 .sp .6
 .RS 4n
-These fields represent the initial values that should be written to those registers if they are present, as indicated by the \fBPresent\fR field.
+These fields represent the initial values that should be written to those
+registers if they are present, as indicated by the \fBPresent\fR field.
 .sp
-The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC\fR Card's \fBPRR\fR (Pin Replacement Register) are valid. Only those bits which are set are considered valid. This affects how status is returned by the \fBcsx_GetStatus\fR(9F) function. If a particular signal is valid in the \fBPRR\fR, both the \fImask\fR (\fBSTATUS\fR) bit and the \fIchange\fR (\fBEVENT\fR) bit must be set in the \fBPin\fR field. The following \fBPRR\fR bit definitions are provided for client use:
+The \fBPin\fR field is also used to inform Card Services which pins in the
+\fBPC\fR Card's \fBPRR\fR (Pin Replacement Register) are valid. Only those
+bits which are set are considered valid. This affects how status is returned
+by the \fBcsx_GetStatus\fR(9F) function. If a particular signal is valid in
+the \fBPRR\fR, both the \fImask\fR (\fBSTATUS\fR) bit and the \fIchange\fR
+(\fBEVENT\fR) bit must be set in the \fBPin\fR field. The following
+\fBPRR\fR bit definitions are provided for client use:
 .sp
 .ne 2
 .mk
@@ -259,7 +317,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_WP_STATUS\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBWRITE PROTECT\fR mask
 .RE
 
@@ -270,7 +328,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_READY_STATUS\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBREADY\fR mask
 .RE
 
@@ -281,7 +339,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_BVD2_STATUS\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBBVD2\fR mask
 .RE
 
@@ -292,7 +350,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_BVD1_STATUS\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBBVD1\fR mask
 .RE
 
@@ -303,7 +361,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_WP_EVENT\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBWRITE PROTECT\fR changed
 .RE
 
@@ -314,7 +372,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_READY_EVENT\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBREADY\fR changed
 .RE
 
@@ -325,7 +383,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_BVD2_EVENT\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBBVD2\fR changed
 .RE
 
@@ -336,7 +394,7 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 \fB\fBPRR_BVD1_EVENT\fR\fR
 .ad
 .RS 20n
-.rt  
+.rt
 \fBBVD1\fR changed
 .RE
 
@@ -350,7 +408,11 @@ The \fBPin\fR field is also used to inform Card Services which pins in the \fBPC
 .ad
 .sp .6
 .RS 4n
-This field is the value written to the \fBCOR\fR (Configuration Option Register) for the configuration index required by the \fBPC\fR Card. Only the least significant six bits of the \fBConfigIndex\fR field are significant; the upper two (2) bits are ignored. The interrupt type in the \fBCOR\fR is always set to \fIlevel\fR mode by Card Services.
+This field is the value written to the \fBCOR\fR (Configuration Option
+Register) for the configuration index required by the \fBPC\fR Card. Only
+the least significant six bits of the \fBConfigIndex\fR field are
+significant; the upper two (2) bits are ignored. The interrupt type in the
+\fBCOR\fR is always set to \fIlevel\fR mode by Card Services.
 .RE
 
 .SH RETURN VALUES
@@ -361,7 +423,7 @@ This field is the value written to the \fBCOR\fR (Configuration Option Register)
 \fB\fBCS_SUCCESS\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Successful operation.
 .RE
 
@@ -372,7 +434,7 @@ Successful operation.
 \fB\fBCS_BAD_HANDLE\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Client handle is invalid or \fBcsx_RequestConfiguration()\fR not done.
 .RE
 
@@ -383,7 +445,7 @@ Client handle is invalid or \fBcsx_RequestConfiguration()\fR not done.
 \fB\fBCS_BAD_SOCKET\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Error in getting or setting socket hardware parameters.
 .RE
 
@@ -394,7 +456,7 @@ Error in getting or setting socket hardware parameters.
 \fB\fBCS_BAD_VCC\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Requested \fBVcc\fR is not available on socket.
 .RE
 
@@ -405,7 +467,7 @@ Requested \fBVcc\fR is not available on socket.
 \fB\fBCS_BAD_VPP\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 Requested \fBVpp\fR is not available on socket.
 .RE
 
@@ -416,7 +478,7 @@ Requested \fBVpp\fR is not available on socket.
 \fB\fBCS_NO_CARD\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 No \fBPC\fR Card in socket.
 .RE
 
@@ -427,7 +489,7 @@ No \fBPC\fR Card in socket.
 \fB\fBCS_BAD_TYPE\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 \fBI/O\fR and memory interface not supported on socket.
 .RE
 
@@ -438,7 +500,7 @@ No \fBPC\fR Card in socket.
 \fB\fBCS_CONFIGURATION_LOCKED\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 \fBcsx_RequestConfiguration()\fR already done.
 .RE
 
@@ -449,7 +511,7 @@ No \fBPC\fR Card in socket.
 \fB\fBCS_UNSUPPORTED_FUNCTION\fR\fR
 .ad
 .RS 27n
-.rt  
+.rt
 No \fBPCMCIA\fR hardware installed.
 .RE
 
@@ -460,7 +522,9 @@ This function may be called from user or kernel context.
 .SH SEE ALSO
 .sp
 .LP
-\fBcsx_AccessConfigurationRegister\fR(9F), \fBcsx_GetStatus\fR(9F), \fBcsx_RegisterClient\fR(9F), \fBcsx_ReleaseConfiguration\fR(9F), \fBcsx_RequestIO\fR(9F), \fBcsx_RequestIRQ\fR(9F) 
+\fBcsx_AccessConfigurationRegister\fR(9F), \fBcsx_GetStatus\fR(9F),
+\fBcsx_RegisterClient\fR(9F), \fBcsx_ReleaseConfiguration\fR(9F),
+\fBcsx_RequestIO\fR(9F), \fBcsx_RequestIRQ\fR(9F)
 .sp
 .LP
 \fIPC Card 95 Standard\fR, PCMCIA/JEIDA

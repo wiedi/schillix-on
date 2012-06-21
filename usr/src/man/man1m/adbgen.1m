@@ -1,8 +1,23 @@
 '\" te
-.\"  Copyright (c) 1998 Sun Microsystems, Inc. All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" Copyright (c) 1998 Sun Microsystems, Inc. All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH adbgen 1M "20 Feb 1998" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 adbgen \- generate adb script
@@ -15,24 +30,45 @@ adbgen \- generate adb script
 .SH DESCRIPTION
 .sp
 .LP
-\fBadbgen\fR makes it possible to write \fBadb\fR(1) scripts that do not contain hard-coded dependencies on structure member offsets. The input to \fBadbgen\fR is a file named \fIfilename\fR\fB\&.adb\fR that contains header information, then a null line, then the name of a structure, and finally an \fBadb\fR script. \fBadbgen\fR only deals with one structure per file; all member names are assumed to be in this structure. The output of \fBadbgen\fR is an \fBadb\fR script in \fIfilename\fR. \fBadbgen\fR operates by generating a C program which determines structure member offsets and sizes, which in turn generate the \fBadb\fR script.
+\fBadbgen\fR makes it possible to write \fBadb\fR(1) scripts that do not
+contain hard-coded dependencies on structure member offsets. The input to
+\fBadbgen\fR is a file named \fIfilename\fR\fB\&.adb\fR that contains header
+information, then a null line, then the name of a structure, and finally an
+\fBadb\fR script. \fBadbgen\fR only deals with one structure per file; all
+member names are assumed to be in this structure. The output of \fBadbgen\fR
+is an \fBadb\fR script in \fIfilename\fR. \fBadbgen\fR operates by
+generating a C program which determines structure member offsets and sizes,
+which in turn generate the \fBadb\fR script.
 .sp
 .LP
-The header lines, up to the null line, are copied verbatim into the generated C program. Typically, these are \fB#include\fR statements, which include the headers containing the relevant structure declarations.
+The header lines, up to the null line, are copied verbatim into the
+generated C program. Typically, these are \fB#include\fR statements, which
+include the headers containing the relevant structure declarations.
 .sp
 .LP
-The \fBadb\fR script part may contain any valid \fBadb\fR commands (see \fBadb\fR(1)), and may also contain \fBadbgen\fR requests, each enclosed in braces (\fB\|{\|}\fR\|). Request types are:
+The \fBadb\fR script part may contain any valid \fBadb\fR commands (see
+\fBadb\fR(1)), and may also contain \fBadbgen\fR requests, each enclosed in
+braces (\fB\|{\|}\fR\|). Request types are:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Print a structure member. The request form is \fB{\fR\fImember\fR\fB,\fR\fI\|format\fR\fB}.\fR \fImember\fR is a member name of the \fIstructure\fR given earlier, and \fBformat\fR is any valid \fBadb\fR format request or any of the \fBadbgen\fR format specifiers (such as \fB{POINTER}\fR) listed below. For example, to print the \fBp_pid\fR field of the \fIproc\fR structure as a decimal number, you would write \fB{p_pid,d}\fR.
+Print a structure member. The request form is
+\fB{\fR\fImember\fR\fB,\fR\fI\|format\fR\fB}.\fR \fImember\fR is a member
+name of the \fIstructure\fR given earlier, and \fBformat\fR is any valid
+\fBadb\fR format request or any of the \fBadbgen\fR format specifiers (such
+as \fB{POINTER}\fR) listed below. For example, to print the \fBp_pid\fR
+field of the \fIproc\fR structure as a decimal number, you would write
+\fB{p_pid,d}\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Print the appropriate \fBadb\fR format character for the given \fBadbgen\fR format specifier. This action takes the data model into consideration. The request form is \fB{\fR\fIformat specifier\fR\fB}.\fR The valid \fBadbgen\fR format specifiers are: 
+Print the appropriate \fBadb\fR format character for the given \fBadbgen\fR
+format specifier. This action takes the data model into consideration. The
+request form is \fB{\fR\fIformat specifier\fR\fB}.\fR The valid \fBadbgen\fR
+format specifiers are:
 .RS
 
 .sp
@@ -42,7 +78,7 @@ Print the appropriate \fBadb\fR format character for the given \fBadbgen\fR form
 \fB\fB{POINTER}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 pointer value in hexadecimal
 .RE
 
@@ -53,7 +89,7 @@ pointer value in hexadecimal
 \fB\fB{LONGDEC}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 long value in decimal
 .RE
 
@@ -64,7 +100,7 @@ long value in decimal
 \fB\fB{ULONGDEC}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 unsigned long value in decimal
 .RE
 
@@ -75,7 +111,7 @@ unsigned long value in decimal
 \fB\fB{ULONGHEX}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 unsigned long value in hexadecimal
 .RE
 
@@ -86,7 +122,7 @@ unsigned long value in hexadecimal
 \fB\fB{LONGOCT}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 long value in octal
 .RE
 
@@ -97,7 +133,7 @@ long value in octal
 \fB\fB{ULONGOCT}\fR\fR
 .ad
 .RS 14n
-.rt  
+.rt
 unsigned long value in octal
 .RE
 
@@ -108,35 +144,59 @@ unsigned long value in octal
 .TP
 .ie t \(bu
 .el o
-Reference a structure member. The request form is \fB{*\fR\fImember\fR\fB,\fR\fI\|base\fR\fB}.\fR \fImember\fR is the member name whose value is desired, and \fIbase\fR is an \fBadb\fR register name which contains the base address of the structure. For example, to get the \fBp_pid\fR field of the \fIproc\fR structure, you would get the \fIproc\fR structure address in an \fBadb\fR register, for example \fB<f\fR, and write \fB{*p_pid,<f}\fR.
+Reference a structure member. The request form is
+\fB{*\fR\fImember\fR\fB,\fR\fI\|base\fR\fB}.\fR \fImember\fR is the member
+name whose value is desired, and \fIbase\fR is an \fBadb\fR register name
+which contains the base address of the structure. For example, to get the
+\fBp_pid\fR field of the \fIproc\fR structure, you would get the \fIproc\fR
+structure address in an \fBadb\fR register, for example \fB<f\fR, and write
+\fB{*p_pid,<f}\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Tell \fBadbgen\fR that the offset is valid. The request form is \fB{OFFSETOK}\fR. This is useful after invoking another \fBadb\fR script which moves the \fBadb\fR \fIdot\fR.
+Tell \fBadbgen\fR that the offset is valid. The request form is
+\fB{OFFSETOK}\fR. This is useful after invoking another \fBadb\fR script
+which moves the \fBadb\fR \fIdot\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Get the size of the \fIstructure\fR. The request form is \fB{SIZEOF}\fR. \fBadbgen\fR replaces this request with the size of the structure. This is useful in incrementing a pointer to step through an array of structures.
+Get the size of the \fIstructure\fR. The request form is \fB{SIZEOF}\fR.
+\fBadbgen\fR replaces this request with the size of the structure. This is
+useful in incrementing a pointer to step through an array of structures.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Calculate an arbitrary C expression. The request form is \fB{EXPR,\fR\fI\|expression\fR\fB}.\fR \fBadbgen\fR replaces this request with the value of the expression. This is useful when more than one structure is involved in the script.
+Calculate an arbitrary C expression. The request form is
+\fB{EXPR,\fR\fI\|expression\fR\fB}.\fR \fBadbgen\fR replaces this request
+with the value of the expression. This is useful when more than one
+structure is involved in the script.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Get the offset to the end of the structure. The request form is \fB{END}\fR. This is useful at the end of the structure to get \fBadb\fR to align the \fIdot\fR for printing the next structure member. 
+Get the offset to the end of the structure. The request form is
+\fB{END}\fR. This is useful at the end of the structure to get \fBadb\fR to
+align the \fIdot\fR for printing the next structure member.
 .RE
 .sp
 .LP
-\fBadbgen\fR keeps track of the movement of the \fBadb\fR \fIdot\fR and generates \fBadb\fR code to move forward or backward as necessary before printing any structure member in a script. \fBadbgen\fR's model of the behavior of \fBadb\fR's \fIdot\fR is simple: it is assumed that the first line of the script is of the form \fIstruct_address\fR/\fIadb text\fR and that subsequent lines are of the form +/\fIadb text\fR. The \fBadb\fR \fIdot\fR then moves in a sane fashion. \fBadbgen\fR does not check the script to ensure that these limitations are met. \fBadbgen\fR also checks the size of the structure member against the size of the \fBadb\fR format code and warns if they are not equal.
+\fBadbgen\fR keeps track of the movement of the \fBadb\fR \fIdot\fR and
+generates \fBadb\fR code to move forward or backward as necessary before
+printing any structure member in a script. \fBadbgen\fR's model of the
+behavior of \fBadb\fR's \fIdot\fR is simple: it is assumed that the first
+line of the script is of the form \fIstruct_address\fR/\fIadb text\fR and
+that subsequent lines are of the form +/\fIadb text\fR. The \fBadb\fR
+\fIdot\fR then moves in a sane fashion. \fBadbgen\fR does not check the
+script to ensure that these limitations are met. \fBadbgen\fR also checks
+the size of the structure member against the size of the \fBadb\fR format
+code and warns if they are not equal.
 .SH OPTIONS
 .sp
 .LP
@@ -148,8 +208,12 @@ The following option is supported:
 \fB\fB-m\fR \fImodel\fR\fR
 .ad
 .RS 12n
-.rt  
-Specifies the data type model to be used by \fBadbgen\fR for the macro. This affects the outcome of the \fB{\fR\fIformat specifier\fR\fB}\fR requests described under \fBDESCRIPTION\fR and the offsets and sizes of data types. \fImodel\fR can be \fBilp32\fR or \fBlp64\fR. If the \fB-m\fR option is not given, the data type model defaults to \fBilp32\fR.
+.rt
+Specifies the data type model to be used by \fBadbgen\fR for the macro.
+This affects the outcome of the \fB{\fR\fIformat specifier\fR\fB}\fR
+requests described under \fBDESCRIPTION\fR and the offsets and sizes of data
+types. \fImodel\fR can be \fBilp32\fR or \fBlp64\fR. If the \fB-m\fR option
+is not given, the data type model defaults to \fBilp32\fR.
 .RE
 
 .SH OPERANDS
@@ -163,8 +227,9 @@ The following operand is supported:
 \fB\fIfilename\fR\fB\&.adb\fR\fR
 .ad
 .RS 18n
-.rt  
-Input file that contains header information, followed by a null line, the name of the structure, and finally an \fBadb\fR script.
+.rt
+Input file that contains header information, followed by a null line, the
+name of the structure, and finally an \fBadb\fR script.
 .RE
 
 .SH EXAMPLES
@@ -188,7 +253,8 @@ struct x {
 
 .sp
 .LP
-then , an \fBadbgen\fR file (call it \fBscript.adb\fR) to print the file \fBx.h\fR would be:
+then , an \fBadbgen\fR file (call it \fBscript.adb\fR) to print the file
+\fBx.h\fR would be:
 
 .sp
 .in +2
@@ -226,7 +292,8 @@ the output file \fBscript\fR contains:
 
 .sp
 .LP
-For a macro generated for a 64-bit program using the \fBlp64\fR data model as follows,
+For a macro generated for a 64-bit program using the \fBlp64\fR data model
+as follows,
 
 .sp
 .in +2
@@ -281,7 +348,8 @@ platform-specific \fBadb\fR scripts for debugging the 32-bit kernel
 .ad
 .sp .6
 .RS 4n
-platform-specific \fBadb\fR scripts for debugging the 64-bit SPARC V9 kernel
+platform-specific \fBadb\fR scripts for debugging the 64-bit SPARC V9
+kernel
 .RE
 
 .sp
@@ -315,8 +383,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -330,15 +398,22 @@ AvailabilitySUNWesu
 .SH DIAGNOSTICS
 .sp
 .LP
-Warnings are given about structure member sizes not equal to \fBadb\fR format items and about badly formatted requests. The C compiler complains if a structure member that does not exist is referenced. It also complains about an ampersand before array names; these complaints may be ignored.
+Warnings are given about structure member sizes not equal to \fBadb\fR
+format items and about badly formatted requests. The C compiler complains if
+a structure member that does not exist is referenced. It also complains
+about an ampersand before array names; these complaints may be ignored.
 .SH NOTES
 .sp
 .LP
-\fIplatform-name\fR can be found using the \fB-i\fR option of \fBuname\fR(1).
+\fIplatform-name\fR can be found using the \fB-i\fR option of
+\fBuname\fR(1).
 .SH BUGS
 .sp
 .LP
-\fBadb\fR syntax is ugly; there should be a higher level interface for generating scripts.
+\fBadb\fR syntax is ugly; there should be a higher level interface for
+generating scripts.
 .sp
 .LP
-Structure members which are bit fields cannot be handled because C will not give the address of a bit field. The address is needed to determine the offset.
+Structure members which are bit fields cannot be handled because C will not
+give the address of a bit field. The address is needed to determine the
+offset.

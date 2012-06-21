@@ -1,0 +1,66 @@
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
+#
+
+#
+# Copyright 2012 Jörg Schilling.  All rights reserved.
+#
+
+#
+# Definitions common to manual pages.
+#
+# include global definitions; SRC should be defined in the shell.
+# SRC is needed until RFE 1026993 is implemented.
+
+include $(SRC)/Makefile.master
+
+FILEMODE=	0444
+
+ROOTMAN=		$(ROOT)/usr/share/man
+
+#
+# MANSECT is set by the Makefiles in the subdirectiries.
+# MANSECT is something like: "3head".
+#
+MANDIR=			$(ROOTMAN)/man$(MANSECT)
+ROOTMANFILES=		$(MANALL:%=$(MANDIR)/%)
+
+MANALL=			$(MANFILES) $(MANSO)
+
+#
+# Rule to install man pages
+#
+$(MANDIR)/%: %
+	$(INS.file)
+
+#
+# Rule to create aliases for man pages via the .so troff command
+#
+$(MANSO):
+	$(RM) $@; $(ECHO) '.so $(SOFILE)' > $@
+
+CLOBBERFILES= $(MANSO)
+
+all:
+
+install:
+
+clean:
+
+clobber:
+	$(RM) $(CLOBBERFILES)
+
+lint:
+
+.KEEP_STATE:
+
+.PARALLEL:
+
+FRC:

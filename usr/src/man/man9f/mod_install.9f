@@ -1,11 +1,27 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc., All Rights Removed
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH mod_install 9F "8 Jul 2008" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
-mod_install, mod_remove, mod_info, mod_modname \- add, remove or query a loadable module
+mod_install, mod_remove, mod_info, mod_modname \- add, remove or query a
+loadable module
 .SH SYNOPSIS
 .LP
 .nf
@@ -23,7 +39,7 @@ mod_install, mod_remove, mod_info, mod_modname \- add, remove or query a loadabl
 
 .LP
 .nf
-\fBint\fR \fBmod_info\fR(\fBstruct modlinkage *\fR\fImodlinkage\fR, 
+\fBint\fR \fBmod_info\fR(\fBstruct modlinkage *\fR\fImodlinkage\fR,
      \fBstruct modinfo *\fR\fImodinfo\fR);
 .fi
 
@@ -44,8 +60,9 @@ Solaris DDI specific (Solaris DDI).
 \fB\fImodlinkage\fR\fR
 .ad
 .RS 14n
-.rt  
-Pointer to the loadable module's \fBmodlinkage\fR structure which describes what type(s) of module elements are included in this loadable module.
+.rt
+Pointer to the loadable module's \fBmodlinkage\fR structure which describes
+what type(s) of module elements are included in this loadable module.
 .RE
 
 .sp
@@ -55,17 +72,19 @@ Pointer to the loadable module's \fBmodlinkage\fR structure which describes what
 \fB\fImodinfo\fR\fR
 .ad
 .RS 14n
-.rt  
-Pointer to the \fBmodinfo\fR structure passed to \fB_info\fR(9E). 
+.rt
+Pointer to the \fBmodinfo\fR structure passed to \fB_info\fR(9E).
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-\fBmod_install()\fR must be called from a module's \fB_init\fR(9E) routine.
+\fBmod_install()\fR must be called from a module's \fB_init\fR(9E)
+routine.
 .sp
 .LP
-\fBmod_remove()\fR must be called from a module's \fB_fini\fR(9E) routine.
+\fBmod_remove()\fR must be called from a module's \fB_fini\fR(9E)
+routine.
 .sp
 .LP
 \fBmod_info()\fR must be called from a module's \fB_info\fR(9E) routine.
@@ -74,23 +93,39 @@ Pointer to the \fBmodinfo\fR structure passed to \fB_info\fR(9E).
 \fBmod_modname()\fR can be called from any module routine.
 .sp
 .LP
-When \fB_init\fR(9E) is executing, its call to \fBmod_install()\fR enables other threads to call \fBattach\fR(9E) even prior to \fBmod_install()\fR returning and \fB_init\fR(9E) completion. From a programming standpoint this means that all \fB_init\fR(9E) initialization must occur prior to \fB_init\fR(9E) calling \fBmod_install()\fR. If \fBmod_install()\fR fails (non-zero return value), any initialization must be undone. 
+When \fB_init\fR(9E) is executing, its call to \fBmod_install()\fR enables
+other threads to call \fBattach\fR(9E) even prior to \fBmod_install()\fR
+returning and \fB_init\fR(9E) completion. From a programming standpoint this
+means that all \fB_init\fR(9E) initialization must occur prior to
+\fB_init\fR(9E) calling \fBmod_install()\fR. If \fBmod_install()\fR fails
+(non-zero return value), any initialization must be undone.
 .sp
 .LP
-When \fB_fini\fR(9E) is executing, another thread may call \fBattach\fR(9E) prior to \fB_fini\fR(9E) calling \fBmod_remove()\fR. If this occurs, the \fBmod_remove()\fR fails (non-zero return). From a programming standpoint, this means that \fB_init\fR(9E) initilizations should only be undone after a successful return from \fBmod_remove()\fR.
+When \fB_fini\fR(9E) is executing, another thread may call \fBattach\fR(9E)
+prior to \fB_fini\fR(9E) calling \fBmod_remove()\fR. If this occurs, the
+\fBmod_remove()\fR fails (non-zero return). From a programming standpoint,
+this means that \fB_init\fR(9E) initilizations should only be undone after a
+successful return from \fBmod_remove()\fR.
 .sp
 .LP
-To query the name of a module, use \fBmod_modname()\fR. If the module is a driver, the module name is the same as the driver name. This function can be used to avoid compiled-in knowledge of the module name, and is of particular use when \fB_init\fR(9E) needs to call a function like \fBkstat_create\fR(9F).
+To query the name of a module, use \fBmod_modname()\fR. If the module is a
+driver, the module name is the same as the driver name. This function can be
+used to avoid compiled-in knowledge of the module name, and is of particular
+use when \fB_init\fR(9E) needs to call a function like
+\fBkstat_create\fR(9F).
 .SH RETURN VALUES
 .sp
 .LP
-\fBmod_install()\fR and \fBmod_remove()\fR return \fB0\fR upon success and non-zero on failure. 
+\fBmod_install()\fR and \fBmod_remove()\fR return \fB0\fR upon success and
+non-zero on failure.
 .sp
 .LP
-\fBmod_info()\fR returns a non-zero value on success and  \fB0\fR upon failure.
+\fBmod_info()\fR returns a non-zero value on success and  \fB0\fR upon
+failure.
 .sp
 .LP
-\fBmod_modname()\fR returns the name of the module. The returned name remains valid as long as the module remains loaded.
+\fBmod_modname()\fR returns the name of the module. The returned name
+remains valid as long as the module remains loaded.
 .SH EXAMPLES
 .sp
 .LP
@@ -98,7 +133,8 @@ See \fB_init\fR(9E) for an example that uses these functions.
 .SH SEE ALSO
 .sp
 .LP
-\fB_fini\fR(9E), \fB_info\fR(9E), \fB_init\fR(9E), \fBkstat_create\fR(9F), \fBmodldrv\fR(9S), \fBmodlinkage\fR(9S), \fBmodlstrmod\fR(9S) 
+\fB_fini\fR(9E), \fB_info\fR(9E), \fB_init\fR(9E), \fBkstat_create\fR(9F),
+\fBmodldrv\fR(9S), \fBmodlinkage\fR(9S), \fBmodlstrmod\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR 
+\fIWriting Device Drivers\fR

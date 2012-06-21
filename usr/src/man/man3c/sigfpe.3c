@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 1996, Sun Microsystems, Inc.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH sigfpe 3C "4 May 2004" "SunOS 5.11" "Standard C Library Functions"
 .SH NAME
 sigfpe \- signal handling for specific SIGFPE codes
@@ -19,15 +34,23 @@ sigfpe \- signal handling for specific SIGFPE codes
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsigfpe()\fR function allows signal handling to be specified for particular \fBSIGFPE\fR codes.  A call to \fBsigfpe()\fR defines a new handler \fIhdl\fR for a particular \fBSIGFPE\fR \fIcode\fR and returns the old handler as the value of the function \fBsigfpe()\fR. Normally handlers are specified as pointers to functions; the special cases \fBSIGFPE_IGNORE\fR, \fBSIGFPE_ABORT\fR, and \fBSIGFPE_DEFAULT\fR allow ignoring, dumping core using \fBabort\fR(3C), or default handling respectively. Default handling is to dump core using \fBabort\fR(3C).
+The \fBsigfpe()\fR function allows signal handling to be specified for
+particular \fBSIGFPE\fR codes.  A call to \fBsigfpe()\fR defines a new
+handler \fIhdl\fR for a particular \fBSIGFPE\fR \fIcode\fR and returns the
+old handler as the value of the function \fBsigfpe()\fR. Normally handlers
+are specified as pointers to functions; the special cases
+\fBSIGFPE_IGNORE\fR, \fBSIGFPE_ABORT\fR, and \fBSIGFPE_DEFAULT\fR allow
+ignoring, dumping core using \fBabort\fR(3C), or default handling
+respectively. Default handling is to dump core using \fBabort\fR(3C).
 .sp
 .LP
-The \fIcode\fR argument is usually one of the five \fBIEEE\|754-related\fR \fBSIGFPE\fR codes:
+The \fIcode\fR argument is usually one of the five \fBIEEE\|754-related\fR
+\fBSIGFPE\fR codes:
 .sp
 .in +2
 .nf
 FPE_FLTRES   fp_inexact \(mi floating-point inexact result
-FPE_FLTDIV   fp_division \(mi floating-point division by zero        
+FPE_FLTDIV   fp_division \(mi floating-point division by zero
 FPE_FLTUND   fp_underflow \(mi floating-point underflow
 FPE_FLTOVF   fp_overflow \(mi floating-point overflow
 FPE_FLTINV   fp_invalid \(mi floating-point invalid operation
@@ -36,7 +59,8 @@ FPE_FLTINV   fp_invalid \(mi floating-point invalid operation
 
 .sp
 .LP
-Three steps are required to intercept an \fBIEEE\|754-related\fR \fBSIGFPE\fR code with \fBsigfpe()\fR:
+Three steps are required to intercept an \fBIEEE\|754-related\fR
+\fBSIGFPE\fR code with \fBsigfpe()\fR:
 .RS +4
 .TP
 1.
@@ -45,19 +69,26 @@ Set up a handler with \fBsigfpe()\fR.
 .RS +4
 .TP
 2.
-Enable the relevant \fBIEEE\|754\fR trapping capability in the hardware, perhaps by using assembly-language instructions.
+Enable the relevant \fBIEEE\|754\fR trapping capability in the hardware,
+perhaps by using assembly-language instructions.
 .RE
 .RS +4
 .TP
 3.
-Perform a floating-point operation that generates the intended \fBIEEE\|754\fR exception.
+Perform a floating-point operation that generates the intended
+\fBIEEE\|754\fR exception.
 .RE
 .sp
 .LP
-The \fBsigfpe()\fR function never changes floating-point hardware mode bits affecting \fBIEEE\|754\fR trapping.  No \fBIEEE\|754-related\fR \fBSIGFPE\fR signals will be generated unless those hardware mode bits are enabled.
+The \fBsigfpe()\fR function never changes floating-point hardware mode bits
+affecting \fBIEEE\|754\fR trapping.  No \fBIEEE\|754-related\fR \fBSIGFPE\fR
+signals will be generated unless those hardware mode bits are enabled.
 .sp
 .LP
-\fBSIGFPE\fR signals can be handled using \fBsigfpe()\fR, \fBsigaction\fR(2) or \fBsignal\fR(3C). In a particular program, to avoid confusion, use only one of these interfaces to handle \fBSIGFPE\fR signals.
+\fBSIGFPE\fR signals can be handled using \fBsigfpe()\fR,
+\fBsigaction\fR(2) or \fBsignal\fR(3C). In a particular program, to avoid
+confusion, use only one of these interfaces to handle \fBSIGFPE\fR
+signals.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRExample Of A User-Specified Signal Handler
@@ -85,7 +116,7 @@ sample_handler(int sig, siginfo_t *sip, ucontext_t *uap) {
 	case FPE_FLTOVF: label = "overflow"; break;
 	default: label = "???"; break;
 	}
-	fprintf(stderr, 
+	fprintf(stderr,
         "FP exception %s (0x%x) occurred at address %p.\en",
         label, sip\(mi>si_code, (void *) sip\(mi>si_addr);
 	abort();
@@ -95,7 +126,7 @@ sample_handler(int sig, siginfo_t *sip, ucontext_t *uap) {
 
 .sp
 .LP
-and it might be set up like this: 
+and it might be set up like this:
 
 .sp
 .in +2
@@ -156,8 +187,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -167,8 +198,10 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBsigaction\fR(2), \fBabort\fR(3C), \fBsignal\fR(3C), \fBattributes\fR(5), \fBfloatingpoint.h\fR(3HEAD)
+\fBsigaction\fR(2), \fBabort\fR(3C), \fBsignal\fR(3C), \fBattributes\fR(5),
+\fBfloatingpoint.h\fR(3HEAD)
 .SH DIAGNOSTICS
 .sp
 .LP
-The \fBsigfpe()\fR function returns (void(*)())-1 if \fIcode\fR is not zero or a defined \fBSIGFPE\fR code.
+The \fBsigfpe()\fR function returns (void(*)())-1 if \fIcode\fR is not zero
+or a defined \fBSIGFPE\fR code.

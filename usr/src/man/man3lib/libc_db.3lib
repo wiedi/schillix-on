@@ -1,8 +1,23 @@
 '\" te
 .\" Copyright (c) 2004, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH libc_db 3LIB "24 Mar 2004" "SunOS 5.11" "Interface Libraries"
 .SH NAME
 libc_db \- threads debugging library
@@ -17,16 +32,35 @@ cc [ \fIflag\fR ... ] \fIfile\fR ... \fB-lc_db\fR [ \fIlibrary \fR... ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBlibc_db\fR library provides support for monitoring and manipulating threads-related aspects of a multithreaded program. There are at least two processes involved,  the controlling process and one or more target processes. The controlling process is the \fBlibc_db\fR client, which links with \fBlibc_db\fR and uses \fBlibc_db\fR to inspect or modify threads-related aspects of one or more target processes. The target processes must be multithreaded processes that use \fBlibc\fR. The controlling process mignt or might not be multithreaded itself.
+The \fBlibc_db\fR library provides support for monitoring and manipulating
+threads-related aspects of a multithreaded program. There are at least two
+processes involved,  the controlling process and one or more target
+processes. The controlling process is the \fBlibc_db\fR client, which links
+with \fBlibc_db\fR and uses \fBlibc_db\fR to inspect or modify
+threads-related aspects of one or more target processes. The target
+processes must be multithreaded processes that use \fBlibc\fR. The
+controlling process mignt or might not be multithreaded itself.
 .sp
 .LP
-The most commonly anticipated use for \fBlibc_db\fR is that the controlling process will be a debugger for a multithreaded program, hence the "db" in \fBlibc_db\fR.
+The most commonly anticipated use for \fBlibc_db\fR is that the controlling
+process will be a debugger for a multithreaded program, hence the "db" in
+\fBlibc_db\fR.
 .sp
 .LP
-The \fBlibc_db\fR library is dependent on the internal implementation details of \fBlibc\fR. It is a "friend" of \fBlibc\fR in the C++ sense, which is precisely the "value added" by \fBlibc_db\fR. It encapsulates the knowledge of \fBlibc\fR internals that a debugger needs to manipulate the threads-related state of a target process.
+The \fBlibc_db\fR library is dependent on the internal implementation
+details of \fBlibc\fR. It is a "friend" of \fBlibc\fR in the C++ sense,
+which is precisely the "value added" by \fBlibc_db\fR. It encapsulates the
+knowledge of \fBlibc\fR internals that a debugger needs to manipulate the
+threads-related state of a target process.
 .sp
 .LP
-To be able to inspect and manipulate target processes, \fBlibc_db\fR makes use of certain process control primitives that must be  provided by the process using \fBlibc_db\fR. The imported interfaces are defined in \fBproc_service\fR(3PROC). In other words, the controlling process is linked with \fBlibc_db\fR and calls routines in \fBlibc_db\fR. In turn, \fBlibc_db\fR calls certain routines that it expects the controlling process to provide.  These process control  primitives allow \fBlibc_db\fR to:
+To be able to inspect and manipulate target processes, \fBlibc_db\fR makes
+use of certain process control primitives that must be  provided by the
+process using \fBlibc_db\fR. The imported interfaces are defined in
+\fBproc_service\fR(3PROC). In other words, the controlling process is linked
+with \fBlibc_db\fR and calls routines in \fBlibc_db\fR. In turn,
+\fBlibc_db\fR calls certain routines that it expects the controlling process
+to provide.  These process control  primitives allow \fBlibc_db\fR to:
 .RS +4
 .TP
 .ie t \(bu
@@ -37,7 +71,8 @@ Look up symbols in a target process.
 .TP
 .ie t \(bu
 .el o
-Stop and continue individual lightweight processes ( LWPs) within a target process.
+Stop and continue individual lightweight processes ( LWPs) within a target
+process.
 .RE
 .RS +4
 .TP
@@ -53,24 +88,40 @@ Read and write memory and registers in a target process.
 .RE
 .sp
 .LP
-Initially, a controlling process obtains a handle for a target process. Through that handle it can then obtain handles for the component objects of the target process, its threads, its synchronization objects, and its thread-specific-data keys.
+Initially, a controlling process obtains a handle for a target process.
+Through that handle it can then obtain handles for the component objects of
+the target process, its threads, its synchronization objects, and its
+thread-specific-data keys.
 .sp
 .LP
-When \fBlibc_db\fR needs to return sets of handles to the controlling process, for example, when returning handles for all the threads in a target process, it uses an iterator function. An iterator function calls back a client-specified function once for each handle to be returned, passing one handle back on each call to the callback function.  The calling function also passes another parameter to the iterator function,  which the iterator function passes on to the callback function.  This makes it easy to build a linked list of thread handles for a particular target process. The additional parameter is the head of the linked list, and the callback function simply inserts the current handle into the linked list.
+When \fBlibc_db\fR needs to return sets of handles to the controlling
+process, for example, when returning handles for all the threads in a target
+process, it uses an iterator function. An iterator function calls back a
+client-specified function once for each handle to be returned, passing one
+handle back on each call to the callback function.  The calling function
+also passes another parameter to the iterator function,  which the iterator
+function passes on to the callback function.  This makes it easy to build a
+linked list of thread handles for a particular target process. The
+additional parameter is the head of the linked list, and the callback
+function simply inserts the current handle into the linked list.
 .sp
 .LP
-Callback functions are expected to return an integer.  Iteration terminates early if a callback function returns a non-zero value. Otherwise, iteration terminates when there are no more handles to pass back.
+Callback functions are expected to return an integer.  Iteration terminates
+early if a callback function returns a non-zero value. Otherwise, iteration
+terminates when there are no more handles to pass back.
 .SH INTERFACES
 .sp
 .LP
-The shared object \fBlibc_db.so.1\fR provides the public interfaces defined below. See \fBIntro\fR(3) for additional information on shared object interfaces.
+The shared object \fBlibc_db.so.1\fR provides the public interfaces defined
+below. See \fBIntro\fR(3) for additional information on shared object
+interfaces.
 .sp
 
 .sp
 .TS
 tab();
-lw(2.75i) lw(2.75i) 
-lw(2.75i) lw(2.75i) 
+lw(2.75i) lw(2.75i)
+lw(2.75i) lw(2.75i)
 .
 \fBtd_init\fR\fBtd_log\fR
 \fBtd_sync_get_info\fR\fBtd_sync_get_stats\fR
@@ -105,7 +156,7 @@ lw(2.75i) lw(2.75i)
 \fB\fB/lib/libc_db.so.1\fR\fR
 .ad
 .RS 24n
-.rt  
+.rt
 shared object
 .RE
 
@@ -116,7 +167,7 @@ shared object
 \fB\fB/lib/64/libc_db.so.1\fR\fR
 .ad
 .RS 24n
-.rt  
+.rt
 64-bit shared object
 .RE
 
@@ -129,8 +180,8 @@ See \fBattributes\fR(5) for description of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -143,4 +194,5 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(3), \fBtd_ta_new\fR(3C_DB), \fBattributes\fR(5), \fBthreads\fR(5)
+\fBIntro\fR(3), \fBtd_ta_new\fR(3C_DB), \fBattributes\fR(5),
+\fBthreads\fR(5)

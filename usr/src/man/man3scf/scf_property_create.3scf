@@ -1,15 +1,34 @@
 '\" te
 .\" Copyright (c) 2007, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH scf_property_create 3SCF "28 Oct 2008" "SunOS 5.11" "Service Configuration Facility Library Functions"
 .SH NAME
-scf_property_create, scf_property_handle, scf_property_destroy, scf_property_get_name, scf_property_type, scf_property_is_type, scf_type_to_string, scf_string_to_type, scf_property_get_value, scf_pg_get_property \- create and manipulate property handles in the Service Configuration Facility
+scf_property_create, scf_property_handle, scf_property_destroy,
+scf_property_get_name, scf_property_type, scf_property_is_type,
+scf_type_to_string, scf_string_to_type, scf_property_get_value,
+scf_pg_get_property \- create and manipulate property handles in the Service
+Configuration Facility
 .SH SYNOPSIS
 .LP
 .nf
-cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.\|. ] 
+cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.\|. ]
 #include <libscf.h>
 
 \fBscf_property_t *\fR\fBscf_property_create\fR(\fBscf_handle_t *\fR\fIhandle\fR);
@@ -68,50 +87,74 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.
 .SH DESCRIPTION
 .sp
 .LP
-Properties are named sets of values of one type. They are grouped into property groups (see \fBscf_pg_create\fR(3SCF)) that are updated atomically using transactions (see \fBscf_transaction_create\fR(3SCF)).
+Properties are named sets of values of one type. They are grouped into
+property groups (see \fBscf_pg_create\fR(3SCF)) that are updated atomically
+using transactions (see \fBscf_transaction_create\fR(3SCF)).
 .sp
 .LP
-An \fBscf_property_t\fR is an opaque handle that can be set to a single property at any given time. When set, it inherits the point-in-time from the source \fBscf_propertygroup_t\fR and does not change until reset.
+An \fBscf_property_t\fR is an opaque handle that can be set to a single
+property at any given time. When set, it inherits the point-in-time from the
+source \fBscf_propertygroup_t\fR and does not change until reset.
 .sp
 .LP
-The \fBscf_property_create()\fR function allocates and initializes a new \fBscf_property_t\fR bound to \fIhandle\fR. The \fBscf_property_destroy()\fR function destroys and frees \fIprop\fR.
+The \fBscf_property_create()\fR function allocates and initializes a new
+\fBscf_property_t\fR bound to \fIhandle\fR. The \fBscf_property_destroy()\fR
+function destroys and frees \fIprop\fR.
 .sp
 .LP
-The \fBscf_property_handle()\fR function returns the handle to which \fIprop\fR is bound.
+The \fBscf_property_handle()\fR function returns the handle to which
+\fIprop\fR is bound.
 .sp
 .LP
-The \fBscf_property_type()\fR function retrieves the type of the property to which \fIprop\fR is set.
+The \fBscf_property_type()\fR function retrieves the type of the property
+to which \fIprop\fR is set.
 .sp
 .LP
-The \fBscf_property_is_type()\fR function determines if the property is compatible with type. See \fBscf_value_create\fR(3SCF).
+The \fBscf_property_is_type()\fR function determines if the property is
+compatible with type. See \fBscf_value_create\fR(3SCF).
 .sp
 .LP
-The \fBscf_type_to_string()\fR function returns the string name of the type supplied. If the type is invalid or unknown, it returns "unknown".
+The \fBscf_type_to_string()\fR function returns the string name of the type
+supplied. If the type is invalid or unknown, it returns "unknown".
 .sp
 .LP
-The \fBscf_string_to_type()\fR function returns the \fBscf_type_t\fR definition of the string supplied. If the string does not translate to an existing type, it returns \fBSCF_TYPE_INVALID\fR.
+The \fBscf_string_to_type()\fR function returns the \fBscf_type_t\fR
+definition of the string supplied. If the string does not translate to an
+existing type, it returns \fBSCF_TYPE_INVALID\fR.
 .sp
 .LP
-The \fBscf_property_get_value()\fR function retrieves the single value that the property to which \fIprop\fR is set contains. If the property has more than one value, the \fIvalue\fR argument is set to one of the values. To retrieve all values associated with a property, see \fBscf_iter_property_values\fR(3SCF).
+The \fBscf_property_get_value()\fR function retrieves the single value that
+the property to which \fIprop\fR is set contains. If the property has more
+than one value, the \fIvalue\fR argument is set to one of the values. To
+retrieve all values associated with a property, see
+\fBscf_iter_property_values\fR(3SCF).
 .sp
 .LP
-The \fBscf_pg_get_property()\fR function sets \fIprop\fR to the property specified by \fIname\fR in the property group specified by \fIpg\fR.
+The \fBscf_pg_get_property()\fR function sets \fIprop\fR to the property
+specified by \fIname\fR in the property group specified by \fIpg\fR.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBscf_property_create()\fR returns a new \fBscf_property_t\fR. Otherwise, it returns \fINULL\fR.
+Upon successful completion, \fBscf_property_create()\fR returns a new
+\fBscf_property_t\fR. Otherwise, it returns \fINULL\fR.
 .sp
 .LP
-Upon successful completion,  \fBscf_property_get_name()\fR function returns the length of the string written, not including the terminating null byte. Otherwise, it returns -1.
+Upon successful completion,  \fBscf_property_get_name()\fR function returns
+the length of the string written, not including the terminating null byte.
+Otherwise, it returns -1.
 .sp
 .LP
-Upon successful completion, \fBscf_pg_get_property()\fR, \fBscf_property_type()\fR, \fBscf_property_is_type()\fR, and \fBscf_pg_get_value()\fR functions return 0. Otherwise, they return -1.
+Upon successful completion, \fBscf_pg_get_property()\fR,
+\fBscf_property_type()\fR, \fBscf_property_is_type()\fR, and
+\fBscf_pg_get_value()\fR functions return 0. Otherwise, they return -1.
 .sp
 .LP
-Upon successful completion, \fBscf_type_to_string()\fR returns a string of the type supplied.
+Upon successful completion, \fBscf_type_to_string()\fR returns a string of
+the type supplied.
 .sp
 .LP
-Upon successful completion, \fBscf_string_to_type()\fR returns the \fBscf_type_t\fR definition of the string supplied
+Upon successful completion, \fBscf_string_to_type()\fR returns the
+\fBscf_type_t\fR definition of the string supplied
 .SH ERRORS
 .sp
 .LP
@@ -123,7 +166,7 @@ The \fBscf_property_create()\fR function will fail if:
 \fB\fBSCF_ERROR_INVALID_ARGUMENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 The value of the \fIhandle\fR argument is \fINULL\fR.
 .RE
 
@@ -134,7 +177,7 @@ The value of the \fIhandle\fR argument is \fINULL\fR.
 \fB\fBSCF_ERROR_NO_MEMORY\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 There is not enough memory to allocate an \fBscf_property_t\fR.
 .RE
 
@@ -145,7 +188,7 @@ There is not enough memory to allocate an \fBscf_property_t\fR.
 \fB\fBSCF_ERROR_NO_RESOURCES\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 The server does not have adequate resources for a new property handle.
 .RE
 
@@ -159,13 +202,15 @@ The \fBscf_property_handle()\fR function will fail if:
 \fB\fBSCF_ERROR_HANDLE_DESTROYED\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 The handle associated with \fIprop\fR has been destroyed.
 .RE
 
 .sp
 .LP
-The \fBscf_property_get_name()\fR, \fBscf_property_type()\fR, \fBscf_property_is_type()\fR, and \fBscf_property_get_value()\fR functions will fail if:
+The \fBscf_property_get_name()\fR, \fBscf_property_type()\fR,
+\fBscf_property_is_type()\fR, and \fBscf_property_get_value()\fR functions
+will fail if:
 .sp
 .ne 2
 .mk
@@ -220,7 +265,7 @@ The \fBscf_property_is_type()\fR function will fail if:
 \fB\fBSCF_ERROR_INVALID_ARGUMENT\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 The \fItype\fR argument is not a valid type.
 .RE
 
@@ -231,7 +276,7 @@ The \fItype\fR argument is not a valid type.
 \fB\fBSCF_ERROR_TYPE_MISMATCH\fR\fR
 .ad
 .RS 30n
-.rt  
+.rt
 The \fIprop\fR argument is not of a type compatible with \fItype\fR.
 .RE
 
@@ -246,7 +291,8 @@ The \fBscf_pg_get_property()\fR function will fail if:
 .ad
 .sp .6
 .RS 4n
-The  storage  mechanism  that  the   repository server (\fBsvc.configd\fR(1M)) chose for the operation denied access.
+The  storage  mechanism  that  the   repository server
+(\fBsvc.configd\fR(1M)) chose for the operation denied access.
 .RE
 
 .sp
@@ -359,7 +405,8 @@ The \fBscf_property_get_value()\fR function will fail if:
 .ad
 .sp .6
 .RS 4n
-The property has more than one value associated with it. The \fIvalue\fR argument will be set to one of the values.
+The property has more than one value associated with it. The \fIvalue\fR
+argument will be set to one of the values.
 .RE
 
 .sp
@@ -381,7 +428,8 @@ The property and value are derived from different handles.
 .ad
 .sp .6
 .RS 4n
-The property has no values associated with it. The \fIvalue\fR argument will be reset.
+The property has no values associated with it. The \fIvalue\fR argument
+will be reset.
 .RE
 
 .sp
@@ -397,7 +445,8 @@ The value could not be read due to access restrictions.
 
 .sp
 .LP
-The \fBscf_error\fR(3SCF) function can be used to retrieve the error value.
+The \fBscf_error\fR(3SCF) function can be used to retrieve the error
+value.
 .SH ATTRIBUTES
 .sp
 .LP
@@ -407,8 +456,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -420,4 +469,8 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibscf\fR(3LIB), \fBscf_error\fR(3SCF), \fBscf_handle_decode_fmri\fR(3SCF), \fBscf_iter_property_values\fR(3SCF), \fBscf_pg_create\fR(3SCF), \fBscf_property_to_fmri\fR(3SCF), \fBscf_transaction_create\fR(3SCF), \fBscf_value_create\fR(3SCF), \fBattributes\fR(5)
+\fBlibscf\fR(3LIB), \fBscf_error\fR(3SCF),
+\fBscf_handle_decode_fmri\fR(3SCF), \fBscf_iter_property_values\fR(3SCF),
+\fBscf_pg_create\fR(3SCF), \fBscf_property_to_fmri\fR(3SCF),
+\fBscf_transaction_create\fR(3SCF), \fBscf_value_create\fR(3SCF),
+\fBattributes\fR(5)

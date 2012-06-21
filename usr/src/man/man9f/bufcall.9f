@@ -1,9 +1,24 @@
 '\" te
 .\" Copyright (c) 2006, Sun Microsystems, Inc.  All Rights Reserved.
 .\" Copyright 1989 AT&T
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH bufcall 9F "16 Jan 2006" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
 bufcall \- call a function when a buffer becomes available
@@ -15,7 +30,7 @@ bufcall \- call a function when a buffer becomes available
 
 
 
-\fBbufcall_id_t\fR \fBbufcall\fR(\fBsize_t\fR \fIsize\fR, \fBuint_t\fR \fIpri\fR, \fBvoid \fR\fI*func\fRvoid \fI*arg\fR, 
+\fBbufcall_id_t\fR \fBbufcall\fR(\fBsize_t\fR \fIsize\fR, \fBuint_t\fR \fIpri\fR, \fBvoid \fR\fI*func\fRvoid \fI*arg\fR,
     \fBvoid\fR \fI*arg\fR);
 .fi
 
@@ -31,7 +46,7 @@ Architecture independent level 1 (DDI/DKI).
 \fB\fIsize\fR\fR
 .ad
 .RS 8n
-.rt  
+.rt
 Number of bytes required for the buffer.
 .RE
 
@@ -42,7 +57,7 @@ Number of bytes required for the buffer.
 \fB\fIpri\fR\fR
 .ad
 .RS 8n
-.rt  
+.rt
 Priority of the \fBallocb\fR(9F) allocation request (not used).
 .RE
 
@@ -53,7 +68,7 @@ Priority of the \fBallocb\fR(9F) allocation request (not used).
 \fB\fIfunc\fR\fR
 .ad
 .RS 8n
-.rt  
+.rt
 Function or driver routine to be called when a buffer becomes available.
 .RE
 
@@ -64,44 +79,73 @@ Function or driver routine to be called when a buffer becomes available.
 \fB\fIarg\fR\fR
 .ad
 .RS 8n
-.rt  
+.rt
 Argument to the function to be called when a buffer becomes available.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBbufcall()\fR function serves as a \fBtimeout\fR(9F) call of indeterminate length. When a buffer allocation request fails, \fBbufcall()\fR can be used to schedule the routine \fIfunc\fR, to be called with the argument \fIarg\fR when a buffer becomes available. \fIfunc\fR may call \fBallocb()\fR or it may do something else.
+The \fBbufcall()\fR function serves as a \fBtimeout\fR(9F) call of
+indeterminate length. When a buffer allocation request fails,
+\fBbufcall()\fR can be used to schedule the routine \fIfunc\fR, to be called
+with the argument \fIarg\fR when a buffer becomes available. \fIfunc\fR may
+call \fBallocb()\fR or it may do something else.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, \fBbufcall()\fR returns a \fBbufcall\fR \fBID\fR that can be used in a call to \fBunbufcall()\fR to cancel the request. If the \fBbufcall()\fR scheduling fails, \fIfunc\fR is never called and \fB0\fR is returned.
+If successful, \fBbufcall()\fR returns a \fBbufcall\fR \fBID\fR that can be
+used in a call to \fBunbufcall()\fR to cancel the request. If the
+\fBbufcall()\fR scheduling fails, \fIfunc\fR is never called and \fB0\fR is
+returned.
 .SH CONTEXT
 .sp
 .LP
-The \fBbufcall()\fR function can be called from user, interrupt, or kernel context.
+The \fBbufcall()\fR function can be called from user, interrupt, or kernel
+context.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fRCalling a function when a buffer becomes available:
 .sp
 .LP
-The purpose of this \fBsrv\fR(9E) service routine is to add a header to all \fBM_DATA\fR messages. Service routines must process all messages on their queues before returning, or arrange to be rescheduled
+The purpose of this \fBsrv\fR(9E) service routine is to add a header to all
+\fBM_DATA\fR messages. Service routines must process all messages on their
+queues before returning, or arrange to be rescheduled
 
 .sp
 .LP
-While there are messages to be processed (line 13), check to see if it is a high priority message or a normal priority message that can be sent on (line 14). Normal priority message that cannot be sent are put back on the message queue (line 34). If the message was a high priority one, or if it was normal priority and \fBcanputnext\fR(9F) succeeded, then send all but \fBM_DATA\fR messages to the next module with \fBputnext\fR(9F) (line 16).
+While there are messages to be processed (line 13), check to see if it is a
+high priority message or a normal priority message that can be sent on (line
+14). Normal priority message that cannot be sent are put back on the message
+queue (line 34). If the message was a high priority one, or if it was normal
+priority and \fBcanputnext\fR(9F) succeeded, then send all but \fBM_DATA\fR
+messages to the next module with \fBputnext\fR(9F) (line 16).
 
 .sp
 .LP
-For \fBM_DATA\fR messages, try to allocate a buffer large enough to hold the header (line 18). If no such buffer is available, the service routine must be rescheduled for a time when a buffer is available. The original message is put back on the queue (line 20) and \fBbufcall\fR (line 21) is used to attempt the rescheduling. It will succeed if the rescheduling succeeds, indicating that qenable will be called subsequently with the argument \fIq\fR once a buffer of the specified size (\fBsizeof (struct hdr)\fR) becomes available. If it does, \fBqenable\fR(9F) will put \fIq\fR on the list of queues to have their service routines called. If \fBbufcall()\fR fails, \fBtimeout\fR(9F) (line 22) is used to try again in about a half second.
+For \fBM_DATA\fR messages, try to allocate a buffer large enough to hold
+the header (line 18). If no such buffer is available, the service routine
+must be rescheduled for a time when a buffer is available. The original
+message is put back on the queue (line 20) and \fBbufcall\fR (line 21) is
+used to attempt the rescheduling. It will succeed if the rescheduling
+succeeds, indicating that qenable will be called subsequently with the
+argument \fIq\fR once a buffer of the specified size (\fBsizeof (struct
+hdr)\fR) becomes available. If it does, \fBqenable\fR(9F) will put \fIq\fR
+on the list of queues to have their service routines called. If
+\fBbufcall()\fR fails, \fBtimeout\fR(9F) (line 22) is used to try again in
+about a half second.
 
 .sp
 .LP
-If the buffer allocation was successful, initialize the header (lines 25-28), make the message type \fBM_PROTO\fR (line 29), link the \fBM_DATA\fR message to it (line 30), and pass it on (line 31).
+If the buffer allocation was successful, initialize the header (lines
+25-28), make the message type \fBM_PROTO\fR (line 29), link the \fBM_DATA\fR
+message to it (line 30), and pass it on (line 31).
 
 .sp
 .LP
-Note that this example ignores the bookkeeping needed to handle \fBbufcall()\fR and \fBtimeout\fR(9F) cancellation for ones that are still outstanding at close time.
+Note that this example ignores the bookkeeping needed to handle
+\fBbufcall()\fR and \fBtimeout\fR(9F) cancellation for ones that are still
+outstanding at close time.
 
 .sp
 .in +2
@@ -153,14 +197,18 @@ Note that this example ignores the bookkeeping needed to handle \fBbufcall()\fR 
 .SH SEE ALSO
 .sp
 .LP
-\fBsrv\fR(9E), \fBallocb\fR(9F), \fBcanputnext\fR(9F), \fBesballoc\fR(9F), \fBesbbcall\fR(9F), \fBputnext\fR(9F), \fBqenable\fR(9F), \fBtestb\fR(9F), \fBtimeout\fR(9F), \fBunbufcall\fR(9F) 
+\fBsrv\fR(9E), \fBallocb\fR(9F), \fBcanputnext\fR(9F), \fBesballoc\fR(9F),
+\fBesbbcall\fR(9F), \fBputnext\fR(9F), \fBqenable\fR(9F), \fBtestb\fR(9F),
+\fBtimeout\fR(9F), \fBunbufcall\fR(9F)
 .sp
 .LP
 \fIWriting Device Drivers\fR
 .sp
 .LP
-\fISTREAMS Programming Guide\fR 
+\fISTREAMS Programming Guide\fR
 .SH WARNINGS
 .sp
 .LP
-Even when \fIfunc\fR is called by \fBbufcall()\fR, \fBallocb\fR(9F) can fail if another module or driver had allocated the memory before \fIfunc\fR was able to call \fBallocb\fR(9F). 
+Even when \fIfunc\fR is called by \fBbufcall()\fR, \fBallocb\fR(9F) can
+fail if another module or driver had allocated the memory before \fIfunc\fR
+was able to call \fBallocb\fR(9F).

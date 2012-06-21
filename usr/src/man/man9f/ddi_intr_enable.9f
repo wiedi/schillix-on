@@ -1,11 +1,28 @@
 '\" te
 .\" Copyright (c) 2005, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH ddi_intr_enable 9F "22 Apr 2005" "SunOS 5.11" "Kernel Functions for Drivers"
 .SH NAME
-ddi_intr_enable, ddi_intr_block_enable, ddi_intr_disable, ddi_intr_block_disable \- enable or disable a given interrupt or range of interrupts
+ddi_intr_enable, ddi_intr_block_enable, ddi_intr_disable,
+ddi_intr_block_disable \- enable or disable a given interrupt or range of
+interrupts
 .SH SYNOPSIS
 .LP
 .nf
@@ -49,7 +66,7 @@ Solaris DDI specific (Solaris DDI).
 \fB\fIh\fR\fR
 .ad
 .RS 5n
-.rt  
+.rt
 DDI interrupt handle
 .RE
 
@@ -63,7 +80,7 @@ DDI interrupt handle
 \fB\fIh_array\fR\fR
 .ad
 .RS 11n
-.rt  
+.rt
 Pointer to an array of DDI interrupt handles
 .RE
 
@@ -74,7 +91,7 @@ Pointer to an array of DDI interrupt handles
 \fB\fIcount\fR\fR
 .ad
 .RS 11n
-.rt  
+.rt
 Number of interrupts
 .RE
 
@@ -88,7 +105,7 @@ Number of interrupts
 \fB\fIh\fR\fR
 .ad
 .RS 5n
-.rt  
+.rt
 DDI interrupt handle
 .RE
 
@@ -102,7 +119,7 @@ DDI interrupt handle
 \fB\fIh_array\fR\fR
 .ad
 .RS 11n
-.rt  
+.rt
 Pointer to an array of DDI interrupt handles
 .RE
 
@@ -113,42 +130,77 @@ Pointer to an array of DDI interrupt handles
 \fB\fIcount\fR\fR
 .ad
 .RS 11n
-.rt  
+.rt
 Number of interrupts
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBddi_intr_enable()\fR function enables the interrupt given by the interrupt handle \fIh\fR.
+The \fBddi_intr_enable()\fR function enables the interrupt given by the
+interrupt handle \fIh\fR.
 .sp
 .LP
-The \fBddi_intr_block_enable()\fR function enables a range of interrupts given by the \fIcount\fR and \fIh_array\fR arguments, where \fIcount\fR must be at least \fB1\fR and \fIh_array\fR is pointer to a count-sized array of interrupt handles.
+The \fBddi_intr_block_enable()\fR function enables a range of interrupts
+given by the \fIcount\fR and \fIh_array\fR arguments, where \fIcount\fR must
+be at least \fB1\fR and \fIh_array\fR is pointer to a count-sized array of
+interrupt handles.
 .sp
 .LP
-The \fBddi_intr_block_enable()\fR function can be used only if the device or host bridge supports the block enable/disable feature. The \fBddi_intr_get_cap()\fR function returns the \fBRO\fR flag \fBDDI_INTR_FLAG_BLOCK\fR if the device or host bridge supports the interrupt block enable/disable feature for the given interrupt type. The \fBddi_intr_block_enable()\fR function is useful for enabling MSI interrupts when the optional per-vector masking capability is not supported.
+The \fBddi_intr_block_enable()\fR function can be used only if the device
+or host bridge supports the block enable/disable feature. The
+\fBddi_intr_get_cap()\fR function returns the \fBRO\fR flag
+\fBDDI_INTR_FLAG_BLOCK\fR if the device or host bridge supports the
+interrupt block enable/disable feature for the given interrupt type. The
+\fBddi_intr_block_enable()\fR function is useful for enabling MSI interrupts
+when the optional per-vector masking capability is not supported.
 .sp
 .LP
-The \fBddi_intr_enable()\fR or \fBddi_intr_block_enable()\fR functions must be called after the required interrupt resources are allocated with \fBddi_intr_alloc()\fR, the interrupt handlers are added through \fBddi_intr_add_handler()\fR, and the required locks are initialized by \fBmutex\fR(9F) or \fBrwlock\fR(9F).
+The \fBddi_intr_enable()\fR or \fBddi_intr_block_enable()\fR functions must
+be called after the required interrupt resources are allocated with
+\fBddi_intr_alloc()\fR, the interrupt handlers are added through
+\fBddi_intr_add_handler()\fR, and the required locks are initialized by
+\fBmutex\fR(9F) or \fBrwlock\fR(9F).
 .sp
 .LP
-Once enabled by either of the enable calls, the interrupt can be taken and passed to the driver's interrupt service routine. Enabling an interrupt implies clearing any system or device mask bits associated with the interrupt.
+Once enabled by either of the enable calls, the interrupt can be taken and
+passed to the driver's interrupt service routine. Enabling an interrupt
+implies clearing any system or device mask bits associated with the
+interrupt.
 .sp
 .LP
-The \fBddi_intr_disable()\fR function disables the interrupt given by the interrupt handle \fIh\fR.
+The \fBddi_intr_disable()\fR function disables the interrupt given by the
+interrupt handle \fIh\fR.
 .sp
 .LP
-The \fBddi_intr_block_disable()\fR function disables a range of interrupts given by the \fIcount\fR and \fIh_array\fR arguments, where \fIcount\fR must be at least \fB1\fR and \fIh_array\fR is pointer to a count-sized array of interrupt handles.
+The \fBddi_intr_block_disable()\fR function disables a range of interrupts
+given by the \fIcount\fR and \fIh_array\fR arguments, where \fIcount\fR must
+be at least \fB1\fR and \fIh_array\fR is pointer to a count-sized array of
+interrupt handles.
 .sp
 .LP
-The \fBddi_intr_block_disable()\fR function can be used only if the device or host bridge supports the block enable/disable feature. The \fBddi_intr_get_cap()\fR function returns the \fBRO\fR flag \fBDDI_INTR_FLAG_BLOCK\fR if the device or host bridge supports the interrupt block enable/disable feature for the given interrupt type. The \fBddi_intr_block_disable()\fR function is useful for disabling MSI interrupts when the optional per-vector masking capability is not supported.
+The \fBddi_intr_block_disable()\fR function can be used only if the device
+or host bridge supports the block enable/disable feature. The
+\fBddi_intr_get_cap()\fR function returns the \fBRO\fR flag
+\fBDDI_INTR_FLAG_BLOCK\fR if the device or host bridge supports the
+interrupt block enable/disable feature for the given interrupt type. The
+\fBddi_intr_block_disable()\fR function is useful for disabling MSI
+interrupts when the optional per-vector masking capability is not
+supported.
 .sp
 .LP
-The \fBddi_intr_disable()\fR or \fBddi_intr_block_disable()\fR functions must be called before removing the interrupt handler and freeing the corresponding interrupt with \fBddi_intr_remove_handler()\fR and \fBddi_intr_free()\fR, respectively. The \fBddi_intr_block_disable()\fR function should be called if the \fBddi_intr_block_enable()\fR function was used to enable the interrupts.
+The \fBddi_intr_disable()\fR or \fBddi_intr_block_disable()\fR functions
+must be called before removing the interrupt handler and freeing the
+corresponding interrupt with \fBddi_intr_remove_handler()\fR and
+\fBddi_intr_free()\fR, respectively. The \fBddi_intr_block_disable()\fR
+function should be called if the \fBddi_intr_block_enable()\fR function was
+used to enable the interrupts.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBddi_intr_enable()\fR, \fBddi_intr_block_enable()\fR, \fBddi_intr_disable()\fR, and \fBddi_intr_block_disable()\fR functions return:
+The \fBddi_intr_enable()\fR, \fBddi_intr_block_enable()\fR,
+\fBddi_intr_disable()\fR, and \fBddi_intr_block_disable()\fR functions
+return:
 .sp
 .ne 2
 .mk
@@ -156,7 +208,7 @@ The \fBddi_intr_enable()\fR, \fBddi_intr_block_enable()\fR, \fBddi_intr_disable(
 \fB\fBDDI_SUCCESS\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 On success.
 .RE
 
@@ -167,7 +219,7 @@ On success.
 \fB\fBDDI_EINVAL\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 On encountering invalid input parameters.
 .RE
 
@@ -178,14 +230,16 @@ On encountering invalid input parameters.
 \fB\fBDDI_FAILURE\fR\fR
 .ad
 .RS 15n
-.rt  
+.rt
 On any implementation specific failure.
 .RE
 
 .SH CONTEXT
 .sp
 .LP
-The \fBddi_intr_enable()\fR, \fBddi_intr_block_enable()\fR, \fBddi_intr_disable()\fR, and \fBddi_intr_block_disable()\fR functions can be called from kernel non-interrupt context.
+The \fBddi_intr_enable()\fR, \fBddi_intr_block_enable()\fR,
+\fBddi_intr_disable()\fR, and \fBddi_intr_block_disable()\fR functions can
+be called from kernel non-interrupt context.
 .SH ATTRIBUTES
 .sp
 .LP
@@ -195,8 +249,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -206,14 +260,22 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_intr_add_handler\fR(9F), \fBddi_intr_alloc\fR(9F), \fBddi_intr_dup_handler\fR(9F), \fBddi_intr_free\fR(9F), \fBddi_intr_get_cap\fR(9F), \fBddi_intr_remove_handler\fR(9F), \fBmutex\fR(9F), \fBrwlock\fR(9F)
+\fBattributes\fR(5), \fBddi_intr_add_handler\fR(9F),
+\fBddi_intr_alloc\fR(9F), \fBddi_intr_dup_handler\fR(9F),
+\fBddi_intr_free\fR(9F), \fBddi_intr_get_cap\fR(9F),
+\fBddi_intr_remove_handler\fR(9F), \fBmutex\fR(9F), \fBrwlock\fR(9F)
 .sp
 .LP
 \fIWriting Device Drivers\fR
 .SH NOTES
 .sp
 .LP
-Consumers of these interfaces should verify that the return value is not equal to \fBDDI_SUCCESS\fR. Incomplete checking for failure codes could result in inconsistent behavior among platforms.
+Consumers of these interfaces should verify that the return value is not
+equal to \fBDDI_SUCCESS\fR. Incomplete checking for failure codes could
+result in inconsistent behavior among platforms.
 .sp
 .LP
-If a device driver that uses \fBMSI\fR and \fBMSI-X\fR interrupts resets the device, the device might reset its configuration space modifications. Such a reset could cause a device driver to lose any \fBMSI\fR and \fBMSI-X\fR interrupt usage settings that have been applied.
+If a device driver that uses \fBMSI\fR and \fBMSI-X\fR interrupts resets
+the device, the device might reset its configuration space modifications.
+Such a reset could cause a device driver to lose any \fBMSI\fR and
+\fBMSI-X\fR interrupt usage settings that have been applied.

@@ -1,18 +1,38 @@
 '\" te
 .\" Copyright (c) 2004, Sun Microsystems Inc.  All Rights Reserved
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH tokenmt 7ipp "29 Sep 2004" "SunOS 5.11" "IP Quality of Service Modules"
 .SH NAME
 tokenmt \- Single and Two Rate Three Conformance Level Meter
 .SH DESCRIPTION
 .sp
 .LP
-The \fBtokenmt\fR module can be configured as a Single or a Two Rate meter. Packets are deemed to belong to one of the three levels - Red, Yellow or Green - depending on the configured rate(s) and the burst sizes. When configured as a Single Rate meter, \fBtokenmt\fR can operate with just the Green and Red levels.
+The \fBtokenmt\fR module can be configured as a Single or a Two Rate meter.
+Packets are deemed to belong to one of the three levels - Red, Yellow or
+Green - depending on the configured rate(s) and the burst sizes. When
+configured as a Single Rate meter, \fBtokenmt\fR can operate with just the
+Green and Red levels.
 .sp
 .LP
-Configuration parameters for \fBtokenmt\fR correspond to definitions in \fIRFC- 2697\fR and \fIRFC- 2698\fR as follows:
+Configuration parameters for \fBtokenmt\fR correspond to definitions in
+\fIRFC- 2697\fR and \fIRFC- 2698\fR as follows:
 .sp
 .LP
 Configuring \fBtokenmt\fR as a Single Rate meter (from \fIRFC- 2697\fR):
@@ -30,7 +50,9 @@ peak_burst - EBS
 .in -2
 .sp
 .LP
-(thus 'peak_burst' for a single rate meter is actually the 'excess  burst' in the RFC. However, throughout the text the parameter name "peak burst" is used.)
+(thus 'peak_burst' for a single rate meter is actually the 'excess  burst'
+in the RFC. However, throughout the text the parameter name "peak burst" is
+used.)
 .sp
 .LP
 Configuring tokenmt as a Two Rate meter (from \fIRFC- 2698\fR):
@@ -52,18 +74,21 @@ peak_burst - PBS
 .in -2
 .sp
 .LP
-The meter is implemented using token buckets C and P, which initially hold tokens equivalent to committed and peak burst sizes (bits) respectively. When a packet of size \fI B\fR bits arrive at time \fI t\fR, the following occurs:
+The meter is implemented using token buckets C and P, which initially hold
+tokens equivalent to committed and peak burst sizes (bits) respectively.
+When a packet of size \fI B\fR bits arrive at time \fI t\fR, the following
+occurs:
 .sp
 .in +2
 .nf
-When operating as a Single Rate meter, the outcome (level) 
+When operating as a Single Rate meter, the outcome (level)
 is decided as follows:
         - Update tokens in C and P
-              o Compute no. of tokens accumulated since the 
+              o Compute no. of tokens accumulated since the
                 last time packet was seen at the committed rate as
                 T(t) = committed rate * (t - t')
                 (where t' is the time the last packet was seen)
-              o Add T tokens to C up to a maximum of committed burst 
+              o Add T tokens to C up to a maximum of committed burst
                 size. Add remaining tokens ((C+T) - Commited Burst),
                 if any, to P, to a maximum of peak burst size.
         - Decide outcome
@@ -74,20 +99,21 @@ is decided as follows:
               o Else,
                       o obtain DSCP from packet
                       o obtain color from color_map, color_map[DSCP]
-                      o if (color is GREEN) and (B <= C), outcome is 
+                      o if (color is GREEN) and (B <= C), outcome is
                         GREEN and C -= B.
                       o Else, if (color is GREEN or YELLOW) and
                         (B <= P), outcome is YELLOW and  P -= B.
                       o Else, outcome is RED.
-     Note that if peak_burst and yellow_next_actions are 
-     not specified (that is, a single rate meter with two 
+     Note that if peak_burst and yellow_next_actions are
+     not specified (that is, a single rate meter with two
      outcomes), the outcome is never YELLOW.
 .fi
 .in -2
 
 .sp
 .LP
-When operating as a Two Rate meter, the outcome (level) is decided as follows:
+When operating as a Two Rate meter, the outcome (level) is decided as
+follows:
 .sp
 .in +2
 .nf
@@ -117,7 +143,8 @@ When operating as a Two Rate meter, the outcome (level) is decided as follows:
 .SH STATISTICS
 .sp
 .LP
-The \fBtokenmt\fR module exports the following statistics through \fBkstat\fR:
+The \fBtokenmt\fR module exports the following statistics through
+\fBkstat\fR:
 .sp
 .LP
 Global statistics:
@@ -157,8 +184,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -168,10 +195,14 @@ AvailabilitySUNWqos
 .SH SEE ALSO
 .sp
 .LP
-\fBipqosconf\fR(1M), \fBdlcosmk\fR(7ipp), \fBdscpmk\fR(7ipp), \fBflowacct\fR(7ipp), \fBipqos\fR(7ipp), \fBipgpc\fR(7ipp), \fBtswtclmt\fR(7ipp)
+\fBipqosconf\fR(1M), \fBdlcosmk\fR(7ipp), \fBdscpmk\fR(7ipp),
+\fBflowacct\fR(7ipp), \fBipqos\fR(7ipp), \fBipgpc\fR(7ipp),
+\fBtswtclmt\fR(7ipp)
 .sp
 .LP
-\fIRFC 2697, A Single Rate Three Color Marker\fR J. Heinanen, R. Guerin \(em The Internet Society, 1999
+\fIRFC 2697, A Single Rate Three Color Marker\fR J. Heinanen, R. Guerin
+\(em The Internet Society, 1999
 .sp
 .LP
-\fIRFC 2698, A Two Rate Three Color Marker\fR J. Heinanen, R. Guerin \(em The Internet Society, 1999 
+\fIRFC 2698, A Two Rate Three Color Marker\fR J. Heinanen, R. Guerin \(em
+The Internet Society, 1999

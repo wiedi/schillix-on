@@ -1,41 +1,76 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved.
-.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
-.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
-.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
 .TH lockstat 1M "28 Feb 2008" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 lockstat \- report kernel lock and profiling statistics
 .SH SYNOPSIS
 .LP
 .nf
-\fBlockstat\fR [\fB-ACEHI\fR] [\fB-e\fR \fIevent_list\fR] [\fB-i\fR \fIrate\fR] 
-     [\fB-b\fR | \fB-t\fR | \fB-h\fR | \fB-s\fR \fIdepth\fR] [\fB-n\fR \fInrecords\fR] 
-     [\fB-l\fR \fIlock\fR [, \fIsize\fR]] [\fB-d\fR \fIduration\fR] 
-     [\fB-f\fR \fIfunction\fR [, \fIsize\fR]] [\fB-T\fR] [\fB-ckgwWRpP\fR] [\fB-D\fR \fIcount\fR] 
+\fBlockstat\fR [\fB-ACEHI\fR] [\fB-e\fR \fIevent_list\fR] [\fB-i\fR \fIrate\fR]
+     [\fB-b\fR | \fB-t\fR | \fB-h\fR | \fB-s\fR \fIdepth\fR] [\fB-n\fR \fInrecords\fR]
+     [\fB-l\fR \fIlock\fR [, \fIsize\fR]] [\fB-d\fR \fIduration\fR]
+     [\fB-f\fR \fIfunction\fR [, \fIsize\fR]] [\fB-T\fR] [\fB-ckgwWRpP\fR] [\fB-D\fR \fIcount\fR]
      [\fB-o\fR \fIfilename\fR] [\fB-x\fR \fIopt\fR [=val]] \fIcommand\fR [\fIargs\fR]
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBlockstat\fR utility gathers and displays kernel locking and profiling statistics. \fBlockstat\fR allows you to specify which events to watch (for example, spin on adaptive mutex, block on read access to rwlock due to waiting writers, and so forth) how much data to gather for each event, and how to display the data. By default, \fBlockstat\fR monitors all lock contention events, gathers frequency and timing data about those events, and displays the data in decreasing frequency order, so that the most common events appear first.
+The \fBlockstat\fR utility gathers and displays kernel locking and profiling
+statistics. \fBlockstat\fR allows you to specify which events to watch (for
+example, spin on adaptive mutex, block on read access to rwlock due to
+waiting writers, and so forth) how much data to gather for each event, and
+how to display the data. By default, \fBlockstat\fR monitors all lock
+contention events, gathers frequency and timing data about those events, and
+displays the data in decreasing frequency order, so that the most common
+events appear first.
 .sp
 .LP
-\fBlockstat\fR gathers data until the specified command completes. For example, to gather statistics for a fixed-time interval, use \fBsleep\fR(1) as the command, as follows:
+\fBlockstat\fR gathers data until the specified command completes. For
+example, to gather statistics for a fixed-time interval, use \fBsleep\fR(1)
+as the command, as follows:
 .sp
 .LP
 \fBexample#\fR \fBlockstat\fR \fBsleep\fR \fB5\fR
 .sp
 .LP
-When the \fB-I\fR option is specified, \fBlockstat\fR establishes a per-processor high-level periodic interrupt source to gather profiling data. The interrupt handler simply generates a \fBlockstat\fR event whose caller is the interrupted PC (program counter). The profiling event is just like any other \fBlockstat\fR event, so all of the normal \fBlockstat\fR options are applicable.
+When the \fB-I\fR option is specified, \fBlockstat\fR establishes a
+per-processor high-level periodic interrupt source to gather profiling data.
+The interrupt handler simply generates a \fBlockstat\fR event whose caller is
+the interrupted PC (program counter). The profiling event is just like any
+other \fBlockstat\fR event, so all of the normal \fBlockstat\fR options are
+applicable.
 .sp
 .LP
-\fBlockstat\fR relies on DTrace to modify the running kernel's text to intercept events of interest. This imposes a small but measurable overhead on all system activity, so access to \fBlockstat\fR is restricted to super-user by default. The system administrator can permit other users to use \fBlockstat\fR by granting them additional DTrace privileges. Refer to the \fISolaris Dynamic Tracing Guide\fR for more information about DTrace security features.
+\fBlockstat\fR relies on DTrace to modify the running kernel's text to
+intercept events of interest. This imposes a small but measurable overhead on
+all system activity, so access to \fBlockstat\fR is restricted to super-user
+by default. The system administrator can permit other users to use
+\fBlockstat\fR by granting them additional DTrace privileges. Refer to the
+\fISolaris Dynamic Tracing Guide\fR for more information about DTrace
+security features.
 .SH OPTIONS
 .sp
 .LP
-The following options are supported: 
+The following options are supported:
 .SS "Event Selection"
 .sp
 .LP
@@ -59,7 +94,7 @@ Watch all lock events. \fB-A\fR is equivalent to \fB-CH\fR.
 .ad
 .sp .6
 .RS 4n
-Watch contention events. 
+Watch contention events.
 .RE
 
 .sp
@@ -81,7 +116,9 @@ Watch error events.
 .ad
 .sp .6
 .RS 4n
-Only watch the specified events. \fIevent\fR \fIlist\fR is a comma-separated list of events or ranges of events such as 1,4-7,35. Run \fBlockstat\fR with no arguments to get a brief description of all events.
+Only watch the specified events. \fIevent\fR \fIlist\fR is a comma-separated
+list of events or ranges of events such as 1,4-7,35. Run \fBlockstat\fR with
+no arguments to get a brief description of all events.
 .RE
 
 .sp
@@ -114,7 +151,9 @@ Watch profiling interrupt events.
 .ad
 .sp .6
 .RS 4n
-Interrupt rate (per second) for \fB-I\fR. The default is 97 Hz, so that profiling doesn't run in lockstep with the clock interrupt (which runs at 100 Hz).
+Interrupt rate (per second) for \fB-I\fR. The default is 97 Hz, so that
+profiling doesn't run in lockstep with the clock interrupt (which runs at 100
+Hz).
 .RE
 
 .SS "Data Gathering"
@@ -126,7 +165,10 @@ Interrupt rate (per second) for \fB-I\fR. The default is 97 Hz, so that profilin
 .ad
 .sp .6
 .RS 4n
-Enable or modify a DTrace runtime option or D compiler option. The list of options is found in the \fI\fR. Boolean options are enabled by specifying their name. Options with values are set by separating the option name and value with an equals sign (=).
+Enable or modify a DTrace runtime option or D compiler option. The list of
+options is found in the \fI\fR. Boolean options are enabled by specifying
+their name. Options with values are set by separating the option name and
+value with an equals sign (=).
 .RE
 
 .SS "Data Gathering (Mutually Exclusive)"
@@ -194,7 +236,9 @@ Only watch events longer than \fIduration\fR.
 .ad
 .sp .6
 .RS 4n
-Only watch events generated by \fIfunc\fR, which can be specified as a symbolic name or hex address. \fIsize\fR defaults to the \fBELF\fR symbol size if available, or \fB1\fR if not.
+Only watch events generated by \fIfunc\fR, which can be specified as a
+symbolic name or hex address. \fIsize\fR defaults to the \fBELF\fR symbol
+size if available, or \fB1\fR if not.
 .RE
 
 .sp
@@ -205,7 +249,9 @@ Only watch events generated by \fIfunc\fR, which can be specified as a symbolic 
 .ad
 .sp .6
 .RS 4n
-Only watch \fIlock\fR, which can be specified as a symbolic name or hex address. \fBsize\fR defaults to the \fBELF\fR symbol size or \fB1\fR if the symbol size is not available.
+Only watch \fIlock\fR, which can be specified as a symbolic name or hex
+address. \fBsize\fR defaults to the \fBELF\fR symbol size or \fB1\fR if the
+symbol size is not available.
 .RE
 
 .sp
@@ -261,7 +307,15 @@ Only display the top \fIcount\fR events of each type.
 .ad
 .sp .6
 .RS 4n
-Show total events generated by function. For example, if \fBfoo()\fR calls \fBbar()\fR in a loop, the work done by \fBbar()\fR counts as work generated by \fBfoo()\fR (along with any work done by \fBfoo()\fR itself). The \fB-g\fR option works by counting the total number of stack frames in which each function appears. This implies two things: (1) the data reported by \fB-g\fR can be misleading if the stack traces are not deep enough, and (2) functions that are called recursively might show greater than 100% activity. In light of issue (1), the default data gathering mode when using \fB-g\fR is \fB-s\fR \fB50\fR.
+Show total events generated by function. For example, if \fBfoo()\fR calls
+\fBbar()\fR in a loop, the work done by \fBbar()\fR counts as work generated
+by \fBfoo()\fR (along with any work done by \fBfoo()\fR itself). The \fB-g\fR
+option works by counting the total number of stack frames in which each
+function appears. This implies two things: (1) the data reported by \fB-g\fR
+can be misleading if the stack traces are not deep enough, and (2) functions
+that are called recursively might show greater than 100% activity. In light
+of issue (1), the default data gathering mode when using \fB-g\fR is \fB-s\fR
+\fB50\fR.
 .RE
 
 .sp
@@ -353,7 +407,8 @@ The following headers appear over various columns of data.
 .ad
 .sp .6
 .RS 4n
-Number of times this event occurred, or the rate (times per second) if \fB-R\fR was specified.
+Number of times this event occurred, or the rate (times per second) if
+\fB-R\fR was specified.
 .RE
 
 .sp
@@ -397,7 +452,9 @@ Cumulative percentage; a running total of the individuals.
 .ad
 .sp .6
 .RS 4n
-Average reference count. This will always be \fB1\fR for exclusive locks (mutexes, spin locks, rwlocks held as writer) but can be greater than \fB1\fR for shared locks (rwlocks held as reader).
+Average reference count. This will always be \fB1\fR for exclusive locks
+(mutexes, spin locks, rwlocks held as writer) but can be greater than \fB1\fR
+for shared locks (rwlocks held as reader).
 .RE
 
 .sp
@@ -408,7 +465,8 @@ Average reference count. This will always be \fB1\fR for exclusive locks (mutexe
 .ad
 .sp .6
 .RS 4n
-Average duration of the events in nanoseconds, as appropriate for the event. For the profiling event, duration means interrupt latency.
+Average duration of the events in nanoseconds, as appropriate for the event.
+For the profiling event, duration means interrupt latency.
 .RE
 
 .sp
@@ -430,7 +488,9 @@ Address of the lock; displayed symbolically if possible.
 .ad
 .sp .6
 .RS 4n
-\fBCPU\fR plus processor interrupt level (\fBPIL\fR). For example, if \fBCPU\fR 4 is interrupted while at \fBPIL\fR 6, this will be reported as \fBcpu[4]+6\fR.
+\fBCPU\fR plus processor interrupt level (\fBPIL\fR). For example, if
+\fBCPU\fR 4 is interrupted while at \fBPIL\fR 6, this will be reported as
+\fBcpu[4]+6\fR.
 .RE
 
 .sp
@@ -538,7 +598,8 @@ Count indv cuml rcnt     nsec Lock                Caller
 .sp
 
 .LP
-\fBExample 3 \fRMeasuring Hold Times for Stack Traces Containing a Specific Function
+\fBExample 3 \fRMeasuring Hold Times for Stack Traces Containing a Specific
+Function
 .sp
 .in +2
 .nf
@@ -590,7 +651,12 @@ sbus_intr_wrapper+0x30
 \fBExample 4 \fRBasic Kernel Profiling
 .sp
 .LP
-For basic profiling, we don't care whether the profiling interrupt sampled \fBfoo()\fR\fB+0x4c\fR or \fBfoo()\fR\fB+0x78\fR; we care only that it sampled somewhere in \fBfoo()\fR, so we use \fB-k\fR. The \fBCPU\fR and \fBPIL\fR aren't relevant to basic profiling because we are measuring the system as a whole, not a particular \fBCPU\fR or interrupt level, so we use \fB-W\fR.
+For basic profiling, we don't care whether the profiling interrupt sampled
+\fBfoo()\fR\fB+0x4c\fR or \fBfoo()\fR\fB+0x78\fR; we care only that it
+sampled somewhere in \fBfoo()\fR, so we use \fB-k\fR. The \fBCPU\fR and
+\fBPIL\fR aren't relevant to basic profiling because we are measuring the
+system as a whole, not a particular \fBCPU\fR or interrupt level, so we use
+\fB-W\fR.
 
 .sp
 .in +2
@@ -637,11 +703,23 @@ Count indv cuml rcnt     nsec Hottest CPU+PIL     Caller
 \fBExample 5 \fRGenerated-load Profiling
 .sp
 .LP
-In the example above, 5% of the samples were in \fBpoll()\fR. This tells us how much time was spent inside \fBpoll()\fR itself, but tells us nothing about how much work was \fBgenerated\fR by \fBpoll()\fR; that is, how much time we spent in functions called by \fBpoll()\fR. To determine that, we use the \fB-g\fR option. The example below shows that although \fBpolltest\fR spends only 5% of its time in \fBpoll()\fR itself, \fBpoll()\fR-induced work accounts for 34% of the load.
+In the example above, 5% of the samples were in \fBpoll()\fR. This tells us
+how much time was spent inside \fBpoll()\fR itself, but tells us nothing
+about how much work was \fBgenerated\fR by \fBpoll()\fR; that is, how much
+time we spent in functions called by \fBpoll()\fR. To determine that, we use
+the \fB-g\fR option. The example below shows that although \fBpolltest\fR
+spends only 5% of its time in \fBpoll()\fR itself, \fBpoll()\fR-induced work
+accounts for 34% of the load.
 
 .sp
 .LP
-Note that the functions that generate the profiling interrupt (\fBlockstat_intr()\fR, \fBcyclic_fire()\fR, and so forth) appear in every stack trace, and therefore are considered to have generated 100% of the load. This illustrates an important point: the generated load percentages do \fBnot\fR add up to 100% because they are not independent. If 72% of all stack traces contain both \fBfoo()\fR and \fBbar()\fR, then both \fBfoo()\fR and \fBbar()\fR are 72% load generators.
+Note that the functions that generate the profiling interrupt
+(\fBlockstat_intr()\fR, \fBcyclic_fire()\fR, and so forth) appear in every
+stack trace, and therefore are considered to have generated 100% of the load.
+This illustrates an important point: the generated load percentages do
+\fBnot\fR add up to 100% because they are not independent. If 72% of all
+stack traces contain both \fBfoo()\fR and \fBbar()\fR, then both \fBfoo()\fR
+and \fBbar()\fR are 72% load generators.
 
 .sp
 .in +2
@@ -684,10 +762,14 @@ Count genr cuml rcnt     nsec Hottest CPU+PIL     Caller
 .sp
 
 .LP
-\fBExample 6 \fRGathering Lock Contention and Profiling Data for a Specific Module
+\fBExample 6 \fRGathering Lock Contention and Profiling Data for a Specific
+Module
 .sp
 .LP
-In this example we use the \fB-f\fR option not to specify a single function, but rather to specify the entire text space of the \fBsbus\fR module. We gather both lock contention and profiling statistics so that contention can be correlated with overall load on the module. 
+In this example we use the \fB-f\fR option not to specify a single function,
+but rather to specify the entire text space of the \fBsbus\fR module. We
+gather both lock contention and profiling statistics so that contention can
+be correlated with overall load on the module.
 
 .sp
 .in +2
@@ -736,7 +818,7 @@ Count indv cuml rcnt     nsec Lock               Caller
 Profiling interrupt: 229 events in 10.042 seconds (23 events/sec)
 
 Count indv cuml rcnt     nsec Hottest CPU+PIL    Caller
- 
+
 -------------------------------------------------------------------------
    89  39%  39% 1.00      426 cpu[0]+6           sync_stream_buf
    64  28%  67% 1.00      398 cpu[0]+6           sbus_intr_wrapper
@@ -752,7 +834,8 @@ Count indv cuml rcnt     nsec Hottest CPU+PIL    Caller
 .sp
 
 .LP
-\fBExample 7 \fRDetermining the Average PIL (processor interrupt level) for a CPU
+\fBExample 7 \fRDetermining the Average PIL (processor interrupt level) for
+a CPU
 .sp
 .in +2
 .nf
@@ -776,7 +859,8 @@ Count indv cuml rcnt     nsec CPU+PIL             Hottest Caller
 .sp
 
 .LP
-\fBExample 8 \fRDetermining which Subsystem is Causing the System to be Busy
+\fBExample 8 \fRDetermining which Subsystem is Causing the System to be
+Busy
 .sp
 .in +2
 .nf
@@ -790,7 +874,7 @@ Count indv cuml rcnt     nsec CPU+PIL          Caller
 1929   40%  40% 0.00     3215 cpu[0]           usec_delay+0x78
   nsec ------ Time Distribution ------ count   Stack
   4096 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  1872    ata_wait+0x90
-  8192 |                               27      acersb_get_intr_status+0x34     
+  8192 |                               27      acersb_get_intr_status+0x34
  16384 |                               29      ata_set_feature+0x124
  32768 |                               1       ata_disk_start+0x15c
                                                ata_hba_start+0xbc
@@ -815,8 +899,8 @@ See \fBattributes\fR(5) for descriptions of the following attributes:
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i) 
-lw(2.75i) |lw(2.75i) 
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -826,23 +910,36 @@ AvailabilitySUNWdtrc
 .SH SEE ALSO
 .sp
 .LP
-\fBdtrace\fR(1M), \fBplockstat\fR(1M), \fBattributes\fR(5), \fBlockstat\fR(7D), \fBmutex\fR(9F), \fBrwlock\fR(9F)
+\fBdtrace\fR(1M), \fBplockstat\fR(1M), \fBattributes\fR(5),
+\fBlockstat\fR(7D), \fBmutex\fR(9F), \fBrwlock\fR(9F)
 .sp
 .LP
 \fISolaris Dynamic Tracing Guide\fR
 .SH NOTES
 .sp
 .LP
-The profiling support provided by \fBlockstat\fR \fB-I\fR replaces the old (and undocumented) \fB/usr/bin/kgmon\fR and \fB/dev/profile\fR.
+The profiling support provided by \fBlockstat\fR \fB-I\fR replaces the old
+(and undocumented) \fB/usr/bin/kgmon\fR and \fB/dev/profile\fR.
 .sp
 .LP
-Tail-call elimination can affect call sites. For example, if \fBfoo()\fR\fB+0x50\fR calls \fBbar()\fR and the last thing \fBbar()\fR does is call \fBmutex_exit()\fR, the compiler can arrange for \fBbar()\fR to branch to \fBmutex_exit()\fRwith a return address of \fBfoo()\fR\fB+0x58\fR. Thus, the \fBmutex_exit()\fR in \fBbar()\fR will appear as though it occurred at \fBfoo()\fR\fB+0x58\fR.
+Tail-call elimination can affect call sites. For example, if
+\fBfoo()\fR\fB+0x50\fR calls \fBbar()\fR and the last thing \fBbar()\fR does
+is call \fBmutex_exit()\fR, the compiler can arrange for \fBbar()\fR to
+branch to \fBmutex_exit()\fRwith a return address of \fBfoo()\fR\fB+0x58\fR.
+Thus, the \fBmutex_exit()\fR in \fBbar()\fR will appear as though it occurred
+at \fBfoo()\fR\fB+0x58\fR.
 .sp
 .LP
-The \fBPC\fR in the stack frame in which an interrupt occurs can be bogus because, between function calls, the compiler is free to use the return address register for local storage.
+The \fBPC\fR in the stack frame in which an interrupt occurs can be bogus
+because, between function calls, the compiler is free to use the return
+address register for local storage.
 .sp
 .LP
-When using the \fB-I\fR and \fB-s\fR options together, the interrupted PC will usually not appear anywhere in the stack since the interrupt handler is entered asynchronously, not by a function call from that \fBPC\fR.
+When using the \fB-I\fR and \fB-s\fR options together, the interrupted PC
+will usually not appear anywhere in the stack since the interrupt handler is
+entered asynchronously, not by a function call from that \fBPC\fR.
 .sp
 .LP
-The \fBlockstat\fR technology is provided on an as-is basis. The format and content of \fBlockstat\fR output reflect the current Solaris kernel implementation and are therefore subject to change in future releases.
+The \fBlockstat\fR technology is provided on an as-is basis. The format and
+content of \fBlockstat\fR output reflect the current Solaris kernel
+implementation and are therefore subject to change in future releases.
