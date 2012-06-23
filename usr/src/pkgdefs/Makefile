@@ -256,6 +256,7 @@ COMMON_SUBDIRS= \
 	SUNWcstl \
 	SUNWdcaf \
 	SUNWdcar \
+	SUNWdes \
 	SUNWdhcm  \
 	SUNWdhcsb  \
 	SUNWdhcsr  \
