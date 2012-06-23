@@ -369,6 +369,7 @@ COMMON_SUBDIRS= \
 	SUNWkey  \
 	SUNWloc  \
 	SUNWluxop \
+	SUNWman \
 	SUNWmdar \
 	SUNWmdau \
 	SUNWmdb \
