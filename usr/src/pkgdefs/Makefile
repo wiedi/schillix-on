@@ -256,7 +256,6 @@ COMMON_SUBDIRS= \
 	SUNWcstl \
 	SUNWdcaf \
 	SUNWdcar \
-	SUNWdes \
 	SUNWdhcm  \
 	SUNWdhcsb  \
 	SUNWdhcsr  \
@@ -520,6 +519,7 @@ COMMON_SUBDIRS= \
 	SUNWsshdr \
 	SUNWsshdu \
 	SUNWstmf \
+	SUNWsystem-des \
 	SUNWdriver-storage-blkdev \
 	SUNWstmfu \
 	SUNWtavor \
