@@ -52,6 +52,7 @@ MANFILES=				\
 	automountd.1m			\
 	autopush.1m			\
 	bart.1m				\
+	beadm.1m			\
 	boot.1m				\
 	bootadm.1m			\
 	bootconfchk.1m			\
