@@ -24,6 +24,7 @@ MANSECT=	7
 MANFILES=				\
 	cpr.7				\
 	FSS.7				\
+	SDC.7				\
 	ibmf.7				\
 	Intro.7
 

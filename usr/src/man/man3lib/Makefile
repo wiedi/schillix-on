@@ -47,11 +47,14 @@ MANFILES=				\
 	libelf.3lib			\
 	libexacct.3lib			\
 	libfcoe.3lib			\
+	libfmevent.3lib			\
 	libform.3lib			\
 	libfstyp.3lib			\
 	libgen.3lib			\
 	libgss.3lib			\
+	libhbaapi.3lib			\
 	libidnkit.3lib			\
+	libilb.3lib			\
 	libintl.3lib			\
 	libiscsit.3lib			\
 	libkmf.3lib			\
@@ -89,6 +92,7 @@ MANFILES=				\
 	libpool.3lib			\
 	libproject.3lib			\
 	libpthread.3lib			\
+	libreparse.3lib			\
 	libresolv.3lib			\
 	librpcsvc.3lib			\
 	librsm.3lib			\
@@ -106,6 +110,7 @@ MANFILES=				\
 	libsocket.3lib			\
 	libssagent.3lib			\
 	libssasnmp.3lib			\
+	libstdcxx4.3lib			\
 	libstmf.3lib			\
 	libsys.3lib			\
 	libsysevent.3lib		\

@@ -73,6 +73,7 @@ MANFILES=				\
 	cfgadm_sbd.1m			\
 	cfgadm_scsi.1m			\
 	cfgadm_sdcard.1m		\
+	cfgadm_shp.1m			\
 	cfgadm_sysctrl.1m		\
 	cfgadm_usb.1m			\
 	cfgadm.1m			\
@@ -202,6 +203,8 @@ MANFILES=				\
 	hextoalabel.1m			\
 	host.1m				\
 	hostconfig.1m			\
+	hotplug.1m			\
+	hotplugd.1m			\
 	htable.1m			\
 	ickey.1m			\
 	id.1m				\
@@ -216,6 +219,8 @@ MANFILES=				\
 	iicpshd.1m			\
 	ikeadm.1m			\
 	ikecert.1m			\
+	ilbadm.1m			\
+	ilbd.1m				\
 	imqadmin.1m			\
 	imqbrokerd.1m			\
 	imqcmd.1m			\
@@ -455,6 +460,7 @@ MANFILES=				\
 	patchadd.1m			\
 	patchrm.1m			\
 	pbind.1m			\
+	pcitool.1m			\
 	pcmciad.1m			\
 	picld.1m			\
 	ping.1m				\
@@ -463,6 +469,7 @@ MANFILES=				\
 	pkgadm.1m			\
 	pkgask.1m			\
 	pkgchk.1m			\
+	pkgcond.1m			\
 	pkgrm.1m			\
 	plockstat.1m			\
 	pmadm.1m			\
@@ -518,6 +525,7 @@ MANFILES=				\
 	rem_drv.1m			\
 	remove_allocatable.1m		\
 	removef.1m			\
+	reparsed.1m			\
 	repquota.1m			\
 	rmmount.1m			\
 	rmt.1m				\
@@ -645,6 +653,7 @@ MANFILES=				\
 	ttymon.1m			\
 	tunefs.1m			\
 	txzonemgr.1m			\
+	tzreload.1m			\
 	tzselect.1m			\
 	uadmin.1m			\
 	ucodeadm.1m			\
@@ -675,6 +684,8 @@ MANFILES=				\
 	vntsd.1m			\
 	volcopy_ufs.1m			\
 	volcopy.1m			\
+	vrrpadm.1m			\
+	vrrpd.1m			\
 	vscanadm.1m			\
 	vscand.1m			\
 	wall.1m				\
