@@ -122,6 +122,7 @@ MANFILES=				\
 	iser.7d				\
 	iwh.7d				\
 	iwi.7d				\
+	iwp.7d				\
 	ixgbe.7d			\
 	kfb.7d				\
 	kmdb.7d				\
@@ -142,6 +143,7 @@ MANFILES=				\
 	mr_sas.7d			\
 	msglog.7d			\
 	mt.7d				\
+	mwl.7d				\
 	mxfe.7d				\
 	myri10ge.7d			\
 	n2cp.7d				\

@@ -102,6 +102,7 @@ MANFILES=				\
 	door_revoke.3c			\
 	door_server_create.3c		\
 	door_ucred.3c			\
+	door_xcreate.3c			\
 	drand48.3c			\
 	dup2.3c				\
 	econvert.3c			\

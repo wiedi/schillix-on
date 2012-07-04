@@ -1,0 +1,284 @@
+'\" te
+.\" Copyright (c) 2009, Sun Microsystems, Inc. All Rights Reserved
+.\" CDDL HEADER START
+.\"
+.\" The contents of this file are subject to the terms of the
+.\" Common Development and Distribution License (the "License").
+.\" You may not use this file except in compliance with the License.
+.\"
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+.\" or http://www.opensolaris.org/os/licensing.
+.\" See the License for the specific language governing permissions
+.\" and limitations under the License.
+.\"
+.\" When distributing Covered Code, include this CDDL HEADER in each
+.\" file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+.\" If applicable, add the following below this CDDL HEADER, with the
+.\" fields enclosed by brackets "[]" replaced with your own identifying
+.\" information: Portions Copyright [yyyy] [name of copyright owner]
+.\"
+.\" CDDL HEADER END
+.TH ipkg 5 "30 Nov 2009" "SunOS 5.11" "Standards, Environments, and Macros"
+.SH NAME
+ipkg \- ipkg branded zone
+.SH DESCRIPTION
+.sp
+.LP
+The \fBipkg\fR brand uses the branded zones framework described in
+\fBbrands\fR(5) to run zones installed with the same software as is
+installed in the global zone. The system software must always be in sync
+with the global zone when using a \fBipkg\fR brand. The system software
+packages within the zone are managed using the image packaging system. See
+\fBpkg(5)\fR.
+.SS "Configuration and Administration"
+.sp
+.LP
+The \fBipkg\fR brand supports the whole root non-global zone model. All of
+the required system software and any additional packages are installed into
+the private file systems of the zone. The zone must reside on its own
+\fBzfs\fR(1M) dataset and only ZFS is supported. The ZFS dataset is created
+automatically when the zone is installed or attached. If a ZFS dataset
+cannot be created, the zone is not installed or attached.
+.SH SUB-COMMANDS
+.sp
+.LP
+The following \fBipkg\fR brand-specific subcommand options are supported by
+\fBzoneadm\fR(1M).
+.sp
+.ne 2
+.mk
+.na
+\fB\fBattach\fR [\fB-a\fR \fIarchive\fR | \fB-d\fR \fIpath\fR]
+[\fB-u\fR]\fR
+.ad
+.sp .6
+.RS 4n
+Attach the specified \fBipkg\fR branded zone image into the zone. If
+neither \fB-a\fR or \fB-d\fR is specified, the zone's zonepath is assumed to
+already be properly installed with the zone's files. \fBzoneadm\fR checks
+package levels on the machine to which the zone is to be attached. If the
+packages that the zone depends on from the global zone are different (have
+different revision numbers) from the dependent packages on the source
+machine, \fBzoneadm\fR reports these conflicts and does not perform the
+attach. If the destination system has only newer dependent packages (higher
+revision numbers) than those on the source system, you can use the
+\fB-u\fRoption to update the attached zone to match the revision of the
+packages that exist on the new system. With \fB-u\fR, as in the default
+behavior, \fBzoneadm\fR does not perform an attach if outdated packages are
+found on the target system.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIarchive\fR\fR
+.ad
+.sp .6
+.RS 4n
+The path to a \fBcpio\fR(1) or \fBpax\fR(1) \fBxustar\fR archive of an
+installed \fBipkg\fR branded zone's zonepath. \fBcpio\fR archives can be
+compressed using \fBgzip\fR or \fBbzip2\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIpath\fR\fR
+.ad
+.sp .6
+.RS 4n
+The path to the zonepath directory of a \fBipkg\fR branded zone's
+zonepath.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.sp .6
+.RS 4n
+Update the packages for the zone's system software to match the global
+zone.
+.RE
+
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fBinstall\fR [\fB-c\fR \fIcertificate_file\fR] [\fB-k\fR
+\fIkey_file\fR] [\fB-P\fR \fIpublisher\fR\fB=\fR\fIuri\fR] [\fB-e\fR
+\fIextrapkg\fR [...]]\fR
+.ad
+.br
+.na
+\fB\fBinstall\fR [\fB-a\fR \fIarchive\fR] | [\fB-d\fR \fIpath\fR]
+[\fB-p\fR] [\fB-s\fR] [\fB-u\fR] [\fB-v\fR]\fR
+.ad
+.sp .6
+.RS 4n
+The \fBipkg\fR brand installer supports installing the zone from either the
+software repository or from an image of an installed system running the same
+release. This can be a \fBcpio\fR(1) or \fBpax\fR(1) \fBxustar\fR archive.
+The \fBcpio\fR archive can be compressed with \fBgzip\fR or \fBbzip2\fR. The
+image can also be a path to the top-level of a system's root tree, or a
+pre-existing zone path.
+.sp
+If neither the \fB-a\fR or \fB-d\fR option is used, the zone is installed
+from the repository.
+.sp
+To install the zone from a system image either the \fB-a\fR or \fB-d\fR is
+required. Either the \fB-u\fR or \fB-p\fR option is also required in this
+case.
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-a\fR \fIarchive\fR\fR
+.ad
+.RS 23n
+.rt
+The path to a \fBcpio\fR(1) or \fBpax\fR(1) \fBxustar\fRarchive of an
+installed system. \fBcpio\fR archives may be compressed using \fBgzip\fR or
+\fBbzip2\fR.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-c\fR \fIcertificate_file\fR\fR
+.ad
+.RS 23n
+.rt
+The path to the certificate file needed for accessing the repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-d\fR \fIpath\fR\fR
+.ad
+.RS 23n
+.rt
+The path to the root directory of an installed system. If path is a hyphen
+(\fB-\fR), the zonepath is presumed to be already populated with the system
+image
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-e\fR \fIpackage_name\fR\fR
+.ad
+.RS 23n
+.rt
+The name of a package to install into the zone. The \fB-e\fR option is used
+to specify an additional package to install, in addition to the base set of
+software which is always installed into the zone. Multiple \fB-e\fR options
+can be used
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-k\fR \fIkey_file\fR\fR
+.ad
+.RS 23n
+.rt
+The path to the key file needed for accessing the repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-P\fR \fIpublisher\fR\fB=\fR\fIuri\fR\fR
+.ad
+.RS 23n
+.rt
+The name of a software repository publisher and its associated URI to use
+to install the zone instead of the default global zone's repository.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-p\fR\fR
+.ad
+.RS 23n
+.rt
+Preserve the system configuration after installing the zone.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-s\fR\fR
+.ad
+.RS 23n
+.rt
+Install silently
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-u\fR\fR
+.ad
+.RS 23n
+.rt
+Run \fBsys-unconfig\fR(1M) on the zone after installing it.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\fB-v\fR\fR
+.ad
+.RS 23n
+.rt
+Verbose output from the install process.
+.RE
+
+.RE
+
+.SH ATTRIBUTES
+.sp
+.LP
+See \fBattributes\fR(5) for a description of the following attributes:
+.sp
+
+.sp
+.TS
+tab() box;
+cw(2.75i) |cw(2.75i)
+lw(2.75i) |lw(2.75i)
+.
+ATTRIBUTE TYPEATTRIBUTE VALUE
+_
+AvailabilitySUNWzoneu
+_
+Interface StabilityUncommitted
+.TE
+
+.SH SEE ALSO
+.sp
+.LP
+\fBcpio\fR(1), \fBpax\fR(1), \fBzfs\fR(1M), \fBzlogin\fR(1),
+\fBzonename\fR(1), \fBsys-unconfig\fR(1M), \fBzoneadm\fR(1M),
+\fBzonecfg\fR(1M),, \fBattributes\fR(5), \fBbrands\fR(5),
+\fBprivileges\fR(5), \fBzones\fR(5)
+.sp
+.LP
+\fBpkg(5)\fR, available in the IPS consolidation

@@ -57,6 +57,7 @@ MANFILES=				\
 	ieee802.11.5			\
 	Intro.5				\
 	ipfilter.5			\
+	ipkg.5				\
 	isalist.5			\
 	kerberos.5			\
 	krb5_auth_rules.5		\
@@ -118,6 +119,7 @@ MANFILES=				\
 	smf_security.5			\
 	smf_template.5			\
 	smf.5				\
+	solaris10.5			\
 	standards.5			\
 	sticky.5			\
 	tecla.5				\
