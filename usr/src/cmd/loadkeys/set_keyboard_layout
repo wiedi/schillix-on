@@ -26,16 +26,39 @@
 #
 
 # get the valid layout name from the eeprom and set it into kernel.
+# If the kernel holds a non-default keyboard layout, take this and set
+# it up. If the layout name is "Ask", ask for a new value.
 # check space and tab to make sure that the kbd -s interaction mode
 # doesn't run here.
-KBD_LAYOUT_NVRAM_EXIST="`/usr/sbin/eeprom | grep keyboard-layout`"
+#
+# Note that:
+# KBD_LAYOUT_NVRAM_EXIST="`/usr/sbin/eeprom | grep keyboard-layout`"
+# Results in: KBD_LAYOUT_NVRAM_EXIST=keyboard-layout=Unknown
+
+KBD_LAYOUT_NAME="`/usr/sbin/prtconf -v | /usr/bin/sed -n '/keyboard-layout/ {
+x
+N
+s/\n//
+p
+}' | /usr/bin/cut -d\' -f2`"
+
+#KBD_LAYOUT_NAME=Ask
+
+KBD_LAYOUT_NVRAM_EXIST="$KBD_LAYOUT_NAME"
+
+echo KBD_LAYOUT_NAME: '"'$KBD_LAYOUT_NAME'"'
 
 if test -n "$KBD_LAYOUT_NVRAM_EXIST"
 then
-	KBD_LAYOUT_NAME="`/usr/sbin/eeprom keyboard-layout |\
-			/usr/bin/sed -n 's/keyboard-layout=//g; s/[ |	]*//p'`"
+	: do nothing
 else
-	exit 0
+	KBD_LAYOUT_NAME=Unknown
+fi
+
+if test ".$KBD_LAYOUT_NAME" = .Ask
+then
+	/usr/bin/kbd -s < /dev/console > /dev/console
+	exit $?
 fi
 
 # The firmware on the keyboard may report "Taiwanese" and so 
