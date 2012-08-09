@@ -1,7 +1,8 @@
-/* @(#)cpp.c	1.26 12/08/07 2010-2012 J. Schilling */
+/* @(#)cpp.c	1.28 12/08/08 2010-2012 J. Schilling */
+#include <schily/mconfig.h>
 #ifndef lint
-static	char sccsid[] =
-	"@(#)cpp.c	1.26 12/08/07 2010-2012 J. Schilling";
+static	UConst char sccsid[] =
+	"@(#)cpp.c	1.28 12/08/08 2010-2012 J. Schilling";
 #endif
 /*
  * C command
@@ -1512,10 +1513,10 @@ main(argc,argv)
  */
 # ifdef sun
 # ifndef __BUILTIN_VA_ARG_INCR
-# define __BUILTIN_VA_ARG_INCR
+# define __BUILTIN_VA_ARG_INCR	1
 # endif
 # endif
-# if __BUILTIN_VA_ARG_INCR
+# ifdef __BUILTIN_VA_ARG_INCR
 	varloc=stsym ("__BUILTIN_VA_ARG_INCR");
 # endif
 	}
