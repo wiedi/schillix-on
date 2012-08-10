@@ -329,7 +329,7 @@ dcopy_free(dcopy_handle_t *channel)
 {
 	dcopy_device_handle_t device;
 	dcopy_list_t *list;
-	boolean_t cleanup;
+	boolean_t cleanup = B_FALSE;
 
 
 	ASSERT(*channel != NULL);
