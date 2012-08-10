@@ -24,7 +24,7 @@
 # Use is subject to license terms.
 #
 
-TEMPLATES=	SUNWdefault.xml SUNWblank.xml
+TEMPLATES=	SUNWipkg.xml SUNWipkgblank.xml
 XMLDOCS=	config.xml platform.xml
 CLOBBERFILES=	$(ROOTXMLDOCS) $(ROOTTEMPLATES)
 
