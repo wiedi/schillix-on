@@ -153,7 +153,7 @@ static int eff_num_gw;			/* effective number of gateways */
 static int num_wraps = -1;		/* no of times 64K icmp_seq wrapped */
 static ushort_t dest_port = 32768 + 666; /* starting port for the UDP probes */
 static char *gw_list[MAXMAX_GWS];	/* list of gateways as user enters */
-static int interval = 1;		/* interval between transmissions */
+static struct timeval interval = {1, 0}; /* interval between transmissions */
 static int options;			/* socket options */
 static int moptions;			/* multicast options */
 int npackets;				/* number of packets to send */
@@ -201,6 +201,7 @@ static void get_gwaddrs(char *[], int, union any_in_addr *,
 static void get_hostinfo(char *, int, struct addrinfo **);
 static ushort_t in_cksum(ushort_t *, int);
 static int int_arg(char *s, char *what);
+static double double_arg(char *s, char *what);
 boolean_t is_a_target(struct addrinfo *, union any_in_addr *);
 static void mirror_gws(union any_in_addr *, int);
 static void pinger(int, struct sockaddr *, struct msghdr *, int);
@@ -322,7 +323,16 @@ main(int argc, char *argv[])
 
 		case 'I':
 			stats = _B_TRUE;
-			interval = int_arg(optarg, "interval");
+			if (strchr(optarg, '.')) {
+				double	i = double_arg(optarg, "interval");
+
+				interval.tv_sec = i;
+				interval.tv_usec = (i - interval.tv_sec) *
+								1000000.0;
+			} else {
+				interval.tv_sec = int_arg(optarg, "interval");
+				interval.tv_usec = 0;
+			}
 			break;
 
 		case 'i':
@@ -1686,11 +1696,15 @@ sigalrm_handler(void)
 	 * Guard againist denial-of-service attacks. Make sure ping doesn't
 	 * send probes for every SIGALRM it receives. Evil hacker can generate
 	 * SIGALRMs as fast as it can, but ping will ignore those which are
-	 * received too soon (earlier than 0.5 sec) after it sent the last
+	 * received too soon (earlier than 0.5 sec or half of the wait time
+	 * if waiting for less than a second) after it sent the last
 	 * probe.  We use gethrtime() instead of gettimeofday() because
 	 * the latter is not linear and is prone to resetting or drifting
 	 */
-	if ((gethrtime() - t_last_probe_sent) < 500000000) {
+	int	minwait = 500000000;
+	if (interval.tv_sec == 0 && interval.tv_usec != 0)
+		minwait = interval.tv_usec * 500;
+	if ((gethrtime() - t_last_probe_sent) < minwait) {
 		return;
 	}
 	send_scheduled_probe();
@@ -1707,7 +1721,12 @@ schedule_sigalrm(void)
 
 	if (npackets == 0 ||
 	    current_targetaddr->num_sent < current_targetaddr->num_probes) {
-		(void) alarm(interval);
+		struct itimerval itv;
+
+		timerclear(&itv.it_interval);
+		itv.it_value.tv_sec = interval.tv_sec;
+		itv.it_value.tv_usec = interval.tv_usec;
+		setitimer(ITIMER_REAL, &itv, 0);
 	} else {
 		if (current_targetaddr->got_reply) {
 			waittime = 2 * tmax / MICROSEC;
@@ -2417,6 +2436,27 @@ int_arg(char *s, char *what)
 	} else {
 		num = (int)strtol(s, &ep, 10);
 	}
+
+	if (errno || *ep != '\0' || num < 0) {
+		(void) Fprintf(stderr, "%s: bad %s: %s\n",
+		    progname, what, s);
+		exit(EXIT_FAILURE);
+	}
+
+	return (num);
+}
+
+/*
+ * Parse double argument; exit with an error if it's not a number.
+ */
+static double
+double_arg(char *s, char *what)
+{
+	char *ep;
+	double num;
+
+	errno = 0;
+	num = strtod(s, &ep);
 
 	if (errno || *ep != '\0' || num < 0) {
 		(void) Fprintf(stderr, "%s: bad %s: %s\n",
