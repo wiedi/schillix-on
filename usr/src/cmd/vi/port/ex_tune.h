@@ -100,10 +100,15 @@
  * length of opening on hardcopies and allows two lines of open on
  * terminals like adm3's (glass tty's) where it switches to pseudo
  * hardcopy mode when a line gets longer than 80 characters.
+ *
+ * TUBELINES was 107 with the last Sun version and TUBESIZE was 54500.
+ * This is not sufficient for current typical screen sizes and small
+ * fonts. We should find a way to dynamically allocate the screen
+ * buffer.
  */
-#define	TUBELINES	107	/* Number of screen lines for visual */
+#define	TUBELINES	200	/* Number of screen lines for visual */
 #define	TUBECOLS	500	/* Number of screen columns for visual */
-#define	TUBESIZE	54500	/* Maximum screen size for visual */
+#define	TUBESIZE	101000	/* Maximum screen size for visual */
 
 /*
  * Output column (and line) are set to this value on cursor addressable
