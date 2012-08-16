@@ -2199,6 +2199,11 @@ web_get_file(PKG_ERR *err, char *dwnld_dir, int nointeract, char **fname)
 		}
 	}
 
+	if (*bname == '\0') {
+		free(bname);
+		bname = xstrdup("index.html");
+	}
+
 	*fname = bname;
 
 	if ((head_val = http_get_header_value(ps->hps, LAST_MODIFIED_HDR))
