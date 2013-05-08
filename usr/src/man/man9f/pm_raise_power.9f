@@ -45,7 +45,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 13n
 .rt
@@ -56,22 +56,26 @@ Pointer to the device's \fBdev_info\fR structure
 .ne 2
 .mk
 .na
-\fIcomponent\fR
+.I component
 .ad
 .RS 13n
 .rt
-The number of the \fIcomponent\fR for which a power level change is desired
+The number of the
+.I component
+for which a power level change is desired
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlevel\fR
+.I level
 .ad
 .RS 13n
 .rt
-The power level to which the indicated \fIcomponent\fR will be raised
+The power level to which the indicated
+.I component
+will be raised
 .RE
 
 .SS "pm_lower_power"
@@ -79,7 +83,7 @@ The power level to which the indicated \fIcomponent\fR will be raised
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 13n
 .rt
@@ -90,86 +94,124 @@ Pointer to the device's \fBdev_info\fR structure
 .ne 2
 .mk
 .na
-\fIcomponent\fR
+.I component
 .ad
 .RS 13n
 .rt
-Number of the \fIcomponent\fR for which a power level change is desired
+Number of the
+.I component
+for which a power level change is desired
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlevel\fR
+.I level
 .ad
 .RS 13n
 .rt
-Power level to which the indicated \fIcomponent\fR will be lowered
+Power level to which the indicated
+.I component
+will be lowered
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
 The \fBpm_raise_power\fR(9F) function requests the Power Management framework
-to raise the power level of \fIcomponent \fRof \fIdip\fR to at least \fIlevel.
+to raise the power level of
+.I component
+of
+.I dip
+to at least \fIlevel.
 \fR 
 .sp
 .LP
 The state of the device should be examined before each physical access. The
-\fBpm_raise_power\fR(9F) function should be called to set a \fIcomponent \fR to
+.BR pm_raise_power (9F)
+function should be called to set a
+.I component
+to
 the required power level if the operation to be performed requires the
-\fIcomponent \fR to be at a power level higher than its current power level.
+\fIcomponent\fR  to be at a power level higher than its current power level.
 .sp
 .LP
-When \fBpm_raise_power\fR(9F) returns with success, the \fIcomponent \fR is
+When
+.BR pm_raise_power "(9F) returns with success, the"
+.I component
+is
 guaranteed to be at least at the requested power level. All devices that depend
 on this will be at their full power level. Since the actual device power level
 may be higher than requested by the driver, the driver should not make any
 assumption about the absolute power level on successful return from
-\fBpm_raise_power\fR(9F). 
+.BR pm_raise_power (9F).
 .sp
 .LP
 The \fBpm_raise_power\fR(9F) function may cause re-entry of the driver
-\fBpower\fR(9E) to raise the power level. Deadlock may result if the driver
-locks are held across the call to \fBpm_raise_power\fR(9F).
+.BR power (9E)
+to raise the power level. Deadlock may result if the driver
+locks are held across the call to
+.BR pm_raise_power (9F).
 .sp
 .LP
 The \fBpm_lower_power\fR(9F) function requests the Power Management framework
-to lower the power level of \fIcomponent \fRof \fIdip\fR to at most
-\fIlevel\fR.
+to lower the power level of
+.I component
+of
+.I dip
+to at most
+.IR level .
 .sp
 .LP
 Normally, transitions to lower power levels are initiated by the Power
-Management framework based on \fIcomponent\fR idleness. However, when
+Management framework based on
+.I component
+idleness. However, when
 detaching, the driver should also initiate reduced power levels by setting the
 power level of all device components to their lowest levels. The
-\fBpm_lower_power\fR(9F) function is intended for this use only, and will
-return \fBDDI_FAILURE\fR if the driver is not detaching at the time of the
+.BR pm_lower_power (9F)
+function is intended for this use only, and will
+return
+.B DDI_FAILURE
+if the driver is not detaching at the time of the
 call. 
 .sp
 .LP
-If automatic Power Management is disabled (see \fBdtpower\fR(1M) and
+If automatic Power Management is disabled (see
+.BR dtpower (1M)
+and
 \fBpower.conf\fR(4)), \fBpm_lower_power\fR(9F) returns \fBDDI_SUCCESS\fR
 without changing the power level of the component. Otherwise, when
-\fBpm_lower_power\fR(9F) returns with success, the \fIcomponent \fR is
+.BR pm_lower_power (9F)
+returns with success, the
+.I component
+is
 guaranteed to be at most at the requested power level. Since the actual device
 power level may be lower than requested by the driver, the driver should not
 make any assumption about the absolute power level on successful return from
-\fBpm_lower_power\fR(9F). 
+.BR pm_lower_power (9F).
 .sp
 .LP
 The \fBpm_lower_power\fR(9F) function may cause re-entry of the driver
-\fBpower\fR(9E) to lower the power level. Deadlock may result if the driver
-locks are held across the call to \fBpm_lower_power\fR(9F).
+.BR power (9E)
+to lower the power level. Deadlock may result if the driver
+locks are held across the call to
+.BR pm_lower_power (9F).
 .LP
 Note -
 .sp
 .RS 2
 If these functions are called as a result of entry into the driver's
-\fBattach\fR(9E), \fBdetach\fR(9E) or \fBpower\fR(9E) entry point, these
-functions must be called from the same thread which entered \fBattach\fR(9E),
-\fBdetach\fR(9E) or \fBpower\fR(9E).
+.BR attach (9E),
+.BR detach (9E)
+or
+.BR power "(9E) entry point, these"
+functions must be called from the same thread which entered
+.BR attach (9E),
+.BR detach (9E)
+or
+.BR power (9E).
 .RE
 .SH RETURN VALUES
 .sp
@@ -179,7 +221,7 @@ The \fBpm_raise_power\fR(9F) function returns:
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 15n
 .rt
@@ -190,11 +232,11 @@ The \fBpm_raise_power\fR(9F) function returns:
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 15n
 .rt
-\fIComponent \fRor \fIlevel\fR is out of range, or the framework was unable to
+\fIComponent\fR or \fIlevel\fR is out of range, or the framework was unable to
 raise the power level of the component to the requested level.
 .RE
 
@@ -205,11 +247,11 @@ The \fBpm_lower_power\fR(9F) function returns:
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 15n
 .rt
-\fI Component \fR is now at the requested power level or lower, or automatic
+\fI Component\fR  is now at the requested power level or lower, or automatic
 Power Management is disabled.
 .RE
 
@@ -217,11 +259,11 @@ Power Management is disabled.
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 15n
 .rt
-\fI Component \fR or \fIlevel\fR is out of range, or the framework was unable
+\fI Component\fR  or \fIlevel\fR is out of range, or the framework was unable
 to lower the power level of the component to the requested level, or the device
 is not detaching.
 .RE
@@ -230,7 +272,7 @@ is not detaching.
 .sp
 .LP
 A hypothetical disk driver might include this code to handle
-\fBpm_raise_power\fR(9F):
+.BR pm_raise_power (9F):
 .sp
 .in +2
 .nf
@@ -308,7 +350,9 @@ These functions can be called from user or kernel context.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attribute:
+See
+.BR attributes (5)
+for a description of the following attribute:
 .sp
 
 .sp
@@ -326,8 +370,11 @@ Interface stabilityCommitted
 .sp
 .LP
 \fBpower.conf\fR(4), \fBpm\fR(7D), \fBattach\fR(9E), \fBdetach\fR(9E),
-\fBpower\fR(9E), \fBpm_busy_component\fR(9F), \fBpm_idle_component\fR(9F),
-\fBpm\fR(9P), \fBpm-components\fR(9P)
+.BR power (9E),
+.BR pm_busy_component (9F),
+.BR pm_idle_component (9F),
+.BR pm (9P),
+.BR pm-components (9P)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

@@ -60,22 +60,36 @@ close \- close a file descriptor
 .SH DESCRIPTION
 .sp
 .LP
-The \fBclose()\fR function deallocates the file descriptor indicated by
+The
+.B close()
+function deallocates the file descriptor indicated by
 \fIfildes\fR. To deallocate means to make the file descriptor available for
-return by subsequent calls to \fBopen\fR(2) or other functions that allocate
+return by subsequent calls to
+.BR open (2)
+or other functions that allocate
 file descriptors. All outstanding record locks owned by the process on the file
 associated with the file descriptor will be removed (that is, unlocked).
 .sp
 .LP
-If \fBclose()\fR is interrupted by a signal that is to be caught, it will
+If
+.B close()
+is interrupted by a signal that is to be caught, it will
 return \fB\(mi1\fR with \fBerrno\fR set to \fBEINTR\fR and the state of
 \fIfildes\fR is unspecified. If an I/O error occurred while reading from or
-writing to the file system during \fBclose()\fR, it returns -1, sets
-\fBerrno\fR to \fBEIO\fR, and the state of \fIfildes\fR is unspecified.
+writing to the file system during
+.BR close() ,
+it returns -1, sets
+\fBerrno\fR to
+.BR EIO ,
+and the state of \fIfildes\fR is unspecified.
 .sp
 .LP
-When all file descriptors associated with a pipe or \fBFIFO\fR special file
-are closed, any data remaining in the pipe or \fBFIFO\fR will be discarded.
+When all file descriptors associated with a pipe or
+.B FIFO
+special file
+are closed, any data remaining in the pipe or
+.B FIFO
+will be discarded.
 .sp
 .LP
 When all file descriptors associated with an open file description have been
@@ -87,17 +101,34 @@ the file are closed, the space occupied by the file will be freed and the file
 will no longer be accessible.
 .sp
 .LP
-If a streams-based (see \fBIntro\fR(2)) \fIfildes\fR is closed and the calling
-process was previously registered to receive a \fBSIGPOLL\fR signal (see
-\fBsignal\fR(3C)) for events associated with that stream (see \fBI_SETSIG\fR in
-\fBstreamio\fR(7I)), the calling process will be unregistered for events
-associated with the stream.  The last \fBclose()\fR for a stream causes the
-stream associated with \fIfildes\fR to be dismantled. If \fBO_NONBLOCK\fR and
+If a streams-based (see
+.BR Intro (2))
+\fIfildes\fR is closed and the calling
+process was previously registered to receive a
+.B SIGPOLL
+signal (see
+.BR signal (3C))
+for events associated with that stream (see
+.B I_SETSIG
+in
+.BR streamio (7I)),
+the calling process will be unregistered for events
+associated with the stream.  The last
+.B close()
+for a stream causes the
+stream associated with \fIfildes\fR to be dismantled. If
+.B O_NONBLOCK
+and
 \fBO_NDELAY\fR are not set and there have been no signals posted for the
-stream, and if there is data on the module's write queue, \fBclose()\fR waits
+stream, and if there is data on the module's write queue,
+.B close()
+waits
 up to 15 seconds (for each module and driver) for any output to drain before
-dismantling the stream. The time delay can be changed via an \fBI_SETCLTIME\fR
-\fBioctl\fR(2) request (see \fBstreamio\fR(7I)). If the \fBO_NONBLOCK\fR or
+.RB "dismantling the stream. The time delay can be changed via an" " I_SETCLTIME"
+.BR ioctl (2)
+request (see \fBstreamio\fR(7I)). If the
+.B O_NONBLOCK
+or
 \fBO_NDELAY\fR flag is set, or if there are any pending signals, \fBclose()\fR
 does not wait for output to drain, and dismantles the stream immediately.
 .sp
@@ -122,9 +153,13 @@ zero-length message may be sent to the master.
 .LP
 When there is an outstanding cancelable asynchronous I/O operation against
 \fIfildes\fR when \fBclose()\fR is called, that I/O operation is canceled. An
-I/O operation that is not canceled completes as if the \fBclose()\fR operation
+I/O operation that is not canceled completes as if the
+.B close()
+operation
 had not yet occurred. All operations that are not canceled will complete as if
-the \fBclose()\fR blocked until the operations completed.
+the
+.B close()
+blocked until the operations completed.
 .sp
 .LP
 If a shared memory object or a memory mapped file remains referenced at the
@@ -135,25 +170,37 @@ the close results in the memory object becoming unreferenced, and the memory
 object has been unlinked, then the memory object will be removed.
 .sp
 .LP
-If \fIfildes\fR refers to a socket, \fBclose()\fR causes the socket to be
-destroyed. If the socket is connection-mode, and the \fBSO_LINGER\fR option is
+If \fIfildes\fR refers to a socket,
+.B close()
+causes the socket to be
+destroyed. If the socket is connection-mode, and the
+.B SO_LINGER
+option is
 set for the socket with non-zero linger time, and the socket has untransmitted
-data, then \fBclose()\fR will block for up to the current linger interval until
+data, then
+.B close()
+will block for up to the current linger interval until
 all data is transmitted.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. Otherwise, \fB\(mi1\fR is
-returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B 0
+is returned. Otherwise, \fB\(mi1\fR is
+returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBclose()\fR function will fail if:
+The
+.B close()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 11n
 .rt
@@ -164,18 +211,20 @@ The \fIfildes\fR argument is not a valid file descriptor.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 11n
 .rt
-The \fBclose()\fR function was interrupted by a signal.
+The
+.B close()
+function was interrupted by a signal.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOLINK\fR
+.B ENOLINK
 .ad
 .RS 11n
 .rt
@@ -187,7 +236,7 @@ is no longer active.
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 11n
 .rt
@@ -196,12 +245,14 @@ There was no free space remaining on the device containing the file.
 
 .sp
 .LP
-The \fBclose()\fR function may fail if:
+The
+.B close()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 7n
 .rt
@@ -210,7 +261,7 @@ An I/O error occurred while reading from or writing to the file system.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRReassign a file descriptor.
+\fBExample 1\fR Reassign a file descriptor.
 .sp
 .LP
 The following example closes the file descriptor associated with standard
@@ -246,10 +297,12 @@ close(pfd);
 .in -2
 
 .LP
-\fBExample 2 \fRClose a file descriptor.
+\fBExample 2\fR Close a file descriptor.
 .sp
 .LP
-In the following example, \fBclose()\fR is used to close a file descriptor
+In the following example,
+.B close()
+is used to close a file descriptor
 after an unsuccessful attempt is made to associate that file descriptor with a
 stream.
 
@@ -277,13 +330,17 @@ if ((fpfd = fdopen (pfd, "w")) == NULL) {
 .SH USAGE
 .sp
 .LP
-An application that used the \fBstdio\fR function \fBfopen\fR(3C) to open a
+An application that used the
+.B stdio
+function \fBfopen\fR(3C) to open a
 file should use the corresponding \fBfclose\fR(3C) function rather than
-\fBclose()\fR.
+.BR close() .
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -302,8 +359,17 @@ MT-LevelAsync-Signal-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBcreat\fR(2), \fBdup\fR(2), \fBexec\fR(2), \fBfcntl\fR(2),
-\fBioctl\fR(2), \fBopen\fR(2) \fBpipe\fR(2), \fBfattach\fR(3C),
+.BR Intro (2),
+.BR creat (2),
+.BR dup (2),
+.BR exec (2),
+\fBfcntl\fR(2),
+.BR ioctl (2),
+.BR open (2)
+.BR pipe (2),
+\fBfattach\fR(3C),
 \fBfclose\fR(3C), \fBfdetach\fR(3C), \fBfopen\fR(3C), \fBsignal\fR(3C),
-\fBsignal.h\fR(3HEAD), \fBattributes\fR(5), \fBstandards\fR(5),
-\fBstreamio\fR(7I)
+.BR signal.h (3HEAD),
+.BR attributes (5),
+.BR standards (5),
+.BR streamio (7I)

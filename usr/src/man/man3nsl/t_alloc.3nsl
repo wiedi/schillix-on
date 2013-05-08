@@ -63,22 +63,37 @@ t_alloc \- allocate a library structure
 .SH DESCRIPTION
 .sp
 .LP
-This routine is part of the \fBXTI\fR interfaces which evolved from the
+This routine is part of the
+.B XTI
+interfaces which evolved from the
 \fBTLI\fR interfaces. \fBXTI\fR represents the future evolution of these
-interfaces. However, \fBTLI\fR interfaces are supported for compatibility.
-When using a \fBTLI\fR routine that has the same name as an \fBXTI\fR
-routine, a different header file, \fBtiuser.h\fR, must be used.  Refer to the
-section, \fBTLI\fR \fBCOMPATIBILITY\fR, for a description of differences
+interfaces. However,
+.B TLI
+interfaces are supported for compatibility.
+When using a
+.B TLI
+routine that has the same name as an
+.BR XTI
+routine, a different header file,
+.BR tiuser.h ,
+must be used.  Refer to the
+section,
+.BR "TLI COMPATIBILITY" ,
+for a description of differences
 between the two interfaces.
 .sp
 .LP
-The \fBt_alloc()\fR function dynamically allocates memory for the various
+The
+.B t_alloc()
+function dynamically allocates memory for the various
 transport function argument structures as specified below. This function will
 allocate memory for the specified structure, and will also allocate memory
 for buffers referenced by the structure.
 .sp
 .LP
-The structure to allocate is specified by \fIstruct_type\fR and must be one
+The structure to allocate is specified by
+.I struct_type
+and must be one
 of the following:
 .sp
 .in +2
@@ -99,8 +114,12 @@ where each of these structures may subsequently be used as an argument to
 one or more transport functions.
 .sp
 .LP
-Each of the above structures, except  \fBT_INFO,\fR contains at least one
-field of type \fBstruct\fR \fBnetbuf\fR. For each field of this type, the
+Each of the above structures, except 
+.B T_INFO,
+contains at least one
+field of type
+.BR "struct netbuf" .
+For each field of this type, the
 user may specify that the buffer for that field should be allocated as well.
 The length of the buffer allocated will be equal to or greater than the
 appropriate size as returned in the \fIinfo\fR argument of \fBt_open\fR(3NSL)
@@ -112,11 +131,16 @@ following:
 .ne 2
 .mk
 .na
-\fBT_ADDR\fR
+.B T_ADDR
 .ad
 .RS 12n
 .rt
-The \fIaddr\fR field of the \fBt_bind\fR, \fBt_call\fR, \fBt_unitdata\fR or
+The
+.I addr
+field of the
+.BR t_bind ,
+.BR t_call ,
+\fBt_unitdata\fR or
 \fBt_uderr\fR structures.
 .RE
 
@@ -124,23 +148,34 @@ The \fIaddr\fR field of the \fBt_bind\fR, \fBt_call\fR, \fBt_unitdata\fR or
 .ne 2
 .mk
 .na
-\fBT_OPT\fR
+.B T_OPT
 .ad
 .RS 12n
 .rt
-The \fIopt\fR field of the \fBt_optmgmt\fR, \fBt_call\fR, \fBt_unitdata\fR
-or \fBt_uderr\fR structures.
+The
+.I opt
+field of the
+.BR t_optmgmt ,
+.BR t_call ,
+.B t_unitdata
+or
+.B t_uderr
+structures.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBT_UDATA\fR
+.B T_UDATA
 .ad
 .RS 12n
 .rt
-The \fIudata\fR field of the \fBt_call\fR, \fBt_discon\fR or
+The
+.I udata
+field of the
+.BR t_call ,
+\fBt_discon\fR or
 \fBt_unitdata\fR structures.
 .RE
 
@@ -148,7 +183,7 @@ The \fIudata\fR field of the \fBt_call\fR, \fBt_discon\fR or
 .ne 2
 .mk
 .na
-\fBT_ALL\fR
+.B T_ALL
 .ad
 .RS 12n
 .rt
@@ -158,22 +193,37 @@ by the transport provider specified by \fIfd\fR will not be allocated.
 
 .sp
 .LP
-For each relevant field specified in \fIfields\fR, \fBt_alloc()\fR will
+For each relevant field specified in
+.IR fields ,
+\fBt_alloc()\fR will
 allocate memory for the buffer associated with the field, and initialize the
 \fIlen\fR field to zero and the \fIbuf\fR pointer and \fImaxlen\fR field
 accordingly. Irrelevant or unknown values passed in fields are ignored. Since
 the length of the buffer allocated will be based on the same size information
-that is returned to the user on a call to \fBt_open\fR(3NSL) and
+that is returned to the user on a call to
+.BR t_open "(3NSL) and"
 \fBt_getinfo\fR(3NSL), \fIfd\fR must refer to the transport endpoint through
 which the newly allocated structure will be passed. In the case where a
 \fBT_INFO\fR structure is to be allocated, \fIfd\fR may be set to any value.
 In this way the appropriate size information can be accessed. If the size
-value associated with any specified field is  \fBT_INVALID,\fR
+value associated with any specified field is 
+.BR T_INVALID,
 \fBt_alloc()\fR will be unable to determine the size of the buffer to
-allocate and will fail, setting  \fBt_errno\fR to \fBTSYSERR\fR and
-\fBerrno\fR to \fBEINVAL\fR.  See  \fBt_open\fR(3NSL) or
+allocate and will fail, setting 
+.B t_errno
+to
+.B TSYSERR
+and
+\fBerrno\fR to
+.BR EINVAL .
+See 
+.BR t_open "(3NSL) or"
 \fBt_getinfo\fR(3NSL). If the size value associated with any specified field
-is \fBT_INFINITE,\fR then the behavior of  \fBt_alloc()\fR is
+is
+.B T_INFINITE,
+then the behavior of 
+.B t_alloc()
+is
 implementation-defined. For any field not specified in \fIfields\fR,
 \fIbuf\fR will be set to the null pointer and \fIlen\fR and \fImaxlen\fR will
 be set to zero. See  \fBt_open\fR(3NSL) or \fBt_getinfo\fR(3NSL).
@@ -184,13 +234,17 @@ it can be assigned to a pointer to any type of object and then used to access
 such an object or array of such objects in the space allocated.
 .sp
 .LP
-Use of \fBt_alloc()\fR to allocate structures will help ensure the
+Use of
+.B t_alloc()
+to allocate structures will help ensure the
 compatibility of user programs with future releases of the transport
 interface functions.
 .SH RETURN VALUES
 .sp
 .LP
-On successful completion, \fBt_alloc()\fR returns a pointer to the newly
+On successful completion,
+.B t_alloc()
+returns a pointer to the newly
 allocated structure. On failure, a null pointer is returned.
 .SH VALID STATES
 .sp
@@ -199,12 +253,14 @@ ALL - apart from \fBT_UNINIT\fR
 .SH ERRORS
 .sp
 .LP
-On failure, \fBt_errno\fR is set to one of the following:
+On failure,
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 16n
 .rt
@@ -216,11 +272,13 @@ descriptor does not refer to a transport endpoint.
 .ne 2
 .mk
 .na
-\fBTNOSTRUCTYPE\fR
+.B TNOSTRUCTYPE
 .ad
 .RS 16n
 .rt
-Unsupported \fIstruct_type\fR requested. This can include a request for a
+Unsupported
+.I struct_type
+requested. This can include a request for a
 structure type which is inconsistent with the transport provider type
 specified, that is, connection-mode or connectionless-mode.
 .RE
@@ -229,20 +287,20 @@ specified, that is, connection-mode or connectionless-mode.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 16n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI error
-\fB(t_errno)\fR. 
+.BR (t_errno) .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 16n
 .rt
@@ -252,27 +310,43 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-The \fBXTI\fR and \fBTLI\fR interface definitions have common names but use
+The
+.B XTI
+and
+.B TLI
+interface definitions have common names but use
 different header files. This, and other semantic differences between the two
 interfaces are described in the subsections below.
 .SS "Interface Header"
 .sp
 .LP
-The \fBXTI\fR interfaces use the header file, \fBxti.h\fR. \fBTLI\fR
-interfaces should \fInot\fR use this header.  They should use the header:
+The
+.B XTI
+interfaces use the header file,
+.BR xti.h .
+.B TLI
+interfaces should
+.I not
+use this header.  They should use the header:
 .sp
 .LP
-\fB#include\fR \fB<tiuser.h>\fR
+.B #include <tiuser.h>
 .SS "Error Description Values"
 .sp
 .LP
-The \fBt_errno\fR values that can be set by the \fBXTI\fR interface and
-cannot be set by the \fBTLI\fR interface are:
+The
+.B t_errno
+values that can be set by the
+.B XTI
+interface and
+cannot be set by the
+.B TLI
+interface are:
 .sp
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 17n
 .rt
@@ -283,7 +357,7 @@ cannot be set by the \fBTLI\fR interface are:
 .ne 2
 .mk
 .na
-\fBTNOSTRUCTYPE\fR
+.B TNOSTRUCTYPE
 .ad
 .RS 17n
 .rt
@@ -293,33 +367,53 @@ cannot be set by the \fBTLI\fR interface are:
 .SS "Special Buffer Sizes"
 .sp
 .LP
-Assume that the value associated with any field of \fBstruct\fR \fBt_info\fR
-(argument returned by \fBt_open()\fR or \fBt_getinfo()\fR\|) that describes
+Assume that the value associated with any field of \fBstruct t_info\fR
+(argument returned by
+.B t_open()
+or \fBt_getinfo()\fR\|) that describes
 buffer limits is -1. Then the underlying service provider can support a
-buffer of unlimited size.  If this is the case, \fBt_alloc()\fR will allocate
+buffer of unlimited size.  If this is the case,
+.B t_alloc()
+will allocate
 a buffer with the default size 1024 bytes, which may be handled as described
 in the next paragraph.
 .sp
 .LP
 If the underlying service provider supports a buffer of unlimited size in
-the \fBnetbuf\fR structure (see \fBt_connect\fR(3NSL)), \fBt_alloc()\fR will
+the \fBnetbuf\fR structure (see \fBt_connect\fR(3NSL)),
+.B t_alloc()
+will
 return a buffer of size 1024 bytes. If a larger size buffer is required, it
 will need to be allocated separately using a memory allocation routine such
 as \fBmalloc\fR(3C). The \fBbuf\fR and \fBmaxlen\fR fields of the
 \fBnetbuf\fR data structure can then be updated with the address of the new
-buffer and the 1024 byte buffer originally allocated by \fBt_alloc()\fR can
+buffer and the 1024 byte buffer originally allocated by
+.B t_alloc()
+can
 be freed using \fBfree\fR(3C).
 .sp
 .LP
-Assume that the value associated with any field of \fBstruct\fR \fBt_info\fR
-(argument returned by \fBt_open()\fR or \fBt_getinfo()\fR \fB\|)\fR that
-describes nbuffer limits is \fB-2\fR\&. Then \fBt_alloc()\fR will set the
-buffer pointer to \fINULL\fR and the buffer maximum size to \fB0\fR, and then
+Assume that the value associated with any field of \fBstruct t_info\fR
+(argument returned by
+.B t_open()
+or \fBt_getinfo()\fR \fB\|)\fR that
+describes nbuffer limits is
+.BR -2 \&.
+Then
+.B t_alloc()
+will set the
+buffer pointer to
+.I NULL
+and the buffer maximum size to
+.BR 0 ,
+and then
 will return success (see \fBt_open\fR(3NSL) or \fBt_getinfo\fR(3NSL)).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp

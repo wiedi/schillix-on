@@ -67,7 +67,7 @@ Architecture independent level 1 (DDI/DKI). This entry point is
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 11n
 .rt
@@ -82,30 +82,42 @@ Device number.
 .ad
 .RS 11n
 .rt
-File status flag, as set by the  \fBopen\fR(2) or modified by the
+File status flag, as set by the 
+.BR open (2)
+or modified by the
 \fBfcntl\fR(2) system calls. The flag is for information only\(emthe file
 should always be closed completely. Possible values are:   \fBFEXCL\fR,
-\fBFNDELAY\fR, \fBFREAD,\fR \fBFKLYR,\fR and  \fBFWRITE\fR. Refer to
-\fBopen\fR(9E) for more information.
+.BR FNDELAY ,
+\fBFREAD, FKLYR,\fR and
+.BR FWRITE .
+Refer to
+.BR open (9E)
+for more information.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIotyp\fR
+.I otyp
 .ad
 .RS 11n
 .rt
 Parameter supplied so that the driver can determine how many times a device
-was opened and for what reasons.  The flags assume the  \fBopen()\fR routine
-may be called many times, but the  \fBclose()\fR routine should only be
-called on the last  \fBclose()\fR of a device.
+was opened and for what reasons.  The flags assume the 
+.B open()
+routine
+may be called many times, but the 
+.B close()
+routine should only be
+called on the last 
+.B close()
+of a device.
 .sp
 .ne 2
 .mk
 .na
-\fBOTYP_BLK\fR
+.B OTYP_BLK
 .ad
 .RS 12n
 .rt
@@ -116,7 +128,7 @@ Close was through block interface for the device.
 .ne 2
 .mk
 .na
-\fBOTYP_CHR\fR
+.B OTYP_CHR
 .ad
 .RS 12n
 .rt
@@ -127,11 +139,11 @@ Close was through the raw/character interface for the device.
 .ne 2
 .mk
 .na
-\fBOTYP_LYR\fR
+.B OTYP_LYR
 .ad
 .RS 12n
 .rt
-Close a layered process (a higher-level driver called the \fBclose()\fR
+.RB "Close a layered process (a higher-level driver called the" " close()"
 routine of the device).
 .RE
 
@@ -141,7 +153,7 @@ routine of the device).
 .ne 2
 .mk
 .na
-\fI*cred_p\fR
+.I *cred_p
 .ad
 .RS 11n
 .rt
@@ -153,7 +165,7 @@ Pointer to the  user credential structure.
 .ne 2
 .mk
 .na
-\fI*q\fR
+.I *q
 .ad
 .RS 11n
 .rt
@@ -177,7 +189,7 @@ File status flag.
 .ne 2
 .mk
 .na
-\fI*cred_p\fR
+.I *cred_p
 .ad
 .RS 11n
 .rt
@@ -187,12 +199,19 @@ Pointer to the  user credential structure.
 .SH DESCRIPTION
 .sp
 .LP
-For STREAMS drivers, the  \fBclose()\fR routine is called by the kernel
+For STREAMS drivers, the 
+.B close()
+routine is called by the kernel
 through the  \fBcb_ops\fR(9S) table entry for the device. (Modules use the
 \fBfmodsw\fR table.) A non-null value in the  \fBd_str\fR field of the
 \fBcb_ops\fR entry points to a  \fBstreamtab\fR structure, which points to a
-\fBqinit\fR(9S) containing a pointer to the  \fBclose()\fR routine.
-Non-STREAMS \fBclose()\fR routines are called directly from the
+.BR qinit (9S)
+containing a pointer to the 
+.B close()
+routine.
+Non-STREAMS
+.B close()
+routines are called directly from the
 \fBcb_ops\fR table.
 .sp
 .LP
@@ -203,47 +222,99 @@ opened again.
 .LP
 A device may be opened simultaneously by multiple processes and the
 \fBopen()\fR driver routine is called for each open. For all \fIotyp\fR
-values other than \fBOTYP_LYR\fR, the kernel calls the \fBclose()\fR routine
-when the last-reference occurs. For \fBOTYP_LYR\fR each close operation will
+values other than
+.BR OTYP_LYR ,
+the kernel calls the
+.B close()
+routine
+when the last-reference occurs. For
+.B OTYP_LYR
+each close operation will
 call the driver.
 .sp
 .LP
 Kernel accounting for last-reference occurs at (\fIdev\fR, \fIotyp\fR)
 granularity. Note that a device is referenced once its associated
-\fBopen\fR(9E) routine is entered, and thus \fBopen\fR(9E)'s  which have not
-yet completed will prevent \fBclose()\fR from  being called.  The driver's
+.BR open (9E)
+routine is entered, and thus \fBopen\fR(9E)'s  which have not
+yet completed will prevent
+.B close()
+from  being called.  The driver's
 \fBclose()\fR call associated with the  last-reference going away is
-typically issued as result of a \fBclose\fR(2), \fBexit\fR(2),
-\fBmunmap\fR(2), or \fBumount\fR(2). However, a failed \fBopen\fR(9E) call
-can cause this last-reference \fBclose()\fR call to be issued as a result of
-an \fBopen\fR(2) or \fBmount\fR(2).
+typically issued as result of a
+.BR close (2),
+.BR exit (2),
+.BR munmap (2),
+or
+.BR umount (2).
+However, a failed
+.BR open (9E)
+call
+can cause this last-reference
+.B close()
+call to be issued as a result of
+an
+.BR open (2)
+or
+.BR mount (2).
 .sp
 .LP
-The kernel provides \fBopen()\fR \fBclose()\fR exclusion guarantees to the
-driver at the same \fIdevp\fR, \fIotyp\fR granularity as last-reference
-accounting. The kernel delays new calls to the  \fBopen()\fR driver routine
-while the last-reference \fBclose()\fR call is executing. For example, a
-driver that blocks in \fBclose()\fR will not see new  calls to \fBopen()\fR
-until it returns from \fBclose()\fR.  This effectively delays invocation of
-other \fBcb_ops\fR(9S) driver entry points that also depend on an
-\fBopen\fR(9E) established device reference. If the driver has indicated
-that an \fBEINTR\fR return is safe via the \fBD_OPEN_RETURNS_EINTR\fR
+The kernel provides
+.B "open() close()"
+exclusion guarantees to the
+driver at the same
+.IR devp ,
+\fIotyp\fR granularity as last-reference
+accounting. The kernel delays new calls to the 
+.B open()
+driver routine
+while the last-reference
+.B close()
+call is executing. For example, a
+driver that blocks in
+.B close()
+will not see new  calls to
+.BR open()
+until it returns from
+.BR close() .
+This effectively delays invocation of
+other
+.BR cb_ops "(9S) driver entry points that also depend on an"
+.BR open (9E)
+established device reference. If the driver has indicated
+that an
+.B EINTR
+return is safe via the
+.BR D_OPEN_RETURNS_EINTR
 \fBcb_flag\fR, then a delayed \fBopen()\fR may be interrupted by a signal,
-resulting in an \fBEINTR\fR return from \fBopen()\fR prior to calling
-\fBopen\fR(9E).
+resulting in an
+.B EINTR
+return from
+.B open()
+prior to calling
+.BR open (9E).
 .sp
 .LP
-Last-reference accounting and \fBopen()\fR \fBclose()\fR exclusion
+Last-reference accounting and
+.B "open() close()"
+exclusion
 typically simplify driver writing. In some cases, however, they might be an
 impediment for certain types of drivers. To overcome any impediment, the
-driver can change minor numbers in \fBopen\fR(9E), as described below, or
+driver can change minor numbers in
+.BR open "(9E), as described below, or"
 implement multiple minor nodes for the same device. Both techniques give the
-driver control over when \fBclose()\fR calls occur and whether additional
+driver control over when
+.B close()
+calls occur and whether additional
 \fBopen()\fR calls will be delayed while \fBclose()\fR is executing.
 .sp
 .LP
-In general, a  \fBclose()\fR routine should always check the validity of
-the minor number component of the  \fIdev\fR parameter.  The routine should
+In general, a 
+.B close()
+routine should always check the validity of
+the minor number component of the 
+.I dev
+parameter.  The routine should
 also check permissions as necessary, by using the user credential structure
 (if pertinent), and the appropriateness of the  \fIflag\fR and  \fIotyp\fR
 parameter values.
@@ -278,7 +349,7 @@ deallocate buffers from a private buffering scheme
 .TP
 .ie t \(bu
 .el o
-unlock an unsharable device (that was locked in the  \fBopen()\fR
+.RB "unlock an unsharable device (that was locked in the " " open()"
 routine)
 .RE
 .RS +4
@@ -301,7 +372,9 @@ deallocate any resources allocated on open
 .RE
 .sp
 .LP
-The  \fBclose()\fR routines of STREAMS drivers and modules are called when
+The 
+.B close()
+routines of STREAMS drivers and modules are called when
 a stream is dismantled or a module popped. The steps for dismantling a
 stream are performed in the following order. First, any multiplexor links
 present are unlinked and the  lower streams are closed. Next, the following
@@ -315,7 +388,9 @@ The write queue is given a chance to drain.
 .RS +4
 .TP
 2.
-The  \fBclose()\fR routine is called.
+The 
+.B close()
+routine is called.
 .RE
 .RS +4
 .TP
@@ -329,25 +404,41 @@ The module or driver is removed from the stream.
 number. Return errors rarely occur, but if a failure is detected, the driver
 should decide whether the severity of the problem warrants either displaying
 a message on the console or, in worst cases, triggering a system panic.
-Generally, a failure in a  \fBclose()\fR routine occurs because a problem
+Generally, a failure in a 
+.B close()
+routine occurs because a problem
 occurred in the associated device.
 .SH NOTES
 .sp
 .LP
-If you use \fBqwait_sig\fR(9F), \fBcv_wait_sig\fR(9F) or
-\fBcv_timedwait_sig\fR(9F), you should note that \fBclose()\fR may be called
+If you use
+.BR qwait_sig (9F),
+.BR cv_wait_sig (9F)
+or
+.BR cv_timedwait_sig (9F),
+you should note that
+.B close()
+may be called
 in contexts in which signals cannot be received. The
-\fBddi_can_receive_sig\fR(9F) function is  provided to determine when this
+.BR ddi_can_receive_sig (9F)
+function is  provided to determine when this
 hazard exists.
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(2), \fBfcntl\fR(2), \fBopen\fR(2), \fBumount\fR(2),
-\fBdetach\fR(9E), \fBopen\fR(9E), \fBddi_can_receive_sig\fR(9F),
-\fBcb_ops\fR(9S), \fBqinit\fR(9S), \fBqueue\fR(9S)
+.BR close (2),
+\fBfcntl\fR(2),
+.BR open (2),
+.BR umount (2),
+.BR detach (9E),
+.BR open (9E),
+.BR ddi_can_receive_sig (9F),
+.BR cb_ops (9S),
+.BR qinit (9S),
+.BR queue (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

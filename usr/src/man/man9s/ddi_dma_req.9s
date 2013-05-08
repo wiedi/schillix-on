@@ -34,7 +34,11 @@ Solaris DDI specific (Solaris DDI). This interface is obsolete.
 .SH DESCRIPTION
 .sp
 .LP
-A \fBddi_dma_req\fR structure describes a request for \fBDMA\fR resources.
+A
+.B ddi_dma_req
+structure describes a request for
+.B DMA
+resources.
 A driver can use it to describe forms of allocations and ways to allocate
 \fBDMA\fR resources for a \fBDMA\fR request.
 .SH STRUCTURE MEMBERS
@@ -54,9 +58,11 @@ ddi_dma_obj_t  dmar_object;        /* Descrip. of  object
 
 .sp
 .LP
-For the definition of the \fBDMA\fR limits structure, which
+For the definition of the
+.B DMA
+limits structure, which
 \fBdmar_limits\fR points to, see \fBddi_dma_lim_sparc\fR(9S) or
-\fBddi_dma_lim_x86\fR(9S). 
+.BR ddi_dma_lim_x86 (9S).
 .sp
 .LP
 Valid values for \fBdmar_flags\fR are:
@@ -75,9 +81,16 @@ DDI_DMA_SBUS_64BIT    /* Use 64 bit capability on SBus */
 
 .sp
 .LP
-\fBDDI_DMA_WRITE\fR, \fBDDI_DMA_READ\fR, and \fBDDI_DMA_RDWR\fR describe
-the intended direction of the \fBDMA \fRtransfer. Some implementations might
-explicitly disallow \fBDDI_DMA_RDWR\fR.
+.BR DDI_DMA_WRITE ,
+.BR DDI_DMA_READ ,
+and
+.B DDI_DMA_RDWR
+describe
+the intended direction of the
+.B DMA
+transfer. Some implementations might
+explicitly disallow
+.BR DDI_DMA_RDWR .
 .sp
 .LP
 \fBDDI_DMA_REDZONE\fR asks the system to establish a protected  \fBred
@@ -90,13 +103,20 @@ have the hardware ability to support it.
 partial mapping. That is, if the size of the object exceeds the resources
 available, the system allocates only a portion of the object and returns
 status indicating this partial allocation. At a later point, the caller can
-use \fBddi_dma_curwin\fR(9F) and \fBddi_dma_movwin\fR(9F) to change the
+use
+.BR ddi_dma_curwin "(9F) and"
+.BR ddi_dma_movwin (9F)
+to change the
 valid portion of the object that has resources allocated.
 .sp
 .LP
 \fBDDI_DMA_CONSISTENT\fR gives a hint to the system that the object should
-be mapped for  \fBbyte consistent\fR access. Normal data transfers usually
-use a \fBstreaming\fR mode of operation. They start at a specific point,
+be mapped for 
+.B "byte consistent"
+access. Normal data transfers usually
+use a
+.B streaming
+mode of operation. They start at a specific point,
 transfer a fairly large amount of data sequentially, and then stop, usually
 on an aligned boundary. Control mode data transfers for memory-resident
 device control blocks (for example, Ethernet message descriptors) do not
@@ -120,26 +140,36 @@ transfers, data will be transferred in 32-bit mode.
 .sp
 .LP
 The callback function specified by the member \fBdmar_fp\fR indicates how a
-caller to one of the \fBDMA\fR resource allocation functions wants to deal
+caller to one of the
+.B DMA
+resource allocation functions wants to deal
 with the possibility of resources not being available. (See
-\fBddi_dma_setup\fR(9F).) If \fBdmar_fp\fR is set to \fBDDI_DMA_DONTWAIT\fR,
+.BR ddi_dma_setup (9F).)
+If \fBdmar_fp\fR is set to \fBDDI_DMA_DONTWAIT\fR,
 then the caller does not care if the allocation fails, and can deal with an
 allocation failure appropriately. Setting \fBdmar_fp\fR to
 \fBDDI_DMA_SLEEP\fR indicates the caller wants to have the allocation
 routines wait for resources to become available. If any other value is set,
-and a \fBDMA\fR resource allocation fails, this value is assumed to be a
+and a
+.B DMA
+resource allocation fails, this value is assumed to be a
 function to call later, when resources become available. When the specified
 function is called, it is passed the value set in the structure member
-\fBdmar_arg\fR. The specified callback function \fBmust\fR return either:
+.BR dmar_arg .
+The specified callback function
+.B must
+return either:
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
-Indicating that it attempted to allocate a \fBDMA\fR resource but failed to
+Indicating that it attempted to allocate a
+.B DMA
+resource but failed to
 do so, again, in which case the callback function will be put back on a list
 to be called again later.
 .RE
@@ -148,11 +178,13 @@ to be called again later.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
-Indicating either success at allocating \fBDMA\fR resources or that it no
+Indicating either success at allocating
+.B DMA
+resources or that it no
 longer wants to retry.
 .RE
 
@@ -167,11 +199,16 @@ protect its critical resources, data structures, and queues.
 It is possible that a call to \fBddi_dma_free\fR(9F), which frees \fBDMA\fR
 resources, might cause a callback function to be called and, unless some
 care is taken, an undesired recursion can occur. This can cause an undesired
-recursive \fBmutex_enter\fR(9F), which makes the system panic.
+recursive
+.BR mutex_enter "(9F), which makes the system panic."
 .SS "dmar_object Structure"
 .sp
 .LP
-The \fBdmar_object\fR member of the \fBddi_dma_req\fR structure is itself a
+The
+.B dmar_object
+member of the
+.B ddi_dma_req
+structure is itself a
 complex and extensible structure:
 .sp
 .in +2
@@ -184,16 +221,26 @@ ddi_dma_aobj_t    dmao_obj;      /* the object described */
 
 .sp
 .LP
-The  \fBdmao_size\fR element is the size, in bytes, of the object resources
-allocated for \fBDMA\fR.
+The 
+.B dmao_size
+element is the size, in bytes, of the object resources
+allocated for
+.BR DMA .
 .sp
 .LP
-The \fBdmao_type\fR element selects the kind of object described by
-\fBdmao_obj\fR. It can be set to \fBDMA_OTYP_VADDR\fR, indicating virtual
+The
+.B dmao_type
+element selects the kind of object described by
+.BR dmao_obj .
+It can be set to
+.BR DMA_OTYP_VADDR ,
+indicating virtual
 addresses.
 .sp
 .LP
-The last element, \fBdmao_obj\fR, consists of the virtual address type:
+The last element,
+.BR dmao_obj ,
+consists of the virtual address type:
 .sp
 .in +2
 .nf
@@ -218,7 +265,9 @@ struct v_address {
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -235,9 +284,13 @@ Interface StabilityObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBddi_dma_addr_setup\fR(9F), \fBddi_dma_buf_setup\fR(9F),
-\fBddi_dma_curwin\fR(9F), \fBddi_dma_free\fR(9F), \fBddi_dma_movwin\fR(9F),
-\fBddi_dma_setup\fR(9F), \fBddi_dma_sync\fR(9F), \fBmutex\fR(9F)
+.BR ddi_dma_addr_setup (9F),
+\fBddi_dma_buf_setup\fR(9F),
+.BR ddi_dma_curwin (9F),
+\fBddi_dma_free\fR(9F), \fBddi_dma_movwin\fR(9F),
+.BR ddi_dma_setup (9F),
+.BR ddi_dma_sync (9F),
+.BR mutex (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

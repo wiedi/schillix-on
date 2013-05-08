@@ -39,8 +39,12 @@ in.rdisc, rdisc \- network router discovery daemon
 .LP
 \fBin.rdisc\fR remains part of the software distribution of the Solaris
 Operating Environment. It is, however, not used by default.
-\fBin.routed\fR(1M) includes the functionality provided by \fBin.rdisc\fR. See
-\fBrouteadm\fR(1M) for details of how to specify the IPV4 routing daemon.
+.BR in.routed (1M)
+includes the functionality provided by
+.BR in.rdisc .
+See
+.BR routeadm (1M)
+for details of how to specify the IPV4 routing daemon.
 .sp
 .LP
 \fBin.rdisc\fR implements the \fBICMP\fR router discovery protocol. The first
@@ -51,7 +55,9 @@ form of the command is used on hosts and the second form is used on routers.
 form (router mode).
 .sp
 .LP
-On a host, \fBin.rdisc\fR populates the network routing tables with default
+On a host,
+.B in.rdisc
+populates the network routing tables with default
 routes. On a router, advertises the router to all the hosts.
 .sp
 .LP
@@ -68,43 +74,74 @@ svc:/network/routing/rdisc:default
 .SS "Host (First Form)"
 .sp
 .LP
-On a host, \fBin.rdisc\fR listens on the \fBALL_HOSTS\fR (224.0.0.1)
-multicast address for \fBROUTER_ADVERTISE\fR messages from routers. The
+On a host,
+.B in.rdisc
+listens on the
+.B ALL_HOSTS
+(224.0.0.1)
+multicast address for
+.B ROUTER_ADVERTISE
+messages from routers. The
 received messages are handled by first ignoring those listed router addresses
 with which the host does not share a network. Among the remaining addresses,
 the ones with the highest preference are selected as default routers and a
 default route is entered in the kernel routing table for each one of them.
 .sp
 .LP
-Optionally, \fBin.rdisc\fR can avoid waiting for routers to announce
-themselves by sending out a few \fBROUTER_SOLICITATION\fR messages to the
+Optionally,
+.B in.rdisc
+can avoid waiting for routers to announce
+themselves by sending out a few
+.B ROUTER_SOLICITATION
+messages to the
 \fBALL_ROUTERS\fR (224.0.0.2) multicast address when it is started.
 .sp
 .LP
 A timer is associated with each router address. The address will no longer be
 considered for inclusion in the routing tables if the timer expires before a
-new \fIadvertise\fR message is received from the router. The address will also
-be excluded from consideration if the host receives an \fIadvertise\fR message
+new
+.I advertise
+message is received from the router. The address will also
+be excluded from consideration if the host receives an
+.I advertise
+message
 with the preference being maximally negative or with a lifetime of zero.
 .SS "Router (Second Form)"
 .sp
 .LP
-When \fBin.rdisc\fR is started on a router, it uses the \fBSIOCGIFCONF\fR
-\fBioctl\fR(2) to find the interfaces configured into the system and it starts
-listening on the \fBALL_ROUTERS\fR multicast address on all the interfaces
-that support multicast. It sends out \fIadvertise\fR messages to the
+When
+.B in.rdisc
+.RB "is started on a router, it uses the" " SIOCGIFCONF"
+.BR ioctl (2)
+to find the interfaces configured into the system and it starts
+listening on the
+.B ALL_ROUTERS
+multicast address on all the interfaces
+that support multicast. It sends out
+.I advertise
+messages to the
 \fBALL_HOSTS\fR multicast address advertising all its \fBIP\fR addresses. A
-few initial \fIadvertise\fR messages are sent out during the first 30 seconds
-and after that it will transmit \fIadvertise\fR messages approximately every
+few initial
+.I advertise
+messages are sent out during the first 30 seconds
+and after that it will transmit
+.I advertise
+messages approximately every
 600 seconds.
 .sp
 .LP
-When \fBin.rdisc\fR receives a \fIsolicitation\fR message, it sends an
+When
+.B in.rdisc
+receives a
+.I solicitation
+message, it sends an
 \fIadvertise\fR message to the host that sent the \fIsolicitation\fR
 message.
 .sp
 .LP
-When \fBin.rdisc\fR is terminated by a signal, it sends out an
+When
+.B in.rdisc
+is terminated by a signal, it sends out an
 \fIadvertise\fR message with the preference being maximally negative.
 .SH OPTIONS
 .sp
@@ -123,14 +160,16 @@ service properties are set using a command of the form:
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .RS 17n
 .rt
 Accept all routers independent of the preference they have in their
 \fIadvertise\fR messages. Normally, \fBin.rdisc\fR only accepts (and enters in
 the kernel routing tables) the router or routers with the highest preference.
-Use of this option is equivalent to setting the \fBaccept_all\fR property to
+Use of this option is equivalent to setting the
+.B accept_all
+property to
 true.
 .RE
 
@@ -142,10 +181,14 @@ true.
 .ad
 .RS 17n
 .rt
-Run \fBin.rdisc\fR forever even if no routers are found. Normally,
+Run
+.B in.rdisc
+forever even if no routers are found. Normally,
 \fBin.rdisc\fR gives up if it has not received any \fIadvertise\fR message
 after soliciting three times, in which case it exits with a non-zero exit
-code. If \fB-f\fR is not specified in the first form then \fB-s\fR must be
+code. If \fB-f\fR is not specified in the first form then
+.B -s
+must be
 specified. For SMF execution, this option is required.
 .RE
 
@@ -153,27 +196,35 @@ specified. For SMF execution, this option is required.
 .ne 2
 .mk
 .na
-\fB-r\fR
+.B -r
 .ad
 .RS 17n
 .rt
 Act as a router, rather than a host. Use of this option is equivalent to
-setting the \fBact_as_router\fR property to true.
+setting the
+.B act_as_router
+property to true.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .RS 17n
 .rt
-Send three \fIsolicitation\fR messages initially to quickly discover the
-routers when the system is booted. When \fB-s\fR is specified, \fBin.rdisc\fR
+Send three
+.I solicitation
+messages initially to quickly discover the
+routers when the system is booted. When
+.B -s
+is specified, \fBin.rdisc\fR
 exits with a non-zero exit code if it can not find any routers. This can be
 overridden with the \fB-f\fR option. This option is not compatible with SMF
-execution and is not supported for the \fBrdisc\fR service.
+execution and is not supported for the
+.B rdisc
+service.
 .RE
 
 .sp
@@ -184,7 +235,9 @@ execution and is not supported for the \fBrdisc\fR service.
 .ad
 .RS 17n
 .rt
-Set the preference transmitted in the \fIsolicitation\fR messages. The
+Set the preference transmitted in the
+.I solicitation
+messages. The
 default is zero. Use of this option is equivalent to setting the
 \fBpreference\fR property.
 .RE
@@ -197,19 +250,31 @@ default is zero. Use of this option is equivalent to setting the
 .ad
 .RS 17n
 .rt
-Set the interval between transmitting the \fIadvertise\fR messages. The
+Set the interval between transmitting the
+.I advertise
+messages. The
 default time is 600 seconds. Use of this option is equivalent to setting the
 \fBtransmit_interval\fR property.
 .RE
 
 .sp
 .LP
-The \fBsend-address\fR and \fBreceive-address\fR daemon options  can be set
-by means of the \fBsend_address\fR and \fBreceive_address\fR properties.
+The
+.B send-address
+and
+.B receive-address
+daemon options  can be set
+by means of the
+.B send_address
+and
+.B receive_address
+properties.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -226,11 +291,18 @@ AvailabilitySUNWroute
 .SH SEE ALSO
 .sp
 .LP
-\fBin.routed\fR(1M), \fBrouteadm\fR(1M), \fBsvcadm\fR(1M), \fBioctl\fR(2),
-\fBgateways\fR(4), \fBattributes\fR(5), \fBsmf\fR(5), \fBicmp\fR(7P),
-\fBinet\fR(7P)
+.BR in.routed (1M),
+.BR routeadm (1M),
+.BR svcadm (1M),
+.BR ioctl (2),
+.BR gateways (4),
+.BR attributes (5),
+\fBsmf\fR(5), \fBicmp\fR(7P),
+.BR inet (7P)
 .sp
 .LP
-Deering, S.E., editor, \fIICMP Router Discovery Messages\fR, \fBRFC\fR 1256,
+Deering, S.E., editor,
+.IR "ICMP Router Discovery Messages" ,
+\fBRFC\fR 1256,
 Network Information Center, SRI International, Menlo Park, California,
 September 1991.

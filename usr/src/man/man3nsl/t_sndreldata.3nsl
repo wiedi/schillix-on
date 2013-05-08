@@ -66,7 +66,11 @@ t_sndreldata \- initiate or respond to an orderly release with user data
 This function is used to initiate an orderly release of the outgoing
 direction of data transfer and to send user data with the release.  The
 argument \fIfd\fR identifies the local transport endpoint where the
-connection exists, and  \fIdiscon\fR points to a  \fB t_discon\fR structure
+connection exists, and 
+.I discon
+points to a 
+.B " t_discon"
+structure
 containing the following members:
 .sp
 .in +2
@@ -79,20 +83,34 @@ int sequence;
 
 .sp
 .LP
-After calling  \fBt_sndreldata()\fR, the user may not send any more data
+After calling
+.BR t_sndreldata() ,
+the user may not send any more data
 over the connection.  However, a user may continue to receive data if an
 orderly release indication has not been received.
 .sp
 .LP
-The field  \fIreason\fR specifies the reason for the disconnection through
-a protocol-dependent  \fIreason code\fR, and  \fIudata\fR identifies any
-user data that is sent with the disconnection; the field  \fIsequence\fR is
+The field 
+.I reason
+specifies the reason for the disconnection through
+a protocol-dependent
+.IR "reason code" ,
+and 
+.I udata
+identifies any
+user data that is sent with the disconnection; the field 
+.I sequence
+is
 not used.
 .sp
 .LP
-The  \fIudata\fR structure specifies the user data to be sent to the remote
+The 
+.I udata
+structure specifies the user data to be sent to the remote
 user. The amount of user data must not exceed the limits supported by the
-transport provider, as returned in the  \fIdiscon\fR field of the
+transport provider, as returned in the 
+.I discon
+field of the
 \fIinfo\fR argument of \fBt_open\fR(3NSL) or  \fBt_getinfo\fR(3NSL). If the
 \fIlen\fR field of  \fIudata\fR is zero or if the provider did not return
 \fBT_ORDRELDATA\fR in the  \fBt_open\fR(3NSL) flags, no data will be sent to
@@ -100,13 +118,18 @@ the remote user.
 .sp
 .LP
 If a user does not wish to send data and reason code to the remote user,
-the value of  \fIdiscon\fR may be a null pointer.
+the value of 
+.I discon
+may be a null pointer.
 .sp
 .LP
 This function is an optional service of the transport provider, only
-supported by providers of service type \fBT_COTS_ORD.\fR The flag
+supported by providers of service type
+.B T_COTS_ORD.
+The flag
 \fBT_ORDRELDATA\fR in the  \fIinfo\(->flag\fR field returned by
-\fBt_open\fR(3NSL) or  \fBt_getinfo\fR(3NSL) indicates that the provider
+.BR t_open (3NSL)
+or  \fBt_getinfo\fR(3NSL) indicates that the provider
 supports orderly release user data.
 .sp
 .LP
@@ -114,34 +137,43 @@ This function may not be available on all systems.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a value of  \fB0\fR is returned.  Otherwise, a
-value of  -1 is returned and  \fBt_errno\fR is set to indicate an error.
+Upon successful completion, a value of 
+.B 0
+is returned.  Otherwise, a
+value of  -1 is returned and 
+.B t_errno
+is set to indicate an error.
 .SH VALID STATES
 .sp
 .LP
-\fBT_DATAXFER\fR, \fBT_INREL\fR.
+.BR T_DATAXFER ,
+.BR T_INREL .
 .SH ERRORS
 .sp
 .LP
-On failure,  \fBt_errno\fR is set to one of the following:
+On failure, 
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTBADDATA\fR
+.B TBADDATA
 .ad
 .RS 15n
 .rt
 The amount of user data specified was not within the bounds allowed by the
 transport provider, or user data was supplied and the provider did not
-return \fBT_ORDRELDATA\fR in the  \fBt_open\fR(3NSL) flags.
+return
+.B T_ORDRELDATA
+in the  \fBt_open\fR(3NSL) flags.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 15n
 .rt
@@ -152,7 +184,7 @@ The specified file descriptor does not refer to a transport endpoint.
 .ne 2
 .mk
 .na
-\fBTFLOW\fR
+.B TFLOW
 .ad
 .RS 15n
 .rt
@@ -164,7 +196,7 @@ transport provider from accepting the function at this time.
 .ne 2
 .mk
 .na
-\fBTLOOK\fR
+.B TLOOK
 .ad
 .RS 15n
 .rt
@@ -176,7 +208,7 @@ immediate attention.
 .ne 2
 .mk
 .na
-\fBTNOTSUPPORT\fR
+.B TNOTSUPPORT
 .ad
 .RS 15n
 .rt
@@ -187,7 +219,7 @@ Orderly release is not supported by the underlying transport provider.
 .ne 2
 .mk
 .na
-\fBTOUTSTATE\fR
+.B TOUTSTATE
 .ad
 .RS 15n
 .rt
@@ -199,20 +231,21 @@ states in which a call to this function is valid.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 15n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI
-error \fB(t_errno)\fR.
+error
+.BR (t_errno) .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 15n
 .rt
@@ -222,12 +255,16 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-In the \fBTLI\fR interface definition, no counterpart of this routine was
+In the
+.B TLI
+interface definition, no counterpart of this routine was
 defined.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -245,11 +282,16 @@ MT LevelSafe
 .sp
 .LP
 \fBt_getinfo\fR(3NSL), \fBt_open\fR(3NSL), \fBt_rcvrel\fR(3NSL),
-\fBt_rcvreldata\fR(3NSL), \fBt_sndrel\fR(3NSL), \fBattributes\fR(5)
+.BR t_rcvreldata (3NSL),
+.BR t_sndrel (3NSL),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-The interfaces \fBt_sndreldata()\fR and \fBt_rcvreldata\fR(3NSL) are only
+The interfaces
+.B t_sndreldata()
+and
+.BR t_rcvreldata "(3NSL) are only"
 for use with a specific transport called "minimal OSI," which is not
 available on the Solaris platform. These interfaces are not available for
 use in conjunction with Internet Transports (\fBTCP\fR or \fBUDP\fR).

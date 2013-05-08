@@ -68,25 +68,41 @@ open, openat \- open a file
 .SH DESCRIPTION
 .sp
 .LP
-The \fBopen()\fR function establishes the connection between a file and a
+The
+.B open()
+function establishes the connection between a file and a
 file descriptor. It creates an open file description that refers to a file
 and a file descriptor that refers to that open file description. The file
 descriptor is used by other I/O functions to refer to that file. The
 \fIpath\fR argument points to a pathname naming the file.
 .sp
 .LP
-The \fBopenat()\fR function is identical to the \fBopen()\fR function
-except that the \fIpath\fR argument is interpreted relative to the starting
+The
+.B openat()
+function is identical to the
+.B open()
+function
+except that the
+.I path
+argument is interpreted relative to the starting
 point implied by the \fIfildes\fR argument. If the \fIfildes\fR argument has
-the special value \fBAT_FDCWD\fR, a relative path argument will be resolved
-relative to the current working directory. If the \fIpath\fR argument is
+the special value
+.BR AT_FDCWD ,
+a relative path argument will be resolved
+relative to the current working directory. If the
+.I path
+argument is
 absolute, the \fIfildes\fR argument is ignored.
 .sp
 .LP
-The \fBopen()\fR function returns a file descriptor for the named file that
+The
+.B open()
+function returns a file descriptor for the named file that
 is the lowest file descriptor not currently open for that process. The open
 file description is new, and therefore the file descriptor does not share it
-with any other process in the system. The \fBFD_CLOEXEC\fR file descriptor
+with any other process in the system. The
+.B FD_CLOEXEC
+file descriptor
 flag associated with the new file descriptor is cleared.
 .sp
 .LP
@@ -95,8 +111,14 @@ the beginning of the file.
 .sp
 .LP
 The file status flags and file access modes of the open file description
-are set according to the value of \fIoflag\fR. The \fImode\fR argument is
-used only when \fBO_CREAT\fR is specified (see below.)
+are set according to the value of
+.IR oflag .
+The
+.I mode
+argument is
+used only when
+.B O_CREAT
+is specified (see below.)
 .sp
 .LP
 Values for \fIoflag\fR are constructed by a bitwise-inclusive-OR of flags
@@ -107,7 +129,7 @@ the value of \fIoflag\fR:
 .ne 2
 .mk
 .na
-\fBO_RDONLY\fR
+.B O_RDONLY
 .ad
 .RS 12n
 .rt
@@ -118,7 +140,7 @@ Open for reading only.
 .ne 2
 .mk
 .na
-\fBO_WRONLY\fR
+.B O_WRONLY
 .ad
 .RS 12n
 .rt
@@ -129,7 +151,7 @@ Open for writing only.
 .ne 2
 .mk
 .na
-\fBO_RDWR\fR
+.B O_RDWR
 .ad
 .RS 12n
 .rt
@@ -144,7 +166,7 @@ Any combination of the following may be used:
 .ne 2
 .mk
 .na
-\fBO_APPEND\fR
+.B O_APPEND
 .ad
 .sp .6
 .RS 4n
@@ -156,7 +178,7 @@ write.
 .ne 2
 .mk
 .na
-\fBO_CREAT\fR
+.B O_CREAT
 .ad
 .sp .6
 .RS 4n
@@ -165,22 +187,44 @@ Create the file if it does not exist. This flag requires that the
 .sp
 If the file exists, this flag has no effect except as noted under
 \fBO_EXCL\fR below.  Otherwise, the file is created with the user \fBID\fR
-of the file set to the effective user \fBID\fR of the process. The group
+of the file set to the effective user
+.B ID
+of the process. The group
 \fBID\fR of the file is set to the effective group \fBIDs\fR of the process,
-or if the \fBS_ISGID\fR bit is set in the directory in which the file is
-being created, the file's group \fBID\fR is set to the group \fBID\fR of its
-parent directory.  If the group \fBID\fR of the new file does not match the
-effective group \fBID\fR or one of the supplementary groups IDs, the
+or if the
+.B S_ISGID
+bit is set in the directory in which the file is
+being created, the file's group
+.B ID
+is set to the group
+.B ID
+of its
+parent directory.  If the group
+.B ID
+of the new file does not match the
+effective group
+.B ID
+or one of the supplementary groups IDs, the
 \fBS_ISGID\fR bit is cleared. The access permission bits (see
-\fB<sys/stat.h>\fR) of the file mode are set to the value of \fImode\fR,
-modified as follows (see \fBcreat\fR(2)): a bitwise-AND is performed on the
+.BR <sys/stat.h> )
+of the file mode are set to the value of
+.IR mode ,
+modified as follows (see
+.BR creat (2)):
+a bitwise-AND is performed on the
 file-mode bits and the corresponding bits in the complement of the process's
 file mode creation mask. Thus, all bits set in the process's file mode
-creation mask (see \fBumask\fR(2)) are correspondingly cleared in the file's
+creation mask (see
+.BR umask (2))
+are correspondingly cleared in the file's
 permission mask. The "save text image after execution bit" of the mode is
-cleared (see \fBchmod\fR(2)). \fBO_SYNC\fR Write I/O operations on the file
+cleared (see
+.BR chmod (2)).
+\fBO_SYNC\fR Write I/O operations on the file
 descriptor complete as defined by synchronized I/O file integrity completion
-(see \fBfcntl.h\fR(3HEAD) definition of \fBO_SYNC\fR.) When bits other than
+(see \fBfcntl.h\fR(3HEAD) definition of
+.BR O_SYNC .)
+When bits other than
 the file permission bits are set, the effect is unspecified. The \fImode\fR
 argument does not affect whether the file is open for reading, writing or
 for both.
@@ -190,7 +234,7 @@ for both.
 .ne 2
 .mk
 .na
-\fBO_DSYNC\fR
+.B O_DSYNC
 .ad
 .sp .6
 .RS 4n
@@ -202,17 +246,28 @@ synchronized I/O data integrity completion.
 .ne 2
 .mk
 .na
-\fBO_EXCL\fR
+.B O_EXCL
 .ad
 .sp .6
 .RS 4n
-If \fBO_CREAT\fR and \fBO_EXCL\fR are set, \fBopen()\fR fails if the file
+If
+.B O_CREAT
+and
+.B O_EXCL
+are set,
+.B open()
+fails if the file
 exists. The check for the existence of the file and the creation of the file
 if it does not exist is atomic with respect to other threads executing
 \fBopen()\fR naming the same filename in the same directory with
 \fBO_EXCL\fR and \fBO_CREAT\fR set. If \fBO_EXCL\fR and \fBO_CREAT\fR are
-set, and path names a symbolic link, \fBopen()\fR fails and sets \fBerrno\fR
-to \fBEEXIST\fR, regardless of the contents of the symbolic link. If
+set, and path names a symbolic link,
+.B open()
+fails and sets
+.BR errno
+to
+.BR EEXIST ,
+regardless of the contents of the symbolic link. If
 \fBO_EXCL\fR is set and \fBO_CREAT\fR is not set, the result is undefined.
 .RE
 
@@ -220,7 +275,7 @@ to \fBEEXIST\fR, regardless of the contents of the symbolic link. If
 .ne 2
 .mk
 .na
-\fBO_LARGEFILE\fR
+.B O_LARGEFILE
 .ad
 .sp .6
 .RS 4n
@@ -233,11 +288,15 @@ value that can be represented correctly in an object of type
 .ne 2
 .mk
 .na
-\fBO_NOCTTY\fR
+.B O_NOCTTY
 .ad
 .sp .6
 .RS 4n
-If set and \fIpath\fR identifies a terminal device, \fBopen()\fR does not
+If set and
+.I path
+identifies a terminal device,
+.B open()
+does not
 cause the terminal device to become the controlling terminal for the
 process.
 .RE
@@ -246,24 +305,33 @@ process.
 .ne 2
 .mk
 .na
-\fBO_NOFOLLOW\fR
+.B O_NOFOLLOW
 .ad
 .sp .6
 .RS 4n
-If the path names a symbolic link, \fBopen()\fR fails and sets \fBerrno\fR
-to \fBELOOP\fR.
+If the path names a symbolic link,
+.B open()
+fails and sets
+.BR errno
+to
+.BR ELOOP .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBO_NOLINKS\fR
+.B O_NOLINKS
 .ad
 .sp .6
 .RS 4n
-If the link count of the named file is greater than 1, \fBopen()\fR fails
-and sets \fBerrno\fR to \fBEMLINK\fR.
+If the link count of the named file is greater than 1,
+.B open()
+fails
+and sets
+.B errno
+to
+.BR EMLINK .
 .RE
 
 .sp
@@ -274,33 +342,70 @@ and sets \fBerrno\fR to \fBEMLINK\fR.
 .ad
 .sp .6
 .RS 4n
-These flags can affect subsequent reads and writes (see \fBread\fR(2) and
-\fBwrite\fR(2)). If both \fBO_NDELAY\fR and \fBO_NONBLOCK\fR are set,
+These flags can affect subsequent reads and writes (see
+.BR read (2)
+and
+.BR write (2)).
+If both
+.B O_NDELAY
+and
+.B O_NONBLOCK
+are set,
 \fBO_NONBLOCK\fR takes precedence.
 .sp
-When opening a \fBFIFO\fR with \fBO_RDONLY\fR or \fBO_WRONLY\fR set:
+When opening a
+.B FIFO
+with
+.B O_RDONLY
+or
+.B O_WRONLY
+set:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fBO_NONBLOCK\fR or \fBO_NDELAY\fR is set, an \fBopen()\fR for reading
-only returns without delay.  An \fBopen()\fR for writing only returns an
+If
+.B O_NONBLOCK
+or
+.B O_NDELAY
+is set, an
+.B open()
+for reading
+only returns without delay.  An
+.B open()
+for writing only returns an
 error if no process currently has the file open for reading.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fBO_NONBLOCK\fR and \fBO_NDELAY\fR are clear, an \fBopen()\fR for
+If
+.B O_NONBLOCK
+and
+.B O_NDELAY
+are clear, an
+.B open()
+for
 reading only blocks until a thread opens the file for writing. An
 \fBopen()\fR for writing only blocks the calling thread until a thread opens
 the file for reading.
 .RE
-After both ends of a \fBFIFO\fR have been opened, there is no guarantee
-that further calls to \fBopen()\fR \fBO_RDONLY\fR (\fBO_WRONLY\fR) will
-synchronize with later calls to \fBopen()\fR \fBO_WRONLY\fR (\fBO_RDONLY\fR)
-until both ends of the \fBFIFO\fR have been closed by all readers and
-writers. Any data written into a \fBFIFO\fR will be lost if both ends of the
+After both ends of a
+.B FIFO
+have been opened, there is no guarantee
+that further calls to
+.B "open() O_RDONLY"
+(\fBO_WRONLY\fR) will
+synchronize with later calls to
+.B "open() O_WRONLY"
+(\fBO_RDONLY\fR)
+until both ends of the
+.B FIFO
+have been closed by all readers and
+writers. Any data written into a
+.B FIFO
+will be lost if both ends of the
 \fBFIFO\fR are closed before the data is read.
 .sp
 When opening a block special or character special file that supports
@@ -309,7 +414,13 @@ non-blocking opens:
 .TP
 .ie t \(bu
 .el o
-If \fBO_NONBLOCK\fR or \fBO_NDELAY\fR is set, the \fBopen()\fR function
+If
+.B O_NONBLOCK
+or
+.B O_NDELAY
+is set, the
+.B open()
+function
 returns without blocking for the device to be ready or available. Subsequent
 behavior of the device is device-specific.
 .RE
@@ -317,11 +428,21 @@ behavior of the device is device-specific.
 .TP
 .ie t \(bu
 .el o
-If \fBO_NONBLOCK\fR and \fBO_NDELAY\fR are clear, the \fBopen()\fR function
+If
+.B O_NONBLOCK
+and
+.B O_NDELAY
+are clear, the
+.B open()
+function
 blocks the calling thread until the device is ready or available before
 returning.
 .RE
-Otherwise, the behavior of \fBO_NONBLOCK\fR and \fBO_NDELAY\fR is
+Otherwise, the behavior of
+.B O_NONBLOCK
+and
+.B O_NDELAY
+is
 unspecified.
 .RE
 
@@ -329,15 +450,25 @@ unspecified.
 .ne 2
 .mk
 .na
-\fBO_RSYNC\fR
+.B O_RSYNC
 .ad
 .sp .6
 .RS 4n
 Read I/O operations on the file descriptor complete at the same level of
-integrity as specified by the \fBO_DSYNC\fR and \fBO_SYNC\fR flags. If both
-\fBO_DSYNC\fR and \fBO_RSYNC\fR are set in \fIoflag\fR, all I/O operations
+integrity as specified by the
+.B O_DSYNC
+and
+.B O_SYNC
+flags. If both
+\fBO_DSYNC\fR and \fBO_RSYNC\fR are set in
+.IR oflag ,
+all I/O operations
 on the file descriptor complete as defined by synchronized I/O data
-integrity completion.  If both \fBO_SYNC\fR and \fBO_RSYNC\fR are set in
+integrity completion.  If both
+.B O_SYNC
+and
+.B O_RSYNC
+are set in
 \fIoflag\fR, all I/O operations on the file descriptor complete as defined
 by synchronized I/O file integrity completion.
 .RE
@@ -346,7 +477,7 @@ by synchronized I/O file integrity completion.
 .ne 2
 .mk
 .na
-\fBO_SYNC\fR
+.B O_SYNC
 .ad
 .sp .6
 .RS 4n
@@ -358,15 +489,23 @@ synchronized I/O file integrity completion.
 .ne 2
 .mk
 .na
-\fBO_TRUNC\fR
+.B O_TRUNC
 .ad
 .sp .6
 .RS 4n
 If the file exists and is a regular file, and the file is successfully
-opened \fBO_RDWR\fR or \fBO_WRONLY\fR, its length is truncated to 0 and the
-mode and owner are unchanged. It has no effect on \fBFIFO\fR special files
+opened
+.B O_RDWR
+or
+.BR O_WRONLY ,
+its length is truncated to 0 and the
+mode and owner are unchanged. It has no effect on
+.B FIFO
+special files
 or terminal device files. Its effect on other file types is
-implementation-dependent. The result of using \fBO_TRUNC\fR with
+implementation-dependent. The result of using
+.B O_TRUNC
+with
 \fBO_RDONLY\fR is undefined.
 .RE
 
@@ -374,14 +513,18 @@ implementation-dependent. The result of using \fBO_TRUNC\fR with
 .ne 2
 .mk
 .na
-\fBO_XATTR\fR
+.B O_XATTR
 .ad
 .sp .6
 .RS 4n
-If set in \fBopenat()\fR, a relative path argument is interpreted as a
+If set in
+.BR openat() ,
+a relative path argument is interpreted as a
 reference to an extended attribute of the file associated with the supplied
 file descriptor.  This flag therefore requires the presence of a legal
-\fIfildes\fR argument. If set in \fBopen()\fR, the implied file descriptor
+\fIfildes\fR argument. If set in
+.BR open() ,
+the implied file descriptor
 is that for the current working directory. Extended attributes must be
 referenced with a relative path; providing an absolute path results in a
 normal file reference.
@@ -389,40 +532,93 @@ normal file reference.
 
 .sp
 .LP
-If \fBO_CREAT\fR is set and the file did not previously exist, upon
-successful completion, \fBopen()\fR marks for update the \fBst_atime\fR,
-\fBst_ctime\fR, and \fBst_mtime\fR fields of the file and the \fBst_ctime\fR
-and \fBst_mtime\fR fields of the parent directory.
+If
+.B O_CREAT
+is set and the file did not previously exist, upon
+successful completion,
+.B open()
+marks for update the
+.BR st_atime ,
+.BR st_ctime ,
+and
+.B st_mtime
+fields of the file and the
+.BR st_ctime
+and
+.B st_mtime
+fields of the parent directory.
 .sp
 .LP
-If \fBO_TRUNC\fR is set and the file did previously exist, upon successful
-completion, \fBopen()\fR marks for update the \fBst_ctime\fR and
+If
+.B O_TRUNC
+is set and the file did previously exist, upon successful
+completion,
+.B open()
+marks for update the
+.B st_ctime
+and
 \fBst_mtime\fR fields of the file.
 .sp
 .LP
-If both the \fBO_SYNC\fR and \fBO_DSYNC\fR flags are set, the effect is as
-if only the \fBO_SYNC\fR flag was set.
+If both the
+.B O_SYNC
+and
+.B O_DSYNC
+flags are set, the effect is as
+if only the
+.B O_SYNC
+flag was set.
 .sp
 .LP
-If \fIpath\fR refers to a \fBSTREAMS\fR file, \fIoflag\fR may be
-constructed from \fBO_NONBLOCK\fR or \fBO_NODELAY\fR OR-ed with either
-\fBO_RDONLY\fR, \fBO_WRONLY\fR, or \fBO_RDWR\fR. Other flag values are not
-applicable to \fBSTREAMS\fR devices and have no effect on them.  The values
+If
+.I path
+refers to a
+.B STREAMS
+file, \fIoflag\fR may be
+constructed from
+.B O_NONBLOCK
+or
+.B O_NODELAY
+OR-ed with either
+.BR O_RDONLY ,
+.BR O_WRONLY ,
+or
+.BR O_RDWR .
+Other flag values are not
+applicable to
+.B STREAMS
+devices and have no effect on them.  The values
 \fBO_NONBLOCK\fR and \fBO_NODELAY\fR affect the operation of \fBSTREAMS\fR
-drivers and certain functions (see \fBread\fR(2), \fBgetmsg\fR(2),
-\fBputmsg\fR(2), and \fBwrite\fR(2)) applied to file descriptors associated
-with \fBSTREAMS\fR files.  For \fBSTREAMS\fR drivers, the implementation of
+drivers and certain functions (see
+.BR read (2),
+.BR getmsg (2),
+.BR putmsg (2),
+and
+.BR write (2))
+applied to file descriptors associated
+with
+.B STREAMS
+files.  For
+.B STREAMS
+drivers, the implementation of
 \fBO_NONBLOCK\fR and \fBO_NODELAY\fR is device-specific.
 .sp
 .LP
-When \fBopen()\fR is invoked to open a named stream, and the \fBconnld\fR
+When
+.B open()
+.RB "is invoked to open a named stream, and the" " connld"
 module (see \fBconnld\fR(7M)) has been pushed on the pipe, \fBopen()\fR
-blocks until the server process has issued an \fBI_RECVFD\fR \fBioctl()\fR
+blocks until the server process has issued an
+.BR "I_RECVFD ioctl()"
 (see \fBstreamio\fR(7I)) to receive the file descriptor.
 .sp
 .LP
-If \fIpath\fR names the master side of a pseudo-terminal device, then it is
-unspecified whether \fBopen()\fR locks the slave side so that it cannot be
+If
+.I path
+names the master side of a pseudo-terminal device, then it is
+unspecified whether
+.B open()
+locks the slave side so that it cannot be
 opened. Portable applications must call \fBunlockpt\fR(3C) before opening
 the slave side.
 .sp
@@ -451,7 +647,7 @@ Set to the type of read/write access for which the file is opened.
 .ad
 .RS 12n
 .rt
-\fBF_NODNY\fR
+.B F_NODNY
 .RE
 
 .sp
@@ -462,16 +658,25 @@ Set to the type of read/write access for which the file is opened.
 .ad
 .RS 12n
 .rt
-The file descriptor value returned from \fBopen()\fR.
+The file descriptor value returned from
+.BR open() .
 .RE
 
 .sp
 .LP
-If \fIpath\fR is a symbolic link and \fBO_CREAT\fR and \fBO_EXCL\fR are
+If
+.I path
+is a symbolic link and
+.B O_CREAT
+and
+.B O_EXCL
+are
 set, the link is not followed.
 .sp
 .LP
-Certain flag values can be set following \fBopen()\fR as described in
+Certain flag values can be set following
+.B open()
+as described in
 \fBfcntl\fR(2).
 .sp
 .LP
@@ -481,19 +686,27 @@ description.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, the \fBopen()\fR function opens the file and
+Upon successful completion, the
+.B open()
+function opens the file and
 return a non-negative integer representing the lowest numbered unused file
-descriptor. Otherwise, \fB\(mi1\fR is returned, \fBerrno\fR is set to
+descriptor. Otherwise, \fB\(mi1\fR is returned,
+.B errno
+is set to
 indicate the error, and no files are created or modified.
 .SH ERRORS
 .sp
 .LP
-The \fBopen()\fR and \fBopenat()\fR functions will fail if:
+The
+.B open()
+and
+.B openat()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
@@ -509,7 +722,9 @@ directory of the file to be created.
 The {\fBPRIV_FILE_DAC_SEARCH\fR} privilege allows processes to search
 directories regardless of permission bits. The {\fBPRIV_FILE_DAC_WRITE\fR}
 privilege allows processes to open files for writing regardless of
-permission bits. See \fBprivileges\fR(5) for special considerations when
+permission bits. See
+.BR privileges (5)
+for special considerations when
 opening files owned by UID 0 for writing. The {\fBPRIV_FILE_DAC_READ\fR}
 privilege allows processes to open files for reading regardless of
 permission bits.
@@ -519,7 +734,7 @@ permission bits.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 16n
 .rt
@@ -531,22 +746,26 @@ access conflicts with an existing \fBf_deny\fR share reservation.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
-The file descriptor provided to \fBopenat()\fR is invalid.
+The file descriptor provided to
+.B openat()
+is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEDQUOT\fR
+.B EDQUOT
 .ad
 .RS 16n
 .rt
-The file does not exist, \fBO_CREAT\fR is specified, and either the
+The file does not exist,
+.B O_CREAT
+is specified, and either the
 directory where the new file entry is being placed cannot be extended
 because the user's quota of disk blocks on that file system has been
 exhausted, or the user's quota of inodes on the file system where the file
@@ -557,11 +776,15 @@ is being created has been exhausted.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 16n
 .rt
-The \fBO_CREAT\fR and \fBO_EXCL\fR flags are set and the named file
+The
+.B O_CREAT
+and
+.B O_EXCL
+flags are set and the named file
 exists.
 .RE
 
@@ -569,11 +792,13 @@ exists.
 .ne 2
 .mk
 .na
-\fBEILSEQ\fR
+.B EILSEQ
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument includes non-UTF8 characters and the file system
+The
+.I path
+argument includes non-UTF8 characters and the file system
 accepts only file names where all characters are part of the UTF-8 character
 codeset.
 .RE
@@ -582,29 +807,32 @@ codeset.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 16n
 .rt
-A signal was caught during \fBopen()\fR.
+A signal was caught during
+.BR open() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument points to an illegal address.
+The
+.I path
+argument points to an illegal address.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
@@ -617,40 +845,50 @@ support extended file attributes.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument names a \fBSTREAMS\fR file and a hangup or error
-occurred during the \fBopen()\fR.
+The
+.I path
+argument names a
+.B STREAMS
+file and a hangup or error
+occurred during the
+.BR open() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEISDIR\fR
+.B EISDIR
 .ad
 .RS 16n
 .rt
-The named file is a directory and \fIoflag\fR includes \fBO_WRONLY\fR or
-\fBO_RDWR\fR.
+The named file is a directory and \fIoflag\fR includes
+.B O_WRONLY
+or
+.BR O_RDWR .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
-Too many symbolic links were encountered in resolving \fIpath\fR.
+Too many symbolic links were encountered in resolving
+.IR path .
 .sp
 A loop exists in symbolic links encountered during resolution of the
 \fIpath\fR argument.
 .sp
-The \fBO_NOFOLLOW\fR flag is set and the final component of path is a
+The
+.B O_NOFOLLOW
+flag is set and the final component of path is a
 symbolic link.
 .RE
 
@@ -658,7 +896,7 @@ symbolic link.
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 16n
 .rt
@@ -670,11 +908,13 @@ process.
 .ne 2
 .mk
 .na
-\fBEMLINK\fR
+.B EMLINK
 .ad
 .RS 16n
 .rt
-The \fBO_NOLINKS\fR flag is set and the named file has a link count greater
+The
+.B O_NOLINKS
+flag is set and the named file has a link count greater
 than 1.
 .RE
 
@@ -682,11 +922,13 @@ than 1.
 .ne 2
 .mk
 .na
-\fBEMULTIHOP\fR
+.B EMULTIHOP
 .ad
 .RS 16n
 .rt
-Components of \fIpath\fR require hopping to multiple remote machines and
+Components of
+.I path
+require hopping to multiple remote machines and
 the file system does not allow it.
 .RE
 
@@ -694,11 +936,13 @@ the file system does not allow it.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-The length of the \fIpath\fR argument exceeds {\fBPATH_MAX\fR} or a
+The length of the
+.I path
+argument exceeds {\fBPATH_MAX\fR} or a
 pathname component is longer than {\fBNAME_MAX\fR}.
 .RE
 
@@ -706,7 +950,7 @@ pathname component is longer than {\fBNAME_MAX\fR}.
 .ne 2
 .mk
 .na
-\fBENFILE\fR
+.B ENFILE
 .ad
 .RS 16n
 .rt
@@ -717,11 +961,13 @@ The maximum allowable number of files is currently open in the system.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
-The \fBO_CREAT\fR flag is not set and the named file does not exist; or the
+The
+.B O_CREAT
+flag is not set and the named file does not exist; or the
 \fBO_CREAT\fR flag is set and either the path prefix does not exist or the
 \fIpath\fR argument points to an empty string.
 .RE
@@ -730,11 +976,13 @@ The \fBO_CREAT\fR flag is not set and the named file does not exist; or the
 .ne 2
 .mk
 .na
-\fBENOLINK\fR
+.B ENOLINK
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument points to a remote machine, and the link to that
+The
+.I path
+argument points to a remote machine, and the link to that
 machine is no longer active.
 .RE
 
@@ -742,11 +990,13 @@ machine is no longer active.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument names a STREAMS-based file and the system is unable
+The
+.I path
+argument names a STREAMS-based file and the system is unable
 to allocate a STREAM.
 .RE
 
@@ -754,35 +1004,43 @@ to allocate a STREAM.
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 16n
 .rt
 The directory or file system that would contain the new file cannot be
-expanded, the file does not exist, and \fBO_CREAT\fR is specified.
+expanded, the file does not exist, and
+.B O_CREAT
+is specified.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOSYS\fR
+.B ENOSYS
 .ad
 .RS 16n
 .rt
-The device specified by \fIpath\fR does not support the open operation.
+The device specified by
+.I path
+does not support the open operation.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOTDIR\fR
+.B ENOTDIR
 .ad
 .RS 16n
 .rt
 A component of the path prefix is not a directory or a relative path was
-supplied to \fBopenat()\fR, the \fBO_XATTR\fR flag was not supplied, and the
+supplied to
+.BR openat() ,
+the
+.B O_XATTR
+flag was not supplied, and the
 file descriptor does not refer to a directory.
 .RE
 
@@ -790,11 +1048,13 @@ file descriptor does not refer to a directory.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 16n
 .rt
-The \fBO_NONBLOCK\fR flag is set, the named file is a FIFO, the
+The
+.B O_NONBLOCK
+flag is set, the named file is a FIFO, the
 \fBO_WRONLY\fR flag is set, and no process has the file open for reading; or
 the named file is a character special or block special file and the device
 associated with this special file does not exist or has been retired by the
@@ -805,11 +1065,12 @@ fault management framework .
 .ne 2
 .mk
 .na
-\fBEOPNOTSUPP\fR
+.B EOPNOTSUPP
 .ad
 .RS 16n
 .rt
-An attempt was made to open a path that corresponds to a \fBAF_UNIX\fR
+An attempt was made to open a path that corresponds to a
+.BR AF_UNIX
 socket.
 .RE
 
@@ -817,11 +1078,13 @@ socket.
 .ne 2
 .mk
 .na
-\fBEOVERFLOW\fR
+.B EOVERFLOW
 .ad
 .RS 16n
 .rt
-The named file is a regular file and either \fBO_LARGEFILE\fR is not set
+The named file is a regular file and either
+.B O_LARGEFILE
+is not set
 and the size of the file cannot be represented correctly in an object of
 type \fBoff_t\fR or \fBO_LARGEFILE\fR is set and the size of the file cannot
 be represented correctly in an object of type \fBoff64_t\fR.
@@ -831,42 +1094,50 @@ be represented correctly in an object of type \fBoff64_t\fR.
 .ne 2
 .mk
 .na
-\fBEROFS\fR
+.B EROFS
 .ad
 .RS 16n
 .rt
 The named file resides on a read-only file system and either
-\fBO_WRONLY\fR, \fBO_RDWR\fR, \fBO_CREAT\fR (if file does not exist), or
+.BR O_WRONLY ,
+.BR O_RDWR ,
+\fBO_CREAT\fR (if file does not exist), or
 \fBO_TRUNC\fR is set in the \fIoflag\fR argument.
 .RE
 
 .sp
 .LP
-The \fBopenat()\fR function will fail if:
+The
+.B openat()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 9n
 .rt
 The \fIfildes\fR argument is not a valid open file descriptor or is not
-\fBAT_FTCWD\fR.
+.BR AT_FTCWD .
 .RE
 
 .sp
 .LP
-The \fBopen()\fR function may fail if:
+The
+.B open()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument names the slave side of a pseudo-terminal device
+The
+.I path
+argument names the slave side of a pseudo-terminal device
 that is locked.
 .RE
 
@@ -874,7 +1145,7 @@ that is locked.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
@@ -885,7 +1156,7 @@ The value of the \fIoflag\fR argument is not valid.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
@@ -897,11 +1168,15 @@ whose length exceeds {\fBPATH_MAX\fR}.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument names a \fBSTREAMS\fR file and the system is unable
+The
+.I path
+argument names a
+.B STREAMS
+file and the system is unable
 to allocate resources.
 .RE
 
@@ -909,7 +1184,7 @@ to allocate resources.
 .ne 2
 .mk
 .na
-\fBETXTBSY\fR
+.B ETXTBSY
 .ad
 .RS 16n
 .rt
@@ -919,10 +1194,12 @@ The file is a pure procedure (shared text) file that is being executed and
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fROpen a file for writing by the owner.
+\fBExample 1\fR Open a file for writing by the owner.
 .sp
 .LP
-The following example opens the file \fB/tmp/file\fR, either by creating it
+The following example opens the file
+.BR /tmp/file ,
+either by creating it
 if it does not already exist, or by truncating its length to 0 if it does
 exist. If the call creates a new file, the access permission bits in the
 file mode of the file are set to permit reading and writing by the owner,
@@ -930,7 +1207,9 @@ and to permit reading only by group members and others.
 
 .sp
 .LP
-If the call to \fBopen()\fR is successful, the file is opened for
+If the call to
+.B open()
+is successful, the file is opened for
 writing.
 
 .sp
@@ -948,12 +1227,16 @@ fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, mode);
 .in -2
 
 .LP
-\fBExample 2 \fROpen a file using an existence check.
+\fBExample 2\fR Open a file using an existence check.
 .sp
 .LP
-The following example uses the \fBopen()\fR function to try to create the
+The following example uses the
+.B open()
+function to try to create the
 \fBLOCKFILE\fR file and open it for writing. Since the \fBopen()\fR function
-specifies the \fBO_EXCL\fR flag, the call fails if the file already exists.
+specifies the
+.B O_EXCL
+flag, the call fails if the file already exists.
 In that case, the application assumes that someone else is updating the
 password file and exits.
 
@@ -978,7 +1261,7 @@ if ((pfd = open(LOCKFILE, O_WRONLY | O_CREAT | O_EXCL,
 .in -2
 
 .LP
-\fBExample 3 \fROpen a file for writing.
+\fBExample 3\fR Open a file for writing.
 .sp
 .LP
 The following example opens a file for writing, creating the file if it
@@ -1008,13 +1291,25 @@ if ((pfd = open(filename, O_WRONLY | O_CREAT | O_TRUNC,
 .SH USAGE
 .sp
 .LP
-The \fBopen()\fR function has a transitional interface for 64-bit file
-offsets. See \fBlf64\fR(5). Note that using \fBopen64()\fR is equivalent to
-using \fBopen()\fR with \fBO_LARGEFILE\fR set in \fIoflag\fR.
+The
+.B open()
+function has a transitional interface for 64-bit file
+offsets. See
+.BR lf64 (5).
+Note that using
+.B open64()
+is equivalent to
+using
+.B open()
+with
+.B O_LARGEFILE
+set in \fIoflag\fR.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1035,13 +1330,28 @@ StandardFor \fBopen()\fR, see \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBchmod\fR(2), \fBclose\fR(2), \fBcreat\fR(2),
-\fBdup\fR(2), \fBexec\fR(2), \fBfcntl\fR(2), \fBgetmsg\fR(2),
-\fBgetrlimit\fR(2), \fBlseek\fR(2), \fBputmsg\fR(2), \fBread\fR(2),
-\fBstat\fR(2), \fBumask\fR(2), \fBwrite\fR(2), \fBattropen\fR(3C),
+.BR Intro (2),
+.BR chmod (2),
+.BR close (2),
+.BR creat (2),
+.BR dup (2),
+.BR exec (2),
+\fBfcntl\fR(2), \fBgetmsg\fR(2),
+.BR getrlimit (2),
+.BR lseek (2),
+.BR putmsg (2),
+.BR read (2),
+.BR stat (2),
+.BR umask (2),
+.BR write (2),
+.BR attropen (3C),
 \fBfcntl.h\fR(3HEAD), \fBstat.h\fR(3HEAD), \fBunlockpt\fR(3C),
-\fBattributes\fR(5), \fBlf64\fR(5), \fBprivileges\fR(5), \fBstandards\fR(5),
-\fBconnld\fR(7M), \fBstreamio\fR(7I)
+.BR attributes (5),
+\fBlf64\fR(5),
+.BR privileges (5),
+.BR standards (5),
+.BR connld (7M),
+.BR streamio (7I)
 .SH NOTES
 .sp
 .LP

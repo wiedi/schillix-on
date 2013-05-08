@@ -32,37 +32,71 @@ rlogin \- remote login
 .SH DESCRIPTION
 .sp
 .LP
-The \fBrlogin\fR utility establishes a remote login session from your terminal
-to the remote machine named \fIhostname\fR. The user can choose to kerberize the
+The
+.B rlogin
+utility establishes a remote login session from your terminal
+to the remote machine named
+.IR hostname .
+The user can choose to kerberize the
 rlogin session using Kerberos V5 and also protect the data being transferred.
 .sp
 .LP
-Hostnames are listed in the \fIhosts\fR database, which can be contained in the
+Hostnames are listed in the
+.I hosts
+database, which can be contained in the
 \fB/etc/hosts\fR file, the Network Information Service (\fBNIS\fR) \fBhosts\fR
 map, the Internet domain name server, or a combination of these. Each host has
 one official name (the first name in the database entry), and optionally one or
 more nicknames. Either official hostnames or nicknames can be specified in
-\fIhostname\fR.
+.IR hostname .
 .sp
 .LP
 The user can opt for a secure rlogin session which uses Kerberos V5 for
 authentication. Encryption of the session data is also possible. The rlogin
 session can be kerberized using any of the following Kerberos specific options:
-\fB-A\fR, \fB-PN\fR or \fB-PO\fR, \fB-x\fR, \fB-f\fR or \fB-F\fR, and \fB-k\fR
-\fIrealm\fR. Some of these options (\fB-A\fR, \fB-x\fR, \fB-PN\fR or \fB-PO\fR,
+.BR -A ,
+\fB-PN\fR or
+.BR -PO ,
+.BR -x ,
+\fB-f\fR or
+.BR -F ,
+and
+.BR -k
+.IR realm .
+Some of these options (\fB-A\fR,
+.BR -x ,
+\fB-PN\fR or \fB-PO\fR,
 and \fB-f\fR or \fB-F\fR) can also be specified in the \fB[appdefaults]\fR
-section of \fBkrb5.conf\fR(4). The usage of these options and the expected
+section of
+.BR krb5.conf (4).
+The usage of these options and the expected
 behavior is discussed in the OPTIONS section below. If Kerberos authentication
 is used, authorization to the account is controlled through rules in
-\fBkrb5_auth_rules\fR(5). If this authorization fails, fallback to normal
+.BR krb5_auth_rules (5).
+If this authorization fails, fallback to normal
 \fBrlogin\fR using \fBrhosts\fR occurs only if the \fB-PO\fR option is used
-explicitly on the command line or is specified in \fBkrb5.conf\fR(4). Also
-notice that the \fB-PN\fR or \fB-PO\fR, \fB-x\fR, \fB-f\fR or \fB-F\fR, and
-\fB-k\fR \fIrealm\fR options are just supersets of the \fB-A\fR option.
+explicitly on the command line or is specified in
+.BR krb5.conf (4).
+Also
+notice that the
+.B -PN
+or
+.BR -PO ,
+.BR -x ,
+\fB-f\fR or
+.BR -F ,
+and
+.B -k
+.I realm
+options are just supersets of the
+.B -A
+option.
 .sp
 .LP
 The remote terminal type is the same as your local terminal type, as given in
-your environment \fBTERM\fR variable. The terminal or window size is also copied
+your environment
+.B TERM
+variable. The terminal or window size is also copied
 to the remote system if the server supports the option. Changes in size are
 reflected as well. All echoing takes place at the remote site, so that (except
 for delays) the remote login is transparent. Flow control using Control-S and
@@ -75,7 +109,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-8\fR
+.B -8
 .ad
 .RS 15n
 .rt
@@ -86,7 +120,7 @@ Passes eight-bit data across the net instead of seven-bit data.
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .RS 15n
 .rt
@@ -98,12 +132,14 @@ username.
 .ne 2
 .mk
 .na
-\fB-A\fR
+.B -A
 .ad
 .RS 15n
 .rt
 Explicitly enables Kerberos authentication and trusts the \fB\&.k5login\fR file
-for access-control. If the authorization check by \fBin.rlogind\fR(1M) on the
+for access-control. If the authorization check by
+.BR in.rlogind (1M)
+on the
 server-side succeeds and if the \fB\&.k5login\fR file permits access, the user
 is allowed to login without supplying a password.
 .RE
@@ -116,7 +152,9 @@ is allowed to login without supplying a password.
 .ad
 .RS 15n
 .rt
-Specifies a different escape character, \fIc\fR, for the line used to
+Specifies a different escape character,
+.IR c ,
+for the line used to
 disconnect from the remote host.
 .RE
 
@@ -124,7 +162,7 @@ disconnect from the remote host.
 .ne 2
 .mk
 .na
-\fB-E\fR
+.B -E
 .ad
 .RS 15n
 .rt
@@ -143,24 +181,33 @@ Forwards a copy of the local credentials (Kerberos Ticket Granting Ticket) to
 the remote system. This is a non-forwardable ticket granting ticket. You must
 forward a ticket granting ticket if you need to authenticate yourself to other
 Kerberized network services on the remote host. An example is if your home
-directory on the remote host is \fBNFS\fR mounted via Kerberos V5. If your local
+directory on the remote host is
+.B NFS
+mounted via Kerberos V5. If your local
 credentials are not forwarded in this case, you can not access your home
-directory. This option is mutually exclusive with the \fB-F\fR option.
+directory. This option is mutually exclusive with the
+.B -F
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-F\fR
+.B -F
 .ad
 .RS 15n
 .rt
 Forwards a forwardable copy of the local credentials (Kerberos Ticket Granting
-Ticket) to the remote system. The \fB-F\fR option provides a superset of the
+Ticket) to the remote system. The
+.B -F
+option provides a superset of the
 functionality offered by the \fB-f\fR option. For example, with the \fB-f\fR
 option, after you connected to the remote host, any attempt to invoke
-\fB/usr/bin/ftp\fR, \fB/usr/bin/telnet\fR, \fB/usr/bin/rlogin\fR, or
+\fB/usr/bin/ftp\fR,
+.BR /usr/bin/telnet ,
+.BR /usr/bin/rlogin ,
+or
 \fB/usr/bin/rsh\fR with the \fB-f\fR or \fB-F\fR options would fail. Thus, you
 would be unable to push your single network sign on trust beyond one system.
 This option is mutually exclusive with the \fB-f\fR option.
@@ -174,7 +221,10 @@ This option is mutually exclusive with the \fB-f\fR option.
 .ad
 .RS 15n
 .rt
-Causes \fBrlogin\fR to obtain tickets for the remote host in \fIrealm\fR
+Causes
+.B rlogin
+to obtain tickets for the remote host in
+.IR realm
 instead of the remote host's realm as determined by \fBkrb5.conf\fR(4).
 .RE
 
@@ -182,12 +232,14 @@ instead of the remote host's realm as determined by \fBkrb5.conf\fR(4).
 .ne 2
 .mk
 .na
-\fB-K\fR
+.B -K
 .ad
 .RS 15n
 .rt
 This option explicitly disables Kerberos authentication. It can be used to
-override the \fBautologin\fR variable in \fBkrb5.conf\fR(4).
+override the
+.B autologin
+variable in \fBkrb5.conf\fR(4).
 .RE
 
 .sp
@@ -198,7 +250,9 @@ override the \fBautologin\fR variable in \fBkrb5.conf\fR(4).
 .ad
 .RS 15n
 .rt
-Specifies a different \fIusername\fR for the remote login. If you do not use
+Specifies a different
+.I username
+for the remote login. If you do not use
 this option, the remote username used is the same as your local username.
 .RE
 
@@ -206,7 +260,7 @@ this option, the remote username used is the same as your local username.
 .ne 2
 .mk
 .na
-\fB-L\fR
+.B -L
 .ad
 .RS 15n
 .rt
@@ -217,11 +271,11 @@ Allows the rlogin session to be run in "\fBlitout\fR" mode.
 .ne 2
 .mk
 .na
-\fB-PN\fR
+.B -PN
 .ad
 .br
 .na
-\fB-PO\fR
+.B -PO
 .ad
 .RS 15n
 .rt
@@ -232,7 +286,8 @@ interoperable with older (MIT/SEAM) servers. The new protocol is used by
 default, unless explicitly specified using these options or by using
 \fBkrb5.conf\fR(4). If Kerberos authorization fails when using the old
 `\fBrcmd\fR' protocol, there is fallback to regular, non-kerberized
-\fBrlogin\fR. This is not the case when the new, more secure `\fBrcmd\fR'
+.BR rlogin .
+This is not the case when the new, more secure `\fBrcmd\fR'
 protocol is used.
 .RE
 
@@ -240,12 +295,16 @@ protocol is used.
 .ne 2
 .mk
 .na
-\fB-x\fR
+.B -x
 .ad
 .RS 15n
 .rt
-Turns on \fBDES\fR encryption for all data passed through the rlogin session.
-This reduces response time and increases \fBCPU\fR utilization.
+Turns on
+.B DES
+encryption for all data passed through the rlogin session.
+This reduces response time and increases
+.B CPU
+utilization.
 .RE
 
 .SS "Escape Sequences"
@@ -257,7 +316,7 @@ sequences." The escape character can be changed using the \fB-e\fR option.
 .ne 2
 .mk
 .na
-\fB~.\fR
+.B ~.
 .ad
 .RS 10n
 .rt
@@ -269,7 +328,7 @@ local host breaks the connection with no warning to the remote end.
 .ne 2
 .mk
 .na
-\fB~susp\fR
+.B ~susp
 .ad
 .RS 10n
 .rt
@@ -281,7 +340,7 @@ Suspends the login session, but only if you are using a shell with Job Control.
 .ne 2
 .mk
 .na
-\fB~dsusp\fR
+.B ~dsusp
 .ad
 .RS 10n
 .rt
@@ -295,11 +354,13 @@ suspend" character, usually Control-Y. See \fBtty\fR(1).
 .ne 2
 .mk
 .na
-\fIhostname\fR
+.I hostname
 .ad
 .RS 12n
 .rt
-The remote machine on which \fIrlogin\fR establishes the remote login
+The remote machine on which
+.I rlogin
+establishes the remote login
 session.
 .RE
 
@@ -311,10 +372,14 @@ list in a file, \fB\&.k5login\fR, in his home directory. Each line in this file
 should contain a Kerberos principal name of the form
 \fIprincipal\fR/\fIinstance@realm\fR. If there is a \fB~/.k5login\fR file,
 access is granted to the account if and only if the originating user is
-authenticated to one of the principals named in the \fB~/.k5login\fR file.
+authenticated to one of the principals named in the
+.B ~/.k5login
+file.
 Otherwise, the originating user is granted access to the account if and only if
 the authenticated principal name of the user can be mapped to the local account
-name using the \fIauthenticated-principal-name\fR \(-> \fIlocal-user-name\fR
+name using the
+.I authenticated-principal-name
+\(-> \fIlocal-user-name\fR
 mapping rules. The \fB\&.k5login\fR file (for access control) comes into play
 only when Kerberos authentication is being done.
 .sp
@@ -322,7 +387,9 @@ only when Kerberos authentication is being done.
 For the non-secure rlogin session, each remote machine can have a file named
 \fB/etc/hosts.equiv\fR containing a list of trusted host names with which it
 shares user names. Users with the same user name on both the local and remote
-machine can \fBrlogin\fR from the machines listed in the remote machine's
+machine can
+.B rlogin
+from the machines listed in the remote machine's
 \fB/etc/hosts.equiv\fR file without supplying a password. Individual users
 camayn set up a similar private equivalence list with the file \fB\&.rhosts\fR
 in their home directories. Each line in this file contains two names, that is, a
@@ -344,7 +411,7 @@ remote user or by root.
 .ne 2
 .mk
 .na
-\fB/etc/passwd\fR
+.B /etc/passwd
 .ad
 .RS 23n
 .rt
@@ -355,18 +422,20 @@ Contains information about users' accounts.
 .ne 2
 .mk
 .na
-\fB/usr/hosts/*\fR
+.B /usr/hosts/*
 .ad
 .RS 23n
 .rt
-For \fIhostname\fR version of the command.
+For
+.I hostname
+version of the command.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/hosts.equiv\fR
+.B /etc/hosts.equiv
 .ad
 .RS 23n
 .rt
@@ -377,7 +446,7 @@ List of trusted hostnames with shared user names.
 .ne 2
 .mk
 .na
-\fB/etc/nologin\fR
+.B /etc/nologin
 .ad
 .RS 23n
 .rt
@@ -388,7 +457,7 @@ Message displayed to users attempting to login during machine shutdown.
 .ne 2
 .mk
 .na
-\fB$HOME/.rhosts\fR
+.B $HOME/.rhosts
 .ad
 .RS 23n
 .rt
@@ -399,7 +468,7 @@ Private list of trusted hostname/username combinations.
 .ne 2
 .mk
 .na
-\fB$HOME/.k5login\fR
+.B $HOME/.k5login
 .ad
 .RS 23n
 .rt
@@ -421,7 +490,7 @@ Kerberos configuration file.
 .ne 2
 .mk
 .na
-\fB/etc/hosts\fR
+.B /etc/hosts
 .ad
 .RS 23n
 .rt
@@ -431,7 +500,9 @@ Hosts database.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -448,9 +519,13 @@ AvailabilitySUNWrcmdc
 .SH SEE ALSO
 .sp
 .LP
-\fBrsh\fR(1), \fBstty\fR(1), \fBtty\fR(1), \fBin.rlogind\fR(1M),
+.BR rsh (1),
+.BR stty (1),
+.BR tty (1),
+.BR in.rlogind (1M),
 \fBhosts\fR(4),\fBhosts.equiv\fR(4), \fBkrb5.conf\fR(4), \fBnologin\fR(4),
-\fBattributes\fR(5), \fBkrb5_auth_rules\fR(5)
+.BR attributes (5),
+.BR krb5_auth_rules (5)
 .SH DIAGNOSTICS
 .sp
 .LP
@@ -467,8 +542,12 @@ NO LOGINS: System going down in \fIN\fR \fBminutes\fR
 .SH NOTES
 .sp
 .LP
-When a system is listed in \fBhosts.equiv\fR, its security must be as good as
-local security. One insecure system listed in \fBhosts.equiv\fR can compromise
+When a system is listed in
+.BR hosts.equiv ,
+its security must be as good as
+local security. One insecure system listed in
+.B hosts.equiv
+can compromise
 the security of the entire system.
 .sp
 .LP
@@ -477,4 +556,6 @@ Pages (\fBYP\fR.) The functionality of the two remains the same. Only the name
 has changed.
 .sp
 .LP
-This implementation can only use the \fBTCP\fR network service.
+This implementation can only use the
+.B TCP
+network service.

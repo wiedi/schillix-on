@@ -37,40 +37,68 @@ dlinfo \- dynamic load information
 .sp
 .LP
 The \fBdlinfo()\fR function sets or extracts information from the runtime
-linker \fBld.so.1\fR(1). This function is loosely modeled after the
-\fBioctl\fR(2) function. The \fIrequest\fR argument and a third argument of
-varying type are passed to \fBdlinfo()\fR. The action taken by \fBdlinfo()\fR
-depends on the value of the \fIrequest\fR that is provided.
+linker
+.BR ld.so.1 (1).
+This function is loosely modeled after the
+.BR ioctl (2)
+function. The
+.I request
+argument and a third argument of
+varying type are passed to
+.BR dlinfo() .
+The action taken by \fBdlinfo()\fR
+depends on the value of the
+.I request
+that is provided.
 .sp
 .LP
-The \fIhandle\fR argument is either the value that is returned from a
-\fBdlopen\fR(3C) or \fBdlmopen()\fR call, or the special handle
-\fBRTLD_SELF\fR. A \fIhandle\fR argument is required for all requests except
-\fBRTLD_DI_CONFIGADDR\fR, \fBRTLD_DI_GETSIGNAL\fR, and
-\fBRTLD_DI_SETSIGNAL\fR. If \fIhandle\fR is the value that is returned from a
+The
+.I handle
+argument is either the value that is returned from a
+.BR dlopen (3C)
+or
+.B dlmopen()
+call, or the special handle
+.BR RTLD_SELF .
+A
+.I handle
+argument is required for all requests except
+.BR RTLD_DI_CONFIGADDR ,
+.BR RTLD_DI_GETSIGNAL ,
+and
+.BR RTLD_DI_SETSIGNAL .
+If
+.I handle
+is the value that is returned from a
 \fBdlopen()\fR or \fBdlmopen()\fR call, the information returned by the
 \fBdlinfo()\fR call pertains to the specified object. If \fIhandle\fR is the
-special handle \fBRTLD_SELF\fR, the information returned by the \fBdlinfo()\fR
+special handle
+.BR RTLD_SELF ,
+the information returned by the \fBdlinfo()\fR
 call pertains to the caller.
 .sp
 .LP
-The \fIrequest\fR argument can take the following values:
+The
+.I request
+argument can take the following values:
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_ARGSINFO\fR
+.B RTLD_DI_ARGSINFO
 .ad
 .sp .6
 .RS 4n
-Obtain process argument information. The \fIp\fR argument is a pointer
+Obtain process argument information. The
+.I p
+argument is a pointer
 (\fBDl_argsinfo_t *\fIp\fR). The following elements from this structure are
 initialized:
 .sp
 .ne 2
 .mk
 .na
-\fBdla_argc\fR
+.B dla_argc
 .ad
 .RS 12n
 .rt
@@ -81,7 +109,7 @@ The number of arguments passed to the process.
 .ne 2
 .mk
 .na
-\fBdla_argv\fR
+.B dla_argv
 .ad
 .RS 12n
 .rt
@@ -92,13 +120,15 @@ The argument array passed to the process.
 .ne 2
 .mk
 .na
-\fBdla_envp\fR
+.B dla_envp
 .ad
 .RS 12n
 .rt
 The active environment variable array that is available to the process. This
 element initially points to the environment variable array that is made
-available to \fBexec\fR(2). This element can be updated should an alternative
+available to
+.BR exec (2).
+This element can be updated should an alternative
 environment be established by the process. See \fBputenv\fR(3C).
 .RE
 
@@ -106,7 +136,7 @@ environment be established by the process. See \fBputenv\fR(3C).
 .ne 2
 .mk
 .na
-\fBdla_auxv\fR
+.B dla_auxv
 .ad
 .RS 12n
 .rt
@@ -114,7 +144,9 @@ The auxiliary vector array passed to the process.
 .RE
 
 A process can be established from executing the runtime linker directly from
-the command line. See \fBld.so.1\fR(1). The \fBDl_argsinfo_t\fR information
+the command line. See
+.BR ld.so.1 (1).
+The \fBDl_argsinfo_t\fR information
 reflects the information that is made available to the application regardless
 of how the runtime linker has been invoked.
 .RE
@@ -123,11 +155,13 @@ of how the runtime linker has been invoked.
 .ne 2
 .mk
 .na
-\fBRTLD_DI_CONFIGADDR\fR
+.B RTLD_DI_CONFIGADDR
 .ad
 .sp .6
 .RS 4n
-Obtain the configuration file information. The \fIp\fR argument is a
+Obtain the configuration file information. The
+.I p
+argument is a
 \fBDl_info_t\fR pointer (\fBDl_info_t *\fIp\fR). The following elements
 from this structure are initialized:
 .sp
@@ -158,16 +192,24 @@ The base address of the configuration file loaded into memory.
 .ne 2
 .mk
 .na
-\fBRTLD_DI_LINKMAP\fR
+.B RTLD_DI_LINKMAP
 .ad
 .sp .6
 .RS 4n
-Obtain the \fBLink_map\fR for the \fIhandle\fR that is specified. The \fIp\fR
+Obtain the
+.B Link_map
+for the
+.I handle
+that is specified. The \fIp\fR
 argument points to a \fBLink_map\fR pointer (\fBLink_map **\fIp\fR). The
-actual storage for the \fBLink_map\fR structure is maintained by
-\fBld.so.1\fR.
+actual storage for the
+.B Link_map
+structure is maintained by
+.BR ld.so.1 .
 .sp
-The \fBLink_map\fR structure includes the following members:
+The
+.B Link_map
+structure includes the following members:
 .sp
 .in +2
 .nf
@@ -184,7 +226,7 @@ The \fBLink_map\fR structure includes the following members:
 .ne 2
 .mk
 .na
-\fBl_addr\fR
+.B l_addr
 .ad
 .RS 13n
 .rt
@@ -195,34 +237,39 @@ The base address of the object loaded into memory.
 .ne 2
 .mk
 .na
-\fBl_name\fR
+.B l_name
 .ad
 .RS 13n
 .rt
 The full name of the loaded object. This full name is the filename of the
-object as referenced by \fBld.so.1\fR.
+object as referenced by
+.BR ld.so.1 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBl_ld\fR
+.B l_ld
 .ad
 .RS 13n
 .rt
-Points to the \fBSHT_DYNAMIC\fR structure.
+Points to the
+.B SHT_DYNAMIC
+structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBl_next\fR
+.B l_next
 .ad
 .RS 13n
 .rt
-The next \fBLink_map\fR on the link-map list. Other objects on the same
+The next
+.B Link_map
+on the link-map list. Other objects on the same
 link-map list as the current object can be examined by following the
 \fBl_next\fR and \fBl_prev\fR members.
 .RE
@@ -231,11 +278,13 @@ link-map list as the current object can be examined by following the
 .ne 2
 .mk
 .na
-\fBl_prev\fR
+.B l_prev
 .ad
 .RS 13n
 .rt
-The previous \fBLink_map\fR on the link-map list.
+The previous
+.B Link_map
+on the link-map list.
 .RE
 
 .sp
@@ -246,9 +295,16 @@ The previous \fBLink_map\fR on the link-map list.
 .ad
 .RS 13n
 .rt
-If the object that is referenced is a \fIfilter\fR, this member points to the
-name of the object being filtered. If the object is not a \fIfilter\fR, this
-member is \fB0\fR. See the \fILinker and Libraries Guide\fR.
+If the object that is referenced is a
+.IR filter ,
+this member points to the
+name of the object being filtered. If the object is not a
+.IR filter ,
+this
+member is
+.BR 0 .
+See the
+.IR "Linker and Libraries Guide" .
 .RE
 
 .RE
@@ -257,12 +313,20 @@ member is \fB0\fR. See the \fILinker and Libraries Guide\fR.
 .ne 2
 .mk
 .na
-\fBRTLD_DI_LMID\fR
+.B RTLD_DI_LMID
 .ad
 .sp .6
 .RS 4n
-Obtain the \fBID\fR for the link-map list upon which the \fIhandle\fR is
-loaded. The \fIp\fR argument is a \fBLmid_t\fR pointer (\fBLmid_t
+Obtain the
+.B ID
+for the link-map list upon which the
+.I handle
+is
+loaded. The
+.I p
+argument is a
+.B Lmid_t
+pointer (\fBLmid_t
 *\fIp\fR).
 .RE
 
@@ -270,12 +334,18 @@ loaded. The \fIp\fR argument is a \fBLmid_t\fR pointer (\fBLmid_t
 .ne 2
 .mk
 .na
-\fBRTLD_DI_MMAPCNT\fR
+.B RTLD_DI_MMAPCNT
 .ad
 .sp .6
 .RS 4n
-Determine the number of segment mappings for the \fIhandle\fR that is
-specified, for use in a \fBRTLD_DI_MMAPS\fR request. The \fIp\fR argument is a
+Determine the number of segment mappings for the
+.I handle
+that is
+specified, for use in a
+.B RTLD_DI_MMAPS
+request. The
+.I p
+argument is a
 \fBuint_t\fR pointer (\fBuint_t *\fIp\fR). On return from a
 \fBRTLD_DI_MMAPCNT\fR request, the \fBuint_t\fR value that is pointed to by
 \fIp\fR contains the number of segment mappings that the associated object
@@ -283,54 +353,80 @@ uses.
 .sp
 To obtain the complete mapping information for an object, a
 \fBmmapobj_result_t\fR array for \fBRTLD_DI_MMAPCNT\fR entries must be
-provided. This array is assigned to the \fBdlm_maps\fR member, and the number
-of entries available in the arry are assigned to the \fBdlm_acnt\fR member.
-This initialized structure is then passed to a \fBRTLD_DI_MMAPS\fR request.
-See \fBEXAMPLES\fR.
+provided. This array is assigned to the
+.B dlm_maps
+member, and the number
+of entries available in the arry are assigned to the
+.B dlm_acnt
+member.
+This initialized structure is then passed to a
+.B RTLD_DI_MMAPS
+request.
+See
+.BR EXAMPLES .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_MMAPS\fR
+.B RTLD_DI_MMAPS
 .ad
 .sp .6
 .RS 4n
-Obtain segment mapping information for the \fIhandle\fR that is specified.
-The \fIp\fR argument is a \fBDl_mapinfo_t\fR pointer (\fBDl_mapinfo_t
+Obtain segment mapping information for the
+.I handle
+that is specified.
+The
+.I p
+argument is a \fBDl_mapinfo_t\fR pointer (\fBDl_mapinfo_t
 *\fIp\fR). This structure can be initialized from the mapping count
-obtained from a previous \fBRTLD_DI_MMAPCNT\fR request.
+obtained from a previous
+.B RTLD_DI_MMAPCNT
+request.
 .sp
-Segment mapping information is provided in an array of \fBmmapobj_result_t\fR
-structures that originate from the \fBmmapobj\fR(2) of the associated object.
-The \fBdlm_acnt\fR member, typically initialized from a previous
+Segment mapping information is provided in an array of
+.BR mmapobj_result_t
+structures that originate from the
+.BR mmapobj (2)
+of the associated object.
+The
+.B dlm_acnt
+member, typically initialized from a previous
 \fBRTLD_DI_MMAPCNT\fR request, indicates the number of enteries in a
 \fBmmapobj_result_t\fR array. This array is assigned to the \fBdlm_maps\fR
-member. This initialized structure is then passed to a \fBRTLD_DI_MMAPS\fR
+.RB "member. This initialized structure is then passed to a" " RTLD_DI_MMAPS"
 request, where the segment mapping information is copied to the
 \fBmmapobj_result_t\fR array. The \fBdlm_rcnt\fR member indicates the number
-of \fBmmapobj_result_t\fR element entries that are returned. See
-\fBEXAMPLES\fR.
+of
+.B mmapobj_result_t
+element entries that are returned. See
+.BR EXAMPLES .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_SERINFO\fR
+.B RTLD_DI_SERINFO
 .ad
 .sp .6
 .RS 4n
-Obtain the library search paths for the \fIhandle\fR that is specified. The
+Obtain the library search paths for the
+.I handle
+that is specified. The
 \fIp\fR argument is a \fBDl_serinfo_t\fR pointer (\fBDl_serinfo_t
 *\fIp\fR). A user must first initialize the \fBDl_serinfo_t\fR structure
-with a \fBRTLD_DI_SERINFOSIZE\fR request. See \fBEXAMPLES\fR.
+with a
+.B RTLD_DI_SERINFOSIZE
+request. See \fBEXAMPLES\fR.
 .sp
 The returned \fBDl_serinfo_t\fR structure contains \fBdls_cnt\fR
 \fBDl_serpath_t\fR entries. Each entry's \fBdlp_name\fR member points to the
 search path. The corresponding \fBdlp_info\fR member contains one of more
-flags indicating the origin of the path. See the \fBLA_SER_*\fR flags that are
+flags indicating the origin of the path. See the
+.B LA_SER_*
+flags that are
 defined in <\fBlink.h\fR>.
 .RE
 
@@ -338,95 +434,151 @@ defined in <\fBlink.h\fR>.
 .ne 2
 .mk
 .na
-\fBRTLD_DI_SERINFOSIZE\fR
+.B RTLD_DI_SERINFOSIZE
 .ad
 .sp .6
 .RS 4n
-Initialize a \fBDl_serinfo_t\fR structure for the \fIhandle\fR that is
-specified, for use in a \fBRTLD_DI_SERINFO\fR request. Both the \fBdls_cnt\fR
-and \fBdls_size\fR members are returned. The \fBdls_cnt\fR member indicates
-the number of search paths that are applicable to the \fIhandle\fR. The
+Initialize a \fBDl_serinfo_t\fR structure for the
+.I handle
+that is
+specified, for use in a
+.B RTLD_DI_SERINFO
+.RB "request. Both the" " dls_cnt"
+and
+.B dls_size
+members are returned. The
+.B dls_cnt
+member indicates
+the number of search paths that are applicable to the
+.IR handle .
+The
 \fBdls_size\fR member indicates the total size of a \fBDl_serinfo_t\fR buffer
-required to hold \fBdls_cnt\fR \fBDl_serpath_t\fR entries and the associated
-search path strings. The \fIp\fR argument is a \fBDl_serinfo_t\fR pointer
+required to hold
+.B "dls_cnt Dl_serpath_t"
+entries and the associated
+search path strings. The
+.I p
+argument is a \fBDl_serinfo_t\fR pointer
 (\fBDl_serinfo_t *\fIp\fR).
 .sp
 To obtain the complete path information, a new \fBDl_serinfo_t\fR buffer of
-size \fBdls_size\fR should be allocated. This new buffer should be initialized
-with the \fBdls_cnt\fR and \fBdls_size\fR entries. The initialized buffer is
-then passed to a \fBRTLD_DI_SERINFO\fR request. See \fBEXAMPLES\fR.
+size
+.B dls_size
+should be allocated. This new buffer should be initialized
+with the
+.B dls_cnt
+and
+.B dls_size
+entries. The initialized buffer is
+then passed to a
+.B RTLD_DI_SERINFO
+request. See \fBEXAMPLES\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_ORIGIN\fR
+.B RTLD_DI_ORIGIN
 .ad
 .sp .6
 .RS 4n
 Obtain the origin of the dynamic object that is associated with the
-\fIhandle\fR. The \fIp\fR argument is a \fBchar\fR pointer (\fBchar
+.IR handle .
+The
+.I p
+argument is a
+.B char
+pointer (\fBchar
 *\fIp\fR). The \fBdirname\fR(3C) of the associated object's
-\fBrealpath\fR(3C), which can be no larger than {\fBPATH_MAX\fR}, is copied to
-the pointer \fIp\fR.
+.BR realpath (3C),
+which can be no larger than {\fBPATH_MAX\fR}, is copied to
+the pointer
+.IR p .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_GETSIGNAL\fR
+.B RTLD_DI_GETSIGNAL
 .ad
 .sp .6
 .RS 4n
 Obtain the numeric signal number used by the runtime linker to kill the
-process in the event of a fatal runtime error. The \fIp\fR argument is an
+process in the event of a fatal runtime error. The
+.I p
+argument is an
 \fBint\fR pointer (\fBint *\fIp\fR). The signal number is copied to the
-pointer \fIp\fR.
+pointer
+.IR p .
 .sp
 By default, the signal used by the runtime linker to terminate a process is
-\fBSIGKILL\fR. See \fBthr_kill\fR(3C). This default can be changed by calling
+.BR SIGKILL .
+See \fBthr_kill\fR(3C). This default can be changed by calling
 \fBdlinfo()\fR with \fBRTLD_DI_SETSIGNAL\fR or by setting the environment
-variable \fBLD_SIGNAL\fR. See \fBld.so.1\fR(1).
+variable
+.BR LD_SIGNAL .
+See
+.BR ld.so.1 (1).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DI_SETSIGNAL\fR
+.B RTLD_DI_SETSIGNAL
 .ad
 .sp .6
 .RS 4n
 Provide a numeric signal number used by the runtime linker to kill the
-process in the event of a fatal runtime error. The \fIp\fR argument is an
+process in the event of a fatal runtime error. The
+.I p
+argument is an
 \fBint\fR pointer (\fBint *\fIp\fR). The value pointed to by \fIp\fR is
 established as the terminating signal value.
 .sp
 The current signal number used by the runtime linker to terminate a process
-can be obtained from \fBdlinfo()\fR using \fBRTLD_DI_GETSIGNAL\fR. Use of the
+can be obtained from \fBdlinfo()\fR using
+.BR RTLD_DI_GETSIGNAL .
+Use of the
 \fBRTLD_DI_SETSIGNAL\fR option is equivalent to setting the environment
-variable \fBLD_SIGNAL\fR. See \fBld.so.1\fR(1).
+variable
+.BR LD_SIGNAL .
+See
+.BR ld.so.1 (1).
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-The \fBdlinfo()\fR function returns \(mi1 if the \fIrequest\fR is invalid,
-the parameter \fIp\fR is \fINULL\fR, or the \fBDl_serinfo_t\fR structure is
-uninitialized for a \fBRTLD_DI_SERINFO\fR request. \fBdlinfo()\fR also returns
+The \fBdlinfo()\fR function returns \(mi1 if the
+.I request
+is invalid,
+the parameter
+.I p
+is
+.IR NULL ,
+or the \fBDl_serinfo_t\fR structure is
+uninitialized for a
+.B RTLD_DI_SERINFO
+request. \fBdlinfo()\fR also returns
 \(mi1 if the \fIhandle\fR argument does not refer to a valid object opened by
-\fBdlopen()\fR, or is not the special handle \fBRTLD_SELF\fR. Detailed
-diagnostic information is available with \fBdlerror\fR(3C).
+.BR dlopen() ,
+or is not the special handle
+.BR RTLD_SELF .
+Detailed
+diagnostic information is available with
+.BR dlerror (3C).
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUse \fBdlinfo()\fR to obtain library search paths.
+\fBExample 1\fR Use \fBdlinfo()\fR to obtain library search paths.
 .sp
 .LP
 The following example demonstrates how a dynamic object can inspect the
 library search paths that would be used to locate a simple filename with
-\fBdlopen()\fR. For simplicity, error checking has been omitted.
+.BR dlopen() .
+For simplicity, error checking has been omitted.
 
 .sp
 .in +2
@@ -455,7 +607,7 @@ library search paths that would be used to locate a simple filename with
 .in -2
 
 .LP
-\fBExample 2 \fRUse \fBdlinfo()\fR to obtain segment information.
+\fBExample 2\fR Use \fBdlinfo()\fR to obtain segment information.
 .sp
 .LP
 The following example demonstrates how a dynamic object can inspect its
@@ -493,7 +645,9 @@ Libraries Guide\fR.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -512,10 +666,21 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBld\fR(1), \fBld.so.1\fR(1), \fBexec\fR(2), \fBioctl\fR(2),
-\fBmmapobj\fR(2), \fBdirname\fR(3C), \fBdlclose\fR(3C), \fBdldump\fR(3C),
-\fBdlerror\fR(3C), \fBdlopen\fR(3C), \fBdlsym\fR(3C), \fBputenv\fR(3C),
-\fBrealpath\fR(3C), \fBthr_kill\fR(3C), \fBattributes\fR(5).
+.BR ld (1),
+.BR ld.so.1 (1),
+.BR exec (2),
+.BR ioctl (2),
+.BR mmapobj (2),
+.BR dirname (3C),
+.BR dlclose (3C),
+.BR dldump (3C),
+.BR dlerror (3C),
+.BR dlopen (3C),
+.BR dlsym (3C),
+.BR putenv (3C),
+.BR realpath (3C),
+.BR thr_kill (3C),
+.BR attributes (5).
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide

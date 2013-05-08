@@ -41,7 +41,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .sp .6
 .RS 4n
@@ -52,7 +52,7 @@ Pointer to the devices's \fBdev_info\fR structure.
 .ne 2
 .mk
 .na
-\fIreset_level\fR
+.I reset_level
 .ad
 .sp .6
 .RS 4n
@@ -63,8 +63,12 @@ The level to which the device is reset. See below for a list of valid
 .SH DESCRIPTION
 .sp
 .LP
-The \fBusb_reset_device()\fR function provides a client driver to request a
-hardware reset for a \fBUSB\fR device, which may be required in some
+The
+.B usb_reset_device()
+function provides a client driver to request a
+hardware reset for a
+.B USB
+device, which may be required in some
 situations such as:
 .RS +4
 .TP
@@ -77,18 +81,22 @@ state caused by physical or firmware defects.
 .TP
 .ie t \(bu
 .el o
-Some \fBUSB\fR devices need the driver to upload firmware into the device's
+Some
+.B USB
+devices need the driver to upload firmware into the device's
 \fBRAM\fR and initiate a hardware reset in order to activate the new
 firmware. 
 .RE
 .sp
 .LP
-The valid values for the \fIreset_level\fR are:
+The valid values for the
+.I reset_level
+are:
 .sp
 .ne 2
 .mk
 .na
-\fBUSB_RESET_LVL_DEFAULT\fR
+.B USB_RESET_LVL_DEFAULT
 .ad
 .sp .6
 .RS 4n
@@ -103,7 +111,7 @@ changing the descriptors.
 .ne 2
 .mk
 .na
-\fBUSB_RESET_LVL_REATTACH\fR
+.B USB_RESET_LVL_REATTACH
 .ad
 .sp .6
 .RS 4n
@@ -112,11 +120,16 @@ attaching process is started according to the updated compatible name. This
 reset level applies to the firmware download with the descriptors changing,
 or other situations in which the device needs to be reattached.
 .sp
-The \fBusb_reset_device()\fR function creates a new helper thread for
-reattachment. When called from \fBattach\fR(9E), the new thread sets a timer
+The
+.B usb_reset_device()
+function creates a new helper thread for
+reattachment. When called from
+.BR attach (9E),
+the new thread sets a timer
 (1 second), and waits until the driver's \fBattach\fR(9E) completes, after
 which the thread attempts to reattach the driver. When not called from
-\fBattach\fR(9E), the new thread attempts to reattach the driver
+.BR attach (9E),
+the new thread attempts to reattach the driver
 immediately.
 .sp
 If the thread fails to reattach to the driver, an error message is printed
@@ -127,17 +140,23 @@ state, depending on where the failure occurred.
 .SH RETURN VALUES
 .sp
 .LP
-The return values for the \fBusb_reset_device()\fR function are:
+The return values for the
+.B usb_reset_device()
+function are:
 .sp
 .ne 2
 .mk
 .na
-\fBUSB_SUCCESS\fR
+.B USB_SUCCESS
 .ad
 .RS 23n
 .rt
-If \fBUSB_RESET_LVL_DEFAULT\fR is specified, the device was reset
-successfully. If \fBUSB_RESET_LVL_REATTACH\fR is specified, reattaching was
+If
+.B USB_RESET_LVL_DEFAULT
+is specified, the device was reset
+successfully. If
+.B USB_RESET_LVL_REATTACH
+is specified, reattaching was
 started successfully or a previous reset is still in progress.
 .RE
 
@@ -145,7 +164,7 @@ started successfully or a previous reset is still in progress.
 .ne 2
 .mk
 .na
-\fBUSB_FAILURE\fR
+.B USB_FAILURE
 .ad
 .RS 23n
 .rt
@@ -159,7 +178,7 @@ suspended). This is called when the driver being detached. If
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_ARGS\fR
+.B USB_INVALID_ARGS
 .ad
 .RS 23n
 .rt
@@ -170,7 +189,7 @@ Invalid arguments.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_PERM\fR
+.B USB_INVALID_PERM
 .ad
 .RS 23n
 .rt
@@ -181,11 +200,13 @@ The driver of the dip does not own the entire device.
 .ne 2
 .mk
 .na
-\fBUSB_BUSY\fR
+.B USB_BUSY
 .ad
 .RS 23n
 .rt
-If \fBUSB_RESET_LVL_DEFAULT\fR is specified, one or more pipes other than
+If
+.B USB_RESET_LVL_DEFAULT
+is specified, one or more pipes other than
 the default control pipe are open on the device.
 .RE
 
@@ -193,17 +214,19 @@ the default control pipe are open on the device.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_CONTEXT\fR
+.B USB_INVALID_CONTEXT
 .ad
 .RS 23n
 .rt
-If \fBUSB_RESET_LVL_DEFAULT\fR is specified, called from interrupt
+If
+.B USB_RESET_LVL_DEFAULT
+is specified, called from interrupt
 context
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRResetting a Device
+\fBExample 1\fR Resetting a Device
 .sp
 .LP
 The following example shows how a device is reset to recover it from an
@@ -241,7 +264,7 @@ xxx_configure()
 .in -2
 
 .LP
-\fBExample 2 \fRResetting a Device After Downloading Firmware
+\fBExample 2\fR Resetting a Device After Downloading Firmware
 .sp
 .LP
 The following example shows how a device is reset after downloading
@@ -273,12 +296,16 @@ static int xxx_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 .SH CONTEXT
 .sp
 .LP
-The \fBusb_reset_device()\fR function may be called from user or kernel
+The
+.B usb_reset_device()
+function may be called from user or kernel
 context.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -299,8 +326,11 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBusb_clr_feature\fR(9F), \fBusb_get_cfg\fR(9F),
-\fBusb_pipe_close\fR(9F), \fBusb_pipe_open\fR(9F), \fBusb_pipe_reset\fR(9F),
+.BR attributes (5),
+\fBusb_clr_feature\fR(9F), \fBusb_get_cfg\fR(9F),
+.BR usb_pipe_close (9F),
+.BR usb_pipe_open (9F),
+.BR usb_pipe_reset (9F),
 
 .SH DIAGNOSTICS
 .sp
@@ -319,7 +349,7 @@ WARNING: \fIdev_path\fR hubd\fIinstance_num\fR \fIdriver_name\fR Error message .
 .ne 2
 .mk
 .na
-\fIdriver_name\fR \fIinstance_num\fR is under bus power management,
+\fIdriver_name instance_num\fR is under bus power management,
 cannot be reset. Please disconnect and reconnect this device.\fR
 .ad
 .sp .6
@@ -333,7 +363,7 @@ and reconnect it to system.
 .ne 2
 .mk
 .na
-\fBTime out when resetting the device \fIdriver_name\fR \fIinstance_num\fR.
+\fBTime out when resetting the device \fIdriver_name instance_num\fR.
 Please disconnect and reconnect it to system.\fR
 .ad
 .sp .6
@@ -347,7 +377,7 @@ a while and reconnect it to system.
 .ne 2
 .mk
 .na
-\fIdriver_name\fR \fIinstance_num\fR cannot be reset due to other
+\fIdriver_name instance_num\fR cannot be reset due to other
 applications are using it, please first close these applications, then
 disconnect and reconnect the device.\fR
 .ad

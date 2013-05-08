@@ -33,35 +33,53 @@ llseek \- move extended read/write file pointer
 .SH DESCRIPTION
 .sp
 .LP
-The \fBllseek()\fR function sets the 64-bit extended file pointer
+The
+.B llseek()
+function sets the 64-bit extended file pointer
 associated with the open file descriptor specified by \fIfildes\fR as
 follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIwhence\fR is \fBSEEK_SET\fR, the pointer is set to \fIoffset\fR
+If
+.I whence
+is
+.BR SEEK_SET ,
+the pointer is set to \fIoffset\fR
 bytes.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIwhence\fR is \fBSEEK_CUR\fR, the pointer is set to its current
+If
+.I whence
+is
+.BR SEEK_CUR ,
+the pointer is set to its current
 location plus \fIoffset\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIwhence\fR is \fBSEEK_END\fR, the pointer is set to the size of the
+If
+.I whence
+is
+.BR SEEK_END ,
+the pointer is set to the size of the
 file plus \fIoffset\fR.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIwhence\fR is \fBSEEK_HOLE\fR, the offset of the start of the next
+If
+.I whence
+is
+.BR SEEK_HOLE ,
+the offset of the start of the next
 hole greater than or equal to the supplied offset is returned. The
 definition of a hole immediately follows this list.
 .RE
@@ -69,7 +87,11 @@ definition of a hole immediately follows this list.
 .TP
 .ie t \(bu
 .el o
-If \fIwhence\fR is \fBSEEK_DATA\fR, the file pointer is set to the start of
+If
+.I whence
+is
+.BR SEEK_DATA ,
+the file pointer is set to the start of
 the next non-hole file region greater than or equal to the supplied
 offset.
 .RE
@@ -77,9 +99,15 @@ offset.
 .LP
 A "hole" is defined as a contiguous range of bytes in a file, all having
 the value of zero, but not all zeros in a file are guaranteed to be
-represented as holes returned with \fBSEEK_HOLE\fR. Filesystems are allowed
-to expose ranges of zeros with \fBSEEK_HOLE\fR, but not required to.
-Applications can use \fBSEEK_HOLE\fR to optimise their behavior for ranges
+represented as holes returned with
+.BR SEEK_HOLE .
+Filesystems are allowed
+to expose ranges of zeros with
+.BR SEEK_HOLE ,
+but not required to.
+Applications can use
+.B SEEK_HOLE
+to optimise their behavior for ranges
 of zeros, but must not depend on it to find all such ranges in a file. The
 existence of a hole at the end of every data region allows for easy
 programming and implies that a virtual hole exists at the end of the file.
@@ -90,7 +118,9 @@ be represented as one entire data region.
 .sp
 .LP
 Although each file has a 64-bit file pointer associated with it, some
-existing file system types (such as \fBtmpfs\fR) do not support the full
+existing file system types (such as
+.BR tmpfs )
+do not support the full
 range of 64-bit offsets.  In particular, on such file systems, non-device
 files remain limited to offsets of less than two gigabytes.  Device drivers
 may support offsets of up to 1024 gigabytes for device special files.
@@ -101,7 +131,9 @@ associated with such a device is undefined.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBllseek()\fR returns the resulting pointer
+Upon successful completion,
+.B llseek()
+returns the resulting pointer
 location as measured in bytes from the beginning of the file. Remote file
 descriptors are the only ones that allow negative file pointers. Otherwise,
 \fB\(mi1\fR is returned, the file pointer remains unchanged, and \fBerrno\fR
@@ -109,12 +141,14 @@ is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBllseek()\fR function will fail if:
+The
+.B llseek()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -125,12 +159,18 @@ The \fIfildes\fR argument is not an open file descriptor.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIwhence\fR argument is not \fBSEEK_SET\fR, \fBSEEK_CUR\fR, or
-\fBSEEK_END\fR; the \fIoffset\fR argument is not a valid offset for this
+The
+.I whence
+argument is not
+.BR SEEK_SET ,
+.BR SEEK_CUR ,
+or
+.BR SEEK_END ;
+the \fIoffset\fR argument is not a valid offset for this
 file system type; or the \fIfildes\fR argument is not a remote file
 descriptor and the resulting file pointer would be negative.
 .RE
@@ -139,12 +179,16 @@ descriptor and the resulting file pointer would be negative.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
-For \fBSEEK_DATA\fR, there are no more data regions past the supplied
-offset. For \fBSEEK_HOLE\fR, there are no more holes past the supplied
+For
+.BR SEEK_DATA ,
+there are no more data regions past the supplied
+offset. For
+.BR SEEK_HOLE ,
+there are no more holes past the supplied
 offset.
 .RE
 
@@ -152,7 +196,7 @@ offset.
 .ne 2
 .mk
 .na
-\fBESPIPE\fR
+.B ESPIPE
 .ad
 .RS 10n
 .rt
@@ -162,5 +206,7 @@ The \fIfildes\fR argument is associated with a pipe or FIFO.
 .SH SEE ALSO
 .sp
 .LP
-\fBcreat\fR(2), \fBdup\fR(2), \fBfcntl\fR(2), \fBlseek\fR(2),
-\fBopen\fR(2)
+.BR creat (2),
+.BR dup (2),
+\fBfcntl\fR(2), \fBlseek\fR(2),
+.BR open (2)

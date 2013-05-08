@@ -54,39 +54,88 @@ setjmp, longjmp, _setjmp, _longjmp \- non-local goto
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsetjmp()\fR and \fBlongjmp()\fR functions are useful for dealing
+The
+.B setjmp()
+and
+.B longjmp()
+functions are useful for dealing
 with errors and interrupts encountered in a low-level subroutine of a
 program.
 .sp
 .LP
-The \fBsetjmp()\fR function saves its stack environment in \fIenv\fR for
-later use by \fBlongjmp()\fR. A normal call to \fBsetjmp()\fR returns zero.
+The
+.B setjmp()
+function saves its stack environment in
+.I env
+for
+later use by
+.BR longjmp() .
+A normal call to
+.B setjmp()
+returns zero.
 \fBsetjmp()\fR also saves the register environment.  If a \fBlongjmp()\fR
-call will be made, the routine which called \fBsetjmp()\fR should not return
-until after the \fBlongjmp()\fR has returned control (see below).
+call will be made, the routine which called
+.B setjmp()
+should not return
+until after the
+.B longjmp()
+has returned control (see below).
 .sp
 .LP
-The \fBlongjmp()\fR function restores the environment saved by the last
-call of \fBsetjmp()\fR, and then returns in such a way that execution
-continues as if the call of \fBsetjmp()\fR had just returned the value
-\fIval\fR to the function that invoked \fBsetjmp()\fR; however, if \fIval\fR
-were zero, execution would continue as if the call of \fBsetjmp()\fR had
-returned one.  This ensures that a ``return'' from \fBsetjmp()\fR caused by
-a call to \fBlongjmp()\fR can be distinguished from a regular return from
-\fBsetjmp()\fR. The calling function must not itself have returned in the
-interim, otherwise \fBlongjmp()\fR will be returning control to a possibly
+The
+.B longjmp()
+function restores the environment saved by the last
+call of
+.BR setjmp() ,
+and then returns in such a way that execution
+continues as if the call of
+.B setjmp()
+had just returned the value
+\fIval\fR to the function that invoked
+.BR setjmp() ;
+however, if \fIval\fR
+were zero, execution would continue as if the call of
+.B setjmp()
+had
+returned one.  This ensures that a ``return'' from
+.B setjmp()
+caused by
+a call to
+.B longjmp()
+can be distinguished from a regular return from
+.BR setjmp() .
+The calling function must not itself have returned in the
+interim, otherwise
+.B longjmp()
+will be returning control to a possibly
 nonexistent environment. All memory-bound data have values as of the time
 \fBlongjmp()\fR was called.  The \fBCPU\fR and floating-point data registers
-are restored to the values they had at the time that \fBsetjmp()\fR was
-called. But, because the \fBregister\fR storage class is only a hint to the
-C compiler, variables declared as \fBregister\fR variables may not
+are restored to the values they had at the time that
+.B setjmp()
+was
+called. But, because the
+.B register
+storage class is only a hint to the
+C compiler, variables declared as
+.B register
+variables may not
 necessarily be assigned to machine registers, so their values are
-unpredictable after a \fBlongjmp()\fR. This is especially a problem for
+unpredictable after a
+.BR longjmp() .
+This is especially a problem for
 programmers trying to write machine-independent C routines.
 .sp
 .LP
-The \fBsetjmp()\fR and \fBlongjmp()\fR functions save and restore the
-signal mask while \fB_setjmp()\fR and \fB_longjmp()\fR manipulate only the C
+The
+.B setjmp()
+and
+.B longjmp()
+functions save and restore the
+signal mask while
+.B _setjmp()
+and
+.B _longjmp()
+manipulate only the C
 stack and registers.
 .sp
 .LP
@@ -94,10 +143,14 @@ None of these functions save or restore any floating-point status or
 control registers.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExamples of \fBsetjmp()\fR and \fBlongjmp()\fR.
+\fBExample 1\fR Examples of \fBsetjmp()\fR and \fBlongjmp()\fR.
 .sp
 .LP
-The following example uses both \fBsetjmp()\fR and \fBlongjmp()\fR to
+The following example uses both
+.B setjmp()
+and
+.B longjmp()
+to
 return the flow of control to the appropriate instruction block:
 
 .sp
@@ -171,7 +224,9 @@ longjumped from alarm
 .SH SEE ALSO
 .sp
 .LP
-\fBsigvec\fR(3UCB), \fBsetjmp\fR(3C), \fBsignal\fR(3C)
+.BR sigvec (3UCB),
+.BR setjmp (3C),
+.BR signal (3C)
 .SH NOTES
 .sp
 .LP
@@ -181,24 +236,42 @@ or in multi-thread applications is unsupported.
 .SH BUGS
 .sp
 .LP
-The \fBsetjmp()\fR function does not save the current notion of whether the
+The
+.B setjmp()
+function does not save the current notion of whether the
 process is executing on the signal stack.  The result is that a
 \fBlongjmp()\fR to some place on the signal stack leaves the signal stack
 state incorrect.
 .sp
 .LP
-On some systems \fBsetjmp()\fR also saves the register environment.
+On some systems
+.B setjmp()
+also saves the register environment.
 Therefore, all data that are bound to registers are restored to the values
-they had at the time that \fBsetjmp()\fR was called. All memory-bound data
-have values as of the time \fBlongjmp()\fR was called.  However, because the
+they had at the time that
+.B setjmp()
+was called. All memory-bound data
+have values as of the time
+.B longjmp()
+was called.  However, because the
 \fBregister\fR storage class is only a hint to the C compiler, variables
-declared as \fBregister\fR variables may not necessarily be assigned to
+declared as
+.B register
+variables may not necessarily be assigned to
 machine registers, so their values are unpredictable after a
-\fBlongjmp()\fR. When using compiler options that specify automatic register
+.BR longjmp() .
+When using compiler options that specify automatic register
 allocation, the compiler will not attempt to assign variables to registers
-in routines that call \fBsetjmp()\fR.
+in routines that call
+.BR setjmp() .
 .sp
 .LP
-The \fBlongjmp()\fR function never causes \fBsetjmp()\fR to return 0, so
-programmers should not depend on \fBlongjmp()\fR being able to cause
+The
+.B longjmp()
+function never causes
+.B setjmp()
+to return 0, so
+programmers should not depend on
+.B longjmp()
+being able to cause
 \fBsetjmp()\fR to return 0.

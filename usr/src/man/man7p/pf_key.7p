@@ -43,20 +43,28 @@ are used to protect both inbound and outbound packets.
 .LP
 A user process (or possibly multiple co-operating processes) maintains
 \fBSADB\fRs by sending messages over a special kind of socket.  This is
-analogous to the method described in \fBroute\fR(7P). Only a superuser may
-access an \fBSADB\fR.
+analogous to the method described in
+.BR route "(7P). Only a superuser may"
+access an
+.BR SADB .
 .sp
 .LP
-SunOS applications that use PF_KEY include \fBipseckey\fR(1M) and
-\fBin.iked\fR(1M).
+SunOS applications that use PF_KEY include
+.BR ipseckey "(1M) and"
+.BR in.iked (1M).
 .sp
 .LP
 The operating system may spontaneously send pf_key messages to listening
-processes, such as a request for a new \fBSA\fR for an outbound datagram or
-to report the expiration of an existing \fBSA\fR.
+processes, such as a request for a new
+.B SA
+for an outbound datagram or
+to report the expiration of an existing
+.BR SA .
 .sp
 .LP
-One opens the channel for passing \fBSADB\fR control messages by using the
+One opens the channel for passing
+.B SADB
+control messages by using the
 socket call shown in the  section above. More than one key socket can be
 open per system.
 .sp
@@ -64,7 +72,9 @@ open per system.
 Messages are formed by a small base header, followed by zero or more
 extension messages, some of which require additional data following them.
 The base message and all extensions must be eight-byte aligned.  An example
-message is the \fBGET\fR message, which  requires the base header, the \fBSA
+message is the
+.B GET
+message, which  requires the base header, the \fBSA
 \fRextension, and the \fBADDRESS_DST\fR extension.
 .SS "Messages"
 .sp
@@ -456,7 +466,11 @@ are expected to take place. Contents of messages are illustrated as:
 
 .sp
 .LP
-The \fBSA\fR extension is sometimes used only for its \fBSPI\fR field. If
+The
+.B SA
+extension is sometimes used only for its
+.B SPI
+field. If
 all other fields must be ignored, this is represented by \fBSA\fR(*).
 .sp
 .LP
@@ -473,7 +487,9 @@ Source and destination address extensions reflect outer-header selectors
 for an IPsec SA. An SA is inbound or outbound depending on which of the
 source or destination address is local to the node. Inner-source and
 inner-destination selectors represent inner-header selectors for Tunnel Mode
-SAs. A Tunnel Mode SA \fBmust\fR have either IPPROTO_ENCAP or IPPROTO_IPV6
+SAs. A Tunnel Mode SA
+.B must
+have either IPPROTO_ENCAP or IPPROTO_IPV6
 in its outer-headers as protocol selector, in addition to filled-in
 Inner-address extensions.
 .sp
@@ -485,8 +501,11 @@ the SA's local address. A non-zero remote NAT-T address represents a peer's
 behind-a-NAT address if it is not equivalent to the SA's remote address. An
 SA with NAT-T extensions will protect-and-transmit outbound traffic.
 Processing of inbound NAT-T traffic requires a UDP socket bound to the
-appropriate local port and it \fBmust\fR have the UDP_NAT_T_ENDPOINT (see
-\fBudp\fR(7P)) socket option enabled.
+appropriate local port and it
+.B must
+have the UDP_NAT_T_ENDPOINT (see
+.BR udp (7P))
+socket option enabled.
 .sp
 .LP
 Note that when an error occurs, only the base header is sent. In the event
@@ -496,13 +515,17 @@ errors include:
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-Various message improprieties, including \fBSPI\fR ranges that are
+Various message improprieties, including
+.B SPI
+ranges that are
 malformed, weak keys, and others. If EINVAL is returned, an application
-should look at the \fBsadb_x_msg_diagnostic\fR field of the sadb_msg
+should look at the
+.B sadb_x_msg_diagnostic
+field of the sadb_msg
 structure. It contains one of many possible causes for EINVAL. See
 \fBnet/pfkeyv2.h\fR for values, all of the form SADB_X_DIAGNOSTIC_.
 .RE
@@ -511,7 +534,7 @@ structure. It contains one of many possible causes for EINVAL. See
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -522,7 +545,7 @@ Needed memory was not available.
 .ne 2
 .mk
 .na
-\fBENSGSIZ\fR
+.B ENSGSIZ
 .ad
 .RS 11n
 .rt
@@ -533,11 +556,13 @@ Message exceeds the maximum length allowed.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 11n
 .rt
-\fBSA\fR (that is being added or created with \fBGETSPI\fR) already
+\fBSA\fR (that is being added or created with
+.BR GETSPI )
+already
 exists.
 .RE
 
@@ -545,7 +570,7 @@ exists.
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 11n
 .rt
@@ -558,7 +583,9 @@ The following are examples of message use and behavior:
 .SS "\fBSADB_GETSPI\fR"
 .sp
 .LP
-Send a \fBSADB_GETSPI\fR message from a user process to the kernel.
+Send a
+.B SADB_GETSPI
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -568,7 +595,9 @@ Send a \fBSADB_GETSPI\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_GETSPI\fR message to all listening
+The kernel returns the
+.B SADB_GETSPI
+message to all listening
 processes.
 .sp
 .in +2
@@ -580,7 +609,9 @@ processes.
 .SS "\fBSADB_UPDATE\fR"
 .sp
 .LP
-Send a \fBSADB_UPDATE\fR message from a user process to the kernel.
+Send a
+.B SADB_UPDATE
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -591,7 +622,9 @@ Send a \fBSADB_UPDATE\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_UPDATE\fR message to all listening
+The kernel returns the
+.B SADB_UPDATE
+message to all listening
 processes.
 .sp
 .in +2
@@ -602,7 +635,10 @@ processes.
 
 .sp
 .LP
-Adding a sadb_x_pair extension to an \fBSADB_UPDATE\fR or \fBSADB_ADD\fR
+Adding a sadb_x_pair extension to an
+.B SADB_UPDATE
+or
+.BR SADB_ADD
 message will update the security association pair linkage with the SPI of
 the security association contained in that extension. The resulting security
 association "pair" can be updated or as a single entity using the
@@ -610,7 +646,9 @@ association "pair" can be updated or as a single entity using the
 .SS "\fBSADB_ADD\fR"
 .sp
 .LP
-Send a \fBSADB_ADD\fR message from a user process to the kernel.
+Send a
+.B SADB_ADD
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -621,7 +659,9 @@ Send a \fBSADB_ADD\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_ADD\fR message to all listening processes.
+The kernel returns the
+.B SADB_ADD
+message to all listening processes.
 .sp
 .in +2
 .nf
@@ -633,7 +673,9 @@ The kernel returns the \fBSADB_ADD\fR message to all listening processes.
 .SS "\fBSADB_X_UPDATEPAIR\fR"
 .sp
 .LP
-Send a \fBSADB_X_UPDATEPAIR\fR message from a user process to  the  kernel.
+Send a
+.B SADB_X_UPDATEPAIR
+message from a user process to  the  kernel.
 This message type is used to update the lifetime values of a security
 association and the lifetime values of the security association it is paired
 with.
@@ -647,7 +689,9 @@ with.
 .SS "\fBSADB_DELETE | SADB_X_DELPAIR\fR"
 .sp
 .LP
-Send a \fBSADB_DELETE\fR message from a user process to the  kernel. The
+Send a
+.B SADB_DELETE
+message from a user process to the  kernel. The
 \fBSADB_X_DELPAIR\fR message type will request deletion of the security
 association and the security association it is paired with.
 .sp
@@ -659,7 +703,9 @@ association and the security association it is paired with.
 
 .sp
 .LP
-The kernel returns the \fBSADB_DELETE\fR message to all listening
+The kernel returns the
+.B SADB_DELETE
+message to all listening
 processes.
 .sp
 .in +2
@@ -671,7 +717,9 @@ processes.
 .SS "\fBSADB_GET\fR"
 .sp
 .LP
-Send a \fBSADB_GET\fR message from a user process to the kernel.
+Send a
+.B SADB_GET
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -681,7 +729,9 @@ Send a \fBSADB_GET\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_GET\fR message to the socket that sent the
+The kernel returns the
+.B SADB_GET
+message to the socket that sent the
 \fBSADB_GET\fR message.
 .sp
 .in +2
@@ -694,10 +744,19 @@ The kernel returns the \fBSADB_GET\fR message to the socket that sent the
 .SS "\fBSADB_ACQUIRE\fR"
 .sp
 .LP
-The kernel sends a \fBSADB_ACQUIRE\fR message to registered sockets. Note
-that any \fBGETSPI\fR, \fBADD\fR, or \fBUPDATE\fR calls in reaction to an
+The kernel sends a
+.B SADB_ACQUIRE
+message to registered sockets. Note
+that any
+.BR GETSPI ,
+.BR ADD ,
+or
+.B UPDATE
+calls in reaction to an
 \fBACQUIRE\fR must fill in the \fBsadb_msg_seq\fR of those messages with the
-one in the \fBACQUIRE\fR message. The address (\fBSD\fR) extensions must
+one in the
+.B ACQUIRE
+message. The address (\fBSD\fR) extensions must
 have the port fields filled in with the port numbers of the session
 requiring keys if appropriate.
 .sp
@@ -723,7 +782,9 @@ combination(s) of security protocols.
 
 .sp
 .LP
-If key management fails, send an \fBSADB_ACQUIRE\fR to indicate failure.
+If key management fails, send an
+.B SADB_ACQUIRE
+to indicate failure.
 .sp
 .in +2
 .nf
@@ -759,7 +820,9 @@ ACQUIRE:
 .SS "\fBSADB_REGISTER\fR"
 .sp
 .LP
-Send a \fBSADB_REGISTER\fR message from a user process to the kernel.
+Send a
+.B SADB_REGISTER
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -769,7 +832,9 @@ Send a \fBSADB_REGISTER\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_REGISTER\fR message to registered sockets,
+The kernel returns the
+.B SADB_REGISTER
+message to registered sockets,
 with algorithm types supported by the kernel being indicated in the
 supported algorithms field. Note that this message may arrive asynchronously
 due to an algorithm being loaded or unloaded into a dynamically linked
@@ -799,7 +864,9 @@ protocol registered) from the kernel.
 .SS "\fBSADB_EXPIRE\fR"
 .sp
 .LP
-The kernel sends a \fBSADB_EXPIRE\fR message to all listeners when the soft
+The kernel sends a
+.B SADB_EXPIRE
+message to all listeners when the soft
 limit of a security association has been expired.
 .sp
 .in +2
@@ -811,7 +878,9 @@ limit of a security association has been expired.
 .SS "\fBSADB_FLUSH\fR"
 .sp
 .LP
-Send a \fBSADB_FLUSH\fR message from a user process to the kernel.
+Send a
+.B SADB_FLUSH
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -821,7 +890,9 @@ Send a \fBSADB_FLUSH\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_FLUSH\fR message to all listening sockets.
+The kernel returns the
+.B SADB_FLUSH
+message to all listening sockets.
 .sp
 .in +2
 .nf
@@ -832,7 +903,9 @@ The kernel returns the \fBSADB_FLUSH\fR message to all listening sockets.
 .SS "\fBSADB_DUMP\fR"
 .sp
 .LP
-Send a \fBSADB_DUMP\fR message from a user process to the kernel.
+Send a
+.B SADB_DUMP
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -842,7 +915,9 @@ Send a \fBSADB_DUMP\fR message from a user process to the kernel.
 
 .sp
 .LP
-Several \fBSADB_DUMP\fR messages will return from the kernel to the sending
+Several
+.B SADB_DUMP
+messages will return from the kernel to the sending
 socket.
 .sp
 .in +2
@@ -866,7 +941,9 @@ To mark the end of a dump a single base header arrives with its
 .SS "\fBSADB_X_PROMISC\fR"
 .sp
 .LP
-Send a \fBSADB_X_PROMISC\fR message from a user process to the kernel.
+Send a
+.B SADB_X_PROMISC
+message from a user process to the kernel.
 .sp
 .in +2
 .nf
@@ -876,7 +953,9 @@ Send a \fBSADB_X_PROMISC\fR message from a user process to the kernel.
 
 .sp
 .LP
-The kernel returns the \fBSADB_X_PROMISC\fR message to all listening
+The kernel returns the
+.B SADB_X_PROMISC
+message to all listening
 processes.
 .sp
 .in +2
@@ -1006,7 +1085,9 @@ Diagnostic Values:
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1024,8 +1105,13 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBin.iked\fR(1M), \fBipseckey\fR(1M), \fBipsec\fR(7P), \fBipsecah\fR(7P),
-\fBipsecesp\fR(7P), \fBroute\fR(7P), \fBudp\fR(7P)
+.BR in.iked (1M),
+.BR ipseckey (1M),
+.BR ipsec (7P),
+.BR ipsecah (7P),
+.BR ipsecesp (7P),
+.BR route (7P),
+.BR udp (7P)
 .sp
 .LP
 McDonald, D.L., Metz, C.W., and Phan, B.G., \fIRFC 2367, PF_KEY Key
@@ -1034,4 +1120,5 @@ Management API, Version 2\fR, The Internet Society, July 1998.
 .sp
 .LP
 Time-based lifetimes may not expire with exact precision in seconds because
-kernel load may affect the aging of \fBSA\fR's.
+kernel load may affect the aging of
+.BR SA 's.

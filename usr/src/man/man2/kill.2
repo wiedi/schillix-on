@@ -33,84 +33,137 @@ kill \- send a signal to a process or a group of processes
 .SH DESCRIPTION
 .sp
 .LP
-The \fBkill()\fR function sends a signal to a process or a group of
+The
+.B kill()
+function sends a signal to a process or a group of
 processes. The process or group of processes to which the signal is to be
-sent is specified by \fIpid\fR. The signal that is to be sent is specified
-by \fIsig\fR and is either one from the list given in \fBsignal\fR (see
-\fBsignal.h\fR(3HEAD)), or 0. If \fIsig\fR is 0 (the null signal), error
+sent is specified by
+.IR pid .
+The signal that is to be sent is specified
+by
+.I sig
+and is either one from the list given in
+.B signal
+(see
+.BR signal.h (3HEAD)),
+or 0. If
+.I sig
+is 0 (the null signal), error
 checking is performed but no signal is actually sent. This can be used to
-check the validity of \fIpid\fR.
+check the validity of
+.IR pid .
 .sp
 .LP
 The real or effective user ID of the sending process must match the real or
-saved (from one of functions in the \fBexec\fR(2) family) user ID of the
+saved (from one of functions in the
+.BR exec (2)
+family) user ID of the
 receiving process, unless the privilege {\fBPRIV_PROC_OWNER\fR} is asserted
-in the effective set of the sending process (see \fBIntro\fR(2)), or
+in the effective set of the sending process (see
+.BR Intro (2)),
+or
 \fIsig\fR is \fBSIGCONT\fR and the sending process has the same session
 \fBID\fR as the receiving process. A process needs the basic privilege
 {\fBPRIV_PROC_SESSION\fR} to send signals to a process with a different
 session ID. See \fBprivileges\fR(5).
 .sp
 .LP
-If \fIpid\fR is greater than 0, \fIsig\fR will be sent to the process whose
-process ID is equal to  \fIpid\fR.
+If
+.I pid
+is greater than 0,
+.I sig
+will be sent to the process whose
+process ID is equal to 
+.IR pid .
 .sp
 .LP
-If \fIpid\fR is negative but not \fB(pid_t)\(mi1\fR, \fIsig\fR will be sent
+If
+.I pid
+is negative but not \fB(pid_t)\(mi1\fR,
+.I sig
+will be sent
 to all processes whose process group ID is equal to the absolute value of
 \fIpid\fR and for which the process has permission to send a signal.
 .sp
 .LP
-If \fIpid\fR is 0, \fIsig\fR will be sent to all processes excluding
-special processes (see \fBIntro\fR(2)) whose process group ID is equal to
+If
+.I pid
+is 0,
+.I sig
+will be sent to all processes excluding
+special processes (see
+.BR Intro (2))
+whose process group ID is equal to
 the process group ID of the sender.
 .sp
 .LP
-If \fIpid\fR is \fB(pid_t)\(mi1\fR and the {\fBPRIV_PROC_OWNER\fR}
+If
+.I pid
+is \fB(pid_t)\(mi1\fR and the {\fBPRIV_PROC_OWNER\fR}
 privilege is not asserted in the effective set of the sending process,
 \fIsig\fR will be sent to all processes excluding special processes whose
-real user ID is equal to the effective user \fBID\fR of the sender.
+real user ID is equal to the effective user
+.B ID
+of the sender.
 .sp
 .LP
-If \fIpid\fR is \fB(pid_t)\(mi1\fR and the {\fBPRIV_PROC_OWNER\fR}
+If
+.I pid
+is \fB(pid_t)\(mi1\fR and the {\fBPRIV_PROC_OWNER\fR}
 privilege is asserted in the effective set of the sending process, \fIsig\fR
 will be sent to all processes excluding special processes.
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, 0 is returned. Otherwise, \(mi1 is returned, no
-signal is sent, and \fBerrno\fR is set to indicate the error.
+signal is sent, and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBkill()\fR function will fail if:
+The
+.B kill()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIsig\fR argument is not a valid signal number.
+The
+.I sig
+argument is not a valid signal number.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
-The \fIsig\fR argument is \fBSIGKILL\fR and the \fIpid\fR argument is
+The
+.I sig
+argument is
+.B SIGKILL
+and the
+.I pid
+argument is
 \fB(pid_t)-1\fR (that is, the calling process does not have permission to
-send the signal to any of the processes specified by \fIpid\fR).
+send the signal to any of the processes specified by
+.IR pid ).
 .sp
 The effective user of the calling process does not match the real or saved
 user and the calling process does not have the {\fBPRIV_PROC_OWNER\fR}
 privilege asserted in the effective set, and the calling process either is
-not sending \fBSIGCONT\fR to a process that shares the same session \fBID\fR
+not sending
+.B SIGCONT
+to a process that shares the same session
+.BR ID
 or does not have the {\fBPRIV_PROC_SESSION\fR} privilege asserted and is
 trying to send a signal to a process with a different session ID.
 .RE
@@ -119,23 +172,27 @@ trying to send a signal to a process with a different session ID.
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 10n
 .rt
 No process or process group can be found corresponding to that specified by
-\fIpid\fR.
+.IR pid .
 .RE
 
 .SH USAGE
 .sp
 .LP
-The \fBsigsend\fR(2) function provides a more versatile way to send signals
+The
+.BR sigsend (2)
+function provides a more versatile way to send signals
 to processes.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -154,7 +211,16 @@ MT-LevelAsync-Signal-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(1), \fBIntro\fR(2), \fBexec\fR(2), \fBgetpid\fR(2),
-\fBgetsid\fR(2), \fBsetpgrp\fR(2), \fBsigaction\fR(2), \fBsigsend\fR(2),
-\fBsignal\fR(3C), \fBsignal.h\fR(3HEAD), \fBattributes\fR(5),
-\fBprivileges\fR(5), \fBstandards\fR(5)
+.BR kill (1),
+.BR Intro (2),
+.BR exec (2),
+.BR getpid (2),
+.BR getsid (2),
+.BR setpgrp (2),
+.BR sigaction (2),
+.BR sigsend (2),
+.BR signal (3C),
+.BR signal.h (3HEAD),
+.BR attributes (5),
+.BR privileges (5),
+.BR standards (5)

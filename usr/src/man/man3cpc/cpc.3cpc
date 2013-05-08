@@ -46,7 +46,9 @@ behavior of other applications, or the behavior of the whole system.
 There are two principal models for using these performance counters. Some
 users of these statistics want to observe system-wide behavior. Other users
 want to view the performance counters as part of the register set exported
-by each \fBLWP\fR. On a machine performing more than one activity, these two
+by each
+.BR LWP .
+On a machine performing more than one activity, these two
 models are in conflict because the counters represent a critical hardware
 resource that cannot simultaneously be both shared and private.
 .SS "Configuration Interfaces"
@@ -106,20 +108,28 @@ how to use and interpret data from the performance counters.
 Performance counters can be present in hardware but not acccessible because
 either some of the necessary system software components are not available or
 not installed, or the counters might be in use by other processes.  The
-\fBcpc_open\fR(3CPC) function determines the accessibility of the counters
+.BR cpc_open (3CPC)
+function determines the accessibility of the counters
 and must be invoked before any attempt to program the counters.
 .SS "Finding Events"
 .sp
 .LP
 Each different type of processor has its own set of events available for
-measurement. The \fBcpc_walk_events_all\fR(3CPC) and
-\fBcpc_walk_events_pic\fR(3CPC) functions allow an application to determine
+measurement. The
+.BR cpc_walk_events_all (3CPC)
+and
+.BR cpc_walk_events_pic (3CPC)
+functions allow an application to determine
 the names of events supported by the underlying processor. A collection of
 generic, platform independent event names are defined by
-\fBgeneric_events\fR(3CPC). Each generic event maps to an underlying
+.BR generic_events (3CPC).
+Each generic event maps to an underlying
 hardware event specific to the underlying processor and any optional
-attributes. The \fBcpc_walk_generic_events_all\fR(3CPC) and
-\fBcpc_walk_generic_events_pic\fR(3CPC) functions allow an application to
+attributes. The
+.BR cpc_walk_generic_events_all (3CPC)
+and
+.BR cpc_walk_generic_events_pic (3CPC)
+functions allow an application to
 determine the generic events supported on the underlying platform.
 .SS "Using Attributes"
 .sp
@@ -143,9 +153,11 @@ on the system.
 .LP
 To achieve this behavior, the library associates \fIperformance counter
 context\fR with each \fBLWP\fR in the process. The context consists of a
-small amount of kernel memory to hold the counter values when the \fBLWP\fR
+small amount of kernel memory to hold the counter values when the
+.BR LWP
 is not running, and some simple kernel functions to save and restore those
-counter values from and to the hardware registers when the \fBLWP\fR
+counter values from and to the hardware registers when the
+.BR LWP
 performs a normal context switch. A process can only observe and manipulate
 its own copy of the performance counter control and data registers.
 .SS "Performance Counters In Other Processes"
@@ -154,25 +166,45 @@ its own copy of the performance counter control and data registers.
 Though applications can be modified to instrument themselves as
 demonstrated above, it is frequently useful to be able to examine the
 behavior of an existing application without changing the source code. A
-separate library, \fBlibpctx\fR, provides a simple set of interfaces that
-use the facilities of \fBproc\fR(4) to control a target process, and
-together with functions in \fBlibcpc\fR, allow \fBtruss\fR-like tools to be
+separate library,
+.BR libpctx ,
+provides a simple set of interfaces that
+use the facilities of
+.BR proc (4)
+to control a target process, and
+together with functions in
+.BR libcpc ,
+allow
+.BR truss "-like tools to be"
 constructed to measure the performance counters in other applications. An
-example of one such application is \fBcputrack\fR(1).
+example of one such application is
+.BR cputrack (1).
 .sp
 .LP
-The functions in \fBlibpctx\fR are independent of those in \fBlibcpc\fR.
+The functions in
+.B libpctx
+are independent of those in
+.BR libcpc .
 These functions manage a process using an event-loop paradigm \(em that is,
 the execution of certain system calls by the controlled process cause the
 library to stop the controlled process and execute callback functions in the
 context of the controlling process. These handlers can perform various
-operations on the target process using APIs in \fBlibpctx\fR and
+operations on the target process using APIs in
+.B libpctx
+and
 \fBlibcpc\fR that consume \fBpctx_t\fR handles.
 .SH SEE ALSO
 .sp
 .LP
-\fBcputrack\fR(1), \fBcpustat\fR(1M), \fBcpc_bind_curlwp\fR(3CPC),
+.BR cputrack (1),
+.BR cpustat (1M),
+.BR cpc_bind_curlwp (3CPC),
 \fBcpc_buf_create\fR(3CPC), \fBcpc_enable\fR(3CPC), \fBcpc_npic\fR(3CPC),
-\fBcpc_open\fR(3CPC), \fBcpc_set_create\fR(3CPC),
-\fBcpc_seterrhndlr\fR(3CPC), \fBgeneric_events\fR(3CPC), \fBlibcpc\fR(3LIB),
-\fBpctx_capture\fR(3CPC), \fBpctx_set_events\fR(3CPC), \fBproc\fR(4)
+.BR cpc_open (3CPC),
+.BR cpc_set_create (3CPC),
+.BR cpc_seterrhndlr (3CPC),
+.BR generic_events (3CPC),
+.BR libcpc (3LIB),
+.BR pctx_capture (3CPC),
+.BR pctx_set_events (3CPC),
+.BR proc (4)

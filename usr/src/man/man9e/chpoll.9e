@@ -45,7 +45,7 @@ This entry point is optional. Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 12n
 .rt
@@ -56,7 +56,7 @@ The device number for the device to be polled.
 .ne 2
 .mk
 .na
-\fIevents\fR
+.I events
 .ad
 .RS 12n
 .rt
@@ -65,7 +65,7 @@ The events that may occur. Valid events are:
 .ne 2
 .mk
 .na
-\fBPOLLIN\fR
+.B POLLIN
 .ad
 .RS 14n
 .rt
@@ -76,7 +76,7 @@ Data other than high priority data may be read without blocking.
 .ne 2
 .mk
 .na
-\fBPOLLOUT\fR
+.B POLLOUT
 .ad
 .RS 14n
 .rt
@@ -87,7 +87,7 @@ Normal data may be written without blocking.
 .ne 2
 .mk
 .na
-\fBPOLLPRI\fR
+.B POLLPRI
 .ad
 .RS 14n
 .rt
@@ -98,7 +98,7 @@ High priority data may be received without blocking.
 .ne 2
 .mk
 .na
-\fBPOLLHUP\fR
+.B POLLHUP
 .ad
 .RS 14n
 .rt
@@ -109,7 +109,7 @@ A device hangup has occurred.
 .ne 2
 .mk
 .na
-\fBPOLLERR\fR
+.B POLLERR
 .ad
 .RS 14n
 .rt
@@ -120,7 +120,7 @@ An error has occurred on the device.
 .ne 2
 .mk
 .na
-\fBPOLLRDNORM\fR
+.B POLLRDNORM
 .ad
 .RS 14n
 .rt
@@ -131,7 +131,7 @@ Normal data (priority band = 0) may be read without blocking.
 .ne 2
 .mk
 .na
-\fBPOLLRDBAND\fR
+.B POLLRDBAND
 .ad
 .RS 14n
 .rt
@@ -142,18 +142,19 @@ Data from a non-zero priority band may be read without blocking
 .ne 2
 .mk
 .na
-\fBPOLLWRNORM\fR
+.B POLLWRNORM
 .ad
 .RS 14n
 .rt
-The same as \fBPOLLOUT\fR.
+The same as
+.BR POLLOUT .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPOLLWRBAND\fR
+.B POLLWRBAND
 .ad
 .RS 14n
 .rt
@@ -166,21 +167,24 @@ Priority data (priority band > 0) may be written.
 .ne 2
 .mk
 .na
-\fIanyyet\fR
+.I anyyet
 .ad
 .RS 12n
 .rt
 A flag that is non-zero if any other file descriptors in the \fBpollfd\fR
-array have events pending. The \fBpoll\fR(2) system call takes a pointer to
+array have events pending. The
+.BR poll (2)
+system call takes a pointer to
 an array of \fBpollfd\fR structures as one of its arguments. See the
-\fBpoll\fR(2) reference page for more details.
+.BR poll (2)
+reference page for more details.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIreventsp\fR
+.I reventsp
 .ad
 .RS 12n
 .rt
@@ -191,24 +195,30 @@ A pointer to a bitmask of the returned events satisfied.
 .ne 2
 .mk
 .na
-\fIphpp\fR
+.I phpp
 .ad
 .RS 12n
 .rt
-A pointer to a pointer to a \fBpollhead\fR structure.
+A pointer to a pointer to a
+.B pollhead
+structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBchpoll()\fR entry point routine is used by non-STREAMS character
+The
+.B chpoll()
+entry point routine is used by non-STREAMS character
 device drivers that wish to support polling. The driver must implement the
 polling discipline itself. The following rules must be followed when
 implementing the polling discipline:
 .RS +4
 .TP
 1.
-Implement the following algorithm when the \fBchpoll()\fR entry point is
+Implement the following algorithm when the
+.B chpoll()
+entry point is
 called: 
 .sp
 .in +2
@@ -228,22 +238,35 @@ return (0);
 .RS +4
 .TP
 2.
-Allocate an instance of the \fBpollhead\fR structure. This instance may be
+Allocate an instance of the
+.B pollhead
+structure. This instance may be
 tied to the per-minor data structure defined by the driver. The
 \fBpollhead\fR structure should be treated as a "black box" by the driver.
-Initialize the \fBpollhead\fR structure by filling it with zeroes. The size
+Initialize the
+.B pollhead
+structure by filling it with zeroes. The size
 of this structure is guaranteed to remain the same across releases.
 .RE
 .RS +4
 .TP
 3.
-Call the \fBpollwakeup()\fR function with \fBevents\fR listed above
-whenever pollable \fBevents\fR which the driver should monitor occur. This
+Call the
+.B pollwakeup()
+function with
+.B events
+listed above
+whenever pollable
+.B events
+which the driver should monitor occur. This
 function can be called with multiple events at one time. The
 \fBpollwakup()\fR can be called regardless of whether or not the
 \fBchpoll()\fR entry is called; it should be called every time the driver
 detects the pollable event. The driver must not hold any mutex across the
-call to \fBpollwakeup\fR(9F) that is acquired in its \fBchpoll()\fR entry
+call to
+.BR pollwakeup "(9F) that is acquired in its"
+.B chpoll()
+entry
 point, or a deadlock may result.
 .RE
 .SH RETURN VALUES
@@ -254,7 +277,9 @@ number.
 .SH SEE ALSO
 .sp
 .LP
-\fBpoll\fR(2), \fBnochpoll\fR(9F), \fBpollwakeup\fR(9F)
+.BR poll (2),
+.BR nochpoll (9F),
+.BR pollwakeup (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

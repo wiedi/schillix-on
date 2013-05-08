@@ -62,15 +62,22 @@ lockf \- record locking on files
 .LP
 The \fBlockf()\fR function allows sections of a file to be locked; advisory
 or mandatory write locks depending  on the mode bits of the file (see
-\fBchmod\fR(2)). Calls to \fBlockf()\fR from other threads that attempt to
+.BR chmod (2)).
+Calls to \fBlockf()\fR from other threads that attempt to
 lock the locked file section will either return an error value or be put to
 sleep until the resource becomes unlocked. All the locks for a process are
-removed when the process terminates. See \fBfcntl\fR(2) for more information
+removed when the process terminates. See
+.BR fcntl (2)
+for more information
 about record locking.
 .sp
 .LP
 The \fIfildes\fR argument is an open file descriptor. The file descriptor
-must have \fBO_WRONLY\fR or \fBO_RDWR\fR permission in order to establish
+must have
+.B O_WRONLY
+or
+.B O_RDWR
+permission in order to establish
 locks with this function call.
 .sp
 .LP
@@ -94,25 +101,43 @@ will result in an error if not implemented.
 .sp
 .LP
 \fBF_TEST\fR is used to detect if a lock by another process is present on
-the specified section. \fBF_LOCK\fR and \fBF_TLOCK\fR both lock a section of
-a file if the section is available. \fBF_ULOCK\fR removes locks from a
+the specified section.
+.B F_LOCK
+and
+.B F_TLOCK
+both lock a section of
+a file if the section is available.
+.B F_ULOCK
+removes locks from a
 section of the file.
 .sp
 .LP
-The \fBsize\fR argument is the number of contiguous bytes to be locked or
+The
+.B size
+argument is the number of contiguous bytes to be locked or
 unlocked. The resource to be locked or unlocked starts at the current offset
 in the file and extends forward for a positive size and backward for a
 negative size (the preceding bytes up to but not including the current
-offset). If \fBsize\fR is zero, the section from the current offset through
+offset). If
+.B size
+is zero, the section from the current offset through
 the largest file offset is locked (that is, from the current offset through
 the present or any future end-of-file). An area need not be allocated to the
 file in order to be locked as such locks may exist past the end-of-file.
 .sp
 .LP
-The sections locked with \fBF_LOCK\fR or \fBF_TLOCK\fR may, in whole or in
+The sections locked with
+.B F_LOCK
+or
+.B F_TLOCK
+may, in whole or in
 part, contain or be contained by a previously locked section for the same
 process. Locked sections will be unlocked starting at the point of the
-offset through \fBsize\fR bytes or to the end of file if \fBsize\fR is
+offset through
+.B size
+bytes or to the end of file if
+.B size
+is
 (\fBoff_t\fR) 0. When this situation occurs, or if this situation occurs in
 adjacent sections, the sections are combined into a single section. If the
 request requires that a new element be added to the table of active locks
@@ -121,9 +146,17 @@ not locked.
 .sp
 .LP
 \fBF_LOCK\fR and \fBF_TLOCK\fR requests differ only by the action taken if
-the resource is not available. \fBF_LOCK\fR blocks the calling thread until
-the resource is available. \fBF_TLOCK\fR causes the function to return \(mi1
-and set \fBerrno\fR to \fBEAGAIN\fR if the section is already locked by
+the resource is not available.
+.B F_LOCK
+blocks the calling thread until
+the resource is available.
+.B F_TLOCK
+causes the function to return \(mi1
+and set
+.B errno
+to
+.B EAGAIN
+if the section is already locked by
 another process.
 .sp
 .LP
@@ -135,22 +168,36 @@ descriptor for the file.
 sections controlled by the process. When sections are not fully released,
 the remaining sections are still locked by the process. Releasing the center
 section of a locked section requires an additional element in the table of
-active locks. If this table is full, an \fBerrno\fR is set to \fBEDEADLK\fR
+active locks. If this table is full, an
+.B errno
+is set to
+.BR EDEADLK
 and the requested section is not released.
 .sp
 .LP
-An \fBF_ULOCK\fR request in which \fBsize\fR is non-zero and the offset of
+An
+.B F_ULOCK
+request in which
+.B size
+is non-zero and the offset of
 the last byte of the requested section is the maximum value for an object of
-type \fBoff_t\fR, when the process has an existing lock in which \fBsize\fR
+type
+.BR off_t ,
+when the process has an existing lock in which
+.BR size
 is 0 and which includes the last byte of the requested section, will be
 treated as a request to unlock from the start of the requested section with
-a size equal to 0. Otherwise, an \fBF_ULOCK\fR request will attempt to
+a size equal to 0. Otherwise, an
+.B F_ULOCK
+request will attempt to
 unlock only the requested section.
 .sp
 .LP
 A potential for deadlock occurs if the threads of a process controlling a
 locked resource is put to sleep by requesting another process's locked
-resource. Thus calls to \fBlockf()\fR or \fBfcntl\fR(2) scan for a deadlock
+resource. Thus calls to \fBlockf()\fR or
+.BR fcntl (2)
+scan for a deadlock
 prior to sleeping on a locked resource. An error return is made if sleeping
 on the locked resource would cause a deadlock.
 .sp
@@ -161,8 +208,12 @@ require this facility.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned.  Otherwise, \fB\(mi1\fR is
-returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B 0
+is returned.  Otherwise, \fB\(mi1\fR is
+returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -171,7 +222,7 @@ The \fBlockf()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 20n
 .rt
@@ -188,7 +239,11 @@ valid file descriptor open for writing.
 .ad
 .RS 20n
 .rt
-The \fBfunction\fR argument is \fBF_TLOCK\fR or \fBF_TEST\fR and the
+The \fBfunction\fR argument is
+.B F_TLOCK
+or
+.B F_TEST
+and the
 section is already locked by another process.
 .RE
 
@@ -196,18 +251,20 @@ section is already locked by another process.
 .ne 2
 .mk
 .na
-\fBEDEADLK\fR
+.B EDEADLK
 .ad
 .RS 20n
 .rt
-The \fBfunction\fR argument is \fBF_LOCK\fR and a deadlock is detected.
+The \fBfunction\fR argument is
+.B F_LOCK
+and a deadlock is detected.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 20n
 .rt
@@ -218,7 +275,7 @@ A signal was caught during execution of the function.
 .ne 2
 .mk
 .na
-\fBECOMM\fR
+.B ECOMM
 .ad
 .RS 20n
 .rt
@@ -230,12 +287,19 @@ machine is no longer active.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 20n
 .rt
-The \fBfunction\fR argument is not one of \fBF_LOCK\fR, \fBF_TLOCK\fR,
-\fBF_TEST\fR, or \fBF_ULOCK\fR; or \fBsize\fR plus the current file offset
+The \fBfunction\fR argument is not one of
+.BR F_LOCK ,
+.BR F_TLOCK ,
+.BR F_TEST ,
+or
+.BR F_ULOCK ;
+or
+.B size
+plus the current file offset
 is less than 0.
 .RE
 
@@ -243,11 +307,13 @@ is less than 0.
 .ne 2
 .mk
 .na
-\fBEOVERFLOW\fR
+.B EOVERFLOW
 .ad
 .RS 20n
 .rt
-The offset of the first, or if \fBsize\fR is not 0 then the last, byte in
+The offset of the first, or if
+.B size
+is not 0 then the last, byte in
 the requested section cannot be represented correctly in an object of type
 \fBoff_t\fR.
 .RE
@@ -259,12 +325,13 @@ The \fBlockf()\fR function may fail if:
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 24n
 .rt
 The \fBfunction\fR argument is \fBF_LOCK\fR or \fBF_TLOCK\fR and the file
-is mapped with \fBmmap\fR(2).
+is mapped with
+.BR mmap (2).
 .RE
 
 .sp
@@ -275,7 +342,10 @@ is mapped with \fBmmap\fR(2).
 .ad
 .RS 24n
 .rt
-The \fBfunction\fR argument is \fBF_LOCK\fR, \fBF_TLOCK\fR, or
+The \fBfunction\fR argument is
+.BR F_LOCK ,
+.BR F_TLOCK ,
+or
 \fBF_ULOCK\fR and the request would cause the number of locks to exceed a
 system-imposed limit.
 .RE
@@ -297,14 +367,20 @@ not supported.
 .LP
 Record-locking should not be used in combination with the \fBfopen\fR(3C),
 \fBfread\fR(3C), \fBfwrite\fR(3C) and other \fBstdio\fR functions.  Instead,
-the more primitive, non-buffered functions (such as \fBopen\fR(2)) should be
+the more primitive, non-buffered functions (such as
+.BR open (2))
+should be
 used. Unexpected results may occur in processes that do buffering in the
 user address space.  The process may later read/write data which is/was
-locked. The \fBstdio\fR functions are the most common source of unexpected
+locked. The
+.B stdio
+functions are the most common source of unexpected
 buffering.
 .sp
 .LP
-The \fBalarm\fR(2) function may be used to provide a timeout facility in
+The
+.BR alarm (2)
+function may be used to provide a timeout facility in
 applications requiring it.
 .sp
 .LP
@@ -313,7 +389,9 @@ offsets. See \fBlf64\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -332,6 +410,14 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBalarm\fR(2), \fBchmod\fR(2), \fBclose\fR(2),
-\fBcreat\fR(2), \fBfcntl\fR(2), \fBmmap\fR(2), \fBopen\fR(2), \fBread\fR(2),
-\fBwrite\fR(2), \fBattributes\fR(5), \fBlf64\fR(5), \fBstandards\fR(5)
+.BR Intro (2),
+.BR alarm (2),
+.BR chmod (2),
+.BR close (2),
+.BR creat (2),
+\fBfcntl\fR(2), \fBmmap\fR(2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
+.BR attributes (5),
+\fBlf64\fR(5), \fBstandards\fR(5)

@@ -35,14 +35,19 @@ socket \- create an endpoint for communication
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsocket()\fR function creates an endpoint for communication and
+The
+.B socket()
+function creates an endpoint for communication and
 returns a descriptor.
 .sp
 .LP
-The \fIdomain\fR argument specifies the protocol family within which
+The
+.I domain
+argument specifies the protocol family within which
 communication takes place. The protocol family is generally the same as the
 address family for the addresses supplied in later operations on the socket.
-These families are defined in \fB<sys/socket.h>\fR.
+These families are defined in
+.BR <sys/socket.h> .
 .sp
 .LP
 The currently supported protocol families are:
@@ -50,7 +55,7 @@ The currently supported protocol families are:
 .ne 2
 .mk
 .na
-\fBPF_UNIX\fR
+.B PF_UNIX
 .ad
 .RS 12n
 .rt
@@ -61,7 +66,7 @@ The currently supported protocol families are:
 .ne 2
 .mk
 .na
-\fBPF_INET\fR
+.B PF_INET
 .ad
 .RS 12n
 .rt
@@ -72,7 +77,7 @@ Internet Protocol Version 4 (IPv4)
 .ne 2
 .mk
 .na
-\fBPF_INET6\fR
+.B PF_INET6
 .ad
 .RS 12n
 .rt
@@ -83,7 +88,7 @@ Internet Protocol Version 6 (IPv6)
 .ne 2
 .mk
 .na
-\fBPF_NCA\fR
+.B PF_NCA
 .ad
 .RS 12n
 .rt
@@ -92,7 +97,9 @@ Network Cache and Accelerator (NCA) protocols
 
 .sp
 .LP
-The socket has the indicated \fItype\fR, which specifies the communication
+The socket has the indicated
+.IR type ,
+which specifies the communication
 semantics. Currently defined types are:
 .sp
 .in +2
@@ -107,28 +114,44 @@ SOCK_RDM
 
 .sp
 .LP
-There must be an entry in the \fBnetconfig\fR(4) file for at least each
+There must be an entry in the
+.BR netconfig (4)
+file for at least each
 protocol family and type required. If  a non-zero protocol has been
 specified but no exact match for the protocol family, type, and protocol is
 found, then the first entry containing the specified family and type with a
 \fIprotocol\fR value of zero will be used.
 .sp
 .LP
-A \fBSOCK_STREAM\fR type provides sequenced, reliable, two-way
+A
+.B SOCK_STREAM
+type provides sequenced, reliable, two-way
 connection-based byte streams. An out-of-band data transmission mechanism
-may be supported. A \fBSOCK_DGRAM\fR socket supports datagrams
+may be supported. A
+.B SOCK_DGRAM
+socket supports datagrams
 (connectionless, unreliable messages of a fixed (typically small) maximum
-length). A \fBSOCK_SEQPACKET\fR socket may provide a sequenced, reliable,
+length). A
+.B SOCK_SEQPACKET
+socket may provide a sequenced, reliable,
 two-way connection-based data transmission path for datagrams of fixed
 maximum length; a consumer may be required to read an entire packet with
 each read system call. This facility is protocol specific, and presently not
-implemented for any protocol family. \fBSOCK_RAW\fR sockets provide access
-to internal network interfaces. The types \fBSOCK_RAW\fR, which is available
-only to a user with the \fBnet_rawaccess\fR privilege, and \fBSOCK_RDM\fR,
+implemented for any protocol family.
+.B SOCK_RAW
+sockets provide access
+to internal network interfaces. The types
+.BR SOCK_RAW ,
+which is available
+only to a user with the
+.B net_rawaccess
+privilege, and \fBSOCK_RDM\fR,
 for which no implementation currently exists, are not described here.
 .sp
 .LP
-The \fIprotocol\fR parameter is a protocol-family-specific value which
+The
+.I protocol
+parameter is a protocol-family-specific value which
 specifies a particular protocol to be used with the socket.  Normally this
 value is zero, as commonly only a single protocol exists to support a
 particular socket type within a given protocol family. However, multiple
@@ -136,67 +159,102 @@ protocols may exist, in which case a particular protocol may be specified in
 this manner.
 .sp
 .LP
-Sockets of type \fBSOCK_STREAM\fR are full-duplex byte streams, similar to
-pipes. A stream socket must be in a \fIconnected\fR state before any data
+Sockets of type
+.B SOCK_STREAM
+are full-duplex byte streams, similar to
+pipes. A stream socket must be in a
+.I connected
+state before any data
 may be sent or received on it. A connection to another socket is created
 with a \fBconnect\fR(3SOCKET) call. Once connected, data may be transferred
-using \fBread\fR(2) and \fBwrite\fR(2) calls or some variant of the
-\fBsend\fR(3SOCKET) and \fBrecv\fR(3SOCKET) calls. When a session has been
-completed, a \fBclose\fR(2) may be performed. Out-of-band data may also be
-transmitted as described on the \fBsend\fR(3SOCKET) manual page and received
-as described on the \fBrecv\fR(3SOCKET) manual page.
+using
+.BR read (2)
+and
+.BR write (2)
+calls or some variant of the
+.BR send (3SOCKET)
+and
+.BR recv "(3SOCKET) calls. When a session has been"
+completed, a
+.BR close (2)
+may be performed. Out-of-band data may also be
+transmitted as described on the
+.BR send "(3SOCKET) manual page and received"
+as described on the
+.BR recv "(3SOCKET) manual page."
 .sp
 .LP
-The communications protocols used to implement a \fBSOCK_STREAM\fR insure
+The communications protocols used to implement a
+.B SOCK_STREAM
+insure
 that data is not lost or duplicated.  If a piece of data for which the peer
 protocol has buffer space cannot be successfully transmitted within a
 reasonable length of time, then the connection is considered broken and
-calls will indicate an error with \(mi1 returns and with \fBETIMEDOUT\fR as
-the specific code in the global variable \fBerrno\fR. The protocols
+calls will indicate an error with \(mi1 returns and with
+.B ETIMEDOUT
+as
+the specific code in the global variable
+.BR errno .
+The protocols
 optionally keep sockets "warm" by forcing transmissions roughly every minute
 in the absence of other activity. An error is then indicated if no response
 can be elicited on an otherwise idle connection for a extended period (for
-instance 5 minutes). A \fBSIGPIPE\fR signal is raised if a thread sends on a
+instance 5 minutes). A
+.B SIGPIPE
+signal is raised if a thread sends on a
 broken stream; this causes naive processes, which do not handle the signal,
 to exit.
 .sp
 .LP
 \fBSOCK_SEQPACKET\fR sockets employ the same system calls as
-\fBSOCK_STREAM\fR sockets. The only difference is that  \fBread\fR(2) calls
+\fBSOCK_STREAM\fR sockets. The only difference is that 
+.BR read (2)
+calls
 will return only the amount of data requested, and any remaining in the
 arriving packet will be discarded.
 .sp
 .LP
 \fBSOCK_DGRAM\fR and \fBSOCK_RAW\fR sockets allow datagrams to be sent to
-correspondents named in \fBsendto\fR(3SOCKET) calls. Datagrams are generally
+correspondents named in
+.BR sendto "(3SOCKET) calls. Datagrams are generally"
 received with \fBrecvfrom\fR(3SOCKET), which returns the next datagram with
 its return address.
 .sp
 .LP
-An \fBfcntl\fR(2) call can be used to specify a process group to receive a
+An
+.BR fcntl (2)
+call can be used to specify a process group to receive a
 \fBSIGURG\fR signal when the out-of-band data arrives. It can also enable
 non-blocking I/O.
 .sp
 .LP
-The operation of sockets is controlled by socket level \fIoptions\fR. These
+The operation of sockets is controlled by socket level
+.IR options .
+These
 options are defined in the file <\fBsys/socket.h\fR>.
-\fBsetsockopt\fR(3SOCKET) and \fBgetsockopt\fR(3SOCKET) are used to set and
+.BR setsockopt (3SOCKET)
+and
+.BR getsockopt "(3SOCKET) are used to set and"
 get options, respectively.
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, a descriptor referencing the socket is
-returned. Otherwise, -1 is returned and \fBerrno\fR is set to indicate the
+returned. Otherwise, -1 is returned and
+.B errno
+is set to indicate the
 error.
 .SH ERRORS
 .sp
 .LP
-The \fBsocket()\fR function will fail if:
+The
+.B socket()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 19n
 .rt
@@ -208,7 +266,7 @@ denied.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 19n
 .rt
@@ -219,7 +277,7 @@ There were insufficient resources available to complete the operation.
 .ne 2
 .mk
 .na
-\fBEAFNOSUPPORT\fR
+.B EAFNOSUPPORT
 .ad
 .RS 19n
 .rt
@@ -230,7 +288,7 @@ The specified address family is not supported by the protocol family.
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 19n
 .rt
@@ -241,7 +299,7 @@ The per-process descriptor table is full.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 19n
 .rt
@@ -252,7 +310,7 @@ Insufficient user memory is available.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 19n
 .rt
@@ -264,7 +322,7 @@ operation.
 .ne 2
 .mk
 .na
-\fBEPFNOSUPPORT\fR
+.B EPFNOSUPPORT
 .ad
 .RS 19n
 .rt
@@ -275,7 +333,7 @@ The specified protocol family is not supported.
 .ne 2
 .mk
 .na
-\fBEPROTONOSUPPORT\fR
+.B EPROTONOSUPPORT
 .ad
 .RS 19n
 .rt
@@ -286,7 +344,7 @@ The protocol type is not supported by the address family.
 .ne 2
 .mk
 .na
-\fBEPROTOTYPE\fR
+.B EPROTOTYPE
 .ad
 .RS 19n
 .rt
@@ -296,7 +354,9 @@ The socket type is not supported by the protocol.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -313,15 +373,31 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBnca\fR(1), \fBclose\fR(2), \fBfcntl\fR(2), \fBioctl\fR(2),
-\fBread\fR(2), \fBwrite\fR(2), \fBaccept\fR(3SOCKET), \fBbind\fR(3SOCKET),
-\fBconnect\fR(3SOCKET), \fBgetsockname\fR(3SOCKET),
+.BR nca (1),
+.BR close (2),
+\fBfcntl\fR(2), \fBioctl\fR(2),
+.BR read (2),
+.BR write (2),
+.BR accept (3SOCKET),
+.BR bind (3SOCKET),
+.BR connect (3SOCKET),
+.BR getsockname (3SOCKET),
 \fBgetsockopt\fR(3SOCKET), \fBin.h\fR(3HEAD),\fBlisten\fR(3SOCKET),
-\fBrecv\fR(3SOCKET), \fBsetsockopt\fR(3SOCKET), \fBsend\fR(3SOCKET),
-\fBshutdown\fR(3SOCKET), \fBsocket.h\fR(3HEAD), \fBsocketpair\fR(3SOCKET),
-\fBattributes\fR(5)
+.BR recv (3SOCKET),
+.BR setsockopt (3SOCKET),
+.BR send (3SOCKET),
+.BR shutdown (3SOCKET),
+.BR socket.h (3HEAD),
+.BR socketpair (3SOCKET),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-Historically, \fBAF_\fR* was commonly used in places where \fBPF_\fR* was
-meant. New code should be careful to use \fBPF_\fR* as necessary.
+Historically,
+.BR AF_ *
+was commonly used in places where
+.BR PF_ *
+was
+meant. New code should be careful to use
+.BR PF_ *
+as necessary.

@@ -24,10 +24,16 @@ ipsec \- Internet Protocol Security Architecture
 .SH DESCRIPTION
 .sp
 .LP
-The \fBIP\fR Security Architecture (IPsec) provides protection for \fBIP\fR
+The
+.B IP
+Security Architecture (IPsec) provides protection for \fBIP\fR
 datagrams. The protection can include confidentiality, strong integrity of
 the data, partial sequence integrity  (replay protection), and data
-authentication. \fBIPsec\fR is performed inside the \fBIP\fR processing, and
+authentication.
+.B IPsec
+is performed inside the
+.B IP
+processing, and
 it can be applied with or without the knowledge of an Internet application.
 .sp
 .LP
@@ -37,15 +43,25 @@ IPsec applies to both IPv4 and IPv6. See \fBip\fR(7P) and \fBip6\fR(7P).
 .LP
 IPsec provides two mechanisms for protecting data. The Authentication Header
 (\fBAH\fR) provides strong integrity, replay protection, and data
-authentication. \fBAH\fR protects as much of the \fBIP\fR datagram as it can.
+authentication.
+.B AH
+protects as much of the
+.B IP
+datagram as it can.
 \fBAH\fR cannot protect fields that change nondeterministically between
 sender and receiver.
 .sp
 .LP
 The Encapsulating Security Payload (\fBESP\fR) provides confidentiality over
-what it encapsulates, as well as the services that \fBAH\fR provides, but
+what it encapsulates, as well as the services that
+.B AH
+provides, but
 only over that which it encapsulates. \fBESP\fR's authentication services are
-optional, which allow \fBESP\fR and \fBAH\fR to be used together on the same
+optional, which allow
+.B ESP
+and
+.B AH
+to be used together on the same
 datagram without redundancy.
 .sp
 .LP
@@ -57,7 +73,8 @@ size".
 .sp
 .LP
 IPsec's ESP can also encapsulate itself in UDP if IKE (see
-\fBin.iked\fR(1M)) discovers a Network Address Translator (NAT) between two
+.BR in.iked (1M))
+discovers a Network Address Translator (NAT) between two
 communicating endpoints.
 .sp
 .LP
@@ -66,19 +83,38 @@ for details.
 .SS "Security Associations"
 .sp
 .LP
-\fBAH\fR and \fBESP\fR use Security Associations (\fBSA\fR). SA's are
+\fBAH\fR and \fBESP\fR use Security Associations
+.RB ( SA ).
+SA's are
 entities that specify security properties from one host to another. Two
-communicating machines require two \fBSA\fRs (at a minimum) to communicate
+communicating machines require two
+.BR SA "s (at a minimum) to communicate"
 securely. However, communicating machines that use multicast can share the
-same multicast \fBSA\fR. \fBSA\fRs are managed through the \fBpf_key\fR(7P)
-interface. For IPv4, automatic \fBSA\fR management is available through the
-Internet Key Exchange (IKE), as implemented by \fBin.iked\fR(1M). A
-command-line front-end is available by means of \fBipseckey\fR(1M). An IPsec
-\fBSA\fR is identified by a tuple of <\fBAH\fR or \fBESP\fR, destination
-\fBIP\fR address, and \fBSPI\fR>. The Security Parameters Index (\fBSPI\fR)
-is an arbitrary 32-bit value that is transmitted on the wire with an \fBAH\fR
-or \fBESP\fR packet. See \fBipsecah\fR(7P) or \fBipsecesp\fR(7P)  for an
-explanation about where the \fBSPI\fR falls in a protected packet.
+same multicast
+.BR SA .
+\fBSA\fRs are managed through the \fBpf_key\fR(7P)
+interface. For IPv4, automatic
+.B SA
+management is available through the
+Internet Key Exchange (IKE), as implemented by
+.BR in.iked (1M).
+A
+command-line front-end is available by means of
+.BR ipseckey (1M).
+An IPsec
+\fBSA\fR is identified by a tuple of <\fBAH\fR or
+.BR ESP ,
+destination
+\fBIP\fR address, and
+.BR SPI >.
+The Security Parameters Index (\fBSPI\fR)
+.RB "is an arbitrary 32-bit value that is transmitted on the wire with an" " AH"
+or
+.B ESP
+packet. See \fBipsecah\fR(7P) or \fBipsecesp\fR(7P)  for an
+explanation about where the
+.B SPI
+falls in a protected packet.
 .SS "Protection Policy and Enforcement Mechanisms"
 .sp
 .LP
@@ -108,12 +144,14 @@ translates into an inbound packet with those mechanisms applied.
 .sp
 .LP
 IPsec policy is enforced in the \fBip\fR(7P) driver. Several \fBndd\fR
-tunables for \fB/dev/ip\fR affect policy enforcement, including:
+tunables for
+.B /dev/ip
+affect policy enforcement, including:
 .sp
 .ne 2
 .mk
 .na
-\fBicmp_accept_clear_messages\fR
+.B icmp_accept_clear_messages
 .ad
 .RS 30n
 .rt
@@ -126,7 +164,7 @@ the request. If zero, treat icmp messages like other IP traffic.
 .ne 2
 .mk
 .na
-\fBigmp_accept_clear_messages\fR
+.B igmp_accept_clear_messages
 .ad
 .RS 30n
 .rt
@@ -137,7 +175,7 @@ If 1, allow inbound cleartext IGMP messages to bypass IPsec policy.
 .ne 2
 .mk
 .na
-\fBpim_accept_clear_messages\fR
+.B pim_accept_clear_messages
 .ad
 .RS 30n
 .rt
@@ -148,14 +186,17 @@ If 1, allow inbound cleartext PIM messages to bypass IPsec policy.
 .ne 2
 .mk
 .na
-\fBipsec_policy_log_interval\fR
+.B ipsec_policy_log_interval
 .ad
 .RS 30n
 .rt
-IPsec logs policy failures and errors to \fB/var/adm/messages\fR. To prevent
+IPsec logs policy failures and errors to
+.BR /var/adm/messages .
+To prevent
 syslog from being overloaded, the IPsec kernel modules limit the rate at
 which errors can be logged. You can query/set ipsec_policy_log_interval using
-\fBndd\fR(1M). The value is in milliseconds. Only one message can be logged
+.BR ndd (1M).
+The value is in milliseconds. Only one message can be logged
 per interval.
 .RE
 
@@ -169,8 +210,14 @@ tunnel can use Transport Mode IPsec or Tunnel Mode IPsec.
 .SS "Per-Socket Policy"
 .sp
 .LP
-The \fBIP_SEC_OPT\fR or \fBIPV6_SEC_OPT\fR socket option is used to set
-per-socket IPsec policy.  The structure used for an \fBIP_SEC_OPT\fR request
+The
+.B IP_SEC_OPT
+or
+.B IPV6_SEC_OPT
+socket option is used to set
+per-socket IPsec policy.  The structure used for an
+.B IP_SEC_OPT
+request
 is: 
 .sp
 .in +2
@@ -188,14 +235,21 @@ typedef struct ipsec_req {
 
 .sp
 .LP
-The IPsec request has fields for both \fBAH\fR and \fBESP\fR. Algorithms may
-or may not be specified. The actual request for \fBAH\fR or \fBESP\fR
+The IPsec request has fields for both
+.B AH
+and
+.BR ESP .
+Algorithms may
+or may not be specified. The actual request for
+.B AH
+or
+.BR ESP
 services can take one of the following values:
 .sp
 .ne 2
 .mk
 .na
-\fBIPSEC_PREF_NEVER\fR
+.B IPSEC_PREF_NEVER
 .ad
 .RS 23n
 .rt
@@ -206,7 +260,7 @@ Bypass all policy. Only the superuser may request this service.
 .ne 2
 .mk
 .na
-\fBIPSEC_PREF_REQUIRED\fR
+.B IPSEC_PREF_REQUIRED
 .ad
 .RS 23n
 .rt
@@ -215,23 +269,30 @@ Regardless of other policy, require the use of the  IPsec  service.
 
 .sp
 .LP
-The following value can be logically ORed to an \fBIPSEC_PREF_REQUIRED\fR
+The following value can be logically ORed to an
+.BR IPSEC_PREF_REQUIRED
 value: 
 .sp
 .ne 2
 .mk
 .na
-\fBIPSEC_PREF_UNIQUE\fR
+.B IPSEC_PREF_UNIQUE
 .ad
 .RS 21n
 .rt
-Regardless of other policy, enforce a unique \fBSA\fR for traffic
+Regardless of other policy, enforce a unique
+.B SA
+for traffic
 originating from this socket.
 .RE
 
 .sp
 .LP
-In the event \fBIP\fR options not normally encapsulated by \fBESP\fR need to
+In the event
+.B IP
+options not normally encapsulated by
+.B ESP
+need to
 be, the \fBipsec_self_encap_req\fR is used to add an additional \fBIP\fR
 header outside the original one. Algorithm values from <\fBnet/pfkeyv2.h\fR>
 are as follows:
@@ -239,7 +300,7 @@ are as follows:
 .ne 2
 .mk
 .na
-\fBSADB_AALG_MD5HMAC\fR
+.B SADB_AALG_MD5HMAC
 .ad
 .RS 24n
 .rt
@@ -250,7 +311,7 @@ Uses the MD5-HMAC (\fIRFC 2403\fR)  algorithm for authentication.
 .ne 2
 .mk
 .na
-\fBSADB_AALG_SHA1HMAC\fR
+.B SADB_AALG_SHA1HMAC
 .ad
 .RS 24n
 .rt
@@ -261,29 +322,33 @@ Uses the SHA1-HMAC (\fIRFC 2404)\fR algorithm for authentication.
 .ne 2
 .mk
 .na
-\fBSADB_EALG_DESCBC\fR
+.B SADB_EALG_DESCBC
 .ad
 .RS 24n
 .rt
-Uses the \fBDES\fR (\fIRFC 2405\fR) algorithm for encryption.
+Uses the
+.B DES
+(\fIRFC 2405\fR) algorithm for encryption.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSADB_EALG_3DESCBC\fR
+.B SADB_EALG_3DESCBC
 .ad
 .RS 24n
 .rt
-Uses the Triple  \fBDES \fR (\fIRFC 2451\fR)   algorithm for encryption.
+Uses the Triple 
+.B DES
+(\fIRFC 2451\fR)   algorithm for encryption.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSADB_EALG_BLOWFISH\fR
+.B SADB_EALG_BLOWFISH
 .ad
 .RS 24n
 .rt
@@ -294,7 +359,7 @@ Uses the Blowfish (\fIRFC 2451\fR) algorithm for encryption.
 .ne 2
 .mk
 .na
-\fBSADB_EALG_AES\fR
+.B SADB_EALG_AES
 .ad
 .RS 24n
 .rt
@@ -305,15 +370,15 @@ Uses  the  Advanced Encryption Standard  algorithm for encryption.
 .ne 2
 .mk
 .na
-\fBSADB_AALG_SHA256HMAC\fR
+.B SADB_AALG_SHA256HMAC
 .ad
 .br
 .na
-\fBSADB_AALG_SHA384HMAC\fR
+.B SADB_AALG_SHA384HMAC
 .ad
 .br
 .na
-\fBSADB_AALG_SHA512HMAC\fR
+.B SADB_AALG_SHA512HMAC
 .ad
 .RS 24n
 .rt
@@ -323,8 +388,10 @@ authentication.
 
 .sp
 .LP
-An application should use either the \fBgetsockopt\fR(3SOCKET) or the
-\fBsetsockopt\fR(3SOCKET) call to manipulate IPsec requests.  For example:
+An application should use either the
+.BR getsockopt "(3SOCKET) or the"
+.BR setsockopt (3SOCKET)
+call to manipulate IPsec requests.  For example:
 .sp
 .in +2
 .nf
@@ -352,7 +419,9 @@ the \fBndd\fR(1M) variables in \fB/dev/ip\fR.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -369,10 +438,17 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBin.iked\fR(1M), \fBipsecconf\fR(1M), \fBipseckey\fR(1M), \fBndd\fR(1M),
-\fBgetsockopt\fR(3SOCKET), \fBsetsockopt\fR(3SOCKET), \fBattributes\fR(5),
-\fBinet\fR(7P), \fBip\fR(7P), \fBip6\fR(7P), \fBipsecah\fR(7P),
-\fBipsecesp\fR(7P), \fBpf_key\fR(7P), \fBudp\fR(7P)
+.BR in.iked (1M),
+\fBipsecconf\fR(1M), \fBipseckey\fR(1M), \fBndd\fR(1M),
+.BR getsockopt (3SOCKET),
+.BR setsockopt (3SOCKET),
+.BR attributes (5),
+.BR inet (7P),
+.BR ip (7P),
+.BR ip6 (7P),
+.BR ipsecah (7P),
+.BR ipsecesp (7P),
+\fBpf_key\fR(7P), \fBudp\fR(7P)
 .sp
 .LP
 Kent, S., and Atkinson, R., \fIRFC 2401, Security Architecture for the

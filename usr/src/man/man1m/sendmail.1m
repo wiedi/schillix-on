@@ -40,27 +40,41 @@ sendmail \- send mail over the internet
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsendmail\fR utility sends a message to one or more people, routing
-the message over whatever networks are necessary. \fBsendmail\fR does
+The
+.B sendmail
+utility sends a message to one or more people, routing
+the message over whatever networks are necessary.
+.B sendmail
+does
 internetwork forwarding as necessary to deliver the message to the correct
 place.
 .sp
 .LP
 \fBsendmail\fR is not intended as a user interface routine. Other programs
-provide user-friendly front ends. \fBsendmail\fR is used only to deliver
+provide user-friendly front ends.
+.B sendmail
+is used only to deliver
 pre-formatted messages.
 .sp
 .LP
-With no flags, \fBsendmail\fR reads its standard input up to an EOF, or a
+With no flags,
+.B sendmail
+reads its standard input up to an EOF, or a
 line with a single dot, and sends a copy of the letter found there to all of
 the addresses listed. It determines the network to use based on the syntax
 and contents of the addresses.
 .sp
 .LP
-Local addresses are looked up in the local \fBaliases\fR(4) file, or in a
-name service as defined by the \fBnsswitch.conf\fR(4) file, and aliased
+Local addresses are looked up in the local
+.BR aliases (4)
+file, or in a
+name service as defined by the
+.BR nsswitch.conf (4)
+file, and aliased
 appropriately. In addition, if there is a \fB\&.forward\fR file in a
-recipient's home directory, \fBsendmail\fR forwards a copy of each message
+recipient's home directory,
+.B sendmail
+forwards a copy of each message
 to the list of recipients that file contains. Refer to the \fBNOTES\fR
 section for more information about \fB\&.forward\fR files. Aliasing can be
 prevented by preceding the address with a backslash.
@@ -68,18 +82,26 @@ prevented by preceding the address with a backslash.
 .LP
 There are several conditions under which the expected behavior is for the
 alias database to be either built or rebuilt. This cannot occur under any
-circumstances unless root owns \fBand\fR has exclusive write permission to
-the \fB/etc/mail/aliases*\fR files.
+circumstances unless root owns
+.B and
+has exclusive write permission to
+the
+.B /etc/mail/aliases*
+files.
 .sp
 .LP
 If a message is found to be undeliverable, it is returned to the sender
 with diagnostics that indicate the location and nature of the failure; or,
-the message is placed in a \fBdead.letter\fR file in the sender's home
+the message is placed in a
+.B dead.letter
+file in the sender's home
 directory.
 .SS "Service Management"
 .sp
 .LP
-The \fBsendmail\fR service is managed by the service management facility,
+The
+.B sendmail
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifiers:
 .sp
 .in +2
@@ -94,8 +116,12 @@ svc:/network/sendmail-client:default
 .sp
 .LP
 Administrative actions on these services, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The services'
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The services'
+status can be queried using the
+.BR svcs (1)
+command.
 .sp
 .LP
 These are separate services rather than instances of the same service so
@@ -106,8 +132,12 @@ for which purposes:
 .TP
 .ie t \(bu
 .el o
-For a service that uses \fBsendmail\fR to send mail, an optional dependency
-on the service \fBsvc:/network/sendmail-client\fR might be in order.
+For a service that uses
+.B sendmail
+to send mail, an optional dependency
+on the service
+.B svc:/network/sendmail-client
+might be in order.
 .RE
 .RS +4
 .TP
@@ -115,14 +145,18 @@ on the service \fBsvc:/network/sendmail-client\fR might be in order.
 .el o
 For a service that needs to receive mail in general, but does not depend on
 \fBsendmail\fR being the particular SMTP receiver, a dependency on the
-service \fBsvc:/network/smtp\fR might be in order.
+service
+.B svc:/network/smtp
+might be in order.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 For a service that needs to interact with sendmail in particular, such as a
-\fBMilter\fR, a dependency on the instance \fBsvc:/network/smtp:sendmail\fR
+.BR Milter ,
+a dependency on the instance
+.BR svc:/network/smtp:sendmail
 might be in order.
 .RE
 .sp
@@ -133,10 +167,14 @@ representing the more general service.
 .SS "Enabling Access to Remote Clients"
 .sp
 .LP
-On an unmodified system, access to \fBsendmail\fR by remote clients is
+On an unmodified system, access to
+.B sendmail
+by remote clients is
 enabled and disabled through the service management facility (see
 \fBsmf\fR(5)). In particular, remote access is determined by the value of
-the \fBlocal_only\fR SMF property:
+the
+.B local_only
+SMF property:
 .sp
 .in +2
 .nf
@@ -146,7 +184,9 @@ svc:/network/smtp:sendmail/config/local_only = true
 
 .sp
 .LP
-A setting of \fBtrue\fR, as above, disallows remote access; \fBfalse\fR
+A setting of
+.BR true ,
+as above, disallows remote access; \fBfalse\fR
 allows remote access. The default value is \fBtrue\fR.
 .sp
 .LP
@@ -167,28 +207,50 @@ The following example shows the sequence of SMF commands used to enable
 See \fBsvcadm\fR(1M) and \fBsvccfg\fR(1M).
 .sp
 .LP
-Note, however, on a system where any of the \fBsendmail\fR(4) files have
+Note, however, on a system where any of the
+.BR sendmail (4)
+files have
 been customized, setting this property might not have the intended effect.
-See \fBsendmail\fR(4) for details.
+See
+.BR sendmail (4)
+for details.
 .SS "Automated Rebuilding of Configuration Files"
 .sp
 .LP
-See \fBsendmail\fR(4) for details on which service properties can be set to
+See
+.BR sendmail (4)
+for details on which service properties can be set to
 automate (re)building of configuration files when the service is started.
 .SS "Restricting Host Access"
 .sp
 .LP
 \fBsendmail\fR uses TCP Wrappers to restrict access to hosts. It uses the
-service name of \fBsendmail\fR for \fBhosts_access()\fR. For more
-information on TCP Wrappers, see \fBtcpd\fR(1M) and \fBhosts_access\fR(4) in
-the \fBSUNWtcpd\fR package. \fBtcpd\fR(1M) and \fBhosts_access\fR(4) are not
+service name of
+.B sendmail
+for
+.BR hosts_access() .
+For more
+information on TCP Wrappers, see
+.BR tcpd (1M)
+and
+.BR hosts_access (4)
+in
+the
+.B SUNWtcpd
+package.
+.BR tcpd (1M)
+and
+.BR hosts_access (4)
+are not
 part of the Solaris man pages.
 .SS "Startup Options"
 .sp
 .LP
 The \fB/etc/default/sendmail\fR file stores startup options for
 \fBsendmail\fR so that the options are not removed when a host is upgraded.
-See also \fBsendmail\fR(4) for details on which service properties can be
+See also
+.BR sendmail (4)
+for details on which service properties can be
 set to automate (re)building of configuration files when the service is
 started.
 .sp
@@ -217,13 +279,19 @@ changes to this variable.
 .ad
 .sp .6
 .RS 4n
-Similar to the \fBQUEUEINTERVAL\fR option, \fBCLIENTQUEUEINTERVAL\fR sets
+Similar to the
+.B QUEUEINTERVAL
+option,
+.B CLIENTQUEUEINTERVAL
+sets
 the time interval for mail queue runs. However, the
 \fBCLIENTQUEUEINTERVAL\fR option controls the functions of the client
 daemon, instead of the functions of the master daemon. Typically, the master
 daemon is able to deliver all messages to the SMTP port. However, if the
 message load is too high or the master daemon is not running, then messages
-go into the client-only queue, \fB/var/spool/clientmqueue\fR. The client
+go into the client-only queue,
+.BR /var/spool/clientmqueue .
+The client
 daemon, which checks in the client-only queue, then acts as a client queue
 processor.
 .RE
@@ -239,18 +307,24 @@ processor.
 Enables an SMTP client and server to interact immediately without waiting
 for the queue run intervals, which are periodic. The server can immediately
 deliver the portion of its queue that goes to the specified hosts. For more
-information, refer to the \fBetrn\fR(1M) man page.
+information, refer to the
+.BR etrn (1M)
+man page.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMODE=-bd\fR
+.B MODE=-bd
 .ad
 .sp .6
 .RS 4n
-Selects the mode to start \fBsendmail\fR with. Use the \fB-bd\fR option or
+Selects the mode to start
+.B sendmail
+with. Use the
+.B -bd
+option or
 leave it undefined.
 .RE
 
@@ -274,12 +348,26 @@ checking is done, so be careful when making changes to this variable.
 .ad
 .sp .6
 .RS 4n
-Sets the interval for mail queue runs on the master daemon. \fI#\fR can be
-a positive integer that is followed by either \fBs\fR for seconds, \fBm\fR
-for minutes, \fBh\fR for hours, \fBd\fR for days, or \fBw\fR for weeks. The
-syntax is checked before \fBsendmail\fR is started. If the interval is
+Sets the interval for mail queue runs on the master daemon.
+.I #
+can be
+a positive integer that is followed by either
+.B s
+for seconds, \fBm\fR
+for minutes,
+.B h
+for hours,
+.B d
+for days, or
+.B w
+for weeks. The
+syntax is checked before
+.B sendmail
+is started. If the interval is
 negative or if the entry does not end with an appropriate letter, the
-interval is ignored and \fBsendmail\fR starts with a queue interval of 15
+interval is ignored and
+.B sendmail
+starts with a queue interval of 15
 minutes.
 .RE
 
@@ -287,13 +375,15 @@ minutes.
 .ne 2
 .mk
 .na
-\fBQUEUEOPTIONS=p\fR
+.B QUEUEOPTIONS=p
 .ad
 .sp .6
 .RS 4n
 Enables one persistent queue runner that sleeps between queue run
 intervals, instead of a new queue runner for each queue run interval. You
-can set this option to \fBp\fR, which is the only setting available.
+can set this option to
+.BR p ,
+which is the only setting available.
 Otherwise, this option is not set.
 .RE
 
@@ -301,7 +391,9 @@ Otherwise, this option is not set.
 .sp
 .LP
 \fBsendmail\fR supports a mail filter API called "milter". For more
-information, see \fB/usr/include/libmilter/README\fR and
+information, see
+.B /usr/include/libmilter/README
+and
 http://www.milter.org
 .SH OPTIONS
 .sp
@@ -311,7 +403,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-Ac\fR
+.B -Ac
 .ad
 .sp .6
 .RS 4n
@@ -323,7 +415,7 @@ initial mail submission.
 .ne 2
 .mk
 .na
-\fB-Am\fR
+.B -Am
 .ad
 .sp .6
 .RS 4n
@@ -335,13 +427,19 @@ submission.
 .ne 2
 .mk
 .na
-\fB-ba\fR
+.B -ba
 .ad
 .sp .6
 .RS 4n
-Goes into \fBARPANET\fR mode. All input lines must end with a
+Goes into
+.B ARPANET
+mode. All input lines must end with a
 RETURN-LINEFEED, and all messages are generated with a RETURN-LINEFEED at
-the end. Also, the \fBFrom:\fR and \fBSender:\fR fields are examined for the
+the end. Also, the
+.B From:
+and
+.B Sender:
+fields are examined for the
 name of the sender.
 .RE
 
@@ -349,7 +447,7 @@ name of the sender.
 .ne 2
 .mk
 .na
-\fB-bd\fR
+.B -bd
 .ad
 .sp .6
 .RS 4n
@@ -361,7 +459,7 @@ connections.
 .ne 2
 .mk
 .na
-\fB-bD\fR
+.B -bD
 .ad
 .sp .6
 .RS 4n
@@ -373,12 +471,18 @@ connections.
 .ne 2
 .mk
 .na
-\fB-bi\fR
+.B -bi
 .ad
 .sp .6
 .RS 4n
-Initializes the \fBaliases\fR(4) database. Root must own \fIand\fR have
-exclusive write permission to the \fB/etc/mail/aliases*\fR files for
+Initializes the
+.BR aliases (4)
+database. Root must own
+.I and
+have
+exclusive write permission to the
+.B /etc/mail/aliases*
+files for
 successful use of this option.
 .RE
 
@@ -386,11 +490,13 @@ successful use of this option.
 .ne 2
 .mk
 .na
-\fB-bl\fR
+.B -bl
 .ad
 .sp .6
 .RS 4n
-Runs as a daemon (like \fB-bd\fR) but accepts only loopback SMTP
+Runs as a daemon
+.RB "(like " -bd )
+but accepts only loopback SMTP
 connections.
 .RE
 
@@ -398,7 +504,7 @@ connections.
 .ne 2
 .mk
 .na
-\fB-bm\fR
+.B -bm
 .ad
 .sp .6
 .RS 4n
@@ -409,7 +515,7 @@ Delivers mail in the usual way (default).
 .ne 2
 .mk
 .na
-\fB-bp\fR
+.B -bp
 .ad
 .sp .6
 .RS 4n
@@ -420,7 +526,7 @@ Prints a summary of the mail queues.
 .ne 2
 .mk
 .na
-\fB-bP\fR
+.B -bP
 .ad
 .sp .6
 .RS 4n
@@ -432,19 +538,22 @@ with shared memory support.
 .ne 2
 .mk
 .na
-\fB-bs\fR
+.B -bs
 .ad
 .sp .6
 .RS 4n
 Uses the SMTP protocol as described in RFC 2821. This flag implies all the
-operations of the \fB-ba\fR flag that are compatible with \fBSMTP\fR.
+operations of the
+.B -ba
+flag that are compatible with
+.BR SMTP .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-bt\fR
+.B -bt
 .ad
 .sp .6
 .RS 4n
@@ -456,7 +565,7 @@ parsing; it is used for debugging configuration tables.
 .ne 2
 .mk
 .na
-\fB-bv\fR
+.B -bv
 .ad
 .sp .6
 .RS 4n
@@ -472,7 +581,9 @@ mode is normally used for validating users or mailing lists.
 .ad
 .sp .6
 .RS 4n
-Indicates body \fItype\fR (\fB7BIT\fR or \fB8BITMIME\fR).
+Indicates body
+.I type
+(\fB7BIT\fR or \fB8BITMIME\fR).
 .RE
 
 .sp
@@ -494,7 +605,8 @@ Uses alternate configuration file.
 .ad
 .sp .6
 .RS 4n
-Send debugging output to the indicated log file instead of \fBstdout\fR.
+Send debugging output to the indicated log file instead of
+.BR stdout .
 .RE
 
 .sp
@@ -505,7 +617,8 @@ Send debugging output to the indicated log file instead of \fBstdout\fR.
 .ad
 .sp .6
 .RS 4n
-Sets debugging value to \fIX\fR.
+Sets debugging value to
+.IR X .
 .RE
 
 .sp
@@ -534,14 +647,18 @@ Sets the full name of the sender.
 .ne 2
 .mk
 .na
-\fB-G\fR
+.B -G
 .ad
 .sp .6
 .RS 4n
 When accepting messages by way of the command line, indicates that they are
-for relay (gateway) submission. When this flag is set, \fBsendmail\fR might
+for relay (gateway) submission. When this flag is set,
+.B sendmail
+might
 complain about syntactically invalid messages, for example, unqualified host
-names, rather than fixing them. \fBsendmail\fR does not do any
+names, rather than fixing them.
+.B sendmail
+does not do any
 canonicalization in this mode.
 .RE
 
@@ -553,7 +670,9 @@ canonicalization in this mode.
 .ad
 .sp .6
 .RS 4n
-Sets the hop count to \fIN\fR. The hop count is incremented every time the
+Sets the hop count to
+.IR N .
+The hop count is incremented every time the
 mail is processed. When it reaches a limit, the mail is returned with an
 error message, the victim of an aliasing loop.
 .RE
@@ -566,8 +685,10 @@ error message, the victim of an aliasing loop.
 .ad
 .sp .6
 .RS 4n
-Sets the identifier used in \fBsyslog\fR messages to the supplied
-\fItag\fR.
+Sets the identifier used in
+.B syslog
+messages to the supplied
+.IR tag .
 .RE
 
 .sp
@@ -578,14 +699,17 @@ Sets the identifier used in \fBsyslog\fR messages to the supplied
 .ad
 .sp .6
 .RS 4n
-Sets macro \fIx\fR to the specified \fIvalue\fR.
+Sets macro
+.I x
+to the specified
+.IR value .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .sp .6
 .RS 4n
@@ -614,7 +738,11 @@ is stuck in a queue somwhere. The default is "FAILURE,DELAY".
 .ad
 .sp .6
 .RS 4n
-Sets option \fIx\fR to the specified \fIvalue\fR. \fBProcessing\fR
+Sets option
+.I x
+to the specified
+.IR value .
+.B Processing
 \fBOptions\fR are described below.
 .RE
 
@@ -626,8 +754,12 @@ Sets option \fIx\fR to the specified \fIvalue\fR. \fBProcessing\fR
 .ad
 .sp .6
 .RS 4n
-Sets \fIoption\fR to the specified \fIvalue\fR (for long from names).
-\fBProcessing\fR \fBOptions\fR are described below.
+Sets
+.I option
+to the specified
+.I value
+(for long from names).
+\fBProcessing Options\fR are described below.
 .RE
 
 .sp
@@ -638,12 +770,25 @@ Sets \fIoption\fR to the specified \fIvalue\fR (for long from names).
 .ad
 .sp .6
 .RS 4n
-Sets the sending protocol. The \fIprotocol\fR field can be in form
+Sets the sending protocol. The
+.I protocol
+field can be in form
 \fIprotocol\fB:\fIhost\fR to set both the sending protocol and the
-sending host. For example: \fB-pUUCP:uunet\fR sets the sending
-\fIprotocol\fR to \fBUUCP\fR and the sending host to \fBuunet\fR. Some
-existing programs use \fB-oM\fR to set the \fIr\fR and \fIs\fR macros; this
-is equivalent to using \fB-p\fR.
+sending host. For example:
+.B -pUUCP:uunet
+sets the sending
+\fIprotocol\fR to \fBUUCP\fR and the sending host to
+.BR uunet .
+Some
+existing programs use
+.B -oM
+to set the
+.I r
+and
+.I s
+macros; this
+is equivalent to using
+.BR -p .
 .RE
 
 .sp
@@ -654,14 +799,33 @@ is equivalent to using \fB-p\fR.
 .ad
 .sp .6
 .RS 4n
-Processes saved messages in the queue at given intervals. If \fItime\fR is
-omitted, processes the queue once. \fItime\fR is given as a tagged number,
-where \fIs\fR is seconds, \fIm\fR is minutes, \fIh\fR is hours, \fId\fR is
-days, and \fIw\fR is weeks. For example, \fB-q1h30m\fR or \fB-q90m\fR would
+Processes saved messages in the queue at given intervals. If
+.I time
+is
+omitted, processes the queue once.
+.I time
+is given as a tagged number,
+where
+.I s
+is seconds,
+.I m
+is minutes,
+.I h
+is hours,
+.I d
+is
+days, and
+.I w
+is weeks. For example,
+.B -q1h30m
+or
+.B -q90m
+would
 both set the timeout to one hour thirty minutes.
 .sp
 By default, sendmail runs in the background. This option can be used safely
-with \fB-bd\fR.
+with
+.BR -bd .
 .RE
 
 .sp
@@ -673,10 +837,14 @@ with \fB-bd\fR.
 .sp .6
 .RS 4n
 Similar to \fB-q\fR[\fItime\fR], except that instead of periodically
-forking a child to process the queue, \fBsendmail\fR forks a single
+forking a child to process the queue,
+.B sendmail
+forks a single
 persistent child for each queue that alternates between processing the queue
 and sleeping. The sleep time (\fItime\fR) is specified as the argument; it
-defaults to \fB1\fR second. The process always sleeps at least \fB5\fR
+defaults to
+.B 1
+.RB "second. The process always sleeps at least" " 5"
 seconds if the queue was empty in the previous queue run.
 .RE
 
@@ -688,7 +856,9 @@ seconds if the queue was empty in the previous queue run.
 .ad
 .sp .6
 .RS 4n
-Processes saved messages in the queue once and does not \fBfork\fR(2), but
+Processes saved messages in the queue once and does not
+.BR fork (2),
+but
 runs in the foreground.
 .RE
 
@@ -700,7 +870,9 @@ runs in the foreground.
 .ad
 .sp .6
 .RS 4n
-Processes jobs in queue group called \fIname\fR only.
+Processes jobs in queue group called
+.I name
+only.
 .RE
 
 .sp
@@ -711,8 +883,14 @@ Processes jobs in queue group called \fIname\fR only.
 .ad
 .sp .6
 .RS 4n
-Limits processed jobs to those containing \fIsubstr\fR as a substring of
-the queue \fBID\fR or not when \fB!\fR is specified.
+Limits processed jobs to those containing
+.I substr
+as a substring of
+the queue
+.B ID
+or not when
+.B !
+is specified.
 .RE
 
 .sp
@@ -723,8 +901,14 @@ the queue \fBID\fR or not when \fB!\fR is specified.
 .ad
 .sp .6
 .RS 4n
-Limits processed jobs to those quarantined jobs containing \fIsubstr\fR as
-a substring of the quarantine \fIreason\fR or not when \fB!\fR is specified.
+Limits processed jobs to those quarantined jobs containing
+.I substr
+as
+a substring of the quarantine
+.I reason
+or not when
+.B !
+is specified.
 
 .RE
 
@@ -736,8 +920,12 @@ a substring of the quarantine \fIreason\fR or not when \fB!\fR is specified.
 .ad
 .sp .6
 .RS 4n
-Limits processed jobs to those containing \fIsubstr\fR as a substring of
-one of the recipients or not when \fB!\fR is specified.
+Limits processed jobs to those containing
+.I substr
+as a substring of
+one of the recipients or not when
+.B !
+is specified.
 .RE
 
 .sp
@@ -748,8 +936,12 @@ one of the recipients or not when \fB!\fR is specified.
 .ad
 .sp .6
 .RS 4n
-Limits processed jobs to those containing \fIsubstr\fR as a substring of
-the sender or not when \fB!\fR is specified.
+Limits processed jobs to those containing
+.I substr
+as a substring of
+the sender or not when
+.B !
+is specified.
 .RE
 
 .sp
@@ -793,12 +985,14 @@ body.
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .sp .6
 .RS 4n
 Reads message for recipients. \fBTo:\fR,\fBCc:\fR, and \fBBcc:\fR lines are
-scanned for people to send to. The \fBBcc:\fR line is deleted before
+scanned for people to send to. The
+.B Bcc:
+line is deleted before
 transmission. Any addresses in the argument list is suppressed. The
 \fBNoRecipientAction\fR Processing Option can be used to change the behavior
 when no legal recipients are included in the message.
@@ -808,7 +1002,7 @@ when no legal recipients are included in the message.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .sp .6
 .RS 4n
@@ -823,7 +1017,9 @@ Goes into verbose mode. Alias expansions are announced, and so forth.
 .ad
 .sp .6
 .RS 4n
-The indicated \fIenvid\fR is passed with the envelope of the message and
+The indicated
+.I envid
+is passed with the envelope of the message and
 returned if the message bounces.
 .RE
 
@@ -835,7 +1031,9 @@ returned if the message bounces.
 .ad
 .sp .6
 .RS 4n
-Logs all traffic in and out of \fBsendmail\fR in the indicated
+Logs all traffic in and out of
+.B sendmail
+in the indicated
 \fIlogfile\fR for debugging mailer problems. This produces a lot of data
 very quickly and should be used sparingly.
 .RE
@@ -856,9 +1054,19 @@ names. The syntax for the single character names of is:
 
 .sp
 .LP
-This sets option \fIx\fR to be \fIvalue\fR. Depending on the option,
+This sets option
+.I x
+to be
+.IR value .
+Depending on the option,
 \fIvalue\fR may be a string, an integer, a boolean (with legal values
-\fBt\fR, \fBT\fR, \fBf\fR, or \fBF\fR; the default is \fBTRUE\fR), or a time
+.BR t ,
+.BR T ,
+\fBf\fR, or
+.BR F ;
+the default is
+.BR TRUE ),
+or a time
 interval.
 .sp
 .LP
@@ -873,7 +1081,11 @@ The multiple character or long names use this syntax:
 
 .sp
 .LP
-This sets the option \fILongname\fR to be \fIargument\fR. The long names
+This sets the option
+.I Longname
+to be
+.IR argument .
+The long names
 are beneficial because they are easier to interpret than the single
 character names.
 .sp
@@ -901,7 +1113,8 @@ Specifies possible alias files.
 .sp .6
 .RS 4n
 If set, waits up to \fIN\fR minutes for an "@:@" entry to exist in the
-\fBaliases\fR(4) database before starting up. If it does not appear in
+.BR aliases (4)
+database before starting up. If it does not appear in
 \fIN\fR minutes, issues a warning. Defaults to 10 minutes.
 .RE
 
@@ -909,11 +1122,13 @@ If set, waits up to \fIN\fR minutes for an "@:@" entry to exist in the
 .ne 2
 .mk
 .na
-\fBAllowBogusHELO\fR
+.B AllowBogusHELO
 .ad
 .sp .6
 .RS 4n
-Allows a \fBHELO SMTP\fR command that does not include a host name. By
+Allows a
+.B "HELO SMTP"
+command that does not include a host name. By
 default this option is disabled.
 .RE
 
@@ -938,7 +1153,9 @@ RCPT command.
 .ad
 .sp .6
 .RS 4n
-Sets the blank substitution character to \fIc\fR. Unquoted spaces in
+Sets the blank substitution character to
+.IR c .
+Unquoted spaces in
 addresses are replaced by this character. Defaults to SPACE (that is, no
 change is made).
 .RE
@@ -947,7 +1164,7 @@ change is made).
 .ne 2
 .mk
 .na
-\fBCACertFile\fR
+.B CACertFile
 .ad
 .sp .6
 .RS 4n
@@ -958,7 +1175,7 @@ File containing one CA cert.
 .ne 2
 .mk
 .na
-\fBCACertPath\fR
+.B CACertPath
 .ad
 .sp .6
 .RS 4n
@@ -969,11 +1186,12 @@ Path to directory with certs of CAs.
 .ne 2
 .mk
 .na
-\fBCheckAliases (n)\fR
+.B CheckAliases (n)
 .ad
 .sp .6
 .RS 4n
-Validates the RHS of aliases when rebuilding the \fBaliases\fR(4)
+Validates the RHS of aliases when rebuilding the
+.BR aliases (4)
 database.
 .RE
 
@@ -985,9 +1203,15 @@ database.
 .ad
 .sp .6
 .RS 4n
-Checkpoints the queue every \fIN\fR (default \fB10\fR) addresses sent. If
+Checkpoints the queue every
+.I N
+(default
+.BR 10 )
+addresses sent. If
 your system crashes during delivery to a large list, this prevents
-retransmission to any but the last \fIN\fR recipients.
+retransmission to any but the last
+.I N
+recipients.
 .RE
 
 .sp
@@ -999,17 +1223,21 @@ retransmission to any but the last \fIN\fR recipients.
 .sp .6
 .RS 4n
 The indicated factor \fIfact\fR is multiplied by the message class
-(determined by the \fBPrecedence:\fR field in the user header and the
+(determined by the
+.B Precedence:
+field in the user header and the
 \fBP\fR lines in the configuration file) and subtracted from the priority.
-Thus, messages with a higher \fBPriority:\fR are favored. Defaults to
-\fB1800\fR.
+Thus, messages with a higher
+.B Priority:
+are favored. Defaults to
+.BR 1800 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBClientCertFile\fR
+.B ClientCertFile
 .ad
 .sp .6
 .RS 4n
@@ -1021,7 +1249,7 @@ File containing the cert of the client, that is, this cert is used when
 .ne 2
 .mk
 .na
-\fBClientKeyFile\fR
+.B ClientKeyFile
 .ad
 .sp .6
 .RS 4n
@@ -1032,11 +1260,13 @@ File containing the private key belonging to the client cert.
 .ne 2
 .mk
 .na
-\fBClientPortOptions\fR
+.B ClientPortOptions
 .ad
 .sp .6
 .RS 4n
-Sets client \fBSMTP\fR options. The options are key=value pairs. Known keys
+Sets client
+.B SMTP
+options. The options are key=value pairs. Known keys
 are:
 .sp
 .ne 2
@@ -1046,7 +1276,9 @@ are:
 .ad
 .sp .6
 .RS 4n
-\fIAddress Mask\fR defaults to \fBINADDR_ANY\fR. The address mask can be a
+\fIAddress Mask\fR defaults to
+.BR INADDR_ANY .
+The address mask can be a
 numeric address in dot notation or a network name.
 .RE
 
@@ -1054,7 +1286,7 @@ numeric address in dot notation or a network name.
 .ne 2
 .mk
 .na
-\fBFamily\fR
+.B Family
 .ad
 .sp .6
 .RS 4n
@@ -1065,7 +1297,7 @@ Address family (defaults to INET).
 .ne 2
 .mk
 .na
-\fBListen\fR
+.B Listen
 .ad
 .sp .6
 .RS 4n
@@ -1076,7 +1308,7 @@ Size of listen queue (defaults to 10).
 .ne 2
 .mk
 .na
-\fBPort\fR
+.B Port
 .ad
 .sp .6
 .RS 4n
@@ -1118,15 +1350,21 @@ Options (flags) for the daemon. Can be:
 .ne 2
 .mk
 .na
-\fBh\fR
+.B h
 .ad
 .sp .6
 .RS 4n
-Uses name of interface for \fBHELO\fR command.
+Uses name of interface for
+.B HELO
+command.
 .RE
 
-If \fBh\fR is set, the name corresponding to the outgoing interface address
-(whether chosen by means of the \fBConnection\fR parameter or the default)
+If
+.B h
+is set, the name corresponding to the outgoing interface address
+(whether chosen by means of the
+.B Connection
+parameter or the default)
 is used for the \fBHELO\fR/\fBEHLO\fR command.
 .RE
 
@@ -1136,7 +1374,7 @@ is used for the \fBHELO\fR/\fBEHLO\fR command.
 .ne 2
 .mk
 .na
-\fBColonOkInAddr\fR
+.B ColonOkInAddr
 .ad
 .sp .6
 .RS 4n
@@ -1154,9 +1392,15 @@ option is on for version 5 and lower configuration files.
 .sp .6
 .RS 4n
 The maximum number of open connections that are to be cached at a time. The
-default is \fB1\fR. This delays closing the current connection until either
-this invocation of \fBsendmail\fR needs to connect to another host or it
-terminates. Setting it to \fB0\fR defaults to the old behavior, that is,
+default is
+.BR 1 .
+This delays closing the current connection until either
+this invocation of
+.B sendmail
+needs to connect to another host or it
+terminates. Setting it to
+.B 0
+defaults to the old behavior, that is,
 connections are closed immediately.
 .RE
 
@@ -1172,7 +1416,9 @@ The maximum amount of time a cached connection is permitted to idle without
 activity. If this time is exceeded, the connection is immediately closed.
 This value should be small (on the order of ten minutes). Before
 \fBsendmail\fR uses a cached connection, it always sends a \fBNOOP\fR (no
-operation) command to check the connection. If the \fBNOOP\fR command fails,
+operation) command to check the connection. If the
+.B NOOP
+command fails,
 it reopens the connection. This keeps your end from failing if the other end
 times out. The point of this option is to be a good network neighbor and
 avoid using up excessive resources on the other end. The default is five
@@ -1183,7 +1429,7 @@ minutes.
 .ne 2
 .mk
 .na
-\fBConnectionRateThrottle\fR
+.B ConnectionRateThrottle
 .ad
 .sp .6
 .RS 4n
@@ -1196,7 +1442,7 @@ connections are accepted, further connections are delayed. If not set or <=
 .ne 2
 .mk
 .na
-\fBConnectionRateWindowSize\fR
+.B ConnectionRateWindowSize
 .ad
 .sp .6
 .RS 4n
@@ -1208,18 +1454,26 @@ connections is maintained. The default is 60 seconds.
 .ne 2
 .mk
 .na
-\fBControlSocketName\fR
+.B ControlSocketName
 .ad
 .sp .6
 .RS 4n
 Name of the control socket for daemon management. A running \fBsendmail\fR
 daemon can be controlled through this Unix domain socket. Available commands
-are: \fBhelp\fR, \fBrestart\fR, \fBshutdown\fR, and \fBstatus\fR. The
+are:
+.BR help ,
+.BR restart ,
+.BR shutdown ,
+and
+.BR status .
+The
 \fBstatus\fR command returns the current number of daemon children, the free
 disk space (in blocks) of the queue directory, and the load average of the
 machine expressed as an integer. If not set, no control socket is available.
 For the sake of security, this Unix domain socket must be in a directory
-which is accessible only by root; \fB/var/spool/mqueue/.smcontrol\fR is
+which is accessible only by root;
+.B /var/spool/mqueue/.smcontrol
+is
 recommended for the socket name.
 .RE
 
@@ -1227,7 +1481,7 @@ recommended for the socket name.
 .ne 2
 .mk
 .na
-\fBCRLFile\fR
+.B CRLFile
 .ad
 .sp .6
 .RS 4n
@@ -1243,13 +1497,15 @@ authentication.
 .ad
 .sp .6
 .RS 4n
-Sets server SMTP options. The options are \fIkey=value\fR pairs. Known keys
+Sets server SMTP options. The options are
+.I key=value
+pairs. Known keys
 are:
 .sp
 .ne 2
 .mk
 .na
-\fBName\fR
+.B Name
 .ad
 .sp .6
 .RS 4n
@@ -1261,7 +1517,7 @@ error messages and logging.
 .ne 2
 .mk
 .na
-\fBAddr\fR
+.B Addr
 .ad
 .sp .6
 .RS 4n
@@ -1275,7 +1531,7 @@ name.
 .ne 2
 .mk
 .na
-\fBFamily\fR
+.B Family
 .ad
 .sp .6
 .RS 4n
@@ -1286,7 +1542,7 @@ Address family (defaults to \fBINET).\fR
 .ne 2
 .mk
 .na
-\fBInputMailFilters\fR
+.B InputMailFilters
 .ad
 .sp .6
 .RS 4n
@@ -1297,7 +1553,7 @@ List of input mail filters for the daemon.
 .ne 2
 .mk
 .na
-\fBListen\fR
+.B Listen
 .ad
 .sp .6
 .RS 4n
@@ -1318,7 +1574,7 @@ of:
 .ne 2
 .mk
 .na
-\fBa\fR
+.B a
 .ad
 .sp .6
 .RS 4n
@@ -1329,7 +1585,7 @@ Requires authentication.
 .ne 2
 .mk
 .na
-\fBb\fR
+.B b
 .ad
 .sp .6
 .RS 4n
@@ -1340,7 +1596,7 @@ Binds to interface through which mail has been received.
 .ne 2
 .mk
 .na
-\fBc\fR
+.B c
 .ad
 .sp .6
 .RS 4n
@@ -1362,18 +1618,20 @@ Requires fully qualified hostname (\fB\&.cf\fR).
 .ne 2
 .mk
 .na
-\fBh\fR
+.B h
 .ad
 .sp .6
 .RS 4n
-Uses name of interface for \fBHELO\fR command.
+Uses name of interface for
+.B HELO
+command.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBu\fR
+.B u
 .ad
 .sp .6
 .RS 4n
@@ -1384,7 +1642,7 @@ Allows unqualified addresses (\fB\&.cf\fR).
 .ne 2
 .mk
 .na
-\fBC\fR
+.B C
 .ad
 .sp .6
 .RS 4n
@@ -1395,11 +1653,15 @@ Does not perform hostname canonification.
 .ne 2
 .mk
 .na
-\fBE\fR
+.B E
 .ad
 .sp .6
 .RS 4n
-Disallows \fBETRN\fR (see \fBRFC\fR 2476).
+Disallows
+.B ETRN
+(see
+.B RFC
+2476).
 .RE
 
 .RE
@@ -1408,11 +1670,13 @@ Disallows \fBETRN\fR (see \fBRFC\fR 2476).
 .ne 2
 .mk
 .na
-\fBName\fR
+.B Name
 .ad
 .sp .6
 .RS 4n
-User-definable name for the daemon (defaults to \fBDaemon#\fR). Used for
+User-definable name for the daemon (defaults to
+.BR Daemon# ).
+Used for
 error messages and logging.
 .RE
 
@@ -1420,7 +1684,7 @@ error messages and logging.
 .ne 2
 .mk
 .na
-\fBPort\fR
+.B Port
 .ad
 .sp .6
 .RS 4n
@@ -1431,7 +1695,7 @@ Name/number of listening port (defaults to \fBsmtp\fR).
 .ne 2
 .mk
 .na
-\fBReceiveSize\fR
+.B ReceiveSize
 .ad
 .sp .6
 .RS 4n
@@ -1442,7 +1706,7 @@ The size of the TCP/IP receive buffer.
 .ne 2
 .mk
 .na
-\fBSendSize\fR
+.B SendSize
 .ad
 .sp .6
 .RS 4n
@@ -1453,7 +1717,7 @@ The size of the TCP/IP send buffer.
 .ne 2
 .mk
 .na
-\fBchildren\fR
+.B children
 .ad
 .sp .6
 .RS 4n
@@ -1464,7 +1728,7 @@ Maximum number of children per daemon. See \fBMaxDaemonChildren\fR.
 .ne 2
 .mk
 .na
-\fBDeliveryMode\fR
+.B DeliveryMode
 .ad
 .sp .6
 .RS 4n
@@ -1486,7 +1750,7 @@ Delivery mode per daemon. See \fBDeliveryMode\fR.
 .ne 2
 .mk
 .na
-\fBdelayLA\fR
+.B delayLA
 .ad
 .sp .6
 .RS 4n
@@ -1497,7 +1761,7 @@ Delivery mode per daemon. See \fBDeliveryMode\fR.
 .ne 2
 .mk
 .na
-\fBqueueLA\fR
+.B queueLA
 .ad
 .sp .6
 .RS 4n
@@ -1524,16 +1788,22 @@ disk-based. The default is 4096 bytes.
 .ne 2
 .mk
 .na
-\fBDeadLetterDrop\fR
+.B DeadLetterDrop
 .ad
 .sp .6
 .RS 4n
 Defines the location of the system-wide dead.letter file, formerly
-hard-coded to \fB/var/tmp/dead.letter\fR. If this option is not set (the
-default), \fBsendmail\fR does not attempt to save to a system-wide
+hard-coded to
+.BR /var/tmp/dead.letter .
+If this option is not set (the
+default),
+.B sendmail
+does not attempt to save to a system-wide
 \fBdead.letter\fR file in the event it cannot bounce the mail to the user or
 postmaster. Instead, it renames the \fBqf\fR file as it has in the past when
-the \fBdead.letter\fR file could not be opened.
+the
+.B dead.letter
+file could not be opened.
 .RE
 
 .sp
@@ -1556,8 +1826,14 @@ to MIME.
 .ad
 .sp .6
 .RS 4n
-Sets the default group ID for mailers to run in to \fIgid\fR or set the
-default userid for mailers to \fIuid\fR. Defaults to \fB1\fR. The value can
+Sets the default group ID for mailers to run in to
+.I gid
+or set the
+default userid for mailers to
+.IR uid .
+Defaults to
+.BR 1 .
+The value can
 also be given as a symbolic group or user name.
 .RE
 
@@ -1569,7 +1845,9 @@ also be given as a symbolic group or user name.
 .ad
 .sp .6
 .RS 4n
-When the system load average exceeds \fILA\fR, \fBsendmail\fR sleeps for
+When the system load average exceeds
+.IR LA ,
+\fBsendmail\fR sleeps for
 one second on most SMTP commands and before accepting connections.
 .RE
 
@@ -1581,9 +1859,17 @@ one second on most SMTP commands and before accepting connections.
 .ad
 .sp .6
 .RS 4n
-Sets minimum time for \fBDeliver By SMTP Service Extension\fR (RFC 2852).
-If \fB0\fR, no time is listed, if less than \fB0\fR, the extension is not
-offered, if greater than \fB0\fR, it is listed as minimum time for the
+Sets minimum time for
+.B "Deliver By SMTP Service Extension"
+(RFC 2852).
+If
+.BR 0 ,
+no time is listed, if less than
+.BR 0 ,
+the extension is not
+offered, if greater than
+.BR 0 ,
+it is listed as minimum time for the
 \fBEHLO\fR keyword \fBDELIVERBY\fR.
 .RE
 
@@ -1595,12 +1881,14 @@ offered, if greater than \fB0\fR, it is listed as minimum time for the
 .ad
 .sp .6
 .RS 4n
-Delivers in mode \fIx\fR. Legal modes are:
+Delivers in mode
+.IR x .
+Legal modes are:
 .sp
 .ne 2
 .mk
 .na
-\fBi\fR
+.B i
 .ad
 .sp .6
 .RS 4n
@@ -1611,7 +1899,7 @@ Delivers interactively (synchronously).
 .ne 2
 .mk
 .na
-\fBb\fR
+.B b
 .ad
 .sp .6
 .RS 4n
@@ -1622,7 +1910,7 @@ Delivers in background (asynchronously).
 .ne 2
 .mk
 .na
-\fBd\fR
+.B d
 .ad
 .sp .6
 .RS 4n
@@ -1633,22 +1921,29 @@ Deferred mode. Database lookups are deferred until the actual queue run.
 .ne 2
 .mk
 .na
-\fBq\fR
+.B q
 .ad
 .sp .6
 .RS 4n
 Just queues the message (delivers during queue run).
 .RE
 
-Defaults to \fBb\fR if no option is specified, \fBi\fR if it is specified
-but given no argument (that is, \fBOd\fR is equivalent to \fBOdi\fR).
+Defaults to
+.B b
+if no option is specified,
+.B i
+if it is specified
+but given no argument (that is,
+.B Od
+is equivalent to
+.BR Odi ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDHParameters\fR
+.B DHParameters
 .ad
 .sp .6
 .RS 4n
@@ -1659,7 +1954,7 @@ File containing the DH parameters.
 .ne 2
 .mk
 .na
-\fBDialDelay\fR
+.B DialDelay
 .ad
 .sp .6
 .RS 4n
@@ -1671,7 +1966,7 @@ If a connection fails, waits this many seconds and tries again. Zero means
 .ne 2
 .mk
 .na
-\fBDontBlameSendmail\fR
+.B DontBlameSendmail
 .ad
 .sp .6
 .RS 4n
@@ -1684,7 +1979,7 @@ http://www.sendmail.org/tips/DontBlameSendmail.html for more information.
 .ne 2
 .mk
 .na
-\fBDontExpandCnames\fR
+.B DontExpandCnames
 .ad
 .sp .6
 .RS 4n
@@ -1696,7 +1991,7 @@ records.
 .ne 2
 .mk
 .na
-\fBDontInitGroups\fR
+.B DontInitGroups
 .ad
 .sp .6
 .RS 4n
@@ -1713,8 +2008,12 @@ group permissions.
 .ad
 .sp .6
 .RS 4n
-If set, \fBsendmail\fR does not insert the names and addresses of any local
-interfaces into the \fB$=w class\fR. If set, you must also include support
+If set,
+.B sendmail
+does not insert the names and addresses of any local
+interfaces into the
+.BR "$=w class" .
+If set, you must also include support
 for these addresses, otherwise mail to addresses in this list bounces with a
 configuration error.
 .RE
@@ -1723,7 +2022,7 @@ configuration error.
 .ne 2
 .mk
 .na
-\fBDontPruneRoutes (R)\fR
+.B DontPruneRoutes (R)
 .ad
 .sp .6
 .RS 4n
@@ -1735,7 +2034,7 @@ possible.
 .ne 2
 .mk
 .na
-\fBDoubleBounceAddress\fR
+.B DoubleBounceAddress
 .ad
 .sp .6
 .RS 4n
@@ -1747,7 +2046,7 @@ bounce" error message to this address.
 .ne 2
 .mk
 .na
-\fBEightBitMode (8)\fR
+.B EightBitMode (8)
 .ad
 .sp .6
 .RS 4n
@@ -1762,14 +2061,16 @@ word is better for clarity.
 .ad
 .sp .6
 .RS 4n
-Does any necessary conversion of \fB8BITMIME\fR to 7-bit.
+Does any necessary conversion of
+.B 8BITMIME
+to 7-bit.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpass\fR
+.B pass
 .ad
 .sp .6
 .RS 4n
@@ -1780,7 +2081,7 @@ Passes unlabeled 8-bit input through as is.
 .ne 2
 .mk
 .na
-\fBstrict\fR
+.B strict
 .ad
 .sp .6
 .RS 4n
@@ -1802,7 +2103,9 @@ slash, it is assumed to be the pathname of a file containing a message (this
 is the recommended setting). Otherwise, it is a literal message. The error
 file might contain the name, email address, and/or phone number of a local
 postmaster who could provide assistance to end users. If the option is
-missing or \fINULL\fR, or if it names a file which does not exist or which
+missing or
+.IR NULL ,
+or if it names a file which does not exist or which
 is not readable, no message is printed.
 .RE
 
@@ -1814,23 +2117,29 @@ is not readable, no message is printed.
 .ad
 .sp .6
 .RS 4n
-Disposes of errors using mode \fIx\fR. The values for \fIx\fR are:
+Disposes of errors using mode
+.IR x .
+The values for
+.I x
+are:
 .sp
 .ne 2
 .mk
 .na
-\fBe\fR
+.B e
 .ad
 .sp .6
 .RS 4n
-Mails back errors and gives \fB0\fR exit status always.
+Mails back errors and gives
+.B 0
+exit status always.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBm\fR
+.B m
 .ad
 .sp .6
 .RS 4n
@@ -1841,7 +2150,7 @@ Mails back errors.
 .ne 2
 .mk
 .na
-\fBp\fR
+.B p
 .ad
 .sp .6
 .RS 4n
@@ -1852,7 +2161,7 @@ Prints error messages (default).
 .ne 2
 .mk
 .na
-\fBq\fR
+.B q
 .ad
 .sp .6
 .RS 4n
@@ -1863,7 +2172,7 @@ No messages, just gives exit status.
 .ne 2
 .mk
 .na
-\fBw\fR
+.B w
 .ad
 .sp .6
 .RS 4n
@@ -1889,7 +2198,7 @@ connectivity.
 .ne 2
 .mk
 .na
-\fBFallBackSmartHost\fR
+.B FallBackSmartHost
 .ad
 .sp .6
 .RS 4n
@@ -1903,7 +2212,7 @@ company's domain but not outside.
 .ne 2
 .mk
 .na
-\fBFastSplit\fR
+.B FastSplit
 .ad
 .sp .6
 .RS 4n
@@ -1911,12 +2220,16 @@ If set to a value greater than zero (the default is one), it suppresses the
 MX lookups on addresses when they are initially sorted, that is, for the
 first delivery attempt. This usually results in faster envelope splitting
 unless the MX records are readily available in a local DNS cache. To enforce
-initial sorting based on MX records set \fBFastSplit\fR to zero. If the mail
+initial sorting based on MX records set
+.B FastSplit
+to zero. If the mail
 is submitted directly from the command line, then the value also limits the
 number of processes to deliver the envelopes; if more envelopes are created
 they are only queued up and must be taken care of by a queue run. Since the
 default submission method is by way of SMTP (either from a MUA or by way of
-the Message Submission Program [MSP]), the value of \fBFastSplit\fR is
+the Message Submission Program [MSP]), the value of
+.B FastSplit
+is
 seldom used to limit the number of processes to deliver the envelopes.
 .RE
 
@@ -1924,7 +2237,7 @@ seldom used to limit the number of processes to deliver the envelopes.
 .ne 2
 .mk
 .na
-\fBForkEachJob (Y)\fR
+.B ForkEachJob (Y)
 .ad
 .sp .6
 .RS 4n
@@ -1942,12 +2255,18 @@ consume considerable amounts of memory while the queue is being processed.
 .sp .6
 .RS 4n
 Sets the path for searching for users' \fB\&.forward\fR files. The default
-is \fB$z/.forward\fR. Some sites that use the automounter may prefer to
+is
+.BR $z/.forward .
+Some sites that use the automounter may prefer to
 change this to \fB/var/forward/$u\fR to search a file with the same name as
 the user in a system directory. It can also be set to a sequence of paths
-separated by colons; \fBsendmail\fR stops at the first file it can
+separated by colons;
+.B sendmail
+stops at the first file it can
 successfully and safely open. For example, \fB/var/forward/$u:$z/.forward\fR
-searches first in \fB/var/forward/\fR \fIusername\fR and then in
+searches first in \fB/var/forward/\fR
+.I username
+and then in
 \fB~\fIusername\fB/.forward\fR (but only if the first file does not
 exist). Refer to the NOTES section for more information.
 .RE
@@ -1978,7 +2297,7 @@ Specifies the help file for SMTP.
 .ne 2
 .mk
 .na
-\fBHoldExpensive (c)\fR
+.B HoldExpensive (c)
 .ad
 .sp .6
 .RS 4n
@@ -1990,7 +2309,7 @@ immediately.
 .ne 2
 .mk
 .na
-\fBHostsFile\fR
+.B HostsFile
 .ad
 .sp .6
 .RS 4n
@@ -2001,11 +2320,13 @@ Sets the file to use when doing "file" type access of host names.
 .ne 2
 .mk
 .na
-\fBHostStatusDirectory\fR
+.B HostStatusDirectory
 .ad
 .sp .6
 .RS 4n
-If set, host status is kept on disk between \fBsendmail\fR runs in the
+If set, host status is kept on disk between
+.B sendmail
+runs in the
 named directory tree. If a full path is not used, then the path is
 interpreted relative to the queue directory.
 .RE
@@ -2014,12 +2335,14 @@ interpreted relative to the queue directory.
 .ne 2
 .mk
 .na
-\fBIgnoreDots (i)\fR
+.B IgnoreDots (i)
 .ad
 .sp .6
 .RS 4n
 Ignores dots in incoming messages. This is always disabled (that is, dots
-are always accepted) when reading \fBSMTP\fR mail.
+are always accepted) when reading
+.B SMTP
+mail.
 .RE
 
 .sp
@@ -2030,7 +2353,10 @@ are always accepted) when reading \fBSMTP\fR mail.
 .ad
 .sp .6
 .RS 4n
-Sets the default log level to \fIn\fR. Defaults to \fB9\fR.
+Sets the default log level to
+.IR n .
+Defaults to
+.BR 9 .
 .RE
 
 .sp
@@ -2041,7 +2367,11 @@ Sets the default log level to \fIn\fR. Defaults to \fB9\fR.
 .ad
 .sp .6
 .RS 4n
-Sets the macro \fIx\fR to \fIvalue\fR. This is intended only for use from
+Sets the macro
+.I x
+to
+.IR value .
+This is intended only for use from
 the command line.
 .RE
 
@@ -2049,25 +2379,28 @@ the command line.
 .ne 2
 .mk
 .na
-\fBMailboxDatabase\fR
+.B MailboxDatabase
 .ad
 .sp .6
 .RS 4n
 Type of lookup to find information about local mail boxes, defaults to
 \fBpw\fR which uses \fBgetpwnam\fR(3C). Other types can be introduced by
-adding them to the source code, see \fBlibsm/mbdb.c\fR for details.
+adding them to the source code, see
+.B libsm/mbdb.c
+for details.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMatchGECOS (G)\fR
+.B MatchGECOS (G)
 .ad
 .sp .6
 .RS 4n
 Tries to match recipient names using the GECOS field. This allows for mail
-to be delivered using names defined in the GECOS field in \fB/etc/passwd\fR
+to be delivered using names defined in the GECOS field in
+.BR /etc/passwd
 as well as the login name.
 .RE
 
@@ -2075,7 +2408,7 @@ as well as the login name.
 .ne 2
 .mk
 .na
-\fBMaxDaemonChildren\fR
+.B MaxDaemonChildren
 .ad
 .sp .6
 .RS 4n
@@ -2091,7 +2424,7 @@ connections are rejected. If not set or <=0, there is no limit.
 .ad
 .sp .6
 .RS 4n
-The maximum hop count. Messages that have been processed more than \fIN\fR
+.RI "The maximum hop count. Messages that have been processed more than" " N"
 times are assumed to be in a loop and are rejected. Defaults to \fB25\fR.
 .RE
 
@@ -2099,7 +2432,7 @@ times are assumed to be in a loop and are rejected. Defaults to \fB25\fR.
 .ne 2
 .mk
 .na
-\fBMaxMessageSize\fR
+.B MaxMessageSize
 .ad
 .sp .6
 .RS 4n
@@ -2114,11 +2447,15 @@ The maximum size of messages that are accepted (in bytes).
 .ad
 .sp .6
 .RS 4n
-Sets the maximum length of certain MIME header field values to \fIM\fR
+Sets the maximum length of certain MIME header field values to
+.IR M
 characters. For some of these headers which take parameters, the maximum
 length of each parameter is set to \fIN\fR if specified. If \fB/\fIN\fR
-is not specified, one half of \fIM\fR is used. By default, these values are
-\fB0\fR, meaning no checks are done.
+is not specified, one half of
+.I M
+is used. By default, these values are
+.BR 0 ,
+meaning no checks are done.
 .RE
 
 .sp
@@ -2141,7 +2478,8 @@ Overrides the default of 20 for the number of useless commands.
 .sp .6
 .RS 4n
 When set, this limits the number of concurrent queue runner processes to
-\fIN\fR. This helps to control the amount of system resources used when
+.IR N .
+This helps to control the amount of system resources used when
 processing the queue. When there are multiple queue groups defined and the
 total number of queue runners for these queue groups would exceed
 \fBMaxQueueChildren\fR then the queue groups are not all run concurrently.
@@ -2154,7 +2492,7 @@ are run later (in round robin order). See \fBMaxRunnersPerQueue\fR.
 .ne 2
 .mk
 .na
-\fBMaxQueueRunSize\fR
+.B MaxQueueRunSize
 .ad
 .sp .6
 .RS 4n
@@ -2172,19 +2510,25 @@ is reached; job priority is not used. If not set, there is no limit.
 .sp .6
 .RS 4n
 This sets the default maximum number of queue runners for queue groups. Up
-to \fIN\fR queue runners work in parallel on a queue group's messages. This
+to
+.I N
+queue runners work in parallel on a queue group's messages. This
 is useful where the processing of a message in the queue might delay the
 processing of subsequent messages. Such a delay can be the result of
 non-erroneous situations such as a low bandwidth connection. The can be
-overridden on a per queue group basis by setting the \fBRunners\fR option.
-The default is \fB1\fR when not set.
+overridden on a per queue group basis by setting the
+.B Runners
+option.
+The default is
+.B 1
+when not set.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMeToo (M)\fR
+.B MeToo (M)
 .ad
 .sp .6
 .RS 4n
@@ -2195,7 +2539,7 @@ Sends to me too, even if I am in an alias expansion.
 .ne 2
 .mk
 .na
-\fBMaxRecipientsPerMessage\fR
+.B MaxRecipientsPerMessage
 .ad
 .sp .6
 .RS 4n
@@ -2212,11 +2556,23 @@ the next delivery attempt.
 .ad
 .sp .6
 .RS 4n
-Insists on at least \fIN\fR blocks free on the file system that holds the
+Insists on at least
+.I N
+blocks free on the file system that holds the
 queue files before accepting email by way of SMTP. If there is insufficient
-space, \fBsendmail\fR gives a \fB452\fR response to the \fBMAIL\fR command.
-This invites the sender to try again later. The optional \fIM\fR is a
-maximum message size advertised in the \fBESMTP\fR \fBEHLO\fR response. It
+space,
+.B sendmail
+gives a
+.B 452
+response to the
+.B MAIL
+command.
+This invites the sender to try again later. The optional
+.I M
+is a
+maximum message size advertised in the
+.B "ESMTP EHLO"
+response. It
 is currently otherwise unused.
 .RE
 
@@ -2224,7 +2580,7 @@ is currently otherwise unused.
 .ne 2
 .mk
 .na
-\fBMinQueueAge\fR
+.B MinQueueAge
 .ad
 .sp .6
 .RS 4n
@@ -2238,7 +2594,7 @@ responsiveness without trying all jobs in each run. The default value is
 .ne 2
 .mk
 .na
-\fBMustQuoteChars\fR
+.B MustQuoteChars
 .ad
 .sp .6
 .RS 4n
@@ -2250,7 +2606,7 @@ Specifies the characters to be quoted in a full name phrase.
 .ne 2
 .mk
 .na
-\fBNiceQueueRun\fR
+.B NiceQueueRun
 .ad
 .sp .6
 .RS 4n
@@ -2261,7 +2617,7 @@ Specifies the priority of queue runners. See \fBnice\fR(1).
 .ne 2
 .mk
 .na
-\fBNoRecipientAction\fR
+.B NoRecipientAction
 .ad
 .sp .6
 .RS 4n
@@ -2271,11 +2627,13 @@ values are:
 .ne 2
 .mk
 .na
-\fBadd-apparently-to\fR
+.B add-apparently-to
 .ad
 .sp .6
 .RS 4n
-Adds an \fBApparently-to:\fR header with all the known recipients (which
+Adds an
+.B Apparently-to:
+header with all the known recipients (which
 may expose blind recipients).
 .RE
 
@@ -2283,22 +2641,26 @@ may expose blind recipients).
 .ne 2
 .mk
 .na
-\fBadd-bcc\fR
+.B add-bcc
 .ad
 .sp .6
 .RS 4n
-Adds an empty \fBBcc:\fR header.
+Adds an empty
+.B Bcc:
+header.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBadd-to\fR
+.B add-to
 .ad
 .sp .6
 .RS 4n
-Adds a \fBTo:\fR header with all the known recipients (which may expose
+Adds a
+.B To:
+header with all the known recipients (which may expose
 blind recipients).
 .RE
 
@@ -2306,18 +2668,20 @@ blind recipients).
 .ne 2
 .mk
 .na
-\fBadd-to-undisclosed\fR
+.B add-to-undisclosed
 .ad
 .sp .6
 .RS 4n
-Adds a \fBTo: undisclosed-recipients:\fR header.
+Adds a
+.B "To: undisclosed-recipients:"
+header.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnone\fR
+.B none
 .ad
 .sp .6
 .RS 4n
@@ -2330,7 +2694,7 @@ Does nothing, that is, leaves the message as it is.
 .ne 2
 .mk
 .na
-\fBOldStyleHeaders (o)\fR
+.B OldStyleHeaders (o)
 .ad
 .sp .6
 .RS 4n
@@ -2345,7 +2709,7 @@ Headers are always output with commas between the names.
 .ne 2
 .mk
 .na
-\fBOperatorChars or $o\fR
+.B OperatorChars or $o
 .ad
 .sp .6
 .RS 4n
@@ -2357,13 +2721,18 @@ of an address into tokens.
 .ne 2
 .mk
 .na
-\fBPidFile\fR
+.B PidFile
 .ad
 .sp .6
 .RS 4n
-Specifies the filename of the \fBpid\fR file. The default is
-\fB/var/run/sendmail.pid\fR. The filename is macro-expanded before it is
-opened, and unlinked when \fBsendmail\fR exits.
+Specifies the filename of the
+.B pid
+file. The default is
+.BR /var/run/sendmail.pid .
+The filename is macro-expanded before it is
+opened, and unlinked when
+.B sendmail
+exits.
 .RE
 
 .sp
@@ -2392,17 +2761,32 @@ certain operating systems vendors.
 Sets privacy options. Privacy is really a misnomer; many of these options
 are just a way of insisting on stricter adherence to the SMTP protocol.
 .sp
-The \fBgoaway\fR pseudo-flag sets all flags except \fBnoreceipts\fR,
-\fBrestrictmailq\fR, \fBrestrictqrun\fR, \fBrestrictexpand\fR, \fBnoetrn\fR,
-and \fBnobodyreturn\fR. If \fBmailq\fR is restricted, only people in the
+The
+.B goaway
+pseudo-flag sets all flags except \fBnoreceipts\fR,
+.BR restrictmailq ,
+.BR restrictqrun ,
+.BR restrictexpand ,
+.BR noetrn ,
+and
+.BR nobodyreturn .
+If
+.B mailq
+is restricted, only people in the
 same group as the queue directory can print the queue. If queue runs are
 restricted, only root and the owner of the queue directory can run the
-queue. The \fBrestrict-expand\fR pseudo-flag instructs sendmail to drop
+queue. The
+.B restrict-expand
+pseudo-flag instructs sendmail to drop
 privileges when the -bv option is given by users who are neither root nor
-the \fBTrustedUser\fR so users cannot read private aliases, forwards, or
+the
+.B TrustedUser
+so users cannot read private aliases, forwards, or
 \fB:include:\fR files. It adds the \fBNonRootSafeAddr\fR to the
 "DontBlame-Sendmail" option to prevent misleading unsafe address warnings.
-It also overrides the \fB-v\fR (verbose) command line option to prevent
+It also overrides the
+.B -v
+(verbose) command line option to prevent
 information leakage. Authentication Warnings add warnings about various
 conditions that may indicate attempts to fool the mail system, such as using
 an non-standard queue directory.
@@ -2412,18 +2796,20 @@ The options can be selected from:
 .ne 2
 .mk
 .na
-\fBauthwarnings\fR
+.B authwarnings
 .ad
 .sp .6
 .RS 4n
-Puts \fBX-Authentication-Warning:\fR headers in messages.
+Puts
+.B X-Authentication-Warning:
+headers in messages.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgoaway\fR
+.B goaway
 .ad
 .sp .6
 .RS 4n
@@ -2434,22 +2820,32 @@ Disallows essentially all SMTP status queries.
 .ne 2
 .mk
 .na
-\fBneedexpnhelo\fR
+.B needexpnhelo
 .ad
 .sp .6
 .RS 4n
-Insists on \fBHELO\fR or \fBEHLO\fR command before \fBEXPN\fR.
+Insists on
+.B HELO
+or
+.B EHLO
+command before
+.BR EXPN .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBneedmailhelo\fR
+.B needmailhelo
 .ad
 .sp .6
 .RS 4n
-Insists on \fBHELO\fR or \fBEHLO\fR command before \fBMAIL\fR.
+Insists on
+.B HELO
+or
+.B EHLO
+command before
+.BR MAIL .
 .RE
 
 .sp
@@ -2460,14 +2856,19 @@ Insists on \fBHELO\fR or \fBEHLO\fR command before \fBMAIL\fR.
 .ad
 .sp .6
 .RS 4n
-Insists on \fBHELO\fR or \fBEHLO\fR command before \fBVRFY\fR.
+Insists on
+.B HELO
+or
+.B EHLO
+command before
+.BR VRFY .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoactualrecipient\fR
+.B noactualrecipient
 .ad
 .sp .6
 .RS 4n
@@ -2479,29 +2880,33 @@ account to which an address is mapped.
 .ne 2
 .mk
 .na
-\fBnoetrn\fR
+.B noetrn
 .ad
 .sp .6
 .RS 4n
-Disallows \fBETRN\fR entirely.
+Disallows
+.B ETRN
+entirely.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoexpn\fR
+.B noexpn
 .ad
 .sp .6
 .RS 4n
-Disallows \fBEXPN\fR entirely.
+Disallows
+.B EXPN
+entirely.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoreceipts\fR
+.B noreceipts
 .ad
 .sp .6
 .RS 4n
@@ -2512,7 +2917,7 @@ Prevents return receipts.
 .ne 2
 .mk
 .na
-\fBnobodyreturn\fR
+.B nobodyreturn
 .ad
 .sp .6
 .RS 4n
@@ -2527,14 +2932,16 @@ Does not return the body of a message with DSNs.
 .ad
 .sp .6
 .RS 4n
-Disallows \fBVRFY\fR entirely.
+Disallows
+.B VRFY
+entirely.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpublic\fR
+.B public
 .ad
 .sp .6
 .RS 4n
@@ -2549,29 +2956,37 @@ Allows open access.
 .ad
 .sp .6
 .RS 4n
-Restricts \fB-bv\fR and \fB-v\fR command line flags.
+Restricts
+.B -bv
+and
+.B -v
+command line flags.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrestrictmailq\fR
+.B restrictmailq
 .ad
 .sp .6
 .RS 4n
-Restricts \fBmailq\fR command.
+Restricts
+.B mailq
+command.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrestrictqrun\fR
+.B restrictqrun
 .ad
 .sp .6
 .RS 4n
-Restricts \fB-q\fR command line flag.
+Restricts
+.B -q
+command line flag.
 .RE
 
 .RE
@@ -2585,7 +3000,8 @@ Restricts \fB-q\fR command line flag.
 .sp .6
 .RS 4n
 Prefixes the process title shown on "\fB/usr/ucb/ps auxww\fR" listings with
-\fIstring\fR. The string is macro processed.
+.IR string .
+The string is macro processed.
 .RE
 
 .sp
@@ -2596,7 +3012,9 @@ Prefixes the process title shown on "\fB/usr/ucb/ps auxww\fR" listings with
 .ad
 .sp .6
 .RS 4n
-Uses the named \fIdir\fR as the queue directory.
+Uses the named
+.I dir
+as the queue directory.
 .RE
 
 .sp
@@ -2611,7 +3029,8 @@ Uses \fIfactor\fR as the multiplier in the map function to decide when to
 just queue up jobs rather than run them. This value is divided by the
 difference between the current load average and the load average limit
 (\fBx\fR flag) to determine the maximum message priority to be sent.
-Defaults to \fB600000\fR.
+Defaults to
+.BR 600000 .
 .RE
 
 .sp
@@ -2623,8 +3042,13 @@ Defaults to \fB600000\fR.
 .sp .6
 .RS 4n
 Defaults permissions for queue files (octal). If not set, \fBsendmail\fR
-uses \fB0600\fR unless its real and effective \fBuid\fR are different in
-which case it uses \fB0644\fR.
+uses
+.B 0600
+unless its real and effective
+.B uid
+are different in
+which case it uses
+.BR 0644 .
 .RE
 
 .sp
@@ -2635,9 +3059,13 @@ which case it uses \fB0644\fR.
 .ad
 .sp .6
 .RS 4n
-When the system load average exceeds \fILA\fR, just queues messages (that
+When the system load average exceeds
+.IR LA ,
+just queues messages (that
 is, does not try to send them). Defaults to eight times the number of
-processors online when \fBsendmail\fR starts.
+processors online when
+.B sendmail
+starts.
 .RE
 
 .sp
@@ -2649,12 +3077,22 @@ processors online when \fBsendmail\fR starts.
 .sp .6
 .RS 4n
 Sets the algorithm used for sorting the queue. Only the first character of
-the value is used. Legal values are \fBhost\fR (to order by the name of the
+the value is used. Legal values are
+.B host
+(to order by the name of the
 first host name of the first recipient), \fBfilename\fR (to order by the
-name of the queue file name), \fBtime\fR (to order by the
-submission/creation time), \fBrandom\fR (to order randomly),
+name of the queue file name),
+.B time
+(to order by the
+submission/creation time),
+.B random
+(to order randomly),
 \fBmodification\fR (to order by the modification time of the \fBqf\fR file
-(older entries first)), \fBnone\fR (to not order), and \fBpriority\fR (to
+(older entries first)),
+.B none
+(to not order), and
+.B priority
+(to
 order by message priority). Host ordering makes better use of the connection
 cache, but may tend to process low priority messages that go to a single
 host over high priority messages that go to several hosts; it probably
@@ -2677,10 +3115,18 @@ default.
 .ad
 .sp .6
 .RS 4n
-Sets the queue timeout to \fIrtime\fR. After this interval, messages that
+Sets the queue timeout to
+.IR rtime .
+After this interval, messages that
 have not been successfully sent are returned to the sender. Defaults to five
-days (\fB5d\fR). The optional \fIwtime\fR is the time after which a warning
-message is sent. If it is missing or \fB0\fR, then no warning messages are
+days
+.RB ( 5d ).
+The optional
+.I wtime
+is the time after which a warning
+message is sent. If it is missing or
+.BR 0 ,
+then no warning messages are
 sent.
 .RE
 
@@ -2688,12 +3134,16 @@ sent.
 .ne 2
 .mk
 .na
-\fBRandFile\fR
+.B RandFile
 .ad
 .sp .6
 .RS 4n
-File containing random data (use prefix \fBfile:\fR) or the name of the
-UNIX socket if EGD is used (use prefix \fBegd:\fR). Note that Solaris
+File containing random data (use prefix
+.BR file: )
+or the name of the
+UNIX socket if EGD is used (use prefix
+.BR egd: ).
+Note that Solaris
 supports \fBrandom\fR(7D), so this does not need to be specified.
 .RE
 
@@ -2708,7 +3158,7 @@ supports \fBrandom\fR(7D), so this does not need to be specified.
 The indicated factor \fIfact\fR is added to the priority (thus
 \fIlowering\fR the priority of the job) for each recipient, that is, this
 value penalizes jobs with large numbers of recipients. Defaults to
-\fB30000\fR.
+.BR 30000 .
 .RE
 
 .sp
@@ -2719,7 +3169,10 @@ value penalizes jobs with large numbers of recipients. Defaults to
 .ad
 .sp .6
 .RS 4n
-When the system load average exceeds \fILA\fR, refuses incoming \fBSMTP\fR
+When the system load average exceeds
+.IR LA ,
+refuses incoming
+.BR SMTP
 connections. Defaults to 12 times the number of processors online when
 \fBsendmail\fR starts.
 .RE
@@ -2728,7 +3181,7 @@ connections. Defaults to 12 times the number of processors online when
 .ne 2
 .mk
 .na
-\fBRejectLogInterval\fR
+.B RejectLogInterval
 .ad
 .sp .6
 .RS 4n
@@ -2739,7 +3192,7 @@ Log interval when refusing connections for this long (default: 3h).
 .ne 2
 .mk
 .na
-\fBResolverOptions (I)\fR
+.B ResolverOptions (I)
 .ad
 .sp .6
 .RS 4n
@@ -2758,19 +3211,23 @@ The indicated factor \fIfact\fR is added to the priority every time a job
 is processed. Thus, each time a job is processed, its priority is decreased
 by the indicated value. In most environments this should be positive, since
 hosts that are down are all too often down for a long time. Defaults to
-\fB90000\fR.
+.BR 90000 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRrtImpliesDsn\fR
+.B RrtImpliesDsn
 .ad
 .sp .6
 .RS 4n
-If this option is set, a \fBReturn-Receipt-To\fR: header causes the request
-of a \fBDSN\fR, which is sent to the envelope sender as required by RFC
+If this option is set, a
+.BR Return-Receipt-To :
+header causes the request
+of a
+.BR DSN ,
+which is sent to the envelope sender as required by RFC
 1891, not to the address given in the header.
 .RE
 
@@ -2778,7 +3235,7 @@ of a \fBDSN\fR, which is sent to the envelope sender as required by RFC
 .ne 2
 .mk
 .na
-\fBRunAsUser\fR
+.B RunAsUser
 .ad
 .sp .6
 .RS 4n
@@ -2794,7 +3251,11 @@ use of firewalls where users do not have accounts.
 .ad
 .sp .6
 .RS 4n
-If set, \fBsendmail\fR does a \fBchroot\fR into this directory before
+If set,
+.B sendmail
+does a
+.B chroot
+into this directory before
 writing files.
 .RE
 
@@ -2806,7 +3267,9 @@ writing files.
 .ad
 .sp .6
 .RS 4n
-Saves Unix-style \fBFrom\fR lines at the front of headers. Normally they
+Saves Unix-style
+.B From
+lines at the front of headers. Normally they
 are assumed redundant and discarded.
 .RE
 
@@ -2814,13 +3277,17 @@ are assumed redundant and discarded.
 .ne 2
 .mk
 .na
-\fBSendMimeErrors (j)\fR
+.B SendMimeErrors (j)
 .ad
 .sp .6
 .RS 4n
 If set, sends error messages in MIME format (see RFC 2045 and RFC 1344 for
-details). If disabled, \fBsendmail\fR does not return the DSN keyword in
-response to an \fBEHLO\fR and does not do Delivery Status Notification
+details). If disabled,
+.B sendmail
+does not return the DSN keyword in
+response to an
+.B EHLO
+and does not do Delivery Status Notification
 processing as described in RFC 1891.
 .RE
 
@@ -2828,7 +3295,7 @@ processing as described in RFC 1891.
 .ne 2
 .mk
 .na
-\fBServerCertFile\fR
+.B ServerCertFile
 .ad
 .sp .6
 .RS 4n
@@ -2840,7 +3307,7 @@ File containing the cert of the server, that is, this cert is used when
 .ne 2
 .mk
 .na
-\fBServerKeyFile\fR
+.B ServerKeyFile
 .ad
 .sp .6
 .RS 4n
@@ -2851,7 +3318,7 @@ File containing the private key belonging to the server cert.
 .ne 2
 .mk
 .na
-\fBServiceSwitchFile\fR
+.B ServiceSwitchFile
 .ad
 .sp .6
 .RS 4n
@@ -2863,7 +3330,7 @@ is defined in the Solaris operating environment this option is ignored.
 .ne 2
 .mk
 .na
-\fBSevenBitInput (7)\fR
+.B SevenBitInput (7)
 .ad
 .sp .6
 .RS 4n
@@ -2875,12 +3342,14 @@ not be necessary.
 .ne 2
 .mk
 .na
-\fBSharedMemoryKey\fR
+.B SharedMemoryKey
 .ad
 .sp .6
 .RS 4n
 Specifies key to use for shared memory segment. If not set (or \fB0\fR),
-shared memory is not be used. If this option is set, \fBsendmail\fR can
+shared memory is not be used. If this option is set,
+.B sendmail
+can
 share some data between different instances. For example, the number of
 entries in a queue directory or the available space in a file system. This
 allows for more efficient program execution, since only one process needs to
@@ -2896,7 +3365,11 @@ time it is required.
 .ad
 .sp .6
 .RS 4n
-If \fBSharedMemoryKeyFile\fR is set to \fB-1\fR, the automatically selected
+If
+.B SharedMemoryKeyFile
+is set to
+.BR -1 ,
+the automatically selected
 shared memory key will be stored in the specified file.
 .RE
 
@@ -2904,11 +3377,13 @@ shared memory key will be stored in the specified file.
 .ne 2
 .mk
 .na
-\fBSingleLineFromHeader\fR
+.B SingleLineFromHeader
 .ad
 .sp .6
 .RS 4n
-If set, \fBFrom:\fR lines that have embedded newlines are unwrapped onto
+If set,
+.B From:
+lines that have embedded newlines are unwrapped onto
 one line.
 .RE
 
@@ -2916,11 +3391,13 @@ one line.
 .ne 2
 .mk
 .na
-\fBSingleThreadDelivery\fR
+.B SingleThreadDelivery
 .ad
 .sp .6
 .RS 4n
-If this option and the \fBHostStatusDirectory\fR option are both set, uses
+If this option and the
+.B HostStatusDirectory
+option are both set, uses
 single thread deliveries to other hosts.
 .RE
 
@@ -2928,7 +3405,7 @@ single thread deliveries to other hosts.
 .ne 2
 .mk
 .na
-\fBSmtpGreetingMessage or $e\fR
+.B SmtpGreetingMessage or $e
 .ad
 .sp .6
 .RS 4n
@@ -2956,9 +3433,15 @@ avoid erroneous bouncing of mail.
 .ad
 .sp .6
 .RS 4n
-Logs statistics in the named \fIfile\fR. By default, this is
-\fB/etc/mail/sendmail.st\fR. As root, you must \fBtouch\fR(1) this file to
-enable \fBmailstats\fR(1).
+Logs statistics in the named
+.IR file .
+By default, this is
+.BR /etc/mail/sendmail.st .
+As root, you must
+.BR touch (1)
+this file to
+enable
+.BR mailstats (1).
 .RE
 
 .sp
@@ -2969,18 +3452,35 @@ enable \fBmailstats\fR(1).
 .ad
 .sp .6
 .RS 4n
-This option can be set to \fBTrue\fR, \fBFalse\fR, \fBInteractive\fR, or
-\fBPostMilter\fR. If set to \fBTrue\fR, \fBsendmail\fR is set to super-safe
+This option can be set to
+.BR True ,
+.BR False ,
+.BR Interactive ,
+or
+.BR PostMilter .
+If set to
+.BR True ,
+\fBsendmail\fR is set to super-safe
 when running things, that is, always instantiate the queue file, even if you
-are going to attempt immediate delivery. \fBsendmail\fR always instantiates
+are going to attempt immediate delivery.
+.B sendmail
+always instantiates
 the queue file before returning control to the client under any
-circumstances. This should really always be set to \fBTrue\fR. The
+circumstances. This should really always be set to
+.BR True .
+The
 \fBInteractive\fR value has been introduced in \fB8.12\fR and can be used
-together with \fBDeliveryMode=i\fR. It skips some synchronization calls
+together with
+.BR DeliveryMode=i .
+It skips some synchronization calls
 which are effectively doubled in the code execution path for this mode. If
-set to \fBPostMilter\fR, \fBsendmail\fR defers synchronizing the queue file
+set to
+.BR PostMilter ,
+\fBsendmail\fR defers synchronizing the queue file
 until any milters have signaled acceptance of the message. \fBPostMilter\fR
-is useful only when \fBsendmail\fR is running as an SMTP server; in all
+is useful only when
+.B sendmail
+is running as an SMTP server; in all
 other situations it acts the same as True.
 .RE
 
@@ -3003,16 +3503,20 @@ Specifies the file mode for queue files.
 .ad
 .sp .6
 .RS 4n
-Timeout reads after time interval. The \fItimeouts\fR argument is a list of
+Timeout reads after time interval. The
+.I timeouts
+argument is a list of
 \fIkeyword=value\fR pairs. All but \fIcommand\fR apply to client \fBSMTP\fR.
-For backward compatibility, a timeout with no \fIkeyword\fR= part is set all
+For backward compatibility, a timeout with no
+.IR keyword =
+part is set all
 of the longer values. The recognized timeouts and their default values, and
 their minimum values specified in RFC 1123 section 5.3.2 are:
 .sp
 .ne 2
 .mk
 .na
-\fBaconnect\fR
+.B aconnect
 .ad
 .sp .6
 .RS 4n
@@ -3023,7 +3527,7 @@ all connections for a single delivery attempt [0, unspecified]
 .ne 2
 .mk
 .na
-\fBcommand\fR
+.B command
 .ad
 .sp .6
 .RS 4n
@@ -3034,7 +3538,7 @@ command read [1h, 5m]
 .ne 2
 .mk
 .na
-\fBconnect\fR
+.B connect
 .ad
 .sp .6
 .RS 4n
@@ -3045,7 +3549,7 @@ initial connect [0, unspecified]
 .ne 2
 .mk
 .na
-\fBcontrol\fR
+.B control
 .ad
 .sp .6
 .RS 4n
@@ -3056,7 +3560,7 @@ complete control socket transaction [2m, none]
 .ne 2
 .mk
 .na
-\fBdatablock\fR
+.B datablock
 .ad
 .sp .6
 .RS 4n
@@ -3078,11 +3582,13 @@ reply to final \fB\&.\fR in data [1h, 10m]
 .ne 2
 .mk
 .na
-\fBdatainit\fR
+.B datainit
 .ad
 .sp .6
 .RS 4n
-reply to \fBDATA\fR command [5m, 2m]
+reply to
+.B DATA
+command [5m, 2m]
 .RE
 
 .sp
@@ -3100,7 +3606,7 @@ file open [60sec, none]
 .ne 2
 .mk
 .na
-\fBhelo\fR
+.B helo
 .ad
 .sp .6
 .RS 4n
@@ -3111,7 +3617,7 @@ reply to \fBHELO\fR or \fBEHLO\fR command [5m, none]
 .ne 2
 .mk
 .na
-\fBhoststatus\fR
+.B hoststatus
 .ad
 .sp .6
 .RS 4n
@@ -3122,7 +3628,7 @@ host retry [30m, unspecified]
 .ne 2
 .mk
 .na
-\fBiconnect\fR
+.B iconnect
 .ad
 .sp .6
 .RS 4n
@@ -3133,7 +3639,7 @@ first attempt to connect to a host [0, unspecified]
 .ne 2
 .mk
 .na
-\fBident\fR
+.B ident
 .ad
 .sp .6
 .RS 4n
@@ -3144,7 +3650,7 @@ first attempt to connect to a host [0, unspecified]
 .ne 2
 .mk
 .na
-\fBinitial\fR
+.B initial
 .ad
 .sp .6
 .RS 4n
@@ -3155,7 +3661,7 @@ wait for initial greeting message [5m, 5m]
 .ne 2
 .mk
 .na
-\fBlhlo\fR
+.B lhlo
 .ad
 .sp .6
 .RS 4n
@@ -3166,18 +3672,20 @@ wait for reply to an LMTP LHLO command [2m, unspecified]
 .ne 2
 .mk
 .na
-\fBmail\fR
+.B mail
 .ad
 .sp .6
 .RS 4n
-reply to \fBMAIL\fR command [10m, 5m]
+reply to
+.B MAIL
+command [10m, 5m]
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmisc\fR
+.B misc
 .ad
 .sp .6
 .RS 4n
@@ -3188,7 +3696,7 @@ reply to \fBNOOP\fR and \fBVERB\fR commands [2m, none]
 .ne 2
 .mk
 .na
-\fBqueuereturn\fR
+.B queuereturn
 .ad
 .sp .6
 .RS 4n
@@ -3199,7 +3707,7 @@ undeliverable message returned [5d]
 .ne 2
 .mk
 .na
-\fBqueuewarn\fR
+.B queuewarn
 .ad
 .sp .6
 .RS 4n
@@ -3210,35 +3718,39 @@ deferred warning [4h]
 .ne 2
 .mk
 .na
-\fBquit\fR
+.B quit
 .ad
 .sp .6
 .RS 4n
-reply to \fBQUIT\fR command [2m, none]
+reply to
+.B QUIT
+command [2m, none]
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrcpt\fR
+.B rcpt
 .ad
 .sp .6
 .RS 4n
-reply to \fBRCPT\fR command [1h, 5m]
+reply to
+.B RCPT
+command [1h, 5m]
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBresolver.retrans\fR
+.B resolver.retrans
 .ad
 .sp .6
 .RS 4n
 Resolver's retransmission time interval (in seconds) [varies]. Sets both
 \fBTimeout.resolver.retrans.first\fR and
-\fBTimeout.resolver.retrans.normal\fR.
+.BR Timeout.resolver.retrans.normal .
 .RE
 
 .sp
@@ -3257,7 +3769,7 @@ to deliver a message [varies].
 .ne 2
 .mk
 .na
-\fBresolver.retrans.normal\fR
+.B resolver.retrans.normal
 .ad
 .sp .6
 .RS 4n
@@ -3269,13 +3781,13 @@ except the first delivery attempt [varies].
 .ne 2
 .mk
 .na
-\fBresolver.retry\fR
+.B resolver.retry
 .ad
 .sp .6
 .RS 4n
 Number of times to retransmit a resolver query [varies]. Sets both
 \fBTimeout.resolver.retry.first\fR and
-\fBTimeout.resolver.retry.normal\fR.
+.BR Timeout.resolver.retry.normal .
 .RE
 
 .sp
@@ -3294,7 +3806,7 @@ deliver a message [varies].
 .ne 2
 .mk
 .na
-\fBresolver.retry.normal\fR
+.B resolver.retry.normal
 .ad
 .sp .6
 .RS 4n
@@ -3306,22 +3818,26 @@ first delivery attempt [varies].
 .ne 2
 .mk
 .na
-\fBrset\fR
+.B rset
 .ad
 .sp .6
 .RS 4n
-reply to \fBRSET\fR command [5m, none]
+reply to
+.B RSET
+command [5m, none]
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstarttls\fR
+.B starttls
 .ad
 .sp .6
 .RS 4n
-response to an \fBSMTP STARTTLS\fR command [1h]
+response to an
+.B "SMTP STARTTLS"
+command [1h]
 .RE
 
 .RE
@@ -3335,9 +3851,13 @@ response to an \fBSMTP STARTTLS\fR command [1h]
 .sp .6
 .RS 4n
 Sets the local time zone info to \fItzinfo\fR, for example, "PST8PDT".
-Actually, if this is not set, the \fBTZ\fR environment variable is cleared
+Actually, if this is not set, the
+.B TZ
+environment variable is cleared
 (so the system default is used); if set but null, the user's \fBTZ\fR
-variable is used, and if set and non-null, the \fBTZ\fR variable is set to
+variable is used, and if set and non-null, the
+.B TZ
+variable is set to
 this value.
 .RE
 
@@ -3345,7 +3865,7 @@ this value.
 .ne 2
 .mk
 .na
-\fBTLSSrvOptions\fR
+.B TLSSrvOptions
 .ad
 .sp .6
 .RS 4n
@@ -3357,7 +3877,7 @@ is, the server does not ask for a certificate.
 .ne 2
 .mk
 .na
-\fBTrustedUser\fR
+.B TrustedUser
 .ad
 .sp .6
 .RS 4n
@@ -3371,13 +3891,15 @@ automatically owned by this user.
 .ne 2
 .mk
 .na
-\fBTryNullMXList (w)\fR
+.B TryNullMXList (w)
 .ad
 .sp .6
 .RS 4n
 If you are the "best" (that is, lowest preference) \fBMX\fR for a given
 host, you should normally detect this situation and treat that condition
-specially, by forwarding the mail to a \fBUUCP\fR feed, treating it as
+specially, by forwarding the mail to a
+.B UUCP
+feed, treating it as
 local, or whatever. However, in some cases (such as Internet firewalls) you
 may want to try to connect directly to that host as though it had no
 \fBMX\fR records at all. Setting this option causes \fBsendmail\fR to try
@@ -3390,7 +3912,7 @@ meaningful. This option is deprecated.
 .ne 2
 .mk
 .na
-\fBUnixFromLine or $l\fR
+.B UnixFromLine or $l
 .ad
 .sp .6
 .RS 4n
@@ -3414,13 +3936,19 @@ such files.
 .ne 2
 .mk
 .na
-\fBUseErrorsTo (l)\fR
+.B UseErrorsTo (l)
 .ad
 .sp .6
 .RS 4n
-If there is an \fBErrors-To\fR: header, sends error messages to the
+If there is an
+.BR Errors-To :
+header, sends error messages to the
 addresses listed there. They normally go to the envelope sender. Use of this
-option causes \fBsendmail\fR to violate \fBRFC\fR 1123. This option is not
+option causes
+.B sendmail
+to violate
+.B RFC
+1123. This option is not
 recommended and deprecated.
 .RE
 
@@ -3428,19 +3956,21 @@ recommended and deprecated.
 .ne 2
 .mk
 .na
-\fBUseMSP\fR
+.B UseMSP
 .ad
 .sp .6
 .RS 4n
 Uses as mail submission program, that is, allows group writable queue files
-if the group is the same as that of a set-group-id \fBsendmail\fR binary.
+if the group is the same as that of a set-group-id
+.B sendmail
+binary.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBUserDatabaseSpec (U)\fR
+.B UserDatabaseSpec (U)
 .ad
 .sp .6
 .RS 4n
@@ -3452,14 +3982,20 @@ information.
 .ne 2
 .mk
 .na
-\fBVerbose (v)\fR
+.B Verbose (v)
 .ad
 .sp .6
 .RS 4n
-Runs in verbose mode. If this is set, \fBsendmail\fR adjusts the
+Runs in verbose mode. If this is set,
+.B sendmail
+adjusts the
 \fBHoldExpensive\fR and \fBDeliveryMode\fR options so that all mail is
 delivered completely in a single job so that you can see the entire delivery
-process. The \fBVerbose\fR option should \fBnever\fR be set in the
+process. The
+.B Verbose
+option should
+.B never
+be set in the
 configuration file; it is intended for command line use only.
 .RE
 
@@ -3479,12 +4015,19 @@ becomes disk-based. The default is 4096 bytes.
 .LP
 If the first character of the user name is a vertical bar, the rest of the
 user name is used as the name of a program to pipe the mail to. It may be
-necessary to quote the name of the user to keep \fBsendmail\fR from
+necessary to quote the name of the user to keep
+.B sendmail
+from
 suppressing the blanks from between arguments.
 .sp
 .LP
-If invoked as \fBnewaliases\fR, \fBsendmail\fR rebuilds the alias database,
-so long as the \fB/etc/mail/aliases*\fR files are owned by root \fIand\fR
+If invoked as
+.BR newaliases ,
+\fBsendmail\fR rebuilds the alias database,
+so long as the
+.B /etc/mail/aliases*
+files are owned by root
+.IR and
 root has exclusive write permission. If invoked as \fBmailq\fR,
 \fBsendmail\fR prints the contents of the mail queue.
 .SH OPERANDS
@@ -3492,7 +4035,7 @@ root has exclusive write permission. If invoked as \fBmailq\fR,
 .ne 2
 .mk
 .na
-\fIaddress\fR
+.I address
 .ad
 .sp .6
 .RS 4n
@@ -3502,19 +4045,22 @@ address of an intended recipient of the message being sent.
 .SH USAGE
 .sp
 .LP
-See \fBlargefile\fR(5) for the description of the behavior of
+See
+.BR largefile (5)
+for the description of the behavior of
 \fBsendmail\fR when encountering files greater than or equal to 2 Gbyte (
 2^31 bytes).
 .SH EXIT STATUS
 .sp
 .LP
 \fBsendmail\fR returns an exit status describing what it did. The codes are
-defined in \fB/usr/include/sysexits.h\fR.
+defined in
+.BR /usr/include/sysexits.h .
 .sp
 .ne 2
 .mk
 .na
-\fBEX_OK\fR
+.B EX_OK
 .ad
 .sp .6
 .RS 4n
@@ -3525,7 +4071,7 @@ Successful completion on all addresses.
 .ne 2
 .mk
 .na
-\fBEX_NOUSER\fR
+.B EX_NOUSER
 .ad
 .sp .6
 .RS 4n
@@ -3536,7 +4082,7 @@ User name not recognized.
 .ne 2
 .mk
 .na
-\fBEX_UNAVAILABLE\fR
+.B EX_UNAVAILABLE
 .ad
 .sp .6
 .RS 4n
@@ -3547,7 +4093,7 @@ Catchall. Necessary resources were not available.
 .ne 2
 .mk
 .na
-\fBEX_SYNTAX\fR
+.B EX_SYNTAX
 .ad
 .sp .6
 .RS 4n
@@ -3558,7 +4104,7 @@ Syntax error in address.
 .ne 2
 .mk
 .na
-\fBEX_SOFTWARE\fR
+.B EX_SOFTWARE
 .ad
 .sp .6
 .RS 4n
@@ -3569,7 +4115,7 @@ Internal software error, including bad arguments.
 .ne 2
 .mk
 .na
-\fBEX_OSERR\fR
+.B EX_OSERR
 .ad
 .sp .6
 .RS 4n
@@ -3580,7 +4126,7 @@ Temporary operating system error, such as "cannot fork".
 .ne 2
 .mk
 .na
-\fBEX_NOHOST\fR
+.B EX_NOHOST
 .ad
 .sp .6
 .RS 4n
@@ -3591,7 +4137,7 @@ Host name not recognized.
 .ne 2
 .mk
 .na
-\fBEX_TEMPFAIL\fR
+.B EX_TEMPFAIL
 .ad
 .sp .6
 .RS 4n
@@ -3602,8 +4148,13 @@ Message could not be sent immediately, but was queued.
 .sp
 .LP
 No environment variables are used. However, sendmail's start-up script,
-invoked by \fBsvcadm\fR(1M), reads \fB/etc/default/sendmail\fR. In this
-file, if the variable \fBETRN_HOSTS\fR is set, the start-up script parses
+invoked by
+.BR svcadm "(1M), reads"
+.BR /etc/default/sendmail .
+In this
+file, if the variable
+.B ETRN_HOSTS
+is set, the start-up script parses
 this variable and invokes \fBetrn\fR(1M) appropriately. \fBETRN_HOSTS\fR
 should be of the form:
 .sp
@@ -3616,10 +4167,16 @@ should be of the form:
 
 .sp
 .LP
-That is, white-space separated groups of \fIserver:client\fR where
+That is, white-space separated groups of
+.I server:client
+where
 \fIclient\fR can be one or more comma-separated names. The \fI:client\fR
-part is optional. \fIserver\fR is the name of the server to prod; a mail
-queue run is requested for each \fIclient\fR name. This is comparable to
+part is optional.
+.I server
+is the name of the server to prod; a mail
+queue run is requested for each
+.I client
+name. This is comparable to
 running:
 .sp
 .in +2
@@ -3631,13 +4188,14 @@ running:
 
 .sp
 .LP
-on the host \fIserver\fR.
+on the host
+.IR server .
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fBdead.letter\fR
+.B dead.letter
 .ad
 .sp .6
 .RS 4n
@@ -3660,7 +4218,7 @@ line options.
 .ne 2
 .mk
 .na
-\fB/etc/mail/aliases\fR
+.B /etc/mail/aliases
 .ad
 .sp .6
 .RS 4n
@@ -3671,7 +4229,7 @@ Mail aliases file (ASCII)
 .ne 2
 .mk
 .na
-\fB/etc/mail/aliases.db\fR
+.B /etc/mail/aliases.db
 .ad
 .sp .6
 .RS 4n
@@ -3682,7 +4240,7 @@ Database of mail aliases (binary)
 .ne 2
 .mk
 .na
-\fB/etc/mail/aliases.dir\fR
+.B /etc/mail/aliases.dir
 .ad
 .sp .6
 .RS 4n
@@ -3693,7 +4251,7 @@ Database of mail aliases (binary)
 .ne 2
 .mk
 .na
-\fB/etc/mail/aliases.pag\fR
+.B /etc/mail/aliases.pag
 .ad
 .sp .6
 .RS 4n
@@ -3708,7 +4266,8 @@ Database of mail aliases (binary)
 .ad
 .sp .6
 .RS 4n
-Defines environment for \fBsendmail\fR
+Defines environment for
+.BR sendmail
 .RE
 
 .sp
@@ -3726,15 +4285,19 @@ Defines environment for MSP
 .ne 2
 .mk
 .na
-\fB/etc/mail/trusted-users\fR
+.B /etc/mail/trusted-users
 .ad
 .sp .6
 .RS 4n
 Lists users that are "trusted", that is, able to set their envelope from
 address using \fB-f\fR without generating a warning message. Note that this
-file is consulted by the default \fBsendmail.cf\fR, but not by the default
+file is consulted by the default
+.BR sendmail.cf ,
+but not by the default
 \fBsubmit.cf\fR, in which the line referring to
-\fB/etc/mail/trusted-users\fR is commented out. See \fBsendmail\fR(4) for
+\fB/etc/mail/trusted-users\fR is commented out. See
+.BR sendmail (4)
+for
 instructions on making changes to \fBsubmit.cf\fR and \fBsendmail.cf\fR.
 .RE
 
@@ -3742,7 +4305,7 @@ instructions on making changes to \fBsubmit.cf\fR and \fBsendmail.cf\fR.
 .ne 2
 .mk
 .na
-\fB/var/spool/clientmqueue/*\fR
+.B /var/spool/clientmqueue/*
 .ad
 .sp .6
 .RS 4n
@@ -3753,7 +4316,7 @@ Temporary files and queued mail
 .ne 2
 .mk
 .na
-\fB/var/spool/mqueue/*\fR
+.B /var/spool/mqueue/*
 .ad
 .sp .6
 .RS 4n
@@ -3775,7 +4338,7 @@ List of recipients for forwarding messages
 .ne 2
 .mk
 .na
-\fB/usr/include/libmilter/README\fR
+.B /usr/include/libmilter/README
 .ad
 .sp .6
 .RS 4n
@@ -3785,7 +4348,9 @@ Describes the steps needed to compile and run a filter
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -3802,26 +4367,52 @@ AvailabilitySUNWsndmu
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBbiff\fR(1B), \fBmail\fR(1), \fBmailq\fR(1),
-\fBmailx\fR(1), \fBnice\fR(1), \fBcheck-hostname\fR(1M),
-\fBcheck-permissions\fR(1M), \fBetrn\fR(1M), \fBnewaliases\fR(1M),
-\fBsvcadm\fR(1M), \fBsvccfg\fR(1M), \fBfork\fR(2), \fBgetpwnam\fR(3C),
-\fBgetusershell\fR(3C), \fBresolver\fR(3RESOLV), \fBaliases\fR(4),
-\fBhosts\fR(4), \fBsendmail\fR(4), \fBshells\fR(4), \fBattributes\fR(5),
-\fBlargefile\fR(5), \fBsmf\fR(5), \fBrandom\fR(7D)
+.BR svcs (1),
+\fBbiff\fR(1B),
+.BR mail (1),
+.BR mailq (1),
+.BR mailx (1),
+.BR nice (1),
+.BR check-hostname (1M),
+.BR check-permissions (1M),
+.BR etrn (1M),
+.BR newaliases (1M),
+.BR svcadm (1M),
+\fBsvccfg\fR(1M),
+.BR fork (2),
+.BR getpwnam (3C),
+.BR getusershell (3C),
+.BR resolver (3RESOLV),
+.BR aliases (4),
+.BR hosts (4),
+.BR sendmail (4),
+.BR shells (4),
+.BR attributes (5),
+\fBlargefile\fR(5),
+.BR smf (5),
+.BR random (7D)
 .sp
 .LP
-\fBtcpd\fR(1M), \fBhosts_access\fR(4) in the \fBSUNWtcpd\fR package.
+.BR tcpd (1M),
+.BR hosts_access (4)
+in the
+.B SUNWtcpd
+package.
 .sp
 .LP
-\fBRFC\fR 2821 \fISimple Mail Transfer Protocol\fR, John Klensin, April
+\fBRFC\fR 2821
+.IR "Simple Mail Transfer Protocol" ,
+John Klensin, April
 2001.
 .sp
 .LP
-\fBRFC\fR 2822 \fIInternet Message Format\fR, Pete Resnick, April 2001.
+\fBRFC\fR 2822
+.IR "Internet Message Format" ,
+Pete Resnick, April 2001.
 .sp
 .LP
-\fIsendmail, Third Edition\fR, Bryan Costales with Eric Allman\fR,
+.IR "sendmail, Third Edition" ,
+Bryan Costales with Eric Allman\fR,
 O'Reilly & Associates, Inc., 2003.
 .sp
 .LP
@@ -3832,35 +4423,48 @@ http://www.milter.org
 .SH NOTES
 .sp
 .LP
-The \fBsendmail\fR program requires a fully qualified host name when
+The
+.B sendmail
+program requires a fully qualified host name when
 starting. A script has been included to help verify if the host name is
 defined properly (see \fBcheck-hostname\fR(1M)).
 .sp
 .LP
 The permissions and the ownership of several directories have been changed
-in order to increase security. In particular, access to \fB/etc/mail\fR and
+in order to increase security. In particular, access to
+.B /etc/mail
+and
 \fB/var/spool/mqueue\fR has been restricted.
 .sp
 .LP
 Security restrictions have been placed users using \fB\&.forward\fR files
 to pipe mail to a program or redirect mail to a file. The default shell (as
-listed in \fB/etc/passwd\fR) of these users must be listed in
-\fB/etc/shells\fR. This restriction does not affect mail that is being
+listed in
+.BR /etc/passwd )
+of these users must be listed in
+.BR /etc/shells .
+This restriction does not affect mail that is being
 redirected to another alias.
 .sp
 .LP
 Additional restrictions have been put in place on \fB\&.forward\fR and
 \fB:include:\fR files. These files and the directory structure that they are
 placed in cannot be group- or world-writable. See
-\fBcheck-permissions\fR(1M). 
+.BR check-permissions (1M).
 .sp
 .LP
 If you have interfaces that map to domains that have MX records that point
 to non-local destinations, you might need to enable the
 \fBDontProbeInterfaces\fR option to enable delivery to those destinations.
-In its default startup behavior, \fBsendmail\fR probes each interface and
-adds an interface's \fBIP\fR addresses, as well as any domains that those
+In its default startup behavior,
+.B sendmail
+probes each interface and
+adds an interface's
+.B IP
+addresses, as well as any domains that those
 addresses map to, to its list of domains that are considered local. For
 domains thus added, being on the list of local domains is equivalent to
-having a 0-preference MX record, with \fBlocalhost\fR as the MX value. If
+having a 0-preference MX record, with
+.B localhost
+as the MX value. If
 this is not the result you want, enable \fBDontProbeInterfaces\fR.

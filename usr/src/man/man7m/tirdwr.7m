@@ -35,29 +35,54 @@ tirdwr \- Transport Interface read/write interface STREAMS module
 transport provider which supports the  Transport Interface ("\fBTI\fR")
 functions of the Network Services library (see Section 3N). This alternate
 interface allows a user to communicate with the transport protocol  provider
-using the  \fBread\fR(2) and  \fBwrite\fR(2) system calls. The  \fBputmsg\fR(2)
-and \fBgetmsg\fR(2) system calls may also be used. However, \fBputmsg\fR and
+using the 
+.BR read (2)
+and 
+.BR write (2)
+system calls. The  \fBputmsg\fR(2)
+and
+.BR getmsg (2)
+system calls may also be used. However,
+.B putmsg
+and
 \fBgetmsg\fR can only transfer data messages between  user and stream; control
 portions are disallowed.
 .sp
 .LP
-The \fBtirdwr\fR module must only be pushed (see \fBI_PUSH\fR in
-\fBstreamio\fR(7I)) onto a stream terminated by a transport protocol provider
-which supports the \fBTI\fR. After the \fBtirdwr\fR module has been pushed onto
-a stream, none of the \fBTI\fR functions can be used. Subsequent calls to
+The
+.B tirdwr
+module must only be pushed (see
+.B I_PUSH
+in
+.BR streamio (7I))
+onto a stream terminated by a transport protocol provider
+which supports the
+.BR TI .
+After the
+.B tirdwr
+module has been pushed onto
+a stream, none of the
+.B TI
+functions can be used. Subsequent calls to
 \fBTI\fR functions cause an error on the stream. Once the error is detected,
-subsequent system calls on the stream return an error with \fBerrno\fR set to
-\fBEPROTO\fR.
+subsequent system calls on the stream return an error with
+.B errno
+set to
+.BR EPROTO .
 .sp
 .LP
-The following are the actions taken by the \fBtirdwr\fR module when pushed on
-the stream, popped (see \fBI_POP\fR in  \fBstreamio\fR(7I)) off  the stream, or
+The following are the actions taken by the
+.B tirdwr
+module when pushed on
+the stream, popped (see
+.B I_POP
+in  \fBstreamio\fR(7I)) off  the stream, or
 when data passes through it.
 .sp
 .ne 2
 .mk
 .na
-\fBpush\fR
+.B push
 .ad
 .RS 9n
 .rt
@@ -65,7 +90,9 @@ When the module is pushed onto a stream, it checks any existing data destined
 for the user to ensure that only regular data messages are present. It ignores
 any messages on the stream that relate to process management, such as messages
 that generate signals to the user processes associated with the stream. If any
-other messages are present, the \fBI_PUSH\fR will return an error with
+other messages are present, the
+.B I_PUSH
+will return an error with
 \fBerrno\fR set to \fBEPROTO\fR.
 .RE
 
@@ -73,7 +100,7 @@ other messages are present, the \fBI_PUSH\fR will return an error with
 .ne 2
 .mk
 .na
-\fBwrite\fR
+.B write
 .ad
 .RS 9n
 .rt
@@ -84,7 +111,11 @@ The module takes the following actions on data that originated from a
 .ie t \(bu
 .el o
 All messages with the exception of messages that contain control portions (see
-the \fBputmsg\fR and \fBgetmsg\fR system calls) are transparently passed onto
+the
+.B putmsg
+and
+.B getmsg
+system calls) are transparently passed onto
 the module's downstream neighbor.
 .RE
 .RS +4
@@ -99,7 +130,10 @@ passed onto the module's downstream neighbor.
 .ie t \(bu
 .el o
 Any messages with control portions generate an error, and any further system
-calls associated with the stream fails with \fBerrno\fR set to \fBEPROTO\fR.
+calls associated with the stream fails with
+.B errno
+set to
+.BR EPROTO .
 .RE
 .RE
 
@@ -107,7 +141,7 @@ calls associated with the stream fails with \fBerrno\fR set to \fBEPROTO\fR.
 .ne 2
 .mk
 .na
-\fBread\fR
+.B read
 .ad
 .RS 9n
 .rt
@@ -115,7 +149,11 @@ The module takes the following actions on data that originated from the
 transport protocol provider.
 .sp
 All messages with the exception of those that contain control portions (see
-the \fBputmsg\fR and \fBgetmsg\fR system calls) are transparently passed onto
+the
+.B putmsg
+and
+.B getmsg
+system calls) are transparently passed onto
 the module's upstream neighbor. The action taken on messages with control
 portions will be as follows:
 .RS +4
@@ -139,8 +177,19 @@ freed by the module.
 .ie t \(bu
 .el o
 Messages that represent an abortive disconnect indication from the transport
-provider cause all further \fBwrite\fR and \fBputmsg\fR system calls to fail
-with \fBerrno\fR set to \fBENXIO\fR. All further \fBread\fR and \fBgetmsg\fR
+provider cause all further
+.B write
+and
+.B putmsg
+system calls to fail
+with
+.B errno
+set to
+.BR ENXIO .
+All further
+.B read
+and
+.BR getmsg
 system calls return zero length data (indicating end of file) once all previous
 data has been read.
 .RE
@@ -150,7 +199,10 @@ data has been read.
 .el o
 With the exception of the above rules, all other messages with control
 portions generate an error and all further system calls associated with the
-stream will fail with \fBerrno\fR set to \fBEPROTO\fR.
+stream will fail with
+.B errno
+set to
+.BR EPROTO .
 .RE
 Any zero length data messages are freed by the module and they are not passed
 onto the module's upstream neighbor.
@@ -160,7 +212,7 @@ onto the module's upstream neighbor.
 .ne 2
 .mk
 .na
-\fBpop\fR
+.B pop
 .ad
 .RS 9n
 .rt
@@ -178,8 +230,14 @@ release request will be sent to the remote side of the transport connection.
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(3), \fBgetmsg\fR(2), \fBputmsg\fR(2), \fBread\fR(2),
-\fBwrite\fR(2), \fBIntro\fR(3), \fBstreamio\fR(7I), \fBtimod\fR(7M)
+.BR Intro (3),
+.BR getmsg (2),
+.BR putmsg (2),
+.BR read (2),
+.BR write (2),
+.BR Intro (3),
+.BR streamio (7I),
+.BR timod (7M)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

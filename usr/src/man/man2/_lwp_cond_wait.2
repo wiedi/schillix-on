@@ -50,52 +50,84 @@ represented by an LWP condition variable. LWP condition variables must be
 initialized to 0 before use.
 .sp
 .LP
-The \fB_lwp_cond_wait()\fR function atomically releases the LWP mutex
-pointed to by \fImp\fR and causes the calling LWP to block on the LWP
-condition variable pointed to by \fIcvp\fR. The blocked LWP may be awakened
-by \fB_lwp_cond_signal\fR(2), \fB_lwp_cond_broadcast\fR(2), or when
+The
+.B _lwp_cond_wait()
+function atomically releases the LWP mutex
+pointed to by
+.I mp
+and causes the calling LWP to block on the LWP
+condition variable pointed to by
+.IR cvp .
+The blocked LWP may be awakened
+by
+.BR _lwp_cond_signal (2),
+.BR _lwp_cond_broadcast (2),
+or when
 interrupted by delivery of a signal. Any change in value of a condition
 associated with the condition variable cannot be inferred by the return of
 \fB_lwp_cond_wait()\fR and any such condition must be re-evaluated.
 .sp
 .LP
-The \fB_lwp_cond_timedwait()\fR function is similar to
-\fB_lwp_cond_wait()\fR, except that the calling LWP will not block past the
-time of day specified by \fIabstime\fR. If the time of day becomes greater
-than \fIabstime\fR, \fB_lwp_cond_timedwait()\fR returns with the error code
-\fBETIME\fR.
+The
+.B _lwp_cond_timedwait()
+function is similar to
+.BR _lwp_cond_wait() ,
+except that the calling LWP will not block past the
+time of day specified by
+.IR abstime .
+If the time of day becomes greater
+than
+.IR abstime ,
+\fB_lwp_cond_timedwait()\fR returns with the error code
+.BR ETIME .
 .sp
 .LP
-The \fB_lwp_cond_reltimedwait()\fR function is similar to
-\fB_lwp_cond_wait()\fR, except that the calling LWP will not block past the
-relative time specified by \fIreltime\fR. If the time of day becomes greater
-than the starting time of day plus \fIreltime\fR,
+The
+.B _lwp_cond_reltimedwait()
+function is similar to
+.BR _lwp_cond_wait() ,
+except that the calling LWP will not block past the
+relative time specified by
+.IR reltime .
+If the time of day becomes greater
+than the starting time of day plus
+.IR reltime ,
 \fB_lwp_cond_reltimedwait()\fR returns with the error code \fBETIME\fR.
 .sp
 .LP
-The \fB_lwp_cond_wait()\fR, \fB_lwp_cond_timedwait()\fR, and
+The
+.BR _lwp_cond_wait() ,
+.BR _lwp_cond_timedwait() ,
+and
 \fB_lwp_cond_reltimedwait()\fR functions always return with the mutex locked
 and owned by the calling lightweight process.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. A non-zero value indicates
+Upon successful completion,
+.B 0
+is returned. A non-zero value indicates
 an error.
 .SH ERRORS
 .sp
 .LP
 If any of the following conditions are detected, \fB_lwp_cond_wait()\fR,
-\fB_lwp_cond_timedwait()\fR, and \fB_lwp_cond_reltimedwait()\fR fail and
+.BR _lwp_cond_timedwait() ,
+and
+.B _lwp_cond_reltimedwait()
+fail and
 return the corresponding value:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIcvp\fR argument points to an invalid LWP condition variable or the
+The
+.I cvp
+argument points to an invalid LWP condition variable or the
 \fImp\fR argument points to an invalid LWP mutex.
 .RE
 
@@ -103,24 +135,32 @@ The \fIcvp\fR argument points to an invalid LWP condition variable or the
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-The \fImp\fR, \fIcvp\fR, or \fIabstime\fR argument points to an illegal
+The
+.IR mp ,
+.IR cvp ,
+or
+.I abstime
+argument points to an illegal
 address.
 .RE
 
 .sp
 .LP
 If any of the following conditions occur, \fB_lwp_cond_wait()\fR,
-\fB_lwp_cond_timedwait()\fR, and \fB_lwp_cond_reltimedwait()\fR fail and
+.BR _lwp_cond_timedwait() ,
+and
+.B _lwp_cond_reltimedwait()
+fail and
 return the corresponding value:
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 9n
 .rt
@@ -129,26 +169,32 @@ The call was interrupted by a signal or \fBfork\fR(2).
 
 .sp
 .LP
-If any of the following conditions occur, \fB_lwp_cond_timedwait()\fR and
+If any of the following conditions occur,
+.B _lwp_cond_timedwait()
+and
 \fB_lwp_cond_reltimedwait()\fR fail and return the corresponding value:
 .sp
 .ne 2
 .mk
 .na
-\fBETIME\fR
+.B ETIME
 .ad
 .RS 9n
 .rt
-The time specified in\fIabstime\fR or \fIreltime\fR has passed.
+The time specified in\fIabstime\fR or
+.I reltime
+has passed.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUse the \fB_lwp_cond_wait()\fR function in a loop testing
+\fBExample 1\fR Use the \fB_lwp_cond_wait()\fR function in a loop testing
 some condition.
 .sp
 .LP
-The \fB_lwp_cond_wait()\fR function is normally used in a loop testing some
+The
+.B _lwp_cond_wait()
+function is normally used in a loop testing some
 condition, as follows:
 
 .sp
@@ -166,11 +212,13 @@ while (cond == FALSE) {
 .in -2
 
 .LP
-\fBExample 2 \fRUse the \fB_lwp_cond_timedwait()\fR function in a loop
+\fBExample 2\fR Use the \fB_lwp_cond_timedwait()\fR function in a loop
 testing some condition.
 .sp
 .LP
-The \fB_lwp_cond_timedwait()\fR function is also normally used in a loop
+The
+.B _lwp_cond_timedwait()
+function is also normally used in a loop
 testing some condition. It uses an absolute timeout value as follows:
 
 .sp
@@ -201,11 +249,13 @@ This example sets a bound on the total wait time even though the
 being signalled or the wait being interrupted.
 
 .LP
-\fBExample 3 \fRUse the \fB_lwp_cond_reltimedwait()\fR function in a loop
+\fBExample 3\fR Use the \fB_lwp_cond_reltimedwait()\fR function in a loop
 testing some condition.
 .sp
 .LP
-The \fB_lwp_cond_reltimedwait()\fR function is also normally used in a loop
+The
+.B _lwp_cond_reltimedwait()
+function is also normally used in a loop
 testing some condition. It uses a relative timeout value as follows:
 
 .sp
@@ -232,6 +282,9 @@ while (cond == FALSE) {
 .SH SEE ALSO
 .sp
 .LP
-\fB_lwp_cond_broadcast\fR(2), \fB_lwp_cond_signal\fR(2),
-\fB_lwp_kill\fR(2), \fB_lwp_mutex_lock\fR(2), \fBfork\fR(2), \fBkill\fR(2)
+.BR _lwp_cond_broadcast (2),
+.BR _lwp_cond_signal (2),
+.BR _lwp_kill (2),
+.BR _lwp_mutex_lock (2),
+\fBfork\fR(2), \fBkill\fR(2)
 

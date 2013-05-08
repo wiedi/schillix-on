@@ -45,7 +45,8 @@ programs that wish to view only specific types of events.
 .LP
 \fBpfmod\fR applies the current packet filter to all \fBM_DATA\fR and
 \fBM_PROTO\fR messages arriving on its read queue. The module prepares these
-messages for examination by first skipping over all leading \fBM_PROTO\fR
+messages for examination by first skipping over all leading
+.BR M_PROTO
 message blocks to arrive at the beginning of the message's data portion. If
 there is no data portion, \fBpfmod\fR accepts the message and passes it
 along to its upstream neighbor. Otherwise, the module ensures that the part
@@ -81,11 +82,13 @@ neighbor.
 .ne 2
 .mk
 .na
-\fBPFIOCSETF\fR
+.B PFIOCSETF
 .ad
 .RS 14n
 .rt
-This \fIioctl\fR directs the module to replace its current packet filter,
+This
+.I ioctl
+directs the module to replace its current packet filter,
 if any, with the filter specified by the \fBstruct packetfilt\fR pointer
 named by its final argument. This structure is defined in
 \fB<sys/pfmod.h>\fR as:
@@ -149,7 +152,8 @@ is:
 .LP
 The binary operators can be from the set {\fBENF_EQ\fR, \fBENF_NEQ\fR,
 \fBENF_LT\fR, \fBENF_LE\fR, \fBENF_GT\fR,\fBENF_GE\fR, \fBENF_AND\fR,
-\fBENF_OR\fR, \fBENF_XOR\fR} which operate on the top two elements of the
+.BR ENF_OR ,
+\fBENF_XOR\fR} which operate on the top two elements of the
 stack and replace them with its result.
 .sp
 .LP
@@ -163,8 +167,12 @@ operators, in that they terminate the execution of the filter immediately if
 the condition they are checking for is found, and continue otherwise. All
 pop two elements from the stack and compare them for equality;
 \fBENF_CAND\fR returns false if the result is false; \fBENF_COR\fR returns
-true if the result is true; \fBENF_CNAND\fR returns true if the result is
-false; \fBENF_CNOR\fR returns false if the result is true. Unlike the other
+true if the result is true;
+.B ENF_CNAND
+returns true if the result is
+false;
+.B ENF_CNOR
+returns false if the result is true. Unlike the other
 binary operators, these four do not leave a result on the stack, even if
 they continue.
 .sp
@@ -172,16 +180,25 @@ they continue.
 The short-circuit operators should be used when possible, to reduce the
 amount of time spent evaluating filters. When they are used, you should also
 arrange the order of the tests so that the filter will succeed or fail as
-soon as possible; for example, checking the \fBIP\fR destination field of a
+soon as possible; for example, checking the
+.B IP
+destination field of a
 \fBUDP\fR packet is more likely to indicate failure than the packet type
 field.
 .sp
 .LP
-The special action \fBENF_NOPUSH\fR and the special operator \fBENF_NOP\fR
+The special action
+.B ENF_NOPUSH
+and the special operator
+.BR ENF_NOP
 can be used to only perform the binary operation or to only push a value on
 the stack. Since both are (conveniently) defined to be zero, indicating only
-an action actually specifies the action followed by \fBENF_NOP\fR, and
-indicating only an operation actually specifies \fBENF_NOPUSH\fR followed by
+an action actually specifies the action followed by
+.BR ENF_NOP ,
+and
+indicating only an operation actually specifies
+.B ENF_NOPUSH
+followed by
 the operation.
 .sp
 .LP
@@ -200,17 +217,26 @@ packet.
 The packet filter module is not dependent on any particular device driver
 or module but is commonly used with datalink drivers such as the Ethernet
 driver. If the underlying datalink driver supports the Data Link Provider
-Interface (DLPI) message set, the appropriate \fBSTREAMS DLPI\fR messages
+Interface (DLPI) message set, the appropriate
+.B "STREAMS DLPI"
+messages
 must be issued to attach the stream to a particular hardware device and bind
 a datalink address to the stream before the underlying driver will route
-received packets upstream. Refer to the \fBDLPI\fR Version 2 specification
+received packets upstream. Refer to the
+.B DLPI
+Version 2 specification
 for details on this interface.
 .sp
 .LP
-The reverse \fBARP\fR daemon program may use code similar to the following
-fragment to construct a filter that rejects all but \fBRARP\fR packets. That
+The reverse
+.B ARP
+daemon program may use code similar to the following
+fragment to construct a filter that rejects all but
+.B RARP
+packets. That
 is, it accepts only packets whose Ethernet type field has the value
-\fBETHERTYPE_REVARP\fR. The filter works whether a VLAN is configured or
+.BR ETHERTYPE_REVARP .
+The filter works whether a VLAN is configured or
 not.
 .sp
 .in +2

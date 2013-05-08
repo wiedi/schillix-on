@@ -43,7 +43,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIep_handle\fR
+.I ep_handle
 .ad
 .RS 20n
 .rt
@@ -54,11 +54,15 @@ Handle for an instance of the Endpoint.
 .ne 2
 .mk
 .na
-\fInum_segments\fR
+.I num_segments
 .ad
 .RS 20n
 .rt
-Number of \fIlmr_triplets\fR in \fIlocal_iov\fR. Can be 0 for receiving a 0 size
+Number of
+.I lmr_triplets
+in
+.IR local_iov .
+Can be 0 for receiving a 0 size
 message.
 .RE
 
@@ -66,11 +70,13 @@ message.
 .ne 2
 .mk
 .na
-\fIlocal_iov\fR
+.I local_iov
 .ad
 .RS 20n
 .rt
-I/O Vector that specifies the local buffer to be filled. Can be \fINULL\fR for
+I/O Vector that specifies the local buffer to be filled. Can be
+.I NULL
+for
 receiving a 0 size message.
 .RE
 
@@ -78,7 +84,7 @@ receiving a 0 size message.
 .ne 2
 .mk
 .na
-\fIuser_cookie:\fR
+.I user_cookie:
 .ad
 .RS 20n
 .rt
@@ -94,7 +100,9 @@ Receive DTO. Can be \fINULL\fR.
 .ad
 .RS 20n
 .rt
-Flags for posted Receive. The default \fBDAT_COMPLETION_DEFAULT_FLAG\fR is 0x00.
+Flags for posted Receive. The default
+.B DAT_COMPLETION_DEFAULT_FLAG
+is 0x00.
 Other values are as follows:
 .sp
 .ne 2
@@ -104,12 +112,12 @@ Other values are as follows:
 .ad
 .RS 30n
 .rt
-\fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
 .sp
 .ne 2
 .mk
 .na
-\fB0x04\fR
+.B 0x04
 .ad
 .RS 8n
 .rt
@@ -124,20 +132,33 @@ CompletionNotification Suppression.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_ep_post_recv()\fR function requests the receive of the data over the
-connection of the \fIep_handle\fR Endpoint of the incoming message into the
-\fIlocal_iov\fR.
+The
+.B dat_ep_post_recv()
+function requests the receive of the data over the
+connection of the
+.I ep_handle
+Endpoint of the incoming message into the
+.IR local_iov .
 .sp
 .LP
-The \fInum_segments\fR parameter specifies the number of segments in the
-\fIlocal_iov\fR. The \fIlocal_iov\fR segments are filled in the I/O Vector order
+The
+.I num_segments
+parameter specifies the number of segments in the
+.IR local_iov .
+The
+.I local_iov
+segments are filled in the I/O Vector order
 until the whole message is received. This ensures that all the "front" segments
-of the \fIlocal_iov\fR I/O Vector are completely filled, only one segment is
+of the
+.I local_iov
+I/O Vector are completely filled, only one segment is
 partially filled, if needed, and all segments that follow it are not filled at
 all.
 .sp
 .LP
-The \fIuser_cookie\fR allows Consumers to have unique identifiers for each DTO.
+The
+.I user_cookie
+allows Consumers to have unique identifiers for each DTO.
 These identifiers are completely under user control and are opaque to the
 Provider. There is no requirement on the Consumer that the value
 \fIuser_cookie\fR should be unique for each DTO. The \fIuser_cookie\fR is
@@ -147,47 +168,78 @@ returned to the Consumer in the Completion event for the posted Receive.
 The completion of the posted Receive is reported to the Consumer asynchronously
 through a DTO Completion event based on the configuration of the connection for
 Solicited Wait and the specified \fIcompletion_flags\fR value for the matching
-Send. The value of \fBDAT_COMPLETION _UNSIGNALLED_FLAG\fR is only valid if the
-Endpoint Recv Completion Flags \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR. Otherwise,
+Send. The value of
+.B "DAT_COMPLETION _UNSIGNALLED_FLAG"
+is only valid if the
+Endpoint Recv Completion Flags
+.BR DAT_COMPLETION_UNSIGNALLED_FLAG .
+Otherwise,
 \fBDAT_INVALID_PARAMETER\fR is returned.
 .sp
 .LP
-A Consumer must not modify the \fIlocal_iov\fR or its content until the DTO is
+A Consumer must not modify the
+.I local_iov
+or its content until the DTO is
 completed. When a Consumer does not adhere to this rule, the behavior of the
 Provider and the underlying Transport is not defined. Providers that allow
-Consumers to get ownership of the \fIlocal_iov\fR but not the memory it specified
-back after the \fBdat_ep_post_recv()\fR returns should document this behavior and
+Consumers to get ownership of the
+.I local_iov
+but not the memory it specified
+back after the
+.B dat_ep_post_recv()
+returns should document this behavior and
 also specify its support in Provider attributes. This behavior allows Consumer
-full control of the \fIlocal_iov\fR content after \fBdat_ep_post_recv()\fR
+full control of the
+.I local_iov
+content after
+.BR dat_ep_post_recv()
 returns. Because this behavior is not guaranteed by all Providers, portable
 Consumers should not rely on this behavior. Consumers  shouldnot rely on the
-Provider copying \fIlocal_iov\fR information.
+Provider copying
+.I local_iov
+information.
 .sp
 .LP
-The \fBDAT_SUCCESS\fR return of the \fBdat_ep_post_recv()\fR is at least the
+The
+.B DAT_SUCCESS
+return of the
+.B dat_ep_post_recv()
+is at least the
 equivalent of posting a Receive operation directly by native Transport. Providers
-should avoid resource allocation as part of \fBdat_ep_post_recv()\fR to ensure
+should avoid resource allocation as part of
+.B dat_ep_post_recv()
+to ensure
 that this operation is nonblocking and thread safe for an UpCall.
 .sp
 .LP
 If the size of an incoming message is larger than the size of the
-\fIlocal_iov\fR, the reported status of the posted Receive DTO in the
-corresponding Completion DTO event is \fBDAT_DTO_LENGTH_ERROR\fR. If the reported
+.IR local_iov ,
+the reported status of the posted Receive DTO in the
+corresponding Completion DTO event is
+.BR DAT_DTO_LENGTH_ERROR .
+If the reported
 status of the Completion DTO event corresponding to the posted Receive DTO is not
-\fBDAT_DTO_SUCCESS\fR, the content of the \fIlocal_iov\fR is not defined.
+.BR DAT_DTO_SUCCESS ,
+the content of the
+.I local_iov
+is not defined.
 .sp
 .LP
 The operation is valid for all states of the Endpoint. The actual data transfer
-does not take place until the Endpoint is in the \fBDAT_EP_STATE_CONNECTED\fR
-state. The operation on the Endpoint in \fBDAT_EP_STATE_DISCONNECTED\fR is
+does not take place until the Endpoint is in the
+.BR DAT_EP_STATE_CONNECTED
+state. The operation on the Endpoint in
+.B DAT_EP_STATE_DISCONNECTED
+is
 allowed. If the operation returns successfully, the posted Recv is immediately
-flushed to \fIrecv_evd_handle\fR.
+flushed to
+.IR recv_evd_handle .
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -198,7 +250,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -209,7 +261,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -221,30 +273,34 @@ outside its LMR.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
-The \fIep_handle\fR parameter is invalid.
+The
+.I ep_handle
+parameter is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_PROTECTION_VIOLATION\fR
+.B DAT_PROTECTION_VIOLATION
 .ad
 .RS 30n
 .rt
 Protection violation for local or remote memory access. Protection Zone mismatch
-between an LMR of one of the \fIlocal_iov\fR segments and the local Endpoint.
+between an LMR of one of the
+.I local_iov
+segments and the local Endpoint.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_PRIVILEGES_VIOLATION\fR
+.B DAT_PRIVILEGES_VIOLATION
 .ad
 .RS 30n
 .rt
@@ -256,13 +312,20 @@ Privileges violation for local or remote memory access. One of the LMRs used in
 .sp
 .LP
 For best Recv operation performance, the Consumer should align each buffer
-segment of \fIlocal_iov\fR to the Optimal Buffer Alignment attribute of the
+segment of
+.I local_iov
+to the Optimal Buffer Alignment attribute of the
 Provider. For portable applications, the Consumer should align each buffer
-segment of \fIlocal_iov\fR to the \fBDAT_OPTIMAL_ALIGNMENT\fR.
+segment of
+.I local_iov
+to the
+.BR DAT_OPTIMAL_ALIGNMENT .
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -281,4 +344,5 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibdat\fR(3LIB), \fBattributes\fR(5)
+.BR libdat (3LIB),
+.BR attributes (5)

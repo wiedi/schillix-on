@@ -61,13 +61,21 @@ msgrcv \- message receive operation
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmsgrcv()\fR function reads a message from the queue associated with
-the message queue identifier specified by \fImsqid\fR and places it in the
+The
+.B msgrcv()
+function reads a message from the queue associated with
+the message queue identifier specified by
+.I msqid
+and places it in the
 user-defined buffer pointed to by \fImsgp\fR.
 .sp
 .LP
-The \fImsgp\fR argument points to a user-defined buffer that must contain
-first a field of type \fBlong int\fR that will specify the type of the
+The
+.I msgp
+argument points to a user-defined buffer that must contain
+first a field of type
+.B "long int"
+that will specify the type of the
 message, and then a data portion that will hold the data bytes of the
 message. The structure below is an example of what this user-defined buffer
 might look like:
@@ -83,41 +91,61 @@ struct mymsg {
 
 .sp
 .LP
-The \fBmtype\fR member is the received message's type as specified by the
+The
+.B mtype
+member is the received message's type as specified by the
 sending process.
 .sp
 .LP
-The \fBmtext\fR member is the text of the message.
+The
+.B mtext
+member is the text of the message.
 .sp
 .LP
-The  \fImsgsz\fR argument specifies the size in bytes of \fBmtext\fR. The
-received message is truncated to \fImsgsz\fR bytes if it is larger than
+The 
+.I msgsz
+argument specifies the size in bytes of
+.BR mtext .
+The
+received message is truncated to
+.I msgsz
+bytes if it is larger than
 \fImsgsz\fR and (\fImsgflg\fB&MSG_NOERROR\fR) is non-zero. The truncated
 part of the message is lost and no indication of the truncation is given to
 the calling process.
 .sp
 .LP
-The \fImsgtyp\fR argument specifies the type of message requested as
+The
+.I msgtyp
+argument specifies the type of message requested as
 follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is 0, the first message on the queue is received.
+If
+.I msgtyp
+is 0, the first message on the queue is received.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is greater than 0, the first message of type \fImsgtyp\fR
+If
+.I msgtyp
+is greater than 0, the first message of type \fImsgtyp\fR
 is received.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is less than 0, the first message of the lowest type that
-is less than or equal to the absolute value of \fImsgtyp\fR is received.
+If
+.I msgtyp
+is less than 0, the first message of the lowest type that
+is less than or equal to the absolute value of
+.I msgtyp
+is received.
 .RE
 .sp
 .LP
@@ -128,8 +156,10 @@ taken if a message of the desired type is not on the queue:
 .ie t \(bu
 .el o
 If (\fImsgflg\fB&IPC_NOWAIT\fR) is non-zero, the calling process will
-return immediately with a return value of \(mi1 and \fBerrno\fR set to
-\fBENOMSG\fR.
+return immediately with a return value of \(mi1 and
+.B errno
+set to
+.BR ENOMSG .
 .RE
 .RS +4
 .TP
@@ -147,8 +177,14 @@ A message of the desired type is placed on the queue.
 .TP
 .ie t \(bu
 .el o
-The message queue identifier \fImsqid\fR is removed from the system (see
-\fBmsgctl\fR(2)); when this occurs, \fBerrno\fR is set equal to \fBEIDRM\fR
+The message queue identifier
+.I msqid
+is removed from the system (see
+.BR msgctl (2));
+when this occurs,
+.B errno
+is set equal to
+.BR EIDRM
 and \fB\(mi1\fR is returned.
 .RE
 .RS +4
@@ -157,13 +193,16 @@ and \fB\(mi1\fR is returned.
 .el o
 The calling process receives a signal that is to be caught; in this case a
 message is not received and the calling process resumes execution in the
-manner prescribed in \fBsigaction\fR(2).
+manner prescribed in
+.BR sigaction (2).
 .RE
 .RE
 .sp
 .LP
 Upon successful completion, the following actions are taken with respect to
-the data structure associated with \fImsqid\fR (see \fBIntro\fR(2)):
+the data structure associated with
+.I msqid
+(see \fBIntro\fR(2)):
 .RS +4
 .TP
 .ie t \(bu
@@ -186,23 +225,33 @@ process.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBmsgrcv()\fR returns a value equal to the
-number of bytes actually placed into the buffer \fImtext\fR. Otherwise,
+Upon successful completion,
+.B msgrcv()
+returns a value equal to the
+number of bytes actually placed into the buffer
+.IR mtext .
+Otherwise,
 \fB\(mi1\fR is returned, no message is received, and \fBerrno\fR is set to
 indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBmsgrcv()\fR function will fail if:
+The
+.B msgrcv()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBE2BIG\fR
+.B E2BIG
 .ad
 .RS 10n
 .rt
-The value of \fBmtext\fR is greater than \fImsgsz\fR and
+The value of
+.B mtext
+is greater than
+.I msgsz
+and
 (\fImsgflg\fB&MSG_NOERROR\fR) is 0.
 .RE
 
@@ -210,52 +259,58 @@ The value of \fBmtext\fR is greater than \fImsgsz\fR and
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
 Operation permission is denied to the calling process.  See
-\fBIntro\fR(2).
+.BR Intro (2).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEIDRM\fR
+.B EIDRM
 .ad
 .RS 10n
 .rt
-The message queue identifier \fImsqid\fR is removed from the system.
+The message queue identifier
+.I msqid
+is removed from the system.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 10n
 .rt
-The \fBmsgrcv()\fR function was interrupted by a signal.
+The
+.B msgrcv()
+function was interrupted by a signal.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fImsqid\fR argument is not a valid message queue identifier.
+The
+.I msqid
+argument is not a valid message queue identifier.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOMSG\fR
+.B ENOMSG
 .ad
 .RS 10n
 .rt
@@ -265,7 +320,9 @@ The queue does not contain a message of the desired type and
 
 .sp
 .LP
-The \fBmsgrcv()\fR function may fail if:
+The
+.B msgrcv()
+function may fail if:
 .sp
 .ne 2
 .mk
@@ -274,18 +331,24 @@ The \fBmsgrcv()\fR function may fail if:
 .ad
 .RS 11n
 .rt
-The \fImsgp\fR argument points to an illegal address.
+The
+.I msgp
+argument points to an illegal address.
 .RE
 
 .SH USAGE
 .sp
 .LP
-The value passed as the \fImsgp\fR argument should be converted to type
-\fBvoid *\fR.
+The value passed as the
+.I msgp
+argument should be converted to type
+.BR "void *" .
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -302,5 +365,10 @@ Interface StabilityStandard
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBmsgctl\fR(2), \fBmsgget\fR(2), \fBmsgsnd\fR(2),
-\fBsigaction\fR(2), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR Intro (2),
+.BR msgctl (2),
+.BR msgget (2),
+.BR msgsnd (2),
+.BR sigaction (2),
+.BR attributes (5),
+.BR standards (5)

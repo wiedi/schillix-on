@@ -75,32 +75,45 @@ getrpcent_r, setrpcent, endrpcent \- get RPC entry
 .sp
 .LP
 These functions are used to obtain entries for RPC (Remote Procedure Call)
-services. An entry may come from any of the sources for \fBrpc\fR specified
+services. An entry may come from any of the sources for
+.B rpc
+specified
 in the \fB/etc/nsswitch.conf\fR file (see \fBnsswitch.conf\fR(4)).
 .sp
 .LP
 \fBgetrpcbyname()\fR searches for an entry with the RPC service name
-specified by the parameter \fIname\fR.
+specified by the parameter
+.IR name .
 .sp
 .LP
 \fBgetrpcbynumber()\fR searches for an entry with the RPC program number
-\fInumber\fR.
+.IR number .
 .sp
 .LP
-The functions \fBsetrpcent()\fR, \fBgetrpcent()\fR, and \fBendrpcent()\fR
+The functions
+.BR setrpcent() ,
+.BR getrpcent() ,
+and
+.BR endrpcent()
 are used to enumerate RPC entries from the database.
 .sp
 .LP
 \fBsetrpcent()\fR sets (or resets) the enumeration to the beginning of the
 set of RPC entries.  This function should be called before the first call to
-\fBgetrpcent()\fR. Calls to \fBgetrpcbyname()\fR and \fBgetrpcbynumber()\fR
+.BR getrpcent() .
+Calls to
+.B getrpcbyname()
+and
+.BR getrpcbynumber()
 leave the enumeration position in an indeterminate state.   If the
 \fIstayopen\fR flag is non-zero, the system may keep allocated resources
 such as open file descriptors until a subsequent call to
-\fBendrpcent()\fR.
+.BR endrpcent() .
 .sp
 .LP
-Successive calls to \fBgetrpcent()\fR return either successive entries or
+Successive calls to
+.B getrpcent()
+return either successive entries or
 \fBNULL,\fR indicating the end of the enumeration.
 .sp
 .LP
@@ -108,16 +121,22 @@ Successive calls to \fBgetrpcent()\fR return either successive entries or
 no further RPC entry retrieval operations; the system may then  deallocate
 resources it was using.  It is still allowed, but possibly less efficient,
 for the process to call more RPC entry retrieval functions after calling
-\fBendrpcent()\fR.
+.BR endrpcent() .
 .SS "Reentrant Interfaces"
 .sp
 .LP
-The functions \fBgetrpcbyname()\fR, \fBgetrpcbynumber()\fR, and
+The functions
+.BR getrpcbyname() ,
+.BR getrpcbynumber() ,
+and
 \fBgetrpcent()\fR use static storage that is re-used in each call, making
 these routines unsafe for use in multithreaded applications.
 .sp
 .LP
-The functions \fBgetrpcbyname_r()\fR, \fBgetrpcbynumber_r()\fR, and
+The functions
+.BR getrpcbyname_r() ,
+.BR getrpcbynumber_r() ,
+and
 \fBgetrpcent_r()\fR provide reentrant interfaces for these operations.
 .sp
 .LP
@@ -145,18 +164,24 @@ For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads.
 \fBsetrpcent()\fR may be used in a multithreaded application but resets the
 enumeration position for all threads.  If multiple threads interleave calls
-to \fBgetrpcent_r()\fR, the threads will enumerate disjoint subsets of the
+to
+.BR getrpcent_r() ,
+the threads will enumerate disjoint subsets of the
 RPC entry database.
 .sp
 .LP
-Like their non-reentrant counterparts, \fBgetrpcbyname_r()\fR and
+Like their non-reentrant counterparts,
+.B getrpcbyname_r()
+and
 \fBgetrpcbynumber_r()\fR leave the enumeration position in an indeterminate
 state.
 .SH RETURN VALUES
 .sp
 .LP
-RPC entries are represented by the \fBstruct rpcent\fR structure defined in
-\fB<rpc/rpcent.h>\fR:
+RPC entries are represented by the
+.B "struct rpcent"
+structure defined in
+.BR <rpc/rpcent.h> :
 .sp
 .in +2
 .nf
@@ -170,45 +195,81 @@ struct rpcent {
 
 .sp
 .LP
-The functions \fBgetrpcbyname()\fR, \fBgetrpcbyname_r(\|)\fR,
+The functions
+.BR getrpcbyname() ,
+\fBgetrpcbyname_r(\|)\fR,
 \fBgetrpcbynumber(\|)\fR, and \fBgetrpcbynumber_r()\fR each return a pointer
-to a \fBstruct rpcent\fR if they successfully locate the requested entry;
-otherwise they return \fBNULL.\fR
+to a
+.B "struct rpcent"
+if they successfully locate the requested entry;
+otherwise they return
+.BR NULL.
 .sp
 .LP
-The functions \fBgetrpcent()\fR and \fBgetrpcent_r()\fR each return a
-pointer to a \fBstruct rpcent\fR if they successfully enumerate an entry;
-otherwise they return \fBNULL,\fR indicating the end of the enumeration.
+The functions
+.B getrpcent()
+and
+.B getrpcent_r()
+each return a
+pointer to a
+.B "struct rpcent"
+if they successfully enumerate an entry;
+otherwise they return
+.B NULL,
+indicating the end of the enumeration.
 .sp
 .LP
-The functions \fBgetrpcbyname()\fR, \fBgetrpcbynumber()\fR, and
+The functions
+.BR getrpcbyname() ,
+.BR getrpcbynumber() ,
+and
 \fBgetrpcent()\fR use static storage, so returned data must be copied before
 a subsequent call to any of these functions if the data is to be saved.
 .sp
 .LP
 When the pointer returned by the reentrant functions
-\fBgetrpcbyname_r()\fR, \fBgetrpcbynumber_r()\fR, and \fBgetrpcent_r()\fR is
-non-NULL, it is always equal to the \fIresult\fR pointer that was supplied
+.BR getrpcbyname_r() ,
+.BR getrpcbynumber_r() ,
+and
+.B getrpcent_r()
+is
+non-NULL, it is always equal to the
+.I result
+pointer that was supplied
 by the caller.
 .SH ERRORS
 .sp
 .LP
-The reentrant functions  \fBgetrpcyname_r()\fR, \fBgetrpcbynumber_r(\|)\fR
-and \fBgetrpcent_r()\fR will return \fBNULL\fR and set \fBerrno\fR to
+The reentrant functions
+.BR getrpcyname_r() ,
+\fBgetrpcbynumber_r(\|)\fR
+and
+.B getrpcent_r()
+will return
+.B NULL
+and set
+.B errno
+to
 \fBERANGE\fR if the length of the buffer supplied by caller is not large
-enough to store the result. See \fBIntro\fR(2) for the proper usage and
-interpretation of \fBerrno\fR in multithreaded applications.
+enough to store the result. See
+.BR Intro (2)
+for the proper usage and
+interpretation of
+.B errno
+in multithreaded applications.
 .SH FILES
 .sp
 .LP
-\fB/etc/rpc\fR
+.B /etc/rpc
 .sp
 .LP
 \fB/etc/nsswitch.conf\fR
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -227,23 +288,34 @@ T}
 .SH SEE ALSO
 .sp
 .LP
-\fBrpcinfo\fR(1M), \fBrpc\fR(3NSL), \fBnsswitch.conf\fR(4), \fBrpc\fR(4),
-\fBattributes\fR(5)
+\fBrpcinfo\fR(1M), \fBrpc\fR(3NSL),
+.BR nsswitch.conf (4),
+.BR rpc (4),
+.BR attributes (5)
 .SH WARNINGS
 .sp
 .LP
-The reentrant interfaces \fBgetrpcbyname_r()\fR, \fBgetrpcbynumber_r()\fR,
-and \fBgetrpcent_r()\fR are included in this release on an uncommitted basis
+The reentrant interfaces
+.BR getrpcbyname_r() ,
+.BR getrpcbynumber_r() ,
+and
+.B getrpcent_r()
+are included in this release on an uncommitted basis
 only, and are subject to change or removal in future minor releases.
 .SH NOTES
 .sp
 .LP
-When compiling multithreaded applications, see  \fBIntro\fR(3), \fINotes On
+When compiling multithreaded applications, see 
+.BR Intro (3),
+\fINotes On
 Multithreaded Applications\fR, for information about the use of the
 \fB_REENTRANT\fR flag.
 .sp
 .LP
-Use of the enumeration interfaces \fBgetrpcent()\fR and \fBgetrpcent_r()\fR
+Use of the enumeration interfaces
+.B getrpcent()
+and
+.BR getrpcent_r()
 is discouraged; enumeration may not be supported for all database sources.
 The semantics of enumeration are discussed further in
 \fBnsswitch.conf\fR(4).

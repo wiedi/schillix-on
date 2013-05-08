@@ -31,7 +31,7 @@ sshd_config \- sshd configuration file
 .sp
 .LP
 The \fBsshd\fR(1M) daemon reads configuration data from
-\fB/etc/ssh/sshd_config\fR (or the file specified with \fBsshd\fR \fB-f\fR
+\fB/etc/ssh/sshd_config\fR (or the file specified with \fBsshd -f\fR
 on the command line). The file contains keyword-value pairs, one per line. A
 line starting with a hash mark (\fB#\fR) and empty lines are interpreted as
 comments.
@@ -43,7 +43,7 @@ otherwise noted, keywords and their arguments are case-insensitive.
 .ne 2
 .mk
 .na
-\fBAllowGroups\fR
+.B AllowGroups
 .ad
 .sp .6
 .RS 4n
@@ -59,7 +59,7 @@ is allowed regardless of the primary group.
 .ne 2
 .mk
 .na
-\fBAllowTcpForwarding\fR
+.B AllowTcpForwarding
 .ad
 .sp .6
 .RS 4n
@@ -72,7 +72,7 @@ denied shell access, as they can always install their own forwarders.
 .ne 2
 .mk
 .na
-\fBAllowUsers\fR
+.B AllowUsers
 .ad
 .sp .6
 .RS 4n
@@ -83,7 +83,9 @@ wildcards in the patterns. Only user names are valid; a numerical user ID is
 not recognized. By default login is allowed regardless of the user name.
 .sp
 If a specified pattern takes the form \fIuser\fR@\fIhost\fR then \fIuser\fR
-and \fIhost\fR are checked separately, restricting logins to particular
+and
+.I host
+are checked separately, restricting logins to particular
 users from particular hosts.
 .RE
 
@@ -91,15 +93,23 @@ users from particular hosts.
 .ne 2
 .mk
 .na
-\fBAuthorizedKeysFile\fR
+.B AuthorizedKeysFile
 .ad
 .sp .6
 .RS 4n
 Specifies the file that contains the public keys that can be used for user
-authentication. \fBAuthorizedKeysFile\fR can contain tokens of the form
-\fB%T\fR, which are substituted during connection set-up. The following
-tokens are defined: \fB%%\fR is replaced by a literal \fB%\fR, \fB%h\fR is
-replaced by the home directory of the user being authenticated and \fB%u\fR
+authentication.
+.B AuthorizedKeysFile
+can contain tokens of the form
+.BR %T ,
+which are substituted during connection set-up. The following
+tokens are defined:
+.B %%
+is replaced by a literal
+.BR % ,
+\fB%h\fR is
+replaced by the home directory of the user being authenticated and
+.BR %u
 is replaced by the username of that user. After expansion,
 \fBAuthorizedKeysFile\fR is taken to be an absolute path or one relative to
 the user's home directory. The default is \fB\&.ssh/authorized_keys\fR.
@@ -109,7 +119,7 @@ the user's home directory. The default is \fB\&.ssh/authorized_keys\fR.
 .ne 2
 .mk
 .na
-\fBBanner\fR
+.B Banner
 .ad
 .sp .6
 .RS 4n
@@ -123,11 +133,13 @@ only available for protocol version 2. By default, no banner is displayed.
 .ne 2
 .mk
 .na
-\fBChrootDirectory\fR
+.B ChrootDirectory
 .ad
 .sp .6
 .RS 4n
-Specifies a path to \fBchroot\fR(2) to after authentication. This path, and
+Specifies a path to
+.BR chroot (2)
+to after authentication. This path, and
 all its components, must be root-owned directories that are not writable by
 any other user or group.
 .sp
@@ -135,29 +147,45 @@ The server always tries to change to the user's home directory locally
 under the chrooted environment but a failure to do so is not considered an
 error. In addition, the path might contain the following tokens that are
 expanded at runtime once the connecting user has been authenticated:
-\fB%%\fR is replaced by a literal \fB%\fR, \fB%h\fR is replaced by the home
-directory of the user being authenticated, and \fB%u\fR is replaced by the
+\fB%%\fR is replaced by a literal
+.BR % ,
+\fB%h\fR is replaced by the home
+directory of the user being authenticated, and
+.B %u
+is replaced by the
 username of that user.
 .sp
-The \fBChrootDirectory\fR must contain the necessary files and directories
+The
+.B ChrootDirectory
+must contain the necessary files and directories
 to support the user's session. For an interactive SSH session this requires
 at least a user's shell, shared libraries needed by the shell, dynamic
-linker, and possibly basic \fB/dev\fR nodes such as \fBnull\fR, \fBzero\fR,
-\fBstdin\fR, \fBstdout\fR, \fBstderr\fR, \fBrandom\fR, and \fBtty\fR.
+linker, and possibly basic
+.B /dev
+nodes such as
+.BR null ,
+.BR zero ,
+.BR stdin ,
+.BR stdout ,
+.BR stderr ,
+.BR random ,
+and
+.BR tty .
 Additionally, terminal databases are needed for screen oriented
 applications. For file transfer sessions using \fBsftp\fR with the SSH
 protocol version 2, no additional configuration of the environment is
 necessary if the in-process \fBsftp\fR server is used. See \fBSubsystem\fR
 for details.
 .sp
-The default is not to \fBchroot\fR(2).
+The default is not to
+.BR chroot (2).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCiphers\fR
+.B Ciphers
 .ad
 .sp .6
 .RS 4n
@@ -187,21 +215,31 @@ security issues in connection with the SSH protocol version 2.
 .ne 2
 .mk
 .na
-\fBClientAliveCountMax\fR
+.B ClientAliveCountMax
 .ad
 .sp .6
 .RS 4n
 Sets the number of client alive messages, (see \fBClientAliveInterval\fR),
-that can be sent without \fBsshd\fR receiving any messages back from the
+that can be sent without
+.B sshd
+receiving any messages back from the
 client. If this threshold is reached while client alive messages are being
-sent, \fBsshd\fR disconnects the client, terminating the session. The use of
-client alive messages is very different from \fBKeepAlive\fR. The client
+sent,
+.B sshd
+disconnects the client, terminating the session. The use of
+client alive messages is very different from
+.BR KeepAlive .
+The client
 alive messages are sent through the encrypted channel and therefore are not
-spoofable. The TCP keepalive option enabled by \fBKeepAlive\fR is spoofable.
+spoofable. The TCP keepalive option enabled by
+.B KeepAlive
+is spoofable.
 The client alive mechanism is valuable when a client or server depend on
 knowing when a connection has become inactive.
 .sp
-The default value is 3. If \fBClientAliveInterval\fR is set to 15, and
+The default value is 3. If
+.B ClientAliveInterval
+is set to 15, and
 \fBClientAliveCountMax\fR is left at the default, unresponsive \fBssh\fR
 clients are disconnected after approximately 45 seconds.
 .RE
@@ -210,12 +248,14 @@ clients are disconnected after approximately 45 seconds.
 .ne 2
 .mk
 .na
-\fBClientAliveInterval\fR
+.B ClientAliveInterval
 .ad
 .sp .6
 .RS 4n
 Sets a timeout interval in seconds after which, if no data has been
-received from the client, \fBsshd\fR sends a message through the encrypted
+received from the client,
+.B sshd
+sends a message through the encrypted
 channel to request a response from the client. The default is 0, indicating
 that these messages are not sent to the client. This option applies only to
 protocol version 2.
@@ -225,7 +265,7 @@ protocol version 2.
 .ne 2
 .mk
 .na
-\fBCompression\fR
+.B Compression
 .ad
 .sp .6
 .RS 4n
@@ -237,7 +277,7 @@ compression. The default is \fByes\fR.
 .ne 2
 .mk
 .na
-\fBDenyGroups\fR
+.B DenyGroups
 .ad
 .sp .6
 .RS 4n
@@ -252,7 +292,7 @@ recognized. By default, login is allowed regardless of the primary group.
 .ne 2
 .mk
 .na
-\fBDenyUsers\fR
+.B DenyUsers
 .ad
 .sp .6
 .RS 4n
@@ -263,7 +303,9 @@ user names are valid; a numerical user ID is not recognized. By default,
 login is allowed regardless of the user name.
 .sp
 If a specified pattern takes the form \fIuser\fR@\fIhost\fR then \fIuser\fR
-and \fIhost\fR are checked separately, disallowing logins to particular
+and
+.I host
+are checked separately, disallowing logins to particular
 users from particular hosts.
 .RE
 
@@ -271,35 +313,50 @@ users from particular hosts.
 .ne 2
 .mk
 .na
-\fBGatewayPorts\fR
+.B GatewayPorts
 .ad
 .sp .6
 .RS 4n
 Specifies whether remote hosts are allowed to connect to ports forwarded
-for the client. By default, \fBsshd\fR binds remote port forwardings to the
+for the client. By default,
+.B sshd
+binds remote port forwardings to the
 loopback address. This prevents other remote hosts from connecting to
-forwarded ports. \fBGatewayPorts\fR can be used to specify that \fBsshd\fR
+forwarded ports.
+.B GatewayPorts
+can be used to specify that
+.BR sshd
 should bind remote port forwardings to the wildcard address, thus allowing
 remote hosts to connect to forwarded ports.
 .sp
-The argument can be \fBno\fR to force remote port forwardings to be
-available to the local host only, \fByes\fR to force remote port forwardings
+The argument can be
+.B no
+to force remote port forwardings to be
+available to the local host only,
+.B yes
+to force remote port forwardings
 to bind to the wildcard address, or \fBclientspecified\fR to allow the
 client to select the address to which the forwarding is bound. The default
-is \fBno\fR. See also \fBRemoteForward\fR in \fBssh_config\fR(4).
+is
+.BR no .
+See also
+.B RemoteForward
+in \fBssh_config\fR(4).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBGSSAPIAuthentication\fR
+.B GSSAPIAuthentication
 .ad
 .sp .6
 .RS 4n
 Enables/disables GSS-API user authentication. The default is \fByes\fR.
 .sp
-Currently \fBsshd\fR authorizes client user principals to user accounts as
+Currently
+.B sshd
+authorizes client user principals to user accounts as
 follows: if the principal name matches the requested user account, then the
 principal is authorized. Otherwise, GSS-API authentication fails.
 .RE
@@ -308,19 +365,21 @@ principal is authorized. Otherwise, GSS-API authentication fails.
 .ne 2
 .mk
 .na
-\fBGSSAPIKeyExchange\fR
+.B GSSAPIKeyExchange
 .ad
 .sp .6
 .RS 4n
 Enables/disables GSS-API-authenticated key exchanges. The default is
-\fByes\fR.
+.BR yes .
 .sp
 This option also enables the use of the GSS-API to authenticate the user to
 server after the key exchange. GSS-API key exchange can succeed but the
 subsequent authentication using the GSS-API fail if the server does not
 authorize the user's GSS principal name to the target user account.
 .sp
-Currently \fBsshd\fR authorizes client user principals to user accounts as
+Currently
+.B sshd
+authorizes client user principals to user accounts as
 follows: if the principal name matches the requested user account, then the
 principal is authorized. Otherwise, GSS-API authentication fails.
 .RE
@@ -329,7 +388,7 @@ principal is authorized. Otherwise, GSS-API authentication fails.
 .ne 2
 .mk
 .na
-\fBGSSAPIStoreDelegatedCredentials\fR
+.B GSSAPIStoreDelegatedCredentials
 .ad
 .sp .6
 .RS 4n
@@ -353,14 +412,21 @@ destroy credentials associated with a session.
 .ne 2
 .mk
 .na
-\fBHostbasedAuthentication\fR
+.B HostbasedAuthentication
 .ad
 .sp .6
 .RS 4n
-Specifies whether to try \fBrhosts\fR-based authentication with public key
-authentication. The argument must be \fByes\fR or \fBno\fR. The default is
-\fBno\fR. This option applies to protocol version 2 only and is similar to
-\fBRhostsRSAAuthentication\fR. See \fBsshd\fR(1M) for guidelines on setting
+Specifies whether to try
+.BR rhosts "-based authentication with public key"
+authentication. The argument must be
+.B yes
+or
+.BR no .
+The default is
+.BR no .
+This option applies to protocol version 2 only and is similar to
+.BR RhostsRSAAuthentication .
+See \fBsshd\fR(1M) for guidelines on setting
 up host-based authentication.
 .RE
 
@@ -368,17 +434,27 @@ up host-based authentication.
 .ne 2
 .mk
 .na
-\fBHostbasedUsesNameFromPacketOnly\fR
+.B HostbasedUsesNameFromPacketOnly
 .ad
 .sp .6
 .RS 4n
-Controls which hostname is searched for in the files \fB~/.shosts\fR,
-\fB/etc/shosts.equiv\fR, and \fB/etc/hosts.equiv\fR. If this parameter is
-set to \fByes\fR, the server uses the name the client claimed for itself and
-signed with that host's key. If set to \fBno\fR, the default, the server
+Controls which hostname is searched for in the files
+.BR ~/.shosts ,
+.BR /etc/shosts.equiv ,
+and
+.BR /etc/hosts.equiv .
+If this parameter is
+set to
+.BR yes ,
+the server uses the name the client claimed for itself and
+signed with that host's key. If set to
+.BR no ,
+the default, the server
 uses the name to which the client's IP address resolves.
 .sp
-Setting this parameter to \fBno\fR disables host-based authentication when
+Setting this parameter to
+.B no
+disables host-based authentication when
 using NAT or when the client gets to the server indirectly through a
 port-forwarding firewall.
 .RE
@@ -387,14 +463,18 @@ port-forwarding firewall.
 .ne 2
 .mk
 .na
-\fBHostKey\fR
+.B HostKey
 .ad
 .sp .6
 .RS 4n
 Specifies the file containing the private host key used by SSH. The default
-is \fB/etc/ssh/ssh_host_key\fR for protocol version 1, and
+is
+.B /etc/ssh/ssh_host_key
+for protocol version 1, and
 \fB/etc/ssh/ssh_host_rsa_key\fR and \fB/etc/ssh/ssh_host_dsa_key\fR for
-protocol version 2. \fBsshd\fR refuses to use a file if it is
+protocol version 2.
+.B sshd
+refuses to use a file if it is
 group/world-accessible. It is possible to have multiple host key files.
 \fBrsa1\fR keys are used for version 1 and \fBdsa\fR or \fBrsa\fR are used
 for version 2 of the SSH protocol.
@@ -404,13 +484,19 @@ for version 2 of the SSH protocol.
 .ne 2
 .mk
 .na
-\fBIgnoreRhosts\fR
+.B IgnoreRhosts
 .ad
 .sp .6
 .RS 4n
 Specifies that \fB\&.rhosts\fR and \fB\&.shosts\fR files are not used in
-authentication. \fB/etc/hosts.equiv\fR and \fB/etc/shosts.equiv\fR are still
-used. The default is \fByes\fR. This parameter applies to both protocol
+authentication.
+.B /etc/hosts.equiv
+and
+.B /etc/shosts.equiv
+are still
+used. The default is
+.BR yes .
+This parameter applies to both protocol
 versions 1 and 2.
 .RE
 
@@ -418,13 +504,19 @@ versions 1 and 2.
 .ne 2
 .mk
 .na
-\fBIgnoreUserKnownHosts\fR
+.B IgnoreUserKnownHosts
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should ignore the user's
-\fB$HOME/.ssh/known_hosts\fR during \fBRhostsRSAAuthentication\fR. The
-default is \fBno\fR. This parameter applies to both protocol versions 1 and
+Specifies whether
+.B sshd
+should ignore the user's
+\fB$HOME/.ssh/known_hosts\fR during
+.BR RhostsRSAAuthentication .
+The
+default is
+.BR no .
+This parameter applies to both protocol versions 1 and
 2.
 .RE
 
@@ -432,7 +524,7 @@ default is \fBno\fR. This parameter applies to both protocol versions 1 and
 .ne 2
 .mk
 .na
-\fBKbdInteractiveAuthentication\fR
+.B KbdInteractiveAuthentication
 .ad
 .sp .6
 .RS 4n
@@ -445,7 +537,7 @@ authentication method (and PAM) is allowed. Defaults to \fByes\fR.
 .ne 2
 .mk
 .na
-\fBKeepAlive\fR
+.B KeepAlive
 .ad
 .sp .6
 .RS 4n
@@ -456,11 +548,15 @@ the route is down temporarily, which can be an annoyance. On the other hand,
 if keepalives are not sent, sessions can hang indefinitely on the server,
 leaving ghost users and consuming server resources.
 .sp
-The default is \fByes\fR (to send keepalives), and the server notices if
+The default is
+.B yes
+(to send keepalives), and the server notices if
 the network goes down or the client host reboots. This avoids infinitely
 hanging sessions.
 .sp
-To disable keepalives, the value should be set to \fBno\fR in both the
+To disable keepalives, the value should be set to
+.B no
+in both the
 server and the client configuration files.
 .RE
 
@@ -468,7 +564,7 @@ server and the client configuration files.
 .ne 2
 .mk
 .na
-\fBKeyRegenerationInterval\fR
+.B KeyRegenerationInterval
 .ad
 .sp .6
 .RS 4n
@@ -484,11 +580,13 @@ the value is 0, the key is never regenerated. The default is 3600
 .ne 2
 .mk
 .na
-\fBListenAddress\fR
+.B ListenAddress
 .ad
 .sp .6
 .RS 4n
-Specifies what local address \fBsshd\fR should listen on. The following
+Specifies what local address
+.B sshd
+should listen on. The following
 forms can be used:
 .sp
 .in +2
@@ -499,14 +597,26 @@ ListenAddress [\fIhost\fR|\fIIPv6_addr\fR]:\fIport\fR
 .fi
 .in -2
 
-If \fIport\fR is not specified, \fBsshd\fR listens on the address and all
-prior \fBPort\fR options specified. The default is to listen on all local
-addresses. Multiple \fBListenAddress\fR options are permitted. Additionally,
-any \fBPort\fR options must precede this option for non-port qualified
+If
+.I port
+is not specified,
+.B sshd
+listens on the address and all
+prior
+.B Port
+options specified. The default is to listen on all local
+addresses. Multiple
+.B ListenAddress
+options are permitted. Additionally,
+any
+.B Port
+options must precede this option for non-port qualified
 addresses.
 .sp
 The default is to listen on all local addresses. Multiple options of this
-type are permitted. Additionally, the \fBPorts\fR options must precede this
+type are permitted. Additionally, the
+.B Ports
+options must precede this
 option.
 .RE
 
@@ -514,7 +624,7 @@ option.
 .ne 2
 .mk
 .na
-\fBLoginGraceTime\fR
+.B LoginGraceTime
 .ad
 .sp .6
 .RS 4n
@@ -527,15 +637,29 @@ default is 120 (seconds).
 .ne 2
 .mk
 .na
-\fBLogLevel\fR
+.B LogLevel
 .ad
 .sp .6
 .RS 4n
 Gives the verbosity level that is used when logging messages from
-\fBsshd\fR. The possible values are: \fBQUIET\fR, \fBFATAL\fR, \fBERROR\fR,
-\fBINFO\fR, \fBVERBOSE\fR, \fBDEBUG\fR, \fBDEBUG1\fR, \fBDEBUG2\fR, and
-\fBDEBUG3\fR. The default is \fBINFO\fR. DEBUG2 and DEBUG3 each specify
-higher levels of debugging output. Logging with level \fBDEBUG\fR violates
+.BR sshd .
+The possible values are:
+.BR QUIET ,
+.BR FATAL ,
+.BR ERROR ,
+.BR INFO ,
+.BR VERBOSE ,
+.BR DEBUG ,
+.BR DEBUG1 ,
+.BR DEBUG2 ,
+and
+.BR DEBUG3 .
+The default is
+.BR INFO .
+DEBUG2 and DEBUG3 each specify
+higher levels of debugging output. Logging with level
+.B DEBUG
+violates
 the privacy of users and is not recommended.
 .RE
 
@@ -543,7 +667,7 @@ the privacy of users and is not recommended.
 .ne 2
 .mk
 .na
-\fBLookupClientHostnames\fR
+.B LookupClientHostnames
 .ad
 .sp .6
 .RS 4n
@@ -555,34 +679,43 @@ Defaults to yes.
 .ne 2
 .mk
 .na
-\fBMACs\fR
+.B MACs
 .ad
 .sp .6
 .RS 4n
 Specifies the available MAC (message authentication code) algorithms. The
 MAC algorithm is used in protocol version 2 for data integrity protection.
 Multiple algorithms must be comma-separated. The default is
-\fBhmac-md5,hmac-sha1,hmac-sha1-96,hmac-md5-96\fR.
+.BR hmac-md5,hmac-sha1,hmac-sha1-96,hmac-md5-96 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMaxStartups\fR
+.B MaxStartups
 .ad
 .sp .6
 .RS 4n
 Specifies the maximum number of concurrent unauthenticated connections to
-the \fBsshd\fR daemon. Additional connections are dropped until
-authentication succeeds or the \fBLoginGraceTime\fR expires for a
+the
+.B sshd
+daemon. Additional connections are dropped until
+authentication succeeds or the
+.B LoginGraceTime
+expires for a
 connection. The default is \fB10\fR.
 .sp
 Alternatively, random early drop can be enabled by specifying the three
 colon-separated values \fIstart\fR:\fIrate\fR:\fIfull\fR (for example,
-\fB10:30:60\fR). Referring to this example, \fBsshd\fR refuse connection
+.BR 10:30:60 ).
+Referring to this example,
+.B sshd
+refuse connection
 attempts with a probability of \fIrate\fR/100 (30% in our example) if there
-are currently 10 (from the \fIstart\fR field) unauthenticated connections.
+are currently 10 (from the
+.I start
+field) unauthenticated connections.
 The probability increases linearly and all connection attempts are refused
 if the number of unauthenticated connections reaches \fIfull\fR (60 in our
 example). 
@@ -592,19 +725,20 @@ example).
 .ne 2
 .mk
 .na
-\fBPasswordAuthentication\fR
+.B PasswordAuthentication
 .ad
 .sp .6
 .RS 4n
 Specifies whether password authentication is allowed. The default is
-\fByes\fR. This option applies to both protocol versions 1 and 2.
+.BR yes .
+This option applies to both protocol versions 1 and 2.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPermitEmptyPasswords\fR
+.B PermitEmptyPasswords
 .ad
 .sp .6
 .RS 4n
@@ -612,41 +746,63 @@ When password or keyboard-interactive authentication is allowed, it
 specifies whether the server allows login to accounts with empty password
 strings. 
 .sp
-If not set then the \fB/etc/default/login\fR \fBPASSREQ\fR value is used
+If not set then the \fB/etc/default/login PASSREQ\fR value is used
 instead. 
 .sp
 \fBPASSREQ=no\fR is equivalent to \fBPermitEmptyPasswords yes\fR.
-\fBPASSREQ=yes\fR is equivalent to \fBPermitEmptyPasswords no\fR. If neither
+\fBPASSREQ=yes\fR is equivalent to
+.BR "PermitEmptyPasswords no" .
+If neither
 \fBPermitEmptyPasswords\fR or \fBPASSREQ\fR are set the default is
-\fBno\fR.
+.BR no .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPermitRootLogin\fR
+.B PermitRootLogin
 .ad
 .sp .6
 .RS 4n
-Specifies whether the root can log in using \fBssh\fR(1). The argument must
-be \fByes\fR, \fBwithout-password\fR, \fBforced-commands-only\fR, or
-\fBno\fR. \fBwithout-password\fR means that root cannot be authenticated
+Specifies whether the root can log in using
+.BR ssh (1).
+The argument must
+be
+.BR yes ,
+.BR without-password ,
+\fBforced-commands-only\fR, or
+.BR no .
+\fBwithout-password\fR means that root cannot be authenticated
 using the "password" or "keyboard-interactive" methods (see description of
-\fBKbdInteractiveAuthentication\fR). \fBforced-commands-only\fR means that
-authentication is allowed only for \fBpublickey\fR (for SSHv2, or RSA, for
+.BR KbdInteractiveAuthentication ).
+\fBforced-commands-only\fR means that
+authentication is allowed only for
+.B publickey
+(for SSHv2, or RSA, for
 SSHv1) and only if the matching \fBauthorized_keys entry\fR for root has a
 \fBcommand=\fI<cmd>\fR option.
 .sp
 In Solaris, the default \fB/etc/ssh/sshd_config\fR file is shipped with
-\fBPermitRootLogin\fR set to \fBno\fR. If unset by the administrator, then
+\fBPermitRootLogin\fR set to
+.BR no .
+If unset by the administrator, then
 \fBCONSOLE\fR parameter from \fB/etc/default/login\fR supplies the default
-value as follows: if the \fBCONSOLE\fR parameter is not commented out (it
+value as follows: if the
+.B CONSOLE
+parameter is not commented out (it
 can even be empty, that is, "\fBCONSOLE=\fR"), then \fBwithout-password\fR
-is used as default value. If \fBCONSOLE\fR is commented out, then the
-default for \fBPermitRootLogin\fR is \fByes\fR.
+is used as default value. If
+.B CONSOLE
+is commented out, then the
+default for
+.B PermitRootLogin
+is
+.BR yes .
 .sp
-The \fBwithout-password\fR and \fBforced-commands-only\fR settings are
+The
+.B without-password
+and \fBforced-commands-only\fR settings are
 useful for, for example, performing remote administration and backups using
 trusted public keys for authentication of the remote client, without
 allowing access to the root account using passwords.
@@ -656,17 +812,26 @@ allowing access to the root account using passwords.
 .ne 2
 .mk
 .na
-\fBPermitUserEnvironment\fR
+.B PermitUserEnvironment
 .ad
 .sp .6
 .RS 4n
-Specifies whether a user's \fB~/.ssh/environment\fR on the server side and
+Specifies whether a user's
+.B ~/.ssh/environment
+on the server side and
 \fBenvironment\fR options in the \fBAuthorizedKeysFile\fR file are processed
-by \fBsshd\fR. The default is \fBno\fR. Enabling environment processing can
+by
+.BR sshd .
+The default is
+.BR no .
+Enabling environment processing can
 enable users to bypass access restrictions in some configurations using
-mechanisms such as \fBLD_PRELOAD\fR.
+mechanisms such as
+.BR LD_PRELOAD .
 .sp
-Environment setting from a relevant entry in \fBAuthorizedKeysFile\fR file
+Environment setting from a relevant entry in
+.B AuthorizedKeysFile
+file
 is processed only if the user was authenticated using the public key
 authentication method. Of the two files used, values of variables set in
 \fB~/.ssh/environment\fR are of higher priority.
@@ -676,12 +841,16 @@ authentication method. Of the two files used, values of variables set in
 .ne 2
 .mk
 .na
-\fBPidFile\fR
+.B PidFile
 .ad
 .sp .6
 .RS 4n
-Allows you to specify an alternative to \fB/var/run/sshd.pid\fR, the
-default file for storing the PID of the \fBsshd\fR listening for
+Allows you to specify an alternative to
+.BR /var/run/sshd.pid ,
+the
+default file for storing the PID of the
+.B sshd
+listening for
 connections. See \fBsshd\fR(1M).
 .RE
 
@@ -689,11 +858,13 @@ connections. See \fBsshd\fR(1M).
 .ne 2
 .mk
 .na
-\fBPort\fR
+.B Port
 .ad
 .sp .6
 .RS 4n
-Specifies the port number that \fBsshd\fR listens on. The default is 22.
+Specifies the port number that
+.B sshd
+listens on. The default is 22.
 Multiple options of this type are permitted. See also \fBListenAddress\fR.
 .RE
 
@@ -701,11 +872,13 @@ Multiple options of this type are permitted. See also \fBListenAddress\fR.
 .ne 2
 .mk
 .na
-\fBPrintLastLog\fR
+.B PrintLastLog
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should display the date and time when the user
+Specifies whether
+.B sshd
+should display the date and time when the user
 last logged in. The default is \fByes\fR.
 .RE
 
@@ -713,27 +886,42 @@ last logged in. The default is \fByes\fR.
 .ne 2
 .mk
 .na
-\fBPrintMotd\fR
+.B PrintMotd
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should display the contents of \fB/etc/motd\fR
+Specifies whether
+.B sshd
+should display the contents of
+.BR /etc/motd
 when a user logs in interactively. (On some systems it is also displayed by
-the shell or a shell startup file, such as \fB/etc/profile\fR.) The default
-is \fByes\fR.
+the shell or a shell startup file, such as
+.BR /etc/profile .)
+The default
+is
+.BR yes .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBProtocol\fR
+.B Protocol
 .ad
 .sp .6
 .RS 4n
-Specifies the protocol versions \fBsshd\fR should support in order of
-preference. The possible values are \fB1\fR and \fB2\fR. Multiple versions
-must be comma-separated. The default is \fB2,1\fR. This means that \fBssh\fR
+Specifies the protocol versions
+.B sshd
+should support in order of
+preference. The possible values are
+.B 1
+and
+.BR 2 .
+Multiple versions
+must be comma-separated. The default is
+.BR 2,1 .
+This means that
+.BR ssh
 tries version 2 and falls back to version 1 if version 2 is not available.
 .RE
 
@@ -741,60 +929,77 @@ tries version 2 and falls back to version 1 if version 2 is not available.
 .ne 2
 .mk
 .na
-\fBPubkeyAuthentication\fR
+.B PubkeyAuthentication
 .ad
 .sp .6
 .RS 4n
 Specifies whether public key authentication is allowed. The default is
-\fByes\fR. This option applies to protocol version 2 only.
+.BR yes .
+This option applies to protocol version 2 only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRhostsAuthentication\fR
+.B RhostsAuthentication
 .ad
 .sp .6
 .RS 4n
-Specifies whether authentication using \fBrhosts\fR or
+Specifies whether authentication using
+.B rhosts
+or
 \fB/etc/hosts.equiv\fR files is sufficient. Normally, this method should not
-be permitted because it is insecure. \fBRhostsRSAAuthentication\fR should be
+be permitted because it is insecure.
+.B RhostsRSAAuthentication
+should be
 used instead, because it performs RSA-based host authentication in addition
-to normal \fBrhosts\fR or \fB/etc/hosts.equiv\fR authentication. The default
-is \fBno\fR. This parameter applies only to protocol version 1.
+to normal
+.B rhosts
+or
+.B /etc/hosts.equiv
+authentication. The default
+is
+.BR no .
+This parameter applies only to protocol version 1.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRhostsRSAAuthentication\fR
+.B RhostsRSAAuthentication
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBrhosts\fR or \fB/etc/hosts.equiv\fR authentication
+Specifies whether
+.B rhosts
+or
+.B /etc/hosts.equiv
+authentication
 together with successful RSA host authentication is allowed. The default is
-\fBno\fR. This parameter applies only to protocol version 1.
+.BR no .
+This parameter applies only to protocol version 1.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRSAAuthentication\fR
+.B RSAAuthentication
 .ad
 .sp .6
 .RS 4n
 Specifies whether pure RSA authentication is allowed. The default is
-\fByes\fR. This option applies to protocol version 1 only.
+.BR yes .
+This option applies to protocol version 1 only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBServerKeyBits\fR
+.B ServerKeyBits
 .ad
 .sp .6
 .RS 4n
@@ -806,11 +1011,13 @@ The minimum value is 512, and the default is 768.
 .ne 2
 .mk
 .na
-\fBStrictModes\fR
+.B StrictModes
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should check file modes and ownership of the
+Specifies whether
+.B sshd
+should check file modes and ownership of the
 user's files and home directory before accepting login. This is normally
 desirable because novices sometimes accidentally leave their directory or
 files world-writable. The default is \fByes\fR.
@@ -820,7 +1027,7 @@ files world-writable. The default is \fByes\fR.
 .ne 2
 .mk
 .na
-\fBSubsystem\fR
+.B Subsystem
 .ad
 .sp .6
 .RS 4n
@@ -841,25 +1048,40 @@ version 2 only.
 .ne 2
 .mk
 .na
-\fBSyslogFacility\fR
+.B SyslogFacility
 .ad
 .sp .6
 .RS 4n
-Gives the facility code that is used when logging messages from \fBsshd\fR.
-The possible values are: \fBDAEMON\fR, \fBUSER\fR, \fBAUTH\fR, \fBLOCAL0\fR,
-\fBLOCAL1\fR, \fBLOCAL2\fR, \fBLOCAL3\fR, \fBLOCAL4\fR, \fBLOCAL5\fR,
-\fBLOCAL6\fR, and \fBLOCAL7\fR. The default is \fBAUTH\fR.
+Gives the facility code that is used when logging messages from
+.BR sshd .
+The possible values are:
+.BR DAEMON ,
+.BR USER ,
+.BR AUTH ,
+.BR LOCAL0 ,
+.BR LOCAL1 ,
+.BR LOCAL2 ,
+.BR LOCAL3 ,
+.BR LOCAL4 ,
+.BR LOCAL5 ,
+.BR LOCAL6 ,
+and
+.BR LOCAL7 .
+The default is
+.BR AUTH .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBUseOpenSSLEngine\fR
+.B UseOpenSSLEngine
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should use the OpenSSL PKCS#11 engine for
+Specifies whether
+.B sshd
+should use the OpenSSL PKCS#11 engine for
 offloading cryptographic operations to the Cryptographic Framework.
 Cryptographic operations are accelerated according to the available
 installed plug-ins. When no suitable plug-ins are present this option does
@@ -874,13 +1096,20 @@ not have an effect. The default is \fByes\fR.
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should try to verify the remote host name and
+Specifies whether
+.B sshd
+should try to verify the remote host name and
 check that the resolved host name for the remote IP address maps back to the
 very same IP address. (A \fByes\fR setting means "verify".) Setting this
-parameter to \fBno\fR can be useful where DNS servers might be down and thus
-cause \fBsshd\fR to spend much time trying to resolve the client's IP
+parameter to
+.B no
+can be useful where DNS servers might be down and thus
+cause
+.B sshd
+to spend much time trying to resolve the client's IP
 address to a name. This feature is useful for Internet-facing servers. The
-default is \fBno\fR.
+default is
+.BR no .
 .RE
 
 .sp
@@ -891,8 +1120,11 @@ default is \fBno\fR.
 .ad
 .sp .6
 .RS 4n
-Specifies the first display number available for \fBsshd\fR's X11
-forwarding. This prevents \fBsshd\fR from interfering with real X11 servers.
+Specifies the first display number available for
+.BR sshd "'s X11"
+forwarding. This prevents
+.B sshd
+from interfering with real X11 servers.
 The default is 10.
 .RE
 
@@ -900,7 +1132,7 @@ The default is 10.
 .ne 2
 .mk
 .na
-\fBX11Forwarding\fR
+.B X11Forwarding
 .ad
 .sp .6
 .RS 4n
@@ -909,13 +1141,23 @@ Disabling X11 forwarding does not improve security in any way, as users can
 always install their own forwarders.
 .sp
 When X11 forwarding is enabled, there can be additional exposure to the
-server and to client displays if the \fBsshd\fR proxy display is configured
-to listen on the wildcard address (see \fBX11UseLocalhost\fR). However, this
+server and to client displays if the
+.B sshd
+proxy display is configured
+to listen on the wildcard address (see
+.BR X11UseLocalhost ).
+However, this
 is not the default. Additionally, the authentication spoofing and
 authentication data verification and substitution occur on the client side.
 The security risk of using X11 forwarding is that the client's X11 display
-server can be exposed to attack when the \fBssh\fR client requests
-forwarding (see the warnings for \fBForwardX11\fR in \fBssh_config\fR(4)). A
+server can be exposed to attack when the
+.B ssh
+client requests
+forwarding (see the warnings for
+.B ForwardX11
+in
+.BR ssh_config (4)).
+A
 system administrator who wants to protect clients that expose themselves to
 attack by unwittingly requesting X11 forwarding, should specify a \fBno\fR
 setting.
@@ -928,30 +1170,47 @@ traffic, as users can always install their own forwarders.
 .ne 2
 .mk
 .na
-\fBX11UseLocalhost\fR
+.B X11UseLocalhost
 .ad
 .sp .6
 .RS 4n
-Specifies whether \fBsshd\fR should bind the X11 forwarding server to the
-loopback address or to the wildcard address. By default, \fBsshd\fR binds
+Specifies whether
+.B sshd
+should bind the X11 forwarding server to the
+loopback address or to the wildcard address. By default,
+.B sshd
+binds
 the forwarding server to the loopback address and sets the hostname part of
-the \fBDISPLAY\fR environment variable to \fBlocalhost\fR. This prevents
+the
+.B DISPLAY
+environment variable to
+.BR localhost .
+This prevents
 remote hosts from connecting to the proxy display. However, some older X11
 clients might not function with this configuration. \fBX11UseLocalhost\fR
-can be set to \fBno\fR to specify that the forwarding server should be bound
-to the wildcard address. The argument must be \fByes\fR or \fBno\fR. The
-default is \fByes\fR.
+can be set to
+.B no
+to specify that the forwarding server should be bound
+to the wildcard address. The argument must be
+.B yes
+or
+.BR no .
+The
+default is
+.BR yes .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBXAuthLocation\fR
+.B XAuthLocation
 .ad
 .sp .6
 .RS 4n
-Specifies the location of the \fBxauth\fR(1) program. The default is
+Specifies the location of the
+.BR xauth (1)
+program. The default is
 \fB/usr/X11/bin/xauth\fR and \fBsshd\fR attempts to open it when X11
 forwarding is enabled.
 .RE
@@ -967,7 +1226,7 @@ and \fIqualifier\fR is one of the following:
 .ne 2
 .mk
 .na
-\fI<none>\fR
+.I <none>
 .ad
 .RS 10n
 .rt
@@ -1022,7 +1281,7 @@ days
 .ne 2
 .mk
 .na
-\fBw\fR | \fR
+\fBw\fR |\fR 
 .ad
 .RS 10n
 .rt
@@ -1037,7 +1296,7 @@ value. For example:
 .ne 2
 .mk
 .na
-\fB600\fR
+.B 600
 .ad
 .RS 9n
 .rt
@@ -1048,7 +1307,7 @@ value. For example:
 .ne 2
 .mk
 .na
-\fB10m\fR
+.B 10m
 .ad
 .RS 9n
 .rt
@@ -1059,7 +1318,7 @@ value. For example:
 .ne 2
 .mk
 .na
-\fB1h30m\fR
+.B 1h30m
 .ad
 .RS 9n
 .rt
@@ -1075,7 +1334,9 @@ value. For example:
 .ad
 .RS 24n
 .rt
-Contains configuration data for \fBsshd\fR. This file should be writable by
+Contains configuration data for
+.BR sshd .
+This file should be writable by
 root only, but it is recommended (though not necessary) that it be
 world-readable.
 .RE
@@ -1083,7 +1344,9 @@ world-readable.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1102,12 +1365,18 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBlogin\fR(1), \fBsshd\fR(1M), \fBchroot\fR(2), \fBssh_config\fR(4),
-\fBattributes\fR(5), \fBkerberos\fR(5)
+.BR login (1),
+.BR sshd (1M),
+.BR chroot (2),
+\fBssh_config\fR(4),
+.BR attributes (5),
+.BR kerberos (5)
 .SH AUTHORS
 .sp
 .LP
-OpenSSH is a derivative of the original and free \fBssh\fR 1.2.12 release
+OpenSSH is a derivative of the original and free
+.B ssh
+1.2.12 release
 by Tatu Ylonen. Aaron Campbell, Bob Beck, Markus Friedl, Niels Provos, Theo
 de Raadt, and Dug Song removed many bugs, re-added recent features, and
 created OpenSSH. Markus Friedl contributed the support for SSH protocol

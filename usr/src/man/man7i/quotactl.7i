@@ -31,10 +31,16 @@ int ioctl(int \fIfd\fR, Q_QUOTACTL, struct quotcl *\fIqp\fR)
 .SH DESCRIPTION
 .sp
 .LP
-This \fBioctl()\fR call manipulates disk quotas. \fIfd\fR is the file
-descriptor returned by the \fBopen()\fR system call after opening the
+This
+.B ioctl()
+call manipulates disk quotas. \fIfd\fR is the file
+descriptor returned by the
+.B open()
+system call after opening the
 \fBquotas\fR file (located in the root directory of the filesystem running
-quotas.) \fBQ_QUOTACTL\fR is defined in
+quotas.)
+.B Q_QUOTACTL
+is defined in
 \fB/usr/include/sys/fs/ufs_quota.h\fR. \fIqp\fR is the address of the
 \fBquotctl\fR structure which is defined as
 .sp
@@ -51,20 +57,35 @@ struct quotctl {
 .sp
 .LP
 \fIop\fR indicates an operation to be applied to the user \fBID\fR
-\fIuid\fR. (See below.) \fIaddr\fR is the address of an optional, command
+.IR uid .
+(See below.)
+.I addr
+is the address of an optional, command
 specific, data structure which is copied in or out of the system. The
-interpretation of \fIaddr\fR is given with each value of \fIop\fR below.
+interpretation of
+.I addr
+is given with each value of
+.I op
+below.
 .sp
 .ne 2
 .mk
 .na
-\fBQ_QUOTAON\fR
+.B Q_QUOTAON
 .ad
 .RS 14n
 .rt
-Turn on quotas for a file system. \fIaddr\fR points to the full pathname of
-the \fBquotas\fR file. \fIuid\fR is ignored. It is recommended that
-\fIuid\fR have the value of \fB0\fR. This call is restricted to the
+Turn on quotas for a file system.
+.I addr
+points to the full pathname of
+the
+.B quotas
+file.
+.I uid
+is ignored. It is recommended that
+\fIuid\fR have the value of
+.BR 0 .
+This call is restricted to the
 super-user.
 .RE
 
@@ -72,38 +93,23 @@ super-user.
 .ne 2
 .mk
 .na
-\fBQ_QUOTAOFF\fR
+.B Q_QUOTAOFF
 .ad
 .RS 14n
 .rt
-Turn off quotas for a file system. \fIaddr\fR and \fIuid\fR are ignored. It
-is recommended that \fIaddr\fR have the value of \fINULL\fR and \fIuid\fR
-have the value of \fB0\fR. This call is restricted to the super-user.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBQ_GETQUOTA\fR
-.ad
-.RS 14n
-.rt
-Get disk quota limits and current usage for user \fIuid\fR. \fIaddr\fR is a
-pointer to a \fBdqblk\fR structure (defined in \fB<sys/fs/ufs_quota.h>\fR).
-Only the super-user may get the quotas of a user other than himself.
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBQ_SETQUOTA\fR
-.ad
-.RS 14n
-.rt
-Set disk quota limits and current usage for user \fIuid\fR. \fIaddr\fR is a
-pointer to a \fBdqblk\fR structure (defined in \fBsys/fs/ufs_quota.h\fR).
+Turn off quotas for a file system.
+.I addr
+and
+.I uid
+are ignored. It
+is recommended that
+.I addr
+have the value of
+.I NULL
+and
+.IR uid
+have the value of
+.BR 0 .
 This call is restricted to the super-user.
 .RE
 
@@ -111,12 +117,50 @@ This call is restricted to the super-user.
 .ne 2
 .mk
 .na
-\fBQ_SETQLIM\fR
+.B Q_GETQUOTA
 .ad
 .RS 14n
 .rt
-Set disk quota limits for user \fIuid\fR. \fIaddr\fR is a pointer to a
-\fBdqblk\fR structure (defined in \fBsys/fs/ufs_quota.h\fR). This call is
+Get disk quota limits and current usage for user
+.IR uid .
+\fIaddr\fR is a
+pointer to a
+.B dqblk
+structure (defined in \fB<sys/fs/ufs_quota.h>\fR).
+Only the super-user may get the quotas of a user other than himself.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B Q_SETQUOTA
+.ad
+.RS 14n
+.rt
+Set disk quota limits and current usage for user
+.IR uid .
+\fIaddr\fR is a
+pointer to a
+.B dqblk
+structure (defined in \fBsys/fs/ufs_quota.h\fR).
+This call is restricted to the super-user.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B Q_SETQLIM
+.ad
+.RS 14n
+.rt
+Set disk quota limits for user
+.IR uid .
+\fIaddr\fR is a pointer to a
+\fBdqblk\fR structure (defined in
+.BR sys/fs/ufs_quota.h ).
+This call is
 restricted to the super-user.
 .RE
 
@@ -124,35 +168,43 @@ restricted to the super-user.
 .ne 2
 .mk
 .na
-\fBQ_SYNC\fR
+.B Q_SYNC
 .ad
 .RS 14n
 .rt
 Update the on-disk copy of quota usages for this file system. \fIaddr\fR
-and \fIuid\fR are ignored.
+and
+.I uid
+are ignored.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBQ_ALLSYNC\fR
+.B Q_ALLSYNC
 .ad
 .RS 14n
 .rt
 Update the on-disk copy of quota usages for all file systems with active
-quotas. \fIaddr\fR and \fIuid\fR are ignored.
+quotas.
+.I addr
+and
+.I uid
+are ignored.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-This \fBioctl()\fR returns:
+This
+.B ioctl()
+returns:
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 9n
 .rt
@@ -167,7 +219,9 @@ on success.
 .ad
 .RS 9n
 .rt
-on failure and sets \fBerrno\fR to indicate the error.
+on failure and sets
+.B errno
+to indicate the error.
 .RE
 
 .SH ERRORS
@@ -175,7 +229,7 @@ on failure and sets \fBerrno\fR to indicate the error.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
@@ -186,11 +240,15 @@ on failure and sets \fBerrno\fR to indicate the error.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The kernel has not been compiled with the \fBQUOTA\fR option. \fIop\fR is
+The kernel has not been compiled with the
+.B QUOTA
+option.
+.I op
+is
 invalid.
 .RE
 
@@ -198,18 +256,22 @@ invalid.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 10n
 .rt
-The \fBquotas\fR file specified by \fIaddr\fR does not exist.
+The
+.B quotas
+file specified by
+.I addr
+does not exist.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
@@ -221,7 +283,7 @@ The call is privileged and the calling process did not assert
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 10n
 .rt
@@ -233,7 +295,7 @@ on for this file system.
 .ne 2
 .mk
 .na
-\fBEUSERS\fR
+.B EUSERS
 .ad
 .RS 10n
 .rt
@@ -242,30 +304,42 @@ The quota table is full.
 
 .sp
 .LP
-If \fIop\fR is \fBQ_QUOTAON\fR, \fBioctl()\fR may set \fBerrno\fR to:
+If
+.I op
+is
+.BR Q_QUOTAON ,
+\fBioctl()\fR may set \fBerrno\fR to:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
-The quota file pointed to by \fIaddr\fR exists but is not a regular file.
-The quota file pointed to by \fIaddr\fR exists but is not on the file system
-pointed to by \fIspecial\fR.
+The quota file pointed to by
+.I addr
+exists but is not a regular file.
+The quota file pointed to by
+.I addr
+exists but is not on the file system
+pointed to by
+.IR special .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 10n
 .rt
-Internal I/O error while attempting to read the \fBquotas\fR file pointed
-to by \fIaddr\fR.
+Internal I/O error while attempting to read the
+.B quotas
+file pointed
+to by
+.IR addr .
 .RE
 
 .SH FILES
@@ -283,13 +357,19 @@ quota-related structure/function definitions and defines
 .SH SEE ALSO
 .sp
 .LP
-\fBquota\fR(1M), \fBquotacheck\fR(1M), \fBquotaon\fR(1M),
-\fBgetrlimit\fR(2), \fBmount\fR(2)
+.BR quota (1M),
+.BR quotacheck (1M),
+.BR quotaon (1M),
+.BR getrlimit (2),
+.BR mount (2)
 .SH BUGS
 .sp
 .LP
 There should be some way to integrate this call with the resource limit
-interface provided by \fBsetrlimit()\fR and \fBgetrlimit\fR(2).
+interface provided by
+.B setrlimit()
+and
+.BR getrlimit (2).
 .sp
 .LP
 This call is incompatible with Melbourne quotas.

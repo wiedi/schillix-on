@@ -70,8 +70,12 @@ freeaddrinfo, getaddrinfo \- get address information
 .sp
 .LP
 The \fBfreeaddrinfo()\fR function frees one or more \fBaddrinfo\fR
-structures returned by \fBgetaddrinfo()\fR, along with any additional
-storage associated with those structures. If the \fBai_next\fR member of the
+structures returned by
+.BR getaddrinfo() ,
+along with any additional
+storage associated with those structures. If the
+.B ai_next
+member of the
 structure is not null, the entire list of structures is freed. The
 \fBfreeaddrinfo()\fR function supports the freeing of arbitrary sublists of
 an \fBaddrinfo\fR list originally returned by \fBgetaddrinfo()\fR.
@@ -83,7 +87,11 @@ addresses and associated information to be used in creating a socket with
 which to address the specified service.
 .sp
 .LP
-The \fInodename\fR and \fIservname\fR arguments are either null pointers or
+The
+.I nodename
+and
+.I servname
+arguments are either null pointers or
 pointers to null-terminated strings. One or both of these two arguments are
 supplied by the application as a non-null pointer.
 .sp
@@ -95,95 +103,182 @@ the name in all supported families and, in absence of errors, one or more
 results are returned.
 .sp
 .LP
-If the \fInodename\fR argument is not null, it can be a descriptive name or
+If the
+.I nodename
+argument is not null, it can be a descriptive name or
 can be an address string. If the specified address family is \fBAF_INET\fR,
-\fBAF_INET6\fR, or \fBAF_UNSPEC\fR, valid descriptive names include host
-names. If the specified address family is \fBAF_INET\fR or \fBAF_UNSPEC\fR,
+.BR AF_INET6 ,
+or
+.BR AF_UNSPEC ,
+valid descriptive names include host
+names. If the specified address family is
+.B AF_INET
+or
+.BR AF_UNSPEC ,
 address strings using Internet standard dot notation as specified in
-\fBinet_addr\fR(3XNET) are valid.
+.BR inet_addr (3XNET)
+are valid.
 .sp
 .LP
-If the specified address family is \fBAF_INET6\fR or \fBAF_UNSPEC\fR,
-standard IPv6 text forms described in \fBinet_ntop\fR(3XNET) are valid.
+If the specified address family is
+.B AF_INET6
+or
+.BR AF_UNSPEC ,
+standard IPv6 text forms described in
+.BR inet_ntop "(3XNET) are valid."
 .sp
 .LP
-If \fInodename\fR is not null, the requested service location is named by
-\fInodename\fR; otherwise, the requested service location is local to the
+If
+.I nodename
+is not null, the requested service location is named by
+.IR nodename ;
+otherwise, the requested service location is local to the
 caller.
 .sp
 .LP
-If \fIservname\fR is null, the call returns network-level addresses for the
-specified \fInodename\fR. If \fIservname\fR is not null, it is a
+If
+.I servname
+is null, the call returns network-level addresses for the
+specified
+.IR nodename .
+If
+.I servname
+is not null, it is a
 null-terminated character string identifying the requested service. This
 string can be either a descriptive name or a numeric representation suitable
 for use with the address family or families. If the specified address family
-is \fBAF_INET\fR, \fBAF_INET6\fR, or \fBAF_UNSPEC\fR, the service can be
+is
+.BR AF_INET ,
+.BR AF_INET6 ,
+or
+.BR AF_UNSPEC ,
+the service can be
 specified as a string specifying a decimal port number.
 .sp
 .LP
-If the \fIhints\fR argument is not null, it refers to a structure
+If the
+.I hints
+argument is not null, it refers to a structure
 containing input values that can direct the operation by providing options
 and by limiting the returned information to a specific socket type, address
-family and/or protocol. In this \fIhints\fR structure every member other
-than \fBai_flags\fR, \fBai_family\fR , \fBai_socktype\fR, and
+family and/or protocol. In this
+.I hints
+structure every member other
+than
+.BR ai_flags ,
+\fBai_family\fR ,
+.BR ai_socktype ,
+and
 \fBai_protocol\fR is set to 0 or a null pointer. A value of \fBAF_UNSPEC\fR
 for \fBai_family\fR means that the caller accepts any address family. A
-value of 0 for \fBai_socktype\fR means that the caller accepts any socket
-type. A value of 0 for \fBai_protocol\fR means that the caller accepts any
-protocol. If \fIhints\fR is a null pointer, the behavior is as if it
+value of 0 for
+.B ai_socktype
+means that the caller accepts any socket
+type. A value of 0 for
+.B ai_protocol
+means that the caller accepts any
+protocol. If
+.I hints
+is a null pointer, the behavior is as if it
 referred to a structure containing the value 0 for the \fBai_flags\fR,
-\fBai_socktype\fR, and \fBai_protocol\fR members, and \fBAF_UNSPEC\fR for
+.BR ai_socktype ,
+and
+.B ai_protocol
+members, and
+.B AF_UNSPEC
+for
 the \fBai_family\fR member.
 .sp
 .LP
-The \fBai_flags\fR member to which the \fIhints\fR parameter points is set
+The \fBai_flags\fR member to which the
+.I hints
+parameter points is set
 to 0 or be the bitwise-inclusive OR of one or more of the values
-\fBAI_PASSIVE\fR, \fBAI_CANONNAME\fR, \fBAI_NUMERICHOST\fR, and
-\fBAI_NUMERICSERV\fR.
+.BR AI_PASSIVE ,
+.BR AI_CANONNAME ,
+.BR AI_NUMERICHOST ,
+and
+.BR AI_NUMERICSERV .
 .sp
 .LP
-If the \fBAI_PASSIVE\fR flag is specified, the returned address information
+If the
+.B AI_PASSIVE
+flag is specified, the returned address information
 is suitable for use in binding a socket for accepting incoming connections
-for the specified service. In this case, if the \fInodename\fR argument is
+for the specified service. In this case, if the
+.I nodename
+argument is
 null, then the IP address portion of the socket address structure is set to
 \fBINADDR_ANY\fR for an IPv4 address or \fBIN6ADDR_ANY_INIT\fR for an IPv6
-address. If the \fBAI_PASSIVE\fR flag is not specified, the returned address
+address. If the
+.B AI_PASSIVE
+flag is not specified, the returned address
 information is suitable for a call to \fBconnect\fR(3XNET) (for a
 connection-mode protocol) or for a call to \fBconnect()\fR,
-\fBsendto\fR(3XNET), or \fBsendmsg\fR(3XNET) (for a connectionless
-protocol). In this case, if the \fInodename\fR argument is null, then the IP
+.BR sendto (3XNET),
+or \fBsendmsg\fR(3XNET) (for a connectionless
+protocol). In this case, if the
+.I nodename
+argument is null, then the IP
 address portion of the socket address structure is set to the loopback
 address.
 .sp
 .LP
-If the \fBAI_CANONNAME\fR flag is specified and the \fInodename\fR argument
+If the
+.B AI_CANONNAME
+flag is specified and the
+.I nodename
+argument
 is not null, the function attempts to determine the canonical name
-corresponding to \fInodename\fR (for example, if \fInodename\fR is an alias
+corresponding to
+.I nodename
+(for example, if
+.I nodename
+is an alias
 or shorthand notation for a complete name).
 .sp
 .LP
-If the \fBAI_NUMERICHOST\fR flag is specified, then a non-null
+If the
+.B AI_NUMERICHOST
+flag is specified, then a non-null
 \fInodename\fR string supplied is a numeric host address string. Otherwise,
-an \fBEAI_NONAME\fR error is returned. This flag prevents any type of name
+an
+.B EAI_NONAME
+error is returned. This flag prevents any type of name
 resolution service (for example, the DNS) from being invoked.
 .sp
 .LP
-If the \fBAI_NUMERICSERV\fR flag is specified, then a non-null
+If the
+.B AI_NUMERICSERV
+flag is specified, then a non-null
 \fIservname\fR string supplied is a numeric port string. Otherwise, an
 \fBEAI_NONAME\fR error is returned. This flag prevents any type of name
 resolution service (for example, NIS+) from being invoked.
 .sp
 .LP
-If the \fBAI_V4MAPPED\fR flag is specified along with an \fBai_family\fR of
-\fBAF_INET6\fR, then \fBgetaddrinfo()\fR returns IPv4-mapped IPv6 addresses
+If the
+.B AI_V4MAPPED
+flag is specified along with an \fBai_family\fR of
+.BR AF_INET6 ,
+then \fBgetaddrinfo()\fR returns IPv4-mapped IPv6 addresses
 on finding no matching IPv6 addresses (\fBai_addrlen\fR is 16). The
 \fBAI_V4MAPPED\fR flag is ignored unless \fBai_family\fR equals
-\fBAF_INET6\fR. If the \fBAI_ALL\fR flag is used with the \fBAI_V4MAPPED\fR
+.BR AF_INET6 .
+If the
+.B AI_ALL
+flag is used with the
+.BR AI_V4MAPPED
 flag, then \fBgetaddrinfo()\fR returns all matching IPv6 and IPv4 addresses.
-The \fBAI_ALL\fR flag without the \fBAI_V4MAPPED\fR flag is ignored.
+The
+.B AI_ALL
+flag without the
+.B AI_V4MAPPED
+flag is ignored.
 .sp
 .LP
-The \fBai_socktype\fR member to which argument hints points specifies the
+The
+.B ai_socktype
+member to which argument hints points specifies the
 socket type for the service, as defined in \fBsocket\fR(3XNET). If a
 specific socket type is not given (for example, a value of 0) and the
 service name could be interpreted as valid with multiple supported socket
@@ -194,13 +289,24 @@ to values with the specified socket type.
 .sp
 .LP
 If the \fBai_family\fR member to which hints points has the value
-\fBAF_UNSPEC\fR, addresses are returned for use with any address family that
-can be used with the specified \fInodename\fR and/or \fIservname\fR.
+.BR AF_UNSPEC ,
+addresses are returned for use with any address family that
+can be used with the specified
+.I nodename
+and/or \fIservname\fR.
 Otherwise, addresses are returned for use only with the specified address
-family. If \fBai_family\fR is not \fBAF_UNSPEC\fR and \fBai_protocol\fR is
+family. If \fBai_family\fR is not
+.B AF_UNSPEC
+and
+.B ai_protocol
+is
 not 0, then addresses are returned for use only with the specified address
-family and protocol; the value of \fBai_protocol\fR is interpreted as in a
-call to the \fBsocket()\fR function with the corresponding values of
+family and protocol; the value of
+.B ai_protocol
+is interpreted as in a
+call to the
+.B socket()
+function with the corresponding values of
 \fBai_family\fR and \fBai_protocol\fR.
 .SH RETURN VALUES
 .sp
@@ -210,7 +316,9 @@ non-zero return value indicates failure. The possible values for the
 failures are listed in the ERRORS section.
 .sp
 .LP
-Upon successful return of \fBgetaddrinfo()\fR, the location to which res
+Upon successful return of
+.BR getaddrinfo() ,
+the location to which res
 points refers to a linked list of \fBaddrinfo\fR structures, each of which
 specifies a socket address and information for use in creating a socket with
 which to use that socket address. The list includes at least one
@@ -218,20 +326,48 @@ which to use that socket address. The list includes at least one
 contains a pointer to the next structure on the list, or a null pointer if
 it is the last structure on the list. Each structure on the list includes
 values for use with a call to the socket function, and a socket address for
-use with the connect function or, if the \fBAI_PASSIVE\fR flag was
+use with the connect function or, if the
+.B AI_PASSIVE
+flag was
 specified, for use with the \fBbind\fR(3XNET) function. The \fBai_family\fR
-, \fBai_socktype\fR, and \fBai_protocol\fR members are usable as the
-arguments to the \fBsocket()\fR function to create a socket suitable for use
-with the returned address. The \fBai_addr\fR and \fBai_addrlen\fR members
-are usable as the arguments to the \fBconnect()\fR or \fBbind()\fR functions
-with such a socket, according to the \fBAI_PASSIVE\fR flag.
+,
+.BR ai_socktype ,
+and
+.B ai_protocol
+members are usable as the
+arguments to the
+.B socket()
+function to create a socket suitable for use
+with the returned address. The
+.B ai_addr
+and
+.B ai_addrlen
+members
+are usable as the arguments to the
+.B connect()
+or
+.B bind()
+functions
+with such a socket, according to the
+.B AI_PASSIVE
+flag.
 .sp
 .LP
-If \fInodename\fR is not null, and if requested by the \fBAI_CANONNAME\fR
-flag, the \fBai_canonname\fR member of the first returned \fBaddrinfo\fR
+If
+.I nodename
+is not null, and if requested by the \fBAI_CANONNAME\fR
+flag, the
+.B ai_canonname
+member of the first returned \fBaddrinfo\fR
 structure points to a null-terminated string containing the canonical name
-corresponding to the input \fInodename\fR. If the canonical name is not
-available, then \fBai_canonname\fR refers to the \fInodename\fR argument or
+corresponding to the input
+.IR nodename .
+If the canonical name is not
+available, then
+.B ai_canonname
+refers to the
+.I nodename
+argument or
 a string with the same contents. The contents of the \fBai_flags\fR member
 of the returned structures are undefined.
 .sp
@@ -248,7 +384,7 @@ The \fBgetaddrinfo()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBEAI_AGAIN\fR
+.B EAI_AGAIN
 .ad
 .RS 16n
 .rt
@@ -260,7 +396,7 @@ succeed.
 .ne 2
 .mk
 .na
-\fBEAI_BADFLAGS\fR
+.B EAI_BADFLAGS
 .ad
 .RS 16n
 .rt
@@ -272,7 +408,7 @@ value.
 .ne 2
 .mk
 .na
-\fBEAI_FAIL\fR
+.B EAI_FAIL
 .ad
 .RS 16n
 .rt
@@ -283,7 +419,7 @@ A non-recoverable error occurred when attempting to resolve the name.
 .ne 2
 .mk
 .na
-\fBEAI_FAMILY\fR
+.B EAI_FAMILY
 .ad
 .RS 16n
 .rt
@@ -294,7 +430,7 @@ The address family was not recognized.
 .ne 2
 .mk
 .na
-\fBEAI_MEMORY\fR
+.B EAI_MEMORY
 .ad
 .RS 16n
 .rt
@@ -306,7 +442,7 @@ the return value.
 .ne 2
 .mk
 .na
-\fBEAI_NONAME\fR
+.B EAI_NONAME
 .ad
 .RS 16n
 .rt
@@ -319,7 +455,7 @@ be supplied.
 .ne 2
 .mk
 .na
-\fBEAI_SERVICE\fR
+.B EAI_SERVICE
 .ad
 .RS 16n
 .rt
@@ -330,7 +466,7 @@ The service passed was not recognized for the specified socket type.
 .ne 2
 .mk
 .na
-\fBEAI_SOCKTYPE\fR
+.B EAI_SOCKTYPE
 .ad
 .RS 16n
 .rt
@@ -341,7 +477,7 @@ The intended socket type was not recognized.
 .ne 2
 .mk
 .na
-\fBEAI_SYSTEM\fR
+.B EAI_SYSTEM
 .ad
 .RS 16n
 .rt
@@ -352,7 +488,7 @@ A system error occurred. The error code can be found in \fBerrno\fR.
 .ne 2
 .mk
 .na
-\fBEAI_OVERFLOW\fR
+.B EAI_OVERFLOW
 .ad
 .RS 16n
 .rt
@@ -368,12 +504,18 @@ If the caller handles only TCP and not UDP, for example, then the
 .sp
 .LP
 If the caller handles only IPv4 and not IPv6, then the \fBai_family\fR
-member of the \fIhints\fR structure should be set to \fBAF_INET\fR when
+member of the
+.I hints
+structure should be set to
+.B AF_INET
+when
 \fBgetaddrinfo()\fR is called.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -392,7 +534,13 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBconnect\fR(3XNET), \fBgai_strerror\fR(3XNET),
-\fBgethostbyname\fR(3XNET), \fBgetnameinfo\fR(3XNET),
-\fBgetservbyname\fR(3XNET), \fBinet_addr\fR(3XNET), \fBinet_ntop\fR(3XNET),
-\fBsocket\fR(3XNET), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR connect (3XNET),
+.BR gai_strerror (3XNET),
+.BR gethostbyname (3XNET),
+\fBgetnameinfo\fR(3XNET),
+.BR getservbyname (3XNET),
+.BR inet_addr (3XNET),
+.BR inet_ntop (3XNET),
+.BR socket (3XNET),
+.BR attributes (5),
+.BR standards (5)

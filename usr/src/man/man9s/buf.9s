@@ -37,10 +37,13 @@ Architecture independent level 1 (DDI/DKI)
 .sp
 .LP
 The \fBbuf\fR structure is the basic data structure for block \fBI/O\fR
-transfers. Each block \fBI/O\fR transfer has an associated buffer header.
+transfers. Each block
+.B I/O
+transfer has an associated buffer header.
 The header contains all the buffer control and status information. For
 drivers, the buffer header pointer is the sole argument to a block driver
-\fBstrategy\fR(9E) routine. Do not depend on the size of the \fBbuf\fR
+.BR strategy (9E)
+routine. Do not depend on the size of the \fBbuf\fR
 structure when writing a driver.
 .sp
 .LP
@@ -104,12 +107,14 @@ Valid flags are as follows:
 .ne 2
 .mk
 .na
-\fBB_BUSY\fR
+.B B_BUSY
 .ad
 .RS 13n
 .rt
 Indicates the buffer is in use. The driver must not change this flag unless
-it allocated the buffer with \fBgetrbuf\fR(9F) and no \fBI/O\fR operation is
+it allocated the buffer with \fBgetrbuf\fR(9F) and no
+.B I/O
+operation is
 in progress.
 .RE
 
@@ -117,7 +122,7 @@ in progress.
 .ne 2
 .mk
 .na
-\fBB_DONE\fR
+.B B_DONE
 .ad
 .RS 13n
 .rt
@@ -128,25 +133,33 @@ Indicates the data transfer has completed. This flag is read-only.
 .ne 2
 .mk
 .na
-\fBB_ERROR\fR
+.B B_ERROR
 .ad
 .RS 13n
 .rt
-Indicates an \fBI/O\fR transfer error. It is set in conjunction with the
+Indicates an
+.B I/O
+transfer error. It is set in conjunction with the
 \fBb_error\fR field. \fBbioerror\fR(9F) should be used in preference to
-setting the \fBB_ERROR\fR bit.
+setting the
+.B B_ERROR
+bit.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBB_PAGEIO\fR
+.B B_PAGEIO
 .ad
 .RS 13n
 .rt
-Indicates the buffer is being used in a paged \fBI/O\fR request. See the
-description of the \fBb_un.b_addr\fR field for more information. This flag
+Indicates the buffer is being used in a paged
+.B I/O
+request. See the
+description of the
+.B b_un.b_addr
+field for more information. This flag
 is read-only.
 .RE
 
@@ -154,12 +167,14 @@ is read-only.
 .ne 2
 .mk
 .na
-\fBB_PHYS\fR
+.B B_PHYS
 .ad
 .RS 13n
 .rt
 indicates the buffer header is being used for physical (direct) \fBI/O\fR
-to a user data area. See the description of the \fBb_un.b_addr\fR field for
+to a user data area. See the description of the
+.B b_un.b_addr
+field for
 more information. This flag is read-only.
 .RE
 
@@ -167,7 +182,7 @@ more information. This flag is read-only.
 .ne 2
 .mk
 .na
-\fBB_READ\fR
+.B B_READ
 .ad
 .RS 13n
 .rt
@@ -179,12 +194,14 @@ memory.
 .ne 2
 .mk
 .na
-\fBB_WRITE\fR
+.B B_WRITE
 .ad
 .RS 13n
 .rt
 Indicates that the data is to be transferred from main memory to the
-peripheral device. \fBB_WRITE\fR is a pseudo flag and cannot be directly
+peripheral device.
+.B B_WRITE
+is a pseudo flag and cannot be directly
 tested; it is only detected as the NOT form of \fBB_READ\fR.
 .RE
 
@@ -195,14 +212,20 @@ buffer into driver work lists.
 .sp
 .LP
 \fBb_bcount\fR specifies the number of bytes to be transferred in both a
-paged and a non-paged \fBI/O\fR request.
+paged and a non-paged
+.B I/O
+request.
 .sp
 .LP
 \fBb_un.b_addr\fR is the virtual address of the \fBI/O\fR request, unless
 \fBB_PAGEIO\fR is set. The address is a kernel virtual address, unless
 \fBB_PHYS\fR is set, in which case it is a user virtual address. If
 \fBB_PAGEIO\fR is set, \fBb_un.b_addr\fR contains kernel private data. Note
-that either one of \fBB_PHYS\fR and \fBB_PAGEIO\fR, or neither, can be set,
+that either one of
+.B B_PHYS
+and
+.BR B_PAGEIO ,
+or neither, can be set,
 but not both.
 .sp
 .LP
@@ -210,14 +233,18 @@ but not both.
 defined by the device number) is to be accessed. The driver might have to
 convert this logical block number to a physical location such as a cylinder,
 track, and sector of a disk. This is a 32-bit value. The driver should use
-\fBb_blkno\fR or \fBb_lblkno\fR, but not both.
+\fBb_blkno\fR or
+.BR b_lblkno ,
+but not both.
 .sp
 .LP
 \fBb_lblkno\fR identifies which logical block on the device (the device is
 defined by the device number) is to be accessed. The driver might have to
 convert this logical block number to a physical location such as a cylinder,
 track, and sector of a disk. This is a 64-bit value. The driver should use
-\fBb_lblkno\fR or \fBb_blkno\fR, but not both.
+\fBb_lblkno\fR or
+.BR b_blkno ,
+but not both.
 .sp
 .LP
 \fBb_resid\fR should be set to the number of bytes not transferred because
@@ -228,13 +255,22 @@ of an error.
 .sp
 .LP
 \fBb_iodone\fR identifies a specific \fBbiodone\fR routine to be called by
-the driver when the \fBI/O\fR is complete.
+the driver when the
+.B I/O
+is complete.
 .sp
 .LP
 \fBb_error\fR can hold an error code that should be passed as a return code
-from the driver. \fBb_error\fR is set in conjunction with the \fBB_ERROR\fR
-bit set in the \fBb_flags\fR member. \fBbioerror\fR(9F) should be used in
-preference to setting the \fBb_error\fR field.
+from the driver.
+.B b_error
+is set in conjunction with the
+.BR B_ERROR
+bit set in the \fBb_flags\fR member.
+.BR bioerror (9F)
+should be used in
+preference to setting the
+.B b_error
+field.
 .sp
 .LP
 \fBb_private\fR is for the private use of the device driver.
@@ -245,12 +281,17 @@ accessed.
 .SH SEE ALSO
 .sp
 .LP
-\fBstrategy\fR(9E), \fBaphysio\fR(9F), \fBbioclone\fR(9F),
-\fBbiodone\fR(9F), \fBbioerror\fR(9F), \fBbioinit\fR(9F), \fBclrbuf\fR(9F),
+.BR strategy (9E),
+.BR aphysio (9F),
+.BR bioclone (9F),
+.BR biodone (9F),
+.BR bioerror (9F),
+.BR bioinit (9F),
+\fBclrbuf\fR(9F),
 \fBgetrbuf\fR(9F), \fBphysio\fR(9F), \fBiovec\fR(9S), \fBuio\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP

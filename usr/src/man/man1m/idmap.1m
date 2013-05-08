@@ -102,7 +102,9 @@ idmap \- configure and manage the Native Identity Mapping service
 .SH DESCRIPTION
 .sp
 .LP
-The \fBidmap\fR utility is used to configure and manage the Native Identity
+The
+.B idmap
+utility is used to configure and manage the Native Identity
 Mapping service.
 .sp
 .LP
@@ -132,17 +134,22 @@ algorithmically generated local SID.
 .RE
 .sp
 .LP
-The \fBidmap\fR utility can be used to create and manage the name-based
+The
+.B idmap
+utility can be used to create and manage the name-based
 mappings and to monitor the mappings in effect.
 .sp
 .LP
-If the \fBidmap\fR utility is invoked without a subcommand or option, it reads
+If the
+.B idmap
+utility is invoked without a subcommand or option, it reads
 the subcommands from standard input. When standard input is a TTY, the
 \fBidmap\fR command prints the usage message and exits.
 .SS "Mapping Mechanisms"
 .sp
 .LP
-The \fBidmapd\fR(1M) daemon maps Windows user and group SIDs to UNIX UIDs and
+The
+.BR idmapd "(1M) daemon maps Windows user and group SIDs to UNIX UIDs and"
 GIDs as follows:
 .RS +4
 .TP
@@ -167,7 +174,9 @@ Local SID mappings are used to map from UNIX to Windows.
 .LP
 To prevent aliasing problems, all file systems, archive and backup formats,
 and protocols must store SIDs or map all UIDs and GIDs in the 2^31 to 2^32 - 2
-range to the \fBnobody\fR user and group.
+range to the
+.B nobody
+user and group.
 .sp
 .LP
 It is possible to create also diagonal mappings. They are the mappings between
@@ -200,14 +209,17 @@ LDAP object for a given Solaris user or group can be augmented to include the
 corresponding Windows user or group name.
 .sp
 .LP
-\fBidmapd\fR(1M) can be configured to use AD and/or native LDAP
+.BR idmapd (1M)
+can be configured to use AD and/or native LDAP
 directory-based name mappings by setting the appropriate service management
 facility (SMF) properties of the \fBidmap\fR service. See "Service Properties,"
 below, for more details.
 .sp
 .LP
 If directory-based name mapping is not configured or if configured but not
-found, then \fBidmapd\fR(1M) will process locally stored name-based mapping
+found, then
+.BR idmapd (1M)
+will process locally stored name-based mapping
 rules.
 .sp
 .LP
@@ -230,16 +242,24 @@ Domain Controllers
 
 .sp
 .LP
-When \fBidmap\fR rules are added, these well-known names will be expanded to
+When
+.B idmap
+rules are added, these well-known names will be expanded to
 canonical form. That is, either the default domain name will be added (for
 names that are not well-known) or an appropriate built-in domain name will be
 added. Depending on the particular well-known name, this domain name might be
-null, \fBBUILTIN\fR, or the local host name.
+null,
+.BR BUILTIN ,
+or the local host name.
 .sp
 .LP
-The following sequence of \fBidmap\fR commands illustrate the treatment of the
-non-well-known name \fBfred\fR and the well-known names \fBadministrator\fR and
-\fBguest\fR.
+The following sequence of
+.B idmap
+commands illustrate the treatment of the
+non-well-known name \fBfred\fR and the well-known names
+.B administrator
+and
+.BR guest .
 .sp
 .in +2
 .nf
@@ -267,10 +287,14 @@ add     winname:fred@example.com       unixuser:fredf
 .SS "Ephemeral Mappings"
 .sp
 .LP
-The \fBidmapd\fR daemon attempts to preserve ephemeral ID mappings across
+The
+.B idmapd
+daemon attempts to preserve ephemeral ID mappings across
 daemon restarts. However, when IDs cannot be preserved, the daemon maps each
 previously mapped SID to a new ephemeral UID or GID value. The daemon will
-never re-use ephemeral UIDs or GIDs. If the \fBidmapd\fR daemon runs out of
+never re-use ephemeral UIDs or GIDs. If the
+.B idmapd
+daemon runs out of
 ephemeral UIDs and GIDs, it returns an error as well as a default UID or GID
 for SIDs that cannot be mapped by name.
 .sp
@@ -383,11 +407,18 @@ rules is performed in the following order:
 .SS "Service Properties"
 .sp
 .LP
-The service properties determine the behavior of the \fBidmapd\fR(1M) daemon.
-These properties are stored in the SMF repository (see \fBsmf\fR(5)) under
-property group \fBconfig\fR. They can be accessed and modified using
+The service properties determine the behavior of the
+.BR idmapd "(1M) daemon."
+These properties are stored in the SMF repository (see
+.BR smf (5))
+under
+property group
+.BR config .
+They can be accessed and modified using
 \fBsvccfg\fR(1M), which requires \fBsolaris.smf.value.idmap\fR authorization.
-The service properties for the \fBidmap\fR service are:
+The service properties for the
+.B idmap
+service are:
 .sp
 .ne 2
 .mk
@@ -448,13 +479,17 @@ is used.
 
 .sp
 .LP
-Changes to service properties do not affect a running \fBidmap\fR service. The
+Changes to service properties do not affect a running
+.B idmap
+service. The
 service must be refreshed (with \fBsvcadm\fR(1M)) for the changes to take
 effect.
 .SH OPERANDS
 .sp
 .LP
-The \fBidmap\fR command uses the following operands:
+The
+.B idmap
+command uses the following operands:
 .sp
 .ne 2
 .mk
@@ -465,7 +500,9 @@ The \fBidmap\fR command uses the following operands:
 .RS 4n
 Specifies the format in which user name mappings are described for the
 \fBexport\fR and \fBimport\fR subcommands. The Netapp \fBusermap.cfg\fR and
-Samba \fBsmbusers\fR external formats are supported. These external formats are
+Samba
+.B smbusers
+external formats are supported. These external formats are
 \fBonly\fR for users, not groups.
 .RS +4
 .TP
@@ -505,7 +542,9 @@ The IP qualifier is not supported.
 .TP
 .ie t \(bu
 .el o
-The \fBsmbusers\fR rule-mapping format is as follows:
+The
+.B smbusers
+rule-mapping format is as follows:
 .sp
 .in +2
 .nf
@@ -514,9 +553,13 @@ The \fBsmbusers\fR rule-mapping format is as follows:
 .in -2
 .sp
 
-If \fIwinname\fR includes whitespace, escape the whitespace by enclosing the
+If
+.I winname
+includes whitespace, escape the whitespace by enclosing the
 value in double quotes. For example, the following file shows how to specify
-whitespace in a valid format for the \fBidmap\fR command:
+whitespace in a valid format for the
+.B idmap
+command:
 .sp
 .in +2
 .nf
@@ -532,13 +575,23 @@ The mappings are imported as unidirectional mappings from Windows names to
 UNIX names.
 .sp
 The format is based on the "username map" entry of the \fBsmb.conf\fR man
-page, which is available on the \fBsamba.org\fR web site. The use of an
-asterisk (\fB*\fR) for \fIwindows-name\fR is supported. However, the
+page, which is available on the
+.B samba.org
+web site. The use of an
+asterisk (\fB*\fR) for
+.I windows-name
+is supported. However, the
 \fB@group\fR directive and the chaining of mappings are not supported.
 .sp
-By default, if no mapping entries are in the \fBsmbusers\fR file, Samba maps a
-\fIwindows-name\fR to the equivalent \fIunix-name\fR, if any. If you want to
-set up the same mapping as Samba does, use the following \fBidmap\fR command:
+By default, if no mapping entries are in the
+.B smbusers
+file, Samba maps a
+\fIwindows-name\fR to the equivalent
+.IR unix-name ,
+if any. If you want to
+set up the same mapping as Samba does, use the following
+.B idmap
+command:
 .sp
 .in +2
 .nf
@@ -554,18 +607,20 @@ idmap add -d "winuser:*@*" "unixuser:*"
 .ne 2
 .mk
 .na
-\fIidentity\fR
+.I identity
 .ad
 .sp .6
 .RS 4n
-Specifies a user name, user ID, group name, or group ID. \fIidentity\fR is
+Specifies a user name, user ID, group name, or group ID.
+.I identity
+is
 specified as \fItype\fB:\fIvalue\fR. \fItype\fR is one of the
 following:
 .sp
 .ne 2
 .mk
 .na
-\fBusid\fR
+.B usid
 .ad
 .RS 13n
 .rt
@@ -576,7 +631,7 @@ Windows user SID in text format
 .ne 2
 .mk
 .na
-\fBgsid\fR
+.B gsid
 .ad
 .RS 13n
 .rt
@@ -587,7 +642,7 @@ Windows group SID in text format
 .ne 2
 .mk
 .na
-\fBsid\fR
+.B sid
 .ad
 .RS 13n
 .rt
@@ -599,7 +654,7 @@ group
 .ne 2
 .mk
 .na
-\fBuid\fR
+.B uid
 .ad
 .RS 13n
 .rt
@@ -610,7 +665,7 @@ Numeric POSIX UID
 .ne 2
 .mk
 .na
-\fBgid\fR
+.B gid
 .ad
 .RS 13n
 .rt
@@ -621,7 +676,7 @@ Numeric POSIX GID
 .ne 2
 .mk
 .na
-\fBunixuser\fR
+.B unixuser
 .ad
 .RS 13n
 .rt
@@ -632,7 +687,7 @@ UNIX user name
 .ne 2
 .mk
 .na
-\fBunixgroup\fR
+.B unixgroup
 .ad
 .RS 13n
 .rt
@@ -643,7 +698,7 @@ UNIX group name
 .ne 2
 .mk
 .na
-\fBwinuser\fR
+.B winuser
 .ad
 .RS 13n
 .rt
@@ -654,7 +709,7 @@ Windows user name
 .ne 2
 .mk
 .na
-\fBwingroup\fR
+.B wingroup
 .ad
 .RS 13n
 .rt
@@ -665,7 +720,7 @@ Windows group name
 .ne 2
 .mk
 .na
-\fBwinname\fR
+.B winname
 .ad
 .RS 13n
 .rt
@@ -673,7 +728,8 @@ Windows user or group name
 .RE
 
 \fIvalue\fR is a number or string that is appropriate to the specified
-\fItype\fR. For instance, \fBunixgroup:staff\fR specifies the UNIX group name,
+.IR type .
+For instance, \fBunixgroup:staff\fR specifies the UNIX group name,
 \fBstaff\fR. The identity \fBgid:10\fR represents GID 10, which corresponds to
 the UNIX group \fBstaff\fR.
 .RE
@@ -682,12 +738,16 @@ the UNIX group \fBstaff\fR.
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .sp .6
 .RS 4n
-Specifies a UNIX name (\fBunixuser\fR, \fBunixgroup\fR) or a Windows name
-(\fBwinuser\fR, \fBwingroup\fR) that can be used for name-based mapping
+Specifies a UNIX name (\fBunixuser\fR,
+.BR unixgroup )
+or a Windows name
+(\fBwinuser\fR,
+.BR wingroup )
+that can be used for name-based mapping
 rules.
 .sp
 .LP
@@ -696,7 +756,7 @@ A Windows security entity name can be specified in one of these ways:
 .TP
 .ie t \(bu
 .el o
-\fIdomain\fR\e\fIname\fR
+.IR domain \e\fIname\fR
 .RE
 .RS +4
 .TP
@@ -708,23 +768,38 @@ A Windows security entity name can be specified in one of these ways:
 .TP
 .ie t \(bu
 .el o
-\fIname\fR, which uses the default mapping domain
+.IR name ,
+which uses the default mapping domain
 .RE
 If \fIname\fR is the empty string (\fB""\fR), mapping is inhibited. Note that
 a name of \fB""\fR should not be used to preclude logins by unmapped Windows
 users.
 .sp
-If \fIname\fR uses the wildcard (\fB*\fR), it matches all names that are not
-matched by other mappings. Similarly, if \fIname\fR is the wildcard Windows
-name (\fB*@*\fR), it matches all names in all domains that are not matched by
+If
+.I name
+uses the wildcard
+.RB ( * ),
+it matches all names that are not
+matched by other mappings. Similarly, if
+.I name
+is the wildcard Windows
+name
+.RB ( *@* ),
+it matches all names in all domains that are not matched by
 other mappings.
 .sp
-If \fIname\fR uses the wildcard on both sides of the mapping rule, the name is
+If
+.I name
+uses the wildcard on both sides of the mapping rule, the name is
 the same for both Windows and Solaris users. For example, if the rule is
 \fB"*@domain" == "*"\fR, the \fBjp@domain\fR Windows user name matches this
-rule and maps to the \fBjp\fR Solaris user name.
+rule and maps to the
+.B jp
+Solaris user name.
 .sp
-Specifying the type of \fIname\fR is optional if the type can be deduced from
+Specifying the type of
+.I name
+is optional if the type can be deduced from
 other arguments or types specified on the command line.
 .RE
 
@@ -732,21 +807,33 @@ other arguments or types specified on the command line.
 .ne 2
 .mk
 .na
-\fItarget-type\fR
+.I target-type
 .ad
 .sp .6
 .RS 4n
-Used with the \fBshow\fR and \fBunset-namemap\fR subcommands. For \fBshow\fR,
+Used with the
+.B show
+and
+.B unset-namemap
+subcommands. For \fBshow\fR,
 specifies the mapping type that should be shown. For example, if
-\fItarget-type\fR is \fBsid\fR, \fBidmap show\fR returns the SID mapped to the
-identity specified on the command line. For \fBunset-namemap\fR, identifies an
-attribute within the object specified by the \fIname\fR operand.
+\fItarget-type\fR is
+.BR sid ,
+\fBidmap show\fR returns the SID mapped to the
+identity specified on the command line. For
+.BR unset-namemap ,
+identifies an
+attribute within the object specified by the
+.I name
+operand.
 .RE
 
 .SH OPTIONS
 .sp
 .LP
-The \fBidmap\fR command supports one option and a set of subcommands. The
+The
+.B idmap
+command supports one option and a set of subcommands. The
 subcommands also have options.
 .SS "Command-Line Option"
 .sp
@@ -757,8 +844,12 @@ subcommands also have options.
 .ad
 .sp .6
 .RS 4n
-Reads and executes \fBidmap\fR subcommands from \fIcommand-file\fR. The
-\fBidmap\fR \fB-f\fR \fB-\fR command reads from standard input. This option is
+Reads and executes
+.B idmap
+subcommands from
+.IR command-file .
+The
+\fBidmap -f\fR \fB-\fR command reads from standard input. This option is
 not used by any subcommands.
 .RE
 
@@ -770,23 +861,37 @@ The following subcommands are supported:
 .ne 2
 .mk
 .na
-\fBadd\fR [\fB-d\fR] \fIname1\fR \fIname2\fR
+\fBadd\fR [\fB-d\fR] \fIname1 name2\fR
 .ad
 .sp .6
 .RS 4n
 Adds a name-based mapping rule. By default, the name mapping is bidirectional.
-If the \fB-d\fR option is used, a unidirectional mapping is created from
+If the
+.B -d
+option is used, a unidirectional mapping is created from
 \fIname1\fR to \fIname2\fR.
 .sp
-Either \fIname1\fR or \fIname2\fR must be a Windows name, and the other must
-be a UNIX name. For the Windows name, the \fBwinname\fR identity type must not
-be used. Instead, specify one of the \fBwinuser\fR or \fBwingroup\fR types. See
+Either
+.I name1
+or
+.I name2
+must be a Windows name, and the other must
+be a UNIX name. For the Windows name, the
+.B winname
+identity type must not
+be used. Instead, specify one of the
+.B winuser
+or
+.B wingroup
+types. See
 "Operands" for information about the \fIname\fR operand.
 .sp
 Note that two unidirectional mappings between the same two names in two
 opposite directions are equivalent to one bidirectional mapping.
 .sp
-This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
+This subcommand requires the
+.B solaris.admin.idmap.rules
+authorization.
 .RE
 
 .sp
@@ -797,7 +902,9 @@ This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
 .ad
 .sp .6
 .RS 4n
-Dumps all the mappings cached since the last system boot. The \fB-n\fR option
+Dumps all the mappings cached since the last system boot. The
+.B -n
+option
 shows the names, as well. By default, only \fBsid\fRs, \fBuid\fRs, and
 \fBgid\fRs are shown. The \fB-v\fR option shows how the mappings were
 generated.
@@ -832,7 +939,7 @@ user or group object represented by the specified name.
 .ne 2
 .mk
 .na
-\fBhelp\fR
+.B help
 .ad
 .sp .6
 .RS 4n
@@ -849,25 +956,29 @@ Displays the usage message.
 .RS 4n
 Imports name-based mapping rules from standard input by using the specified
 \fIformat\fR. The \fB-f\fR \fIfile\fR option reads the rules from the specified
-file. The \fB-F\fR option flushes existing name-based mapping rules before
+file. The
+.B -F
+option flushes existing name-based mapping rules before
 adding new ones.
 .sp
 Regardless of the external format used, the imported rules are processed by
 using the semantics and order described in the section "Rule Lookup Order,"
 above.
 .sp
-This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
+This subcommand requires the
+.B solaris.admin.idmap.rules
+authorization.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBlist\fR
+.B list
 .ad
 .sp .6
 .RS 4n
-Lists all name-based mapping rules. Each rule appears in its \fBidmap add\fR
+.RB "Lists all name-based mapping rules. Each rule appears in its" " idmap add"
 form.
 .RE
 
@@ -882,42 +993,58 @@ form.
 Removes any name-based mapping rule that involves the specified name.
 \fIname\fR can be either a UNIX or Windows user name or group name.
 .sp
-The \fB-f\fR option removes rules that use \fIname\fR as the source. The
+The \fB-f\fR option removes rules that use
+.I name
+as the source. The
 \fB-t\fR option removes rules that use \fIname\fR as the destination. These
 options are mutually exclusive.
 .sp
-This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
+This subcommand requires the
+.B solaris.admin.idmap.rules
+authorization.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBremove\fR \fB-a\fR
+.B remove -a
 .ad
 .sp .6
 .RS 4n
 Removes all name-based mapping rules.
 .sp
-This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
+This subcommand requires the
+.B solaris.admin.idmap.rules
+authorization.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBremove\fR [\fB-d\fR] \fIname1\fR \fIname2\fR
+\fBremove\fR [\fB-d\fR] \fIname1 name2\fR
 .ad
 .sp .6
 .RS 4n
-Removes name-based mapping rules between \fIname1\fR and \fIname2\fR. If the
+Removes name-based mapping rules between
+.I name1
+and
+.IR name2 .
+If the
 \fB-d\fR option is specified, rules from \fIname1\fR to \fIname2\fR are
 removed.
 .sp
-Either \fIname1\fR or \fIname2\fR must be a Windows name, and the other must
+Either
+.I name1
+or
+.I name2
+must be a Windows name, and the other must
 be a UNIX name.
 .sp
-This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
+This subcommand requires the
+.B solaris.admin.idmap.rules
+authorization.
 .RE
 
 .sp
@@ -925,18 +1052,33 @@ This subcommand requires the \fBsolaris.admin.idmap.rules\fR authorization.
 .mk
 .na
 \fBset-namemap\fR [\fB-a\fR \fIauthenticationMethod\fR] [\fB-D\fR
-\fIbindDN\fR] [\fB-j\fR \fIpasswdfile\fR] \fIname1\fR \fIname2\fR
+\fIbindDN\fR] [\fB-j\fR \fIpasswdfile\fR] \fIname1 name2\fR
 .ad
 .sp .6
 .RS 4n
 Sets name mapping information in the AD or native LDAP user or group object.
-Either \fIname1\fR or \fIname2\fR must be a Windows name, and the other must be
+Either
+.I name1
+or
+.I name2
+must be a Windows name, and the other must be
 a UNIX name.
 .sp
-If \fIname1\fR is a Windows name, then the UNIX name \fIname2\fR is added to
-the AD object represented by \fIname1\fR. Similarly, if \fIname1\fR is a UNIX
-name then the Windows name \fIname2\fR is added to the native LDAP entry
-represented by \fIname1\fR.
+If
+.I name1
+is a Windows name, then the UNIX name
+.I name2
+is added to
+the AD object represented by
+.IR name1 .
+Similarly, if
+.I name1
+is a UNIX
+name then the Windows name
+.I name2
+is added to the native LDAP entry
+represented by
+.IR name1 .
 .sp
 The following options are supported:
 .sp
@@ -948,7 +1090,8 @@ The following options are supported:
 .sp .6
 .RS 4n
 Specify authentication method when modifying native LDAP entry. See
-\fBldapaddent\fR(1M) for details. Default value is \fBsasl/GSSAPI\fR.
+.BR ldapaddent (1M)
+for details. Default value is \fBsasl/GSSAPI\fR.
 .RE
 
 .sp
@@ -959,7 +1102,9 @@ Specify authentication method when modifying native LDAP entry. See
 .ad
 .sp .6
 .RS 4n
-Uses the distinguished name \fIbindDN\fR to bind to the directory.
+Uses the distinguished name
+.I bindDN
+to bind to the directory.
 .RE
 
 .sp
@@ -983,15 +1128,24 @@ Specify a file containing the password for authentication to the directory.
 .ad
 .sp .6
 .RS 4n
-Shows the identity of type, \fItarget-type\fR, that the specified \fIname\fR
-maps to. If the optional \fItarget-type\fR is omitted, the non-diagonal mapping
+Shows the identity of type,
+.IR target-type ,
+that the specified
+.IR name
+maps to. If the optional
+.I target-type
+is omitted, the non-diagonal mapping
 is shown.
 .sp
 By default, this subcommand shows only mappings that have been established
-already. The \fB-c\fR option forces the evaluation of name-based mapping
+already. The
+.B -c
+option forces the evaluation of name-based mapping
 configurations or the dynamic allocation of IDs.
 .sp
-The \fB-v\fR option shows how the mapping was generated and also whether the
+The
+.B -v
+option shows how the mapping was generated and also whether the
 mapping was just generated or was retrieved from the cache.
 .RE
 
@@ -1008,15 +1162,19 @@ Unsets directory-based name mapping information from the AD or native LDAP
 user or group object represented by the specified name and optional target
 type.
 .sp
-See the \fBset-namemap\fR subcommand for options.
+See the
+.B set-namemap
+subcommand for options.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing a Wildcard on Both Sides of a Name-Based Mapping Rule
+\fBExample 1\fR Using a Wildcard on Both Sides of a Name-Based Mapping Rule
 .sp
 .LP
-The following command maps all Windows user names in the \fBxyz.com\fR domain
+The following command maps all Windows user names in the
+.B xyz.com
+domain
 to the UNIX users with the same names provided that one exists and is not
 otherwise mapped. If such a rule is matched but the UNIX user name does not
 exist, an ephemeral ID mapping is used.
@@ -1030,12 +1188,21 @@ exist, an ephemeral ID mapping is used.
 .sp
 
 .LP
-\fBExample 2 \fRUsing a Wildcard on One Side of a Name-Based Mapping Rule
+\fBExample 2\fR Using a Wildcard on One Side of a Name-Based Mapping Rule
 .sp
 .LP
-The following command maps all unmapped Windows users in the \fBxyz.com\fR
-domain to the \fBguest\fR UNIX user. The \fB-d\fR option specifies a
-unidirectional mapping from \fB*@xyz.com\fR users to the \fBguest\fR user.
+The following command maps all unmapped Windows users in the
+.BR xyz.com
+domain to the
+.B guest
+UNIX user. The
+.B -d
+option specifies a
+unidirectional mapping from
+.B *@xyz.com
+users to the
+.B guest
+user.
 
 .sp
 .in +2
@@ -1046,11 +1213,15 @@ unidirectional mapping from \fB*@xyz.com\fR users to the \fBguest\fR user.
 .sp
 
 .LP
-\fBExample 3 \fRAdding a Bidirectional Name-Based Mapping Rule
+\fBExample 3\fR Adding a Bidirectional Name-Based Mapping Rule
 .sp
 .LP
-The following command maps Windows user, \fBfoobar@example.com\fR, to UNIX
-user, \fBfoo\fR, and conversely:
+The following command maps Windows user,
+.BR foobar@example.com ,
+to UNIX
+user,
+.BR foo ,
+and conversely:
 
 .sp
 .in +2
@@ -1073,7 +1244,7 @@ This command shows how to remove the mapping added by the previous command:
 .sp
 
 .LP
-\fBExample 4 \fRShowing a UID-to-SID Mapping
+\fBExample 4\fR Showing a UID-to-SID Mapping
 .RS +4
 .TP
 .ie t \(bu
@@ -1095,7 +1266,9 @@ uid:50000 -> usid:S-1-5-21-3223191800-2000
 .ie t \(bu
 .el o
 The following command shows the UNIX user name that the specified Windows user
-name, \fBjoe@example.com\fR, maps to:
+name,
+.BR joe@example.com ,
+maps to:
 .sp
 .in +2
 .nf
@@ -1107,7 +1280,7 @@ winuser:joe@example.com -> unixuser:joes
 
 .RE
 .LP
-\fBExample 5 \fRListing the Cached SID-to-UID Mappings
+\fBExample 5\fR Listing the Cached SID-to-UID Mappings
 .sp
 .LP
 The following command shows all of the SID-to-UID mappings that are in the
@@ -1127,10 +1300,12 @@ usid:S-1-5-21-3223191700-4000    =>     uid:60001
 .sp
 
 .LP
-\fBExample 6 \fRBatching \fBidmap\fR Requests
+\fBExample 6\fR Batching \fBidmap\fR Requests
 .sp
 .LP
-The following commands show how to batch \fBidmap\fR requests. This particular
+The following commands show how to batch
+.B idmap
+requests. This particular
 command sequence does the following:
 
 .RS +4
@@ -1143,14 +1318,18 @@ Removes any previous rules for \fBfoobar@example.com\fR.
 .TP
 .ie t \(bu
 .el o
-Maps Windows user \fBfoobar@example.com\fR to UNIX user \fBbar\fR and
+Maps Windows user \fBfoobar@example.com\fR to UNIX user
+.B bar
+and
 vice-versa.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Maps Windows group \fBmembers\fR to UNIX group \fBstaff\fR and vice-versa.
+Maps Windows group
+.B members
+to UNIX group \fBstaff\fR and vice-versa.
 .RE
 .sp
 .in +2
@@ -1165,7 +1344,7 @@ Maps Windows group \fBmembers\fR to UNIX group \fBstaff\fR and vice-versa.
 .sp
 
 .LP
-\fBExample 7 \fRListing Name-Based Mapping Rules
+\fBExample 7\fR Listing Name-Based Mapping Rules
 .sp
 .LP
 The following command shows how to list the name-based mapping rules:
@@ -1181,13 +1360,15 @@ add wingroup:members unixgroup:staff
 .sp
 
 .LP
-\fBExample 8 \fRImporting Name-Based Mapping Rules From the \fBusermap.cfg\fR
+\fBExample 8\fR Importing Name-Based Mapping Rules From the \fBusermap.cfg\fR
 File
 .sp
 .LP
 The \fBusermap.cfg\fR file can be used to configure name-based mapping rules.
 The following \fBusermap.cfg\fR file shows mapping rules that map Windows user
-\fBfoo@example.com\fR to UNIX user \fBfoo\fR, and that map
+\fBfoo@example.com\fR to UNIX user
+.BR foo ,
+and that map
 \fBfoobar@example.com\fR to the UNIX user \fBfoo\fR.
 
 .sp
@@ -1202,7 +1383,9 @@ foobar@example.com => foo
 
 .sp
 .LP
-The following \fBidmap\fR command imports \fBusermap.cfg\fR information to the
+The following
+.B idmap
+command imports \fBusermap.cfg\fR information to the
 \fBidmapd\fR database:
 
 .sp
@@ -1227,7 +1410,8 @@ This command does the same as the previous command:
 
 .sp
 .LP
-The following commands are equivalent to the previous \fBidmap import\fR
+The following commands are equivalent to the previous
+.BR "idmap import"
 commands:
 
 .sp
@@ -1242,15 +1426,24 @@ commands:
 .sp
 
 .LP
-\fBExample 9 \fRUsing Name-Based and Ephemeral ID Mapping With Identity
+\fBExample 9\fR Using Name-Based and Ephemeral ID Mapping With Identity
 Function Mapping and Exceptions
 .sp
 .LP
-The following commands map all users in the \fBexample.com\fR Windows domain
+The following commands map all users in the
+.B example.com
+Windows domain
 to UNIX user accounts of the same name. The command also specifies mappings for
-the following Windows users: \fBjoe@example.com\fR, \fBjane.doe@example.com\fR,
-\fBadministrator@example.com\fR. The \fBadministrator\fR from all domains is
-mapped to \fBnobody\fR. Any Windows users without corresponding UNIX accounts
+the following Windows users:
+.BR joe@example.com ,
+.BR jane.doe@example.com ,
+.BR administrator@example.com .
+The
+.B administrator
+from all domains is
+mapped to
+.BR nobody .
+Any Windows users without corresponding UNIX accounts
 are mapped dynamically to available ephemeral UIDs.
 
 .sp
@@ -1268,10 +1461,12 @@ are mapped dynamically to available ephemeral UIDs.
 .sp
 
 .LP
-\fBExample 10 \fRAdding Directory-based Name Mapping to AD User Object
+\fBExample 10\fR Adding Directory-based Name Mapping to AD User Object
 .sp
 .LP
-The following command maps Windows user \fBjoe@example.com\fR to UNIX user
+The following command maps Windows user
+.B joe@example.com
+to UNIX user
 \fBjoe\fR by adding the UNIX name to AD object for \fBjoe@example.com\fR.
 
 .sp
@@ -1283,7 +1478,7 @@ The following command maps Windows user \fBjoe@example.com\fR to UNIX user
 .sp
 
 .LP
-\fBExample 11 \fRAdding Directory-based Name Mapping to Native LDAP User
+\fBExample 11\fR Adding Directory-based Name Mapping to Native LDAP User
 Object
 .sp
 .LP
@@ -1300,11 +1495,14 @@ The following command maps UNIX user \fBfoo\fR to Windows user
 .sp
 
 .LP
-\fBExample 12 \fRRemoving Directory-based Name Mapping from AD User Object
+\fBExample 12\fR Removing Directory-based Name Mapping from AD User Object
 .sp
 .LP
-The following command removes the UNIX username \fBunixuser\fR from the AD
-object representing \fBjoe@example.com\fR.
+The following command removes the UNIX username
+.B unixuser
+from the AD
+object representing
+.BR joe@example.com .
 
 .sp
 .in +2
@@ -1319,7 +1517,7 @@ object representing \fBjoe@example.com\fR.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 6n
 .rt
@@ -1330,7 +1528,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fB>0\fR
+.B >0
 .ad
 .RS 6n
 .rt
@@ -1340,7 +1538,9 @@ An error occurred. A diagnostic message is written to standard error.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1359,17 +1559,26 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBidmapd\fR(1M), \fBldapaddent\fR(1M), \fBsvcadm\fR(1M),
-\fBsvccfg\fR(1M), \fBattributes\fR(5), \fBsmf\fR(5)
+.BR svcs (1),
+.BR idmapd (1M),
+.BR ldapaddent (1M),
+.BR svcadm (1M),
+\fBsvccfg\fR(1M),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
-The \fBidmapd\fR service is managed by the service management facility,
+The
+.B idmapd
+service is managed by the service management facility,
 \fBsmf\fR(5). The service identifier for the \fBidmapd\fR service is
-\fBsvc:/system/idmap\fR.
+.BR svc:/system/idmap .
 .sp
 .LP
-Use the \fBsvcadm\fR command to perform administrative actions on this
+Use the
+.B svcadm
+command to perform administrative actions on this
 service, such as enabling, disabling, or restarting the service. These actions
 require the \fBsolaris.smf.manage.idmap\fR authorization. Use the \fBsvcs\fR
 command to query the service's status.
@@ -1377,7 +1586,9 @@ command to query the service's status.
 .LP
 Windows user names are case-insensitive, while UNIX user names are
 case-sensitive. The case of Windows names as they appear in \fBidmap\fR
-name-rules and \fBidmap show\fR command lines is irrelevant.
+name-rules and
+.B "idmap show"
+command lines is irrelevant.
 .sp
 .LP
 Because common practice in UNIX environments is to use all-lowercase user
@@ -1391,7 +1602,11 @@ is used as the UNIX user or group name.
 As a result of this differing treatment of case, user names that appear to be
 alike might not be recognized as matches. You must create rules to handle such
 pairings of strings that differ only in case. For example, to map the Windows
-user \fBsam@example\fR to the Solaris user \fBSam\fR, you must create the
+user
+.B sam@example
+to the Solaris user
+.BR Sam ,
+you must create the
 following rules:
 .sp
 .in +2
@@ -1406,5 +1621,7 @@ following rules:
 .LP
 For guidance on modifying an Active Directory schema, consult the Microsoft
 document, \fIStep-by-Step Guide to Using Active Directory Schema and Display
-Specifiers\fR, which you can find at their \fBtechnet\fR web site,
+Specifiers\fR, which you can find at their
+.B technet
+web site,
 http://technet.microsoft.com/\&.

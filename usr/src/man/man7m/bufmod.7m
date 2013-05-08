@@ -38,17 +38,27 @@ bufmod \- STREAMS Buffer Module
 \fBbufmod\fR is a \fBSTREAMS\fR module that buffers incoming messages,
 reducing the number of system calls and the associated overhead required to
 read and process them. Although \fBbufmod\fR was originally designed to be
-used in conjunction with \fBSTREAMS-based\fR networking device drivers, the
+used in conjunction with
+.B STREAMS-based
+networking device drivers, the
 version described here is general purpose so that it can be used anywhere
 \fBSTREAMS\fR input buffering is required.
 .SS "Read-side Behavior"
 .sp
 .LP
 The behavior of \fBbufmod\fR depends on various parameters and flags that
-can be set and queried as described below under \fBIOCTLS\fR. \fBbufmod\fR
-collects incoming \fBM_DATA\fR messages into chunks, passing each chunk
+can be set and queried as described below under
+.BR IOCTLS .
+\fBbufmod\fR
+collects incoming
+.B M_DATA
+messages into chunks, passing each chunk
 upstream when the chunk becomes full or the current read timeout expires. It
-optionally converts \fBM_PROTO\fR messages to \fBM_DATA\fR and adds them to
+optionally converts
+.B M_PROTO
+messages to
+.B M_DATA
+and adds them to
 chunks as well. It also optionally adds to each message a header containing
 a timestamp, and a cumulative count of  messages dropped on the stream read
 side due to resource exhaustion or flow control. Thedefault settings of
@@ -62,21 +72,35 @@ When a message arrives, \fBbufmod\fR processes it in several steps. The
 following paragraphs discuss each step in turn.
 .sp
 .LP
-Upon receiving a message from below, if the \fBSB_NO_HEADER\fR flag is not
+Upon receiving a message from below, if the
+.B SB_NO_HEADER
+flag is not
 set, \fBbufmod\fR immediately timestamps it and saves the current time value
 for later insertion in the header described below.
 .sp
 .LP
-Next, if \fBSB_NO_PROTO_CVT\fR is not set, \fBbufmod\fR converts all
-leading \fBM_PROTO\fR blocks in the message to \fBM_DATA\fR blocks, altering
+Next, if
+.B SB_NO_PROTO_CVT
+is not set, \fBbufmod\fR converts all
+leading
+.B M_PROTO
+blocks in the message to
+.B M_DATA
+blocks, altering
 only the message type field and leaving the contents alone.
 .sp
 .LP
-It then truncates the message to the current \fIsnapshot length\fR, which
-is set with the \fBSBIOCSSNAP\fR \fBioctl\fR described below.
+It then truncates the message to the current
+.IR "snapshot length" ,
+which
+is set with the
+.B "SBIOCSSNAP ioctl"
+described below.
 .sp
 .LP
-Afterwards, if \fBSB_NO_HEADER\fR is not set, \fBbufmod\fR prepends a
+Afterwards, if
+.B SB_NO_HEADER
+is not set, \fBbufmod\fR prepends a
 header to the converted message. This header is defined as follows.
 .sp
 .in +2
@@ -97,9 +121,15 @@ struct sb_hdr {
 
 .sp
 .LP
-The \fBsbh_origlen\fR field gives the message's original length before
-truncation in bytes. The \fBsbh_msglen\fR field gives the length in bytes of
-the message after the truncation has been done. \fBsbh_totlen\fR gives the
+The
+.B sbh_origlen
+field gives the message's original length before
+truncation in bytes. The
+.B sbh_msglen
+field gives the length in bytes of
+the message after the truncation has been done.
+.B sbh_totlen
+gives the
 distance in bytes from the start of the truncated message in the current
 chunk (described below) to the start of the next message in the chunk; the
 value reflects any padding necessary to insure correct data alignment for
@@ -107,11 +137,15 @@ the host machine and includes the length of the header itself.
 \fBsbh_drops\fR reports the cumulative number of input messages that this
 instance of \fBbufmod\fR has dropped due to flow control or resource
 exhaustion. In the current implementation message dropping due to flow
-control can occur only if the \fBSB_NO_DROPS\fR flag is not set. (Note: this
-accounts only for events occurring within \fBbufmod\fR, and does not count
+control can occur only if the
+.B SB_NO_DROPS
+flag is not set. (Note: this
+accounts only for events occurring within
+.BR bufmod ,
+and does not count
 messages dropped by downstream or by upstream modules.) The
 \fBsbh_timestamp\fR field contains the message arrival time expressed as a
-\fBstruct timeval\fR.
+.BR "struct timeval" .
 .sp
 .LP
 After preparing a message, \fBbufmod\fR attempts to add it to the end of
@@ -145,11 +179,15 @@ neighbor, maintaining message order for non high priority messages by
 passing up any accumulated chunk first.
 .sp
 .LP
-If the \fBSB_DEFER_CHUNK\fR flag is set, buffering does not begin until the
+If the
+.B SB_DEFER_CHUNK
+flag is set, buffering does not begin until the
 second message is received within the timeout window.
 .sp
 .LP
-If the \fBSB_SEND_ON_WRITE\fR flag is set, \fBbufmod\fR passes up the read
+If the
+.B SB_SEND_ON_WRITE
+flag is set, \fBbufmod\fR passes up the read
 side any buffered data when a message is received on the write side.
 \fBSB_SEND_ON_WRITE\fR and \fBSB_DEFER_CHUNK\fR are often used together.
 .SS "Write-side Behavior"
@@ -157,7 +195,9 @@ side any buffered data when a message is received on the write side.
 .LP
 \fBbufmod\fR intercepts \fBM_IOCTL\fR messages for the \fBioctl\fRs
 described below. The module passes all other messages through unaltered to
-its lower neighbor. If \fBSB_SEND_ON_WRITE\fR is set, message arrival on the
+its lower neighbor. If
+.B SB_SEND_ON_WRITE
+is set, message arrival on the
 writer side suffices to close and transmit the current read side chunk.
 .SH IOCTLS
 .sp
@@ -167,7 +207,7 @@ writer side suffices to close and transmit the current read side chunk.
 .ne 2
 .mk
 .na
-\fBSBIOCSTIME\fR
+.B SBIOCSTIME
 .ad
 .RS 16n
 .rt
@@ -175,27 +215,34 @@ Set the read timeout value to the value referred to by the \fBstruct
 timeval\fR pointer given as argument. Setting the timeout value to zero has
 the side-effect of forcing the chunk size to zero as well, so that the
 module will pass all incoming messages upward immediately upon arrival.
-Negative values are rejected with an \fBEINVAL\fR error.
+Negative values are rejected with an
+.B EINVAL
+error.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSBIOCGTIME\fR
+.B SBIOCGTIME
 .ad
 .RS 16n
 .rt
-Return the read timeout in the \fBstruct timeval\fR pointed to by the
+Return the read timeout in the
+.B "struct timeval"
+pointed to by the
 argument. If the timeout has been cleared with the \fBSBIOCCTIME\fR
-\fBioctl\fR, return with an \fBERANGE\fR error.
+.BR ioctl ,
+return with an
+.B ERANGE
+error.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSBIOCCTIME\fR
+.B SBIOCCTIME
 .ad
 .RS 16n
 .rt
@@ -208,11 +255,13 @@ full.
 .ne 2
 .mk
 .na
-\fBSBIOCSCHUNK\fR
+.B SBIOCSCHUNK
 .ad
 .RS 16n
 .rt
-Set the chunk size to the value referred to by the \fIuint_t\fR pointer
+Set the chunk size to the value referred to by the
+.I uint_t
+pointer
 given as argument. See Notes for a description of effect on stream head high
 water mark.
 .RE
@@ -221,22 +270,25 @@ water mark.
 .ne 2
 .mk
 .na
-\fBSBIOCGCHUNK\fR
+.B SBIOCGCHUNK
 .ad
 .RS 16n
 .rt
-Return the chunk size in the \fIuint_t\fR pointed to by the argument.
+Return the chunk size in the
+.I uint_t
+pointed to by the argument.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSBIOCSSNAP\fR
+.B SBIOCSSNAP
 .ad
 .RS 16n
 .rt
-Set the current snapshot length to the value given in the \fBuint_t\fR
+Set the current snapshot length to the value given in the
+.BR uint_t
 pointed to by the \fBioctl\fR's final argument. \fBbufmod\fR interprets a
 snapshot length value of zero as meaning infinity, so it will not alter the
 message. See  Notes for a description of effect on stream head high water
@@ -247,11 +299,13 @@ mark.
 .ne 2
 .mk
 .na
-\fBSBIOCGSNAP\fR
+.B SBIOCGSNAP
 .ad
 .RS 16n
 .rt
-Returns the current snapshot length in the \fBuint_t\fR pointed to by the
+Returns the current snapshot length in the
+.B uint_t
+pointed to by the
 \fBioctl\fR's final argument.
 .RE
 
@@ -259,18 +313,20 @@ Returns the current snapshot length in the \fBuint_t\fR pointed to by the
 .ne 2
 .mk
 .na
-\fBSBIOCSFLAGS\fR
+.B SBIOCSFLAGS
 .ad
 .RS 16n
 .rt
-Set the current flags to the value given in the \fBuint_t\fR pointed to by
+Set the current flags to the value given in the
+.B uint_t
+pointed to by
 the \fBioctl\fR's final argument. Possible values are a combination of the
 following. 
 .sp
 .ne 2
 .mk
 .na
-\fBSB_SEND_ON_WRITE\fR
+.B SB_SEND_ON_WRITE
 .ad
 .RS 21n
 .rt
@@ -281,7 +337,7 @@ Transmit the read side chunk on arrival of a message on the write side.
 .ne 2
 .mk
 .na
-\fBSB_NO_HEADER\fR
+.B SB_NO_HEADER
 .ad
 .RS 21n
 .rt
@@ -292,7 +348,7 @@ Do not add headers to read side messages.
 .ne 2
 .mk
 .na
-\fBSB_NO_DROPS\fR
+.B SB_NO_DROPS
 .ad
 .RS 21n
 .rt
@@ -303,18 +359,21 @@ Do not drop messages due to flow control upstream.
 .ne 2
 .mk
 .na
-\fBSB_NO_PROTO_CVT\fR
+.B SB_NO_PROTO_CVT
 .ad
 .RS 21n
 .rt
-Do not convert \fBM_PROTO\fR messages into \fBM_DATA\fR.
+Do not convert
+.B M_PROTO
+messages into
+.BR M_DATA .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSB_DEFER_CHUNK\fR
+.B SB_DEFER_CHUNK
 .ad
 .RS 21n
 .rt
@@ -328,30 +387,41 @@ interval.
 .ne 2
 .mk
 .na
-\fBSBIOCGFLAGS\fR
+.B SBIOCGFLAGS
 .ad
 .RS 16n
 .rt
-Returns the current flags in the \fBuint_t\fR pointed to by the
+Returns the current flags in the
+.B uint_t
+pointed to by the
 \fBioctl\fR's final argument.
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBdlpi\fR(7P), \fBpfmod\fR(7M)
+.BR dlpi (7P),
+\fBpfmod\fR(7M)
 .SH NOTES
 .sp
 .LP
 Older versions of \fBbufmod\fR did not support the behavioral flexibility
-controlled by the \fBSBIOCSFLAGS\fR \fBioctl\fR. Applications that wish to
+controlled by the
+.BR "SBIOCSFLAGS ioctl" .
+Applications that wish to
 take advantage of this flexibility can guard themselves against old versions
-of the module by invoking the \fBSBIOCGFLAGS\fR ioctl and checking for an
+of the module by invoking the
+.B SBIOCGFLAGS
+ioctl and checking for an
 \fBEINVAL\fR error return.
 .sp
 .LP
-When buffering is enabled by issuing an \fBSBIOCSCHUNK\fR ioctl to set the
-chunk size to a non zero value,  \fBbufmod\fR sends a \fBSETOPTS\fR message
+When buffering is enabled by issuing an
+.B SBIOCSCHUNK
+ioctl to set the
+chunk size to a non zero value,  \fBbufmod\fR sends a
+.B SETOPTS
+message
 to adjust the stream head high and low water marks to accommodate the
 chunked messages.
 .sp

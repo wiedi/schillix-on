@@ -98,23 +98,52 @@ passwd \- change login password and password attributes
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpasswd\fR command changes the password or lists password attributes
-associated with the user's login \fIname\fR. Additionally, privileged users
-can use \fBpasswd\fR to install or change passwords and attributes
-associated with any login \fIname\fR.
+The
+.B passwd
+command changes the password or lists password attributes
+associated with the user's login
+.IR name .
+Additionally, privileged users
+can use
+.B passwd
+to install or change passwords and attributes
+associated with any login
+.IR name .
 .sp
 .LP
-When used to change a password, \fBpasswd\fR prompts everyone for their old
+When used to change a password,
+.B passwd
+prompts everyone for their old
 password, if any. It then prompts for the new password twice. When the old
-password is entered, \fBpasswd\fR checks to see if it has aged sufficiently.
-If \fBaging\fR is insufficient, \fBpasswd\fR terminates; see
-\fBpwconv\fR(1M), \fBnistbladm\fR(1), and \fBshadow\fR(4) for additional
+password is entered,
+.B passwd
+checks to see if it has aged sufficiently.
+If
+.B aging
+is insufficient,
+.B passwd
+terminates; see
+.BR pwconv (1M),
+.BR nistbladm (1),
+and
+.BR shadow (4)
+for additional
 information.
 .sp
 .LP
-The \fBpwconv\fR command creates and updates \fB/etc/shadow\fR with
-information from \fB/etc/passwd\fR. \fBpwconv\fR relies on a special value
-of \fBx\fR in the password field of \fB/etc/passwd\fR. This value of
+The
+.B pwconv
+command creates and updates
+.B /etc/shadow
+with
+information from
+.BR /etc/passwd .
+\fBpwconv\fR relies on a special value
+of
+.B x
+in the password field of
+.BR /etc/passwd .
+This value of
 \fBx\fRindicates that the password for the user is already in
 \fB/etc/shadow\fR and should not be modified.
 .sp
@@ -131,8 +160,12 @@ Passwords must be constructed to meet the following requirements:
 .TP
 .ie t \(bu
 .el o
-Each password must have \fBPASSLENGTH\fR characters, where \fBPASSLENGTH\fR
-is defined in \fB/etc/default/passwd\fR and is set to \fB6\fR. Setting
+Each password must have
+.B PASSLENGTH
+.RB "characters, where" " PASSLENGTH"
+is defined in \fB/etc/default/passwd\fR and is set to
+.BR 6 .
+Setting
 \fBPASSLENGTH\fR to more than eight characters requires configuring
 \fBpolicy.conf\fR(4) with an algorithm that supports greater than eight
 characters.
@@ -161,9 +194,14 @@ the prior password history.
 .RE
 .sp
 .LP
-If all requirements are met, by default, the \fBpasswd\fR command consults
+If all requirements are met, by default, the
+.B passwd
+command consults
 \fB/etc/nsswitch.conf\fR to determine in which repositories to perform
-password update. It searches the \fBpasswd\fR and \fBpasswd_compat\fR
+password update. It searches the
+.B passwd
+and
+.BR passwd_compat
 entries. The sources (repositories) associated with these entries are
 updated. However, the password update configurations supported are limited
 to the following cases. Failure to comply with the configurations prevents
@@ -205,7 +243,7 @@ are:
 .el o
 \fBpasswd: compat\fR (==> files ldap)
 .sp
-\fBpasswd_compat: ldap\fR
+.B passwd_compat: ldap
 .RE
 .RS +4
 .TP
@@ -213,41 +251,65 @@ are:
 .el o
 \fBpasswd: compat\fR (==> files nisplus)
 .sp
-\fBpasswd_compat: nisplus\fR
+.B passwd_compat: nisplus
 .RE
 .sp
 .LP
-You can add the \fBad\fR keyword to any of the \fBpasswd\fR configurations
-in the above list. However, you cannot use the \fBpasswd\fR command to
+You can add the
+.B ad
+keyword to any of the
+.B passwd
+configurations
+in the above list. However, you cannot use the
+.B passwd
+command to
 change the password of an Active Directory (AD) user. If the \fBad\fR
-keyword is found in the \fBpasswd\fR entry during a password update
+keyword is found in the
+.B passwd
+entry during a password update
 operation, it is ignored. To update the password of an AD user, use the
-\fBkpasswd\fR(1) command.
+.BR kpasswd (1)
+command.
 .sp
 .LP
 Network administrators, who own the NIS+ password table, can change any
 password attributes. The administrator configured for updating LDAP shadow
 information can also change any password attributes. See
-\fBldapclient\fR(1M).
+.BR ldapclient (1M).
 .sp
 .LP
 When a user has a password stored in one of the name services as well as a
-local \fBfiles\fR entry, the \fBpasswd\fR command updates both. It is
+local \fBfiles\fR entry, the
+.B passwd
+command updates both. It is
 possible to have different passwords in the name service and local files
-entry. Use \fBpasswd\fR \fB-r\fR to change a specific password repository.
+entry. Use
+.B "passwd -r"
+to change a specific password repository.
 
 .sp
 .LP
 In the \fBfiles\fR case, super-users (for instance, real and effective uid
-equal to \fB0\fR, see \fBid\fR(1M) and \fBsu\fR(1M)) can change any
-password. Hence, \fBpasswd\fR does not prompt privileged users for the old
+equal to
+.BR 0 ,
+see
+.BR id "(1M) and"
+.BR su (1M))
+can change any
+password. Hence,
+.B passwd
+does not prompt privileged users for the old
 password. Privileged users are not forced to comply with password aging and
 password construction requirements. A privileged user can create a null
 password by entering a carriage return in response to the prompt for a new
-password. (This differs from \fBpasswd\fR \fB-d\fR because the
+password. (This differs from
+.B "passwd -d"
+because the
 \fBpassword\fR prompt is still displayed.) If NIS is in effect, superuser on
 the root master can change any password without being prompted for the old
-NIS \fBpasswd\fR, and is not forced to comply with password construction
+NIS
+.BR passwd ,
+and is not forced to comply with password construction
 requirements.
 .sp
 .LP
@@ -256,15 +318,28 @@ any password without being prompted for the old LDAP passwd, and is not
 forced to comply with password construction requirements.
 .sp
 .LP
-Normally, \fBpasswd\fR entered with no arguments changes the password of
-the current user. When a user logs in and then invokes \fBsu\fR(1M) to
-become superuser or another user, \fBpasswd\fR changes the original user's
+Normally,
+.B passwd
+entered with no arguments changes the password of
+the current user. When a user logs in and then invokes
+.BR su (1M)
+to
+become superuser or another user,
+.B passwd
+changes the original user's
 password, not the password of the superuser or the new user.
 .sp
 .LP
-Any user can use the \fB-s\fR option to show password attributes for his or
-her own login \fIname\fR, provided they are using the \fB-r\fR \fBnisplus\fR
-argument. Otherwise, the \fB-s\fR argument is restricted to the superuser.
+Any user can use the
+.B -s
+option to show password attributes for his or
+her own login
+.IR name ,
+provided they are using the
+.BR "-r nisplus"
+argument. Otherwise, the
+.B -s
+argument is restricted to the superuser.
 .sp
 .LP
 The format of the display is:
@@ -294,51 +369,60 @@ where
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 12n
 .rt
-The login \fBID\fR of the user.
+The login
+.B ID
+of the user.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIstatus\fR
+.I status
 .ad
 .RS 12n
 .rt
-The password status of \fIname\fR.
+The password status of
+.IR name .
 .sp
-The \fIstatus\fR field can take the following values:
+The
+.I status
+field can take the following values:
 .sp
 .ne 2
 .mk
 .na
-\fBLK\fR
+.B LK
 .ad
 .RS 6n
 .rt
-This account is \fBlocked\fR account. See Security.
+This account is
+.B locked
+account. See Security.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNL\fR
+.B NL
 .ad
 .RS 6n
 .rt
-This account is a \fBno login\fR account. See \fBSecurity\fR.
+This account is a
+.B "no login"
+account. See \fBSecurity\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNP\fR
+.B NP
 .ad
 .RS 6n
 .rt
@@ -350,7 +434,7 @@ authentication.
 .ne 2
 .mk
 .na
-\fBPS\fR
+.B PS
 .ad
 .RS 6n
 .rt
@@ -363,11 +447,13 @@ This account has a password.
 .ne 2
 .mk
 .na
-\fImm/dd/yy\fR
+.I mm/dd/yy
 .ad
 .RS 12n
 .rt
-The date password was last changed for \fIname\fR. All password aging dates
+The date password was last changed for
+.IR name .
+All password aging dates
 are determined using Greenwich Mean Time (Universal Time) and therefore can
 differ by as much as a day in other time zones.
 .RE
@@ -376,51 +462,68 @@ differ by as much as a day in other time zones.
 .ne 2
 .mk
 .na
-\fImin\fR
+.I min
 .ad
 .RS 12n
 .rt
 The minimum number of days required between password changes for
-\fIname\fR. \fBMINWEEKS\fR is found in \fB/etc/default/passwd\fR and is set
-to \fBNULL\fR.
+.IR name .
+\fBMINWEEKS\fR is found in \fB/etc/default/passwd\fR and is set
+to
+.BR NULL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fImax\fR
+.I max
 .ad
 .RS 12n
 .rt
-The maximum number of days the password is valid for \fIname\fR.
+The maximum number of days the password is valid for
+.IR name .
 \fBMAXWEEKS\fR is found in \fB/etc/default/passwd\fR and is set to
-\fBNULL\fR.
+.BR NULL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIwarn\fR
+.I warn
 .ad
 .RS 12n
 .rt
-The number of days relative to \fImax\fR before the password expires and
-the \fIname\fR are warned.
+The number of days relative to
+.I max
+before the password expires and
+the
+.I name
+are warned.
 .RE
 
 .SS "Security"
 .sp
 .LP
 \fBpasswd\fR uses \fBpam\fR(3PAM) for password change. It calls PAM with a
-service name \fBpasswd\fR and uses service module type \fBauth\fR for
+service name
+.B passwd
+and uses service module type
+.B auth
+for
 authentication and password for password change.
 .sp
 .LP
 Locking an account (\fB-l\fR option) does not allow its use for password
-based login or delayed execution (such as \fBat\fR(1), \fBbatch\fR(1), or
-\fBcron\fR(1M)). The \fB-N\fR option can be used to disallow password based
+based login or delayed execution (such as
+.BR at (1),
+.BR batch (1),
+or
+.BR cron (1M)).
+The
+.B -N
+option can be used to disallow password based
 login, while continuing to allow delayed execution.
 .SH OPTIONS
 .sp
@@ -430,12 +533,16 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .RS 17n
 .rt
 Shows password attributes for all entries. Use only with the \fB-s\fR
-option. \fIname\fR must not be provided. For the \fBnisplus\fR repository,
+option.
+.I name
+must not be provided. For the
+.B nisplus
+repository,
 this shows only the entries in the NIS+ password table in the local domain
 that the invoker is authorized to read. For the \fBfiles\fR and \fBldap\fR
 repositories, this is restricted to the superuser.
@@ -449,45 +556,61 @@ repositories, this is restricted to the superuser.
 .ad
 .RS 17n
 .rt
-Consults the \fBpasswd.org_dir\fR table in \fBdomainname\fR. If this option
-is not specified, the default \fBdomainname\fR returned by
-\fBnis_local_directory\fR(3NSL) are used. This domain name is the same as
-that returned by \fBdomainname\fR(1M).
+Consults the
+.B passwd.org_dir
+table in
+.BR domainname .
+If this option
+is not specified, the default
+.B domainname
+returned by
+.BR nis_local_directory (3NSL)
+are used. This domain name is the same as
+that returned by
+.BR domainname (1M).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 17n
 .rt
 Changes the login shell. For the \fBfiles\fR repository, this only works
-for the superuser. Normal users can change the \fBldap\fR, \fBnis\fR, or
+for the superuser. Normal users can change the
+.BR ldap ,
+.BR nis ,
+or
 \fBnisplus\fR repositories. The choice of shell is limited by the
 requirements of \fBgetusershell\fR(3C). If the user currently has a shell
-that is not allowed by \fBgetusershell\fR, only root can change it.
+that is not allowed by
+.BR getusershell ,
+only root can change it.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-g\fR
+.B -g
 .ad
 .RS 17n
 .rt
 Changes the gecos (finger) information. For the \fBfiles\fR repository,
 this only works for the superuser. Normal users can change the \fBldap\fR,
-\fBnis\fR, or \fBnisplus\fR repositories.
+.BR nis ,
+or
+.B nisplus
+repositories.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-h\fR
+.B -h
 .ad
 .RS 17n
 .rt
@@ -498,12 +621,16 @@ Changes the home directory.
 .ne 2
 .mk
 .na
-\fB-r\fR
+.B -r
 .ad
 .RS 17n
 .rt
 Specifies the repository to which an operation is applied. The supported
-repositories are \fBfiles\fR, \fBldap\fR, \fBnis\fR, or \fBnisplus\fR.
+repositories are \fBfiles\fR,
+.BR ldap ,
+.BR nis ,
+or
+.BR nisplus .
 .RE
 
 .sp
@@ -514,13 +641,20 @@ repositories are \fBfiles\fR, \fBldap\fR, \fBnis\fR, or \fBnisplus\fR.
 .ad
 .RS 17n
 .rt
-Shows password attributes for the login \fIname\fR. For the \fBnisplus\fR
+Shows password attributes for the login
+.IR name .
+For the
+.BR nisplus
 repository, this works for everyone. However for the \fBfiles\fR and
 \fBldap\fR repositories, this only works for the superuser. It does not work
-at all for the \fBnis\fR repository which does not support password aging.
+at all for the
+.B nis
+repository which does not support password aging.
 .sp
 The output of this option, and only this option is Stable and parsable. The
-format is \fIusername\fR followed by white space followed by one of the
+format is
+.I username
+followed by white space followed by one of the
 following codes.
 .sp
 New codes might be added in the future so code that parses this must be
@@ -532,41 +666,49 @@ The following are the current status codes:
 .ne 2
 .mk
 .na
-\fBLK\fR
+.B LK
 .ad
 .RS 6n
 .rt
-Account is locked for UNIX authenitcation. \fBpasswd -l\fR was run or the
-authentication failed \fBRETRIES\fR times.
+Account is locked for UNIX authenitcation.
+.B "passwd -l"
+was run or the
+authentication failed
+.B RETRIES
+times.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNL\fR
+.B NL
 .ad
 .RS 6n
 .rt
-The account is a no login account. \fBpasswd -N\fR has been run.
+The account is a no login account.
+.B "passwd -N"
+has been run.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNP\fR
+.B NP
 .ad
 .RS 6n
 .rt
-Account has no password. \fBpasswd -d\fR was run.
+Account has no password.
+.B "passwd -d"
+was run.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPS\fR
+.B PS
 .ad
 .RS 6n
 .rt
@@ -577,7 +719,7 @@ The account probably has a valid password.
 .ne 2
 .mk
 .na
-\fBUN\fR
+.B UN
 .ad
 .RS 6n
 .rt
@@ -596,16 +738,24 @@ Only a privileged user can use the following options:
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 11n
 .rt
-Deletes password for \fIname\fR and unlocks the account. The login
+Deletes password for
+.I name
+and unlocks the account. The login
 \fIname\fR is not prompted for password. It is only applicable to the
 \fBfiles\fR and \fBldap\fR repositories.
 .sp
-If the \fBlogin\fR(1) option \fBPASSREQ=YES\fR is configured, the account
-is not able to login. \fBPASSREQ=YES\fR is the delivered default.
+If the
+.BR login (1)
+option
+.B PASSREQ=YES
+is configured, the account
+is not able to login.
+.B PASSREQ=YES
+is the delivered default.
 .RE
 
 .sp
@@ -617,18 +767,25 @@ is not able to login. \fBPASSREQ=YES\fR is the delivered default.
 .RS 11n
 .rt
 Forces the user to change password at the next login by expiring the
-password for \fIname\fR.
+password for
+.IR name .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR
+.B -l
 .ad
 .RS 11n
 .rt
-Locks password entry for \fIname\fR. See the \fB-d\fR or \fB-u\fR option
+Locks password entry for
+.IR name .
+See the
+.B -d
+or
+.B -u
+option
 for unlocking the account.
 .RE
 
@@ -636,12 +793,14 @@ for unlocking the account.
 .ne 2
 .mk
 .na
-\fB-N\fR
+.B -N
 .ad
 .RS 11n
 .rt
 Makes the password entry for name a value that cannot be used for login,
-but does not lock the account. See the \fB-d\fR option for removing the
+but does not lock the account. See the
+.B -d
+option for removing the
 value, or to set a password to allow logins.
 .RE
 
@@ -653,22 +812,40 @@ value, or to set a password to allow logins.
 .ad
 .RS 11n
 .rt
-Sets minimum field for \fIname\fR. The \fImin\fR field contains the minimum
-number of days between password changes for \fIname\fR. If \fImin\fR is
-greater than \fImax\fR, the user can not change the password. Always use
-this option with the \fB-x\fR option, unless \fImax\fR is set to \fB\(mi1\fR
-(aging turned off). In that case, \fImin\fR need not be set.
+Sets minimum field for
+.IR name .
+The
+.I min
+field contains the minimum
+number of days between password changes for
+.IR name .
+If
+.I min
+is
+greater than
+.IR max ,
+the user can not change the password. Always use
+this option with the
+.B -x
+option, unless
+.I max
+is set to \fB\(mi1\fR
+(aging turned off). In that case,
+.I min
+need not be set.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .RS 11n
 .rt
-Unlocks a locked password for entry name. See the \fB-d\fR option for
+Unlocks a locked password for entry name. See the
+.B -d
+option for
 removing the locked password, or to set a password to allow logins.
 .RE
 
@@ -680,7 +857,11 @@ removing the locked password, or to set a password to allow logins.
 .ad
 .RS 11n
 .rt
-Sets warn field for \fIname\fR. The \fIwarn\fR field contains the number of
+Sets warn field for
+.IR name .
+The
+.I warn
+field contains the number of
 days before the password expires and the user is warned. This option is not
 valid if password aging is disabled.
 .RE
@@ -693,9 +874,18 @@ valid if password aging is disabled.
 .ad
 .RS 11n
 .rt
-Sets maximum field for \fIname\fR. The \fImax\fR field contains the number
-of days that the password is valid for \fIname\fR. The aging for \fIname\fR
-is turned off immediately if \fImax\fR is set to \fB\(mi1\fR\&.
+Sets maximum field for
+.IR name .
+The
+.I max
+field contains the number
+of days that the password is valid for
+.IR name .
+The aging for
+.IR name
+is turned off immediately if
+.I max
+is set to \fB\(mi1\fR\&.
 .RE
 
 .SH OPERANDS
@@ -706,7 +896,7 @@ The following operand is supported:
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 8n
 .rt
@@ -716,28 +906,56 @@ User login name.
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-If any of the \fBLC_*\fR variables, that is, \fBLC_CTYPE\fR,
-\fBLC_MESSAGES\fR, \fBLC_TIME\fR, \fBLC_COLLATE\fR, \fBLC_NUMERIC\fR, and
-\fBLC_MONETARY\fR (see \fBenviron\fR(5)), are not set in the environment,
-the operational behavior of \fBpasswd\fR for each corresponding locale
-category is determined by the value of the \fBLANG\fR environment variable.
-If \fBLC_ALL\fR is set, its contents are used to override both the
+If any of the
+.B LC_*
+variables, that is, \fBLC_CTYPE\fR,
+.BR LC_MESSAGES ,
+.BR LC_TIME ,
+.BR LC_COLLATE ,
+.BR LC_NUMERIC ,
+and
+\fBLC_MONETARY\fR (see
+.BR environ (5)),
+are not set in the environment,
+the operational behavior of
+.B passwd
+for each corresponding locale
+category is determined by the value of the
+.B LANG
+environment variable.
+If
+.B LC_ALL
+is set, its contents are used to override both the
 \fBLANG\fR and the other \fBLC_*\fR variables. If none of the above
-variables is set in the environment, the \fBC\fR (U.S. style) locale
-determines how \fBpasswd\fR behaves.
+variables is set in the environment, the
+.B C
+(U.S. style) locale
+determines how
+.B passwd
+behaves.
 .sp
 .ne 2
 .mk
 .na
-\fBLC_CTYPE\fR
+.B LC_CTYPE
 .ad
 .RS 15n
 .rt
-Determines how \fBpasswd\fR handles characters. When \fBLC_CTYPE\fR is set
-to a valid value, \fBpasswd\fR can display and handle text and filenames
-containing valid characters for that locale. \fBpasswd\fR can display and
+Determines how
+.B passwd
+handles characters. When
+.B LC_CTYPE
+is set
+to a valid value,
+.B passwd
+can display and handle text and filenames
+containing valid characters for that locale.
+.B passwd
+can display and
 handle Extended Unix Code (\fBEUC\fR) characters where any individual
-character can be 1, 2, or 3 bytes wide. \fBpasswd\fR can also handle
+character can be 1, 2, or 3 bytes wide.
+.B passwd
+can also handle
 \fBEUC\fR characters of 1, 2, or more column widths. In the \fBC\fR locale,
 only characters from ISO 8859-1 are valid.
 .RE
@@ -746,13 +964,15 @@ only characters from ISO 8859-1 are valid.
 .ne 2
 .mk
 .na
-\fBLC_MESSAGES\fR
+.B LC_MESSAGES
 .ad
 .RS 15n
 .rt
 Determines how diagnostic and informative messages are presented. This
 includes the language and style of the messages, and the correct form of
-affirmative and negative responses. In the \fBC\fR locale, the messages are
+affirmative and negative responses. In the
+.B C
+locale, the messages are
 presented in the default form found in the program itself (in most cases,
 U.S. English).
 .RE
@@ -760,12 +980,14 @@ U.S. English).
 .SH EXIT STATUS
 .sp
 .LP
-The \fBpasswd\fR command exits with one of the following values:
+The
+.B passwd
+command exits with one of the following values:
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 6n
 .rt
@@ -776,7 +998,7 @@ Success.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 6n
 .rt
@@ -787,7 +1009,7 @@ Permission denied.
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .RS 6n
 .rt
@@ -798,7 +1020,7 @@ Invalid combination of options.
 .ne 2
 .mk
 .na
-\fB3\fR
+.B 3
 .ad
 .RS 6n
 .rt
@@ -809,7 +1031,7 @@ Unexpected failure. Password file unchanged.
 .ne 2
 .mk
 .na
-\fB4\fR
+.B 4
 .ad
 .RS 6n
 .rt
@@ -820,7 +1042,7 @@ Unexpected failure. Password file(s) missing.
 .ne 2
 .mk
 .na
-\fB5\fR
+.B 5
 .ad
 .RS 6n
 .rt
@@ -831,7 +1053,7 @@ Password file(s) busy. Try again later.
 .ne 2
 .mk
 .na
-\fB6\fR
+.B 6
 .ad
 .RS 6n
 .rt
@@ -842,7 +1064,7 @@ Invalid argument to option.
 .ne 2
 .mk
 .na
-\fB7\fR
+.B 7
 .ad
 .RS 6n
 .rt
@@ -853,7 +1075,7 @@ Aging option is disabled.
 .ne 2
 .mk
 .na
-\fB8\fR
+.B 8
 .ad
 .RS 6n
 .rt
@@ -864,7 +1086,7 @@ No memory.
 .ne 2
 .mk
 .na
-\fB9\fR
+.B 9
 .ad
 .RS 6n
 .rt
@@ -875,7 +1097,7 @@ System error.
 .ne 2
 .mk
 .na
-\fB10\fR
+.B 10
 .ad
 .RS 6n
 .rt
@@ -897,14 +1119,18 @@ Default values can be set for the following flags in
 .ne 2
 .mk
 .na
-\fBDICTIONDBDIR\fR
+.B DICTIONDBDIR
 .ad
 .RS 16n
 .rt
 The directory where the generated dictionary databases reside. Defaults to
-\fB/var/passwd\fR. 
+.BR /var/passwd .
 .sp
-If neither \fBDICTIONLIST\fR nor \fBDICTIONDBDIR\fR is specified, the
+If neither
+.B DICTIONLIST
+nor
+.B DICTIONDBDIR
+is specified, the
 system does not perform a dictionary check.
 .RE
 
@@ -912,18 +1138,26 @@ system does not perform a dictionary check.
 .ne 2
 .mk
 .na
-\fBDICTIONLIST\fR
+.B DICTIONLIST
 .ad
 .RS 16n
 .rt
 DICTIONLIST can contain list of comma separated dictionary files such as
-\fBDICTIONLIST=\fIfile1\fR, \fIfile2\fR, \fIfile3\fR. Each dictionary
+\fBDICTIONLIST=\fIfile1\fR, \fIfile2\fR,
+.IR file3 .
+Each dictionary
 file contains multiple lines and each line consists of a word and a NEWLINE
-character (similar to \fB/usr/share/lib/dict/words\fR.) You must specify
+character (similar to
+.BR /usr/share/lib/dict/words .)
+You must specify
 full pathnames. The words from these files are merged into a database that
 is used to determine whether a password is based on a dictionary word.
 .sp
-If neither \fBDICTIONLIST\fR nor \fBDICTIONDBDIR\fR is specified, the
+If neither
+.B DICTIONLIST
+nor
+.B DICTIONDBDIR
+is specified, the
 system does not perform a dictionary check.
 .sp
 To pre-build the dictionary database, see \fBmkpwdict\fR(1M).
@@ -933,15 +1167,21 @@ To pre-build the dictionary database, see \fBmkpwdict\fR(1M).
 .ne 2
 .mk
 .na
-\fBHISTORY\fR
+.B HISTORY
 .ad
 .RS 16n
 .rt
 Maximum number of prior password history to keep for a user. Setting the
-\fBHISTORY\fR value to zero (\fB0\fR), or removing the flag, causes the
+\fBHISTORY\fR value to zero
+.RB ( 0 ),
+or removing the flag, causes the
 prior password history of all users to be discarded at the next password
-change by any user. The default is not to define the \fBHISTORY\fR flag. The
-maximum value is \fB26.\fR Currently, this functionality is enforced only
+change by any user. The default is not to define the
+.B HISTORY
+flag. The
+maximum value is
+.B 26.
+Currently, this functionality is enforced only
 for user accounts defined in the \fBfiles\fR name service (local
 \fBpasswd\fR(4)/\fBshadow\fR(4)).
 .RE
@@ -950,19 +1190,21 @@ for user accounts defined in the \fBfiles\fR name service (local
 .ne 2
 .mk
 .na
-\fBMAXREPEATS\fR
+.B MAXREPEATS
 .ad
 .RS 16n
 .rt
 Maximum number of allowable consecutive repeating characters. If
-\fBMAXREPEATS\fR is not set or is zero (\fB0\fR), the default is no checks
+\fBMAXREPEATS\fR is not set or is zero
+.RB ( 0 ),
+the default is no checks
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMAXWEEKS\fR
+.B MAXWEEKS
 .ad
 .RS 16n
 .rt
@@ -973,19 +1215,22 @@ Maximum time period that password is valid.
 .ne 2
 .mk
 .na
-\fBMINALPHA\fR
+.B MINALPHA
 .ad
 .RS 16n
 .rt
-Minimum number of alpha character required. If \fBMINALPHA\fR is not set,
-the default is \fB2\fR.
+Minimum number of alpha character required. If
+.B MINALPHA
+is not set,
+the default is
+.BR 2 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMINDIFF\fR
+.B MINDIFF
 .ad
 .RS 16n
 .rt
@@ -997,12 +1242,16 @@ Minimum differences required between an old and a new password. If
 .ne 2
 .mk
 .na
-\fBMINDIGIT\fR
+.B MINDIGIT
 .ad
 .RS 16n
 .rt
-Minimum number of digits required. If \fBMINDIGIT\fR is not set or is set
-to zero (\fB0\fR), the default is no checks. You cannot be specify
+Minimum number of digits required. If
+.B MINDIGIT
+is not set or is set
+to zero
+.RB ( 0 ),
+the default is no checks. You cannot be specify
 \fBMINDIGIT\fR if \fBMINNONALPHA\fR is also specified.
 .RE
 
@@ -1010,7 +1259,7 @@ to zero (\fB0\fR), the default is no checks. You cannot be specify
 .ne 2
 .mk
 .na
-\fBMINLOWER\fR
+.B MINLOWER
 .ad
 .RS 16n
 .rt
@@ -1022,12 +1271,14 @@ default is no checks.
 .ne 2
 .mk
 .na
-\fBMINNONALPHA\fR
+.B MINNONALPHA
 .ad
 .RS 16n
 .rt
 Minimum number of non-alpha (including numeric and special) required. If
-\fBMINNONALPHA\fR is not set, the default is \fB1\fR. You cannot specify
+\fBMINNONALPHA\fR is not set, the default is
+.BR 1 .
+You cannot specify
 \fBMINNONALPHA\fR if \fBMINDIGIT\fR or \fBMINSPECIAL\fR is also specified.
 .RE
 
@@ -1035,7 +1286,7 @@ Minimum number of non-alpha (including numeric and special) required. If
 .ne 2
 .mk
 .na
-\fBMINWEEKS\fR
+.B MINWEEKS
 .ad
 .RS 16n
 .rt
@@ -1046,44 +1297,55 @@ Minimum time period before the password can be changed.
 .ne 2
 .mk
 .na
-\fBMINSPECIAL\fR
+.B MINSPECIAL
 .ad
 .RS 16n
 .rt
 Minimum number of special (non-alpha and non-digit) characters required. If
-\fBMINSPECIAL\fR is not set or is zero (\fB0\fR), the default is no checks.
-You cannot specify \fBMINSPECIAL\fR if you also specify \fBMINNONALPHA\fR.
+\fBMINSPECIAL\fR is not set or is zero
+.RB ( 0 ),
+the default is no checks.
+You cannot specify
+.B MINSPECIAL
+if you also specify
+.BR MINNONALPHA .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMINUPPER\fR
+.B MINUPPER
 .ad
 .RS 16n
 .rt
-Minimum number of upper case letters required. If \fBMINUPPER\fR is not set
-or is zero (\fB0\fR), the default is no checks.
+Minimum number of upper case letters required. If
+.B MINUPPER
+is not set
+or is zero
+.RB ( 0 ),
+the default is no checks.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNAMECHECK\fR
+.B NAMECHECK
 .ad
 .RS 16n
 .rt
 Enable/disable checking or the login name. The default is to do login name
-checking. A case insensitive value of \fBno\fR disables this feature.
+checking. A case insensitive value of
+.B no
+disables this feature.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPASSLENGTH\fR
+.B PASSLENGTH
 .ad
 .RS 16n
 .rt
@@ -1094,7 +1356,7 @@ Minimum length of password, in characters.
 .ne 2
 .mk
 .na
-\fBWARNWEEKS\fR
+.B WARNWEEKS
 .ad
 .RS 16n
 .rt
@@ -1105,13 +1367,20 @@ Time period until warning of date of password's ensuing expiration.
 .ne 2
 .mk
 .na
-\fBWHITESPACE\fR
+.B WHITESPACE
 .ad
 .RS 16n
 .rt
 Determine if white space characters are allowed in passwords. Valid values
-are \fBYES\fR and \fBNO\fR. If \fBWHITESPACE\fR is not set or is set to
-\fBYES\fR, white space characters are allowed.
+are
+.B YES
+and
+.BR NO .
+If
+.B WHITESPACE
+is not set or is set to
+.BR YES ,
+white space characters are allowed.
 .RE
 
 .RE
@@ -1120,11 +1389,13 @@ are \fBYES\fR and \fBNO\fR. If \fBWHITESPACE\fR is not set or is set to
 .ne 2
 .mk
 .na
-\fB/etc/oshadow\fR
+.B /etc/oshadow
 .ad
 .RS 23n
 .rt
-Temporary file used by \fBpasswd\fR, \fBpassmgmt\fR and \fBpwconv\fR to
+Temporary file used by
+.BR passwd ,
+\fBpassmgmt\fR and \fBpwconv\fR to
 update the real shadow file.
 .RE
 
@@ -1132,7 +1403,7 @@ update the real shadow file.
 .ne 2
 .mk
 .na
-\fB/etc/passwd\fR
+.B /etc/passwd
 .ad
 .RS 23n
 .rt
@@ -1143,7 +1414,7 @@ Password file.
 .ne 2
 .mk
 .na
-\fB/etc/shadow\fR
+.B /etc/shadow
 .ad
 .RS 23n
 .rt
@@ -1154,7 +1425,7 @@ Shadow password file.
 .ne 2
 .mk
 .na
-\fB/etc/shells\fR
+.B /etc/shells
 .ad
 .RS 23n
 .rt
@@ -1164,7 +1435,9 @@ Shell database.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1188,32 +1461,77 @@ The human readable output is Uncommitted. The options are Committed.
 .SH SEE ALSO
 .sp
 .LP
-\fBat\fR(1), \fBbatch\fR(1), \fBfinger\fR(1), \fBkpasswd\fR(1),
-\fBlogin\fR(1), \fBnistbladm\fR(1), \fBcron\fR(1M), \fBdomainname\fR(1M),
-\fBeeprom\fR(1M), \fBid\fR(1M), \fBldapclient\fR(1M), \fBmkpwdict\fR(1M),
-\fBpassmgmt\fR(1M), \fBpwconv\fR(1M), \fBsu\fR(1M), \fBuseradd\fR(1M),
-\fBuserdel\fR(1M), \fBusermod\fR(1M), \fBcrypt\fR(3C), \fBgetpwnam\fR(3C),
-\fBgetspnam\fR(3C), \fBgetusershell\fR(3C), \fBnis_local_directory\fR(3NSL),
-\fBpam\fR(3PAM), \fBloginlog\fR(4), \fBnsswitch.conf\fR(4),
-\fBpam.conf\fR(4), \fBpasswd\fR(4), \fBpolicy.conf\fR(4), \fBshadow\fR(4),
-\fBshells\fR(4), \fBattributes\fR(5), \fBenviron\fR(5),
-\fBpam_authtok_check\fR(5), \fBpam_authtok_get\fR(5),
-\fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5), \fBpam_ldap\fR(5),
-\fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5),
-\fBpam_unix_session\fR(5)
+.BR at (1),
+.BR batch (1),
+\fBfinger\fR(1), \fBkpasswd\fR(1),
+.BR login (1),
+.BR nistbladm (1),
+.BR cron (1M),
+.BR domainname (1M),
+.BR eeprom (1M),
+.BR id (1M),
+.BR ldapclient (1M),
+.BR mkpwdict (1M),
+.BR passmgmt (1M),
+.BR pwconv (1M),
+.BR su (1M),
+.BR useradd (1M),
+.BR userdel (1M),
+.BR usermod (1M),
+.BR crypt (3C),
+.BR getpwnam (3C),
+.BR getspnam (3C),
+.BR getusershell (3C),
+.BR nis_local_directory (3NSL),
+.BR pam (3PAM),
+.BR loginlog (4),
+\fBnsswitch.conf\fR(4),
+\fBpam.conf\fR(4), \fBpasswd\fR(4),
+.BR policy.conf (4),
+.BR shadow (4),
+.BR shells (4),
+.BR attributes (5),
+.BR environ (5),
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_ldap (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+.BR pam_unix_session (5)
 .SH NOTES
 .sp
 .LP
-The \fBpam_unix\fR(5) module is no longer supported. Similar functionality
-is provided by \fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5),
-\fBpam_unix_session\fR(5), \fBpam_authtok_check\fR(5),
-\fBpam_authtok_get\fR(5), \fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5),
-and \fBpam_passwd_auth\fR(5).
+The
+.BR pam_unix (5)
+module is no longer supported. Similar functionality
+is provided by
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+.BR pam_unix_session (5),
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+and
+.BR pam_passwd_auth (5).
 .sp
 .LP
-The \fBnispasswd\fR and \fBypasswd\fR commands are wrappers around
-\fBpasswd\fR. Use of \fBnispasswd\fR and \fBypasswd\fR is discouraged. Use
-\fBpasswd\fR \fB-r\fR \fIrepository_name\fR instead.
+The
+.B nispasswd
+and
+.B ypasswd
+commands are wrappers around
+.BR passwd .
+Use of
+.B nispasswd
+and
+.B ypasswd
+is discouraged. Use
+.B "passwd -r"
+.I repository_name
+instead.
 .sp
 .LP
 NIS+ might not be supported in future releases of the Solaris operating
@@ -1222,7 +1540,9 @@ current Solaris release. For more information, visit
 http://www.sun.com/directory/nisplus/transition.html.
 .sp
 .LP
-Changing a password in the \fBfiles\fR and \fBldap\fR repositories clears
+Changing a password in the \fBfiles\fR and
+.B ldap
+repositories clears
 the failed login count.
 .sp
 .LP
@@ -1231,8 +1551,14 @@ the length of the inactivity period.
 .sp
 .LP
 Input terminal processing might interpret some key sequences and not pass
-them to the \fBpasswd\fR command.
+them to the
+.B passwd
+command.
 .sp
 .LP
-An account with no password, status code \fBNP\fR, might not be able to
-login. See the \fBlogin\fR(1) \fBPASSREQ\fR option.
+An account with no password, status code
+.BR NP ,
+might not be able to
+login. See the
+.BR login (1)
+\fBPASSREQ\fR option.

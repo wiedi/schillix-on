@@ -39,43 +39,69 @@ sigblock, sigmask, sigpause, sigsetmask \- block signals
 .LP
 \fBsigblock()\fR adds the signals specified in \fImask\fR to the set of
 signals currently being blocked from delivery.  Signals are blocked if the
-appropriate bit in \fImask\fR is a 1; the macro \fBsigmask\fR is provided to
-construct the mask for a given \fIsignum\fR. \fBsigblock()\fR returns the
+appropriate bit in
+.I mask
+is a 1; the macro
+.B sigmask
+is provided to
+construct the mask for a given
+.IR signum .
+\fBsigblock()\fR returns the
 previous mask. The previous mask may be restored using \fBsigsetmask()\fR.
 .sp
 .LP
 \fBsigpause()\fR assigns \fImask\fR to the set of masked signals and then
 waits for a signal to arrive; on return the set of masked signals is
-restored. \fImask\fR is usually 0 to indicate that no signals are now to be
-blocked. \fBsigpause()\fR always terminates by being interrupted, returning
+restored.
+.I mask
+is usually 0 to indicate that no signals are now to be
+blocked.
+.B sigpause()
+always terminates by being interrupted, returning
 \(mi1 and setting \fBerrno\fR to \fBEINTR.\fR
 .sp
 .LP
 \fBsigsetmask()\fR sets the current signal mask (those signals that are
 blocked from delivery).  Signals are blocked if the corresponding bit in
 \fImask\fR is a 1; the macro \fBsigmask\fR is provided to construct the mask
-for a given \fIsignum\fR.
+for a given
+.IR signum .
 .sp
 .LP
-In normal usage, a signal is blocked using \fBsigblock()\fR. To begin a
+In normal usage, a signal is blocked using
+.BR sigblock() .
+To begin a
 critical section, variables modified on the occurrence of the signal are
 examined to determine that there is no work to be done, and the process
-pauses awaiting work by using \fBsigpause()\fR with the mask returned by
-\fBsigblock()\fR.
+pauses awaiting work by using
+.B sigpause()
+with the mask returned by
+.BR sigblock() .
 .sp
 .LP
-It is not possible to block \fBSIGKILL\fR, \fBSIGSTOP\fR, or
-\fBSIGCONT\fR, this restriction is silently imposed by the system.
+It is not possible to block
+.BR SIGKILL ,
+.BR SIGSTOP ,
+or
+.BR SIGCONT ,
+this restriction is silently imposed by the system.
 .SH RETURN VALUES
 .sp
 .LP
 \fBsigblock()\fR and \fBsigsetmask()\fR return the previous set of masked
-signals. \fBsigpause()\fR returns \(mi1 and sets \fBerrno\fR to
-\fBEINTR\fR.
+signals.
+.B sigpause()
+returns \(mi1 and sets
+.B errno
+to
+.BR EINTR .
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(2), \fBsigaction\fR(2), \fBsignal\fR(3UCB), \fBsigvec\fR(3UCB)
+.BR kill (2),
+.BR sigaction (2),
+.BR signal (3UCB),
+.BR sigvec (3UCB)
 .SH NOTES
 .sp
 .LP

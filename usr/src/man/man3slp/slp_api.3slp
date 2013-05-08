@@ -31,45 +31,72 @@ slp_api \- Service Location Protocol Application Programming Interface
 .SH DESCRIPTION
 .sp
 .LP
-The \fBslp_api\fR is a C  language  binding  that  maps directly into the
+The
+.B slp_api
+is a C  language  binding  that  maps directly into the
 Service Location Protocol ("\fBSLP\fR") defined  by  \fIRFC 2614\fR. This
 implementation requires minimal overhead. With  the exception  of the
 \fBSLPDereg()\fR and \fBSLPDelAttrs()\fR functions,  which  map into
-different uses  of  the  \fBSLP\fR deregister  request, there is  one C
+different uses  of  the 
+.B SLP
+deregister  request, there is  one C
 language function  per protocol  request.   Parameters are for the most part
 character buffers.  Memory management is kept simple because the client
 allocates most memory and client callback functions are required to copy
 incoming parameters into memory allocated by the client code. Any memory
-returned directly from the \fBAPI\fR functions is deallocated using the
+returned directly from the
+.B API
+functions is deallocated using the
 \fBSLPFree()\fR function.
 .sp
 .LP
 To conform with standard C practice, all character strings passed to and
-returned through the \fBAPI\fR are null-terminated, even though the
+returned through the
+.B API
+are null-terminated, even though the
 \fBSLP\fR protocol does not use null-terminated strings.  Strings passed as
-parameters are \fBUTF-8\fR but they may still be passed as a C string (a
+parameters are
+.B UTF-8
+but they may still be passed as a C string (a
 null-terminated sequence of bytes.)  Escaped characters must be encoded by
-the \fBAPI\fR client as \fBUTF-8\fR.  In the common case of \fBUS-ASCII\fR,
-the usual one byte per character C strings work.  \fBAPI\fR functions assist
+the
+.B API
+client as
+.BR UTF-8 .
+In the common case of
+.BR US-ASCII ,
+the usual one byte per character C strings work. 
+.B API
+functions assist
 in escaping and unescaping strings.
 .sp
 .LP
-Unless otherwise noted, parameters to \fBAPI\fR functions and callbacks are
+Unless otherwise noted, parameters to
+.B API
+functions and callbacks are
 non-\fINULL\fR. Some parameters may have other restrictions.  If any
 parameter fails to satisfy the restrictions on its value, the operation
-returns a \fBPARAMETER_BAD\fR error.
+returns a
+.B PARAMETER_BAD
+error.
 .SS "Syntax for String Parameters"
 .sp
 .LP
 Query strings, attribute registration lists, attribute deregistration
 lists, scope lists, and attribute selection lists follow the syntax
-described in \fIRFC 2608\fR. The \fBAPI\fR reflects the strings passed from
+described in
+.IR "RFC 2608" .
+The
+.B API
+reflects the strings passed from
 clients directly into protocol  requests, and reflects out strings returned
 from protocol replies directly to clients. As a consequence, clients are
 responsible for formatting request strings, including escaping and
 converting opaque values to escaped byte-encoded strings. Similarly, on
 output, clients are required  to unescape strings and convert escaped
-string-encoded opaques to binary. The \fBSLPEscape()\fR and
+string-encoded opaques to binary. The
+.B SLPEscape()
+and
 \fBSLPUnescape()\fR functions can be used for escaping \fBSLP\fR reserved
 characters, but they perform no opaque processing.
 .sp
@@ -80,17 +107,24 @@ Opaque values consist of a character buffer that contains a
 values for the original bytes in the opaque.  The escape convention is
 relatively simple. An escape consists of a backslash followed by the two
 hexadecimal digits encoding the byte. An example is "\fB\2c\fR" for the byte
-\fB0x2c\fR. Clients handle opaque processing themselves, since the algorithm
+.BR 0x2c .
+Clients handle opaque processing themselves, since the algorithm
 is relatively simple and uniform.
 .SS "System Properties"
 .sp
 .LP
-The system properties established in \fBslp.conf\fR(4), the configuration
-file, are accessible through the \fBSLPGetProperty()\fR and
+The system properties established in
+.BR slp.conf (4),
+the configuration
+file, are accessible through the
+.B SLPGetProperty()
+and
 \fBSLPSetProperty()\fR functions. The \fBSLPSetProperty()\fR function
 modifies properties only in the running process, not in the configuration
 file. Errors are checked when the property is used and, as with parsing the
-configuration file, are logged at the \fBLOG_INFO\fR priority. Program
+configuration file, are logged at the
+.B LOG_INFO
+priority. Program
 execution continues without interruption by substituting the default for the
 erroneous parameter. In general, individual agents should rarely be required
 to override these properties, since they reflect properties of the \fBSLP\fR
@@ -99,15 +133,26 @@ required, system administrators should modify the configuration file.
 .sp
 .LP
 Properties are global to the process, affecting all threads and all handles
-created with \fBSLPOpen()\fR.
+created with
+.BR SLPOpen() .
 .SS "Memory Management"
 .sp
 .LP
-The only \fBAPI\fR functions that return memory specifically requiring
-deallocation on the part of the client are \fBSLPParseSrvURL()\fR,
-\fBSLPFindScope()\fR, \fBSLPEscape()\fR, and \fBSLPUnescape()\fR. Free this
-memory with \fBSLPFree()\fR when it is no longer needed. Do not free
-character strings returned by means of the \fBSLPGetProperty()\fR
+The only
+.B API
+functions that return memory specifically requiring
+deallocation on the part of the client are
+.BR SLPParseSrvURL() ,
+.BR SLPFindScope() ,
+.BR SLPEscape() ,
+and
+.BR SLPUnescape() .
+Free this
+memory with
+.B SLPFree()
+when it is no longer needed. Do not free
+character strings returned by means of the
+.BR SLPGetProperty()
 function.
 .sp
 .LP
@@ -118,8 +163,12 @@ callback parameters is allowed.
 .SS "Asynchronous and Incremental Return Semantics"
 .sp
 .LP
-If a handle parameter to an \fBAPI\fR function is opened asynchronously,
-the \fBAPI\fR function calls on the handle to check the other parameters,
+If a handle parameter to an
+.B API
+function is opened asynchronously,
+the
+.B API
+function calls on the handle to check the other parameters,
 opens the appropriate operation, and returns immediately. If an error occurs
 in the process of starting the operation, the error code is returned. If the
 handle parameter is opened synchronously, the function call is blocked until
@@ -128,17 +177,33 @@ reported through the callback function. The return code indicates whether
 any errors occurred during the operation.
 .sp
 .LP
-The callback function is called whenever the \fBAPI\fR library has results
+The callback function is called whenever the
+.B API
+library has results
 to report. The callback code is required to check the error code parameter
 before looking at the other parameters. If the error code is not
-\fBSLP_OK\fR, the other parameters  may be \fINULL\fR or otherwise invalid.
-The \fBAPI\fR library can terminate any outstanding operation on which an
+.BR SLP_OK ,
+the other parameters  may be
+.I NULL
+or otherwise invalid.
+The
+.B API
+library can terminate any outstanding operation on which an
 error occurs. The callback code can similarly indicate that the operation
-should be terminated by passing back \fBSLP_FALSE\fR to indicate that it is
+should be terminated by passing back
+.B SLP_FALSE
+to indicate that it is
 not interested in receiving more results. Callback functions are not
-permitted to recursively call into the \fBAPI\fR on the same
-\fBSLPHandle\fR. If an attempt is made to call into the \fBAPI\fR, the
-\fBAPI\fR function returns \fBSLP_HANDLE_IN_USE\fR. Prohibiting recursive
+permitted to recursively call into the
+.B API
+on the same
+.BR SLPHandle .
+If an attempt is made to call into the
+.BR API ,
+the
+\fBAPI\fR function returns
+.BR SLP_HANDLE_IN_USE .
+Prohibiting recursive
 callbacks on the same handle simplifies implementation of thread safe code,
 since locks held on the handle will not be in place during a second outcall
 on the handle.
@@ -149,17 +214,21 @@ The total number of results received can be controlled by setting the
 .sp
 .LP
 On the last call to a callback, whether asynchronous or synchronous, the
-status code passed to the callback has value \fBSLP_LAST_CALL\fR. There are
+status code passed to the callback has value
+.BR SLP_LAST_CALL .
+There are
 four reasons why the call can terminate:
 .sp
 .ne 2
 .mk
 .na
-\fBDA reply received\fR
+.B DA reply received
 .ad
 .RS 26n
 .rt
-A reply from a \fBDA\fR has been received and therefore nothing more is
+A reply from a
+.B DA
+has been received and therefore nothing more is
 expected.
 .RE
 
@@ -167,11 +236,13 @@ expected.
 .ne 2
 .mk
 .na
-\fBMulticast terminated\fR
+.B Multicast terminated
 .ad
 .RS 26n
 .rt
-The multicast convergence time has elapsed and the \fBAPI\fR library
+The multicast convergence time has elapsed and the
+.B API
+library
 multicast code is giving up.
 .RE
 
@@ -179,11 +250,12 @@ multicast code is giving up.
 .ne 2
 .mk
 .na
-\fBMulticast null results\fR
+.B Multicast null results
 .ad
 .RS 26n
 .rt
-Nothing new has been received during multicast for awhile and the \fBAPI\fR
+Nothing new has been received during multicast for awhile and the
+.BR API
 library multicast code is giving up on that (as an optimization).
 .RE
 
@@ -191,26 +263,38 @@ library multicast code is giving up on that (as an optimization).
 .ne 2
 .mk
 .na
-\fBMaximum results\fR
+.B Maximum results
 .ad
 .RS 26n
 .rt
-The user has set the \fBnet.slp.maxResults\fR property and that number of
+The user has set the
+.B net.slp.maxResults
+property and that number of
 replies has been collected and returned.
 .RE
 
 .SS "Configuration Files"
 .sp
 .LP
-The \fBAPI\fR library reads \fBslp.conf\fR(4), the default configuration
+The
+.B API
+library reads
+.BR slp.conf (4),
+the default configuration
 file, to obtain the operating parameters. You can specify the location of
-this file with the \fBSLP_CONF_FILE\fR environment variable. If you do not
-set this variable, or the file it refers to is invalid, the \fBAPI\fR will
+this file with the
+.B SLP_CONF_FILE
+environment variable. If you do not
+set this variable, or the file it refers to is invalid, the
+.B API
+will
 use the default configuration file at \fB/etc/inet/slp.conf\fR instead.
 .SS "Data Structures"
 .sp
 .LP
-The data structures used by the \fBSLP\fR \fBAPI\fR are as follows:
+The data structures used by the
+.B "SLP API"
+are as follows:
 .SS "The URL Lifetime Type"
 .sp
 .in +2
@@ -225,10 +309,18 @@ typedef enum {
 .sp
 .LP
 The enumeration \fBSLPURLLifetime\fR  contains  \fBURL\fR  lifetime values,
-in seconds, that are frequently used. \fBSLP_LIFETIME_DEFAULT\fR is 3 hours,
-while \fBSLP_LIFETIME_MAXIMUM\fR is  18 hours, which corresponds to the
-maximum size of the \fBlifetime\fR field in \fBSLP\fR messages. Note that on
-registration \fBSLP_LIFETIME_MAXIMUM\fR causes the advertisement to be
+in seconds, that are frequently used.
+.B SLP_LIFETIME_DEFAULT
+is 3 hours,
+while
+.B SLP_LIFETIME_MAXIMUM
+is  18 hours, which corresponds to the
+maximum size of the \fBlifetime\fR field in
+.B SLP
+messages. Note that on
+registration
+.B SLP_LIFETIME_MAXIMUM
+causes the advertisement to be
 continually reregistered until the process exits.
 .SS "The SLPBoolean Type"
 .sp
@@ -243,7 +335,9 @@ typedef enum {
 
 .sp
 .LP
-The enumeration \fBSLPBoolean\fR is used as a Boolean flag.
+The enumeration
+.B SLPBoolean
+is used as a Boolean flag.
 .SS "The Service URL Structure"
 .sp
 .in +2
@@ -260,15 +354,21 @@ typedef struct srvurl {
 
 .sp
 .LP
-The \fBSLPSrvURL\fR structure is filled in by the \fBSLPParseSrvURL()\fR
+The
+.B SLPSrvURL
+structure is filled in by the
+.BR SLPParseSrvURL()
 function with information parsed from a character buffer containing a
-service \fBURL\fR. The fields correspond to different parts of the
-\fBURL\fR, as follows:
+service
+.BR URL .
+The fields correspond to different parts of the
+.BR URL ,
+as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBs_pcSrvType\fR
+.B s_pcSrvType
 .ad
 .RS 17n
 .rt
@@ -280,7 +380,7 @@ naming authority.
 .ne 2
 .mk
 .na
-\fBs_pcHost\fR
+.B s_pcHost
 .ad
 .RS 17n
 .rt
@@ -292,19 +392,20 @@ information.
 .ne 2
 .mk
 .na
-\fBs_iPort\fR
+.B s_iPort
 .ad
 .RS 17n
 .rt
 The port number, or zero, if none. The port is only available if the
-transport is \fBIP\fR.
+transport is
+.BR IP .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBs_pcNetFamily\fR
+.B s_pcNetFamily
 .ad
 .RS 17n
 .rt
@@ -318,14 +419,18 @@ identifier. Possible values are "\fBipx\fR" for the \fBIPX\fR family,
 .ne 2
 .mk
 .na
-\fBs_pcSrvPart\fR
+.B s_pcSrvPart
 .ad
 .RS 17n
 .rt
-The remainder of the \fBURL\fR, after the host identification.
+The remainder of the
+.BR URL ,
+after the host identification.
 .sp
 The host and port should be sufficient to open a socket to the machine
-hosting the service; the remainder of the \fBURL\fR should allow further
+hosting the service; the remainder of the
+.B URL
+should allow further
 differentiation of the service.
 .RE
 
@@ -339,9 +444,17 @@ typedef void* SLPHandle;
 
 .sp
 .LP
-The \fBSLPHandle\fR type is returned by \fBSLPOpen()\fR and is a parameter
-to all \fBSLP\fR functions. It serves as a handle for all resources
-allocated on behalf of the process by the \fBSLP\fR library. The type is
+The
+.B SLPHandle
+type is returned by
+.B SLPOpen()
+and is a parameter
+to all
+.B SLP
+functions. It serves as a handle for all resources
+allocated on behalf of the process by the
+.B SLP
+library. The type is
 opaque.
 .SS "Callbacks"
 .sp
@@ -360,11 +473,16 @@ Each callback parameter list contains parameters for reporting the results
 of the operation, as well as an error code parameter and a cookie parameter.
 The error code parameter reports the error status of the ongoing (for
 asynchronous) or completed (for synchronous) operation. The cookie parameter
-allows the client code that starts the operation by invoking the \fBAPI\fR
+allows the client code that starts the operation by invoking the
+.BR API
 function to pass information down to the callback without using global
-variables. The callback returns an \fBSLPBoolean\fR to indicate whether the
+variables. The callback returns an
+.B SLPBoolean
+to indicate whether the
 \fBAPI\fR library should continue processing the operation. If the value
-returned from the callback is \fBSLP_TRUE\fR, asynchronous operations are
+returned from the callback is
+.BR SLP_TRUE ,
+asynchronous operations are
 terminated. Synchronous operations ignore the return since the operation is
 already complete.
 .SS "\fBSLPRegReport()\fR"
@@ -380,13 +498,16 @@ typedef void SLPRegReport(SLPHandle hSLP,
 .sp
 .LP
 \fBSLPRegReport()\fR is the callback function to the \fBSLPReg()\fR,
-\fBSLPDereg()\fR, and \fBSLPDelAttrs()\fR functions. The
+.BR SLPDereg() ,
+and
+.B SLPDelAttrs()
+functions. The
 \fBSLPRegReport()\fR callback has the following parameters:
 .sp
 .ne 2
 .mk
 .na
-\fIhSLP\fR
+.I hSLP
 .ad
 .RS 12n
 .rt
@@ -397,7 +518,7 @@ The\fBSLPHandle()\fR used to initiate the operation.
 .ne 2
 .mk
 .na
-\fIerrCode\fR
+.I errCode
 .ad
 .RS 12n
 .rt
@@ -408,11 +529,12 @@ An error code indicating if an error occurred during the operation.
 .ne 2
 .mk
 .na
-\fIpvCookie\fR
+.I pvCookie
 .ad
 .RS 12n
 .rt
-Memory passed down from the client code that called the original \fBAPI\fR
+Memory passed down from the client code that called the original
+.BR API
 function, starting the operation. It may be \fINULL\fR.
 .RE
 
@@ -429,26 +551,36 @@ typedef SLPBoolean SLPSrvTypeCallback(SLPHandle hSLP,
 
 .sp
 .LP
-The \fBSLPSrvTypeCallback()\fR type is the type of the callback function
-parameter to the \fBSLPFindSrvTypes()\fR function. The results are collated
-when the \fIhSLP\fR handle is opened either synchronously or asynchronously.
-The \fBSLPSrvTypeCallback()\fR callback has the following parameters:
+The
+.B SLPSrvTypeCallback()
+type is the type of the callback function
+parameter to the
+.B SLPFindSrvTypes()
+function. The results are collated
+when the
+.I hSLP
+handle is opened either synchronously or asynchronously.
+The
+.B SLPSrvTypeCallback()
+callback has the following parameters:
 .sp
 .ne 2
 .mk
 .na
-\fIhSLP\fR
+.I hSLP
 .ad
 .RS 14n
 .rt
-The \fBSLPHandle\fR used to initiate the operation.
+The
+.B SLPHandle
+used to initiate the operation.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpcSrvTypes\fR
+.I pcSrvTypes
 .ad
 .RS 14n
 .rt
@@ -460,13 +592,17 @@ service types.
 .ne 2
 .mk
 .na
-\fIerrCode\fR
+.I errCode
 .ad
 .RS 14n
 .rt
 An error code indicating if an error occurred during the operation. The
 callback should check this error code before processing the parameters. If
-the error code is other than \fBSLP_OK\fR, then the \fBAPI\fR library may
+the error code is other than
+.BR SLP_OK ,
+then the
+.B API
+library may
 choose to terminate the outstanding operation.
 .RE
 
@@ -474,11 +610,12 @@ choose to terminate the outstanding operation.
 .ne 2
 .mk
 .na
-\fIpvCookie\fR
+.I pvCookie
 .ad
 .RS 14n
 .rt
-emory passed down from the client code that called the original \fBAPI\fR
+emory passed down from the client code that called the original
+.BR API
 function, starting the operation. It can be \fINULL\fR.
 .RE
 
@@ -496,30 +633,39 @@ typedef SLPBoolean SLPSrvURLCallback(SLPHandle hSLP,
 
 .sp
 .LP
-The \fBSLPSrvURLCallback()\fR type is the type of the callback function
-parameter to the \fBSLPFindSrvs()\fR function. The results are collated,
-regardless of whether the \fIhSLP\fR was opened collated or uncollated. The
+The
+.B SLPSrvURLCallback()
+type is the type of the callback function
+parameter to the
+.B SLPFindSrvs()
+function. The results are collated,
+regardless of whether the
+.I hSLP
+was opened collated or uncollated. The
 \fBSLPSrvURLCallback()\fR callback has the following parameters:
 .sp
 .ne 2
 .mk
 .na
-\fIhSLP\fR
+.I hSLP
 .ad
 .RS 14n
 .rt
-The \fBSLPHandle\fR used to initiate the operation.
+The
+.B SLPHandle
+used to initiate the operation.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpcSrvURL\fR
+.I pcSrvURL
 .ad
 .RS 14n
 .rt
-A character buffer containing the returned service \fBURL\fR.
+A character buffer containing the returned service
+.BR URL .
 .RE
 
 .sp
@@ -532,20 +678,24 @@ A character buffer containing the returned service \fBURL\fR.
 .rt
 An unsigned short giving the life time of the service advertisement. The
 value must be an unsigned integer less than or equal to
-\fBSLP_LIFETIME_MAXIMUM\fR.
+.BR SLP_LIFETIME_MAXIMUM .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIerrCode\fR
+.I errCode
 .ad
 .RS 14n
 .rt
 An error code indicating if an error occurred during the operation. The
 callback should check this error code before processing the parameters. If
-the error code is other than \fBSLP_OK\fR, then the \fBAPI\fR library may
+the error code is other than
+.BR SLP_OK ,
+then the
+.B API
+library may
 choose to terminate the outstanding operation.
 .RE
 
@@ -553,11 +703,12 @@ choose to terminate the outstanding operation.
 .ne 2
 .mk
 .na
-\fIpvCookie\fR
+.I pvCookie
 .ad
 .RS 14n
 .rt
-Memory passed down from the client code that called the original \fBAPI\fR
+Memory passed down from the client code that called the original
+.BR API
 function, starting the operation. It can be \fINULL\fR.
 .RE
 
@@ -574,28 +725,46 @@ typedef SLPBoolean SLPAttrCallback(SLPHandle hSLP,
 
 .sp
 .LP
-The \fBSLPAttrCallback()\fR type is the type of the callback function
-parameter to the \fBSLPFindAttrs()\fR function.
+The
+.B SLPAttrCallback()
+type is the type of the callback function
+parameter to the
+.B SLPFindAttrs()
+function.
 .sp
 .LP
 The behavior of the callback differs depending upon whether the attribute
-request was by \fBURL\fR or by service type. If the \fBSLPFindAttrs()\fR
-operation was originally called with a \fBURL\fR, the callback is called
+request was by
+.B URL
+or by service type. If the \fBSLPFindAttrs()\fR
+operation was originally called with a
+.BR URL ,
+the callback is called
 once, in addition to the last call, regardless of whether the handle was
-opened asynchronously or synchronously. The \fIpcAttrList\fR parameter
+opened asynchronously or synchronously. The
+.I pcAttrList
+parameter
 contains the requested attributes as a comma-separated list. It is empty if
 no attributes match the original tag list.
 .sp
 .LP
-If the \fBSLPFindAttrs()\fR operation was originally called with a service
-type, the value of \fIpcAttrList\fR and the calling behavior depend upon
+If the
+.B SLPFindAttrs()
+operation was originally called with a service
+type, the value of
+.I pcAttrList
+and the calling behavior depend upon
 whether the handle was opened asynchronously or synchronously. If the handle
-was opened asynchronously, the callback is called every time the \fBAPI\fR
-library has results from a remote agent. The \fIpcAttrList\fR parameter is
+.RB "was opened asynchronously, the callback is called every time the" " API"
+library has results from a remote agent. The
+.I pcAttrList
+parameter is
 collated between calls, and contains a comma-separated list of the results
 from the agent that immediately returned. If the handle was opened
 synchronously, the results are collated from all returning agents, the
-callback is called once, and the \fIpcAttrList\fR parameter is set to the
+callback is called once, and the
+.I pcAttrList
+parameter is set to the
 collated result.
 .sp
 .LP
@@ -604,36 +773,44 @@ collated result.
 .ne 2
 .mk
 .na
-\fIhSLP\fR
+.I hSLP
 .ad
 .RS 14n
 .rt
-The \fBSLPHandle\fR used to initiate the operation.
+The
+.B SLPHandle
+used to initiate the operation.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpcAttrList\fR
+.I pcAttrList
 .ad
 .RS 14n
 .rt
 A character buffer containing a comma-separated and null-terminated list of
-attribute id/value assignments, in \fBSLP\fR wire format.
+attribute id/value assignments, in
+.B SLP
+wire format.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIerrCode\fR
+.I errCode
 .ad
 .RS 14n
 .rt
 An error code indicating if an error occurred during the operation. The
 callback should check this error code before processing the parameters. If
-the error code is other than \fBSLP_OK\fR, then the \fBAPI\fR library may
+the error code is other than
+.BR SLP_OK ,
+then the
+.B API
+library may
 choose to terminate the outstanding operation.
 .RE
 
@@ -641,36 +818,46 @@ choose to terminate the outstanding operation.
 .ne 2
 .mk
 .na
-\fIpvCookie\fR
+.I pvCookie
 .ad
 .RS 14n
 .rt
-Memory passed down from the client code that called the original \fBAPI\fR
+Memory passed down from the client code that called the original
+.BR API
 function, starting the operation. It can be \fINULL\fR.
 .RE
 
 .SH ERRORS
 .sp
 .LP
-An interface that is part of the \fBSLP\fR \fBAPI\fR may return one of the
+An interface that is part of the
+.B "SLP API"
+may return one of the
 following values.
 .sp
 .ne 2
 .mk
 .na
-\fBSLP_LAST_CALL\fR
+.B SLP_LAST_CALL
 .ad
 .RS 30n
 .rt
-The \fBSLP_LAST_CALL\fR code is passed to callback functions when the
+The
+.B SLP_LAST_CALL
+code is passed to callback functions when the
 \fBAPI\fR library has no more data for them and therefore no further calls
 will be made to the callback on the currently outstanding operation. The
 callback uses this to signal the main body of the client code that no more
 data will be forthcoming on the operation, so that the main body of the
 client code can break out of data collection loops. On the last call of a
 callback during both a synchronous and asynchronous call, the error code
-parameter has value \fBSLP_LAST_CALL\fR, and the other parameters are all
-\fINULL\fR. If no results are returned by an \fBAPI\fR operation, then only
+parameter has value
+.BR SLP_LAST_CALL ,
+and the other parameters are all
+.IR NULL .
+If no results are returned by an
+.B API
+operation, then only
 one call is made, with the error parameter set to \fBSLP_LAST_CALL\fR.
 .RE
 
@@ -678,11 +865,13 @@ one call is made, with the error parameter set to \fBSLP_LAST_CALL\fR.
 .ne 2
 .mk
 .na
-\fBSLP_OK\fR
+.B SLP_OK
 .ad
 .RS 30n
 .rt
-The \fBSLP_OK\fR code indicates that the no error occurred during the
+The
+.B SLP_OK
+code indicates that the no error occurred during the
 operation.
 .RE
 
@@ -690,12 +879,20 @@ operation.
 .ne 2
 .mk
 .na
-\fBSLP_LANGUAGE_NOT_SUPPORTED\fR
+.B SLP_LANGUAGE_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
-No \fBDA\fR or \fBSA\fR has service advertisement information in the
-language requested, but at least one \fBDA\fR or \fBSA\fR might have
+No
+.B DA
+or
+.B SA
+has service advertisement information in the
+language requested, but at least one
+.B DA
+or
+.B SA
+might have
 information for that service in another language.
 .RE
 
@@ -703,26 +900,40 @@ information for that service in another language.
 .ne 2
 .mk
 .na
-\fBSLP_PARSE_ERROR\fR
+.B SLP_PARSE_ERROR
 .ad
 .RS 30n
 .rt
-The \fBSLP\fR message was rejected by a remote \fBSLP\fR agent. The
+The
+.B SLP
+message was rejected by a remote
+.B SLP
+agent. The
 \fBAPI\fR returns this error only when no information was retrieved, and at
-least one \fBSA\fR or \fBDA\fR indicated a protocol error. The data supplied
-through the \fBAPI\fR may be malformed or damaged in transit.
+least one
+.B SA
+or
+.B DA
+indicated a protocol error. The data supplied
+through the
+.B API
+may be malformed or damaged in transit.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLP_INVALID_REGISTRATION\fR
+.B SLP_INVALID_REGISTRATION
 .ad
 .RS 30n
 .rt
-The \fBAPI\fR may return this error if an attempt to register a service was
-rejected by all \fBDA\fRs because of a malformed \fBURL\fR or
+The
+.B API
+may return this error if an attempt to register a service was
+rejected by all \fBDA\fRs because of a malformed
+.B URL
+or
 attributes.\fBSLP\fR does not return the error if at least one \fBDA\fR
 accepts the registration.
 .RE
@@ -731,26 +942,42 @@ accepts the registration.
 .ne 2
 .mk
 .na
-\fBSLP_SCOPE_NOT_SUPPORTED\fR
+.B SLP_SCOPE_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
-The \fBAPI\fR returns this error if the \fBUA\fR or \fBSA\fR has been
-configured with the \fBnet.slp.useScopes\fR list of scopes and the \fBSA\fR
+The
+.B API
+returns this error if the
+.B UA
+or
+.B SA
+has been
+configured with the
+.B net.slp.useScopes
+list of scopes and the
+.BR SA
 request did not specify one or more of these allowable scopes, and no
-others. It may also be returned by a \fBDA\fR if the scope included in a
-request is not supported by a \fBDA\fR.
+others. It may also be returned by a
+.B DA
+if the scope included in a
+request is not supported by a
+.BR DA .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLP_AUTHENTICATION_ABSENT\fR
+.B SLP_AUTHENTICATION_ABSENT
 .ad
 .RS 30n
 .rt
-This error arises when the \fBUA\fR or \fBSA \fRfailed to send an
+This error arises when the
+.B UA
+or
+.B SA
+failed to send an
 authenticator for requests or registrations when security is enabled and
 thus required.
 .RE
@@ -759,19 +986,23 @@ thus required.
 .ne 2
 .mk
 .na
-\fBSLP_AUTHENTICATION_FAILED\fR
+.B SLP_AUTHENTICATION_FAILED
 .ad
 .RS 30n
 .rt
-This error arises when a authentication on an \fBSLP\fR message received
-from a remote \fBSLP\fR agent failed.
+This error arises when a authentication on an
+.B SLP
+message received
+from a remote
+.B SLP
+agent failed.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLP_INVALID_UPDATE\fR
+.B SLP_INVALID_UPDATE
 .ad
 .RS 30n
 .rt
@@ -783,12 +1014,17 @@ a service type or scope different than that in the initial registration.
 .ne 2
 .mk
 .na
-\fBSLP_REFRESH_REJECTED\fR
+.B SLP_REFRESH_REJECTED
 .ad
 .RS 30n
 .rt
-The \fBSA\fR attempted to refresh a registration more frequently than the
-minimum refresh interval. The \fBSA\fR should call the appropriate \fBAPI\fR
+The
+.B SA
+attempted to refresh a registration more frequently than the
+minimum refresh interval. The
+.B SA
+should call the appropriate
+.BR API
 function to obtain the minimum refresh interval to use.
 .RE
 
@@ -796,11 +1032,13 @@ function to obtain the minimum refresh interval to use.
 .ne 2
 .mk
 .na
-\fBSLP_NOT_IMPLEMENTED\fR
+.B SLP_NOT_IMPLEMENTED
 .ad
 .RS 30n
 .rt
-An outgoing request overflowed the maximum network \fBMTU\fR size. The
+An outgoing request overflowed the maximum network
+.B MTU
+size. The
 request should be reduced in size or broken into pieces and tried again.
 .RE
 
@@ -808,11 +1046,13 @@ request should be reduced in size or broken into pieces and tried again.
 .ne 2
 .mk
 .na
-\fBSLP_BUFFER_OVERFLOW\fR
+.B SLP_BUFFER_OVERFLOW
 .ad
 .RS 30n
 .rt
-An outgoing request overflowed the maximum network \fBMTU\fR size. The
+An outgoing request overflowed the maximum network
+.B MTU
+size. The
 request should be reduced in size or broken into pieces and tried again.
 .RE
 
@@ -820,7 +1060,7 @@ request should be reduced in size or broken into pieces and tried again.
 .ne 2
 .mk
 .na
-\fBSLP_NETWORK_TIMED_OUT\fR
+.B SLP_NETWORK_TIMED_OUT
 .ad
 .RS 30n
 .rt
@@ -832,7 +1072,7 @@ timeout interval, this error is returned.
 .ne 2
 .mk
 .na
-\fBSLP_NETWORK_INIT_FAILED\fR
+.B SLP_NETWORK_INIT_FAILED
 .ad
 .RS 30n
 .rt
@@ -843,11 +1083,13 @@ If the network cannot initialize properly, this error is returned.
 .ne 2
 .mk
 .na
-\fBSLP_MEMORY_ALLOC_FAILED\fR
+.B SLP_MEMORY_ALLOC_FAILED
 .ad
 .RS 30n
 .rt
-If the \fBAPI\fR fails to allocate memory, the operationis aborted and
+If the
+.B API
+fails to allocate memory, the operationis aborted and
 returns this.
 .RE
 
@@ -855,7 +1097,7 @@ returns this.
 .ne 2
 .mk
 .na
-\fBSLP_PARAMETER_BAD\fR
+.B SLP_PARAMETER_BAD
 .ad
 .RS 30n
 .rt
@@ -866,7 +1108,7 @@ If a parameter passed into an interface is bad, this  error is returned.
 .ne 2
 .mk
 .na
-\fBSLP_NETWORK_ERROR\fR
+.B SLP_NETWORK_ERROR
 .ad
 .RS 30n
 .rt
@@ -878,11 +1120,13 @@ returned.
 .ne 2
 .mk
 .na
-\fBSLP_INTERNAL_SYSTEM_ERROR\fR
+.B SLP_INTERNAL_SYSTEM_ERROR
 .ad
 .RS 30n
 .rt
-A basic failure of the \fBAPI\fR causes this error to be returned. This
+A basic failure of the
+.B API
+causes this error to be returned. This
 occurs when a system call or library fails. The operation could not
 recover.
 .RE
@@ -891,14 +1135,22 @@ recover.
 .ne 2
 .mk
 .na
-\fBSLP_HANDLE_IN_USE\fR
+.B SLP_HANDLE_IN_USE
 .ad
 .RS 30n
 .rt
-In the C \fBAPI\fR, callback functions are not permitted to recursively
-call into the \fBAPI\fR on the same \fBSLPHandle\fR, either directly or
+In the C
+.BR API ,
+callback functions are not permitted to recursively
+call into the
+.B API
+on the same
+.BR SLPHandle ,
+either directly or
 indirectly. If an attempt is made to do so, this error is returned from the
-called \fBAPI\fR function
+called
+.B API
+function
 .RE
 
 .SH LIST OF ROUTINES
@@ -906,29 +1158,33 @@ called \fBAPI\fR function
 .ne 2
 .mk
 .na
-\fBSLPOpen()\fR
+.B SLPOpen()
 .ad
 .RS 27n
 .rt
-open an \fBSLP\fR handle
+open an
+.B SLP
+handle
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPClose()\fR
+.B SLPClose()
 .ad
 .RS 27n
 .rt
-close an open \fBSLP\fR handle
+close an open
+.B SLP
+handle
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPReg()\fR
+.B SLPReg()
 .ad
 .RS 27n
 .rt
@@ -939,7 +1195,7 @@ register a service advertisement
 .ne 2
 .mk
 .na
-\fBSLPDereg()\fR
+.B SLPDereg()
 .ad
 .RS 27n
 .rt
@@ -950,7 +1206,7 @@ deregister a service advertisement
 .ne 2
 .mk
 .na
-\fBSLPDelAttrs()\fR
+.B SLPDelAttrs()
 .ad
 .RS 27n
 .rt
@@ -961,7 +1217,7 @@ delete attributes
 .ne 2
 .mk
 .na
-\fBSLPFindSrvTypes()\fR
+.B SLPFindSrvTypes()
 .ad
 .RS 27n
 .rt
@@ -972,7 +1228,7 @@ return service types
 .ne 2
 .mk
 .na
-\fBSLPFindSrvs()\fR
+.B SLPFindSrvs()
 .ad
 .RS 27n
 .rt
@@ -983,7 +1239,7 @@ return service URLs
 .ne 2
 .mk
 .na
-\fBSLPFindAttrs()\fR
+.B SLPFindAttrs()
 .ad
 .RS 27n
 .rt
@@ -998,14 +1254,15 @@ return service attributes
 .ad
 .RS 27n
 .rt
-return the maximum allowed refresh interval for \fBSA\fRs
+return the maximum allowed refresh interval for
+.BR SA s
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPFindScopes()\fR
+.B SLPFindScopes()
 .ad
 .RS 27n
 .rt
@@ -1016,18 +1273,19 @@ return list of configured and discovered scopes
 .ne 2
 .mk
 .na
-\fBSLPParseSrvURL()\fR
+.B SLPParseSrvURL()
 .ad
 .RS 27n
 .rt
-parse service \fBURL\fR
+parse service
+.BR URL
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPEscape()\fR
+.B SLPEscape()
 .ad
 .RS 27n
 .rt
@@ -1038,51 +1296,58 @@ escape special characters
 .ne 2
 .mk
 .na
-\fBSLPUnescape()\fR
+.B SLPUnescape()
 .ad
 .RS 27n
 .rt
-translate escaped characters into \fBUTF-8\fR
+translate escaped characters into
+.BR UTF-8
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPGetProperty()\fR
+.B SLPGetProperty()
 .ad
 .RS 27n
 .rt
-return \fBSLP\fR configuration property
+return
+.B SLP
+configuration property
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPSetProperty()\fR
+.B SLPSetProperty()
 .ad
 .RS 27n
 .rt
-set an \fBSLP\fR configuration property
+set an
+.B SLP
+configuration property
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslp_strerror()\fR
+.B slp_strerror()
 .ad
 .RS 27n
 .rt
-map \fBSLP\fR error code to message
+map
+.B SLP
+error code to message
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLPFree()\fR
+.B SLPFree()
 .ad
 .RS 27n
 .rt
@@ -1092,11 +1357,15 @@ free memory
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-When \fBSLP_CONF_FILE\fR is set, use this file for configuration.
+When
+.B SLP_CONF_FILE
+is set, use this file for configuration.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1117,15 +1386,20 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBslpd\fR(1M), \fBslp.conf\fR(4), \fBslpd.reg\fR(4), \fBattributes\fR(5)
+.BR slpd (1M),
+\fBslp.conf\fR(4),
+.BR slpd.reg (4),
+.BR attributes (5)
 .sp
 .LP
-\fISystem Administration Guide: Network Services\fR
+.I System Administration Guide: Network Services
 .sp
 .LP
 Guttman, E., Perkins, C., Veizades, J., and Day, M. \fIRFC 2608, Service
 Location Protocol, Version 2\fR. The Internet Society. June 1999.
 .sp
 .LP
-Kempf, J. and Guttman, E. \fIRFC 2614, An API for Service Location\fR. The
+Kempf, J. and Guttman, E.
+.IR "RFC 2614, An API for Service Location" .
+The
 Internet Society. June 1999.

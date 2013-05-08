@@ -46,12 +46,14 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIacc_handle\fR
+.I acc_handle
 .ad
 .RS 16n
 .rt
 Data access handle obtained from a previous call to
-\fBddi_regs_map_setup\fR(9F), \fBddi_dma_mem_alloc\fR(9F), or to a similar
+.BR ddi_regs_map_setup (9F),
+.BR ddi_dma_mem_alloc (9F),
+or to a similar
 function.
 .RE
 
@@ -59,23 +61,26 @@ function.
 .ne 2
 .mk
 .na
-\fIdma_handle\fR
+.I dma_handle
 .ad
 .RS 16n
 .rt
 \fBDMA\fR handle obtained from a previous call to
-\fBddi_dma_mem_alloc\fR(9F) or one of its derivatives.
+.BR ddi_dma_mem_alloc (9F)
+or one of its derivatives.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIerror_status\fR
+.I error_status
 .ad
 .RS 16n
 .rt
-Pointer to where the error status for the access or \fBDMA\fR handle should
+Pointer to where the error status for the access or
+.B DMA
+handle should
 be returned.
 .RE
 
@@ -83,44 +88,68 @@ be returned.
 .ne 2
 .mk
 .na
-\fIversion\fR
+.I version
 .ad
 .RS 16n
 .rt
-Version number of \fBddi_fm_error_t\fR. The driver should always set this
-to \fBDDI_FME_VERSION\fR.
+Version number of
+.BR ddi_fm_error_t .
+The driver should always set this
+to
+.BR DDI_FME_VERSION .
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
 The \fBddi_fm_dma_err_get()\fR and \fBddi_fm_acc_err_get()\fR functions
-return the error status for a \fBDMA\fR or access handle respectively. If a
+return the error status for a
+.B DMA
+or access handle respectively. If a
 fault has occurred that affects the resource mapped by the supplied handle,
-the supplied \fIerror_status\fR structure is updated to reflect error
+the supplied
+.I error_status
+structure is updated to reflect error
 information captured during error handling by a bus or other device driver
-in the \fBI/O\fR data path.
+in the
+.B I/O
+data path.
 .sp
 .LP
 If an error is indicated for an access handle, the driver might no longer
-be able to access the mapped registers or memory using programmed \fBI/O\fR
+be able to access the mapped registers or memory using programmed
+.BR I/O
 through the handle. Typically, this might occur after the device has failed
-to respond to an \fBI/O\fR access - in the case of a bus error, for
-instance, or a timeout. The effect of programmed \fBI/O\fR access made at
+to respond to an
+.B I/O
+access - in the case of a bus error, for
+instance, or a timeout. The effect of programmed
+.B I/O
+access made at
 the time of a fault is undefined. Read access via \fBddi_get8\fR(9F), for
 example, can return random values, while write access via \fBddi_put8\fR(9F)
 might or might not have an effect. It is possible, however, that the error
 might be transient. In that case, the driver can attempt to recover by
-calling \fBddi_fm_acc_err_clear()\fR, resetting the device to return it to a
+calling
+.BR ddi_fm_acc_err_clear() ,
+resetting the device to return it to a
 known state, then retrying any potentially failed transactions.
 .sp
 .LP
-If an error is indicated for a \fBDMA\fR handle, it implies that an error
-has been detected that has or will affect \fBDMA\fR transactions between the
+If an error is indicated for a
+.B DMA
+handle, it implies that an error
+has been detected that has or will affect
+.B DMA
+transactions between the
 device and the memory currently bound to the handle - or the memory most
 recently bound, if the handle is currently unbound. Possible causes include
-the failure of a component in the \fBDMA\fR data path or an attempt by the
-device to make an invalid \fBDMA\fR access. The contents of any memory
+the failure of a component in the
+.B DMA
+data path or an attempt by the
+device to make an invalid
+.B DMA
+access. The contents of any memory
 currently or previously bound to the handle should be considered
 indeterminate. The driver might be able to continue by freeing memory that
 is bound to the handle back to the system, resetting the device to return it
@@ -131,7 +160,9 @@ If the driver is unable to recover, the operating state should be changed
 by a call to \fBddi_fm_service_impact()\fR that specifies
 \fBDDI_SERVICE_LOST\fR for the impacted device instance. If the recovery and
 retry succeed, a call should still be made to \fBddi_fm_service_impact()\fR
-but \fBDDI_SERVICE_UNAFFECTED\fR should be specified.
+but
+.B DDI_SERVICE_UNAFFECTED
+should be specified.
 .SH CONTEXT
 .sp
 .LP
@@ -140,7 +171,9 @@ be called from user, kernel, or high-level interrupt context.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -157,10 +190,13 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_dma_mem_alloc\fR(9F),
+.BR attributes (5),
+.BR ddi_dma_mem_alloc (9F),
 \fBddi_fm_acc_err_clear\fR(9F), \fBddi_fm_service_impact\fR(9F),
-\fBddi_get8\fR(9F), \fBddi_put8\fR(9F), \fBddi_regs_map_setup\fR(9F),
+.BR ddi_get8 (9F),
+.BR ddi_put8 (9F),
+.BR ddi_regs_map_setup (9F),
 \fBddi_fm_error\fR(9S), 
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

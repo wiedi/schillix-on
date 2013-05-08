@@ -73,43 +73,76 @@ cc [ \fIflag \fR.\|.\|. ] \fIfile\fR.\|.\|. \fB-D_POSIX_PTHREAD_SEMANTICS\fR [ \
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgetlogin()\fR function returns a pointer to the login name as found
-in \fB/var/adm/utmpx\fR. It can be used in conjunction with
-\fBgetpwnam\fR(3C) to locate the correct password file entry when the same
-user \fBID\fR is shared by several login names.
+The
+.B getlogin()
+function returns a pointer to the login name as found
+in
+.BR /var/adm/utmpx .
+It can be used in conjunction with
+.BR getpwnam (3C)
+to locate the correct password file entry when the same
+user
+.B ID
+is shared by several login names.
 .sp
 .LP
-If \fBgetlogin()\fR is called within a process that is not attached to a
+If
+.B getlogin()
+is called within a process that is not attached to a
 terminal, it returns a null pointer. The correct procedure for determining
-the login name is to call \fBcuserid\fR(3C), or to call \fBgetlogin()\fR and
-if it fails to call \fBgetpwuid\fR(3C).
+the login name is to call
+.BR cuserid "(3C), or to call"
+.B getlogin()
+and
+if it fails to call
+.BR getpwuid (3C).
 .sp
 .LP
-The \fBgetlogin_r()\fR function has the same functionality as
+The
+.B getlogin_r()
+function has the same functionality as
 \fBgetlogin()\fR except that the caller must supply a buffer \fIname\fR with
-length \fInamelen\fR to store the result.  The \fIname\fR buffer must be at
-least \fB_POSIX_LOGIN_NAME_MAX\fR bytes in size (defined in
-<\fBlimits.h\fR>). The POSIX version (see \fBstandards\fR(5)) of
+length
+.I namelen
+to store the result.  The
+.I name
+buffer must be at
+least
+.B _POSIX_LOGIN_NAME_MAX
+bytes in size (defined in
+<\fBlimits.h\fR>). The POSIX version (see
+.BR standards (5))
+of
 \fBgetlogin_r()\fR takes a \fInamesize\fR parameter of type \fBsize_t\fR.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBgetlogin()\fR returns a pointer to the login
+Upon successful completion,
+.B getlogin()
+returns a pointer to the login
 name or a null pointer if the user's login name cannot be found.  Otherwise
-it returns a null pointer and sets \fBerrno\fR to indicate the error.
+it returns a null pointer and sets
+.B errno
+to indicate the error.
 .sp
 .LP
-The standard-conforming \fBgetlogin_r()\fR returns \fB0\fR if successful,
+The standard-conforming
+.B getlogin_r()
+returns
+.B 0
+if successful,
 or the error number upon failure.
 .SH ERRORS
 .sp
 .LP
-The \fBgetlogin_r()\fR function will fail if:
+The
+.B getlogin_r()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
@@ -120,22 +153,27 @@ The size of the buffer is smaller than the result to be returned.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-And entry for the current user was not found in the \fB/var/adm/utmpx\fR
+And entry for the current user was not found in the
+.BR /var/adm/utmpx
 file.
 .RE
 
 .sp
 .LP
-The \fBgetlogin()\fR and \fBgetlogin_r()\fR functions may fail if:
+The
+.B getlogin()
+and
+.B getlogin_r()
+functions may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 10n
 .rt
@@ -147,7 +185,7 @@ process.
 .ne 2
 .mk
 .na
-\fBENFILE\fR
+.B ENFILE
 .ad
 .RS 10n
 .rt
@@ -158,7 +196,7 @@ The maximum allowable number of files is currently open in the system.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
@@ -167,12 +205,14 @@ The calling process has no controlling terminal.
 
 .sp
 .LP
-The \fBgetlogin_r()\fR function may fail if:
+The
+.B getlogin_r()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
@@ -182,13 +222,17 @@ The size of the buffer is smaller than the result to be returned.
 .SH USAGE
 .sp
 .LP
-The return value of \fBgetlogin()\fR points to thread-specific data whose
+The return value of
+.B getlogin()
+points to thread-specific data whose
 content is overwritten on each call by the same thread.
 .sp
 .LP
 Three names associated with the current process can be determined:
 \fBgetpwuid(\fBgeteuid()\fB)\fR returns the name associated with the
-effective user ID of the process; \fBgetlogin()\fR returns the name
+effective user ID of the process;
+.B getlogin()
+returns the name
 associated with the current login activity; and
 \fBgetpwuid(\fBgetuid()\fB)\fR returns the name associated with the
 real user ID of the process.
@@ -197,7 +241,7 @@ real user ID of the process.
 .ne 2
 .mk
 .na
-\fB/var/adm/utmpx\fR
+.B /var/adm/utmpx
 .ad
 .RS 18n
 .rt
@@ -207,7 +251,9 @@ user access and administration information
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -226,21 +272,33 @@ MT-LevelSee below.
 .SH SEE ALSO
 .sp
 .LP
-\fBgeteuid\fR(2), \fBgetuid\fR(2), \fBcuserid\fR(3C), \fBgetgrnam\fR(3C),
-\fBgetpwnam\fR(3C), \fBgetpwuid\fR(3C), \fButmpx\fR(4), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR geteuid (2),
+.BR getuid (2),
+.BR cuserid (3C),
+.BR getgrnam (3C),
+.BR getpwnam (3C),
+.BR getpwuid (3C),
+.BR utmpx (4),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
 When compiling multithreaded programs, see \fBIntro\fR(3).
 .sp
 .LP
-The \fBgetlogin()\fR function is safe to use in multithreaded applications,
-but is discouraged. The \fBgetlogin_r()\fR function should be used
+The
+.B getlogin()
+function is safe to use in multithreaded applications,
+but is discouraged. The
+.B getlogin_r()
+function should be used
 instead.
 .sp
 .LP
-Solaris 2.4 and earlier releases provided a \fBgetlogin_r()\fR as specified
+Solaris 2.4 and earlier releases provided a
+.B getlogin_r()
+as specified
 in POSIX.1c Draft 6. The final POSIX.1c standard changed the interface as
 described above. Support for the Draft 6 interface is provided for
 compatibility only and may not be supported in future releases. New

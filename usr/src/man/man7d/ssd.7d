@@ -30,10 +30,14 @@ ssd \- Fibre Channel Arbitrated Loop disk device driver
 .SH DESCRIPTION
 .sp
 .LP
- The \fBssd\fR driver supports Fibre Channel disk devices.
+ The
+.B ssd
+driver supports Fibre Channel disk devices.
 .sp
 .LP
-The specific type of each disk is determined by the \fBSCSI\fR inquiry
+The specific type of each disk is determined by the
+.B SCSI
+inquiry
 command and reading the volume label stored on block 0 of the drive. The
 volume label describes the disk geometry and partitioning; it must be
 present or the disk cannot be mounted by the system.
@@ -44,18 +48,31 @@ mechanism and are read and written without regard to physical disk records.
 A "raw" interface provides for direct transmission between the disk and the
 read or write buffer. A single read or write call usually results in one I/O
 operation; raw I/O is therefore more efficient when many bytes are
-transmitted. Block file names are found in \fB/dev/dsk\fR; the names of the
-raw files are found in \fB/dev/rdsk\fR.
+transmitted. Block file names are found in
+.BR /dev/dsk ;
+the names of the
+raw files are found in
+.BR /dev/rdsk .
 .sp
 .LP
-I/O requests (such as \fBlseek\fR(2)) to the \fBSCSI\fR disk must have an
-offset that is a multiple of 512 bytes (\fBDEV_BSIZE\fR), or the driver
-returns an \fBEINVAL\fR error. If the transfer length is not a multiple of
+I/O requests (such as
+.BR lseek (2))
+to the
+.B SCSI
+disk must have an
+offset that is a multiple of 512 bytes
+.RB ( DEV_BSIZE ),
+or the driver
+returns an
+.B EINVAL
+error. If the transfer length is not a multiple of
 512 bytes, the transfer count is rounded up by the driver.
 .sp
 .LP
 Partition 0 is normally used for the root file system on a disk, with
-partition 1 as a paging area (for example, \fBswap\fR). Partition 2 is used
+partition 1 as a paging area (for example,
+.BR swap ).
+Partition 2 is used
 to back up the entire disk. Partition 2 normally maps the entire disk and
 may also be used as the mount point for secondary disks in the system. The
 rest of the disk is normally partition 6. For the primary disk, the user
@@ -77,18 +94,22 @@ each queue.
 .sp
 .LP
 Not all device drivers make per-partition IO statistics available for
-reporting. \fBssd\fR and \fBsd\fR(7D) per-partition statistics are  enabled
+reporting.
+.B ssd
+and
+.BR sd "(7D) per-partition statistics are  enabled"
 by default but may be disabled in their configuration files.
 .SH IOCTLS
 .sp
 .LP
-Refer to  \fBdkio\fR(7I).
+Refer to 
+.BR dkio (7I).
 .SH ERRORS
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
@@ -99,7 +120,7 @@ Permission denied.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
@@ -110,7 +131,7 @@ The partition was opened exclusively by another thread.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
@@ -121,7 +142,7 @@ The argument was a bad address.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -132,7 +153,7 @@ Invalid argument.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 10n
 .rt
@@ -143,7 +164,7 @@ An I/O error occurred.
 .ne 2
 .mk
 .na
-\fBENOTTY\fR
+.B ENOTTY
 .ad
 .RS 10n
 .rt
@@ -154,11 +175,13 @@ The device does not support the requested ioctl function.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
-When returned during  \fBopen\fR(2), this error indicates the device does
+When returned during 
+.BR open (2),
+this error indicates the device does
 not exist.
 .RE
 
@@ -166,7 +189,7 @@ not exist.
 .ne 2
 .mk
 .na
-\fBEROFS\fR
+.B EROFS
 .ad
 .RS 10n
 .rt
@@ -176,22 +199,27 @@ The device is a read-only device.
 .SH CONFIGURATION
 .sp
 .LP
-You configure the \fBssd\fR driver by defining  properties in the
+You configure the
+.B ssd
+driver by defining  properties in the
 \fBssd.conf\fR file. The \fBssd\fR driver supports the following
 properties:
 .sp
 .ne 2
 .mk
 .na
-\fBenable-partition-kstats\fR
+.B enable-partition-kstats
 .ad
 .RS 27n
 .rt
 The default value is 1, which causes partition IO statistics to be
 maintained. Set this value to zero to prevent the driver from recording
 partition statistics. This slightly reduces the CPU overhead for IO,
-mimimizes the amount of \fBsar\fR(1) data collected and makes these
-statistics unavailable for reporting by \fBiostat\fR(1M) even though the
+mimimizes the amount of
+.BR sar (1)
+data collected and makes these
+statistics unavailable for reporting by
+.BR iostat "(1M) even though the"
 \fB-p\fR/\fB-P\fR option is specified.  Regardless of this setting, disk IO
 statistics are always maintained.
 .RE
@@ -306,7 +334,8 @@ is the controller number on the system.
 .ad
 .RS 22n
 .rt
-SCSI lun  \fIn\fR
+SCSI lun 
+.IR n
 .RE
 
 .sp
@@ -317,24 +346,30 @@ SCSI lun  \fIn\fR
 .ad
 .RS 22n
 .rt
-partition \fIn\fR (0-7)
+partition
+.I n
+(0-7)
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBsar\fR(1), \fBformat\fR(1M), \fBiostat\fR(1M), \fBioctl\fR(2),
-\fBlseek\fR(2), \fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2),
+.BR sar (1),
+\fBformat\fR(1M), \fBiostat\fR(1M), \fBioctl\fR(2),
+.BR lseek (2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
 \fBscsi\fR(4)\fBdriver.conf\fR(4), \fBcdio\fR(7I), \fBdkio\fR(7I)
 .sp
 .LP
 \fIANSI Small Computer System Interface-2 (SCSI-2)\fR
 .sp
 .LP
-\fIANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)\fR
+.I "ANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)
 .sp
 .LP
-\fIFibre Channel - Private Loop SCSI Direct Attach (FC-PLDA)\fR
+.I "Fibre Channel - Private Loop SCSI Direct Attach (FC-PLDA)
 .SH DIAGNOSTICS
 .sp
 .in +2

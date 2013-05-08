@@ -65,7 +65,7 @@ Pointer to a character string.
 .ne 2
 .mk
 .na
-\fIap\fR
+.I ap
 .ad
 .RS 8n
 .rt
@@ -76,24 +76,40 @@ Pointer to a variable argument list.
 .sp
 .LP
 \fBvsprintf()\fR builds a string in \fIbuf\fR under the control of the
-format \fIfmt\fR. The format is a character string with either plain
-characters, which are simply copied into \fIbuf\fR, or conversion
+format
+.IR fmt .
+The format is a character string with either plain
+characters, which are simply copied into
+.IR buf ,
+or conversion
 specifications, each of which converts zero or more arguments, again copied
-into \fIbuf\fR. The results are unpredictable if there are insufficient
+into
+.IR buf .
+The results are unpredictable if there are insufficient
 arguments for the format;  excess arguments are simply ignored. It is the
 user's responsibility to ensure that enough storage is available for
 \fIbuf\fR. 
 .sp
 .LP
 \fIap\fR contains the list of arguments used by the conversion
-specifications in \fIfmt\fR. \fIap\fR is a variable argument list and must
-be initialized by calling  \fBva_start\fR(9F). \fBva_end\fR(9F) is used to
+specifications in
+.IR fmt .
+\fIap\fR is a variable argument list and must
+be initialized by calling 
+.BR va_start (9F).
+.BR va_end (9F)
+is used to
 clean up and must be called after each traversal of the list. Multiple
-traversals of the argument list, each bracketed by  \fBva_start\fR(9F) and
-\fBva_end\fR(9F), are possible.
+traversals of the argument list, each bracketed by 
+.BR va_start (9F)
+and
+.BR va_end (9F),
+are possible.
 .sp
 .LP
-Each conversion specification is introduced by the \fB%\fR character, after
+Each conversion specification is introduced by the
+.B %
+character, after
 which the following appear in sequence:
 .sp
 .LP
@@ -102,9 +118,20 @@ conversion. The converted value will be right-justified and padded with
 leading zeroes if it has fewer characters than the minimum.
 .sp
 .LP
-An optional \fBl\fR (\fBll\fR) specifying that a following \fBd\fR,
-\fBD\fR, \fBo\fR, \fBO\fR, \fBx\fR, \fBX\fR, or \fBu\fR conversion character
-applies to a \fBlong\fR (\fBlong long\fR) integer argument. An \fBl\fR
+An optional
+.B l
+(\fBll\fR) specifying that a following \fBd\fR,
+.BR D ,
+.BR o ,
+.BR O ,
+.BR x ,
+.BR X ,
+or
+.B u
+conversion character
+applies to a
+.B long
+(\fBlong long\fR) integer argument. An \fBl\fR
 (\fBll\fR) before any other conversion character is ignored.
 .sp
 .LP
@@ -118,17 +145,23 @@ A character indicating the type of conversion to be applied:
 .RS 17n
 .rt
 The integer argument is converted to signed decimal (\fBd\fR, \fBD\fR),
-unsigned octal (\fBo\fR, \fBO\fR), unsigned hexadecimal (\fBx\fR, \fBX\fR)
-or unsigned decimal (\fBu\fR), respectively, and copied. The letters
+unsigned octal (\fBo\fR,
+.BR O ),
+unsigned hexadecimal (\fBx\fR, \fBX\fR)
+or unsigned decimal
+.RB ( u ),
+respectively, and copied. The letters
 \fBabcdef\fR are used for \fBx\fR conversion. The letters \fBABCDEF\fR are
-used for \fBX\fR conversion.
+used for
+.B X
+conversion.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBc\fR
+.B c
 .ad
 .RS 17n
 .rt
@@ -139,7 +172,7 @@ The character value of the argument is copied.
 .ne 2
 .mk
 .na
-\fBb\fR
+.B b
 .ad
 .RS 17n
 .rt
@@ -162,9 +195,14 @@ the name of the bit.
 .ad
 .RS 17n
 .rt
-A bit number is a binary-valued character in the range \fB1-32\fR. For each
+A bit number is a binary-valued character in the range
+.BR 1-32 .
+For each
 bit set in the first argument, and named in the second argument, the bit
-names are copied, separated by commas, and bracketed by \fB<\fR and \fB>\fR.
+names are copied, separated by commas, and bracketed by
+.B <
+and
+.BR > .
 Thus, the following function call would generate
 \fBreg=3<BitTwo,BitOne>\en\fR in \fIbuf\fR.
 .RE
@@ -184,13 +222,17 @@ Thus, the following function call would generate
 .ne 2
 .mk
 .na
-\fBs\fR
+.B s
 .ad
 .RS 17n
 .rt
 The argument is taken to be a string (character pointer), and characters
 from the string are copied until a null character is encountered.  If the
-character pointer is \fINULL\fR on \fBSPARC\fR, the string
+character pointer is
+.I NULL
+on
+.BR SPARC ,
+the string
 \fB<nullstring>\fR is used in its place; on x86, it is undefined.
 .RE
 
@@ -198,11 +240,13 @@ character pointer is \fINULL\fR on \fBSPARC\fR, the string
 .ne 2
 .mk
 .na
-\fB%\fR
+.B %
 .ad
 .RS 17n
 .rt
-Copy a \fB%\fR; no argument is converted.
+Copy a
+.BR % ;
+no argument is converted.
 .RE
 
 .SH RETURN VALUES
@@ -215,16 +259,32 @@ Copy a \fB%\fR; no argument is converted.
 \fBvsprintf()\fR can be called from user, kernel, or interrupt context.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBvsprintf()\fR
+\fBExample 1\fR Using \fBvsprintf()\fR
 .sp
 .LP
-In this example, \fBxxerror()\fR accepts a pointer to a  \fBdev_info_t\fR
-structure \fBdip\fR, an error level \fBlevel\fR, a format  \fBfmt\fR, and a
+In this example,
+.B xxerror()
+accepts a pointer to a  \fBdev_info_t\fR
+structure
+.BR dip ,
+an error level
+.BR level ,
+a format 
+.BR fmt ,
+and a
 variable number of arguments.  The routine uses \fBvsprintf()\fR to format
-the error message in  \fBbuf\fR. Note that  \fBva_start\fR(9F) and
-\fBva_end\fR(9F) bracket the call to \fBvsprintf()\fR. \fBinstance\fR,
-\fBlevel\fR, \fBname\fR, and  \fBbuf\fR are then passed to
-\fBcmn_err\fR(9F). 
+the error message in 
+.BR buf .
+Note that 
+.BR va_start "(9F) and"
+.BR va_end (9F)
+bracket the call to
+.BR vsprintf() .
+.BR instance ,
+.BR level ,
+.BR name ,
+and  \fBbuf\fR are then passed to
+.BR cmn_err (9F).
 
 .sp
 .in +2
@@ -259,8 +319,10 @@ xxerror(dev_info_t *dip, int level, const char *fmt, .\|.\|.\|)
 .SH SEE ALSO
 .sp
 .LP
-\fBcmn_err\fR(9F), \fBddi_binding_name\fR(9F), \fBddi_get_instance\fR(9F),
-\fBva_arg\fR(9F) 
+.BR cmn_err (9F),
+.BR ddi_binding_name (9F),
+.BR ddi_get_instance (9F),
+.BR va_arg (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

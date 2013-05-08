@@ -40,14 +40,22 @@ aioread, aiowrite \- read or write asynchronous I/O operations
 .SH DESCRIPTION
 .sp
 .LP
-The \fBaioread()\fR function initiates one asynchronous \fBread\fR(2) and
+The
+.B aioread()
+function initiates one asynchronous
+.BR read (2)
+and
 returns control to the calling program. The read continues concurrently with
 other activity of the process. An attempt is made to read \fIbufs\fR bytes
 of data from the object referenced by the descriptor \fIfildes\fR into the
 buffer pointed to by \fIbufp\fR.
 .sp
 .LP
-The \fBaiowrite()\fR function initiates one asynchronous \fBwrite\fR(2) and
+The
+.B aiowrite()
+function initiates one asynchronous
+.BR write (2)
+and
 returns control to the calling program. The write continues concurrently
 with other activity of the process. An attempt is made to write \fIbufs\fR
 bytes of data from the buffer pointed to by \fIbufp\fR to the object
@@ -55,18 +63,31 @@ referenced by the descriptor \fIfildes\fR.
 .sp
 .LP
 On objects capable of seeking, the I/O operation starts at the position
-specified by \fIwhence\fR and \fIoffset\fR. These parameters have the same
-meaning as the corresponding parameters to the \fBllseek\fR(2) function. On
+specified by
+.I whence
+and
+.IR offset .
+These parameters have the same
+meaning as the corresponding parameters to the
+.BR llseek (2)
+function. On
 objects not capable of seeking the I/O operation always start from the
-current position and the parameters \fBwhence\fR and \fIoffset\fR are
+current position and the parameters
+.B whence
+and \fIoffset\fR are
 ignored. The seek pointer for objects capable of seeking is not updated by
-\fBaioread()\fR or \fBaiowrite()\fR. Sequential asynchronous operations on
-these devices must be managed by the application using the \fIwhence\fR and
+\fBaioread()\fR or
+.BR aiowrite() .
+Sequential asynchronous operations on
+these devices must be managed by the application using the
+.I whence
+and
 \fIoffset\fR parameters.
 .sp
 .LP
 The result of the asynchronous operation is stored in the structure pointed
-to by \fIresultp\fR:
+to by
+.IR resultp :
 .sp
 .in +2
 .nf
@@ -77,10 +98,15 @@ int aio_errno;          /* value of errno for read() or write() */
 
 .sp
 .LP
-Upon completion of the operation both \fBaio_return\fR and \fBaio_errno\fR
+Upon completion of the operation both
+.B aio_return
+and
+.BR aio_errno
 are set to reflect the result of the operation. Since \fBAIO_INPROGRESS\fR
 is not a value used by the system, the client can detect a change in state
-by initializing \fBaio_return\fR to this value.
+by initializing
+.B aio_return
+to this value.
 .sp
 .LP
 The application-supplied buffer \fIbufp\fR should not be referenced by the
@@ -90,22 +116,33 @@ in progress, this buffer is in use by the operating system.
 .LP
 Notification of the completion of an asynchronous I/O  operation can be
 obtained synchronously through the  \fBaiowait\fR(3C) function, or
-asynchronously by installing a signal handler for the \fBSIGIO\fR signal.
+asynchronously by installing a signal handler for the
+.B SIGIO
+signal.
 Asynchronous notification is accomplished by sending the process a
 \fBSIGIO\fR signal. If a signal handler is not installed for the \fBSIGIO\fR
 signal, asynchronous notification is disabled. The delivery of this instance
-of the \fBSIGIO\fR signal is reliable in that a signal delivered while the
+of the
+.B SIGIO
+signal is reliable in that a signal delivered while the
 handler is executing is not lost. If the client ensures that \fBaiowait()\fR
 returns nothing (using a polling timeout) before returning from the signal
 handler, no asynchronous I/O notifications are lost. The \fBaiowait()\fR
 function is the only way to dequeue an asynchronous notification. The
 \fBSIGIO\fR signal can have several meanings simultaneously. For example, it
-can signify that a descriptor generated \fBSIGIO\fR and an asynchronous
+can signify that a descriptor generated
+.B SIGIO
+and an asynchronous
 operation completed. Further, issuing an asynchronous request successfully
 guarantees that space exists to queue the completion notification.
 .sp
 .LP
-The \fBclose\fR(2), \fBexit\fR(2) and \fBexecve\fR(2)) functions block
+The
+.BR close (2),
+.BR exit (2)
+and
+.BR execve (2))
+functions block
 until all pending asynchronous I/O operations can be canceled by the
 system.
 .sp
@@ -116,18 +153,31 @@ the operation.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion,  \fBaioread()\fR and \fBaiowrite()\fR return
-\fB0\fR. Upon failure, \fBaioread()\fR and \fBaiowrite()\fR return
+Upon successful completion, 
+.B aioread()
+and
+.B aiowrite()
+return
+.BR 0 .
+Upon failure,
+.B aioread()
+and
+.B aiowrite()
+return
 \fB\(mi1\fR and set \fBerrno\fR to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBaioread()\fR and \fBaiowrite()\fR functions will fail if:
+The
+.B aioread()
+and
+.B aiowrite()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -139,7 +189,7 @@ time has been exceeded
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -151,11 +201,13 @@ reading.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-At least one of \fIbufp\fR or \fIresultp\fR points to an address outside
+At least one of \fIbufp\fR or
+.I resultp
+points to an address outside
 the address space of the requesting process. This condition is reported only
 if detected by the application process.
 .RE
@@ -164,11 +216,13 @@ if detected by the application process.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIresultp\fR argument is currently being used by an outstanding
+The
+.I resultp
+argument is currently being used by an outstanding
 asynchronous request.
 .RE
 
@@ -176,7 +230,7 @@ asynchronous request.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -188,7 +242,7 @@ type.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -198,12 +252,18 @@ Memory resources are unavailable to initiate request.
 .SH USAGE
 .sp
 .LP
-The \fBaioread()\fR and \fBaiowrite()\fR functions have transitional
+The
+.B aioread()
+and
+.B aiowrite()
+functions have transitional
 interfaces for 64-bit file offsets.  See \fBlf64\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -220,7 +280,16 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(2), \fBexecve\fR(2), \fBexit\fR(2), \fBllseek\fR(2),
-\fBlseek\fR(2), \fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2),
-\fBaiocancel\fR(3C), \fBaiowait\fR(3C), \fBsigvec\fR(3UCB),
-\fBattributes\fR(5), \fBlf64\fR(5)
+.BR close (2),
+.BR execve (2),
+.BR exit (2),
+.BR llseek (2),
+.BR lseek (2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
+.BR aiocancel (3C),
+.BR aiowait (3C),
+.BR sigvec (3UCB),
+.BR attributes (5),
+\fBlf64\fR(5)

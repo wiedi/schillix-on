@@ -42,61 +42,111 @@ t = t_open ("/dev/rawip6", O_RDWR);
 .SH DESCRIPTION
 .sp
 .LP
-The \fBIPv6\fR protocol is the next generation of the internetwork datagram
+The
+.B IPv6
+protocol is the next generation of the internetwork datagram
 delivery protocol of the Internet protocol family. Programs may use
 \fBIPv6\fR through higher-level protocols such as the Transmission Control
-Protocol (\fBTCP\fR) or the User Datagram Protocol (\fBUDP\fR), or may
-interface directly to \fBIPv6\fR. See \fBtcp\fR(7P) and \fBudp\fR(7P).
+Protocol (\fBTCP\fR) or the User Datagram Protocol
+.RB ( UDP ),
+or may
+interface directly to
+.BR IPv6 .
+See \fBtcp\fR(7P) and \fBudp\fR(7P).
 Direct access may be by means of the socket interface, using a "raw socket,"
-or by means of the Transport Level Interface (\fBTLI\fR). The protocol
-options and \fBIPv6\fR extension headers defined in the \fBIPv6\fR
+or by means of the Transport Level Interface
+.RB ( TLI ).
+The protocol
+options and
+.B IPv6
+extension headers defined in the
+.BR IPv6
 specification may be set in outgoing datagrams.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
 .LP
-The \fBSTREAMS\fR driver \fB/dev/rawip6\fR is the \fBTLI\fR transport
-provider that provides raw access to \fBIPv6\fR.
+The
+.B STREAMS
+driver
+.B /dev/rawip6
+is the
+.B TLI
+transport
+provider that provides raw access to
+.BR IPv6 .
 .sp
 .LP
-Raw \fBIPv6\fR sockets are connectionless and are normally used with the
+Raw
+.B IPv6
+sockets are connectionless and are normally used with the
 \fBsendto()\fR and \fBrecvfrom()\fR calls (see \fBsend\fR(3SOCKET) and
-\fBrecv\fR(3SOCKET)), although the \fBconnect\fR(3SOCKET) call may also be
+.BR recv (3SOCKET)),
+although the
+.BR connect "(3SOCKET) call may also be"
 used to fix the destination for future datagrams. In this case, the
-\fBread\fR(2) or \fBrecv\fR(3SOCKET) and \fBwrite\fR(2) or
-\fBsend\fR(3SOCKET) calls may be used. Ancillary data may also be sent or
-received over raw \fBIPv6\fR sockets using the \fBsendmsg\fR(3SOCKET) and
-\fBrecvmsg\fR(3SOCKET) system calls.
+.BR read (2)
+or
+.BR recv "(3SOCKET) and"
+.BR write (2)
+or
+.BR send (3SOCKET)
+calls may be used. Ancillary data may also be sent or
+received over raw
+.B IPv6
+sockets using the
+.BR sendmsg "(3SOCKET) and"
+.BR recvmsg (3SOCKET)
+system calls.
 .sp
 .LP
-Unlike raw \fBIP\fR, \fBIPv6\fR applications do not include a complete
+Unlike raw
+.BR IP ,
+\fBIPv6\fR applications do not include a complete
 \fBIPv6\fR header when sending; there is no \fBIPv6\fR analog to the
-\fBIP\fR \fBIP_HDRINCL\fR socket option. \fBIPv6\fR header values may be
-specified or received as ancillary data to a \fBsendmsg\fR(3SOCKET) or
+\fBIP IP_HDRINCL\fR socket option. \fBIPv6\fR header values may be
+specified or received as ancillary data to a
+.BR sendmsg "(3SOCKET) or"
 \fBrecvmsg\fR(3SOCKET) system call, or may be specified as "sticky" options
-on a per-socket basis by using the \fBsetsockopt\fR(3SOCKET) system call.
+on a per-socket basis by using the
+.BR setsockopt (3SOCKET)
+system call.
 Such sticky options are applied to all outbound packets unless overridden by
 ancillary data. If any ancillary data is specified in a
-\fBsendmsg\fR(3SOCKET) call, all sticky options not explicitly overridden
+.BR sendmsg (3SOCKET)
+call, all sticky options not explicitly overridden
 revert to default values for that datagram only; the sticky options persist
 as set for subsequent datagrams.
 .sp
 .LP
-Since \fBsendmsg\fR(3SOCKET) is not supported for \fBSOCK_STREAM\fR upper
-level protocols such as \fBTCP\fR, ancillary data is unsupported for
-\fBTCP\fR. Sticky options, however, are supported.
+Since \fBsendmsg\fR(3SOCKET) is not supported for
+.B SOCK_STREAM
+upper
+level protocols such as
+.BR TCP ,
+ancillary data is unsupported for
+.BR TCP .
+Sticky options, however, are supported.
 .sp
 .LP
-Since \fBsendmsg\fR(3SOCKET) is supported for \fBSOCK_DGRAM\fR upper level
+Since \fBsendmsg\fR(3SOCKET) is supported for
+.B SOCK_DGRAM
+upper level
 protocols, both ancillary data and sticky options are supported for
-\fBUDP\fR, \fBICMP6\fR, and raw \fBIPv6\fR sockets.
+.BR UDP ,
+.BR ICMP6 ,
+and raw
+.B IPv6
+sockets.
 .sp
 .LP
-The socket options supported at the \fBIPv6\fR level are:
+The socket options supported at the
+.B IPv6
+level are:
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_BOUND_IF\fR
+.B IPV6_BOUND_IF
 .ad
 .RS 24n
 .rt
@@ -108,7 +158,7 @@ integer as an argument; the integer is the selected interace index.
 .ne 2
 .mk
 .na
-\fBIPV6_UNSPEC_SRC\fR
+.B IPV6_UNSPEC_SRC
 .ad
 .RS 24n
 .rt
@@ -119,28 +169,39 @@ Boolean. Allow/disallow sending with a zero source address.
 .ne 2
 .mk
 .na
-\fBIPV6_UNICAST_HOPS\fR
+.B IPV6_UNICAST_HOPS
 .ad
 .RS 24n
 .rt
 Default hop limit for unicast datagrams. This option takes an integer as an
-argument. Its value becomes the new default value for \fBip6_hops\fR that
+argument. Its value becomes the new default value for
+.B ip6_hops
+that
 \fBIPv6\fR will use on outgoing unicast datagrams sent from that socket. The
-initial default is \fB60\fR.
+initial default is
+.BR 60 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_CHECKSUM\fR
+.B IPV6_CHECKSUM
 .ad
 .RS 24n
 .rt
 Specify the integer offset in bytes into the user data of the checksum
-location. Does not apply to the \fBICMP6\fR protocol. Note: checksums are
-required for all \fBIPv6\fR datagrams; this is different from \fBIP\fR, in
-which datagram checksums were optional. \fBIPv6\fR will compute the
+location. Does not apply to the
+.B ICMP6
+protocol. Note: checksums are
+required for all
+.B IPv6
+datagrams; this is different from
+.BR IP ,
+in
+which datagram checksums were optional.
+.B IPv6
+will compute the
 \fBULP\fR checksum if the value in the checksum field is zero.
 .RE
 
@@ -148,7 +209,7 @@ which datagram checksums were optional. \fBIPv6\fR will compute the
 .ne 2
 .mk
 .na
-\fBIPV6_SEC_OPT\fR
+.B IPV6_SEC_OPT
 .ad
 .RS 24n
 .rt
@@ -160,7 +221,7 @@ on the protection services of IPsec, see \fBipsec\fR(7P).
 .ne 2
 .mk
 .na
-\fBIPV6_DONTFRAG\fR
+.B IPV6_DONTFRAG
 .ad
 .RS 24n
 .rt
@@ -171,7 +232,7 @@ Boolean. Control fragmentation.
 .ne 2
 .mk
 .na
-\fBIPV6_USE_MIN_MTU\fR
+.B IPV6_USE_MIN_MTU
 .ad
 .RS 24n
 .rt
@@ -186,7 +247,7 @@ performed.
 .ne 2
 .mk
 .na
-\fBIPV6_V6ONLY\fR
+.B IPV6_V6ONLY
 .ad
 .RS 24n
 .rt
@@ -197,13 +258,13 @@ Boolean. If set, only V6 packets can be sent or received
 .ne 2
 .mk
 .na
-\fBIPV6_SRC_PREFERENCES\fR
+.B IPV6_SRC_PREFERENCES
 .ad
 .RS 24n
 .rt
 Enable or obtain Source Address Selection rule settings for this socket.
 For more details on the Source Address Selection rules, see
-\fBinet6\fR(7P).
+.BR inet6 (7P).
 .RE
 
 .sp
@@ -214,7 +275,7 @@ ancillary data:
 .ne 2
 .mk
 .na
-\fBIPV6_RECVPKTINFO\fR
+.B IPV6_RECVPKTINFO
 .ad
 .RS 25n
 .rt
@@ -226,7 +287,7 @@ and of the inbound packet's destination address.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVHOPLIMIT\fR
+.B IPV6_RECVHOPLIMIT
 .ad
 .RS 25n
 .rt
@@ -237,11 +298,13 @@ Enable/disable receipt of the inbound packet's current hoplimit.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVHOPOPTS\fR
+.B IPV6_RECVHOPOPTS
 .ad
 .RS 25n
 .rt
-Enable/disable receipt of the inbound packet's \fBIPv6\fR hop-by-hop
+Enable/disable receipt of the inbound packet's
+.B IPv6
+hop-by-hop
 extension header.
 .RE
 
@@ -249,11 +312,13 @@ extension header.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVDSTOPTS\fR
+.B IPV6_RECVDSTOPTS
 .ad
 .RS 25n
 .rt
-Enable/disable receipt of the inbound packet's \fBIPv6\fR destination
+Enable/disable receipt of the inbound packet's
+.B IPv6
+destination
 options extension header.
 .RE
 
@@ -261,18 +326,20 @@ options extension header.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVRTHDR\fR
+.B IPV6_RECVRTHDR
 .ad
 .RS 25n
 .rt
-Enable/disable receipt of the inbound packet's \fBIPv6\fR routing header.
+Enable/disable receipt of the inbound packet's
+.B IPv6
+routing header.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_RECVRTHDRDSTOPTS\fR
+.B IPV6_RECVRTHDRDSTOPTS
 .ad
 .RS 25n
 .rt
@@ -285,7 +352,7 @@ of both destination option headers.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVTCLASS\fR
+.B IPV6_RECVTCLASS
 .ad
 .RS 25n
 .rt
@@ -296,7 +363,7 @@ Enable/disable receipt of the traffic class of the inbound packet.
 .ne 2
 .mk
 .na
-\fBIPV6_RECVPATHMTU\fR
+.B IPV6_RECVPATHMTU
 .ad
 .RS 25n
 .rt
@@ -306,25 +373,27 @@ Enable/disable receipt of the path mtu of the inbound packet.
 .sp
 .LP
 The following options may be set as sticky options with
-\fBsetsockopt\fR(3SOCKET) or as ancillary data to a \fBsendmsg\fR(3SOCKET)
+.BR setsockopt (3SOCKET)
+or as ancillary data to a
+.BR sendmsg (3SOCKET)
 system call:
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_PKTINFO\fR
+.B IPV6_PKTINFO
 .ad
 .RS 21n
 .rt
 Set the source address and/or interface out which the packet(s) will be
-sent. Takes a \fBstruct\fR \fBin6_pktinfo\fR as the parameter.
+sent. Takes a \fBstruct in6_pktinfo\fR as the parameter.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_HOPLIMIT\fR
+.B IPV6_HOPLIMIT
 .ad
 .RS 21n
 .rt
@@ -339,12 +408,16 @@ default hoplimit.
 .ne 2
 .mk
 .na
-\fBIPV6_NEXTHOP\fR
+.B IPV6_NEXTHOP
 .ad
 .RS 21n
 .rt
-Specify the \fBIPv6\fR address of the first hop, which must be a neighbor
-of the sending host. Takes a \fBstruct\fR \fBsockaddr_in6\fR as the
+Specify the
+.B IPv6
+address of the first hop, which must be a neighbor
+of the sending host. Takes a
+.B "struct sockaddr_in6"
+as the
 parameter. When this option specifies the same address as the destination
 \fBIPv6\fR address of the datagram, this is equivalent to the existing
 \fBSO_DONTROUTE\fR option.
@@ -354,7 +427,7 @@ parameter. When this option specifies the same address as the destination
 .ne 2
 .mk
 .na
-\fBIPV6_HOPOPTS\fR
+.B IPV6_HOPOPTS
 .ad
 .RS 21n
 .rt
@@ -366,7 +439,7 @@ Specify one or more hop-by-hop options. Variable length. Takes a complete
 .ne 2
 .mk
 .na
-\fBIPV6_DSTOPTS\fR
+.B IPV6_DSTOPTS
 .ad
 .RS 21n
 .rt
@@ -378,11 +451,13 @@ Specify one or more destination options. Variable length. Takes a complete
 .ne 2
 .mk
 .na
-\fBIPV6_RTHDR\fR
+.B IPV6_RTHDR
 .ad
 .RS 21n
 .rt
-Specify the \fBIPv6\fR routing header. Variable length. Takes a complete
+Specify the
+.B IPv6
+routing header. Variable length. Takes a complete
 \fBIPv6\fR routing header as the parameter. Currently, only type 0 routing
 headers are supported.
 .RE
@@ -391,13 +466,17 @@ headers are supported.
 .ne 2
 .mk
 .na
-\fBIPV6_RTHDRDSTOPTS\fR
+.B IPV6_RTHDRDSTOPTS
 .ad
 .RS 21n
 .rt
 Specify one or more destination options for all intermediate hops. May be
-configured, but will not be applied unless an \fBIPv6\fR routing header is
-also configured. Variable length. Takes a complete \fBIPv6\fR destination
+configured, but will not be applied unless an
+.B IPv6
+routing header is
+also configured. Variable length. Takes a complete
+.B IPv6
+destination
 options extension header as the parameter.
 .RE
 
@@ -405,7 +484,7 @@ options extension header as the parameter.
 .ne 2
 .mk
 .na
-\fBIPV6_PATHMTU\fR
+.B IPV6_PATHMTU
 .ad
 .RS 21n
 .rt
@@ -417,7 +496,7 @@ the parameter.
 .ne 2
 .mk
 .na
-\fBIPV6_TCLASS\fR
+.B IPV6_TCLASS
 .ad
 .RS 21n
 .rt
@@ -434,11 +513,13 @@ The following options affect the socket's multicast behavior:
 .ne 2
 .mk
 .na
-\fBIPV6_JOIN_GROUP\fR
+.B IPV6_JOIN_GROUP
 .ad
 .RS 28n
 .rt
-Join a multicast group. Takes a \fBstruct\fR \fBipv6_mreq\fR as the
+Join a multicast group. Takes a
+.B "struct ipv6_mreq"
+as the
 parameter; the structure contains a multicast address and an interface
 index.
 .RE
@@ -447,11 +528,13 @@ index.
 .ne 2
 .mk
 .na
-\fBIPV6_LEAVE_GROUP\fR
+.B IPV6_LEAVE_GROUP
 .ad
 .RS 28n
 .rt
-Leave a multicast group. Takes a \fBstruct\fR \fBipv6_mreq\fR as the
+Leave a multicast group. Takes a
+.B "struct ipv6_mreq"
+as the
 parameter; the structure contains a multicast address and an interface
 index.
 .RE
@@ -460,11 +543,11 @@ index.
 .ne 2
 .mk
 .na
-\fBMCAST_JOIN_GROUP\fR
+.B MCAST_JOIN_GROUP
 .ad
 .RS 28n
 .rt
-Functionally equivalent to IPV6_JOIN_GROUP. Takes a \fBstruct\fR
+.RB "Functionally equivalent to IPV6_JOIN_GROUP. Takes a" " struct"
 \fBgroup_req\fR as the parameter. The structure contains a multicast address
 and an interface index.
 .RE
@@ -473,13 +556,13 @@ and an interface index.
 .ne 2
 .mk
 .na
-\fBMCAST_BLOCK_SOURCE\fR
+.B MCAST_BLOCK_SOURCE
 .ad
 .RS 28n
 .rt
 Block multicast packets on a particular multicast group whose source
 address matches the given source address. The specified group must be joined
-previously using IPV6_JOIN_GROUP or MCAST_JOIN_GROUP. Takes a \fBstruct\fR
+.RB "previously using IPV6_JOIN_GROUP or MCAST_JOIN_GROUP. Takes a" " struct"
 \fBgroup_source_req\fR as the parameter. The structure contains an interface
 index, a multicast address, and a source address.
 .RE
@@ -488,12 +571,14 @@ index, a multicast address, and a source address.
 .ne 2
 .mk
 .na
-\fBMCAST_UNBLOCK_SOURCE\fR
+.B MCAST_UNBLOCK_SOURCE
 .ad
 .RS 28n
 .rt
 Unblock multicast packets which were previously blocked using
-MCAST_BLOCK_SOURCE. Takes a \fBstruct\fR \fBgroup_source_req\fR as the
+MCAST_BLOCK_SOURCE. Takes a
+.B "struct group_source_req"
+as the
 parameter. The structure contains an interface index, a multicast address,
 and a source address.
 .RE
@@ -502,11 +587,11 @@ and a source address.
 .ne 2
 .mk
 .na
-\fBMCAST_LEAVE_GROUP\fR
+.B MCAST_LEAVE_GROUP
 .ad
 .RS 28n
 .rt
-Functionally equivalent to IPV6_LEAVE_GROUP. Takes a \fBstruct\fR
+.RB "Functionally equivalent to IPV6_LEAVE_GROUP. Takes a" " struct"
 \fBgroup_req\fR as the parameter. The structure contains a multicast address
 and an interface index.
 .RE
@@ -515,12 +600,12 @@ and an interface index.
 .ne 2
 .mk
 .na
-\fBMCAST_JOIN_SOURCE_GROUP\fR
+.B MCAST_JOIN_SOURCE_GROUP
 .ad
 .RS 28n
 .rt
 Begin receiving packets for the given multicast group whose source address
-matches the specified address. Takes a \fBstruct\fR \fBgroup_source_req\fR
+matches the specified address. Takes a \fBstruct group_source_req\fR
 as the parameter. The structure contains an interface index, a multicast
 address, and a source address.
 .RE
@@ -529,12 +614,12 @@ address, and a source address.
 .ne 2
 .mk
 .na
-\fBMCAST_LEAVE_SOURCE_GROUP\fR
+.B MCAST_LEAVE_SOURCE_GROUP
 .ad
 .RS 28n
 .rt
 Stop receiving packets for the given multicast group whose source address
-matches the specified address. Takes a \fBstruct\fR \fBgroup_source_req\fR
+matches the specified address. Takes a \fBstruct group_source_req\fR
 as the parameter. The structure contains an interface index, a multicast
 address, and a source address.
 .RE
@@ -543,7 +628,7 @@ address, and a source address.
 .ne 2
 .mk
 .na
-\fBIPV6_MULTICAST_IF\fR
+.B IPV6_MULTICAST_IF
 .ad
 .RS 28n
 .rt
@@ -556,21 +641,24 @@ interface.
 .ne 2
 .mk
 .na
-\fBIPV6_MULTICAST_HOPS\fR
+.B IPV6_MULTICAST_HOPS
 .ad
 .RS 28n
 .rt
 Default hop limit for multicast datagrams. This option takes an integer as
-an argument. Its value becomes the new default value for \fBip6_hops\fR that
+an argument. Its value becomes the new default value for
+.B ip6_hops
+that
 \fBIPv6\fR will use on outgoing multicast datagrams sent from that socket.
-The initial default is \fB1\fR.
+The initial default is
+.BR 1 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBIPV6_MULTICAST_LOOP\fR
+.B IPV6_MULTICAST_LOOP
 .ad
 .RS 28n
 .rt
@@ -582,45 +670,83 @@ argument to 0 will cause the opposite behavior.
 .sp
 .LP
 The multicast socket options can be used with any datagram socket type in
-the \fBIPv6\fR family.
+the
+.B IPv6
+family.
 .sp
 .LP
-At the socket level, the socket option \fBSO_DONTROUTE\fR may be applied.
+At the socket level, the socket option
+.B SO_DONTROUTE
+may be applied.
 This option forces datagrams being sent to bypass routing and forwarding by
-forcing the \fBIPv6\fR hoplimit field to \fB1\fR, meaning that the packet
+forcing the
+.B IPv6
+hoplimit field to
+.BR 1 ,
+meaning that the packet
 will not be forwarded by routers.
 .sp
 .LP
-Raw \fBIPv6\fR datagrams can also be sent and received using the \fBTLI\fR
+Raw
+.B IPv6
+datagrams can also be sent and received using the
+.BR TLI
 connectionless primitives.
 .sp
 .LP
-Datagrams flow through the \fBIPv6\fR layer in two directions: from the
-network \fIup\fR to user processes and from user processes \fIdown\fR to the
-network. Using this orientation, \fBIPv6\fR is layered \fIabove\fR the
-network interface drivers and \fIbelow\fR the transport protocols such as
-\fBUDP\fR and \fBTCP\fR. The Internet Control Message Protocol
+Datagrams flow through the
+.B IPv6
+layer in two directions: from the
+network
+.I up
+to user processes and from user processes
+.I down
+to the
+network. Using this orientation,
+.B IPv6
+is layered
+.I above
+the
+network interface drivers and
+.I below
+the transport protocols such as
+\fBUDP\fR and
+.BR TCP .
+The Internet Control Message Protocol
 (\fBICMPv6\fR) for the Internet Protocol Version 6 (\fBIPv6\fR) is logically
-a part of \fBIPv6\fR. See \fBicmp6\fR(7P).
+a part of
+.BR IPv6 .
+See
+.BR icmp6 (7P).
 .sp
 .LP
-Unlike \fBIP\fR, \fBIPv6\fR provides no checksum of the \fBIPv6\fR header.
-Also unlike \fBIP\fR, upper level protocol checksums are required.
+Unlike
+.BR IP ,
+\fBIPv6\fR provides no checksum of the \fBIPv6\fR header.
+Also unlike
+.BR IP ,
+upper level protocol checksums are required.
 \fBIPv6\fR will compute the \fBULP\fR/data portion checksum if the checksum
-field contains a zero (see \fBIPV6_CHECKSUM\fR option above).
+field contains a zero (see
+.B IPV6_CHECKSUM
+option above).
 .sp
 .LP
 \fBIPv6\fR extension headers in received datagrams are processed in the
 \fBIPv6\fR layer according to the protocol specification. Currently
-recognized \fBIPv6\fR extension headers include hop-by-hop options header,
+recognized
+.B IPv6
+extension headers include hop-by-hop options header,
 destination options header, routing header (currently, only type 0 routing
 headers are supported), and fragment header.
 .sp
 .LP
 By default, the IPv6 layer will not forward IPv6 packets that are not
 addressed to it. This behavior can be overridden by using
-\fBrouteadm\fR(1M) to enable the ipv6-forwarding option. IPv6 forwarding is
-configured at boot time based on the setting of \fBrouteadm\fR(1M)'s
+.BR routeadm (1M)
+to enable the ipv6-forwarding option. IPv6 forwarding is
+configured at boot time based on the setting of
+.BR routeadm (1M)'s
 ipv6-forwarding option.
 .sp
 .LP
@@ -641,7 +767,8 @@ sets all of the IPv6 interfaces' IFF_ROUTER flags.
 .LP
 For backwards compatibility, each interface creates an
 \fB<ifname>ip6_forwarding /dev/ip6\fR variable that can be modified using
-\fBndd\fR(1M). An interface's \fB:ip6_forwarding ndd\fR variable is a
+.BR ndd (1M).
+An interface's \fB:ip6_forwarding ndd\fR variable is a
 boolean variable that mirrors the status of its IFF_ROUTER interface flag.
 It is set to 1 if the flag is set, or 0 if it is clear. This interface
 specific \fB<ifname>:ip6_forwarding ndd\fR variable is obsolete and may be
@@ -649,24 +776,37 @@ removed in a future release of Solaris. The \fBifconfig\fR(1M) router and
 -router interfaces are preferred.
 .sp
 .LP
-The \fBIPv6\fR layer will send an \fBICMP6\fR message back to the source
+The
+.B IPv6
+layer will send an
+.B ICMP6
+message back to the source
 host in many cases when it receives a datagram that can not be handled. A
-"\fBtime\fR \fBexceeded\fR" \fBICMP6\fR message will be sent if the
+"\fBtime exceeded\fR" \fBICMP6\fR message will be sent if the
 \fBip6_hops\fR field in the \fBIPv6\fR header drops to zero in the process
-of forwarding a datagram. A "\fBdestination\fR \fBunreachable\fR" message
+of forwarding a datagram. A "\fBdestination unreachable\fR" message
 will be sent by a router or by the originating host if a datagram can not be
 sent on because there is no route to the final destination; it will be sent
 by a router when it encounters a firewall prohibition; it will be sent by a
-destination node when the transport protocol (that is, \fBTCP\fR) has no
-listener. A "\fBpacket\fR \fBtoo\fR \fBbig\fR" message will be sent by a
-router if the packet is larger than the \fBMTU\fR of the outgoing link (this
-is used for Path \fBMTU\fR Discovery). A "\fBparameter\fR \fBproblem\fR"
-message will be sent if there is a problem with a field in the \fBIPv6\fR
-header or any of the \fBIPv6\fR extension headers such that the packet
+destination node when the transport protocol
+.RB "(that is, " TCP )
+has no
+listener. A "\fBpacket too\fR \fBbig\fR" message will be sent by a
+router if the packet is larger than the
+.B MTU
+of the outgoing link (this
+is used for Path \fBMTU\fR Discovery). A "\fBparameter problem\fR"
+message will be sent if there is a problem with a field in the
+.BR IPv6
+header or any of the
+.B IPv6
+extension headers such that the packet
 cannot be fully processed.
 .sp
 .LP
-The \fBIPv6\fR layer supports fragmentation and reassembly. Datagrams are
+The
+.B IPv6
+layer supports fragmentation and reassembly. Datagrams are
 fragmented on output if the datagram is larger than the maximum transmission
 unit (\fBMTU\fR) of the network interface. Fragments of received datagrams
 are dropped from the reassembly queues if the complete datagram is not
@@ -678,13 +818,29 @@ passed by IPv6 back up to the user process.
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBndd\fR(1M), \fBrouteadm\fR(1M), \fBsvcadm\fR(1M),
-\fBread\fR(2), \fBwrite\fR(2), \fBbind\fR(3SOCKET), \fBconnect\fR(3SOCKET),
-\fBgetsockopt\fR(3SOCKET), \fBrecv\fR(3SOCKET), \fBrecvmsg\fR(3SOCKET),
-\fBsend\fR(3SOCKET), \fBsendmsg\fR(3SOCKET), \fBsetsockopt\fR(3SOCKET),
-\fBdefaultrouter\fR(4), \fBsmf\fR(5), \fBicmp6\fR(7P), \fBif_tcp\fR(7P),
-\fBipsec\fR(7P), \fBinet6\fR(7P), \fBrouting\fR(7P), \fBtcp\fR(7P),
-\fBudp\fR(7P)
+.BR svcs (1),
+.BR ndd (1M),
+.BR routeadm (1M),
+.BR svcadm (1M),
+.BR read (2),
+.BR write (2),
+.BR bind (3SOCKET),
+.BR connect (3SOCKET),
+.BR getsockopt (3SOCKET),
+.BR recv (3SOCKET),
+.BR recvmsg (3SOCKET),
+.BR send (3SOCKET),
+.BR sendmsg (3SOCKET),
+.BR setsockopt (3SOCKET),
+\fBdefaultrouter\fR(4),
+.BR smf (5),
+.BR icmp6 (7P),
+\fBif_tcp\fR(7P),
+.BR ipsec (7P),
+.BR inet6 (7P),
+.BR routing (7P),
+.BR tcp (7P),
+.BR udp (7P)
 .sp
 .LP
 Deering, S. and Hinden, B. \fI RFC 2460, Internet Protocol, Version 6
@@ -701,7 +857,7 @@ A socket operation may fail with one of the following errors returned:
 .ne 2
 .mk
 .na
-\fBEPROTONOSUPPORT\fR
+.B EPROTONOSUPPORT
 .ad
 .RS 19n
 .rt
@@ -712,7 +868,7 @@ Unsupported protocol (for example, IPPROTO_RAW.)
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 19n
 .rt
@@ -724,11 +880,13 @@ the effective user ID of the process was not the privileged user.
 .ne 2
 .mk
 .na
-\fBEADDRINUSE\fR
+.B EADDRINUSE
 .ad
 .RS 19n
 .rt
-A \fBbind()\fR operation was attempted on a socket with a network
+A
+.B bind()
+operation was attempted on a socket with a network
 address/port pair that has already been bound to another socket.
 .RE
 
@@ -736,11 +894,13 @@ address/port pair that has already been bound to another socket.
 .ne 2
 .mk
 .na
-\fBEADDRNOTAVAIL\fR
+.B EADDRNOTAVAIL
 .ad
 .RS 19n
 .rt
-A \fBbind()\fR operation was attempted for an address that is not
+A
+.B bind()
+operation was attempted for an address that is not
 configured on this machine.
 .RE
 
@@ -748,11 +908,15 @@ configured on this machine.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 19n
 .rt
-A \fBsendmsg()\fR operation with a non-NULL \fBmsg_accrights\fR was
+A
+.B sendmsg()
+operation with a non-NULL
+.B msg_accrights
+was
 attempted.
 .RE
 
@@ -760,11 +924,15 @@ attempted.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 19n
 .rt
-A \fBgetsockopt()\fR or \fBsetsockopt()\fR operation with an unknown socket
+A
+.B getsockopt()
+or
+.B setsockopt()
+operation with an unknown socket
 option name was given.
 .RE
 
@@ -772,11 +940,15 @@ option name was given.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 19n
 .rt
-A \fBgetsockopt()\fR or \fBsetsockopt()\fR operation was attempted with the
+A
+.B getsockopt()
+or
+.B setsockopt()
+operation was attempted with the
 \fBIPv6\fR option field improperly formed; an option field was shorter than
 the minimum value or longer than the option buffer provided; the value in
 the option field was invalid.
@@ -786,11 +958,13 @@ the option field was invalid.
 .ne 2
 .mk
 .na
-\fBEISCONN\fR
+.B EISCONN
 .ad
 .RS 19n
 .rt
-A \fBconnect()\fR operation was attempted on a socket on which a
+A
+.B connect()
+operation was attempted on a socket on which a
 \fBconnect()\fR operation had already been performed, and the socket could
 not be successfully disconnected before making the new connection.
 .RE
@@ -799,11 +973,15 @@ not be successfully disconnected before making the new connection.
 .ne 2
 .mk
 .na
-\fBEISCONN\fR
+.B EISCONN
 .ad
 .RS 19n
 .rt
-A \fBsendto()\fR or \fBsendmsg()\fR operation specifying an address to
+A
+.B sendto()
+or
+.B sendmsg()
+operation specifying an address to
 which the message should be sent was attempted on a socket on which a
 \fBconnect()\fR operation had already been performed.
 .RE
@@ -812,11 +990,16 @@ which the message should be sent was attempted on a socket on which a
 .ne 2
 .mk
 .na
-\fBEMSGSIZE\fR
+.B EMSGSIZE
 .ad
 .RS 19n
 .rt
-A \fBsend()\fR, \fBsendto()\fR, or \fBsendmsg()\fR operation was attempted
+A
+.BR send() ,
+.BR sendto() ,
+or
+.B sendmsg()
+operation was attempted
 to send a datagram that was too large for an interface, but was not allowed
 to be fragmented (such as broadcasts).
 .RE
@@ -825,12 +1008,18 @@ to be fragmented (such as broadcasts).
 .ne 2
 .mk
 .na
-\fBENETUNREACH\fR
+.B ENETUNREACH
 .ad
 .RS 19n
 .rt
-An attempt was made to establish a connection via \fBconnect()\fR, or to
-send a datagram by means of \fBsendto()\fR or \fBsendmsg()\fR, where there
+An attempt was made to establish a connection via
+.BR connect() ,
+or to
+send a datagram by means of
+.B sendto()
+or
+.BR sendmsg() ,
+where there
 was no matching entry in the routing table; or if an \fBICMP\fR
 "\fBdestination unreachable\fR" message was received.
 .RE
@@ -839,13 +1028,19 @@ was no matching entry in the routing table; or if an \fBICMP\fR
 .ne 2
 .mk
 .na
-\fBENOTCONN\fR
+.B ENOTCONN
 .ad
 .RS 19n
 .rt
-A \fBsend()\fR or \fBwrite()\fR operation, or a \fBsendto()\fR or
+A
+.B send()
+or
+.B write()
+operation, or a
+.B sendto()
+or
 \fBsendmsg()\fR operation not specifying an address to which the message
-should be sent, was attempted on a socket on which a \fBconnect()\fR
+.RB "should be sent, was attempted on a socket on which a" " connect()"
 operation had not already been performed.
 .RE
 
@@ -853,7 +1048,7 @@ operation had not already been performed.
 .ne 2
 .mk
 .na
-\fBENOBUFS\fR
+.B ENOBUFS
 .ad
 .RS 19n
 .rt
@@ -865,11 +1060,13 @@ data structures.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 19n
 .rt
-The system was unable to allocate memory for an \fBIPv6\fR socket option or
+The system was unable to allocate memory for an
+.B IPv6
+socket option or
 other internal data structures.
 .RE
 
@@ -877,11 +1074,15 @@ other internal data structures.
 .ne 2
 .mk
 .na
-\fBENOPROTOOPT\fR
+.B ENOPROTOOPT
 .ad
 .RS 19n
 .rt
-An \fBIP\fR socket option was attempted on an \fBIPv6\fR socket, or an
+An
+.B IP
+socket option was attempted on an
+.B IPv6
+socket, or an
 \fBIPv6\fR socket option was attempted on an \fBIP\fR socket.
 .RE
 
@@ -889,7 +1090,7 @@ An \fBIP\fR socket option was attempted on an \fBIPv6\fR socket, or an
 .ne 2
 .mk
 .na
-\fBENOPROTOOPT\fR
+.B ENOPROTOOPT
 .ad
 .RS 19n
 .rt
@@ -899,12 +1100,18 @@ Invalid socket type for the option.
 .SH NOTES
 .sp
 .LP
-Applications using the sockets \fBAPI\fR must use the Advanced Sockets
+Applications using the sockets
+.B API
+must use the Advanced Sockets
 \fBAPI\fR for \fBIPv6\fR (\fIRFC 2292\fR) to see elements of the inbound
-packet's \fBIPv6\fR header or extension headers.
+packet's
+.B IPv6
+header or extension headers.
 .sp
 .LP
-The \fBip6\fR service is managed by the service management facility,
+The
+.B ip6
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -917,5 +1124,9 @@ svc:/network/initial:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.

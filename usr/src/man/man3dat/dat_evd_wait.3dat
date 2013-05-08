@@ -43,7 +43,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIevd_handle\fR
+.I evd_handle
 .ad
 .RS 14n
 .rt
@@ -54,7 +54,7 @@ Handle for an instance of the Event Dispatcher.
 .ne 2
 .mk
 .na
-\fItimeout\fR
+.I timeout
 .ad
 .RS 14n
 .rt
@@ -66,19 +66,21 @@ for the event.
 .ne 2
 .mk
 .na
-\fIthreshold\fR
+.I threshold
 .ad
 .RS 14n
 .rt
 The number of events that should be on the EVD queue before the operation
-should return with \fBDAT_SUCCESS\fR. The threshold must be at least 1.
+should return with
+.BR DAT_SUCCESS .
+The threshold must be at least 1.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIevent\fR
+.I event
 .ad
 .RS 14n
 .rt
@@ -90,7 +92,7 @@ the event data.
 .ne 2
 .mk
 .na
-\fInmore\fR
+.I nmore
 .ad
 .RS 14n
 .rt
@@ -100,7 +102,9 @@ The snapshot of the queue size at the time of the operation return.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_evd_wait()\fR function removes the first event from the Event
+The
+.B dat_evd_wait()
+function removes the first event from the Event
 Dispatcher event queue and fills the Consumer-allocated \fIevent\fR
 structure with event data. The first element in this structure provides the
 type of the event; the rest provides the event type-specific parameters. The
@@ -108,97 +112,178 @@ Consumer should allocate an event structure big enough to hold any event
 that the Event Dispatcher can deliver.
 .sp
 .LP
-For all events, the Provider fills the \fIdat_event\fR that the Consumer
-allocates. Therefore, for all events, all fields of \fIdat_event\fR are OUT
-from the Consumer point of view. For \fBDAT_CONNECTION_REQUEST_EVENT\fR, the
-Provider creates a Connection Request whose \fIcr_handle\fR is returned to
-the Consumer in \fBDAT_CR_ARRIVAL_EVENT_DATA\fR. That object is destroyed by
-the Provider as part of \fBdat_cr_accept\fR(3DAT),
-\fBdat_cr_reject\fR(3DAT), or \fBdat_cr_handoff\fR(3DAT). The Consumer
-should not use \fIcr_handle\fR or any of its parameters, including
-\fIprivate_data\fR, after one of these operations destroys the Connection
+For all events, the Provider fills the
+.I dat_event
+that the Consumer
+allocates. Therefore, for all events, all fields of
+.I dat_event
+are OUT
+from the Consumer point of view. For
+.BR DAT_CONNECTION_REQUEST_EVENT ,
+the
+Provider creates a Connection Request whose
+.I cr_handle
+is returned to
+the Consumer in
+.BR DAT_CR_ARRIVAL_EVENT_DATA .
+That object is destroyed by
+the Provider as part of
+.BR dat_cr_accept (3DAT),
+.BR dat_cr_reject (3DAT),
+or \fBdat_cr_handoff\fR(3DAT). The Consumer
+should not use
+.I cr_handle
+or any of its parameters, including
+.IR private_data ,
+after one of these operations destroys the Connection
 Request.
 .sp
 .LP
-For \fBDAT_CONNECTION_EVENT_ESTABLISHED\fR for the Active side of
+For
+.B DAT_CONNECTION_EVENT_ESTABLISHED
+for the Active side of
 connection establishment, the Provider returns the pointer for
-\fIprivate_data\fR and the \fIprivate_data_size\fR. For the Passive side,
+\fIprivate_data\fR and the
+.IR private_data_size .
+For the Passive side,
 \fBDAT_CONNECTION_EVENT_ESTABLISHED\fR event \fIprivate_data\fR is not
-defined and \fIprivate_data_size\fR returns zero. The Provider is
+defined and
+.I private_data_size
+returns zero. The Provider is
 responsible for the memory allocation and deallocation for
-\fIprivate_data\fR. The \fIprivate_data\fR is valid until the Active side
+.IR private_data .
+The
+.I private_data
+is valid until the Active side
 Consumer destroys the connected Endpoint (\fBdat_ep_free\fR(3DAT)), or
 transitions the Endpoint into Unconnected state so it is ready for the next
 connection. So, while the Endpoint is in Connected, Disconnect Pending, or
-Disconnected state, the \fIprivate_data\fR of
+Disconnected state, the
+.I private_data
+of
 \fBDAT_CONNECTION_REQUEST_EVENT\fR is still valid for Active side
 Consumers.
 .sp
 .LP
 Provider must pass to the Consumer the entire Private Data that the remote
-Consumer provided for \fBdat_ep_connect\fR(3DAT),
-\fBdat_ep_dup_connect\fR(3DAT), and \fBdat_cr_accept()\fR. If the Consumer
+Consumer provided for
+.BR dat_ep_connect (3DAT),
+.BR dat_ep_dup_connect (3DAT),
+and
+.BR dat_cr_accept() .
+If the Consumer
 provides more data than the Provider and Transport can support (larger than
-IA Attribute of \fImax_private_data_size\fR), \fBDAT_INVALID_PARAMETER\fR is
+IA Attribute of
+.IR max_private_data_size ),
+\fBDAT_INVALID_PARAMETER\fR is
 returned for that operation.
 .sp
 .LP
-A Consumer that blocks performing a \fBdat_evd_wait()\fR on an Event
+A Consumer that blocks performing a
+.B dat_evd_wait()
+on an Event
 Dispatcher effectively takes exclusive ownership of that Event Dispatcher.
 Any other dequeue operation (\fBdat_evd_wait()\fR or
-\fBdat_evd_dequeue\fR(3DAT)) on the Event Dispatcher is rejected with a
+.BR dat_evd_dequeue (3DAT))
+on the Event Dispatcher is rejected with a
 \fBDAT_INVALID_STATE\fR error code.
 .sp
 .LP
-The CNO associated with the \fBevd_handle()\fR is not triggered upon event
-arrival if there is a Consumer blocked on \fBdat_evd_wait()\fR on this Event
+The CNO associated with the
+.B evd_handle()
+is not triggered upon event
+arrival if there is a Consumer blocked on
+.B dat_evd_wait()
+on this Event
 Dispatcher.
 .sp
 .LP
-The \fItimeout\fR allows the Consumer to restrict the amount of time it is
+The
+.I timeout
+allows the Consumer to restrict the amount of time it is
 blocked waiting for the event arrival. The value of
 \fBDAT_TIMEOUT_INFINITE\fR indicates that the Consumer waits indefinitely
 for an event arrival. Consumers should use extreme caution in using this
 value.
 .sp
 .LP
-When \fItimeout\fR value is reached and the number of events on the EVD
-queue is below the \fIthreshold\fR value, the operation fails and returns
-\fBDAT_TIMEOUT_EXPIRED\fR. In this case, no event is dequeued from the EVD
-and the return value for the \fIevent\fR argument is undefined. However, an
+When
+.I timeout
+value is reached and the number of events on the EVD
+queue is below the
+.I threshold
+value, the operation fails and returns
+.BR DAT_TIMEOUT_EXPIRED .
+In this case, no event is dequeued from the EVD
+and the return value for the
+.I event
+argument is undefined. However, an
 \fInmore\fR value is returned that specifies the snapshot of the number of
 the events on the EVD queue that is returned.
 .sp
 .LP
-The \fIthreshold\fR allows the Consumer to wait for a requested number of
+The
+.I threshold
+allows the Consumer to wait for a requested number of
 event arrivals prior to waking the Consumer. If the value of the
 \fIthreshold\fR is larger than the Event Dispatcher queue length, the
-operation fails with the return \fBDAT_INVALID_PARAMETER\fR. If a
-non-positive value is specified for \fIthreshold\fR, the operation fails and
-returns \fBDAT_INVALID_PARAMETER\fR.
+operation fails with the return
+.BR DAT_INVALID_PARAMETER .
+If a
+non-positive value is specified for
+.IR threshold ,
+the operation fails and
+returns
+.BR DAT_INVALID_PARAMETER .
 .sp
 .LP
 If EVD is used by an Endpoint for a DTO completion stream that is
 configured for a Consumer-controlled event Notification
 (\fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR or
 \fBDAT_COMPLETION_SOLICITED_WAIT_FLAG\fR for Receive Completion Type for
-Receives; \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR for Request Completion Type
-for Send, RDMA Read, RDMA Write and RMR Bind), the \fIthreshold\fR value
-must be 1. An attempt to specify some other value for \fIthreshold\fR for
-this case results in \fBDAT_INVALID_STATE\fR.
+Receives;
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
+for Request Completion Type
+for Send, RDMA Read, RDMA Write and RMR Bind), the
+.I threshold
+value
+must be 1. An attempt to specify some other value for
+.I threshold
+for
+this case results in
+.BR DAT_INVALID_STATE .
 .sp
 .LP
-The returned value of \fInmore\fR indicates the number of events left on
-the Event Dispatcher queue after the \fBdat_evd_wait()\fR returns. If the
-operation return value is \fBDAT_SUCCESS\fR, the \fInmore\fR value is at
-least the value of (\fIthreshold\fR -1). Notice that \fInmore\fR is only a
+The returned value of
+.I nmore
+indicates the number of events left on
+the Event Dispatcher queue after the
+.B dat_evd_wait()
+returns. If the
+operation return value is
+.BR DAT_SUCCESS ,
+the
+.I nmore
+value is at
+least the value of (\fIthreshold\fR -1). Notice that
+.I nmore
+is only a
 snapshot and the number of events can be changed by the time the Consumer
-tries to dequeue events with \fBdat_evd_wait()\fR with timeout of zero or
-with \fBdat_evd_dequeue()\fR.
+tries to dequeue events with
+.B dat_evd_wait()
+with timeout of zero or
+with
+.BR dat_evd_dequeue() .
 .sp
 .LP
-For returns other than \fBDAT_SUCCESS\fR, \fBDAT_TIMEOUT_EXPIRED\fR, and
-\fBDAT_INTERRUPTED_CALL\fR, the returned value of \fInmore\fR is
+For returns other than
+.BR DAT_SUCCESS ,
+.BR DAT_TIMEOUT_EXPIRED ,
+and
+.BR DAT_INTERRUPTED_CALL ,
+the returned value of
+.I nmore
+is
 undefined.
 .sp
 .LP
@@ -208,18 +293,30 @@ to the returned event were already returned to a Consumer directly through a
 \fBdat_evd_dequeue()\fR or \fBdat_evd_wait()\fR operation.
 .sp
 .LP
-If the return value is neither \fBDAT_SUCCESS\fR nor
-\fBDAT_TIMEOUT_EXPIRED\fR, then returned values of \fInmore\fR and event are
-undefined. If the return value is \fBDAT_TIMEOUT_EXPIRED\fR, then the return
-value of event is undefined, but the return value of \fInmore\fR is defined.
-If the return value is \fBDAT_SUCCESS\fR, then the return values of
+If the return value is neither
+.B DAT_SUCCESS
+nor
+.BR DAT_TIMEOUT_EXPIRED ,
+then returned values of
+.I nmore
+and event are
+undefined. If the return value is
+.BR DAT_TIMEOUT_EXPIRED ,
+then the return
+value of event is undefined, but the return value of
+.I nmore
+is defined.
+If the return value is
+.BR DAT_SUCCESS ,
+then the return values of
 \fInmore\fR and \fIevent\fR are defined.
 .sp
 .LP
 If this function is called on an EVD in an unwaitable state, or if
-\fBdat_evd_set_unwaitable\fR(3DAT) is called on an EVD on which a thread is
+.BR dat_evd_set_unwaitable (3DAT)
+is called on an EVD on which a thread is
 blocked in this function, the function returns with
-\fBDAT_INVALID_STATE\fR.
+.BR DAT_INVALID_STATE .
 .sp
 .LP
 The ordering of events dequeued by overlapping calls to
@@ -229,7 +326,7 @@ The ordering of events dequeued by overlapping calls to
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 25n
 .rt
@@ -240,22 +337,28 @@ The operation was successful. An event was returned to a Consumer.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 25n
 .rt
-The \fIevd_handle\fR parameter is invalid.
+The
+.I evd_handle
+parameter is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 25n
 .rt
-The \fItimeout\fR or \fIthreshold\fR parameter is invalid. For example,
+The
+.I timeout
+or
+.I threshold
+parameter is invalid. For example,
 \fIthreshold\fR is larger than the EVD's \fIevd_min_qlen\fR.
 .RE
 
@@ -263,7 +366,7 @@ The \fItimeout\fR or \fIthreshold\fR parameter is invalid. For example,
 .ne 2
 .mk
 .na
-\fBDAT_ABORT\fR
+.B DAT_ABORT
 .ad
 .RS 25n
 .rt
@@ -274,7 +377,7 @@ The operation was aborted because IA was closed or EVD was destroyed
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_STATE\fR
+.B DAT_INVALID_STATE
 .ad
 .RS 25n
 .rt
@@ -286,7 +389,7 @@ waiter on the EVD, or the EVD is in an unwaitable state.
 .ne 2
 .mk
 .na
-\fBDAT_TIMEOUT_EXPIRED\fR
+.B DAT_TIMEOUT_EXPIRED
 .ad
 .RS 25n
 .rt
@@ -297,7 +400,7 @@ The operation timed out.
 .ne 2
 .mk
 .na
-\fBDAT_INTERRUPTED_CALL\fR
+.B DAT_INTERRUPTED_CALL
 .ad
 .RS 25n
 .rt
@@ -308,20 +411,27 @@ The operation was interrupted by a signal.
 .sp
 .LP
 Consumers should be cautioned against using threshold combined with
-infinite \fItimeout\fR.
+infinite
+.IR timeout .
 .sp
 .LP
 Consumers should not mix different models for control of unblocking a
 waiter. If the Consumer uses Notification Suppression or Solicited Wait to
 control the Notification events for unblocking a waiter, the \fIthreshold\fR
-must be set to 1. If the Consumer uses \fIthreshold\fR  to control when a
-waiter is unblocked, \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR locally and
+must be set to 1. If the Consumer uses
+.I threshold
+to control when a
+waiter is unblocked,
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
+locally and
 \fBDAT_COMPLETION_SOLICITED_WAIT\fR remotely shall not be used. By default,
 all completions are Notification events.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -340,8 +450,11 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_cr_accept\fR(3DAT), \fBdat_cr_handoff\fR(3DAT),
-\fBdat_cr_reject\fR(3DAT), \fBdat_ep_connect\fR(3DAT),
+.BR dat_cr_accept (3DAT),
+\fBdat_cr_handoff\fR(3DAT),
+.BR dat_cr_reject (3DAT),
+.BR dat_ep_connect (3DAT),
 \fBdat_ep_dup_connect\fR(3DAT),\fBdat_ep_free\fR(3DAT), \fBdat_evd_dequeue\fR(3DAT),
-\fBdat_evd_set_unwaitable\fR(3DAT), \fBlibdat\fR(3LIB),
-\fBattributes\fR(5)
+.BR dat_evd_set_unwaitable (3DAT),
+.BR libdat (3LIB),
+.BR attributes (5)

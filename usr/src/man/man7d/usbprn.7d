@@ -40,23 +40,37 @@ usbprn@unit-address
 .SH DESCRIPTION
 .sp
 .LP
-The \fBusbprn\fR driver is a USBA (Solaris USB Architecture) compliant
-client driver that supports the \fIUSB Printer Class 1.0\fR specification.
-The \fBusbprn\fR driver supports a subset of the \fBecpp\fR(7D) parallel
+The
+.B usbprn
+driver is a USBA (Solaris USB Architecture) compliant
+client driver that supports the
+.I "USB Printer Class 1.0"
+specification.
+The
+.B usbprn
+driver supports a subset of the
+.BR ecpp "(7D) parallel"
 port driver functionality. However, unlike the STREAMS-based \fBecpp\fR
-driver, \fBusbprn\fR is a character driver.
+driver,
+.B usbprn
+is a character driver.
 .sp
 .LP
-The \fBusbprn\fR driver supports all USB printer-class compliant printers.
+The
+.B usbprn
+driver supports all USB printer-class compliant printers.
 For a list of recommended printers and USB parallel printer adapters, visit
 http://\fIwww.sun.com/io\fR.
 .sp
 .LP
-The \fBusbrpn\fR driver includes support for communicating with many
+The
+.B usbrpn
+driver includes support for communicating with many
 different printers. To use these printers, it may be nesessary to install
 and configure additional format conversion packages available in the Solaris
 distribution. Configuration of these conversion packages under the Solaris
-printing system can be simplified through the use of the \fBprintmgr\fR(1M).
+printing system can be simplified through the use of the
+.BR printmgr (1M).
 This tool allows selection of printer manufacturer/model information while
 creating a print queue. For USB connected printers, it attempts to
 pre-select the the manufacturer and model information based on the 1284
@@ -64,8 +78,12 @@ device id supplied by the printer.
 .SS "UGEN (Generic USB)"
 .sp
 .LP
-The \fBusbprn\fR driver also supports a \fBugen\fR(7D) interface allowing
-raw access to the device, for example by \fBlibusb\fR(3LIB) applications, by
+The
+.B usbprn
+driver also supports a \fBugen\fR(7D) interface allowing
+raw access to the device, for example by
+.BR libusb (3LIB)
+applications, by
 passing the drivers bound to each interface. Because a libusb application
 might change the state of the device, you should not access the device
 through the child interface drivers.
@@ -78,7 +96,9 @@ interfaces:
 .sp
 .LP
 Configuration variables are set to their default values each time the USB
-printer device is attached. The \fBwrite_timeout\fR period (defined in the
+printer device is attached. The
+.B write_timeout
+period (defined in the
 ECPPIOC_SETPARMS ioctl description below) is set to 90 seconds. The mode is
 set to centronics mode (ECPP_CENTRONICS). Parameters can be changed through
 the ECPPIOC_SETPARMS ioctl and read through the ECPPIOC_GETPARMS ioctl. Each
@@ -91,33 +111,47 @@ Note -
 .sp
 .RS 2
 Unlike the \fBecpp\fR(7D) driver, \fBusbprn\fR resets configuration
-variables to their default values with each \fBattach\fR(9E). (The
-\fBecpp\fR(7D) driver resets configuration variables with each
-\fBopen\fR(2).)
+variables to their default values with each
+.BR attach "(9E). (The"
+.BR ecpp (7D)
+driver resets configuration variables with each
+.BR open (2).)
 .RE
 .SH WRITE OPERATION
 .sp
 .LP
-A \fBwrite\fR(2) operation returns the number of bytes successfully written
+A
+.BR write (2)
+operation returns the number of bytes successfully written
 to the device. If a failure occurs while a driver is transferring data to
 printer, the contents of the status bits are captured at the time of the
 error and can be retrieved by the application program using the
-ECPPIOC_GETERR \fBioctl\fR(2) call. The captured status information is
-overwritten each time an ECPPIOC_TESTIO \fBioctl\fR(2) occurs.
+ECPPIOC_GETERR
+.BR ioctl (2)
+call. The captured status information is
+overwritten each time an ECPPIOC_TESTIO
+.BR ioctl (2)
+occurs.
 .SH IOCTLS
 .sp
 .LP
-The \fBusbprn\fR driver supports \fBprnio(7I)\fR interfaces. Note that the
+The
+.B usbprn
+driver supports
+.B prnio(7I)
+interfaces. Note that the
 \fBPRNIOC_RESET\fR command has no effect on USB printers.
 .sp
 .LP
-The following \fBioctl\fR(2) calls are supported for backward compatibility
+The following
+.BR ioctl (2)
+calls are supported for backward compatibility
 and are not recommended for new applications.
 .sp
 .ne 2
 .mk
 .na
-\fBECPPIOC_GETPARMS\fR
+.B ECPPIOC_GETPARMS
 .ad
 .RS 20n
 .rt
@@ -128,8 +162,10 @@ opened, the structure will be set to its default configuration.
 Note -
 .sp
 .RS 2
-Unlike the \fBecpp\fR(7D) driver, only the ECPP_CENTRONICS mode is
-currently supported in \fBusbprn\fR.
+Unlike the
+.BR ecpp "(7D) driver, only the ECPP_CENTRONICS mode is"
+currently supported in
+.BR usbprn .
 .RE
 .RE
 
@@ -137,14 +173,18 @@ currently supported in \fBusbprn\fR.
 .ne 2
 .mk
 .na
-\fBECPPIOC_SETPARMS\fR
+.B ECPPIOC_SETPARMS
 .ad
 .RS 20n
 .rt
 Sets transfer parameters. The argument is a pointer to a \fBstruct
-ecpp_transfer_parms\fR. If a parameter is out of range, \fBEINVAL\fR is
+ecpp_transfer_parms\fR. If a parameter is out of range,
+.B EINVAL
+is
 returned. If the peripheral or host device cannot support the requested
-mode, \fBEPROTONOSUPPORT\fR is returned.
+mode,
+.B EPROTONOSUPPORT
+is returned.
 .sp
 The transfer parameters structure is defined in <\fBsys/ecppio.h\fR>:
 .sp
@@ -157,18 +197,26 @@ struct ecpp_transfer_parms {
 .fi
 .in -2
 
-The \fBwrite_timeout\fR field, which specifies how long the driver will
+The
+.B write_timeout
+field, which specifies how long the driver will
 take to transfer 8192 bytes of data to the device, is set to a default value
-of 90 seconds. The \fBwrite_timeout\fR field must be greater than one second
+of 90 seconds. The
+.B write_timeout
+field must be greater than one second
 and less than 300 seconds (five minutes.)
 .LP
 Note -
 .sp
 .RS 2
-Unlike the \fBecpp\fR(7D) driver, only the ECPP_CENTRONICS mode is
-currently supported in \fBusbprn\fR. Also, the semantics of
+Unlike the
+.BR ecpp "(7D) driver, only the ECPP_CENTRONICS mode is"
+currently supported in
+.BR usbprn .
+Also, the semantics of
 \fBwrite_timeout\fR in \fBusbprn\fR differ from \fBecpp\fR(7D). Refer to
-\fBecpp\fR(7D) for information.
+.BR ecpp (7D)
+for information.
 .RE
 .RE
 
@@ -176,23 +224,35 @@ currently supported in \fBusbprn\fR. Also, the semantics of
 .ne 2
 .mk
 .na
-\fBBPPIOC_TESTIO\fR
+.B BPPIOC_TESTIO
 .ad
 .RS 20n
 .rt
 Tests the transfer readiness of a print device and checks status bits to
-determine if a \fBwrite\fR(2) will succeed. If status bits are set, a
+determine if a
+.BR write (2)
+will succeed. If status bits are set, a
 transfer will fail. If a transfer will succeed, zero is returned. If a
-transfer fails, the driver returns \fBEIO\fR and the state of the status
+transfer fails, the driver returns
+.B EIO
+and the state of the status
 bits are captured. The captured status can be retrieved using the
-BPPIOC_GETERR \fBioctl\fR(2) call. BPPIOC_TESTIO and BPPIOC_GETERR are
-compatible to the ioctls specified in \fBbpp\fR(7D).
+BPPIOC_GETERR
+.BR ioctl (2)
+call. BPPIOC_TESTIO and BPPIOC_GETERR are
+compatible to the ioctls specified in
+.BR bpp (7D).
 .LP
 Note -
 .sp
 .RS 2
-Unlike the \fBecpp\fR(7D) driver, only the ECPP_CENTRONICS mode is
-currently supported in \fBusbprn\fR. Additionally, \fBbus_error\fR and
+Unlike the
+.BR ecpp "(7D) driver, only the ECPP_CENTRONICS mode is"
+currently supported in
+.BR usbprn .
+Additionally,
+.B bus_error
+and
 \fBtimeout_occurred\fR fields are not used in the \fBusbprn\fR interface.
 (In \fBecpp\fR(7D), \fBtimeout_occurred\fR is used.)
 .RE
@@ -202,15 +262,19 @@ currently supported in \fBusbprn\fR. Additionally, \fBbus_error\fR and
 .ne 2
 .mk
 .na
-\fBBPPIOC_GETERR\fR
+.B BPPIOC_GETERR
 .ad
 .RS 20n
 .rt
 Get last error status. The argument is a pointer to a \fBstruct
 bpp_error_status\fR. This structure indicates the status of all the
 appropriate status bits at the time of the most recent error condition
-during a \fBwrite\fR(2) call, or the status of the bits at the most recent
-BPPIOC_TESTIO \fBioctl\fR(2) call.
+during a
+.BR write (2)
+call, or the status of the bits at the most recent
+BPPIOC_TESTIO
+.BR ioctl (2)
+call.
 .sp
 .in +2
 .nf
@@ -224,16 +288,27 @@ struct bpp_error_status {
 .in -2
 
 The pin_status field indicates possible error conditions. The error status
-structure \fBbpp_error_status\fR is defined in the include file
+structure
+.B bpp_error_status
+is defined in the include file
 \fB<sys/bpp_io.h>\fR\&. The valid bits for \fBpin_status\fR can be
-\fBBPP_ERR_ERR\fR, \fBBPP_SLCT_ERR\fR, and \fBBPP_PE_ERR\fR. A set bit
+.BR BPP_ERR_ERR ,
+.BR BPP_SLCT_ERR ,
+and
+.BR BPP_PE_ERR .
+A set bit
 indicates that the associated pin is asserted.
 .LP
 Note -
 .sp
 .RS 2
-Unlike the \fBecpp\fR(7D) driver, only the ECPP_CENTRONICS mode is
-currently supported in \fBusbprn\fR. Additionally, the \fBbus_error\fR and
+Unlike the
+.BR ecpp "(7D) driver, only the ECPP_CENTRONICS mode is"
+currently supported in
+.BR usbprn .
+Additionally, the
+.B bus_error
+and
 \fBtimeout_occurred\fR fields are not used in the \fBusbprn\fR interface.
 (In \fBecpp\fR(7D), \fBtimeout_occurred\fR is used.) Unlike \fBecpp\fR(7D),
 the BPP_BUSY_ERR status bit is not supported by USB printers.
@@ -244,18 +319,26 @@ the BPP_BUSY_ERR status bit is not supported by USB printers.
 .ne 2
 .mk
 .na
-\fBECPPIOC_GETDEVID\fR
+.B ECPPIOC_GETDEVID
 .ad
 .RS 20n
 .rt
 Gets the IEEE 1284 device ID from the peripheral. The argument is a pointer
-to a \fBstruct ecpp_device_id\fR. Applications should set mode to
+to a
+.BR "struct ecpp_device_id" .
+Applications should set mode to
 ECPP_CENTRONICS. If another mode is used, the driver will return
-\fBEPROTONOSUPPORT\fR. \fBlen\fR is the length of the buffer pointed to by
-\fBaddr\fR. \fBrlen\fR is the actual length of the device ID string returned
-from the peripheral. If the returned \fBrlen\fR is greater than \fBlen\fR,
+.BR EPROTONOSUPPORT .
+\fBlen\fR is the length of the buffer pointed to by
+.BR addr .
+\fBrlen\fR is the actual length of the device ID string returned
+from the peripheral. If the returned
+.B rlen
+is greater than
+.BR len ,
 the application should call ECPPIOC_GETDEVID a second time with a buffer
-length equal to \fBrlen\fR.
+length equal to
+.BR rlen .
 .sp
 The 1284 device ID structure:
 .sp
@@ -273,21 +356,26 @@ struct ecpp_device_id {
 Note -
 .sp
 .RS 2
-Unlike \fBecpp\fR(7D), only the ECPP_CENTRONICS mode is currently supported
-in \fBusbprn\fR.
+Unlike
+.BR ecpp "(7D), only the ECPP_CENTRONICS mode is currently supported"
+in
+.BR usbprn .
 .RE
 .RE
 
 .SH READ OPERATION
 .sp
 .LP
- The \fBread\fR operation is not supported and returns \fBEIO\fR.
+ The
+.B read
+operation is not supported and returns
+.BR EIO .
 .SH ERRORS
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 19n
 .rt
@@ -298,7 +386,7 @@ in \fBusbprn\fR.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 19n
 .rt
@@ -311,25 +399,32 @@ structure.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 19n
 .rt
 The driver has received an unrecoverable device error, or the device is not
 responding, or the device has stalled when attempting an access. A
-\fBwrite\fR(2) or \fBioctl\fR(2) did not complete due to a peripheral
-access. A \fBread\fR(2) system call has been issued.
+.BR write (2)
+or
+.BR ioctl (2)
+did not complete due to a peripheral
+access. A
+.BR read (2)
+system call has been issued.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 19n
 .rt
-The driver has received an \fBopen\fR(2) request for a unit for which the
+The driver has received an
+.BR open (2)
+request for a unit for which the
 attach failed.
 .RE
 
@@ -337,11 +432,13 @@ attach failed.
 .ne 2
 .mk
 .na
-\fBENODEV\fR
+.B ENODEV
 .ad
 .RS 19n
 .rt
-The driver has received an \fBopen\fR(2) request for a device that has been
+The driver has received an
+.BR open (2)
+request for a device that has been
 disconnected.
 .RE
 
@@ -349,11 +446,13 @@ disconnected.
 .ne 2
 .mk
 .na
-\fBEPROTONOSUPPORT\fR
+.B EPROTONOSUPPORT
 .ad
 .RS 19n
 .rt
-The driver has received a ECPPIOC_SETPARMS \fBioctl\fR(2) for a mode
+The driver has received a ECPPIOC_SETPARMS
+.BR ioctl (2)
+for a mode
 argument other than ECPP_CENTRONICS in the \fBecpp_transfer_parms\fR
 structure.
 .RE
@@ -363,7 +462,7 @@ structure.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/usbprn\fR
+.B /kernel/drv/usbprn
 .ad
 .RS 30n
 .rt
@@ -374,7 +473,7 @@ structure.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/amd64/usbprn\fR
+.B /kernel/drv/amd64/usbprn
 .ad
 .RS 30n
 .rt
@@ -385,7 +484,7 @@ structure.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/sparcv9/usbprn\fR
+.B /kernel/drv/sparcv9/usbprn
 .ad
 .RS 30n
 .rt
@@ -396,7 +495,7 @@ structure.
 .ne 2
 .mk
 .na
-\fB/dev/usb/*/*/* \fR
+\fB/dev/usb/*/*/*\fR 
 .ad
 .RS 30n
 .rt
@@ -417,7 +516,9 @@ Character special files
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -436,13 +537,20 @@ AvailabilitySUNWusb
 .SH SEE ALSO
 .sp
 .LP
-\fBcfgadm_usb\fR(1M), \fBprintmgr\fR(1M), \fBioctl\fR(2), \fBopen\fR(2),
-\fBread\fR(2), \fBwrite\fR(2), \fBlibusb\fR(3LIB), \fBattributes\fR(5),
-\fBbpp\fR(7D), \fBecpp\fR(7D), \fBugen\fR(7D),
+\fBcfgadm_usb\fR(1M), \fBprintmgr\fR(1M),
+.BR ioctl (2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
+.BR libusb (3LIB),
+.BR attributes (5),
+.BR bpp (7D),
+.BR ecpp (7D),
+.BR ugen (7D),
 \fBusba\fR(7D)\fBprnio\fR(7I), \fBattach\fR(9E)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
 \fIUniversal Serial Bus Specification 1.0 and 1.1\fR
@@ -451,7 +559,7 @@ AvailabilitySUNWusb
 \fIUSB Device Class Definition for Printing Devices 1.0\fR
 .sp
 .LP
-\fISystem Administration Guide: Basic Administration\fR
+.I System Administration Guide: Basic Administration
 .sp
 .LP
 http://\fIwww.sun.com/io\fR
@@ -472,7 +580,7 @@ Warning: <device path> (usbprn<instance num>): Error Message...
 .ne 2
 .mk
 .na
-\fBDevice was disconnected while open. Data may have been lost.\fR
+.B "Device was disconnected while open. Data may have been lost.
 .ad
 .sp .6
 .RS 4n
@@ -484,7 +592,7 @@ possible data transfer was in progress. The job may be aborted.
 .ne 2
 .mk
 .na
-\fBCannot access <device>. Please reconnect.\fR
+.B Cannot access <device>. Please reconnect.
 .ad
 .sp .6
 .RS 4n
@@ -510,7 +618,7 @@ USB device and reconnect the printer to the same port.
 .ne 2
 .mk
 .na
-\fBPrinter has been reconnected but data may have been lost.\fR
+.B "Printer has been reconnected but data may have been lost.
 .ad
 .sp .6
 .RS 4n
@@ -527,7 +635,8 @@ The USB printer will be power managed if the device is closed.
 .LP
 If a printer is hot-removed before a job completes, the job is terminated
 and the driver will return EIO. All subsequent opens will return
-\fBENODEV\fR. If a printer is hot-removed, an LP reconfiguration may not be
+.BR ENODEV .
+If a printer is hot-removed, an LP reconfiguration may not be
 needed if a printer is re-inserted on the same port. If re-inserted on a
 different port, an LP reconfiguration may be required.
 .sp

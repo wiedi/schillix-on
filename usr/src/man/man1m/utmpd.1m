@@ -31,24 +31,41 @@ utmpd \- utmpx monitoring daemon
 .SH DESCRIPTION
 .sp
 .LP
-The \fButmpd\fR daemon monitors the \fB/var/adm/utmpx\fR file. See
-\fButmpx\fR(4) (and \fButmp\fR(4) for historical information).
+The
+.B utmpd
+daemon monitors the
+.B /var/adm/utmpx
+file. See
+.BR utmpx (4)
+(and
+.BR utmp (4)
+for historical information).
 .sp
 .LP
 \fButmpd\fR receives requests from \fBpututxline\fR(3C) by way of a named
-pipe. It maintains a table of processes and uses \fBpoll\fR(2) on
+pipe. It maintains a table of processes and uses
+.BR poll (2)
+on
 \fB/proc\fR files to detect process termination. When \fButmpd\fR detects
 that a process has terminated, it checks that the process has removed its
-\fButmpx\fR entry from \fB/var/adm/utmpx\fR. If the process' \fButmpx\fR
-entry has not been removed, \fButmpd\fR removes the entry. By periodically
-scanning the \fB/var/adm/utmpx\fR file, \fButmpd\fR also monitors processes
+\fButmpx\fR entry from
+.BR /var/adm/utmpx .
+If the process' \fButmpx\fR
+entry has not been removed,
+.B utmpd
+removes the entry. By periodically
+scanning the
+.B /var/adm/utmpx
+file,
+.B utmpd
+also monitors processes
 that are not in its table.
 .SH OPTIONS
 .sp
 .ne 2
 .mk
 .na
-\fB-debug\fR
+.B -debug
 .ad
 .sp .6
 .RS 4n
@@ -64,7 +81,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .sp .6
 .RS 4n
@@ -75,7 +92,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fB>0\fR
+.B >0
 .ad
 .sp .6
 .RS 4n
@@ -92,16 +109,19 @@ An error occurred.
 .sp .6
 .RS 4n
 You can set default values for the flags listed below. For example:
-\fBSCAN_PERIOD=600\fR
+.B SCAN_PERIOD=600
 .sp
 .ne 2
 .mk
 .na
-\fBSCAN_PERIOD\fR
+.B SCAN_PERIOD
 .ad
 .sp .6
 .RS 4n
-The number of seconds that \fButmpd\fR sleeps between checks of \fB/proc\fR
+The number of seconds that
+.B utmpd
+sleeps between checks of
+.BR /proc
 to see if monitored processes are still alive. The default is 300.
 .RE
 
@@ -109,11 +129,13 @@ to see if monitored processes are still alive. The default is 300.
 .ne 2
 .mk
 .na
-\fBMAX_FDS\fR
+.B MAX_FDS
 .ad
 .sp .6
 .RS 4n
-The maximum number of processes that \fButmpd\fR attempts to monitor. The
+The maximum number of processes that
+.B utmpd
+attempts to monitor. The
 default value is 4096.
 .RE
 
@@ -121,13 +143,16 @@ default value is 4096.
 .ne 2
 .mk
 .na
-\fBWTMPX_UPDATE_FREQ\fR
+.B WTMPX_UPDATE_FREQ
 .ad
 .sp .6
 .RS 4n
-The number of seconds that \fButmpd\fR sleeps between read accesses of the
+The number of seconds that
+.B utmpd
+sleeps between read accesses of the
 \fBwtmpx\fR file. The \fBwtmpx\fR file's last access time is used by
-\fBinit\fR(1M) on reboot to determine when the operating system became
+.BR init (1M)
+on reboot to determine when the operating system became
 unavailable. The default is 60.
 .RE
 
@@ -137,30 +162,37 @@ unavailable. The default is 60.
 .ne 2
 .mk
 .na
-\fB/var/adm/utmpx\fR
+.B /var/adm/utmpx
 .ad
 .sp .6
 .RS 4n
 File containing user and accounting information for commands such as
-\fBwho\fR(1), \fBwrite\fR(1), and \fBlogin\fR(1).
+.BR who (1),
+.BR write (1),
+and
+.BR login (1).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/proc\fR
+.B /proc
 .ad
 .sp .6
 .RS 4n
-Directory containing files for processes whose \fButmpx\fR entries are
+Directory containing files for processes whose
+.B utmpx
+entries are
 being monitored.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -177,22 +209,36 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBinit\fR(1M), \fBsvcadm\fR(1M), \fBpoll\fR(2),
-\fBpututxline\fR(3C), \fBproc\fR(4), \fButmp\fR(4), \fButmpx\fR(4),
-\fBattributes\fR(5), \fBsmf\fR(5)
+.BR svcs (1),
+.BR init (1M),
+.BR svcadm (1M),
+.BR poll (2),
+.BR pututxline (3C),
+.BR proc (4),
+.BR utmp (4),
+.BR utmpx (4),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
-If the filesystem holding \fB/var/adm/wtmpx\fR is mounted with options
+If the filesystem holding
+.B /var/adm/wtmpx
+is mounted with options
 which inhibit or defer access time updates, an unknown amount of error will
-be introduced into the \fButmp\fR \fBDOWN_TIME\fR record's timestamp in the
+be introduced into the
+.B "utmp DOWN_TIME"
+record's timestamp in the
 event of an uncontrolled shutdown (for example, a crash or loss of power ).
-Controlled shutdowns will update the modify time of \fB/var/adm/wtmpx\fR,
+Controlled shutdowns will update the modify time of
+.BR /var/adm/wtmpx ,
 which will be used on the next boot to determine when the previous shutdown
 ocurred, regardless of access time deferral or inhibition.
 .sp
 .LP
-The \fButmpd\fR service is managed by the service management facility,
+The
+.B utmpd
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -205,5 +251,9 @@ svc:/system/utmp:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.

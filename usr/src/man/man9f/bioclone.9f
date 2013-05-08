@@ -41,7 +41,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIbp\fR
+.I bp
 .ad
 .RS 13n
 .rt
@@ -57,7 +57,11 @@ request.
 .ad
 .RS 13n
 .rt
-Offset within original \fBI/O\fR request where new \fBI/O\fR request should
+Offset within original
+.B I/O
+request where new
+.B I/O
+request should
 start.
 .RE
 
@@ -65,18 +69,20 @@ start.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 13n
 .rt
-Length of the \fBI/O \fRrequest.
+Length of the
+.B I/O
+request.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 13n
 .rt
@@ -87,7 +93,7 @@ Device number.
 .ne 2
 .mk
 .na
-\fIblkno\fR
+.I blkno
 .ad
 .RS 13n
 .rt
@@ -98,22 +104,24 @@ Block number on device.
 .ne 2
 .mk
 .na
-\fIiodone\fR
+.I iodone
 .ad
 .RS 13n
 .rt
-Specific \fBbiodone\fR(9F) routine.
+Specific
+.BR biodone "(9F) routine."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIbp_mem\fR
+.I bp_mem
 .ad
 .RS 13n
 .rt
-Pointer to a buffer structure to be filled in or \fBNULL. \fR
+Pointer to a buffer structure to be filled in or
+.B NULL.
 .RE
 
 .sp
@@ -133,59 +141,114 @@ available.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBbioclone()\fR function returns an initialized buffer to perform
+The
+.B bioclone()
+function returns an initialized buffer to perform
 \fBI/O\fR to a portion of another buffer. The new buffer will be set up to
-perform \fBI/O\fR to the range within the original \fBI/O\fR request
-specified by the parameters \fIoff\fR and \fIlen\fR. An offset \fB0\fR
-starts the new \fBI/O\fR request at the same address as the original
+perform
+.B I/O
+to the range within the original
+.B I/O
+request
+specified by the parameters \fIoff\fR and
+.IR len .
+An offset
+.BR 0
+starts the new
+.B I/O
+request at the same address as the original
 request. \fIoff\fR + \fIlen\fR must not exceed \fIb_bcount,\fR the length of
-the original request. The device number \fIdev\fR specifies the device to
-which the buffer is to perform \fBI/O\fR. \fIblkno\fR is the block number on
-device. It will be assigned to the \fIb_blkno\fR field of the cloned buffer
-structure. \fIiodone\fR lets the driver identify a specific
-\fBbiodone\fR(9F) routine to be called by the driver when the \fBI/O\fR is
-complete. \fIbp_mem\fR determines from where the space for the buffer should
-be allocated. If \fIbp_mem\fR is \fBNULL\fR, \fBbioclone()\fR will allocate
+the original request. The device number
+.I dev
+specifies the device to
+which the buffer is to perform
+.BR I/O .
+\fIblkno\fR is the block number on
+device. It will be assigned to the
+.I b_blkno
+field of the cloned buffer
+structure.
+.I iodone
+lets the driver identify a specific
+.BR biodone (9F)
+routine to be called by the driver when the
+.B I/O
+is
+complete.
+.I bp_mem
+determines from where the space for the buffer should
+be allocated. If
+.I bp_mem
+is
+.BR NULL ,
+\fBbioclone()\fR will allocate
 a new buffer using \fBgetrbuf\fR(9F). If \fIsleepflag\fR is set to
-\fBKM_SLEEP\fR, the driver may sleep until space is freed up. If
-\fIsleepflag\fR is set to \fBKM_NOSLEEP\fR, the driver will not sleep. In
-either case, a pointer to the allocated space is returned or \fINULL\fR to
+.BR KM_SLEEP ,
+the driver may sleep until space is freed up. If
+\fIsleepflag\fR is set to
+.BR KM_NOSLEEP ,
+the driver will not sleep. In
+either case, a pointer to the allocated space is returned or
+.I NULL
+to
 indicate that no space was available. After the transfer is completed, the
-buffer has to be freed using \fBfreerbuf\fR(9F). If \fIbp_mem\fR is not
-\fINULL\fR, it will be used as the space for the buffer structure. The
-driver has to ensure that \fIbp_mem\fR is initialized properly either using
+buffer has to be freed using \fBfreerbuf\fR(9F). If
+.I bp_mem
+is not
+.IR NULL ,
+it will be used as the space for the buffer structure. The
+driver has to ensure that
+.I bp_mem
+is initialized properly either using
 \fBgetrbuf\fR(9F) or \fBbioinit\fR(9F).
 .sp
 .LP
 If the original buffer is mapped into the kernel virtual address space
-using \fBbp_mapin\fR(9F) before calling \fBbioclone()\fR, a clone buffer
+using \fBbp_mapin\fR(9F) before calling
+.BR bioclone() ,
+a clone buffer
 will share the kernel mapping of the original buffer. An additional
 \fBbp_mapin()\fR to get a kernel mapping for the clone buffer is not
 necessary.
 .sp
 .LP
 The driver has to ensure that the original buffer is not freed while any of
-the clone buffers is still performing \fBI/O\fR. The \fBbiodone()\fR
+the clone buffers is still performing
+.BR I/O .
+The
+.BR biodone()
 function has to be called on all clone buffers \fBbefore\fR it is called on
 the original buffer.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBbioclone()\fR function returns a pointer to the initialized buffer
-header, or \fBNULL\fR if no space is available.
+The
+.B bioclone()
+function returns a pointer to the initialized buffer
+header, or
+.B NULL
+if no space is available.
 .SH CONTEXT
 .sp
 .LP
-The \fBbioclone()\fR function can be called from user, interrup, or
-interrupt context. Drivers must not allow \fBbioclone()\fR to sleep if
+The
+.B bioclone()
+function can be called from user, interrup, or
+interrupt context. Drivers must not allow
+.B bioclone()
+to sleep if
 called from an interrupt routine.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBbioclone()\fR for Disk Striping
+\fBExample 1\fR Using \fBbioclone()\fR for Disk Striping
 .sp
 .LP
-A device driver can use \fBbioclone()\fR for disk striping. For each disk
-in the stripe, a clone buffer is created which performs \fBI/O\fR to a
+A device driver can use
+.B bioclone()
+for disk striping. For each disk
+in the stripe, a clone buffer is created which performs
+.B I/O
+to a
 portion of the original buffer.
 
 .sp
@@ -238,8 +301,10 @@ stripe_done(struct buf *bp)
 .SH SEE ALSO
 .sp
 .LP
-\fBbiodone\fR(9F), \fBbp_mapin\fR(9F), \fBfreerbuf\fR(9F),
+.BR biodone (9F),
+.BR bp_mapin (9F),
+\fBfreerbuf\fR(9F),
 \fBgetrbuf\fR(9F), \fBbuf\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

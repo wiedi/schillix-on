@@ -32,16 +32,24 @@ crle \- configure runtime linking environment
 .SH DESCRIPTION
 .sp
 .LP
-The \fBcrle\fR utility provides for the creation and display of a runtime
+The
+.B crle
+utility provides for the creation and display of a runtime
 linking configuration file. The configuration file is read and interpreted by
-the runtime linker, \fBld.so.1\fR(1), during process startup. The runtime
+the runtime linker,
+.BR ld.so.1 (1),
+during process startup. The runtime
 linker attempts to read a default configuration file for all processes. For
 32-bit processes, the default configuration file is \fB/var/ld/ld.config\fR.
 For 64-bit processes, the default configuration file is
 \fB/var/ld/64/ld.config\fR.
 .sp
 .LP
-Without any arguments, or with just the \fB-c\fR option, \fBcrle\fR displays
+Without any arguments, or with just the
+.B -c
+option,
+.B crle
+displays
 configuration information. This information includes the contents of a
 configuration file, any system defaults and the command-line required to
 regenerate the configuration file. When used with any other options, a new
@@ -49,27 +57,40 @@ configuration file is created or updated.
 .sp
 .LP
 The runtime linker can also be directed to an alternative configuration file
-by setting one of the \fBLD_CONFIG\fR family of environment variable.
+by setting one of the
+.B LD_CONFIG
+family of environment variable.
 \fBLD_CONFIG\fR applies to both 32-bit and 64-bit programs. Since 32-bit and
 64-bit configuration files differ, a single configuration file cannot be used
-for both class of object. Hence, \fBLD_CONFIG\fR can adversely affect program
+for both class of object. Hence,
+.B LD_CONFIG
+can adversely affect program
 execution in cases where a program of one class executes a program of the other
 class. In particular, it is common practice for the 32-bit version of standard
-Solaris utilities to execute their 64-bit counterpart. \fBLD_CONFIG\fR cannot
+Solaris utilities to execute their 64-bit counterpart.
+.B LD_CONFIG
+cannot
 be successfully used in this case. Therefore, the use of the \fBLD_CONFIG_32\fR
-and \fBLD_CONFIG_64\fR environment variables, that precisely target the
+and
+.B LD_CONFIG_64
+environment variables, that precisely target the
 appropriate class of process, is recommended.
 .sp
 .LP
 Creating an incorrect configuration file in the standard location,
-\fB/var/ld\fR, can prevent programs from running, and can therefore be
+.BR /var/ld ,
+can prevent programs from running, and can therefore be
 difficult to recover from. To guard against this situation, it is recommented
 that new configuration files first be created in a temporary location. Then set
-the appropriate \fBLD_CONFIG\fR environment variable to this new configuration
+the appropriate
+.B LD_CONFIG
+environment variable to this new configuration
 file. This setting causes the new configuration file to be used by the runtime
 linker instead of any default. After verification, the new configuration file
 can be moved to the default location if desired. At any time, the environment
-variable \fBLD_NOCONFIG\fR can be set to any value to instruct the runtime
+variable
+.B LD_NOCONFIG
+can be set to any value to instruct the runtime
 linker to ignore any configuration files. This setting can prove useful during
 experimentation.
 .sp
@@ -86,35 +107,46 @@ A configuration file can contain the following information.
 The runtime linker uses a prescribed search path for locating the dynamic
 dependencies of an object. This search path starts with the components of any
 \fBLD_LIBRARY_PATH\fR definition, followed by the components of an object's
-\fBrunpath\fR. Finally, any default search paths specific to the object's class
+.BR runpath .
+Finally, any default search paths specific to the object's class
 are used. This last component of the search path can be expressed within the
 configuration file. Typically, use of this facility should be augmented with
-any system default. See the \fB-l\fR and \fB-u\fR options.
+any system default. See the
+.B -l
+and
+.B -u
+options.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTrusted Directories\fR
+.B Trusted Directories
 .ad
 .sp .6
 .RS 4n
 When processing a secure application, the runtime linker restricts the use of
 \fBLD_LIBRARY_PATH\fR searches, and \fB$ORIGIN\fR token expansion. See
-\fISecurity\fR in \fILinker and Libraries Guide\fR. In addition, the
+\fISecurity\fR in
+.IR "Linker and Libraries Guide" .
+In addition, the
 directories from which preload and audit libraries can be located are also
 restricted. The path names that are associated with preload and audit libraries
 are restricted to known trusted directories. Trusted directories can be
 expressed within the configuration file. Typically, use of this facility should
-be augmented with any system defaults. See the \fB-s\fR and \fB-u\fR options.
+be augmented with any system defaults. See the
+.B -s
+and
+.B -u
+options.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEnvironment Variables\fR
+.B Environment Variables
 .ad
 .sp .6
 .RS 4n
@@ -126,7 +158,7 @@ within the configuration file.
 .ne 2
 .mk
 .na
-\fBDirectory Cache\fR
+.B Directory Cache
 .ad
 .sp .6
 .RS 4n
@@ -139,13 +171,15 @@ overhead of searching for application dependencies.
 .ne 2
 .mk
 .na
-\fBAlternative Objects\fR
+.B Alternative Objects
 .ad
 .sp .6
 .RS 4n
 In conjunction with the directory cache, shared objects can have alternative
 objects specified for use at runtime. These alternate objects, can be supplied
-by the user. Alternative objects can also be created by \fBcrle\fR as copies of
+by the user. Alternative objects can also be created by
+.B crle
+as copies of
 shared objects fixed to known memory locations. These fixed alternative objects
 can require less processing at runtime than their original shared object
 counterpart.
@@ -169,17 +203,23 @@ linker provides a means of centralizing their definition for all
 applications.
 .sp
 .LP
-The directory cache, and \fBcrle\fR generated alternate objects, can provide a
+The directory cache, and
+.B crle
+generated alternate objects, can provide a
 means of reducing the runtime startup overhead of applications. Alternative
 objects can be useful for applications that require many dependencies, or whose
 dependencies are expensive to relocate. Shared objects that contain
 \fBposition-dependent\fR code are often expensive to relocate. Note, the system
 has many caching facilities that help mitigate expenses such as negative path
-lookups, and thus employing \fBcrle\fR to create a directory cache may have
+lookups, and thus employing
+.B crle
+to create a directory cache may have
 minimal effect other than for some very specific cases.
 .sp
 .LP
-When alternate objects that are generated by \fBcrle\fR are specified within a
+When alternate objects that are generated by
+.B crle
+are specified within a
 configuration file, the runtime linker performs some minimal consistency
 verification. The alternative objects are verified against their originating
 objects. This verification is intended to avert application failure should an
@@ -198,10 +238,19 @@ improvement in some very specific cases.
 .sp
 .LP
 \fBcrle\fR creates alternate objects for the shared objects that are
-discovered when using the \fB-I\fR and \fB-G\fR options, using
-\fBdldump\fR(3C). The alternate object is created in the directory specified by
-the preceding \fB-o\fR option, or defaults to the directory in which the
-configuration file is created. The flags used by \fBdldump()\fR are specified
+discovered when using the
+.B -I
+and
+.B -G
+options, using
+.BR dldump (3C).
+The alternate object is created in the directory specified by
+the preceding
+.B -o
+option, or defaults to the directory in which the
+configuration file is created. The flags used by
+.B dldump()
+are specified
 using the \fB-f\fR option, or default to \fBRTLD_REL_RELATIVE\fR.
 .SH OPTIONS
 .sp
@@ -211,11 +260,13 @@ The following options are supported.
 .ne 2
 .mk
 .na
-\fB-64\fR
+.B -64
 .ad
 .sp .6
 .RS 4n
-Specify to process 64-bit objects, the default is 32-bit. Use \fB-64\fR to
+Specify to process 64-bit objects, the default is 32-bit. Use
+.B -64
+to
 create a 64-bit specific configuration file.
 .RE
 
@@ -227,15 +278,23 @@ create a 64-bit specific configuration file.
 .ad
 .sp .6
 .RS 4n
-Create an alternative path name for \fIname\fR. The alternative path name is
+Create an alternative path name for
+.IR name .
+The alternative path name is
 added to the configuration file.
 .sp
 The actual alternative file must be supplied by the user. Multiple occurrences
-of this option are permitted. If \fIname\fR is a directory, each shared object
-within the directory is added to the cache. If \fIname\fR does not exist, then
+of this option are permitted. If
+.I name
+is a directory, each shared object
+within the directory is added to the cache. If
+.I name
+does not exist, then
 \fIname\fR is marked in the cache as a nonexistent file.
 .sp
-Typically, this option is used with the \fB-o\fR option.
+Typically, this option is used with the
+.B -o
+option.
 .RE
 
 .sp
@@ -246,15 +305,25 @@ Typically, this option is used with the \fB-o\fR option.
 .ad
 .sp .6
 .RS 4n
-Create an optional alternative path name for \fIname\fR. This alternative path
+Create an optional alternative path name for
+.IR name .
+This alternative path
 name is added to the configuration file.
 .sp
-This option mimics the \fB-a\fR option, except that if the alternative is
-unavailable at runtime, the original object \fIname\fR is used. This model
-mimics the use of auxiliary filters. See \fIGenerating Auxiliary Filters\fR in
-\fILinker and Libraries Guide\fR.
+This option mimics the
+.B -a
+option, except that if the alternative is
+unavailable at runtime, the original object
+.I name
+is used. This model
+mimics the use of auxiliary filters. See
+.I "Generating Auxiliary Filters"
+in
+.IR "Linker and Libraries Guide" .
 .sp
-Typically, this option is used with the \fB-o\fR option.
+Typically, this option is used with the
+.B -o
+option.
 .RE
 
 .sp
@@ -265,7 +334,9 @@ Typically, this option is used with the \fB-o\fR option.
 .ad
 .sp .6
 .RS 4n
-Specify to use the configuration file name \fIconf\fR. If this option is not
+Specify to use the configuration file name
+.IR conf .
+If this option is not
 supplied, the default configuration file is used.
 .RE
 
@@ -277,15 +348,23 @@ supplied, the default configuration file is used.
 .ad
 .sp .6
 .RS 4n
-Specify a \fBreplaceable\fR environment variable, \fIenv\fR. Only environment
+Specify a
+.B replaceable
+environment variable,
+.IR env .
+Only environment
 variables that are applicable to the runtime linker are meaningful. Multiple
 occurrences of this option are permitted. This option is similar to the
 \fB-E\fR option. However, the options differs in how configuration file
 definitions, and process environment definitions of the same name are resolved
 at runtime.
 .sp
-A definition established in a configuration file can be \fBoverridden\fR by a
-process environment definition, or be \fBsuppressed\fR by a null-value process
+A definition established in a configuration file can be
+.B overridden
+by a
+process environment definition, or be
+.B suppressed
+by a null-value process
 environment definition.
 .sp
 In other words, these configuration file definitions can be replaced, or
@@ -300,7 +379,11 @@ removed by the process environment at runtime.
 .ad
 .sp .6
 .RS 4n
-Specify a \fBpermanent\fR environment variable, \fIenv\fR. Only environment
+Specify a
+.B permanent
+environment variable,
+.IR env .
+Only environment
 variables that are applicable to the runtime linker are meaningful. Multiple
 occurrences of this option are permitted. This option is similar to the
 \fB-e\fR option. However, the option differs in how configuration file
@@ -316,11 +399,15 @@ which can take one or more values, are definitions such as
 .sp
 A singular definition that is established in a configuration file takes
 precedence over a process environment definition. A list definition that is
-established in a configuration file is \fBappended\fR to a process environment
+established in a configuration file is
+.B appended
+to a process environment
 definition. Any definition that is established in a configuration file can
 \fBnot\fR be suppressed by a null-value process environment definition.
 .sp
-In other words, these configuration file definitions can \fBnot\fR be
+In other words, these configuration file definitions can
+.B not
+be
 replaced, or removed by the process environment at runtime.
 .RE
 
@@ -332,12 +419,17 @@ replaced, or removed by the process environment at runtime.
 .ad
 .sp .6
 .RS 4n
-Provide the symbolic \fIflags\fR argument to the \fBdldump\fR(3C) calls used
-to generate alternate objects. Any of the \fBRTLD_REL\fR flags that are defined
+Provide the symbolic \fIflags\fR argument to the
+.BR dldump (3C)
+calls used
+to generate alternate objects. Any of the
+.B RTLD_REL
+flags that are defined
 in \fB/usr/include/dlfcn.h\fR can be used. Multiple flags can be \fBor\fR'ed
 together using the "\fB|\fR" character. In this case, the string should be
 quoted to avoid expansion by the shell. If no \fIflags\fR values are provided
-the default flag is \fBRTLD_REL_RELATIVE\fR.
+the default flag is
+.BR RTLD_REL_RELATIVE .
 .RE
 
 .sp
@@ -348,10 +440,20 @@ the default flag is \fBRTLD_REL_RELATIVE\fR.
 .ad
 .sp .6
 .RS 4n
-Add an individual \fIname\fR to the configuration cache. Multiple occurrences
-of this option are permitted. \fIname\fR can be a shared object or a directory.
-If \fIname\fR is a directory, each shared object within the directory is added
-to the cache. If \fIname\fR does not exist, the \fIname\fR is marked in the
+Add an individual
+.I name
+to the configuration cache. Multiple occurrences
+of this option are permitted.
+.I name
+can be a shared object or a directory.
+If
+.I name
+is a directory, each shared object within the directory is added
+to the cache. If
+.I name
+does not exist, the
+.I name
+is marked in the
 cache as a nonexistent directory.
 .RE
 
@@ -363,9 +465,14 @@ cache as a nonexistent directory.
 .ad
 .sp .6
 .RS 4n
-Mimic the \fB-i\fR, and in addition any shared object that is processed has an
+Mimic the
+.BR -i ,
+and in addition any shared object that is processed has an
 alternative created using \fBdldump\fR(3C). If the \fB-f\fR flag contains
-\fBRTLD_REL_EXEC\fR, then \fIname\fR can be a dynamic executable, for which an
+.BR RTLD_REL_EXEC ,
+then
+.I name
+can be a dynamic executable, for which an
 alternative is created. Only one dynamic executable can be specified in this
 manner, as the cache that is created is specific to this application.
 .RE
@@ -378,11 +485,19 @@ manner, as the cache that is created is specific to this application.
 .ad
 .sp .6
 .RS 4n
-Add the group \fIname\fR to the configuration cache. Each object is expanded
+Add the group
+.I name
+to the configuration cache. Each object is expanded
 to determine its dependencies. Multiple occurrences of this option are
-permitted. \fIname\fR can be a dynamic executable, shared object or a
-directory. If \fIname\fR is a shared object, the shared object and its
-dependencies are added to the cache. If \fIname\fR is a directory, each shared
+permitted.
+.I name
+can be a dynamic executable, shared object or a
+directory. If
+.I name
+is a shared object, the shared object and its
+dependencies are added to the cache. If
+.I name
+is a directory, each shared
 object within the directory, and its dependencies, are added to the cache.
 .RE
 
@@ -394,9 +509,15 @@ object within the directory, and its dependencies, are added to the cache.
 .ad
 .sp .6
 .RS 4n
-Mimic the \fB-g\fR option, and in addition any shared object that is processed
-has an alternative created using \fBdldump\fR(3C). If \fIname\fR is a dynamic
-executable, and the \fB-f\fR flag contains \fBRTLD_REL_EXEC\fR, then an
+Mimic the
+.B -g
+option, and in addition any shared object that is processed
+has an alternative created using \fBdldump\fR(3C). If
+.I name
+is a dynamic
+executable, and the \fB-f\fR flag contains
+.BR RTLD_REL_EXEC ,
+then an
 alternative for the dynamic executable is also created. Only one dynamic
 executable can be specified in this manner as the cache that is created is
 specific to this application.
@@ -410,24 +531,50 @@ specific to this application.
 .ad
 .sp .6
 .RS 4n
-Specify a new default search directory \fIdir\fR for \fBELF\fR or \fBAOUT\fR
+Specify a new default search directory
+.I dir
+for
+.B ELF
+or
+.BR AOUT
 objects. Multiple occurrences of this option are permitted. The type of object
 that is applicable to the search, is specified by the preceding \fB-t\fR
 option, or defaults to \fBELF\fR.
 .sp
-The default search paths for 32-bit \fBELF\fR objects are \fB/lib\fR followed
-by \fB/usr/lib\fR. For 64-bit \fBELF\fR objects, the default search paths are
+The default search paths for 32-bit
+.B ELF
+objects are
+.B /lib
+followed
+by
+.BR /usr/lib .
+For 64-bit
+.B ELF
+objects, the default search paths are
 \fB/lib/64\fR followed by \fB/usr/lib/64\fR.
 .sp
-The default search paths for \fBAOUT\fR objects are \fB/usr/4lib\fR, followed
-by \fB/usr/lib\fR and finally \fB/usr/local/lib\fR.
+The default search paths for
+.B AOUT
+objects are
+.BR /usr/4lib ,
+followed
+by
+.B /usr/lib
+and finally
+.BR /usr/local/lib .
 .sp
-Use of this option \fBreplaces\fR the default search path. Therefore, a
+Use of this option
+.B replaces
+the default search path. Therefore, a
 \fB-l\fR option is normally required to specify the original system default in
 relation to any new paths that are being applied. However, if the \fB-u\fR
-option is in effect, and a configuration file does \fBnot\fR exist, the system
+option is in effect, and a configuration file does
+.B not
+exist, the system
 defaults are added to the new configuration file. These defaults are added
-before the new paths specified with the \fB-l\fR option.
+before the new paths specified with the
+.B -l
+option.
 .RE
 
 .sp
@@ -438,16 +585,30 @@ before the new paths specified with the \fB-l\fR option.
 .ad
 .sp .6
 .RS 4n
-When used with either the \fB-a\fR or \fB-A\fR options, specifies the
-directory \fIdir\fR in which any alternate objects exist. When alternative
-objects are created by \fBcrle\fR, this option specified where the alternative
+When used with either the
+.B -a
+or
+.B -A
+options, specifies the
+directory
+.I dir
+in which any alternate objects exist. When alternative
+objects are created by
+.BR crle ,
+this option specified where the alternative
 are created. Without this option, alternate objects exist in the directory in
 which the configuration file is created. Multiple occurrences of this option
-are permitted, the directory \fIdir\fR being used to locate alternatives for
+are permitted, the directory
+.I dir
+being used to locate alternatives for
 any following command-line options. Alternative objects are not permitted to
 override their associated originals.
 .sp
-Typically, this option is used with the \fB-a\fR or \fB-A\fR options.
+Typically, this option is used with the
+.B -a
+or
+.B -A
+options.
 .RE
 
 .sp
@@ -458,37 +619,64 @@ Typically, this option is used with the \fB-a\fR or \fB-A\fR options.
 .ad
 .sp .6
 .RS 4n
-Specify a new trusted directory \fIdir\fR for \fIsecure\fR \fBELF\fR or
-\fBAOUT\fR objects. See \fBSECURITY\fR in \fBld.so.1\fR(1) for a definition of
-secure objects. See \fISecurity\fR in \fILinker and Libraries Guide\fR for a
+Specify a new trusted directory
+.I dir
+for
+.I secure
+\fBELF\fR or
+\fBAOUT\fR objects. See \fBSECURITY\fR in
+.BR ld.so.1 (1)
+for a definition of
+secure objects. See
+.I Security
+in
+.I "Linker and Libraries Guide"
+for a
 discussion of runtime restrictions imposed on secure applications.
 .sp
 Multiple occurrences of this option are permitted. The type of object that is
-applicable to the search is specified by the preceding \fB-t\fR option, or
-defaults to \fBELF\fR.
+applicable to the search is specified by the preceding
+.B -t
+option, or
+defaults to
+.BR ELF .
 .sp
-The default trusted directories for secure 32-bit \fBELF\fR objects, and
+The default trusted directories for secure 32-bit
+.B ELF
+objects, and
 \fBAOUT\fR objects, are \fB/lib/secure\fR followed by \fB/usr/lib/secure\fR.
-For 64-bit secure \fBELF\fR objects, the default trusted directories are
+For 64-bit secure
+.B ELF
+objects, the default trusted directories are
 \fB/lib/secure/64\fR followed by \fB/usr/lib/secure/64\fR.
 .sp
-Use of this option \fBreplaces\fR the default trusted directories. Therefore,
-a \fB-s\fR option is normally required to specify the original system default
+Use of this option
+.B replaces
+the default trusted directories. Therefore,
+a
+.B -s
+option is normally required to specify the original system default
 in relation to any new directories that are being applied. However, if the
 \fB-u\fR option is in effect, and a configuration file does \fBnot\fR exist,
 the system defaults are added to the new configuration file. These defaults are
-added before the new directories specified with the \fB-l\fR option.
+added before the new directories specified with the
+.B -l
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-t\fR \fBELF\fR | \fBAOUT\fR
+\fB-t ELF\fR | \fBAOUT\fR
 .ad
 .sp .6
 .RS 4n
-Toggle the object type that is applicable to any \fB-l\fR or \fB-s\fR options
+Toggle the object type that is applicable to any
+.B -l
+or
+.B -s
+options
 that follow. The default object type is \fBELF\fR.
 .RE
 
@@ -496,7 +684,7 @@ that follow. The default object type is \fBELF\fR.
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .sp .6
 .RS 4n
@@ -506,13 +694,18 @@ inspected and its contents recomputed. Additional arguments allow information
 to be appended to the recomputed contents. See NOTES.
 .sp
 If a configuration file does not exist, the configuration file is created as
-directed by the other arguments. In the case of the \fB-l\fR and \fB-s\fR
+directed by the other arguments. In the case of the
+.B -l
+and
+.BR -s
 options, any system defaults are first applied to the configuration file before
 the directories specified with these options.
 .sp
 The configuration file can be in the older format that lacks the system
 identification information that is normally written at the beginning of the
-file. In this case, \fBcrle\fR does not place system identification information
+file. In this case,
+.B crle
+does not place system identification information
 into the resulting file, preserving compatibility of the file with older
 versions of Solaris. See NOTES.
 .RE
@@ -521,7 +714,7 @@ versions of Solaris. See NOTES.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .sp .6
 .RS 4n
@@ -539,12 +732,17 @@ By default, the runtime linker attempts to read the configuration file
 an alternative application, the runtime linker uses a
 \fB$ORIGIN/ld.config.\fIapp-name\fR configuration file if present. See
 NOTES. Applications can reference an alternative configuration file by setting
-the \fBLD_CONFIG\fR environment variable. An alternative configuration file can
+the
+.B LD_CONFIG
+environment variable. An alternative configuration file can
 also be specified by recording the configuration file name in the application
-at the time the application is built. See the \fB-c\fR option of \fBld\fR(1).
+at the time the application is built. See the
+.B -c
+option of
+.BR ld (1).
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExperimenting With a Temporary Configuration File
+\fBExample 1\fR Experimenting With a Temporary Configuration File
 .sp
 .LP
 The following example creates a temporary configuration file with a new
@@ -574,7 +772,7 @@ Thu May 29 17:42:00 PDT 2008
 .sp
 
 .LP
-\fBExample 2 \fRUpdating and Displaying a New Default Search Path for ELF
+\fBExample 2\fR Updating and Displaying a New Default Search Path for ELF
 Objects
 .sp
 .LP
@@ -614,19 +812,27 @@ Command line:
 .sp
 .LP
 In this example, the default configuration file initially did not exist.
-Therefore, the new search path \fB/local/lib\fR is appended to the system
-default. The next update appends the search path \fB/ISV/lib\fR to those paths
+Therefore, the new search path
+.B /local/lib
+is appended to the system
+default. The next update appends the search path
+.B /ISV/lib
+to those paths
 already established in the configuration file.
 
 .LP
-\fBExample 3 \fRRecovering From a Bad Configuration File
+\fBExample 3\fR Recovering From a Bad Configuration File
 .sp
 .LP
 The following example creates a bad configuration file in the default
 location. The file can be removed by instructing the runtime linker to ignore
-any configuration file with the \fBLD_NOCONFIG\fR environment variable. Note,
+any configuration file with the
+.B LD_NOCONFIG
+environment variable. Note,
 it is recommended that temporary configuration files be created and the
-environment variable \fBLD_CONFIG\fR used to experiment with these files.
+environment variable
+.B LD_CONFIG
+used to experiment with these files.
 
 .sp
 .in +2
@@ -646,11 +852,13 @@ Thu May 29 17:52:00 PDT 2008
 .sp
 .LP
 Note, the reason the configuration file is bad is because the system default
-search paths are not present. Hence, the \fBdate\fR utility is not able to
-locate the system dependencies that it required. In this case, the \fB-u\fR
+search paths are not present. Hence, the
+.B date
+utility is not able to
+.RB "locate the system dependencies that it required. In this case, the" " -u"
 option should have been used.
 .LP
-\fBExample 4 \fRCreating and Displaying a New Default Search Path and New
+\fBExample 4\fR Creating and Displaying a New Default Search Path and New
 Trusted Directory for ELF Objects
 .sp
 .LP
@@ -677,13 +885,17 @@ Command line:
 .sp
 .LP
 With this configuration file, third party applications could be installed in
-\fB/local/bin\fR and their associated dependencies in \fB/local/lib\fR. The
+\fB/local/bin\fR and their associated dependencies in
+.BR /local/lib .
+The
 default search path allows the applications to locate their dependencies
-without the need to set \fBLD_LIBRARY_PATH\fR. The default trusted directories
+without the need to set
+.BR LD_LIBRARY_PATH .
+The default trusted directories
 have also been replaced with this example.
 
 .LP
-\fBExample 5 \fRCreating a Directory Cache for ELF Objects
+\fBExample 5\fR Creating a Directory Cache for ELF Objects
 .sp
 .LP
 The following example creates a directory cache for ELF objects.
@@ -718,12 +930,13 @@ $ \fBLD_CONFIG=config ldd -s ./main\fR
 .LP
 With this configuration, the cache reflects that the system library
 \fBlibc.so.1\fR does not exist in the directories \fB/usr/dt/lib\fR or
-\fB/usr/openwin/lib\fR. Therefore, the search for this system file ignores
+.BR /usr/openwin/lib .
+Therefore, the search for this system file ignores
 these directories even though the application's runpath indicates these paths
 should be searched.
 
 .LP
-\fBExample 6 \fRCreating an Alternative Object Cache for an ELF Executable
+\fBExample 6\fR Creating an Alternative Object Cache for an ELF Executable
 .sp
 .LP
 The following example creates an alternative object cache for an ELF
@@ -747,16 +960,22 @@ $ \fBldd /usr/local/$HOST/xterm\fR
 
 .sp
 .LP
-With this configuration, a new \fBxterm\fR and its dependencies are created.
+With this configuration, a new
+.B xterm
+and its dependencies are created.
 These new objects are fully relocated to each other, and result in faster
 startup than the originating objects. The execution of this application uses
 its own specific configuration file. This model is generally more flexible than
-using the environment variable \fBLD_CONFIG\fR, as the configuration file can
-not be erroneously used by other applications such as \fBldd\fR(1) or
-\fBtruss\fR(1).
+using the environment variable
+.BR LD_CONFIG ,
+as the configuration file can
+not be erroneously used by other applications such as
+.BR ldd (1)
+or
+.BR truss (1).
 
 .LP
-\fBExample 7 \fRCreating an Alternative Object Cache to Replace an ELF Shared
+\fBExample 7\fR Creating an Alternative Object Cache to Replace an ELF Shared
 Object
 .sp
 .LP
@@ -794,10 +1013,10 @@ $ \fBldd /usr/bin/vi\fR
 .LP
 With this configuration, any dependency that would normally resolve to
 \fB/usr/lib/libcurses.so.1\fR instead resolves to
-\fB/usr/ucblib/libcurses.so.1\fR.
+.BR /usr/ucblib/libcurses.so.1 .
 
 .LP
-\fBExample 8 \fRSetting Replaceable and Permanent Environment Variables
+\fBExample 8\fR Setting Replaceable and Permanent Environment Variables
 .sp
 .LP
 The following example sets replaceable and permanent environment variables.
@@ -835,7 +1054,9 @@ environment definition.
 .SH EXIT STATUS
 .sp
 .LP
-The creation or display of a configuration file results in a \fB0\fR being
+The creation or display of a configuration file results in a
+.B 0
+being
 returned. Otherwise, any error condition is accompanied with a diagnostic
 message and a non-zero value being returned.
 .SH NOTES
@@ -843,13 +1064,19 @@ message and a non-zero value being returned.
 .LP
 The ability to tag an alternative application to use an application-specific
 configuration file, is possible if the original application contains one of the
-\fI\&.dynamic\fR tags \fBDT_FLAGS_1\fR or \fBDT_FEATURE_1\fR. Without these
+\fI\&.dynamic\fR tags \fBDT_FLAGS_1\fR or
+.BR DT_FEATURE_1 .
+Without these
 entries, a configuration file must be specified using the \fBLD_CONFIG\fR
 environment variable. Care should be exercised with this latter method as this
 environment variable is visible to any forked applications.
 .sp
 .LP
-The use of the \fB-u\fR option requires at least version 2 of \fBcrle\fR. This
+The use of the
+.B -u
+option requires at least version 2 of
+.BR crle .
+This
 version level is evident from displaying the contents of a configuration
 file.
 .sp
@@ -865,27 +1092,40 @@ Configuration file [2]: /var/ld/ld.config
 
 .sp
 .LP
-With a version 2 configuration file, \fBcrle\fR is capable of constructing the
+With a version 2 configuration file,
+.B crle
+is capable of constructing the
 command-line arguments required to regenerate the configuration file. This
 command-line construction, provides full update capabilities using the \fB-u\fR
 option. Although a version 1 configuration file update is possible, the
-configuration file contents might be insufficient for \fBcrle\fR to compute the
+configuration file contents might be insufficient for
+.B crle
+to compute the
 entire update requirements.
 .sp
 .LP
 Configuration files contain platform specific binary data. A given
 configuration file can only be interpreted by software with the same machine
 class and byte ordering. However, the information necessary to enforce this
-restriction was not included in configuration files until \fBSXCE\fR build
-\fB41\fR. As of this \fBSXCE\fR build, configuration files have system
+restriction was not included in configuration files until
+.B SXCE
+build
+.BR 41 .
+As of this
+.B SXCE
+build, configuration files have system
 identification information at the beginning of the file. This additional
-information is used by \fBcrle\fR and the runtime to check their compatibility
+information is used by
+.B crle
+and the runtime to check their compatibility
 with configuration files. This information also allows the \fBfile\fR(1)
 command to properly identify  configuration files. For backward compatibility,
 older files that are missing this information are still accepted, although
 without the identification and error checking that would otherwise be possible.
 When processing an update (\fB-u\fR) operation for an older file that lacks
-system information, \fBcrle\fR does not add system identification information
+system information,
+.B crle
+does not add system identification information
 to the result.
 .SH FILES
 .sp
@@ -914,7 +1154,7 @@ Default configuration file for 64-bit applications.
 .ne 2
 .mk
 .na
-\fB/var/tmp\fR
+.B /var/tmp
 .ad
 .sp .6
 .RS 4n
@@ -925,57 +1165,65 @@ Default location for temporary configuration file. See \fBtempnam\fR(3C).
 .ne 2
 .mk
 .na
-\fB/usr/lib/lddstub\fR
+.B /usr/lib/lddstub
 .ad
 .sp .6
 .RS 4n
-Stub application that is employed to \fBdldump\fR(3C) 32-bit objects.
+Stub application that is employed to
+.BR dldump "(3C) 32-bit objects."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/64/lddstub\fR
+.B /usr/lib/64/lddstub
 .ad
 .sp .6
 .RS 4n
-Stub application that is employed to \fBdldump\fR(3C) 64-bit objects.
+Stub application that is employed to
+.BR dldump "(3C) 64-bit objects."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/libcrle.so.1\fR
+.B /usr/lib/libcrle.so.1
 .ad
 .sp .6
 .RS 4n
-Audit library that is employed to \fBdldump\fR(3C) 32-bit objects.
+Audit library that is employed to
+.BR dldump "(3C) 32-bit objects."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/64/libcrle.so.1\fR
+.B /usr/lib/64/libcrle.so.1
 .ad
 .sp .6
 .RS 4n
-Audit library that is employed to \fBdldump\fR(3C) 64-bit objects.
+Audit library that is employed to
+.BR dldump "(3C) 64-bit objects."
 .RE
 
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-There are no environment variables that are referenced by \fBcrle\fR. However,
+There are no environment variables that are referenced by
+.BR crle .
+However,
 several environment variables affect the runtime linkers behavior in regard to
-the processing of configuration files that are created by \fBcrle\fR.
+the processing of configuration files that are created by
+.BR crle .
 .sp
 .ne 2
 .mk
 .na
-\fBLD_CONFIG\fR, \fBLD_CONFIG_32\fR and \fBLD_CONFIG_64\fR
+.BR LD_CONFIG ,
+\fBLD_CONFIG_32\fR and \fBLD_CONFIG_64\fR
 .ad
 .sp .6
 .RS 4n
@@ -986,7 +1234,8 @@ Provide an alternative configuration file.
 .ne 2
 .mk
 .na
-\fBLD_NOCONFIG\fR, \fBLD_NOCONFIG_32\fR and \fBLD_NOCONFIG_64\fR
+.BR LD_NOCONFIG ,
+\fBLD_NOCONFIG_32\fR and \fBLD_NOCONFIG_64\fR
 .ad
 .sp .6
 .RS 4n
@@ -997,8 +1246,9 @@ Disable configuration file processing.
 .ne 2
 .mk
 .na
-\fBLD_NODIRCONFIG\fR, \fBLD_NODIRCONFIG_32\fR and
-\fBLD_NODIRCONFIG_64\fR
+.BR LD_NODIRCONFIG ,
+\fBLD_NODIRCONFIG_32\fR and
+.B LD_NODIRCONFIG_64
 .ad
 .sp .6
 .RS 4n
@@ -1009,8 +1259,9 @@ Disable directory cache processing from a configuration file.
 .ne 2
 .mk
 .na
-\fBLD_NOENVCONFIG\fR, \fBLD_NOENVCONFIG_32\fR and
-\fBLD_NOENVCONFIG_64\fR
+.BR LD_NOENVCONFIG ,
+\fBLD_NOENVCONFIG_32\fR and
+.B LD_NOENVCONFIG_64
 .ad
 .sp .6
 .RS 4n
@@ -1021,7 +1272,8 @@ Disable environment variable processing from a configuration file.
 .ne 2
 .mk
 .na
-\fBLD_NOOBJALTER\fR, \fBLD_NOOBJALTER_32\fR and \fBLD_NOOBJALTER_64\fR
+.BR LD_NOOBJALTER ,
+\fBLD_NOOBJALTER_32\fR and \fBLD_NOOBJALTER_64\fR
 .ad
 .sp .6
 .RS 4n
@@ -1031,7 +1283,9 @@ Disable alternative object processing from a configuration file.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes.
+See
+.BR attributes (5)
+for descriptions of the following attributes.
 .sp
 
 .sp
@@ -1050,8 +1304,11 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBfile\fR(1), \fBld\fR(1), \fBld.so.1\fR(1), \fBdldump\fR(3C),
-\fBtempnam\fR(3C), \fBattributes\fR(5)
+\fBfile\fR(1), \fBld\fR(1),
+.BR ld.so.1 (1),
+.BR dldump (3C),
+.BR tempnam (3C),
+.BR attributes (5)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide

@@ -43,7 +43,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIbp\fR
+.I bp
 .ad
 .RS 6n
 .rt
@@ -53,34 +53,58 @@ Pointer to a \fBbuf\fR(9S) structure.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBbiodone()\fR function notifies blocked processes waiting for the\fB
+The
+.B biodone()
+function notifies blocked processes waiting for the\fB
 I/O\fR to complete, sets the \fBB_DONE\fR flag in the \fBb_flags\fR field of
-the \fBbuf\fR(9S) structure, and releases the buffer if the \fBI/O\fR is
-asynchronous. \fBbiodone()\fR is called by either the driver interrupt or
-\fBstrategy\fR(9E) routines when a buffer \fBI/O\fR request is complete.
+the \fBbuf\fR(9S) structure, and releases the buffer if the
+.B I/O
+is
+asynchronous.
+.B biodone()
+is called by either the driver interrupt or
+.BR strategy (9E)
+routines when a buffer
+.B I/O
+request is complete.
 .sp
 .LP
-The \fBbiodone()\fR function provides the capability to call a completion
-routine if \fIbp\fR describes a kernel buffer. The address of the routine is
-specified in the \fBb_iodone\fR field of the \fBbuf\fR(9S) structure. If
-such a routine is specified, \fBbiodone()\fR calls it and returns without
+The
+.B biodone()
+function provides the capability to call a completion
+routine if
+.I bp
+describes a kernel buffer. The address of the routine is
+specified in the
+.B b_iodone
+field of the \fBbuf\fR(9S) structure. If
+such a routine is specified,
+.B biodone()
+calls it and returns without
 performing any other actions. Otherwise, it performs the steps above.
 .SH CONTEXT
 .sp
 .LP
-The \fBbiodone()\fR function can be called from user, interrupt, or kernel
+The
+.B biodone()
+function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .sp
 .LP
 Generally, the first validation test performed by any block device
-\fBstrategy\fR(9E) routine is a check for an end-of-file (\fBEOF\fR)
+.BR strategy (9E)
+routine is a check for an end-of-file (\fBEOF\fR)
 condition. The \fBstrategy\fR(9E) routine is responsible for determining an
 \fBEOF\fR condition when the device is accessed directly. If a \fBread\fR(2)
 request is made for one block beyond the limits of the device (line 10), it
-will report an \fBEOF\fR condition.  Otherwise, if the request is outside
+will report an
+.B EOF
+condition.  Otherwise, if the request is outside
 the limits of the device, the routine will report an error condition.  In
-either case, report the \fBI/O\fR operation as complete (line 27).
+either case, report the
+.B I/O
+operation as complete (line 27).
 .sp
 .in +2
 .nf
@@ -125,22 +149,35 @@ either case, report the \fBI/O\fR operation as complete (line 27).
 .SH SEE ALSO
 .sp
 .LP
-\fBread\fR(2), \fBstrategy\fR(9E), \fBbiowait\fR(9F),
-\fBddi_add_intr\fR(9F), \fBdelay\fR(9F), \fBtimeout\fR(9F),
-\fBuntimeout\fR(9F), \fBbuf\fR(9S)
+.BR read (2),
+.BR strategy (9E),
+.BR biowait (9F),
+.BR ddi_add_intr (9F),
+.BR delay (9F),
+.BR timeout (9F),
+.BR untimeout (9F),
+\fBbuf\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-After calling \fBbiodone()\fR, \fIbp\fR is no longer available to be
+After calling
+.BR biodone() ,
+\fIbp\fR is no longer available to be
 referred to by the driver. If the driver makes any reference to \fIbp\fR
-after calling \fBbiodone()\fR, a panic may result.
+after calling
+.BR biodone() ,
+a panic may result.
 .SH NOTES
 .sp
 .LP
-Drivers that use the \fBb_iodone\fR field of the \fBbuf\fR(9S) structure to
+Drivers that use the
+.B b_iodone
+field of the \fBbuf\fR(9S) structure to
 specify a substitute completion routine should save the value of
 \fBb_iodone\fR before changing it, and then restore the old value before
-calling \fBbiodone()\fR to release the buffer.
+calling
+.B biodone()
+to release the buffer.

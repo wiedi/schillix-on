@@ -50,28 +50,44 @@ plgrp \- observe and affect home lgroup and lgroup affinities of threads
 affinities for one or more processes, threads, or LWPs.
 .sp
 .LP
-An \fBlgroup\fR represents the set of CPU and memory-like hardware devices
+An
+.B lgroup
+represents the set of CPU and memory-like hardware devices
 that are at most some distance (latency) apart from each other. Each
 \fBlgroup\fR in the system is identified by a unique \fBlgroup\fR ID. The
 \fBlgroups\fR are organized into a hierarchy to facilitate finding the
-nearest resources (see lgrpinfo(1) for more about \fBlgroups\fR and the
+nearest resources (see lgrpinfo(1) for more about
+.B lgroups
+and the
 \fBlgroup\fR hierarchy).
 .sp
 .LP
-By default, each thread is assigned a home \fBlgroup\fR upon creation. When
+By default, each thread is assigned a home
+.B lgroup
+upon creation. When
 the system needs to allocate a CPU or memory resource for a thread, it
-searches the lgroup hierarchy from the thread's home \fBlgroup\fR for the
+searches the lgroup hierarchy from the thread's home
+.B lgroup
+for the
 nearest available resources to the thread's home.
 .sp
 .LP
-Typically, the home \fBlgroup\fR for a thread is the lgroup for which the
+Typically, the home
+.B lgroup
+for a thread is the lgroup for which the
 thread has the most affinity. Initially, the system chooses a home
 \fBlgroup\fR for each thread, but leaves the thread's affinity for that
-\fBlgroup\fR set to \fBnone\fR. If a thread sets a stronger affinity for an
+\fBlgroup\fR set to
+.BR none .
+If a thread sets a stronger affinity for an
 lgroup in its processor set other than its home, the thread is rehomed to
 that lgroup as long as the thread is not bound to a CPU. The thread can be
-re-homed to the \fBlgroup\fR in its processor set with the next highest
-affinity when the affinity (if any) for its home \fBlgroup\fR is removed
+re-homed to the
+.B lgroup
+in its processor set with the next highest
+affinity when the affinity (if any) for its home
+.B lgroup
+is removed
 (set to \fBnone\fR).
 .sp
 .LP
@@ -98,28 +114,36 @@ following:
 
 .sp
 .LP
-The \fBall\fR keyword represents all lgroup IDs in the system. The
-\fBroot\fR keyword represents the ID of the root \fBlgroup\fR. The
-\fBleaves\fR keyword represents the IDs of all \fBleaf\fR \fBlgroups\fR,
+The
+.B all
+keyword represents all lgroup IDs in the system. The
+\fBroot\fR keyword represents the ID of the root
+.BR lgroup .
+The
+\fBleaves\fR keyword represents the IDs of all \fBleaf lgroups\fR,
 that is, lgroups which do not have any children.
 .SS "Specifying Processes and Threads"
 .sp
 .LP
 \fBplgrp\fR takes one or more space separated processes or threads as
 arguments. Processes and threads can be specified in a manner similiar to
-the \fBproc\fR(1) tools. A process ID may be specified as an integer
+the
+.BR proc (1)
+tools. A process ID may be specified as an integer
 \fIpid\fR or \fB/proc/\fIpid\fR. Shell expansions can be used to specify
 processes when \fB/proc/\fIpid\fR is used. For example, \fB/proc/*\fR can
 be used to specify all the processes in the system. If a process ID is given
 alone, then all the threads of the process are included as arguments to
-\fBplgrp\fR.
+.BR plgrp .
 .sp
 .LP
 A thread can be explicitly specified with its process ID and thread ID
 given together as \fIpid\fB/\fIlwpid\fR. Multiple threads of a process
 can be selected at once by using the hyphen (\fB-\fR) and comma(\fB,\fR).
 For example, \fIpid\fB/1,2,7-9\fR specifies threads 1, 2, 7, 8, and 9 of
-the process with \fIpid\fR as its process ID.
+the process with
+.I pid
+as its process ID.
 .SH OPTIONS
 .sp
 .LP
@@ -132,21 +156,24 @@ The following options are supported:
 .ad
 .sp .6
 .RS 4n
-Display \fBlgroup\fR affinities of specified processes or threads for the
-specified \fIlgroup_list\fR.
+Display
+.B lgroup
+affinities of specified processes or threads for the
+specified
+.IR lgroup_list .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-A\fR
+.B -A
 \fIlgroup_list\fB/\fInone\fB|\fIweak\fB|\fIstrong\fB[,.\|.\|.]\fR
 .ad
 .sp .6
 .RS 4n
 Set affinity of specified processes or threads for the specified
-\fIlgroup_list\fR. 
+.IR lgroup_list .
 .sp
 A comma separated list of \fIlgroups\fB/\fIaffinity\fR assignments
 can be given to set several affinities at once.
@@ -156,27 +183,33 @@ can be given to set several affinities at once.
 .ne 2
 .mk
 .na
-\fB-F\fR
+.B -F
 .ad
 .sp .6
 .RS 4n
 Force by grabbing the target process even if another process has control.
-Caution should be exercised when using the \fB-F\fR flag. Imposing two
+Caution should be exercised when using the
+.B -F
+flag. Imposing two
 controlling processes on one victim process can lead to chaos. Safety is
 assured only when the primary controlling process (typically a debugger) has
 stopped the victim process, but isn't doing anything during the application
-of this proc tool. See \fBWARNINGS\fR for more details.
+of this proc tool. See
+.B WARNINGS
+for more details.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-h\fR
+.B -h
 .ad
 .sp .6
 .RS 4n
-Get home \fBlgroup\fR of specified processes and/or threads. If no options
+Get home
+.B lgroup
+of specified processes and/or threads. If no options
 are specified, this is the default.
 .RE
 
@@ -188,11 +221,19 @@ are specified, this is the default.
 .ad
 .sp .6
 .RS 4n
-Set home \fBlgroup\fR of specified processes and threads.
+Set home
+.B lgroup
+of specified processes and threads.
 .sp
 This sets a strong affinity for the desired lgroup to rehome the threads.
-If more than one \fBlgroup\fR is specified, \fBplgrp\fR tries to home the
-threads to the \fBlgroups\fR in a round robin fashion.
+If more than one
+.B lgroup
+is specified,
+.B plgrp
+tries to home the
+threads to the
+.B lgroups
+in a round robin fashion.
 .RE
 
 .SH OPERANDS
@@ -203,7 +244,7 @@ The following operands are supported:
 .ne 2
 .mk
 .na
-\fIlwps\fR
+.I lwps
 .ad
 .RS 8n
 .rt
@@ -214,7 +255,7 @@ Specifies thread. See \fBUSAGE\fR.
 .ne 2
 .mk
 .na
-\fIpid\fR
+.I pid
 .ad
 .RS 8n
 .rt
@@ -223,10 +264,12 @@ Specifies process ID. See \fBUSAGE\fR.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRGetting the Home \fBlgroup\fR for the Shell
+\fBExample 1\fR Getting the Home \fBlgroup\fR for the Shell
 .sp
 .LP
-The following example gets the home \fBlgroup\fR for the shell:
+The following example gets the home
+.B lgroup
+for the shell:
 
 .sp
 .in +2
@@ -239,12 +282,16 @@ PID/LWPID    HOME
 .sp
 
 .LP
-\fBExample 2 \fRSetting the Home \fBlgroup\fR of Multiple Threads to the
-Root \fBlgroup\fR
+\fBExample 2\fR Setting the Home \fBlgroup\fR of Multiple Threads to the
+Root
+.BR lgroup
 .sp
 .LP
-The following example sets the home \fBlgroup\fR of multiple threads to the
-root \fBlgroup\fR:
+The following example sets the home
+.B lgroup
+of multiple threads to the
+root
+.BR lgroup :
 
 .sp
 .in +2
@@ -265,7 +312,7 @@ root \fBlgroup\fR:
 .sp
 
 .LP
-\fBExample 3 \fRGetting Two Threads' Affinities for \fBlgroups 0-2\fR
+\fBExample 3\fR Getting Two Threads' Affinities for \fBlgroups 0-2\fR
 .sp
 .LP
 The following example gets two threads' affinities for \fBlgroups 1-2\fR:
@@ -282,7 +329,7 @@ PID/LWPID    HOME  AFFINITY
 .sp
 
 .LP
-\fBExample 4 \fRSetting \fBlgroup\fR Affinities
+\fBExample 4\fR Setting \fBlgroup\fR Affinities
 .sp
 .LP
 The following example sets lgroup affinities:
@@ -305,7 +352,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -316,7 +363,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -327,7 +374,7 @@ Syntax error. Nothing was changed.
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .RS 5n
 .rt
@@ -337,7 +384,9 @@ Non-fatal error or interrupt. Something might have changed.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -359,15 +408,25 @@ The command syntax is Unstable. The output formats are Unstable.
 .SH SEE ALSO
 .sp
 .LP
-\fBlgrpinfo\fR(1), \fBmadv.so.1\fR(1), \fBpmadvise\fR(1), \fBpmap\fR(1),
-\fBproc\fR(1), \fBps\fR(1), \fBprstat\fR(1M),
+\fBlgrpinfo\fR(1), \fBmadv.so.1\fR(1),
+.BR pmadvise (1),
+.BR pmap (1),
+.BR proc (1),
+.BR ps (1),
+.BR prstat (1M),
 \fBlgrp_affinity_get\fR(3LGRP), \fBlgrp_affinity_set\fR(3LGRP),
-\fBlgrp_home\fR(3LGRP), \fBliblgrp\fR(3LIB), \fBproc\fR(4),
-\fBattributes\fR(5)
+.BR lgrp_home (3LGRP),
+.BR liblgrp (3LIB),
+.BR proc (4),
+.BR attributes (5)
 .SH WARNINGS
 .sp
 .LP
-Like the \fBproc\fR(1) tools, the \fBplgrp\fR utility stops its target
+Like the
+.BR proc (1)
+tools, the
+.B plgrp
+utility stops its target
 processes while inspecting them and reports the results when invoked with
 any option.
 .sp
@@ -377,7 +436,8 @@ nothing while it is stopped. Stopping a heavily used process in a production
 environment (even for a short amount of time) can cause severe bottlenecks
 and even hangs of these processes, making them to be unavailable to users.
 Thus, stopping a UNIX process in a production environment should be avoided.
-See \fBproc\fR(1).
+See
+.BR proc (1).
 .sp
 .LP
 A process that is stopped by this tool might be identified by issuing the
@@ -392,6 +452,12 @@ following command:
 
 .sp
 .LP
-and looking for a \fBT\fR in the first column of the output. Certain
-processes, for example, \fBsched\fR, can show the \fBT\fR status by default
+and looking for a
+.B T
+in the first column of the output. Certain
+processes, for example,
+.BR sched ,
+can show the
+.B T
+status by default
 most of the time.

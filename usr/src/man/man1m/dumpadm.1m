@@ -32,14 +32,18 @@ dumpadm \- configure operating system crash dump
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdumpadm\fR program is an administrative command that manages the
+The
+.B dumpadm
+program is an administrative command that manages the
 configuration of the operating system crash dump facility. A crash dump is a
 disk copy of the physical memory of the computer at the time of a fatal
 system error. When a fatal operating system error occurs, a message
 describing the error is printed to the console. The operating system then
 generates a crash dump by writing the contents of physical memory to a
 predetermined dump device, which is typically a local disk partition. The
-dump device can be configured by way of \fBdumpadm\fR. Once the crash dump
+dump device can be configured by way of
+.BR dumpadm .
+Once the crash dump
 has been written to the dump device, the system will reboot.
 .sp
 .LP
@@ -51,10 +55,17 @@ such, it is vital that the crash dump be retrieved and given to your support
 provider. Following an operating system crash, the \fBsavecore\fR(1M)
 utility is executed automatically during boot to retrieve the crash dump
 from the dump device, and write it to a pair of files in your file system
-named \fIunix.X\fR and \fIvmcore.X\fR, where X is an integer identifying the
-dump. Together, these data files form the \fIsaved crash dump\fR. The
+named
+.I unix.X
+and
+.IR vmcore.X ,
+where X is an integer identifying the
+dump. Together, these data files form the
+.IR "saved crash dump" .
+The
 directory in which the crash dump is saved on reboot can also be configured
-using \fBdumpadm\fR.
+using
+.BR dumpadm .
 .sp
 .LP
 For systems with a UFS root file system, the default dump device is
@@ -81,17 +92,25 @@ Savecore directory: /var/crash/saturn
 
 .sp
 .LP
-When no options are specified, \fBdumpadm\fR prints the current crash dump
+When no options are specified,
+.B dumpadm
+prints the current crash dump
 configuration. The example shows the set of default values: the dump content
 is set to kernel memory pages only, the dump device is a swap disk
-partition, the directory for \fBsavecore\fR files is set to
+partition, the directory for
+.B savecore
+files is set to
 \fB/var/crash/\fBhostname\fB,\fR and \fBsavecore\fR is set to run
 automatically on reboot.
 .sp
 .LP
-When one or more options are specified, \fBdumpadm\fR verifies that your
+When one or more options are specified,
+.B dumpadm
+verifies that your
 changes are valid, and if so, reconfigures the crash dump parameters and
-displays the resulting configuration. You must be \fBroot\fR to view or
+displays the resulting configuration. You must be
+.B root
+to view or
 change dump parameters.
 .SH OPTIONS
 .sp
@@ -111,7 +130,7 @@ specified dump content. The content should be one of the following:
 .ne 2
 .mk
 .na
-\fBkernel\fR
+.B kernel
 .ad
 .sp .6
 .RS 4n
@@ -122,7 +141,7 @@ Kernel memory pages only.
 .ne 2
 .mk
 .na
-\fBall\fR
+.B all
 .ad
 .sp .6
 .RS 4n
@@ -133,7 +152,7 @@ All memory pages.
 .ne 2
 .mk
 .na
-\fBcurproc\fR
+.B curproc
 .ad
 .sp .6
 .RS 4n
@@ -159,7 +178,7 @@ device may one of the following:
 .ne 2
 .mk
 .na
-\fIdump-device\fR
+.I dump-device
 .ad
 .sp .6
 .RS 4n
@@ -173,16 +192,24 @@ when the system is running a ZFS root file system.
 .ne 2
 .mk
 .na
-\fBswap\fR
+.B swap
 .ad
 .sp .6
 .RS 4n
-If the special token \fBswap\fR is specified as the dump device,
+If the special token
+.B swap
+is specified as the dump device,
 \fBdumpadm\fR examines the  active swap entries and selects the most
 appropriate entry to configure as the dump device. See \fBswap\fR(1M). Refer
-to the \fBNOTES\fR  below for details of the algorithm  used to select an
+to the
+.B NOTES
+below for details of the algorithm  used to select an
 appropriate swap entry. When the system is first installed with a UFS root
-file system, \fBdumpadm\fR uses the value for \fBswap\fR to determine the
+file system,
+.B dumpadm
+uses the value for
+.B swap
+to determine the
 initial dump device setting. A given ZFS volume cannot be configured for
 both the swap area and the dump device.
 .RE
@@ -198,36 +225,42 @@ both the swap area and the dump device.
 .sp .6
 .RS 4n
 Create a \fBminfree\fR file in the current savecore directory indicating
-that \fBsavecore\fR should maintain at least the specified amount of free
+that
+.B savecore
+should maintain at least the specified amount of free
 space in the file system where the savecore directory is located. The
 \fBmin\fR argument can be one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBk\fR
+.B k
 .ad
 .sp .6
 .RS 4n
-A positive integer suffixed with the unit \fBk\fR specifying kilobytes.
+A positive integer suffixed with the unit
+.B k
+specifying kilobytes.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBm\fR
+.B m
 .ad
 .sp .6
 .RS 4n
-A positive integer suffixed with the unit \fBm\fR specifying megabytes.
+A positive integer suffixed with the unit
+.B m
+specifying megabytes.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB%\fR
+.B %
 .ad
 .sp .6
 .RS 4n
@@ -236,27 +269,37 @@ the specified percentage of the total current size of the file system
 containing the savecore directory.
 .RE
 
-The \fBsavecore\fR command will consult the \fBminfree\fR file, if present,
+The
+.B savecore
+command will consult the \fBminfree\fR file, if present,
 prior to writing the dump files. If the size of these files would decrease
 the amount of free disk space below the \fBminfree\fR threshold, no dump
 files are written and an error message is logged. The administrator should
 immediately clean up the savecore directory to provide adequate free space,
-and re-execute the \fBsavecore\fR command manually. The administrator can
-also specify an alternate directory on the \fBsavecore\fR command-line.
+and re-execute the
+.B savecore
+command manually. The administrator can
+also specify an alternate directory on the
+.B savecore
+command-line.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .sp .6
 .RS 4n
-Modify the dump configuration to not run \fBsavecore\fR automatically on
+Modify the dump configuration to not run
+.B savecore
+automatically on
 reboot. This is not the recommended system configuration; if the dump device
 is a swap partition, the dump data will be overwritten as the system begins
-to swap. If \fBsavecore\fR is not executed shortly after boot, crash dump
+to swap. If
+.B savecore
+is not executed shortly after boot, crash dump
 retrieval may not be possible.
 .RE
 
@@ -268,9 +311,15 @@ retrieval may not be possible.
 .ad
 .sp .6
 .RS 4n
-Specify an alternate root directory relative to which \fBdumpadm\fR should
-create files. If no \fB-r\fR argument is specified, the default root
-directory \fB/\fR is used.
+Specify an alternate root directory relative to which
+.B dumpadm
+should
+create files. If no
+.B -r
+argument is specified, the default root
+directory
+.B /
+is used.
 .RE
 
 .sp
@@ -282,26 +331,37 @@ directory \fB/\fR is used.
 .sp .6
 .RS 4n
 Modify the dump configuration to use the specified directory to save files
-written by \fBsavecore\fR. The directory should be an absolute path and
+written by
+.BR savecore .
+The directory should be an absolute path and
 exist on the system. If upon reboot the directory does not exist, it will be
-created prior to the execution of \fBsavecore\fR. See the \fBNOTES\fR
+created prior to the execution of
+.BR savecore .
+See the
+.BR NOTES
 section below for a discussion of security issues relating to access to the
 savecore directory. The default savecore directory is
 \fB/var/crash/\fIhostname\fR where \fIhostname\fR is the output of the
-\fB-n\fR option to the \fBuname\fR(1) command.
+\fB-n\fR option to the
+.BR uname (1)
+command.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .sp .6
 .RS 4n
 Forcibly update the kernel dump configuration based on the contents of
 \fB/etc/dumpadm.conf\fR. Normally this option is used only on reboot when
-starting \fBsvc:/system/dumpadm:default\fR, when the \fBdumpadm\fR settings
+starting
+.BR svc:/system/dumpadm:default ,
+when the
+.B dumpadm
+settings
 from the previous boot must be restored. Your dump configuration is saved in
 the configuration file for this purpose. If the configuration file is
 missing or contains invalid values for any dump properties, the default
@@ -313,17 +373,19 @@ resynchronized with the kernel dump configuration.
 .ne 2
 .mk
 .na
-\fB-y\fR
+.B -y
 .ad
 .sp .6
 .RS 4n
-Modify the dump configuration to automatically run \fBsavecore\fR on
+Modify the dump configuration to automatically run
+.B savecore
+on
 reboot. This is the default for this dump setting.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRReconfiguring The Dump Device To A Dedicated Dump Device:
+\fBExample 1\fR Reconfiguring The Dump Device To A Dedicated Dump Device:
 .sp
 .LP
 The following command reconfigures the dump device to a dedicated dump
@@ -350,7 +412,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .sp .6
 .RS 4n
@@ -362,7 +424,7 @@ made successfully.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .sp .6
 .RS 4n
@@ -374,7 +436,7 @@ configuration.
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .sp .6
 .RS 4n
@@ -386,7 +448,7 @@ Invalid command line options were specified.
 .ne 2
 .mk
 .na
-\fB/dev/dump\fR
+.B /dev/dump
 .ad
 .sp .6
 .RS 4n
@@ -401,7 +463,9 @@ Dump device.
 .ad
 .sp .6
 .RS 4n
-Contains configuration parameters for \fBdumpadm\fR. Modifiable only
+Contains configuration parameters for
+.BR dumpadm .
+Modifiable only
 through that command.
 .RE
 
@@ -413,14 +477,18 @@ through that command.
 .ad
 .sp .6
 .RS 4n
-Contains minimum amount of free space for \fIsavecore-directory\fR. See
-\fBsavecore\fR(1M).
+Contains minimum amount of free space for
+.IR savecore-directory .
+See
+.BR savecore (1M).
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -437,13 +505,20 @@ AvailabilitySUNWcsr
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBuname\fR(1), \fBsavecore\fR(1M), \fBsvcadm\fR(1M),
-\fBswap\fR(1M), \fBattributes\fR(5), \fBsmf\fR(5)
+.BR svcs (1),
+.BR uname (1),
+.BR savecore (1M),
+.BR svcadm (1M),
+.BR swap (1M),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
 The system crash dump service is managed by the service management
-facility, \fBsmf\fR(5), under the service identifier:
+facility,
+.BR smf (5),
+under the service identifier:
 .sp
 .in +2
 .nf
@@ -455,14 +530,22 @@ svc:/system/dumpadm:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.
 .SS "Dump Device Selection"
 .sp
 .LP
-When the special \fBswap\fR token is specified as the argument to
-\fBdumpadm\fR \fB-d\fR the utility will attempt to configure the most
-appropriate swap device as the dump device. \fBdumpadm\fR configures the
+When the special
+.B swap
+token is specified as the argument to
+\fBdumpadm -d\fR the utility will attempt to configure the most
+appropriate swap device as the dump device.
+.B dumpadm
+configures the
 largest swap block device as the dump device; if no block devices are
 available for swap, the largest swap entry is configured as the dump device.
 If no swap entries are present, or none can be configured as the dump
@@ -472,40 +555,60 @@ files can be configured as the dump device, this is not recommended.
 .sp
 .LP
 In the event that the dump device is also a swap device, and the swap
-device is deleted by the administrator using the \fBswap\fR \fB-d\fR
-command, the \fBswap\fR command will automatically invoke \fBdumpadm\fR
-\fB-d\fR \fBswap\fR in order to attempt to configure another appropriate
+device is deleted by the administrator using the
+.BR "swap -d"
+command, the
+.B swap
+command will automatically invoke
+.BR dumpadm
+\fB-d swap\fR in order to attempt to configure another appropriate
 swap device as the dump device. If no swap devices remain or none can be
 configured as the dump device, the crash dump will be disabled and a warning
 message will be displayed. Similarly, if the crash dump is disabled and the
-administrator adds a new swap device using the \fBswap\fR \fB-a\fR command,
-\fBdumpadm\fR \fB-d\fR \fBswap\fR will be invoked to re-enable the crash
+administrator adds a new swap device using the
+.B "swap -a"
+command,
+.B "dumpadm -d"
+.B swap
+will be invoked to re-enable the crash
 dump using the new swap device.
 .sp
 .LP
-Once \fBdumpadm\fR \fB-d\fR \fBswap\fR has been issued, the new dump device
+Once
+.B "dumpadm -d"
+\fBswap\fR has been issued, the new dump device
 is stored in the configuration file for subsequent reboots. If a larger or
 more appropriate swap device is added by the administrator, the dump device
-is not changed; the administrator must re-execute \fBdumpadm\fR \fB-d\fR
+.RB "is not changed; the administrator must re-execute" " dumpadm -d"
 \fBswap\fR to reselect the most appropriate device fom the new list of swap
 devices.
 .SS "Minimum Free Space"
 .sp
 .LP
-If the \fBdumpadm\fR \fB-m\fR option is used to create a \fBminfree\fR file
+If the
+.B "dumpadm -m"
+option is used to create a \fBminfree\fR file
 based on a percentage of the total size of the file system containing the
 savecore directory, this value is not automatically recomputed if the file
 system subsequently changes size.  In this case, the administrator must
-re-execute \fBdumpadm\fR \fB-m\fR to recompute the \fBminfree\fR value. If
-no such file exists in the savecore directory, \fBsavecore\fR will default
+re-execute
+.B "dumpadm -m"
+to recompute the \fBminfree\fR value. If
+no such file exists in the savecore directory,
+.B savecore
+will default
 to a free space threshold of one megabyte. If no free space threshold is
 desired, a minfree file containing size 0 can be created.
 .SS "Security Issues"
 .sp
 .LP
 If, upon reboot, the specified savecore directory is not present, it will
-be created prior to the execution of \fBsavecore\fR with permissions 0700
-(read, write, execute by owner only) and owner \fBroot\fR. It is recommended
+be created prior to the execution of
+.B savecore
+with permissions 0700
+(read, write, execute by owner only) and owner
+.BR root .
+It is recommended
 that alternate savecore directories also be created with similar
 permissions, as the operating system crash dump files themselves may contain
 secure information.

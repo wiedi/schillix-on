@@ -89,7 +89,9 @@ getopt \- command option parsing
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgetopt()\fR function is a command line parser that can be used by
+The
+.B getopt()
+function is a command line parser that can be used by
 applications that follow Basic Utility Syntax Guidelines 3, 4, 5, 6, 7, 9,
 and 10 which parallel those defined by application portability standards
 (see intro(1)). It can also be used by applications which additionally
@@ -100,12 +102,24 @@ associated with an option.  The remaining guidelines are not addressed by
 \fBgetopt()\fR and are the responsibility of the application.
 .sp
 .LP
-The \fIargc\fR and \fIargv\fR arguments are the argument count and argument
-array as passed to main (see \fBexec\fR(2)). The \fIoptstring\fR argument
+The
+.I argc
+and
+.I argv
+arguments are the argument count and argument
+array as passed to main (see
+.BR exec (2)).
+The
+.I optstring
+argument
 specifies the acceptable options. For utilities wanting to conform to the
-Basic Utility Syntax Guidelines, \fIoptstring\fR is a string of recognized
+Basic Utility Syntax Guidelines,
+.I optstring
+is a string of recognized
 option characters. All option characters allowed by Utility Syntax Guideline
-3 are allowed in \fIoptstring\fR. If a character is followed by a colon (:),
+3 are allowed in
+.IR optstring .
+If a character is followed by a colon (:),
 the option is expected to have an option-argument, which can be separated
 from it by white space.  Utilities wanting to conform to the extended CLIP
 guidelines can specify long-option equivalents to short options by following
@@ -113,13 +127,25 @@ the short-option character (and optional colon) with a sequence of strings,
 each enclosed in parentheses, that specify the long-option aliases.
 .sp
 .LP
-The \fBgetopt()\fR function returns the short-option character in
+The
+.B getopt()
+function returns the short-option character in
 \fIoptstring\fR that corresponds to the next option found in \fIargv\fR.
 .sp
 .LP
-The \fBgetopt()\fR function places in \fIoptind\fR the \fIargv\fR index of
-the next argument to be processed. The \fIoptind\fR variable is external and
-is initialized to 1 before the first call to \fBgetopt()\fR. The
+The
+.B getopt()
+function places in
+.I optind
+the
+.I argv
+index of
+the next argument to be processed. The
+.I optind
+variable is external and
+is initialized to 1 before the first call to
+.BR getopt() .
+The
 \fBgetopt()\fR function sets the variable \fIoptarg\fR to point to the start
 of the option-argument as follows:
 .RS +4
@@ -127,7 +153,11 @@ of the option-argument as follows:
 .ie t \(bu
 .el o
 If the option is a short option and that character is the last character in
-the argument, then \fIoptarg\fR contains the next element of \fIargv\fR, and
+the argument, then
+.I optarg
+contains the next element of
+.IR argv ,
+and
 \fIoptind\fR is incremented by 2.
 .RE
 .RS +4
@@ -135,8 +165,12 @@ the argument, then \fIoptarg\fR contains the next element of \fIargv\fR, and
 .ie t \(bu
 .el o
 If the option is a short option and that character is not the last
-character in the argument, then \fIoptarg\fR points to the string following
-the option character in that argument, and \fIoptind\fR is incremented by
+character in the argument, then
+.I optarg
+points to the string following
+the option character in that argument, and
+.I optind
+is incremented by
 1.
 .RE
 .RS +4
@@ -144,7 +178,11 @@ the option character in that argument, and \fIoptind\fR is incremented by
 .ie t \(bu
 .el o
 If the option is a long option and the character equals is not found in the
-argument, then \fIoptarg\fR contains the next element of \fIargv\fR, and
+argument, then
+.I optarg
+contains the next element of
+.IR argv ,
+and
 \fIoptind\fR is incremented by 2.
 .RE
 .RS +4
@@ -152,13 +190,20 @@ argument, then \fIoptarg\fR contains the next element of \fIargv\fR, and
 .ie t \(bu
 .el o
 If the option is a long option and the character equals is found in the
-argument, then \fIoptarg\fR points to the string following the equals
-character in that argument and \fIoptind\fR is incremented by 1.
+argument, then
+.I optarg
+points to the string following the equals
+character in that argument and
+.I optind
+is incremented by 1.
 .RE
 .sp
 .LP
-In all cases, if the resulting value of \fIoptind\fR is not less than
-\fIargc\fR, this indicates a missing option-argument and \fBgetopt()\fR
+In all cases, if the resulting value of
+.I optind
+is not less than
+.IR argc ,
+.RB "this indicates a missing option-argument and" " getopt()"
 returns an error indication.
 .sp
 .LP
@@ -169,35 +214,68 @@ and "--" is skipped. This is useful in delimiting non-option arguments that
 begin with "-" (hyphen).
 .sp
 .LP
-If \fBgetopt()\fR encounters a short-option character or a long-option
-string not described in the \fIopstring\fR argument, it returns the
+If
+.B getopt()
+encounters a short-option character or a long-option
+string not described in the
+.I opstring
+argument, it returns the
 question-mark (?) character. If it detects a missing option-argument, it
 also returns the question-mark (?) character, unless the first character of
-the \fIoptstring\fR argument was a colon (:), in which case \fBgetopt()\fR
-returns the colon (:) character. For short options, \fBgetopt()\fR sets the
-variable \fIoptopt\fR to the option character that caused the error. For
-long options, \fIoptopt\fR is set to the hyphen (-) character and the
+the
+.I optstring
+.RB "argument was a colon (:), in which case" " getopt()"
+returns the colon (:) character. For short options,
+.B getopt()
+sets the
+variable
+.I optopt
+to the option character that caused the error. For
+long options,
+.I optopt
+is set to the hyphen (-) character and the
 failing long option can be identified through \fIargv\fR[\fIoptind\fR-1]. If
-the application has not set the variable \fIopterr\fR to 0 and the first
-character of \fIoptstring\fR is not a colon (:), \fBgetopt()\fR also prints
-a diagnostic message to \fBstderr\fR.
+the application has not set the variable
+.I opterr
+to 0 and the first
+character of
+.I optstring
+is not a colon (:),
+.B getopt()
+also prints
+a diagnostic message to
+.BR stderr .
 .SH RETURN VALUES
 .sp
 .LP
-The \fBgetopt()\fR function returns the short-option character associated
+The
+.B getopt()
+function returns the short-option character associated
 with the option recognized.
 .sp
 .LP
-A colon (:) is returned if \fBgetopt()\fR detects a missing argument and
-the first character of \fIoptstring\fR was a colon (:).
+A colon (:) is returned if
+.B getopt()
+detects a missing argument and
+the first character of
+.I optstring
+was a colon (:).
 .sp
 .LP
-A question mark (?) is returned if \fBgetopt()\fR encounters an option not
-specified in \fIoptstring\fR or detects a missing argument and the first
-character of \fIoptstring\fR was not a colon (:).
+A question mark (?) is returned if
+.B getopt()
+encounters an option not
+specified in
+.I optstring
+or detects a missing argument and the first
+character of
+.I optstring
+was not a colon (:).
 .sp
 .LP
-Otherwise, \fBgetopt()\fR returns -1 when all command line options are
+Otherwise,
+.B getopt()
+returns -1 when all command line options are
 parsed.
 .SH ERRORS
 .sp
@@ -205,12 +283,18 @@ parsed.
 No errors are defined.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRParsing Command Line Options
+\fBExample 1\fR Parsing Command Line Options
 .sp
 .LP
 The following code fragment shows how you might process the arguments for a
-utility that can take the mutually-exclusive options \fBa\fR and \fBb\fR and
-the options \fBf\fR and \fBo\fR, both of which require arguments:
+utility that can take the mutually-exclusive options
+.B a
+and
+.B b
+and
+the options \fBf\fR and
+.BR o ,
+both of which require arguments:
 
 .sp
 .in +2
@@ -288,7 +372,7 @@ cmd -aoarg path path
 .in -2
 
 .LP
-\fBExample 2 \fRCheck Options and Arguments.
+\fBExample 2\fR Check Options and Arguments.
 .sp
 .LP
 The following example parses a set of command line options and prints
@@ -332,7 +416,9 @@ while ((c = getopt(argc, argv, ":abf:")) != -1) {
 .sp
 .LP
 This example can be expanded to be CLIP-compliant by substituting the
-following string for the \fIoptstring\fR argument:
+following string for the
+.I optstring
+argument:
 
 .sp
 .in +2
@@ -401,27 +487,36 @@ aliases can also be assigned as shown in the following example:
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-See \fBenviron\fR(5) for descriptions of the following environment
-variables that affect the execution of \fBgetopt()\fR: \fBLANG\fR,
-\fBLC_ALL\fR, and \fBLC_MESSAGES\fR.
+See
+.BR environ (5)
+for descriptions of the following environment
+variables that affect the execution of
+.BR getopt() :
+.BR LANG ,
+.BR LC_ALL ,
+and
+.BR LC_MESSAGES .
 .sp
 .ne 2
 .mk
 .na
-\fBLC_CTYPE\fR
+.B LC_CTYPE
 .ad
 .RS 12n
 .rt
 Determine the locale for the interpretation of sequences of bytes as
-characters in \fIoptstring\fR.
+characters in
+.IR optstring .
 .RE
 
 .SH USAGE
 .sp
 .LP
-The \fBgetopt()\fR function does not fully check for mandatory arguments
+The
+.B getopt()
+function does not fully check for mandatory arguments
 because there is no unambiguous algorithm to do so. Given an option string
-\fBa\fR:\fBb\fR and the input \fB-a\fR \fB-b\fR, \fBgetopt()\fR assumes that
+\fBa\fR:\fBb\fR and the input \fB-a -b\fR, \fBgetopt()\fR assumes that
 \fB-b\fR is the mandatory argument to the \fB-a\fR option and not that
 \fB-a\fR is missing a mandatory argument.  Indeed, the only time a missing
 option-argument can be reliably detected is when the option is the final
@@ -429,10 +524,17 @@ option on the command line and is not followed by any command arguments.
 .sp
 .LP
 It is a violation of the Basic Utility Command syntax standard (see
-\fBIntro\fR(1)) for options with arguments to be grouped with other options,
-as in \fBcmd\fR \fB-abo\fR \fIfilename\fR , where \fBa\fR and \fBb\fR are
-options, \fBo\fR is an option that requires an argument, and \fIfilename\fR
-is the argument to \fBo\fR. Although this syntax is permitted in the current
+.BR Intro (1))
+for options with arguments to be grouped with other options,
+as in
+.B "cmd -abo"
+\fIfilename\fR , where \fBa\fR and \fBb\fR are
+options,
+.B o
+is an option that requires an argument, and \fIfilename\fR
+is the argument to
+.BR o .
+Although this syntax is permitted in the current
 implementation, it should not be used because it may not be supported in
 future releases.  The correct syntax to use is:
 .sp
@@ -446,7 +548,9 @@ cmd \(miab \(mio filename
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -470,6 +574,12 @@ For the Basic Utility Command syntax is Standard, see \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(1), \fBgetopt\fR(1), \fBgetopts\fR(1), \fBgetsubopt\fR(3C),
-\fBgettext\fR(3C), \fBsetlocale\fR(3C), \fBattributes\fR(5),
-\fBenviron\fR(5), \fBstandards\fR(5)
+.BR Intro (1),
+.BR getopt (1),
+.BR getopts (1),
+.BR getsubopt (3C),
+.BR gettext (3C),
+.BR setlocale (3C),
+.BR attributes (5),
+.BR environ (5),
+.BR standards (5)

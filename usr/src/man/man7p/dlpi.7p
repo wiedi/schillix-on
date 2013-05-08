@@ -32,17 +32,25 @@ dlpi \- Data Link Provider Interface
 .LP
 SunOS STREAMS-based device drivers wishing to support the STREAMS \fB
 TCP/IP\fR and other STREAMS-based networking protocol suite implementations
-support Version 2 of the Data Link Provider Interface (\fBDLPI\fR). \fBDLPI
+support Version 2 of the Data Link Provider Interface
+.RB ( DLPI ).
+\fBDLPI
 V2\fR enables a data link service user to access and use any of a variety of
 conforming data link service providers without special knowledge of the
 provider's protocol. Specifically, the interface is intended to support
-Ethernet, \fBX.25 LAPB,\fR \fBSDLC,\fR \fBISDN LAPD,\fR \fBCSMA/CD,\fR
+Ethernet,
+.B "X.25 LAPB,"
+.B "SDLC, ISDN LAPD," CSMA/CD,
 \fBFDDI,\fR token ring, token bus, Bisync, and other datalink-level
 protocols.
 .sp
 .LP
 The interface specifies access to the data link service provider in the
-form of \fBM_PROTO\fR and \fBM_PCPROTO\fR type STREAMS messages and does not
+form of
+.B M_PROTO
+and
+.B M_PCPROTO
+type STREAMS messages and does not
 define a specific protocol implementation. The interface defines the syntax
 and semantics of primitives exchanged between the data link user and the
 data link provider to attach a physical device with physical-level address
@@ -57,7 +65,8 @@ operations.
 .LP
 Solaris conforms to The Open Group Technical Standard for \fIDLPI, Version
 2\fR. For free access to this specification, point your browser to
-\fIwww.opengroup.org/pubs/catalog/c811.htm\fR. Solaris also provides
+.IR www.opengroup.org/pubs/catalog/c811.htm .
+Solaris also provides
 extensions to the DLPI standard, as detailed in this man page.
 .SH SOLARIS-SPECIFIC DLPI EXTENSIONS
 .sp
@@ -68,9 +77,15 @@ extensions to the DLPI standard, as detailed in this man page.
 .ad
 .sp .6
 .RS 4n
-Enables \fBDLPI\fR consumers to register for notification when events of
-interest occur at the \fBDLPI\fR provider. The negotiation can be performed
-on any attached DLPI stream, and begins with the \fBDLPI\fR consumer,
+Enables
+.B DLPI
+consumers to register for notification when events of
+interest occur at the
+.B DLPI
+provider. The negotiation can be performed
+on any attached DLPI stream, and begins with the
+.B DLPI
+consumer,
 sending a DL_NOTIFY_REQ to the provider, which is an M_PROTO message with
 the following payload:
 .sp
@@ -102,10 +117,14 @@ DL_NOTE_PROMISC_OFF_PHYS  Notify when DL_PROMISC_PHYS is cleared
 .in -2
 
 Consumers might find it useful to send a DL_NOTIFY_REQ message with no
-requested types to check if the \fBDLPI\fR provider supports the
+requested types to check if the
+.B DLPI
+provider supports the
 extension.
 .sp
-Upon receiving the DL_NOTIFY_REQ, the \fBDLPI\fR provider must generate a
+Upon receiving the DL_NOTIFY_REQ, the
+.B DLPI
+provider must generate a
 DL_NOTIFY_ACK, which is an M_PROTO message with the following payload:
 .sp
 .in +2
@@ -117,7 +136,9 @@ DL_NOTIFY_ACK, which is an M_PROTO message with the following payload:
 .fi
 .in -2
 
-The \fBdl_primitive\fR field must be set to DL_NOTIFY_ACK. The
+The
+.B dl_primitive
+field must be set to DL_NOTIFY_ACK. The
 \fBdl_notifications\fR field must include any notifications that the
 provider supports, along with any other unrequested notifications that the
 provider supports. However, regardless of the notifications the provider
@@ -125,7 +146,9 @@ supports, it is restricted to sending only DL_NOTIFY_IND messages  (see
 below) that were requested in the DL_NOTIFY_REQ.
 .sp
 Since there are additional notification types which are not yet available
-for public use, \fBDLPI\fR consumers and providers must take care when
+for public use,
+.B DLPI
+consumers and providers must take care when
 inspecting and setting the \fBdl_notifications\fR field. Specifically,
 consumers must be careful to only request the above notification types, and
 providers must be careful to not include any unrecognized notification types
@@ -153,29 +176,45 @@ is an M_PROTO message with the following payload:
 .fi
 .in -2
 
-The \fBdl_primitive\fR field must be set to DL_NOTIFY_IND, and the
+The
+.B dl_primitive
+field must be set to DL_NOTIFY_IND, and the
 \fBdl_notification\fR field must be set to the event type that has occurred
 (for example, DL_NOTE_LINK_DOWN). Only a single event type can be set in
 each DL_NOTIFY_IND.
 .sp
-For the DL_NOTE_SPEED event type, \fBdl_data\fR must be set to the current
+For the DL_NOTE_SPEED event type,
+.B dl_data
+must be set to the current
 interface speed in kilobits per second. For the DL_NOTE_PHYS_ADDR event
 type, dl_data must be set to DL_CURR_PHYS_ADDR. For the DL_NOTE_SDU_SIZE
-event type, \fBdl_data\fR must be set to the current MTU in bytes.
-Otherwise, \fBdl_data\fR must be set to zero.
+event type,
+.B dl_data
+must be set to the current MTU in bytes.
+Otherwise,
+.B dl_data
+must be set to zero.
 .sp
-For the DL_NOTE_PHYS_ADDR event type, the \fBdl_addr_length\fR field must
+For the DL_NOTE_PHYS_ADDR event type, the
+.B dl_addr_length
+field must
 be set to the length of the address, and the \fBdl_addr_offset\fR field must
 be set to offset of the first byte of the address, relative to b_rptr (for
 example, if the address immediately follows the \fBdl_notify_ind\fR
 structure, \fBdl_addr_offset\fR is set to 'sizeof (\fBdl_notify_ind\fR)').
-For all other event types, the \fBdl_addr_length\fR and \fBdl_addr_offset\fR
+For all other event types, the
+.B dl_addr_length
+and \fBdl_addr_offset\fR
 fields must be set to zero by DLPI providers and ignored by DLPI
 consumers.
 .sp
 In addition to generating DL_NOTIFY_IND messages when a requested event has
-occurred, the \fBDLPI\fR provider must initially generate one or more
-DL_NOTIFY_IND messages to notify the \fBDLPI\fR consumer of the the current
+occurred, the
+.B DLPI
+provider must initially generate one or more
+DL_NOTIFY_IND messages to notify the
+.B DLPI
+consumer of the the current
 state of the interface. For instance, if the consumer has requested
 DL_NOTE_LINK_UP | DL_NOTE_LINK_DOWN, the provider must send a DL_NOTIFY_IND
 containing the current state of the link (either DL_NOTE_LINK_UP or
@@ -192,7 +231,9 @@ operations and logging error messages during network interface
 initialization.
 .sp
 The DLPI provider must continue to generate DL_NOTIFY_IND messages until it
-receives a new DL_NOTIFY_REQ message or the \fBDLPI\fR stream is detached
+receives a new DL_NOTIFY_REQ message or the
+.B DLPI
+stream is detached
 (or closed). Further, a DLPI style  2 provider must keep track of the
 requested events after a DL_DETACH_REQ operation, and if a subsequent
 DL_ATTACH_REQ is received, it must send gratuitous DL_NOTIFY_IND  messages
@@ -209,11 +250,14 @@ discarded its previous state).
 .ad
 .sp .6
 .RS 4n
-Solaris link aggregations as configured by \fBdladm\fR(1M) export DLPI
+Solaris link aggregations as configured by
+.BR dladm "(1M) export DLPI"
 nodes for both the link aggregation, and individual links that comprises the
 aggregation, to allow observability of the aggregated links. To allow
-applications such as  \fBsnoop\fR(1M) to open those individual aggregated
-links while disallowing other consumers such as \fBip\fR(7P), DL_PASSIVE_REQ
+applications such as 
+.BR snoop "(1M) to open those individual aggregated"
+links while disallowing other consumers such as
+.BR ip "(7P), DL_PASSIVE_REQ"
 (a DLPI primitive), must be issued by \fBsnoop\fR(1M) and similar
 applications.
 .sp
@@ -230,7 +274,7 @@ typedef struct {
 
 Issuing this primitive allows the consumer of a DLPI link to coexist with a
 link aggregation that also uses the link.  Such a consumer is considered
-\fBpassive\fR.
+.BR passive .
 .sp
 Consumers that don't use this primitive while an aggregation is using the
 link receive DL_SYSERR/EBUSY when issuing the following DLPI primitives:
@@ -248,11 +292,15 @@ DL_SET_PHYS_ADDR_REQ
 .in -2
 
 A consumer that has not issued a DL_PASSIVE_REQ and has successfully issued
-one of the above primitives is considered \fBactive\fR.
+one of the above primitives is considered
+.BR active .
 .sp
 The creation of a link aggregation using \fBdladm\fR(1M) fails if one of
-the links included in the aggregation has an \fBactive\fR consumer, but
-succeeds if the links do not have any DLPI consumers or only \fBpassive\fR
+the links included in the aggregation has an
+.B active
+consumer, but
+succeeds if the links do not have any DLPI consumers or only
+.BR passive
 consumers.
 .RE
 
@@ -260,20 +308,33 @@ consumers.
 .ne 2
 .mk
 .na
-\fBRaw Mode\fR
+.B Raw Mode
 .ad
 .sp .6
 .RS 4n
-The \fBDLIOCRAW\fR ioctl function is used by some DLPI applications, most
-notably the \fBsnoop\fR(1M) command. The \fBDLIOCRAW\fR command puts the
+The
+.B DLIOCRAW
+ioctl function is used by some DLPI applications, most
+notably the
+.BR snoop "(1M) command. The"
+.B DLIOCRAW
+command puts the
 stream into a raw mode, which, upon receive, causes the the full MAC-level
-packet to be sent upstream in an \fBM_DATA\fR message instead of it being
-transformed into the \fBDL_UNITDATA_IND\fR form normally used for reporting
-incoming packets. Packet \fBSAP\fR filtering is still performed on streams
+packet to be sent upstream in an
+.B M_DATA
+message instead of it being
+transformed into the
+.B DL_UNITDATA_IND
+form normally used for reporting
+incoming packets. Packet
+.B SAP
+filtering is still performed on streams
 that are in raw mode. If a stream user wants to receive all incoming packets
 it must also select the appropriate promiscuous modes. After successfully
 selecting raw mode, the application is also allowed to send fully formatted
-packets to the provider as \fBM_DATA\fR messages for transmission.
+packets to the provider as
+.B M_DATA
+messages for transmission.
 \fBDLIOCRAW\fR takes no arguments. Once enabled, the stream remains in this
 mode until closed.
 .RE
@@ -282,13 +343,13 @@ mode until closed.
 .ne 2
 .mk
 .na
-\fBNative Mode\fR
+.B Native Mode
 .ad
 .sp .6
 .RS 4n
 Some DLPI providers are able to represent their link layer using more than
 one link-layer  format. In this case, the  default link-layer format can
-minimize impact to applications, but might not allow truly \fBnative\fR
+.RB "minimize impact to applications, but might not allow truly" " native"
 link-layer headers to be sent or received. DLPI consumers who wish to use
 the native  link-layer format can use DLIOCNATIVE to transition the stream.
 DLIOCNATIVE takes no arguments and returns the DLPI mac type associated with
@@ -306,7 +367,7 @@ the native DLPI type.
 .ne 2
 .mk
 .na
-\fBMargin\fR
+.B Margin
 .ad
 .sp .6
 .RS 4n
@@ -328,7 +389,11 @@ data is a t_uscalar_t representing the margin size.
 .SS "Traditional VLAN Access"
 .sp
 .LP
-Some \fBDL_ETHER DLPI\fR providers support \fIIEEE 802.1Q\fR Virtual LANs
+Some
+.B "DL_ETHER DLPI"
+providers support
+.I "IEEE 802.1Q"
+Virtual LANs
 (VLAN). For these providers, traffic for a particular VLAN can be accessed
 by opening a VLAN data-link.
 .sp
@@ -342,7 +407,9 @@ consumers not require special-case logic to implement VLAN access.
 .SS "SAP-Based VLAN Access"
 .sp
 .LP
-As per \fIIEEE 802.1Q\fR, all VLAN traffic is sent using Ether- Type
+As per
+.IR "IEEE 802.1Q" ,
+all VLAN traffic is sent using Ether- Type
 0x8100, meaning  that in addition to directly opening a VLAN data-link, all
 VLAN traffic for a given underline data-link can also be accessed by opening
 the underlying data-link and binding to SAP 0x8100. Accordingly, all VLAN
@@ -358,13 +425,16 @@ because access to all VLAN traffic, regardless of  VLAN ID, is needed).
 .LP
 Because all VLAN traffic is sent with SAP 0x8100, VLAN traffic not filtered
 at the physical (\fBDL_PROMISC_PHYS\fR) level is also visible if a DLPI
-consumer enables promiscuous mode of a stream at the \fBDL_PROMISC_SAP\fR
+consumer enables promiscuous mode of a stream at the
+.BR DL_PROMISC_SAP
 level. As mentioned earlier, these packets are received starting with their
 VLAN headers if raw mode is not enabled.
 .SS "QoS Support"
 .sp
 .LP
-The \fIIEEE 802.1Q\fR standard defines eight classes of priority values
+The
+.I "IEEE 802.1Q"
+standard defines eight classes of priority values
 used by QoS traffic control of Ethernet packets. Although the priority
 values are encoded in the\fI 802.1Q\fR tags, they can be used independently
 from VLANs.  In particular, a  special priority tagged packet (with VLAN ID
@@ -375,8 +445,10 @@ The priority value can be set on either a per-stream or per-packet basis.
 DLPI consumers can specify the  per-stream priority using the
 \fBDL_UDQOS_REQ\fR request (the priority value remains unchanged until the
 next DL_UDQOS_REQ) and also specify the per-packet priority value using the
-b_band field of a M_DATA message or the \fBdl_priority\fR field of a
-\fBDL_UNITDATA_REQ\fR.
+b_band field of a M_DATA message or the
+.B dl_priority
+field of a
+.BR DL_UNITDATA_REQ .
 .SS "Raw Mode"
 .SS "SAP-Based VLAN Access"
 .sp
@@ -408,11 +480,14 @@ the packets.
 .SH FILES
 .sp
 .LP
-Files in or under \fB/dev\fR.
+Files in or under
+.BR /dev .
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -431,13 +506,20 @@ T}Committed
 .SH SEE ALSO
 .sp
 .LP
-\fBdladm\fR(1M), \fBsnoop\fR(1M), \fBlibdlpi\fR(3LIB), \fBgld\fR(7D),
-\fBip\fR(7P)
+.BR dladm (1M),
+.BR snoop (1M),
+.BR libdlpi (3LIB),
+.BR gld (7D),
+.BR ip (7P)
 .SH NOTES
 .sp
 .LP
-A Solaris DLPI link name consists of a \fBDLPI provider name\fR followed by
-a numeric \fBPPA\fR (physical point of attachment).
+A Solaris DLPI link name consists of a
+.B "DLPI provider name"
+followed by
+a numeric
+.B PPA
+(physical point of attachment).
 .sp
 .LP
 The DLPI provider name must be between 1 and 16 characters in length,
@@ -447,5 +529,9 @@ underscore (_).  The first and last character of the DLPI provider name
 cannot be a digit.
 .sp
 .LP
-The PPA must be a number between \fB0\fR and \fB4294967294\fR inclusive.
+The PPA must be a number between
+.B 0
+and
+.B 4294967294
+inclusive.
 Leading zeroes are not permitted.

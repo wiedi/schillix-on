@@ -58,50 +58,86 @@ accounting and miscellaneous accounting commands
 .LP
 Accounting software is structured as a set of tools (consisting of both C
 programs and shell procedures) that can be used to build accounting systems.
-\fBacctsh\fR(1M) describes the set of shell procedures built on top of the C
+.BR acctsh (1M)
+describes the set of shell procedures built on top of the C
 programs.
 .sp
 .LP
 Connect time accounting is handled by various programs that write records into
-\fB/var/adm/wtmpx\fR, as described in \fButmpx\fR(4). The programs described in
-\fBacctcon\fR(1M) convert this file into session and charging records, which are
-then summarized by \fBacctmerg\fR(1M).
+.BR /var/adm/wtmpx ,
+as described in
+.BR utmpx (4).
+The programs described in
+.BR acctcon (1M)
+convert this file into session and charging records, which are
+then summarized by
+.BR acctmerg (1M).
 .sp
 .LP
 Process accounting is performed by the system kernel. Upon termination of a
 process, one record per process is written to a file (normally
-\fB/var/adm/pacct\fR). The programs in \fBacctprc\fR(1M) summarize this data for
-charging purposes; \fBacctcms\fR(1M) is used to summarize command usage. Current
-process data may be examined using \fBacctcom\fR(1).
+.BR /var/adm/pacct ).
+The programs in \fBacctprc\fR(1M) summarize this data for
+charging purposes;
+.BR acctcms (1M)
+is used to summarize command usage. Current
+process data may be examined using
+.BR acctcom (1).
 .sp
 .LP
 Process accounting records and connect time accounting records (or any
-accounting records in the \fBtacct\fR format described in \fBacct.h\fR(3HEAD))
-can be merged and summarized into total accounting records by \fBacctmerg\fR
-(see \fBtacct\fR format in \fBacct.h\fR(3HEAD)). \fBprtacct\fR (see
-\fBacctsh\fR(1M)) is used to format any or all accounting records.
+accounting records in the
+.B tacct
+format described in
+.BR acct.h (3HEAD))
+can be merged and summarized into total accounting records by
+.BR acctmerg
+(see
+.B tacct
+format in
+.BR acct.h (3HEAD)).
+.B prtacct
+(see
+.BR acctsh (1M))
+is used to format any or all accounting records.
 .sp
 .LP
-\fBacctdisk\fR reads lines that contain user \fBID\fR, login name, and number
+\fBacctdisk\fR reads lines that contain user
+.BR ID ,
+login name, and number
 of disk blocks and converts them to total accounting records that can be merged
-with other accounting records. \fBacctdisk\fR returns an error if the input file
+with other accounting records.
+.B acctdisk
+returns an error if the input file
 is corrupt or improperly formatted.
 .sp
 .LP
-\fBacctdusg\fR reads its standard input (usually from \fBfind\fR \fB/\fR
+\fBacctdusg\fR reads its standard input (usually from \fBfind /\fR
 \fB-\fBprint\fR) and computes disk resource consumption (including indirect
 blocks) by login.
 .sp
 .LP
 \fBaccton\fR without arguments turns process accounting off. If \fIfilename\fR
 is given, it must be the name of an existing file, to which the kernel appends
-process accounting records (see \fBacct\fR(2) and \fBacct.h\fR(3HEAD)).
+process accounting records (see
+.BR acct (2)
+and
+.BR acct.h (3HEAD)).
 .sp
 .LP
-\fBacctwtmp\fR writes a \fButmpx\fR(4) record to \fIfilename\fR. The record
+\fBacctwtmp\fR writes a
+.BR utmpx (4)
+record to
+.IR filename .
+The record
 contains the current time and a string of characters that describe the
-\fIreason\fR. A record type of \fBACCOUNTING\fR is assigned (see \fButmpx\fR(4))
-\fIreason\fR must be a string of 11 or fewer characters, numbers, \fB$\fR, or
+.IR reason .
+A record type of
+.B ACCOUNTING
+is assigned (see \fButmpx\fR(4))
+\fIreason\fR must be a string of 11 or fewer characters, numbers,
+.BR $ ,
+or
 spaces. For example, the following are suggestions for use in reboot and
 shutdown procedures, respectively:
 .sp
@@ -114,15 +150,28 @@ acctwtmp "acctg off" /var/adm/wtmpx
 
 .sp
 .LP
-For each user currently logged on, \fBclosewtmp\fR puts a false
+For each user currently logged on,
+.B closewtmp
+puts a false
 \fBDEAD_PROCESS\fR record in the \fB/var/adm/wtmpx\fR file. \fBrunacct\fR (see
-\fBrunacct\fR(1M)) uses this false \fBDEAD_PROCESS\fR record so that the connect
+.BR runacct (1M))
+uses this false
+.B DEAD_PROCESS
+record so that the connect
 accounting procedures can track the time used by users logged on before
 \fBrunacct\fR was invoked.
 .sp
 .LP
-For each user currently logged on, \fBrunacct\fR uses \fButmp2wtmp\fR to create
-an entry in the file \fB/var/adm/wtmpx\fR, created by \fBrunacct\fR. Entries in
+For each user currently logged on,
+.B runacct
+uses
+.B utmp2wtmp
+to create
+an entry in the file
+.BR /var/adm/wtmpx ,
+created by
+.BR runacct .
+Entries in
 \fB/var/adm/wtmpx\fR enable subsequent invocations of \fBrunacct\fR to account
 for connect times of users currently logged in.
 .SH OPTIONS
@@ -150,32 +199,61 @@ avoid disk charges).
 .ad
 .RS 15n
 .rt
-Specifies a password file, \fIfilename\fR. This option is not needed if the
-password file is \fB/etc/passwd\fR.
+Specifies a password file,
+.IR filename .
+This option is not needed if the
+password file is
+.BR /etc/passwd .
 .RE
 
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-If any of the \fBLC_*\fR variables (\fBLC_TYPE\fR, \fBLC_MESSAGES\fR,
-\fBLC_TIME\fR, \fBLC_COLLATE\fR, \fBLC_NUMERIC\fR, and \fBLC_MONETARY\fR) (see
-\fBenviron\fR(5)) are not set in the environment, the operational behavior of
+If any of the
+.B LC_*
+variables (\fBLC_TYPE\fR, \fBLC_MESSAGES\fR,
+.BR LC_TIME ,
+.BR LC_COLLATE ,
+.BR LC_NUMERIC ,
+and
+.BR LC_MONETARY )
+(see
+.BR environ (5))
+are not set in the environment, the operational behavior of
 \fBacct\fR for each corresponding locale category is determined by the value of
-the \fBLANG\fR environment variable. If \fBLC_ALL\fR is set, its contents are
-used to override both the \fBLANG\fR and the other \fBLC_*\fR variables. If none
+the
+.B LANG
+environment variable. If
+.B LC_ALL
+is set, its contents are
+used to override both the
+.B LANG
+and the other
+.B LC_*
+variables. If none
 of the above variables are set in the environment, the "C" (U.S. style) locale
-determines how \fBacct\fR behaves.
+determines how
+.B acct
+behaves.
 .sp
 .ne 2
 .mk
 .na
-\fBLC_CTYPE\fR
+.B LC_CTYPE
 .ad
 .RS 12n
 .rt
-Determines how \fBacct\fR handles characters. When \fBLC_CTYPE\fR is set to a
-valid value, \fBacct\fR can display and handle text and filenames containing
-valid characters for that locale. \fBacct\fR can display and handle Extended
+Determines how
+.B acct
+handles characters. When
+.B LC_CTYPE
+is set to a
+valid value,
+.B acct
+can display and handle text and filenames containing
+valid characters for that locale.
+.B acct
+can display and handle Extended
 Unix Code (EUC) characters where any  character can be 1, 2, or 3 bytes wide.
 \fBacct\fR can also handle EUC characters of 1, 2, or more column widths. In the
 "C" locale, only characters from ISO 8859-1 are valid.
@@ -185,7 +263,7 @@ Unix Code (EUC) characters where any  character can be 1, 2, or 3 bytes wide.
 .ne 2
 .mk
 .na
-\fBLC_TIME\fR
+.B LC_TIME
 .ad
 .RS 12n
 .rt
@@ -198,18 +276,20 @@ date and time handling follows the U.S. rules.
 .ne 2
 .mk
 .na
-\fB/etc/passwd\fR
+.B /etc/passwd
 .ad
 .RS 18n
 .rt
-Used for login name to user \fBID\fR conversions.
+Used for login name to user
+.B ID
+conversions.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/acct\fR
+.B /usr/lib/acct
 .ad
 .RS 18n
 .rt
@@ -220,7 +300,7 @@ Holds all accounting commands listed in sub-class 1M of this manual.
 .ne 2
 .mk
 .na
-\fB/var/adm/pacct\fR
+.B /var/adm/pacct
 .ad
 .RS 18n
 .rt
@@ -231,7 +311,7 @@ Current process accounting file.
 .ne 2
 .mk
 .na
-\fB/var/adm/wtmpx\fR
+.B /var/adm/wtmpx
 .ad
 .RS 18n
 .rt
@@ -241,7 +321,9 @@ History of user access and administration information..
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -258,10 +340,19 @@ AvailabilitySUNWaccu
 .SH SEE ALSO
 .sp
 .LP
-\fBacctcom\fR(1), \fBacctcms\fR(1M), \fBacctcon\fR(1M), \fBacctmerg\fR(1M),
-\fBacctprc\fR(1M), \fBacctsh\fR(1M), \fBfwtmp\fR(1M), \fBrunacct\fR(1M),
-\fBacct\fR(2), \fBacct.h\fR(3HEAD), \fBpasswd\fR(4), \fButmpx\fR(4),
-\fBattributes\fR(5), \fBenviron\fR(5)
+.BR acctcom (1),
+.BR acctcms (1M),
+.BR acctcon (1M),
+.BR acctmerg (1M),
+.BR acctprc (1M),
+.BR acctsh (1M),
+\fBfwtmp\fR(1M), \fBrunacct\fR(1M),
+.BR acct (2),
+.BR acct.h (3HEAD),
+.BR passwd (4),
+.BR utmpx (4),
+.BR attributes (5),
+.BR environ (5)
 .sp
 .LP
 \fR

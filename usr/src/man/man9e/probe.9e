@@ -40,13 +40,14 @@ probe \- determine if a non-self-identifying device is present
 Solaris DDI specific (Solaris DDI). This entry point is required for
 non-self-identifying devices.  You must write it for such devices. For
 self-identifying devices,  \fBnulldev\fR(9F) should be specified in the
-\fBdev_ops\fR(9S) structure if a probe routine is not necessary.
+.BR dev_ops (9S)
+structure if a probe routine is not necessary.
 .SH ARGUMENTS
 .sp
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 8n
 .rt
@@ -57,33 +58,48 @@ Pointer to the device's  \fBdev_info\fR structure.
 .sp
 .LP
 \fBprobe()\fR determines whether the device corresponding to \fIdip\fR
-actually exists and is a valid device for this driver. \fBprobe()\fR is
+actually exists and is a valid device for this driver.
+.B probe()
+is
 called after \fBidentify\fR(9E) and before \fBattach\fR(9E) for a given
-\fIdip\fR. For example, the \fBprobe()\fR routine can map the device
-registers using \fBddi_map_regs\fR(9F) then attempt to access the hardware
+.IR dip .
+For example, the
+.B probe()
+routine can map the device
+registers using
+.BR ddi_map_regs "(9F) then attempt to access the hardware"
 using \fBddi_peek\fR(9F) or \fBddi_poke\fR(9F) and determine if the device
 exists. Then the device registers should be unmapped using
-\fBddi_unmap_regs\fR(9F). 
+.BR ddi_unmap_regs (9F).
 .sp
 .LP
-To probe a device that was left powered off after the last \fBdetach()\fR,
+To probe a device that was left powered off after the last
+.BR detach() ,
 it might be necessary to power it up. If so, the driver must power up the
-device by accessing device registers directly. \fBpm_raise_power\fR(9F) will
+device by accessing device registers directly.
+.BR pm_raise_power (9F)
+will
 be not be available until \fBattach\fR(9E). The framework ensures that the
 ancestors of the node being probed and all relevant platform-specific power
-management hardware is at full power at the time that \fBprobe()\fR is
+management hardware is at full power at the time that
+.B probe()
+is
 called.
 .sp
 .LP
 \fBprobe()\fR should only probe the device. It should not change any
 software state and should not create any software state. Device
-initialization should be done in \fBattach\fR(9E).
+initialization should be done in
+.BR attach (9E).
 .sp
 .LP
 For a self-identifying device, this entry point is not necessary. However,
 if a device exists in both self-identifying and non-self-identifying forms,
-a \fBprobe()\fR routine can be provided to simplify the driver.
-\fBddi_dev_is_sid\fR(9F) can then be used to determine whether
+a
+.B probe()
+routine can be provided to simplify the driver.
+.BR ddi_dev_is_sid (9F)
+can then be used to determine whether
 \fBprobe()\fR needs to do any work. See \fBddi_dev_is_sid\fR(9F) for an
 example.
 .SH RETURN VALUES
@@ -91,7 +107,7 @@ example.
 .ne 2
 .mk
 .na
-\fBDDI_PROBE_SUCCESS\fR
+.B DDI_PROBE_SUCCESS
 .ad
 .RS 23n
 .rt
@@ -102,7 +118,7 @@ If the probe was successful.
 .ne 2
 .mk
 .na
-\fBDDI_PROBE_FAILURE\fR
+.B DDI_PROBE_FAILURE
 .ad
 .RS 23n
 .rt
@@ -113,11 +129,13 @@ If the probe failed.
 .ne 2
 .mk
 .na
-\fBDDI_PROBE_DONTCARE\fR
+.B DDI_PROBE_DONTCARE
 .ad
 .RS 23n
 .rt
-If the probe was unsuccessful, yet \fBattach\fR(9E) should still be
+If the probe was unsuccessful, yet
+.BR attach (9E)
+should still be
 called.
 .RE
 
@@ -125,7 +143,7 @@ called.
 .ne 2
 .mk
 .na
-\fBDDI_PROBE_PARTIAL\fR
+.B DDI_PROBE_PARTIAL
 .ad
 .RS 23n
 .rt
@@ -135,9 +153,13 @@ If the instance is not present now, but may be present in the future.
 .SH SEE ALSO
 .sp
 .LP
-\fBattach\fR(9E), \fBidentify\fR(9E), \fBddi_dev_is_sid\fR(9F),
-\fBddi_map_regs\fR(9F), \fBddi_peek\fR(9F), \fBddi_poke\fR(9F),
-\fBnulldev\fR(9F), \fBdev_ops\fR(9S)
+.BR attach (9E),
+\fBidentify\fR(9E), \fBddi_dev_is_sid\fR(9F),
+.BR ddi_map_regs (9F),
+.BR ddi_peek (9F),
+.BR ddi_poke (9F),
+.BR nulldev (9F),
+.BR dev_ops (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

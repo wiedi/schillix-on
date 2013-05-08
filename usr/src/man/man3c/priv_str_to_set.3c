@@ -65,13 +65,24 @@ functions
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpriv_str_to_set()\fR function maps the privilege specification in
+The
+.B priv_str_to_set()
+function maps the privilege specification in
 \fIbuf\fR to a privilege set. It returns a privilege set on success or
 \fINULL\fR on failure. If an error occurs when parsing the string, a pointer
 to the remainder of the string is stored in the object pointed to by
-\fIendptr\fR, provided that \fIendptr\fR is not a null pointer. If an error
-occurs when allocating memory, \fBerrno\fR is set and the object pointed to
-by \fIendptr\fR is set to the null pointer, provided that \fIendptr\fR is not
+.IR endptr ,
+provided that
+.I endptr
+is not a null pointer. If an error
+occurs when allocating memory,
+.B errno
+is set and the object pointed to
+by
+.I endptr
+is set to the null pointer, provided that
+.I endptr
+is not
 a null pointer.
 .sp
 .LP
@@ -80,8 +91,11 @@ The application is responsible for freeing the returned privilege set using
 .sp
 .LP
 A privilege specification should contain one or more privilege names,
-separated by characters in \fIsep\fR using the same algorithm as
-\fBstrtok\fR(3C). Privileges can optionally be preceded by a dash (-) or an
+separated by characters in
+.I sep
+using the same algorithm as
+.BR strtok (3C).
+Privileges can optionally be preceded by a dash (-) or an
 exclamation mark (!), in which case they are excluded from the resulting set.
 The special strings "none" for the empty set, "all" for the set of all
 privileges, "zone" for the set of all privileges available within the
@@ -89,8 +103,12 @@ caller's zone, and "basic" for the set of basic privileges are also
 recognized. Set specifications are interpreted from left to right.
 .sp
 .LP
-The \fBpriv_set_to_str()\fR function converts the privilege set to a
-sequence of privileges separated by \fIsep\fR, returning the a pointer to the
+The
+.B priv_set_to_str()
+function converts the privilege set to a
+sequence of privileges separated by
+.IR sep ,
+returning the a pointer to the
 dynamically allocated result. The application is responsible for freeing the
 memory using \fBfree\fR(3C).
 .sp
@@ -98,33 +116,57 @@ memory using \fBfree\fR(3C).
 To maintain future compatibility, the "basic" set of privileges is included
 as "basic,!missing_basic_priv1,.\|.\|.". When further currently unprivileged
 operations migrate to the basic privilege set, the conversion back of the
-result with \fBpriv_str_to_set()\fR includes the additional basic privileges,
+result with
+.B priv_str_to_set()
+includes the additional basic privileges,
 guaranteeing that the resulting privilege set carries the same privileges.
 This behavior is the default and is equivalent to specifying a \fIflag\fR
-argument of \fBPRIV_STR_PORT\fR. When specifying a \fIflag\fR argument of
-\fBPRIV_STR_LIT\fR, the result does not treat basic privileges differently
+argument of
+.BR PRIV_STR_PORT .
+When specifying a \fIflag\fR argument of
+.BR PRIV_STR_LIT ,
+the result does not treat basic privileges differently
 and the privileges present are all literally presented in the output. A flag
-argument of \fBPRIV_STR_SHORT\fR attempts to arrive at the shortest output,
+argument of
+.B PRIV_STR_SHORT
+attempts to arrive at the shortest output,
 using the tokens "basic", "zone", "all", and negated privileges. This output
 is most useful for trace output.
 .sp
 .LP
-The \fBpriv_getbyname()\fR and \fBpriv_getsetbyname()\fR functions map
+The
+.B priv_getbyname()
+and
+.B priv_getsetbyname()
+functions map
 privilege names and privilege set names to numbers. The numbers returned are
 valid for the current kernel instance only and could change at the next boot.
 Only the privilege names should be committed to persistent storage. The
 numbers should not be committed to persistent storage. Both functions return
--1 on error, setting \fBerrno\fR to \fBEINVAL\fR.
+-1 on error, setting
+.B errno
+to
+.BR EINVAL .
 .sp
 .LP
-The \fBpriv_getbynum()\fR and \fBpriv_getsetbynum()\fR functions map
+The
+.B priv_getbynum()
+and
+.B priv_getsetbynum()
+functions map
 privileges numbers to names. The strings returned point to shared storage
 that should not be modified and is valid for the lifetime of the process.
-Both functions return \fINULL\fR on error, setting \fBerrno\fR to
-\fBEINVAL\fR.
+Both functions return
+.I NULL
+on error, setting
+.B errno
+to
+.BR EINVAL .
 .sp
 .LP
-The \fBpriv_gettext()\fR function returns a pointer to a string consisting
+The
+.B priv_gettext()
+function returns a pointer to a string consisting
 of one or more newline-separated lines of text describing the privilege. The
 text is localized using {\fBLC_MESSAGES\fR}. The application is responsibe
 for freeing the memory returned.
@@ -136,36 +178,58 @@ structures when necessary.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBpriv_str_to_set()\fR and
+Upon successful completion,
+.B priv_str_to_set()
+and
 \fBpriv_set_to_str()\fR return a non-null pointer to allocated memory that
 should be freed by the application using the appropriate functions when it is
 no longer referenced.
 .sp
 .LP
-The \fBpriv_getbynum()\fR and \fBpriv_getsetbynum()\fR functions return
+The
+.B priv_getbynum()
+and
+.B priv_getsetbynum()
+functions return
 non-null pointers to constant memory that should not be modified or freed by
-the application. Otherwise, \fINULL\fR is returned and \fBerrno\fR is set to
+the application. Otherwise,
+.I NULL
+is returned and
+.B errno
+is set to
 indicate the error.
 .sp
 .LP
-Upon successful completion, \fBpriv_getbyname()\fR and
+Upon successful completion,
+.B priv_getbyname()
+and
 \fBpriv_getsetbyname()\fR return a non-negative integer. Otherwise, -1 is
-returned and \fBerrno\fR is set to indicate the error.
+returned and
+.B errno
+is set to indicate the error.
 .sp
 .LP
-Upon successful completion, \fBpriv_gettext()\fR returns a non-null value.
-It returns \fINULL\fR if an error occurs or no descriptive text for the
+Upon successful completion,
+.B priv_gettext()
+returns a non-null value.
+It returns
+.I NULL
+if an error occurs or no descriptive text for the
 specified privilege can be found.
 .SH ERRORS
 .sp
 .LP
-The \fBpriv_str_to_set()\fR and \fBpriv_set_to_str()\fR functions will fail
+The
+.B priv_str_to_set()
+and
+.B priv_set_to_str()
+functions will fail
 if:
 .sp
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -177,7 +241,7 @@ needed to hold a privilege set.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -192,7 +256,7 @@ All of these functions will fail if:
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -201,7 +265,7 @@ One or more of the arguments is invalid.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRList all the sets and privileges defined in the system.
+\fBExample 1\fR List all the sets and privileges defined in the system.
 .sp
 .LP
 The following example lists all the sets and privileges defined in the
@@ -231,7 +295,9 @@ for (i = 0; (name = priv_getbynum(i++)) != NULL; )
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -251,4 +317,5 @@ MT-LevelMT-Safe
 .sp
 .LP
 \fBfree\fR(3C), \fBpriv_set\fR(3C), \fBattributes\fR(5),
-\fBprivileges\fR(5), \fBpriv_getbyname\fR(9F)
+.BR privileges (5),
+.BR priv_getbyname (9F)

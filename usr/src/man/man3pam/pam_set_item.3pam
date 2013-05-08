@@ -40,15 +40,24 @@ pam_set_item, pam_get_item \- authentication information routines for PAM
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpam_get_item()\fR and \fBpam_set_item()\fR functions allow
-applications and \fBPAM\fR service modules to access and to update \fBPAM\fR
-information as needed.  The information is specified by \fIitem_type\fR, and
+The
+.B pam_get_item()
+and
+.B pam_set_item()
+functions allow
+applications and
+.B PAM
+service modules to access and to update
+.BR PAM
+information as needed.  The information is specified by
+.IR item_type ,
+and
 can be one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_AUSER\fR
+.B PAM_AUSER
 .ad
 .RS 19n
 .rt
@@ -61,7 +70,7 @@ user name. See NOTES and \fBpam_unix_cred\fR(5).
 .ne 2
 .mk
 .na
-\fBPAM_AUTHTOK\fR
+.B PAM_AUTHTOK
 .ad
 .RS 19n
 .rt
@@ -72,18 +81,20 @@ The user authentication token.
 .ne 2
 .mk
 .na
-\fBPAM_CONV\fR
+.B PAM_CONV
 .ad
 .RS 19n
 .rt
-The  \fBpam_conv\fR structure.
+The 
+.B pam_conv
+structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_OLDAUTHTOK\fR
+.B PAM_OLDAUTHTOK
 .ad
 .RS 19n
 .rt
@@ -94,14 +105,18 @@ The old user authentication token.
 .ne 2
 .mk
 .na
-\fBPAM_RESOURCE\fR
+.B PAM_RESOURCE
 .ad
 .RS 19n
 .rt
 A semicolon-separated list of \fIkey\fR=\fIvalue\fR pairs that represent
-the set of resource controls for application by \fBpam_setcred\fR(3PAM) or
-\fBpam_open_session\fR(3PAM). See the individual service module definitions,
-such as \fBpam_unix_cred\fR(5), for interpretations of the keys and
+the set of resource controls for application by
+.BR pam_setcred "(3PAM) or"
+.BR pam_open_session (3PAM).
+See the individual service module definitions,
+such as
+.BR pam_unix_cred (5),
+for interpretations of the keys and
 values.
 .RE
 
@@ -109,7 +124,7 @@ values.
 .ne 2
 .mk
 .na
-\fBPAM_RHOST\fR
+.B PAM_RHOST
 .ad
 .RS 19n
 .rt
@@ -120,7 +135,7 @@ The remote host name.
 .ne 2
 .mk
 .na
-\fBPAM_RUSER\fR
+.B PAM_RUSER
 .ad
 .RS 19n
 .rt
@@ -131,7 +146,7 @@ The \fBrlogin\fR/\fBrsh\fR untrusted remote user name.
 .ne 2
 .mk
 .na
-\fBPAM_SERVICE\fR
+.B PAM_SERVICE
 .ad
 .RS 19n
 .rt
@@ -142,7 +157,7 @@ The service name.
 .ne 2
 .mk
 .na
-\fBPAM_TTY\fR
+.B PAM_TTY
 .ad
 .RS 19n
 .rt
@@ -153,7 +168,7 @@ The tty name.
 .ne 2
 .mk
 .na
-\fBPAM_USER\fR
+.B PAM_USER
 .ad
 .RS 19n
 .rt
@@ -164,18 +179,19 @@ The user name.
 .ne 2
 .mk
 .na
-\fBPAM_USER_PROMPT\fR
+.B PAM_USER_PROMPT
 .ad
 .RS 19n
 .rt
-The default prompt used by  \fBpam_get_user()\fR.
+The default prompt used by 
+.BR pam_get_user() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_REPOSITORY\fR
+.B PAM_REPOSITORY
 .ad
 .RS 19n
 .rt
@@ -199,46 +215,87 @@ struct pam_repository {
 
 .sp
 .LP
-The \fIitem_type\fR \fBPAM_SERVICE\fR can be set only by \fBpam_start()\fR
+The
+.I item_type
+\fBPAM_SERVICE\fR can be set only by \fBpam_start()\fR
 and is read-only to both applications and service modules.
 .sp
 .LP
-For security reasons, the \fIitem_type\fR \fBPAM_AUTHTOK\fR and
+For security reasons, the
+.I item_type
+\fBPAM_AUTHTOK\fR and
 \fBPAM_OLDAUTHTOK\fR are available only to the module providers. The
 authentication module, account module, and session management module should
-treat \fBPAM_AUTHTOK\fR as the current authentication token and ignore
-\fBPAM_OLDAUTHTOK\fR. The password management module should treat
+treat
+.B PAM_AUTHTOK
+as the current authentication token and ignore
+.BR PAM_OLDAUTHTOK .
+The password management module should treat
 \fBPAM_OLDAUTHTOK\fR as the current authentication token and
 \fBPAM_AUTHTOK\fR as the new authentication token.
 .sp
 .LP
-The \fBpam_set_item()\fR function is passed the authentication handle,
-\fIpamh\fR, returned by \fBpam_start()\fR, a pointer to the object,
-\fIitem\fR, and its type, \fIitem_type\fR. If successful,
+The
+.B pam_set_item()
+function is passed the authentication handle,
+.IR pamh ,
+returned by
+.BR pam_start() ,
+a pointer to the object,
+.IR item ,
+and its type,
+.IR item_type .
+If successful,
 \fBpam_set_item()\fR copies the item to an internal storage area allocated
-by the  authentication module and returns  \fBPAM_SUCCESS\fR. An item that
+by the  authentication module and returns
+.BR PAM_SUCCESS .
+An item that
 had been previously set will be overwritten by the new value.
 .sp
 .LP
-The \fBpam_get_item()\fR function is passed the authentication handle,
-\fIpamh\fR, returned by \fBpam_start()\fR, an \fIitem_type\fR, and the
-address of the pointer, \fIitem\fR, which is assigned the address of the
+The
+.B pam_get_item()
+function is passed the authentication handle,
+.IR pamh ,
+returned by
+.BR pam_start() ,
+an
+.IR item_type ,
+and the
+address of the pointer,
+.IR item ,
+which is assigned the address of the
 requested object. The object data is valid until modified by a subsequent
-call to \fBpam_set_item()\fR for the same \fIitem_type\fR, or unless it is
+call to
+.B pam_set_item()
+for the same
+.IR item_type ,
+or unless it is
 modified by any of the underlying service modules. If the item has not been
-previously set, \fBpam_get_item()\fR returns a null pointer.  An \fIitem\fR
-retrieved by \fBpam_get_item()\fR should not be modified or freed.  The item
-will be released by \fBpam_end()\fR.
+previously set,
+.B pam_get_item()
+.RI "returns a null pointer.  An" " item"
+retrieved by
+.B pam_get_item()
+should not be modified or freed.  The item
+will be released by
+.BR pam_end() .
 .SH RETURN VALUES
 .sp
 .LP
-Upon success, \fBpam_get_item()\fR returns  \fBPAM_SUCCESS\fR; otherwise it
+Upon success,
+.B pam_get_item()
+returns 
+.BR PAM_SUCCESS ;
+otherwise it
 returns an error code. Refer to \fBpam\fR(3PAM) for information on error
 related return values.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -257,27 +314,43 @@ MT-LevelMT-Safe with exceptions
 .sp
 .LP
 The functions in \fBlibpam\fR(3LIB) are MT-Safe only if each thread within
-the multithreaded application uses its own \fBPAM\fR handle.
+the multithreaded application uses its own
+.B PAM
+handle.
 .SH SEE ALSO
 .sp
 .LP
-\fBlibpam\fR(3LIB), \fBpam\fR(3PAM), \fBpam_acct_mgmt\fR(3PAM),
-\fBpam_authenticate\fR(3PAM), \fBpam_chauthtok\fR(3PAM),
-\fBpam_get_user\fR(3PAM), \fBpam_open_session\fR(3PAM),
-\fBpam_setcred\fR(3PAM), \fBpam_start\fR(3PAM), \fBattributes\fR(5),
-\fBpam_unix_cred\fR(5)
+.BR libpam (3LIB),
+.BR pam (3PAM),
+.BR pam_acct_mgmt (3PAM),
+.BR pam_authenticate (3PAM),
+.BR pam_chauthtok (3PAM),
+.BR pam_get_user (3PAM),
+.BR pam_open_session (3PAM),
+.BR pam_setcred (3PAM),
+.BR pam_start (3PAM),
+.BR attributes (5),
+.BR pam_unix_cred (5)
 .SH NOTES
 .sp
 .LP
-If the \fBPAM_REPOSITORY\fR \fIitem_type\fR is set and a service module
+If the
+.B PAM_REPOSITORY
+\fIitem_type\fR is set and a service module
 does not recognize the type, the service module does not process any
-information, and returns \fBPAM_IGNORE\fR. If the \fBPAM_REPOSITORY\fR
+information, and returns
+.BR PAM_IGNORE .
+If the
+.BR PAM_REPOSITORY
 \fIitem_type\fR is not set, a service module performs its default action.
 
 .sp
 .LP
 PAM_AUSER is not intended as a replacement for PAM_USER.  It is expected to
 be used to supplement PAM_USER when there is an authenticated user from a
-source other than \fBpam_authenticate\fR(3PAM). Such sources could be
-\fBsshd\fR host-based authentication, kerberized \fBrlogin\fR, and
-\fBsu\fR(1M).
+source other than
+.BR pam_authenticate "(3PAM). Such sources could be"
+\fBsshd\fR host-based authentication, kerberized
+.BR rlogin ,
+and
+.BR su (1M).

@@ -39,89 +39,134 @@ framework also allows new authentication service modules to be plugged in and
 made available without modifying the applications.
 .sp
 .LP
-The \fBPAM\fR framework, \fBlibpam\fR, consists of an interface library and
-multiple authentication  service modules. The \fBPAM\fR interface library is
+The
+.B PAM
+framework,
+.BR libpam ,
+consists of an interface library and
+multiple authentication  service modules. The
+.B PAM
+interface library is
 the layer that implements the Application Programming Interface ( \fBAPI\fR
 ). The authentication service modules are a set of dynamically loadable
-objects invoked by the \fBPAM\fR \fBAPI\fR to provide a particular type of
+objects invoked by the
+.B "PAM API"
+to provide a particular type of
 user authentication.
 .sp
 .LP
-This manual page gives an overview of the \fBPAM\fR \fBAPIs\fR for the
+This manual page gives an overview of the
+.B "PAM APIs"
+for the
 service modules, also called the Service Provider Interface
 (\fBPAM\fR-\fBSPI\fR).
 .SS "Interface Overview"
 .sp
 .LP
-The \fBPAM\fR service module interface consists of functions which can be
+The
+.B PAM
+service module interface consists of functions which can be
 grouped into four categories. The names for all the authentication library
-functions start with \fBpam_sm\fR. The only difference between the
+functions start with
+.BR pam_sm .
+The only difference between the
 \fBpam_*()\fR interfaces and their corresponding \fBpam_sm_*()\fR interfaces
-is that all the \fBpam_sm_*()\fR interfaces require extra parameters to pass
+is that all the
+.B pam_sm_*()
+interfaces require extra parameters to pass
 service-specific options to the shared modules. They are otherwise
 identical.
 .sp
 .LP
 The first category contains functions to authenticate an individual user,
-\fBpam_sm_authenticate\fR(3PAM), and to set the credentials of the user,
-\fBpam_sm_setcred\fR(3PAM). These back-end functions implement the
+.BR pam_sm_authenticate (3PAM),
+and to set the credentials of the user,
+.BR pam_sm_setcred (3PAM).
+These back-end functions implement the
 functionality of \fBpam_authenticate\fR(3PAM) and \fBpam_setcred\fR(3PAM)
 respectively.
 .sp
 .LP
 The second category contains the function to do account management:
-\fBpam_sm_acct_mgmt\fR(3PAM). This includes checking for password aging and
+.BR pam_sm_acct_mgmt (3PAM).
+This includes checking for password aging and
 access-hour restrictions. This back-end function implements the functionality
-of \fBpam_acct_mgmt\fR(3PAM).
+of
+.BR pam_acct_mgmt (3PAM).
 .sp
 .LP
-The third category contains the functions \fBpam_sm_open_session\fR(3PAM)
+The third category contains the functions
+.BR pam_sm_open_session (3PAM)
 and \fBpam_sm_close_session\fR(3PAM) to perform session management after
 access to the system has been granted. These back-end functions implement the
-functionality of \fBpam_open_session\fR(3PAM) and
-\fBpam_close_session\fR(3PAM), respectively.
+functionality of
+.BR pam_open_session "(3PAM) and"
+.BR pam_close_session (3PAM),
+respectively.
 .sp
 .LP
 The fourth category consists a function to change authentication tokens
-\fBpam_sm_chauthtok\fR(3PAM). This back-end function implements the
-functionality of \fBpam_chauthtok\fR(3PAM).
+.BR pam_sm_chauthtok (3PAM).
+This back-end function implements the
+functionality of
+.BR pam_chauthtok (3PAM).
 .SS "Stateful Interface"
 .sp
 .LP
 A sequence of calls sharing a common set of state information is referred to
 as an authentication transaction. An authentication transaction begins with a
-call to \fBpam_start()\fR. \fBpam_start()\fR allocates space, performs
+call to
+.BR pam_start() .
+\fBpam_start()\fR allocates space, performs
 various initialization activities, and assigns an authentication handle to be
 used for subsequent calls to the library. Note that the service modules do
-not get called or initialized when \fBpam_start()\fR is called. The modules
+not get called or initialized when
+.B pam_start()
+is called. The modules
 are loaded and the symbols resolved upon first use of that function.
 .sp
 .LP
-The \fBPAM\fR handle keeps certain information about the transaction that
-can be accessed through the \fBpam_get_item()\fR \fBAPI\fR. Though the
-modules can also use \fBpam_set_item()\fR to change any of the item
+The
+.B PAM
+handle keeps certain information about the transaction that
+can be accessed through the
+.BR "pam_get_item() API" .
+Though the
+modules can also use
+.B pam_set_item()
+to change any of the item
 information, it is recommended that nothing be changed except
 \fBPAM_AUTHTOK\fR and \fBPAM_OLDAUTHTOK\fR.
 .sp
 .LP
 If the modules want to store any module specific state information then they
 can use the \fBpam_set_data\fR(3PAM) function to store that information with
-the \fBPAM\fR handle. The data should be stored with a name which is unique
+the
+.B PAM
+handle. The data should be stored with a name which is unique
 across all modules and module types. For example,
 \fBSUNW_PAM_UNIX_AUTH_userid\fR can be used as a name by the UNIX module to
 store information about the state of user's authentication. Some modules use
 this technique to share data across two different module types.
 .sp
 .LP
-Also, during the call to \fBpam_authenticate()\fR, the UNIX module may store
+Also, during the call to
+.BR pam_authenticate() ,
+the UNIX module may store
 the authentication status (success or reason for failure) in the handle,
-using a unique name such as \fBSUNW_SECURE_RPC_DATA\fR. This information is
-intended for use by \fBpam_setcred()\fR.
+using a unique name such as
+.BR SUNW_SECURE_RPC_DATA .
+This information is
+intended for use by
+.BR pam_setcred() .
 .sp
 .LP
-During the call to \fBpam_acct_mgmt()\fR, the account modules may store data
+During the call to
+.BR pam_acct_mgmt() ,
+the account modules may store data
 in the handle to indicate which passwords have aged. This information is
-intended for use by \fBpam_chauthtok()\fR.
+intended for use by
+.BR pam_chauthtok() .
 .sp
 .LP
 The module can also store a cleanup function associated with the data. The
@@ -130,13 +175,21 @@ The module can also store a cleanup function associated with the data. The
 .SS "Interaction with the User"
 .sp
 .LP
-The \fBPAM\fR service modules do not communicate directly with the user;
+The
+.B PAM
+service modules do not communicate directly with the user;
 instead they rely on the application to perform all such interactions. The
-application passes a pointer to the function, \fBconv()\fR, along with any
-associated application data pointers, through the \fBpam_conv\fR structure
+application passes a pointer to the function,
+.BR conv() ,
+along with any
+associated application data pointers, through the
+.B pam_conv
+structure
 when it initiates an authentication transaction (by means of a call to
-\fBpam_start()\fR. The service module will then use the function,
-\fBconv()\fR, to prompt the user for data, output error messages, and display
+.BR pam_start() .
+The service module will then use the function,
+.BR conv() ,
+to prompt the user for data, output error messages, and display
 text information. Refer to \fBpam_start\fR(3PAM) for more information. The
 modules are responsible for the localization of all messages to the user.
 .SS "Conventions"
@@ -144,26 +197,36 @@ modules are responsible for the localization of all messages to the user.
 .LP
 By convention, applications that need to prompt for a user name should call
 \fBpam_set_item()\fR and set the value of \fBPAM_USER_PROMPT\fR before
-calling \fBpam_authenticate()\fR. The service module's
+calling
+.BR pam_authenticate() .
+The service module's
 \fBpam_sm_authenticate()\fR function will then call \fBpam_get_user()\fR to
-prompt for the user name. Note that certain \fBPAM\fR service modules (such
-as a smart card module) may override the value of \fBPAM_USER_PROMPT\fR and
+prompt for the user name. Note that certain
+.B PAM
+service modules (such
+as a smart card module) may override the value of
+.B PAM_USER_PROMPT
+and
 pass in their own prompt.
 .sp
 .LP
-Though the \fBPAM\fR framework enforces no rules about the module's names,
+Though the
+.B PAM
+framework enforces no rules about the module's names,
 location, options and such, there are certain conventions that all module
 providers are expected to follow.
 .sp
 .LP
-By convention, the modules should be located in the \fB/usr/lib/security\fR
+.RB "By convention, the modules should be located in the" " /usr/lib/security"
 directory. Additional modules may be located in \fB/opt/<pkg>/lib\fR.
 Architecture specific libraries (for example, sparcv9 or amd64) are located
 in their respective subdirectories.
 .sp
 .LP
 For every such module, there should be a corresponding manual page in
-section 5 which should describe the \fImodule_type\fR it supports, the
+section 5 which should describe the
+.I module_type
+it supports, the
 functionality of the module, along with the options it supports. The
 dependencies should be clearly identified to the system administrator. For
 example, it should be made clear whether this module is a stand-alone module
@@ -177,11 +240,13 @@ By convention, the modules should support the following options:
 .ne 2
 .mk
 .na
-\fBdebug\fR
+.B debug
 .ad
 .RS 10n
 .rt
-Syslog debugging information at \fBLOG_DEBUG\fR level. Be careful as to not
+Syslog debugging information at
+.B LOG_DEBUG
+level. Be careful as to not
 log any sensitive information such as passwords.
 .RE
 
@@ -189,7 +254,7 @@ log any sensitive information such as passwords.
 .ne 2
 .mk
 .na
-\fBnowarn\fR
+.B nowarn
 .ad
 .RS 10n
 .rt
@@ -199,31 +264,45 @@ Turn off warning messages such as "password is about to expire."
 .sp
 .LP
 If an unsupported option is passed to the modules, it should syslog the
-error at \fBLOG_ERR\fR level.
+error at
+.B LOG_ERR
+level.
 .sp
 .LP
 The permission bits on the service module should be set such that it is not
 writable by either "group" or "other." The service module should also be
-owned by root. The \fBPAM\fR framework will not load the module if the above
+owned by root. The
+.B PAM
+framework will not load the module if the above
 permission rules are not followed.
 .SH ERRORS
 .sp
 .LP
 If there are any errors, the modules should log them using \fBsyslog\fR(3C)
-at the \fBLOG_ERR\fR level.
+at the
+.B LOG_ERR
+level.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBPAM\fR service module functions may return any of the \fBPAM\fR error
+The
+.B PAM
+service module functions may return any of the
+.B PAM
+error
 numbers specified in the specific man pages. It can also return a
 \fBPAM_IGNORE\fR error number to mean that the \fBPAM\fR framework should
 ignore this module regardless of whether it is required, optional or
 sufficient. This error number is normally returned when the module does not
-contribute to the decision being made by the \fBPAM\fR framework.
+contribute to the decision being made by the
+.B PAM
+framework.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -242,18 +321,36 @@ MT-LevelMT-Safe with exceptions
 .SH SEE ALSO
 .sp
 .LP
-\fBpam\fR(3PAM), \fBpam_authenticate\fR(3PAM), \fBpam_chauthtok\fR(3PAM),
-\fBpam_get_user\fR(3PAM), \fBpam_open_session\fR(3PAM),
-\fBpam_setcred\fR(3PAM), \fBpam_set_item\fR(3PAM),
-\fBpam_sm_authenticate\fR(3PAM), \fBpam_sm_chauthtok\fR(3PAM),
-\fBpam_sm_open_session\fR(3PAM), \fBpam_sm_setcred\fR(3PAM),
-\fBpam_start\fR(3PAM), \fBpam_strerror\fR(3PAM), \fBsyslog\fR(3C),
-\fBpam.conf\fR(4), \fBattributes\fR(5), \fBpam_authtok_check\fR(5),
-\fBpam_authtok_get\fR(5), \fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5),
-\fBpam_passwd_auth\fR(5), \fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5),
-\fBpam_unix_session\fR(5)
+.BR pam (3PAM),
+.BR pam_authenticate (3PAM),
+.BR pam_chauthtok (3PAM),
+.BR pam_get_user (3PAM),
+.BR pam_open_session (3PAM),
+.BR pam_setcred (3PAM),
+.BR pam_set_item (3PAM),
+.BR pam_sm_authenticate (3PAM),
+.BR pam_sm_chauthtok (3PAM),
+.BR pam_sm_open_session (3PAM),
+.BR pam_sm_setcred (3PAM),
+.BR pam_start (3PAM),
+.BR pam_strerror (3PAM),
+.BR syslog (3C),
+\fBpam.conf\fR(4),
+.BR attributes (5),
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_passwd_auth (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+.BR pam_unix_session (5)
 .SH NOTES
 .sp
 .LP
-The interfaces in \fBlibpam\fR are MT-Safe only if each thread within the
-multithreaded application uses its own \fBPAM\fR handle.
+The interfaces in
+.B libpam
+are MT-Safe only if each thread within the
+multithreaded application uses its own
+.B PAM
+handle.

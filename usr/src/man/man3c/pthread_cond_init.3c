@@ -74,11 +74,21 @@ cc -mt [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. -lpthread [ \fIlibrary\fR.\|.\|. 
 .SH DESCRIPTION
 .sp
 .LP
-The function \fBpthread_cond_init()\fR initializes the condition variable
-referenced by \fIcond\fR with attributes referenced by \fIattr\fR. If
-\fIattr\fR is  \fBNULL\fR, the default condition variable attributes are
+The function
+.B pthread_cond_init()
+initializes the condition variable
+referenced by
+.I cond
+with attributes referenced by
+.IR attr .
+If
+\fIattr\fR is
+.BR NULL ,
+the default condition variable attributes are
 used; the effect is the same as passing the address of a default condition
-variable attributes object. See \fBpthread_condattr_init\fR(3C). Upon
+variable attributes object. See
+.BR pthread_condattr_init (3C).
+Upon
 successful initialization, the state of the condition variable becomes
 initialized.
 .sp
@@ -87,12 +97,21 @@ Attempting to initialize an already initialized condition variable results
 in undefined behavior.
 .sp
 .LP
-The function \fBpthread_cond_destroy()\fR destroys the given condition
-variable specified by \fIcond\fR; the object becomes, in effect,
-uninitialized. An implementation may cause \fBpthread_cond_destroy()\fR to
-set the object referenced by \fIcond\fR to an invalid value. A destroyed
+The function
+.B pthread_cond_destroy()
+destroys the given condition
+variable specified by
+.IR cond ;
+the object becomes, in effect,
+uninitialized. An implementation may cause
+.B pthread_cond_destroy()
+to
+set the object referenced by
+.I cond
+to an invalid value. A destroyed
 condition variable object can be re-initialized using
-\fBpthread_cond_init()\fR; the results of otherwise referencing the object
+.BR pthread_cond_init() ;
+the results of otherwise referencing the object
 after it has been destroyed are undefined.
 .sp
 .LP
@@ -103,30 +122,43 @@ behavior.
 .sp
 .LP
 In cases where default condition variable attributes are appropriate, the
-macro \fBPTHREAD_COND_INITIALIZER\fR can be used to initialize condition
+macro
+.B PTHREAD_COND_INITIALIZER
+can be used to initialize condition
 variables that are statically allocated. The effect is equivalent to dynamic
-initialization by a call to \fBpthread_cond_init()\fR with parameter
+initialization by a call to
+.B pthread_cond_init()
+with parameter
 \fIattr\fR specified as  \fBNULL,\fR except that no error checks are
 performed.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, the \fBpthread_cond_init()\fR and
-\fBpthread_cond_destroy()\fR functions return  \fB0\fR. Otherwise, an error
-number is returned to indicate the error. The \fBEBUSY\fR and \fBEINVAL\fR
+If successful, the
+.B pthread_cond_init()
+and
+\fBpthread_cond_destroy()\fR functions return 
+.BR 0 .
+Otherwise, an error
+number is returned to indicate the error. The
+.B EBUSY
+and
+.BR EINVAL
 error checks, if implemented, act as if they were performed immediately at
 the beginning of processing for the function and caused an error return
 prior to modifying the state of the condition variable specified by
-\fIcond\fR. 
+.IR cond .
 .SH ERRORS
 .sp
 .LP
-The  \fBpthread_cond_init()\fR function will fail if:
+The 
+.B pthread_cond_init()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -138,7 +170,7 @@ another condition variable.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -147,17 +179,21 @@ Insufficient memory exists to initialize the condition variable.
 
 .sp
 .LP
-The \fBpthread_cond_init()\fR function may fail if:
+The
+.B pthread_cond_init()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
 The implementation has detected an attempt to re-initialize the object
-referenced by \fIcond\fR, a previously initialized, but not yet destroyed,
+referenced by
+.IR cond ,
+a previously initialized, but not yet destroyed,
 condition variable.
 .RE
 
@@ -165,27 +201,35 @@ condition variable.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value specified by \fIattr\fR is invalid.
+The value specified by
+.I attr
+is invalid.
 .RE
 
 .sp
 .LP
-The \fBpthread_cond_destroy()\fR function may fail if:
+The
+.B pthread_cond_destroy()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
 The implementation has detected an attempt to destroy the object referenced
-by \fIcond\fR while it is referenced (for example, while being used in a
-\fBpthread_cond_wait()\fR or \fBpthread_cond_timedwait()\fR) by another
+by
+.I cond
+while it is referenced (for example, while being used in a
+\fBpthread_cond_wait()\fR or
+.BR pthread_cond_timedwait() )
+by another
 thread.
 .RE
 
@@ -193,17 +237,21 @@ thread.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value specified by \fIcond\fR is invalid.
+The value specified by
+.I cond
+is invalid.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -222,7 +270,11 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBpthread_cond_signal\fR(3C), \fBpthread_cond_broadcast\fR(3C),
-\fBpthread_cond_wait\fR(3C), \fBpthread_cond_timedwait\fR(3C),
-\fBpthread_condattr_init\fR(3C), \fBattributes\fR(5), \fBcondition\fR(5),
-\fBstandards\fR(5) 
+.BR pthread_cond_signal (3C),
+.BR pthread_cond_broadcast (3C),
+.BR pthread_cond_wait (3C),
+.BR pthread_cond_timedwait (3C),
+.BR pthread_condattr_init (3C),
+.BR attributes (5),
+.BR condition (5),
+.BR standards (5)

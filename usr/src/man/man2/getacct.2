@@ -45,28 +45,43 @@ getacct, putacct, wracct \- get, put, or write extended accounting data
 These functions provide access to the extended accounting facility.
 .sp
 .LP
-The \fBgetacct()\fR function returns extended accounting buffers from the
+The
+.B getacct()
+function returns extended accounting buffers from the
 kernel for currently executing tasks and processes. The resulting data buffer
-is a packed \fBexacct\fR object that can be unpacked using
+is a packed
+.B exacct
+object that can be unpacked using
 \fBea_unpack_object()\fR (see \fBea_pack_object\fR(3EXACCT)) and subsequently
 manipulated using the functions of the extended accounting library,
-\fBlibexacct\fR(3LIB).
+.BR libexacct (3LIB).
 .sp
 .LP
-The \fBputacct()\fR function provides privileged processes the ability to
+The
+.B putacct()
+function provides privileged processes the ability to
 tag accounting records with additional data specific to that process.  For
 instance, a queueing facility might want to record to which queue a given
 task or process was submitted prior to running. The \fIflags\fR argument
 determines whether the contents of \fIbuf\fR should be treated as raw data
 (\fBEP_RAW\fR) or as an embedded \fBexacct\fR structure
-(\fBEP_EXACCT_OBJECT\fR). In the case of \fBEP_EXACCT_OBJECT\fR, \fIbuf\fR
-must be a packed \fBexacct\fR object as returned by
-\fBea_pack_object\fR(3EXACCT). The use of an inappropriate flag or the
-inclusion of corrupt \fBexacct\fR data will likely corrupt the enclosing
+(\fBEP_EXACCT_OBJECT\fR). In the case of
+.BR EP_EXACCT_OBJECT ,
+\fIbuf\fR
+must be a packed
+.B exacct
+object as returned by
+.BR ea_pack_object (3EXACCT).
+The use of an inappropriate flag or the
+inclusion of corrupt
+.B exacct
+data will likely corrupt the enclosing
 \fBexacct\fR file.
 .sp
 .LP
-The \fBwracct()\fR function requests the kernel to write, given its internal
+The
+.B wracct()
+function requests the kernel to write, given its internal
 state of resource usage, the appropriate data for the specified task or
 process. The flags field determines whether a partial (\fBEW_PARTIAL\fR) or
 interval record (\fBEW_INTERVAL\fR) is written.
@@ -79,41 +94,61 @@ records to the system's extended accounting files.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBgetacct()\fR function returns the number of bytes required to
+The
+.B getacct()
+function returns the number of bytes required to
 represent the extended accounting record for the requested system task or
 process. If \fIbufsize\fR exceeds the returned size, \fIbuf\fR will contain a
 valid accounting record buffer. If \fIbufsize\fR is less than the return
 value, \fIbuf\fR will contain the first \fIbufsize\fR bytes of the record. If
 \fIbufsize\fR is 0, \fBgetacct()\fR returns only the number of  bytes
 required to represent the extended accounting record. In the event of
-failure, \fB\(mi1\fR is returned and \fBerrno\fR is set to indicate the
+failure, \fB\(mi1\fR is returned and
+.B errno
+is set to indicate the
 error.
 .sp
 .LP
-The \fBputacct()\fR and \fBwracct()\fR functions return \fB0\fR if the
+The
+.B putacct()
+and
+.B wracct()
+functions return
+.B 0
+if the
 record was successfully written. Otherwise, \fB\(mi1\fR is returned and
 \fBerrno\fR is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBgetacct()\fR, \fBputacct()\fR, and \fBwracct()\fR functions will fail
+The
+.BR getacct() ,
+.BR putacct() ,
+and
+.B wracct()
+functions will fail
 if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 14n
 .rt
-The \fIidtype\fR argument was not \fBP_TASKID\fR or \fBP_PID\fR.
+The
+.I idtype
+argument was not
+.B P_TASKID
+or
+.BR P_PID .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 14n
 .rt
@@ -126,13 +161,19 @@ exceed the amount of space remaining on the file system.
 .ne 2
 .mk
 .na
-\fBENOTACTIVE\fR
+.B ENOTACTIVE
 .ad
 .RS 14n
 .rt
-The extended accounting facility for the requested \fBidtype_t\fR is not
-active. Either \fBputacct()\fR attempted to write a task record when the task
-accounting file was unset, or \fBgetacct()\fR attempted to retrieve
+The extended accounting facility for the requested
+.B idtype_t
+is not
+active. Either
+.B putacct()
+attempted to write a task record when the task
+accounting file was unset, or
+.B getacct()
+attempted to retrieve
 accounting data for a process when extended process accounting was
 inactive.
 .RE
@@ -141,7 +182,7 @@ inactive.
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 14n
 .rt
@@ -153,33 +194,43 @@ the calling process.
 .ne 2
 .mk
 .na
-\fBERSCH\fR
+.B ERSCH
 .ad
 .RS 14n
 .rt
-The \fIid\fR argument does not refer to a presently active system task
+The
+.I id
+argument does not refer to a presently active system task
 \fBID\fR or process \fBID\fR.
 .RE
 
 .sp
 .LP
-The \fBputacct()\fR and \fBwracct()\fR functions will fail if:
+The
+.B putacct()
+and
+.B wracct()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIflags\fR argument is neither \fBEW_PARTIAL\fR nor
-\fBEW_INTERVAL\fR.
+The \fIflags\fR argument is neither
+.B EW_PARTIAL
+nor
+.BR EW_INTERVAL .
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp

@@ -35,15 +35,32 @@ monitoring services
 .sp
 .LP
 The \fBlfmt()\fR function retrieves a format string from a locale-specific
-message database (unless  \fBMM_NOGET\fR is specified) and uses it for
-\fBprintf\fR(3C) style formatting of \fIargs\fR. The output is displayed on
-\fIstream\fR. If \fIstream\fR is  \fINULL\fR no output is displayed.
+message database (unless 
+.B MM_NOGET
+is specified) and uses it for
+\fBprintf\fR(3C) style formatting of
+.IR args .
+The output is displayed on
+.IR stream .
+If
+.I stream
+is 
+.I NULL
+no output is displayed.
 .sp
 .LP
 The \fBlfmt()\fR function encapsulates the output in the standard error
-message format (unless  \fBMM_NOSTD\fR is specified, in which case the
-output is like that of \fBprintf()\fR. It forwards its output to the logging
-and monitoring facility, even if \fIstream\fR is  \fINULL\fR. Optionally,
+message format (unless 
+.B MM_NOSTD
+is specified, in which case the
+output is like that of
+.BR printf() .
+It forwards its output to the logging
+and monitoring facility, even if
+.I stream
+is
+.IR NULL .
+Optionally,
 \fBlfmt()\fR displays the output on the console with a date and time
 stamp.
 .sp
@@ -55,32 +72,45 @@ database, the \fBformat\fR argument must have the following structure:
 \fI<catalog>\fB:\fI<msgnum>\fB:\fI<defmsg>\fR\&.
 .sp
 .LP
-If  \fBMM_NOGET\fR is specified,  only the \fI<defmsg>\fR field must be
+If 
+.B MM_NOGET
+is specified,  only the \fI<defmsg>\fR field must be
 specified.
 .sp
 .LP
-The \fI<catalog>\fR field indicates the message database that contains the
+The
+.I <catalog>
+field indicates the message database that contains the
 localized version of the format string. This field is limited to 14
 characters selected from a set of all characters values, excluding the null
 character (\fB\e0\fR) and the ASCII codes for slash (\fB/\fR) and colon
 (\fB:\fR).
 .sp
 .LP
-The \fI<msgnum>\fR field is a positive number that indicates the index of
+The
+.I <msgnum>
+field is a positive number that indicates the index of
 the string into the message database.
 .sp
 .LP
 If the catalog does not exist in the locale (specified by the last call to
-\fBsetlocale\fR(3C) using the  \fBLC_ALL\fR or  \fBLC_MESSAGES\fR
+.BR setlocale (3C)
+using the 
+.B LC_ALL
+or 
+.BR LC_MESSAGES
 categories), or if the message number is out of bound, \fBlfmt()\fR will
 attempt to retrieve the message from the C locale. If this second retrieval
 fails, \fBlfmt()\fR uses the \fI<defmsg>\fR field of the \fBformat\fR
 argument.
 .sp
 .LP
-If \fI<catalog>\fR is omitted, \fBlfmt()\fR will attempt to retrieve the
+If
+.I <catalog>
+is omitted, \fBlfmt()\fR will attempt to retrieve the
 string from the default catalog specified by the last call to
-\fBsetcat\fR(3C). In this case, the \fBformat\fR argument has the following
+.BR setcat (3C).
+In this case, the \fBformat\fR argument has the following
 structure:
 .sp
 .LP
@@ -93,8 +123,12 @@ The \fBlfmt()\fR function will output the message
 \fBMessage not found!!\en\fR
 .sp
 .LP
-as the format string if \fI<catalog>\fR is not a valid catalog name, if no
-catalog is specified (either explicitly or with \fBsetcat()\fR), if
+as the format string if
+.I <catalog>
+is not a valid catalog name, if no
+catalog is specified (either explicitly or with
+.BR setcat() ),
+if
 \fI<msgnum>\fR is not a valid number, or if no message could be retrieved
 from the message databases and \fI<defmsg>\fR was omitted.
 .sp
@@ -119,21 +153,23 @@ following values (one from each group):
 .ne 2
 .mk
 .na
-\fBMM_NOSTD\fR
+.B MM_NOSTD
 .ad
 .RS 12n
 .rt
 Do not use the standard message format but interpret \fBformat\fR as a
-\fBprintf()\fR \fBformat\fR. Only \fIcatalog access control flags\fR,
+\fBprintf() format\fR. Only \fIcatalog access control flags\fR,
 \fIconsole display control\fR and \fIlogging information\fR should be
-specified if  \fBMM_NOSTD\fR is used; all other flags will be ignored.
+specified if 
+.B MM_NOSTD
+is used; all other flags will be ignored.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_STD\fR
+.B MM_STD
 .ad
 .RS 12n
 .rt
@@ -146,7 +182,7 @@ Output using the standard message format (default value is 0).
 .ne 2
 .mk
 .na
-\fICatalog access control\fR
+.I Catalog access control
 .ad
 .sp .6
 .RS 4n
@@ -154,11 +190,13 @@ Output using the standard message format (default value is 0).
 .ne 2
 .mk
 .na
-\fBMM_NOGET\fR
+.B MM_NOGET
 .ad
 .RS 12n
 .rt
-Do not retrieve a localized version of \fBformat\fR. In this case, only the
+Do not retrieve a localized version of
+.BR format .
+In this case, only the
 \fI<defmsg>\fR field of \fBformat\fR is specified.
 .RE
 
@@ -166,11 +204,13 @@ Do not retrieve a localized version of \fBformat\fR. In this case, only the
 .ne 2
 .mk
 .na
-\fBMM_GET\fR
+.B MM_GET
 .ad
 .RS 12n
 .rt
-Retrieve a localized version of \fBformat\fR from \fI<catalog>\fR, using
+Retrieve a localized version of \fBformat\fR from
+.IR <catalog> ,
+using
 \fI<msgid>\fR as the index and \fI<defmsg>\fR as the default message
 (default value is 0).
 .RE
@@ -189,49 +229,57 @@ Retrieve a localized version of \fBformat\fR from \fI<catalog>\fR, using
 .ne 2
 .mk
 .na
-\fBMM_HALT\fR
+.B MM_HALT
 .ad
 .RS 14n
 .rt
-Generate a localized version of  \fBHALT,\fR but donot halt the machine.
+Generate a localized version of 
+.B HALT,
+but donot halt the machine.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_ERROR\fR
+.B MM_ERROR
 .ad
 .RS 14n
 .rt
-Generate a localized version of  \fBERROR\fR (default value is 0).
+Generate a localized version of 
+.B ERROR
+(default value is 0).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_WARNING\fR
+.B MM_WARNING
 .ad
 .RS 14n
 .rt
-Generate a localized version of  \fBWARNING\fR.
+Generate a localized version of 
+.BR WARNING .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_INFO\fR
+.B MM_INFO
 .ad
 .RS 14n
 .rt
-Generate a localized version of  \fBINFO\fR.
+Generate a localized version of 
+.BR INFO .
 .RE
 
 Additional severities can be defined with the \fBaddsev\fR(3C) function,
 using number-string pairs with numeric values in the range [5-255]. The
-specified severity is formed by the bitwise \fBOR\fR operation of the
+specified severity is formed by the bitwise
+.B OR
+operation of the
 numeric value and other \fIflags\fR arguments.
 .sp
 If the severity is not defined, \fBlfmt()\fR uses the string
@@ -248,7 +296,7 @@ cause the display of either a severity string (if defined) or the string
 .ne 2
 .mk
 .na
-\fIAction\fR
+.I Action
 .ad
 .sp .6
 .RS 4n
@@ -256,12 +304,13 @@ cause the display of either a severity string (if defined) or the string
 .ne 2
 .mk
 .na
-\fBMM_ACTION\fR
+.B MM_ACTION
 .ad
 .RS 13n
 .rt
 Specify an action message. Any severity value is superseded and replaced by
-a localized version of \fBTO FIX\fR.
+a localized version of
+.BR "TO FIX" .
 .RE
 
 .RE
@@ -270,7 +319,7 @@ a localized version of \fBTO FIX\fR.
 .ne 2
 .mk
 .na
-\fIConsole display control\fR
+.I Console display control
 .ad
 .sp .6
 .RS 4n
@@ -278,19 +327,19 @@ a localized version of \fBTO FIX\fR.
 .ne 2
 .mk
 .na
-\fBMM_CONSOLE\fR
+.B MM_CONSOLE
 .ad
 .RS 16n
 .rt
 Display the message to the console in addition to the specified
-\fIstream\fR.
+.IR stream .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_NOCONSOLE\fR
+.B MM_NOCONSOLE
 .ad
 .RS 16n
 .rt
@@ -317,7 +366,11 @@ Do not display the message to the console in addition to the specified
 .sp .6
 .RS 4n
 Identify the source of the condition. Identifiers are: \fBMM_HARD\fR
-(hardware), \fBMM_SOFT\fR (software), and \fBMM_FIRM\fR (firmware).
+(hardware),
+.B MM_SOFT
+(software), and
+.B MM_FIRM
+(firmware).
 .RE
 
 .sp
@@ -329,7 +382,11 @@ Identify the source of the condition. Identifiers are: \fBMM_HARD\fR
 .sp .6
 .RS 4n
 Identify the type of software in which the problem is spotted. Identifiers
-are: \fBMM_APPL\fR (application), \fBMM_UTIL\fR (utility), and
+are:
+.B MM_APPL
+(application),
+.B MM_UTIL
+(utility), and
 \fBMM_OPSYS\fR (operating system).
 .RE
 
@@ -349,7 +406,10 @@ format:
 
 .sp
 .LP
-If no \fIlabel\fR was defined by a call to \fBsetlabel\fR(3C), the message
+If no
+.I label
+was defined by a call to
+.BR setlabel "(3C), the message"
 is displayed in the format:
 .sp
 .in +2
@@ -383,7 +443,8 @@ transmitted. Otherwise, it returns a negative value:
 .ad
 .RS 9n
 .rt
-Write the error to \fIstream\fR.
+Write the error to
+.IR stream .
 .RE
 
 .sp
@@ -400,11 +461,13 @@ Cannot log and/or display at console.
 .SH USAGE
 .sp
 .LP
-Since \fBlfmt()\fR uses \fBgettxt\fR(3C), it is recommended that
+Since \fBlfmt()\fR uses
+.BR gettxt (3C),
+it is recommended that
 \fBlfmt()\fR not be used.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe following example
+\fBExample 1\fR The following example
 .sp
 .in +2
 .nf
@@ -416,7 +479,9 @@ lfmt(stderr, MM_ERROR|MM_CONSOLE|MM_SOFT|MM_UTIL,
 
 .sp
 .LP
-displays the message to \fBstderr\fR and to the console and makes it
+displays the message to
+.B stderr
+and to the console and makes it
 available for logging:
 
 .sp
@@ -427,7 +492,7 @@ UX:test: ERROR: Cannot open file: No such file or directory
 .in -2
 
 .LP
-\fBExample 2 \fRThe following example
+\fBExample 2\fR The following example
 .sp
 .in +2
 .nf
@@ -439,7 +504,9 @@ lfmt(stderr, MM_INFO|MM_SOFT|MM_UTIL,
 
 .sp
 .LP
-displays the message to \fBstderr\fR and makes it available for logging:
+displays the message to
+.B stderr
+and makes it available for logging:
 
 .sp
 .in +2
@@ -451,7 +518,9 @@ UX:test: INFO: test facility enabled
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -468,6 +537,11 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBaddsev\fR(3C), \fBgettxt\fR(3C), \fBpfmt\fR(3C), \fBprintf\fR(3C),
-\fBsetcat\fR(3C), \fBsetlabel\fR(3C), \fBsetlocale\fR(3C),
-\fBattributes\fR(5), \fBenviron\fR(5)
+.BR addsev (3C),
+.BR gettxt (3C),
+\fBpfmt\fR(3C), \fBprintf\fR(3C),
+.BR setcat (3C),
+.BR setlabel (3C),
+.BR setlocale (3C),
+.BR attributes (5),
+.BR environ (5)

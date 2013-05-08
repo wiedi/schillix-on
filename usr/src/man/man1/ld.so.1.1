@@ -38,7 +38,9 @@ ld.so.1 \- runtime linker for dynamic objects
 Dynamic applications consist of one or more dynamic objects. A dynamic
 application is typically a dynamic executable and one or more shared object
 dependencies. As part of the initialization and execution of a dynamic
-application, an \fBinterpreter\fR is called. This interpreter completes the
+application, an
+.B interpreter
+is called. This interpreter completes the
 binding of the application to its shared object dependencies. In Solaris, this
 interpreter is referred to as the runtime linker.
 .sp
@@ -46,13 +48,20 @@ interpreter is referred to as the runtime linker.
 During the link-editing of a dynamic executable, a special \fB\&.interp\fR
 section, together with an associated program header, is created. This section
 contains a path name specifying the program's interpreter. An interpreter path
-name can be specified when the executable is constructed using the \fB-I\fR
-option to \fBld\fR(1), the link-editor. The default name supplied by the
+name can be specified when the executable is constructed using the
+.BR -I
+option to
+.BR ld (1),
+the link-editor. The default name supplied by the
 link-editor is the name of the runtime linker, \fBld.so.1\fR.
 .sp
 .LP
 During the process of executing a dynamic executable, the kernel maps the file,
-and locates the required interpreter. See \fBexec\fR(2) and \fBmmapobj\fR(2). The
+and locates the required interpreter. See
+.BR exec (2)
+and
+.BR mmapobj (2).
+The
 kernel maps in, and transfers control to, this interpreter. Sufficient
 information is passed to the interpretor to allow the interpreter to continue to
 bind, and then execute the application.
@@ -70,12 +79,18 @@ The runtime linker performs the following functions:
 .el o
 A configuration file, if in existence, is processed. Configuration files can be
 employed to alter default search paths, provide a directory cache, and provide
-alternative object dependencies. See \fBcrle\fR(1). By default, for 32-bit
+alternative object dependencies. See
+.BR crle (1).
+By default, for 32-bit
 objects, the configuration file \fB/var/ld/ld.config\fR is used. For 64-bit
 objects, the default configuration file \fB/var/ld/64/ld.config\fR is used.
-Alternative configuration files can be specified with the \fBLD_CONFIG\fR
+Alternative configuration files can be specified with the
+.BR LD_CONFIG
 environment variable. Alternative configuration files can also be encoded within
-a dynamic executable by using the \fB-c\fR option of \fBld\fR(1).
+a dynamic executable by using the
+.B -c
+option of
+.BR ld (1).
 .RE
 .RS +4
 .TP
@@ -108,7 +123,9 @@ Any initialization functions provided by the shared object dependencies and,
 possibly, by the dynamic executable are called. The functions are called in the
 reverse order of the topologically sorted dependencies. If cyclic dependencies
 exist, the initialization functions are called using the sorted order with the
-cycle removed. \fBldd\fR(1) can be used to display the initialization order of
+cycle removed.
+.BR ldd (1)
+can be used to display the initialization order of
 shared object dependencies.
 .RE
 .RS +4
@@ -137,7 +154,8 @@ sorted dependencies.
 .ie t \(bu
 .el o
 The application can also call upon the services of the runtime linker to acquire
-additional shared objects by using \fBdlopen\fR(3C). Symbols provided by these
+additional shared objects by using
+.BR dlopen "(3C). Symbols provided by these"
 objects, can be bound to using \fBdlsym\fR(3C).
 .RE
 .sp
@@ -149,11 +167,24 @@ Libraries Guide\fR.
 The runtime linker uses a prescribed search path for locating the dynamic
 dependencies of an object. The default search paths are the runpath recorded in
 the object, followed by a series of defaults. For 32-bit objects, the defaults
-are \fB/lib\fR followed by \fB/usr/lib\fR. For 64-bit objects, the defaults are
-\fB/lib/64\fR followed by \fB/usr/lib/64\fR. These defaults component can be
-modified using a configuration file that is created with \fBcrle\fR(1). The
-runpath is specified when the dynamic object is constructed using the \fB-R\fR
-option to \fBld\fR(1). The environment variable \fBLD_LIBRARY_PATH\fR can be used
+are
+.B /lib
+followed by
+.BR /usr/lib .
+For 64-bit objects, the defaults are
+\fB/lib/64\fR followed by
+.BR /usr/lib/64 .
+These defaults component can be
+modified using a configuration file that is created with
+.BR crle (1).
+The
+runpath is specified when the dynamic object is constructed using the
+.BR -R
+option to
+.BR ld (1).
+The environment variable
+.B LD_LIBRARY_PATH
+can be used
 to indicate directories to be searched before the default directories.
 .SS "Command Line Usage"
 .sp
@@ -185,45 +216,87 @@ VARIABLES.
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-Each environment variable can be specified with a \fB_32\fR or \fB_64\fR suffix.
+Each environment variable can be specified with a
+.B _32
+or
+.B _64
+suffix.
 This makes the environment variable specific, respectively, to 32-bit or 64-bit
 processes. This environment variable overrides any non-suffixed version of the
 environment variable that might be in effect. Environment variables specified
-without a value, that have a \fB_32\fR or \fB_64\fR suffix, effectively cancel
+without a value, that have a
+.B _32
+or
+.B _64
+suffix, effectively cancel
 any associated generic environment variable setting.
 .sp
 .ne 2
 .mk
 .na
-\fBLD_AUDIT\fR, \fBLD_AUDIT_32\fR, and \fBLD_AUDIT_64\fR
+.BR LD_AUDIT ,
+.BR LD_AUDIT_32 ,
+and
+.BR LD_AUDIT_64
 .ad
 .sp .6
 .RS 4n
 A colon-separated list of objects that are loaded by the runtime linker. As each
-object is loaded, the object is examined for \fILink-Auditing\fR interface
+object is loaded, the object is examined for
+.I Link-Auditing
+interface
 routines. The routines that are present are called as specified in the
 \fILink-Auditing\fR interface described in the \fILinker and Libraries Guide\fR.
-Also, see the \fB-p\fR and \fB-P\fR options of \fBld\fR(1).
+Also, see the
+.B -p
+and
+.B -P
+options of
+.BR ld (1).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBLD_BIND_LAZY\fR, \fBLD_BIND_LAZY_32\fR, and \fBLD_BIND_LAZY_64\fR
+.BR LD_BIND_LAZY ,
+.BR LD_BIND_LAZY_32 ,
+and
+.BR LD_BIND_LAZY_64
 .ad
 .sp .6
 .RS 4n
 The runtime linker's default mode of performing lazy binding can be enforced by
-setting the environment variable \fBLD_BIND_LAZY\fR to any non-null value. This
-setting causes the runtime linker to perform only \fBlazy\fR reference
+setting the environment variable
+.B LD_BIND_LAZY
+to any non-null value. This
+setting causes the runtime linker to perform only
+.B lazy
+reference
 relocations for all objects that are loaded into the process. Individual objects
-can request that \fBlazy\fR reference relocations are performed when the object
-is loaded. See the \fB-z\fR \fBnow\fR option of \fBld\fR(1), and \fBdlopen\fR(3C)
-with the mode \fBRTLD_NOW\fR. Such requests to perform \fBlazy\fR reference
-relocations are suppressed when \fBLD_BIND_LAZY\fR is in effect.
+can request that
+.B lazy
+reference relocations are performed when the object
+is loaded. See the
+.B "-z now"
+option of
+.BR ld (1),
+and
+.BR dlopen (3C)
+with the mode
+.BR RTLD_NOW .
+Such requests to perform
+.B lazy
+reference
+relocations are suppressed when
+.B LD_BIND_LAZY
+is in effect.
 .sp
-If both \fBLD_BIND_LAZY\fR and \fBLD_BIND_NOW\fR are specified, then
+If both
+.B LD_BIND_LAZY
+and
+.B LD_BIND_NOW
+are specified, then
 \fBLD_BIND_NOW\fR takes precedence.
 .RE
 
@@ -231,19 +304,35 @@ If both \fBLD_BIND_LAZY\fR and \fBLD_BIND_NOW\fR are specified, then
 .ne 2
 .mk
 .na
-\fBLD_BIND_NOW\fR, \fBLD_BIND_NOW_32\fR, and \fBLD_BIND_NOW_64\fR
+.BR LD_BIND_NOW ,
+.BR LD_BIND_NOW_32 ,
+and
+.BR LD_BIND_NOW_64
 .ad
 .sp .6
 .RS 4n
 The runtime linker's default mode of performing lazy binding can be overridden
-by setting the environment variable \fBLD_BIND_NOW\fR to any non-null value. This
-setting causes the runtime linker to perform both \fBimmediate\fR reference and
+by setting the environment variable
+.B LD_BIND_NOW
+to any non-null value. This
+setting causes the runtime linker to perform both
+.B immediate
+reference and
 \fBlazy\fR reference relocations for all objects that are loaded into the
-process. Individual objects can request that \fBlazy\fR reference relocations are
-performed when the object is loaded. See the \fB-z\fR \fBnow\fR option of
-\fBld\fR(1), and \fBdlopen\fR(3C) with the mode \fBRTLD_NOW\fR.
+process. Individual objects can request that
+.B lazy
+reference relocations are
+performed when the object is loaded. See the
+.B "-z now"
+option of
+.BR ld (1),
+and \fBdlopen\fR(3C) with the mode \fBRTLD_NOW\fR.
 .sp
-If both \fBLD_BIND_NOW\fR and \fBLD_BIND_LAZY\fR are specified, then
+If both
+.B LD_BIND_NOW
+and
+.B LD_BIND_LAZY
+are specified, then
 \fBLD_BIND_NOW\fR takes precedence.
 .RE
 
@@ -251,7 +340,10 @@ If both \fBLD_BIND_NOW\fR and \fBLD_BIND_LAZY\fR are specified, then
 .ne 2
 .mk
 .na
-\fBLD_CONFIG\fR, \fBLD_CONFIG_32\fR, and \fBLD_CONFIG_64\fR
+.BR LD_CONFIG ,
+.BR LD_CONFIG_32 ,
+and
+.BR LD_CONFIG_64
 .ad
 .sp .6
 .RS 4n
@@ -264,7 +356,10 @@ object dependencies. See \fBcrle\fR(1).
 .ne 2
 .mk
 .na
-\fBLD_DEBUG\fR, \fBLD_DEBUG_32\fR, and \fBLD_DEBUG_64\fR
+.BR LD_DEBUG ,
+.BR LD_DEBUG_32 ,
+and
+.BR LD_DEBUG_64
 .ad
 .sp .6
 .RS 4n
@@ -280,12 +375,19 @@ of the application generating the debugging information. See \fBlari\fR(1).
 .ne 2
 .mk
 .na
-\fBLD_DEMANGLE\fR, \fBLD_DEMANGLE_32\fR, and \fBLD_DEMANGLE_64\fR
+.BR LD_DEMANGLE ,
+.BR LD_DEMANGLE_32 ,
+and
+.BR LD_DEMANGLE_64
 .ad
 .sp .6
 .RS 4n
 Any symbol name used as part of a diagnostic message is shown as defined within
-an \fBELF\fR file. When \fBLD_DEMANGLE\fR is set to any non-null value, the
+an
+.B ELF
+file. When
+.B LD_DEMANGLE
+is set to any non-null value, the
 runtime linker attempts to decode (demangle) any C++ symbol name.
 .RE
 
@@ -293,7 +395,10 @@ runtime linker attempts to decode (demangle) any C++ symbol name.
 .ne 2
 .mk
 .na
-\fBLD_FLAGS\fR, \fBLD_FLAGS_32\fR, and \fBLD_FLAGS_64\fR
+.BR LD_FLAGS ,
+.BR LD_FLAGS_32 ,
+and
+.BR LD_FLAGS_64
 .ad
 .sp .6
 .RS 4n
@@ -306,45 +411,67 @@ token. Multiple tokens can be supplied separated by commas. See EXAMPLES.
 .ne 2
 .mk
 .na
-\fBLD_LIBRARY_PATH\fR, \fBLD_LIBRARY_PATH_32\fR, and
-\fBLD_LIBRARY_PATH_64\fR
+.BR LD_LIBRARY_PATH ,
+.BR LD_LIBRARY_PATH_32 ,
+and
+.B LD_LIBRARY_PATH_64
 .ad
 .sp .6
 .RS 4n
-The \fBLD_LIBRARY_PATH\fR environment variable, if set, is used to enhance the
+The
+.B LD_LIBRARY_PATH
+environment variable, if set, is used to enhance the
 search path that the runtime linker uses to find dynamic dependencies.
 \fBLD_LIBRARY_PATH\fR specifies a colon-separated list of directories that are
 searched before the default directories. Also notice that \fBLD_LIBRARY_PATH\fR
-adds additional semantics to \fBld\fR(1).
+adds additional semantics to
+.BR ld (1).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBLD_LOADFLTR\fR, \fBLD_LOADFLTR_32\fR, and \fBLD_LOADFLTR_64\fR
+.BR LD_LOADFLTR ,
+.BR LD_LOADFLTR_32 ,
+and
+.BR LD_LOADFLTR_64
 .ad
 .sp .6
 .RS 4n
 Filters are a form of shared object. Filters allow an alternative shared object
 to be selected at runtime that provide the implementation for any symbols that
 are defined within the filter. See the \fB-f\fR and \fB-F\fR options of
-\fBld\fR(1). By default, the alternative shared object processing is deferred
-until symbol resolution occurs against the filter. When \fBLD_LOADFLTR\fR is set
+.BR ld (1).
+By default, the alternative shared object processing is deferred
+until symbol resolution occurs against the filter. When
+.B LD_LOADFLTR
+is set
 to any non-null value, any filters are processed immediately when the filter is
-loaded. Also, see the \fB-z\fR \fBloadfltr\fR option of \fBld\fR(1).
+loaded. Also, see the \fB-z loadfltr\fR option of \fBld\fR(1).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBLD_NOAUDIT\fR, \fBLD_NOAUDIT_32\fR, and \fBLD_NOAUDIT_64\fR
+.BR LD_NOAUDIT ,
+.BR LD_NOAUDIT_32 ,
+and
+.BR LD_NOAUDIT_64
 .ad
 .sp .6
 .RS 4n
 Local auditing libraries can be defined within applications and shared objects.
-See the \fB-p\fR and \fB-P\fR options of \fBld\fR(1). When \fBLD_NOAUDIT\fR is
+See the
+.B -p
+and
+.B -P
+options of
+.BR ld (1).
+When
+.B LD_NOAUDIT
+is
 set to any non-null value, the runtime linker ignores any local auditing
 libraries.
 .RE
@@ -353,14 +480,21 @@ libraries.
 .ne 2
 .mk
 .na
-\fBLD_NOAUXFLTR\fR, \fBLD_NOAUXFLTR_32\fR, and \fBLD_NOAUXFLTR_64\fR
+.BR LD_NOAUXFLTR ,
+.BR LD_NOAUXFLTR_32 ,
+and
+.BR LD_NOAUXFLTR_64
 .ad
 .sp .6
 .RS 4n
 Auxiliary filters are a form of shared object. Auxiliary filters allow an
 alternative shared object to be selected at runtime which provides the
 implementation for any symbols that are defined within the filter. See the
-\fB-f\fR option of \fBld\fR(1). When \fBLD_NOAUXFLTR\fR is set to any non-null
+\fB-f\fR option of
+.BR ld (1).
+When
+.B LD_NOAUXFLTR
+is set to any non-null
 value, the runtime linker disables this alternative shared object lookup.
 .RE
 
@@ -368,12 +502,17 @@ value, the runtime linker disables this alternative shared object lookup.
 .ne 2
 .mk
 .na
-\fBLD_NOCONFIG\fR, \fBLD_NOCONFIG_32\fR, and \fBLD_NOCONFIG_64\fR
+.BR LD_NOCONFIG ,
+.BR LD_NOCONFIG_32 ,
+and
+.BR LD_NOCONFIG_64
 .ad
 .sp .6
 .RS 4n
 By default the runtime linker attempts to open and process a configuration file.
-When \fBLD_NOCONFIG\fR is set to any non-null value, the runtime linker disables
+When
+.B LD_NOCONFIG
+is set to any non-null value, the runtime linker disables
 this configuration file processing.
 .RE
 
@@ -381,12 +520,16 @@ this configuration file processing.
 .ne 2
 .mk
 .na
-\fBLD_NODIRCONFIG\fR, \fBLD_NODIRCONFIG_32\fR, and
-\fBLD_NODIRCONFIG_64\fR
+.BR LD_NODIRCONFIG ,
+.BR LD_NODIRCONFIG_32 ,
+and
+.B LD_NODIRCONFIG_64
 .ad
 .sp .6
 .RS 4n
-Provides a subset of \fBLD_NOCONFIG\fR in that any directory cache information
+Provides a subset of
+.B LD_NOCONFIG
+in that any directory cache information
 provided in a configuration file is ignored.
 .RE
 
@@ -394,14 +537,22 @@ provided in a configuration file is ignored.
 .ne 2
 .mk
 .na
-\fBLD_NODIRECT\fR, \fBLD_NODIRECT_32\fR, and \fBLD_NODIRECT_64\fR
+.BR LD_NODIRECT ,
+.BR LD_NODIRECT_32 ,
+and
+.BR LD_NODIRECT_64
 .ad
 .sp .6
 .RS 4n
 Direct binding information instructs the runtime linker to search directly for a
-symbol in an associated object. See the \fB-B\fR \fBdirect\fR option of
-\fBld\fR(1). Without direct binding, the symbol search performed by the runtime
-linker follows the default model. When \fBLD_NODIRECT\fR is set to any non-null
+symbol in an associated object. See the
+.B "-B direct"
+option of
+.BR ld (1).
+Without direct binding, the symbol search performed by the runtime
+linker follows the default model. When
+.B LD_NODIRECT
+is set to any non-null
 value, the runtime linker ignores any direct binding information.
 .RE
 
@@ -409,12 +560,16 @@ value, the runtime linker ignores any direct binding information.
 .ne 2
 .mk
 .na
-\fBLD_NOENVCONFIG\fR, \fBLD_NOENVCONFIG_32\fR, and
-\fBLD_NOENVCONFIG_64\fR
+.BR LD_NOENVCONFIG ,
+.BR LD_NOENVCONFIG_32 ,
+and
+.B LD_NOENVCONFIG_64
 .ad
 .sp .6
 .RS 4n
-Provides a subset of \fBLD_NOCONFIG\fR in that any environment variables
+Provides a subset of
+.B LD_NOCONFIG
+in that any environment variables
 provided in a configuration file are ignored.
 .RE
 
@@ -422,13 +577,20 @@ provided in a configuration file are ignored.
 .ne 2
 .mk
 .na
-\fBLD_NOLAZYLOAD\fR, \fBLD_NOLAZYLOAD_32\fR, and \fBLD_NOLAZYLOAD_64\fR
+.BR LD_NOLAZYLOAD ,
+.BR LD_NOLAZYLOAD_32 ,
+and
+.BR LD_NOLAZYLOAD_64
 .ad
 .sp .6
 .RS 4n
 Dependencies that are labeled for lazy loading are not loaded into memory until
 explicit reference to the dependency has been made. See the \fB-z\fR
-\fBlazyload\fR option of \fBld\fR(1). When \fBLD_NOLAZYLOAD\fR is set to any
+\fBlazyload\fR option of
+.BR ld (1).
+When
+.B LD_NOLAZYLOAD
+is set to any
 non-null value, the runtime linker ignores a dependencies lazy loading label and
 loads the dependency immediately.
 .RE
@@ -437,11 +599,16 @@ loads the dependency immediately.
 .ne 2
 .mk
 .na
-\fBLD_NOOBJALTER\fR, \fBLD_NOOBJALTER_32\fR, and \fBLD_NOOBJALTER_64\fR
+.BR LD_NOOBJALTER ,
+.BR LD_NOOBJALTER_32 ,
+and
+.BR LD_NOOBJALTER_64
 .ad
 .sp .6
 .RS 4n
-Provides a subset of \fBLD_NOCONFIG\fR in that any alternative object
+Provides a subset of
+.B LD_NOCONFIG
+in that any alternative object
 dependencies provided in a configuration file are ignored.
 .RE
 
@@ -449,12 +616,17 @@ dependencies provided in a configuration file are ignored.
 .ne 2
 .mk
 .na
-\fBLD_NOVERSION\fR, \fBLD_NOVERSION_32\fR, and \fBLD_NOVERSION_64\fR
+.BR LD_NOVERSION ,
+.BR LD_NOVERSION_32 ,
+and
+.BR LD_NOVERSION_64
 .ad
 .sp .6
 .RS 4n
 By default, the runtime linker verifies version dependencies for the primary
-executable and all of its dependencies. When \fBLD_NOVERSION\fR is set to any
+executable and all of its dependencies. When
+.B LD_NOVERSION
+is set to any
 non-null value, the runtime linker disables this version checking.
 .RE
 
@@ -462,14 +634,25 @@ non-null value, the runtime linker disables this version checking.
 .ne 2
 .mk
 .na
-\fBLD_ORIGIN\fR, \fBLD_ORIGIN_32\fR, and \fBLD_ORIGIN_64\fR
+.BR LD_ORIGIN ,
+.BR LD_ORIGIN_32 ,
+and
+.BR LD_ORIGIN_64
 .ad
 .sp .6
 .RS 4n
-The immediate processing of \fB$ORIGIN\fR can be triggered by setting the
-environment variable \fBLD_ORIGIN\fR to any non-null value. Before Solaris 9,
-this option was useful for applications that invoked \fBchdir\fR(2) prior to
-locating dependencies that employed the \fB$ORIGIN\fR string token. The
+The immediate processing of
+.B $ORIGIN
+can be triggered by setting the
+environment variable
+.B LD_ORIGIN
+to any non-null value. Before Solaris 9,
+this option was useful for applications that invoked
+.BR chdir (2)
+prior to
+locating dependencies that employed the
+.B $ORIGIN
+string token. The
 establishment of the current working directory by the runtime linker is now
 default thus making this option redundant.
 .RE
@@ -478,7 +661,10 @@ default thus making this option redundant.
 .ne 2
 .mk
 .na
-\fBLD_PRELOAD\fR, \fBLD_PRELOAD_32\fR, and \fBLD_PRELOAD_64\fR
+.BR LD_PRELOAD ,
+.BR LD_PRELOAD_32 ,
+and
+.BR LD_PRELOAD_64
 .ad
 .sp .6
 .RS 4n
@@ -494,27 +680,46 @@ symbol definitions provided by the program.
 .ne 2
 .mk
 .na
-\fBLD_PROFILE\fR, \fBLD_PROFILE_32\fR, and \fBLD_PROFILE_64\fR
+.BR LD_PROFILE ,
+.BR LD_PROFILE_32 ,
+and
+.BR LD_PROFILE_64
 .ad
 .sp .6
 .RS 4n
 Defines a shared object to be profiled by the runtime linker. When profiling is
 enabled, a profiling buffer file is created and mapped. The name of the buffer
 file is the name of the shared object being profiled with a \fB\&.profile\fR
-extension. By default, this buffer is placed under \fB/var/tmp\fR. The
-environment variable \fBLD_PROFILE_OUTPUT\fR can also be supplied to indicate an
+extension. By default, this buffer is placed under
+.BR /var/tmp .
+The
+environment variable
+.B LD_PROFILE_OUTPUT
+can also be supplied to indicate an
 alternative directory in which to place the profiling buffer.
 .sp
-The profiling buffer contains \fBprofil\fR(2) and call count information. This
-information is similar to the \fIgmon.out\fR information generated by programs
-that have been linked with the \fB-xpg\fR option of \fBcc\fR. Any applications
+The profiling buffer contains
+.BR profil (2)
+and call count information. This
+information is similar to the
+.I gmon.out
+information generated by programs
+that have been linked with the
+.B -xpg
+option of
+.BR cc .
+Any applications
 that use the named shared object and run while this environment variable is set,
 accumulate data in the profile buffer. See also NOTES. The profile buffer
 information can be examined using \fBgprof\fR(1).
 .sp
-The \fBLD_PROFILE\fR profiling technique is an alternative to other techniques
+The
+.B LD_PROFILE
+profiling technique is an alternative to other techniques
 that might be provided by the compilation system. The shared object being
-profiled does not have to be instrumented in any way, and \fBLD_PROFILE\fR should
+profiled does not have to be instrumented in any way, and
+.B LD_PROFILE
+should
 not be combined with a profile-instrumented application. See the \fILinker and
 Libraries Guide\fR for more information on profiling shared objects.
 .RE
@@ -523,22 +728,39 @@ Libraries Guide\fR for more information on profiling shared objects.
 .ne 2
 .mk
 .na
-\fBLD_SIGNAL\fR, \fBLD_SIGNAL_32\fR, and \fBLD_SIGNAL_64\fR
+.BR LD_SIGNAL ,
+.BR LD_SIGNAL_32 ,
+and
+.BR LD_SIGNAL_64
 .ad
 .sp .6
 .RS 4n
-Provides a \fBnumeric\fR signal number that the runtime linker uses to kill the
-process in the event of a fatal runtime error. See \fBthr_kill\fR(3C). By
-default, \fBSIGKILL\fR is used. For example, providing the alternative signal
-number \fB6\fR (\fBSIGABRT\fR), can provide for the creation of a core file to
-aid debugging. See also the \fBRTLD_DI_SETSIGNAL\fR request to
+Provides a
+.B numeric
+signal number that the runtime linker uses to kill the
+process in the event of a fatal runtime error. See
+.BR thr_kill (3C).
+By
+default,
+.B SIGKILL
+is used. For example, providing the alternative signal
+number
+.BR 6
+.RB ( SIGABRT ),
+can provide for the creation of a core file to
+aid debugging. See also the
+.B RTLD_DI_SETSIGNAL
+request to
 \fBdlinfo\fR(3C).
 .RE
 
 .sp
 .LP
 Notice that environment variable names beginning with the characters '\fBLD_\fR'
-are reserved for possible future enhancements to \fBld\fR(1) and \fBld.so.1\fR.
+are reserved for possible future enhancements to
+.BR ld (1)
+and
+.BR ld.so.1 .
 .SH SECURITY
 .sp
 .LP
@@ -547,21 +769,35 @@ dependencies and runpaths to prevent malicious dependency substitution or symbol
 interposition.
 .sp
 .LP
-The runtime linker categorizes a process as secure if the \fBissetugid\fR(2)
+The runtime linker categorizes a process as secure if the
+.BR issetugid (2)
 system call returns true for the process.
 .sp
 .LP
 For 32-bit objects, the default trusted directories that are known to the
-runtime linker are \fB/lib/secure\fR and \fB/usr/lib/secure\fR. For 64-bit
-objects, the default trusted directories are \fB/lib/secure/64\fR and
-\fB/usr/lib/secure/64\fR. The utility \fBcrle\fR(1) can be used to specify
+runtime linker are
+.B /lib/secure
+and
+.BR /usr/lib/secure .
+For 64-bit
+objects, the default trusted directories are
+.B /lib/secure/64
+and
+.BR /usr/lib/secure/64 .
+The utility
+.BR crle (1)
+can be used to specify
 additional trusted directories that are applicable for secure applications.
 Administrators who use this technique should ensure that the target directories
 are suitably protected from malicious intrusion.
 .sp
 .LP
-If an \fBLD_LIBRARY_PATH\fR family environment variable is in effect for a
-secure process, only the \fBtrusted\fR directories specified by this variable are
+If an
+.B LD_LIBRARY_PATH
+family environment variable is in effect for a
+secure process, only the
+.B trusted
+directories specified by this variable are
 used to augment the runtime linker's search rules.
 .sp
 .LP
@@ -570,16 +806,25 @@ any of its dependencies are used, provided the component is a full path name,
 that is, the path name starts with a '\fB/\fR'.
 .sp
 .LP
-In a secure process, the expansion of the \fB$ORIGIN\fR string is allowed only
-if the string expands to a \fBtrusted\fR directory. However, should a
+In a secure process, the expansion of the
+.B $ORIGIN
+string is allowed only
+if the string expands to a
+.B trusted
+directory. However, should a
 \fB$ORIGIN\fR expansion match a directory that has already provided dependencies,
 then the directory is implicitly secure. This directory can be used to provide
 additional dependencies.
 .sp
 .LP
-In a secure process, \fBLD_CONFIG\fR is ignored. However, a configuration file
-that is recorded in a secure application is used. See the \fB-c\fR option of
-\fBld\fR(1). A recorded configuration file must be a full path name, that is, the
+In a secure process,
+.B LD_CONFIG
+is ignored. However, a configuration file
+that is recorded in a secure application is used. See the
+.B -c
+option of
+.BR ld (1).
+A recorded configuration file must be a full path name, that is, the
 path name starts with a '\fB/\fR'. A recorded configuration file that employs the
 \fB$ORIGIN\fR string is restricted to known trusted directories. Developers who
 record a configuration file within a secure application should ensure that the
@@ -588,13 +833,20 @@ the absence of a recorded configuration file, a secure process uses the default
 configuration file, if a configuration file exists. See \fBcrle\fR(1).
 .sp
 .LP
-In a secure process, \fBLD_SIGNAL\fR is ignored.
+In a secure process,
+.B LD_SIGNAL
+is ignored.
 .sp
 .LP
 Additional objects can be loaded with a secure process using the
-\fBLD_PRELOAD\fR, or \fBLD_AUDIT\fR environment variables. These objects must be
+.BR LD_PRELOAD ,
+or
+.B LD_AUDIT
+environment variables. These objects must be
 specified as \fBfull\fR path names or \fBsimple\fR file names. Full path names
-are restricted to known \fBtrusted\fR directories. Simple file names, in which no
+are restricted to known
+.B trusted
+directories. Simple file names, in which no
 \&'\fB/\fR' appears in the name, are located subject to the search path
 restrictions previously described. Simple file names resolve only to known
 \fBtrusted\fR directories.
@@ -608,16 +860,28 @@ referenced as a full path name or relative path name dependency is suitably
 protected from malicious intrusion.
 .sp
 .LP
-When creating a secure process, relative path names should \fBnot\fR be used to
-express dependencies, or to construct \fBdlopen\fR(3C) path names. This
-restriction should be applied to the application and to \fBall\fR dependencies.
+When creating a secure process, relative path names should
+.B not
+be used to
+express dependencies, or to construct
+.BR dlopen (3C)
+path names. This
+restriction should be applied to the application and to
+.B all
+dependencies.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing LD_FLAGS to group environment variable information
+\fBExample 1\fR Using LD_FLAGS to group environment variable information
 .sp
 .LP
-The following use of \fBLD_FLAGS\fR is equivalent to setting the individual
-environment variables \fBLD_BIND_NOW\fR and \fBLD_LIBRARY_PATH\fR for 32-bit
+The following use of
+.B LD_FLAGS
+is equivalent to setting the individual
+environment variables
+.B LD_BIND_NOW
+and
+.B LD_LIBRARY_PATH
+for 32-bit
 applications:
 
 .sp
@@ -630,8 +894,14 @@ example% \fBLD_FLAGS_32=bind_now,library_path=/lib/one:/lib/two\fR
 
 .sp
 .LP
-The following use of \fBLD_FLAGS\fR is equivalent to setting the individual
-environment variables \fBLD_LIBRARY_PATH\fR and \fBLD_PRELOAD\fR for 64-bit
+The following use of
+.B LD_FLAGS
+is equivalent to setting the individual
+environment variables
+.B LD_LIBRARY_PATH
+and
+.B LD_PRELOAD
+for 64-bit
 applications:
 
 .sp
@@ -647,7 +917,7 @@ example% \fBLD_FLAGS_64=library_path=/lib/one/64,preload=foo.so\fR
 .ne 2
 .mk
 .na
-\fB/lib/ld.so.1\fR
+.B /lib/ld.so.1
 .ad
 .sp .6
 .RS 4n
@@ -658,18 +928,20 @@ Default runtime linker.
 .ne 2
 .mk
 .na
-\fB/lib/libc.so.1\fR
+.B /lib/libc.so.1
 .ad
 .sp .6
 .RS 4n
-Alternate interpreter for \fBSVID ABI\fR compatibility.
+Alternate interpreter for
+.B "SVID ABI"
+compatibility.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/ld.so\fR
+.B /usr/lib/ld.so
 .ad
 .sp .6
 .RS 4n
@@ -680,7 +952,7 @@ Alternate interpreter for \fBSVID ABI\fR compatibility.
 .ne 2
 .mk
 .na
-\fB/usr/lib/0@0.so.1\fR
+.B /usr/lib/0@0.so.1
 .ad
 .sp .6
 .RS 4n
@@ -713,7 +985,7 @@ A compatibility library to support null character pointers. See NOTES.
 .ne 2
 .mk
 .na
-\fB/lib/64/ld.so.1\fR
+.B /lib/64/ld.so.1
 .ad
 .sp .6
 .RS 4n
@@ -724,7 +996,7 @@ Default runtime linker for 64-bit applications.
 .ne 2
 .mk
 .na
-\fB/usr/lib/64/0@0.so.1\fR
+.B /usr/lib/64/0@0.so.1
 .ad
 .sp .6
 .RS 4n
@@ -756,7 +1028,9 @@ Default configuration file for 64-bit applications.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -773,19 +1047,33 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBcrle\fR(1), \fBgprof\fR(1), \fBlari\fR(1), \fBld\fR(1), \fBldd\fR(1),
-\fBexec\fR(2), \fBissetugid\fR(2), \fBmmapobj\fR(2), \fBprofil\fR(2),
-\fBdladdr\fR(3C), \fBdlclose\fR(3C), \fBdldump\fR(3C), \fBdlerror\fR(3C),
+.BR crle (1),
+\fBgprof\fR(1), \fBlari\fR(1),
+.BR ld (1),
+.BR ldd (1),
+.BR exec (2),
+.BR issetugid (2),
+.BR mmapobj (2),
+\fBprofil\fR(2),
+.BR dladdr (3C),
+.BR dlclose (3C),
+.BR dldump (3C),
+.BR dlerror (3C),
 \fBdlinfo\fR(3C), \fBdlopen\fR(3C), \fBdlsym\fR(3C), \fBthr_kill\fR(3C),
-\fBproc\fR(4), \fBattributes\fR(5)
+.BR proc (4),
+.BR attributes (5)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide
 .SH NOTES
 .sp
 .LP
-Care should be exercised when using \fBLD_PROFILE\fR in combination with other
-process monitoring techniques, such as users of \fBproc\fR(4). Multiple process
+Care should be exercised when using
+.B LD_PROFILE
+in combination with other
+process monitoring techniques, such as users of
+.BR proc (4).
+Multiple process
 monitoring techniques can result in deadlock conditions that leave the profile
 buffer locked. A locked buffer blocks any processes that try to record profiling
 information. To reduce this likelihood, the runtime linker's profile
@@ -794,19 +1082,28 @@ profiling of the process is silently disabled. However, this mechanism can not
 catch monitoring processes that attach to the process during its execution.
 .sp
 .LP
-The user compatibility library \fB/usr/lib/0@0.so.1\fR provides a mechanism that
-establishes a value of \fB0\fR at location 0. Some applications exist that
+The user compatibility library
+.B /usr/lib/0@0.so.1
+provides a mechanism that
+establishes a value of
+.B 0
+at location 0. Some applications exist that
 erroneously assume a null character pointer should be treated the same as a
 pointer to a null string. A segmentation violation occurs in these applications
 when a null character pointer is accessed. If this library is added to such an
-application at runtime using \fBLD_PRELOAD\fR, the library provides an
+application at runtime using
+.BR LD_PRELOAD ,
+the library provides an
 environment that is sympathetic to this errant behavior. However, the user
 compatibility library is intended neither to enable the generation of such
 applications, nor to endorse this particular programming practice.
 .sp
 .LP
-In many cases, the presence of \fB/usr/lib/0@0.so.1\fR is benign, and it can be
+In many cases, the presence of
+.B /usr/lib/0@0.so.1
+is benign, and it can be
 pre-loaded into programs that do not require it. However, there are exceptions.
 Some applications, such as the JVM (Java Virtual Machine), require that a
 segmentation violation be generated from a null pointer access. Applications such
-as the JVM should not preload \fB/usr/lib/0@0.so\fR.
+as the JVM should not preload
+.BR /usr/lib/0@0.so .

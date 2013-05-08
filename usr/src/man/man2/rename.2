@@ -49,73 +49,128 @@ rename, renameat \- change the name of a file
 .SH DESCRIPTION
 .sp
 .LP
-The  \fBrename()\fR function changes the name of a file. The \fIold\fR
+The 
+.B rename()
+function changes the name of a file. The \fIold\fR
 argument points to the pathname of the file to be renamed. The \fInew\fR
 argument points to the new path name of the file.
 .sp
 .LP
-The \fBrenameat()\fR function renames an entry in a directory, possibly
-moving the entry into a different directory.  See \fBfsattr\fR(5). If the
+The
+.B renameat()
+function renames an entry in a directory, possibly
+moving the entry into a different directory.  See
+.BR fsattr (5).
+If the
 \fIold\fR argument is an absolute path, the \fIfromfd\fR is ignored.
 Otherwise it is resolved relative to the \fIfromfd\fR argument rather than
-the current working directory.  Similarly, if the \fInew\fR argument is not
+the current working directory.  Similarly, if the
+.I new
+argument is not
 absolute, it is resolved relative to the \fItofd\fR argument.  If either
-\fIfromfd\fR or \fItofd\fR have the value \fBAT_FDCWD\fR, defined in
+\fIfromfd\fR or \fItofd\fR have the value
+.BR AT_FDCWD ,
+defined in
 <\fBfcntl.h\fR>, and their respective paths are relative, the path is
 resolved relative to the current working directory.
 .sp
 .LP
-Current implementation restrictions will cause the \fBrenameat()\fR
+Current implementation restrictions will cause the
+.BR renameat()
 function to return an error if an attempt is made to rename an extended
 attribute file to a regular (non-attribute) file, or to rename a regular
 file to an extended attribute file.
 .sp
 .LP
-If \fIold\fR and \fInew\fR both refer to the same existing file, the
+If
+.I old
+and
+.I new
+both refer to the same existing file, the
 \fBrename()\fR and \fBrenameat()\fR functions return successfully and
 performs no other action.
 .sp
 .LP
-If \fIold\fR points to the pathname of a file that is not a directory,
+If
+.I old
+points to the pathname of a file that is not a directory,
 \fInew\fR must not point to the pathname of a directory. If the link named
-by \fInew\fR exists, it will be removed and \fIold\fR will be renamed to
-\fInew\fR. In this case, a link named \fInew\fR must remain visible to other
+by
+.I new
+exists, it will be removed and
+.I old
+will be renamed to
+.IR new .
+In this case, a link named
+.I new
+must remain visible to other
 processes throughout the renaming operation and will refer to either the
-file referred to by \fInew\fR or the file referred to as \fIold\fR before
+file referred to by
+.I new
+or the file referred to as
+.I old
+before
 the operation began.
 .sp
 .LP
-If \fIold\fR points to the pathname of a directory, \fInew\fR  must not
+If
+.I old
+points to the pathname of a directory,
+.I new
+must not
 point to the pathname of a file that is not a directory. If the directory
-named by \fInew\fR exists, it will be removed and \fIold\fR will be renamed
-to \fInew\fR. In this case, a link named \fInew\fR  will exist throughout
+named by
+.I new
+exists, it will be removed and
+.I old
+will be renamed
+to
+.IR new .
+In this case, a link named
+.I new
+will exist throughout
 the renaming operation and will refer to either the file referred to by
 \fInew\fR or the file referred to as \fIold\fR before the operation began.
-Thus, if \fInew\fR names  an existing directory, it must be an empty
+Thus, if
+.I new
+names  an existing directory, it must be an empty
 directory.
 .sp
 .LP
-The \fInew\fR pathname must not contain a path prefix that names \fIold\fR.
+The
+.I new
+pathname must not contain a path prefix that names
+.IR old .
 Write access permission is required for both the directory containing
-\fIold\fR and the directory containing \fInew\fR. If \fIold\fR points to the
+\fIold\fR and the directory containing
+.IR new .
+If
+.I old
+points to the
 pathname of a directory, write access permission is required for the
-directory named by \fIold\fR, and, if it exists, the directory  named by
-\fInew\fR.
+directory named by
+.IR old ,
+and, if it exists, the directory  named by
+.IR new .
 .sp
 .LP
-If the directory containing \fIold\fR has the sticky bit set,  at least one
+If the directory containing
+.I old
+has the sticky bit set,  at least one
 of the following conditions listed below must be true:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-the user must own \fIold\fR
+the user must own
+.IR old
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-the user must own the directory containing \fIold\fR
+the user must own the directory containing
+.IR old
 .RE
 .RS +4
 .TP
@@ -131,20 +186,26 @@ the user must be a privileged user
 .RE
 .sp
 .LP
-If \fInew\fR exists, and the directory containing \fInew\fR is writable and
+If
+.I new
+exists, and the directory containing
+.I new
+is writable and
 has the sticky bit set, at least  one of the following conditions must be
 true:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-the user must own \fInew\fR
+the user must own
+.IR new
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-the user must own the directory containing \fInew\fR
+the user must own the directory containing
+.IR new
 .RE
 .RS +4
 .TP
@@ -160,50 +221,75 @@ the user must be a privileged user
 .RE
 .sp
 .LP
-If the link named by \fInew\fR exists, the file's link count becomes zero
+If the link named by
+.I new
+exists, the file's link count becomes zero
 when it is removed, and no process has the file open, then  the space
 occupied by the file will be freed and the file will no longer be
 accessible. If one or more processes have the file open when the last link
-is removed, the link will be removed before \fBrename()\fR or
+is removed, the link will be removed before
+.B rename()
+or
 \fBrenameat()\fR returns, but the removal of the file contents will be
 postponed until all references to the file have been closed.
 .sp
 .LP
-Upon successful completion, the \fBrename()\fR and \fBrenameat()\fR
-functions will mark for update the \fBst_ctime\fR and \fBst_mtime\fR fields
+Upon successful completion, the
+.B rename()
+and
+.BR renameat()
+functions will mark for update the
+.B st_ctime
+and
+.B st_mtime
+fields
 of the parent directory of each file.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. Otherwise, \fB\(mi1\fR is
-returned and \fBerrno\fR is set to indicate an error.
+Upon successful completion,
+.B 0
+is returned. Otherwise, \fB\(mi1\fR is
+returned and
+.B errno
+is set to indicate an error.
 .SH ERRORS
 .sp
 .LP
-The \fBrename()\fR function will fail if:
+The
+.B rename()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
 A component of either path prefix denies search permission; one of the
-directories containing \fIold\fR and \fInew\fR denies write permissions; or
-write permission is denied by a directory pointed to by \fIold\fR or
-\fInew\fR.
+directories containing
+.I old
+and
+.I new
+denies write permissions; or
+write permission is denied by a directory pointed to by
+.I old
+or
+.IR new .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 16n
 .rt
-The \fInew\fR argument is a directory and the mount point for a mounted
+The
+.I new
+argument is a directory and the mount point for a mounted
 file system.
 .RE
 
@@ -211,7 +297,7 @@ file system.
 .ne 2
 .mk
 .na
-\fBEDQUOT\fR
+.B EDQUOT
 .ad
 .RS 16n
 .rt
@@ -224,11 +310,13 @@ exhausted.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 16n
 .rt
-The link named by \fInew\fR is a directory containing entries other than
+The link named by
+.I new
+is a directory containing entries other than
 `\fB\&.\fR' (the directory itself) and `\fB\&..\fR' (the parent
 directory).
 .RE
@@ -237,18 +325,22 @@ directory).
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-Either \fIold\fR or \fInew\fR references an invalid address.
+Either
+.I old
+or
+.I new
+references an invalid address.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEILSEQ\fR
+.B EILSEQ
 .ad
 .RS 16n
 .rt
@@ -261,12 +353,16 @@ codeset.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
-The \fInew\fR argument directory pathname contains a path prefix that names
-the \fIold\fR directory, or an attempt was made to rename a regular file to
+The
+.I new
+argument directory pathname contains a path prefix that names
+the
+.I old
+directory, or an attempt was made to rename a regular file to
 an extended attribute or from an extended attribute to a regular file.
 .RE
 
@@ -274,7 +370,7 @@ an extended attribute or from an extended attribute to a regular file.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
@@ -285,11 +381,15 @@ An I/O error occurred while making or updating a directory entry.
 .ne 2
 .mk
 .na
-\fBEISDIR\fR
+.B EISDIR
 .ad
 .RS 16n
 .rt
-The \fInew\fR argument points to a directory but \fIold\fR points to a file
+The
+.I new
+argument points to a directory but
+.I old
+points to a file
 that is not a directory.
 .RE
 
@@ -297,7 +397,7 @@ that is not a directory.
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
@@ -308,12 +408,22 @@ Too many symbolic links were encountered in translating the pathname.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-The length of \fIold\fR or \fInew\fR exceeds  \fBPATH_MAX\fR, or a pathname
-component is longer than  \fBNAME_MAX\fR while \fB_POSIX_NO_TRUNC\fR is in
+The length of
+.I old
+or
+.I new
+exceeds
+.BR PATH_MAX ,
+or a pathname
+component is longer than 
+.B NAME_MAX
+while
+.B _POSIX_NO_TRUNC
+is in
 effect.
 .RE
 
@@ -321,24 +431,35 @@ effect.
 .ne 2
 .mk
 .na
-\fBEMLINK\fR
+.B EMLINK
 .ad
 .RS 16n
 .rt
-The file named by \fIold\fR is a directory, and the link count of  the
-parent directory of \fInew\fR would exceed  \fBLINK_MAX\fR.
+The file named by
+.I old
+is a directory, and the link count of  the
+parent directory of
+.I new
+would exceed 
+.BR LINK_MAX .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
-The link named by \fIold\fR does not name an existing file, a component of
-the path prefix of \fInew\fR does not exist, or either \fIold\fR or
+The link named by
+.I old
+does not name an existing file, a component of
+the path prefix of
+.I new
+does not exist, or either
+.I old
+or
 \fInew\fR points to an empty string.
 .RE
 
@@ -346,23 +467,29 @@ the path prefix of \fInew\fR does not exist, or either \fIold\fR or
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 16n
 .rt
-The directory that would contain \fInew\fR cannot be extended.
+The directory that would contain
+.I new
+cannot be extended.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOTDIR\fR
+.B ENOTDIR
 .ad
 .RS 16n
 .rt
-A component of either path prefix is not a directory, or \fIold\fR names a
-directory and \fInew\fR names a file that is not a directory, or \fItofd\fR
+A component of either path prefix is not a directory, or
+.I old
+names a
+directory and
+.I new
+names a file that is not a directory, or \fItofd\fR
 and \fIdirfd\fR in \fBrenameat()\fR do not reference a directory.
 .RE
 
@@ -370,7 +497,7 @@ and \fIdirfd\fR in \fBrenameat()\fR do not reference a directory.
 .ne 2
 .mk
 .na
-\fBEROFS\fR
+.B EROFS
 .ad
 .RS 16n
 .rt
@@ -382,21 +509,27 @@ system.
 .ne 2
 .mk
 .na
-\fBEXDEV\fR
+.B EXDEV
 .ad
 .RS 16n
 .rt
-The links named by \fIold\fR and \fInew\fR are on different file systems.
+The links named by
+.I old
+and
+.I new
+are on different file systems.
 .RE
 
 .sp
 .LP
-The \fBrenameat()\fR functions will fail if:
+The
+.B renameat()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 11n
 .rt
@@ -407,7 +540,9 @@ rename an attribute file as a regular file.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -428,16 +563,31 @@ StandardFor \fBrename()\fR, see \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBchmod\fR(2), \fBlink\fR(2), \fBunlink\fR(2), \fBattributes\fR(5),
+.BR chmod (2),
+.BR link (2),
+.BR unlink (2),
+.BR attributes (5),
 \fBfsattr\fR(5), \fBstandards\fR(5)
 .SH NOTES
 .sp
 .LP
 The system can deadlock if there is a loop in the file system graph. Such a
-loop can occur if there is an entry in directory \fBa\fR, \fBa/name1\fR,
-that is a hard link to directory \fBb\fR, and an entry in directory \fBb\fR,
-\fBb/name2\fR, that is a hard link to directory \fBa\fR. When such a loop
-exists and two separate processes attempt to rename \fBa/name1\fR to
-\fBb/name2\fR and \fBb/name2\fR to \fBa/name1\fR, the system may deadlock
+loop can occur if there is an entry in directory
+.BR a ,
+.BR a/name1 ,
+that is a hard link to directory
+.BR b ,
+and an entry in directory
+.BR b ,
+.BR b/name2 ,
+that is a hard link to directory
+.BR a .
+When such a loop
+exists and two separate processes attempt to rename
+.B a/name1
+to
+\fBb/name2\fR and \fBb/name2\fR to
+.BR a/name1 ,
+the system may deadlock
 attempting to lock  both directories for modification.  Use symbolic links
 instead of hard links  for directories.

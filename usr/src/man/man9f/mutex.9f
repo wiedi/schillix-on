@@ -65,18 +65,19 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fImp\fR
+.I mp
 .ad
 .RS 8n
 .rt
-Pointer to a kernel mutex lock (\fBkmutex_t\fR).
+Pointer to a kernel mutex lock
+.RB ( kmutex_t ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 8n
 .rt
@@ -88,7 +89,7 @@ Descriptive string. This is obsolete and should be \fINULL\fR.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 8n
 .rt
@@ -99,7 +100,7 @@ Type of mutex lock.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 8n
 .rt
@@ -120,18 +121,27 @@ cannot be reentered before exiting.
 .sp
 .LP
 \fBmutex_init()\fR initializes a mutex. It is an error to initialize a
-mutex more than once. The \fItype\fR argument should be set to
-\fBMUTEX_DRIVER\fR. 
+mutex more than once. The
+.I type
+argument should be set to
+.BR MUTEX_DRIVER .
 .sp
 .LP
 \fIarg\fR provides type-specific information for a given variant type of
-mutex. When \fBmutex_init()\fR is called for driver mutexes, if the mutex is
-used by the interrupt handler, the \fIarg\fR should be the interrupt
-priority returned from \fBddi_intr_get_pri\fR(9F) or
+mutex. When
+.B mutex_init()
+is called for driver mutexes, if the mutex is
+used by the interrupt handler, the
+.I arg
+should be the interrupt
+priority returned from
+.BR ddi_intr_get_pri "(9F) or"
 \fBddi_intr_get_softint_pri\fR(9F). Note that \fIarg\fR should be the value
-of the interrupt priority cast by calling the \fBDDI_INTR_PRI\fR macro. If
+of the interrupt priority cast by calling the
+.B DDI_INTR_PRI
+macro. If
 the mutex is never used inside an interrupt handler, the argument should be
-\fINULL\fR.
+.IR NULL .
 .sp
 .LP
 \fBmutex_enter()\fR is used to acquire a mutex. If the mutex is already
@@ -141,14 +151,16 @@ panic ensues.
 .sp
 .LP
 \fBmutex_owned()\fR should only be used in \fBASSERT()\fR and may be
-enforced by not being defined unless the preprocessor symbol \fBDEBUG\fR is
+enforced by not being defined unless the preprocessor symbol
+.B DEBUG
+is
 defined. Its return value is non-zero if the current thread (or, if that
 cannot be determined, at least some thread) holds the mutex pointed to by
-\fImp\fR.
+.IR mp .
 .sp
 .LP
 \fBmutex_tryenter()\fR is very similar to \fBmutex_enter()\fR except that
-it doesn't block when the mutex is already held. \fBmutex_tryenter()\fR
+.RB "it doesn't block when the mutex is already held." " mutex_tryenter()"
 returns non-zero when it acquired the mutex and 0 when the mutex is already
 held.
 .sp
@@ -158,7 +170,9 @@ are blocked on the mutex.
 .sp
 .LP
 \fBmutex_destroy()\fR releases any resources that might have been allocated
-by \fBmutex_init()\fR. \fBmutex_destroy()\fR must be called before freeing
+by
+.BR mutex_init() .
+\fBmutex_destroy()\fR must be called before freeing
 the memory containing the mutex, and should be called with the mutex unheld
 (not owned by any thread). The caller must be sure that no other thread
 attempts to use the mutex.
@@ -170,18 +184,24 @@ failure.
 .sp
 .LP
 \fBmutex_owned()\fR returns a non-zero value if the calling thread
-currently holds the mutex pointed to by \fImp\fR, or when that cannot be
+currently holds the mutex pointed to by
+.IR mp ,
+or when that cannot be
 determined, if any thread holds the mutex. Otherwise \fBmutex_owned()\fR
 returns zero.
 .SH CONTEXT
 .sp
 .LP
 These functions can be called from user, kernel, or high-level interrupt
-context, except for \fBmutex_init()\fR and \fBmutex_destroy()\fR, which can
+context, except for
+.B mutex_init()
+and
+.BR mutex_destroy() ,
+which can
 be called from user or kernel context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRInitializing a Mutex
+\fBExample 1\fR Initializing a Mutex
 .sp
 .LP
 A driver might do this to initialize a mutex that is part of its unit
@@ -197,7 +217,7 @@ ddi_intr_add_handler(hdlp, xxintr, (caddr_t)un, NULL);
 .in -2
 
 .LP
-\fBExample 2 \fRCalling a Routine with a Lock
+\fBExample 2\fR Calling a Routine with a Lock
 .sp
 .LP
 A routine that expects to be called with a certain lock held might have the
@@ -216,21 +236,32 @@ xxstart(struct xxunit *un)
 .SH SEE ALSO
 .sp
 .LP
-\fBlockstat\fR(1M), \fBIntro\fR(9F), \fBcondvar\fR(9F),
-\fBddi_intr_alloc\fR(9F), \fBddi_intr_add_handler\fR(9F),
-\fBddi_intr_get_pri\fR(9F), \fBddi_intr_get_softint_pri\fR(9F),
-\fBrwlock\fR(9F), \fBsemaphore\fR(9F)
+.BR lockstat (1M),
+.BR Intro (9F),
+.BR condvar (9F),
+.BR ddi_intr_alloc (9F),
+.BR ddi_intr_add_handler (9F),
+.BR ddi_intr_get_pri (9F),
+\fBddi_intr_get_softint_pri\fR(9F),
+.BR rwlock (9F),
+.BR semaphore (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
-Compiling with \fB_LOCKTEST\fR or \fB_MPSTATS\fR defined has no effect. To
+Compiling with
+.B _LOCKTEST
+or
+.B _MPSTATS
+defined has no effect. To
 gather lock statistics, see \fBlockstat\fR(1M).
 .sp
 .LP
-The address of a \fBkmutex_t\fR lock must be aligned on an 8-byte boundary
+The address of a
+.B kmutex_t
+lock must be aligned on an 8-byte boundary
 for 64-bit kernels, or a 4-byte boundary for 32-bit kernels. Violation of
 this requirement will result in undefined behavior, including, but not
 limited to, failure of mutual exclusion or a system panic.
@@ -245,7 +276,9 @@ Never return from a driver entry point with a mutex held.
 .br
 .in +2
 Never hold a mutex when calling a service that may block, for example
-\fBkmem_alloc\fR(9F) with KM_SLEEP or \fBdelay\fR(9F).
+.BR kmem_alloc (9F)
+with KM_SLEEP or
+.BR delay (9F).
 .in -2
 .br
 .in +2

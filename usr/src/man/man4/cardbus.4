@@ -28,7 +28,9 @@ The CardBus bus share the same configuration parameters with the PCI bus.
 CardBus devices are self-identifying, which means that these devices provide
 configuration parameters to the system that allow the system to identify the
 device and its driver. The configuration parameters are represented in the
-form of name-value pairs that can be retrieved using the \fBDDI\fR property
+form of name-value pairs that can be retrieved using the
+.B DDI
+property
 interfaces. See \fBddi_prop_lookup\fR(9F) for details.
 .sp
 .LP
@@ -39,7 +41,9 @@ for these devices.
 .LP
 On some occasions, drivers for CardBus devices can use driver configuration
 files to provide driver private properties through the global property
-mechanism. See \fBdriver.conf\fR(4) for further details. Driver
+mechanism. See
+.BR driver.conf (4)
+for further details. Driver
 configuration files can also be used to augment or override properties for a
 specific instance of a driver.
 .sp
@@ -49,15 +53,19 @@ The CardBus nexus driver recognizes the following properties:
 .ne 2
 .mk
 .na
-\fBreg\fR
+.B reg
 .ad
 .RS 14n
 .rt
 An arbitrary length array where each element of the array consists of a
 5-tuple of 32-bit values. Each array element describes a logically
-contiguous mappable resource on the \fBPCI\fR bus.
+contiguous mappable resource on the
+.B PCI
+bus.
 .sp
-The first three values in the 5-tuple describe the \fBPCI\fR address of the
+The first three values in the 5-tuple describe the
+.B PCI
+address of the
 mappable resource. The first tuple contains the following information:
 .sp
 
@@ -92,10 +100,14 @@ lw(1.83i) lw(1.83i) lw(1.83i)
 .TE
 
 The bus number is a unique identifying number assigned to each bus within
-the \fBPCI\fR or PCIe domain.
+the
+.B PCI
+or PCIe domain.
 .sp
 The device number is a unique identifying number assigned to each device on
-a \fBPCI\fR bus, PCIe logical bus, or CardBus bus. A device number is unique
+a
+.B PCI
+bus, PCIe logical bus, or CardBus bus. A device number is unique
 only within the set of device numbers for a particular bus or logical bus.
 .sp
 Each CardBus device can have one to eight logically independent functions,
@@ -109,21 +121,32 @@ address space type identifier indicates configuration space, non-zero
 register number extended bits select registers in extended configuration
 space.
 .sp
-The second and third values in the \fBreg\fR property 5-tuple specify the
-64-bit address of the mappable resource within the \fBPCI\fR or PCIe address
+The second and third values in the
+.B reg
+property 5-tuple specify the
+64-bit address of the mappable resource within the
+.B PCI
+or PCIe address
 domain. Since the CardBus is a 32-bit bus, the second 32-bit tuple is not
 used. The third 32-bit tuple corresponds to the 32-bit address.
 .sp
-The fourth and fifth 32-bit values in the 5-tuple \fBreg\fR property
+The fourth and fifth 32-bit values in the 5-tuple
+.B reg
+property
 specify the size of the mappable resource. The size is a 64-bit value. Since
 it's a 32-bit bus, only the fifth tuple is used.
 .sp
 The driver can refer to the elements of this array by index, and construct
-kernel mappings to these addresses using \fBddi_regs_map_setup\fR(9F). The
-index into the array is passed as the \fIrnumber\fR argument of
-\fBddi_regs_map_setup\fR(9F).
+kernel mappings to these addresses using
+.BR ddi_regs_map_setup "(9F). The"
+index into the array is passed as the
+.I rnumber
+argument of
+.BR ddi_regs_map_setup (9F).
 .sp
-At a high-level interrupt context, you can use the \fBddi_get*\fR and
+At a high-level interrupt context, you can use the
+.B ddi_get*
+and
 \fBddi_put*\fR family of functions to access I/O and memory space. However,
 access to configuration space is not allowed when running at a
 high-interrupt level.
@@ -133,27 +156,41 @@ high-interrupt level.
 .ne 2
 .mk
 .na
-\fBinterrupts\fR
+.B interrupts
 .ad
 .RS 14n
 .rt
 This property consists of a single-integer element array. Valid interrupt
-property values are \fB1\fR, \fB2\fR, \fB3\fR, and \fB4\fR. This value is
+property values are
+.BR 1 ,
+.BR 2 ,
+.BR 3 ,
+and
+.BR 4 .
+This value is
 derived directly from the contents of the device's
 configuration-interrupt-pin register.
 .sp
-A driver should use an index value of \fB0\fR when registering its
+A driver should use an index value of
+.B 0
+when registering its
 interrupt handler with the DDI interrupt interfaces.
 .RE
 
 .sp
 .LP
-All CardBus devices support the \fBreg\fR property. The device number and
-function number as derived from the \fBreg\fR property are used to construct
-the address part of the device name under \fB/devices\fR.
+All CardBus devices support the
+.B reg
+property. The device number and
+function number as derived from the
+.B reg
+property are used to construct
+the address part of the device name under
+.BR /devices .
 .sp
 .LP
-Only devices that generate interrupts support an \fBinterrupts\fR
+Only devices that generate interrupts support an
+.BR interrupts
 property.
 .sp
 .LP
@@ -169,7 +206,9 @@ device node, certain conditions must be met.
 .TP
 .ie t \(bu
 .el o
-First, the \fBname\fR property must be identical. The value of the
+First, the
+.B name
+property must be identical. The value of the
 \fBname\fR property needs to match the binding name of the device. The
 binding name is the name chosen by the system to bind a driver to a device
 and is either an alias associated with the driver or the hardware node name
@@ -194,15 +233,23 @@ unit-address property is:
 \fBDD[,F]\fR
 .sp
 .LP
-where \fBDD\fR is the device number and \fBF\fR is the function number. If
-the function number is 0, only \fBDD\fR is specified.
+where
+.B DD
+is the device number and
+.B F
+is the function number. If
+the function number is 0, only
+.B DD
+is specified.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRSample Configuration File
+\fBExample 1\fR Sample Configuration File
 .sp
 .LP
 An example configuration file called \fBACME,scsi-hba.conf\fR for a CardBus
-device driver called \fBACME,scsi-hba\fR follows:
+device driver called
+.B ACME,scsi-hba
+follows:
 
 .sp
 .in +2
@@ -220,7 +267,9 @@ hba-dma-speed=10;
 
 .sp
 .LP
-In this example, a property \fBscsi-initiator-id\fR specifies the
+In this example, a property
+.B scsi-initiator-id
+specifies the
 \fBSCSI\fR bus initiator id that the adapter should use, for just one
 particular instance of adapter installed in the machine. The \fBname\fR
 property identifies the driver and the parent property to identify the
@@ -230,15 +279,23 @@ itself, with device number of 3 and function number of 0.
 
 .sp
 .LP
-Two global driver properties are also created: \fBhba-advanced-mode\fR
-(which has the string value \fBon\fR) and \fBhba-dma-speed\fR (which has the
-value \fB10\fR M bit/s). These properties apply to all device nodes of the
-\fBACME,scsi-hba\fR.
+.RB "Two global driver properties are also created:" " hba-advanced-mode"
+(which has the string value
+.BR on )
+and
+.B hba-dma-speed
+(which has the
+value
+.B 10
+M bit/s). These properties apply to all device nodes of the
+.BR ACME,scsi-hba .
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -255,11 +312,14 @@ ArchitectureSPARC, x86
 .SH SEE ALSO
 .sp
 .LP
-\fBdriver.conf\fR(4), \fBattributes\fR(5), \fBddi_intr_add_handler\fR(9F),
-\fBddi_prop_lookup\fR(9F), \fBddi_regs_map_setup\fR(9F)
+\fBdriver.conf\fR(4),
+.BR attributes (5),
+.BR ddi_intr_add_handler (9F),
+.BR ddi_prop_lookup (9F),
+.BR ddi_regs_map_setup (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fIIEEE 1275 PCI Bus Binding\fR
+.I IEEE 1275 PCI Bus Binding

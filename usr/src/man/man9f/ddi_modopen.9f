@@ -51,7 +51,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fImodname\fR
+.I modname
 .ad
 .RS 11n
 .rt
@@ -76,7 +76,7 @@ provided.
 .ne 2
 .mk
 .na
-\fImode\fR
+.I mode
 .ad
 .RS 11n
 .rt
@@ -87,11 +87,15 @@ Currently, \fBKRTLD_MODE_FIRST\fR.
 .ne 2
 .mk
 .na
-\fIerrnop\fR
+.I errnop
 .ad
 .RS 11n
 .rt
-Pointer to \fBerrno\fR returned on error, if \fBNULL\fR then no additional
+Pointer to
+.B errno
+returned on error, if
+.B NULL
+then no additional
 error information is available.
 .RE
 
@@ -99,19 +103,21 @@ error information is available.
 .ne 2
 .mk
 .na
-\fIhandle\fR
+.I handle
 .ad
 .RS 11n
 .rt
-Opaque handle returned from \fBddi_modopen()\fR, invalidated by
-\fBddi_modclose()\fR.
+Opaque handle returned from
+.BR ddi_modopen() ,
+invalidated by
+.BR ddi_modclose() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIsymname\fR
+.I symname
 .ad
 .RS 11n
 .rt
@@ -121,23 +127,34 @@ Symbol's name as a character string.
 .SH DESCRIPTION
 .sp
 .LP
-The function prototypes for \fBddi_modopen()\fR, \fBddi_modsym()\fR, and
+The function prototypes for
+.BR ddi_modopen() ,
+.BR ddi_modsym() ,
+and
 \fBddi_modclose()\fR are modeled after the userland \fBlibdl\fR(3LIB),
-\fBdlopen\fR(3C), \fBdlsym\fR(3C) , and\fBdlclose\fR(3C) interfaces, however
+.BR dlopen (3C),
+.BR dlsym (3C)
+, and\fBdlclose\fR(3C) interfaces, however
 not all userland features are available and the kernel symbol resolution is
 different. The \fBdlerror\fR(3C) interface is not appropriate for the kernel
-environment, so the new \fIerrnop\fR return argument was added for
+environment, so the new
+.I errnop
+return argument was added for
 \fBddi_modopen()\fR and \fBddi_modsym()\fR.
 .sp
 .LP
 The \fBddi_modopen()\fRfunction makes a dynamically-loaded kernel module
 named by "modname" available to a running kernel. \fBddi_modopen()\fR
 returns a handle that the caller can use on subsequent calls to
-\fBddi_modsym()\fR and \fBddi_modclose()\fR. The value of this handle should
+\fBddi_modsym()\fR and
+.BR ddi_modclose() .
+The value of this handle should
 not be interpreted in any way by the caller.
 .sp
 .LP
-The \fBddi_modopen()\fR interface works best as a dynamic component/object
+The
+.B ddi_modopen()
+interface works best as a dynamic component/object
 plug-in mechanism when targeting kernel "misc" modules that contain a single
 "struct modlmisc" module linkage, however non-"misc" modules and modules
 with multiple linkage structures can also be targeted.
@@ -161,56 +178,102 @@ A -> A's _depends_on -> unix -> unix's _depends_on
 .sp
 .LP
 A single-level, left-to-right search in \fB_depends_on\fR (or the "ld -N"
-alternative) modules occurs. For \fBUNIX\fR on \fBSparc\fR,
+alternative) modules occurs. For
+.B UNIX
+on
+.BR Sparc ,
 \fB_depends_on\fR is similar to "genunix misc/platmod
 cpu/SUNW,UltraSPARC-III+ dtracestubs" for \fBIntel\fR, it is "genunix
 dtracestubs". The \fBddi_modsym()\fR search is limited to the module
 directly associated with the handle.
 .sp
 .LP
-The \fBddi_modopen()\fR function increments the reference count on the
+The
+.B ddi_modopen()
+function increments the reference count on the
 named kernel module. Upon the first load of a module, the\fB_init\fR(9E)
-initialization code in the module is called; \fBddi_modopen()\fR does not
-return until \fB_init\fR completes.
+initialization code in the module is called;
+.B ddi_modopen()
+does not
+return until
+.B _init
+completes.
 .sp
 .LP
-The \fBddi_modsym()\fR function allows a caller to obtain the address of a
-symbol that is defined within a module. The \fIhandle\fR argument is a valid
-\fBddi_modhandle_t\fR as returned by \fBddi_modopen()\fR, the \fIsymname\fR
+The
+.B ddi_modsym()
+function allows a caller to obtain the address of a
+symbol that is defined within a module. The
+.I handle
+argument is a valid
+\fBddi_modhandle_t\fR as returned by
+.BR ddi_modopen() ,
+the
+.IR symname
 argument is the symbol's name as a character string. The special handle
 values supported by ddi_modsym(3C) are not supported.
 .sp
 .LP
-The \fBddi_modclose()\fR function decrements the reference count of the
+The
+.B ddi_modclose()
+function decrements the reference count of the
 kernel module associated with the specified handle. After the
 \fBddi_modclose()\fR function is called, all \fBddi_modsym()\fR resolutions
-obtained (either directly or indirectly) using the now closed \fIhandle\fR
+.RI "obtained (either directly or indirectly) using the now closed" " handle"
 are invalid; further use of these resolutions can cause undefined behavior
-(that is, may lead to a panic). When the last \fBddi_modclose()\fR of a
+(that is, may lead to a panic). When the last
+.B ddi_modclose()
+of a
 module occurs, and there are no further references to the module, the module
 \fB_fini\fR(9E)entry point may be called. If \fB_fini\fR returns success
 then the module may be unloaded.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBddi_modopen()\fR function returns a handle to the dynamically-loaded
-kernel module. The \fBddi_modopen()\fR function returns \fBNULL\fR if the
+The
+.B ddi_modopen()
+function returns a handle to the dynamically-loaded
+kernel module. The
+.B ddi_modopen()
+function returns
+.B NULL
+if the
 module cannot be found, the object cannot be relocated, or an error occurs
 during the process of resolving and relocating its symbolic references.
 .sp
 .LP
-The \fBddi_modsym()\fR function returns \fBNULL\fR if the \fIsymname\fR
+The
+.B ddi_modsym()
+function returns
+.B NULL
+if the
+.IR symname
 symbol cannot be found directly within the module associated with the
-\fIhandle\fR.
+.IR handle .
 .sp
 .LP
-If the \fIhandle\fR was not referenced, \fBddi_modclose()\fR returns 0. If
-the \fIhandle\fR is invalid, \fBddi_modclose()\fR may return a non-zero
+If the
+.I handle
+was not referenced,
+.B ddi_modclose()
+returns 0. If
+the
+.I handle
+is invalid,
+.B ddi_modclose()
+may return a non-zero
 value.
 .sp
 .LP
-When either \fBddi_modopen()\fR or \fBddi_modsym()\fR return \fBNULL\fR,
-additional \fIerrno\fR information related to the failure is returned in
+When either
+.B ddi_modopen()
+or
+.B ddi_modsym()
+return
+.BR NULL ,
+additional
+.I errno
+information related to the failure is returned in
 \fI*errnop\fR if it is not \fBNULL\fR.
 .SH CONTEXT
 .sp
@@ -218,7 +281,7 @@ additional \fIerrno\fR information related to the failure is returned in
 \fBddi_modopen()\fR can be called from user context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCoding a Dynamically Loaded Kernel Module
+\fBExample 1\fR Coding a Dynamically Loaded Kernel Module
 .sp
 .LP
 The following example shows code to dynamically load and call a
@@ -303,11 +366,13 @@ test(int i)
 .in -2
 
 .LP
-\fBExample 2 \fRDynamically Accessing a Kernel Module within a Drive
+\fBExample 2\fR Dynamically Accessing a Kernel Module within a Drive
 .sp
 .LP
 The following example shows driver code to dynamically load into the kernel
-a module constructed via the \fBelfwrap\fR(1) utility and containing
+a module constructed via the
+.BR elfwrap (1)
+utility and containing
 firmware intended for download to a device. The "\fBstart\fR" and
 "\fBend\fR" pointers provide the addresses of the beginning of the data and
 first byte beyond the data.
@@ -331,15 +396,20 @@ rv = ddi_modclose(modp);
 .SH SEE ALSO
 .sp
 .LP
-\fBdlclose\fR(3C), \fBdlopen\fR(3C), \fBdlsym\fR(3C), \fBlibdl\fR(3LIB),
-\fBboot\fR(1M), \fBelfwrap\fR(1), \fBmodload\fR(1M), \fBsystem\fR(4),
+.BR dlclose (3C),
+.BR dlopen (3C),
+.BR dlsym (3C),
+.BR libdl (3LIB),
+.BR boot (1M),
+\fBelfwrap\fR(1), \fBmodload\fR(1M), \fBsystem\fR(4),
 \fB_fini\fR(9E), \fB_info\fR(9E), \fB_init\fR(9E)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
 A \fBsystem\fR(4)forceload must be established for modules targeted by
 \fBddi_modopen()\fR by code involved in the mount of root on "bootdev"
-during machine \fBboot\fR(1M).
+during machine
+.BR boot (1M).

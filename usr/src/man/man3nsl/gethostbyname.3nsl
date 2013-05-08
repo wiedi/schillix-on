@@ -104,28 +104,45 @@ gethostent_r, sethostent, endhostent \- get network host entry
 .sp
 .LP
 These functions are used to obtain entries describing hosts. An entry can
-come from any of the sources for \fBhosts\fR specified in the
-\fB/etc/nsswitch.conf\fR file. See \fBnsswitch.conf\fR(4). These functions
-have been superseded by \fBgetipnodebyname\fR(3SOCKET),
-\fBgetipnodebyaddr\fR(3SOCKET), and \fBgetaddrinfo\fR(3SOCKET), which
+come from any of the sources for
+.B hosts
+specified in the
+\fB/etc/nsswitch.conf\fR file. See
+.BR nsswitch.conf (4).
+These functions
+have been superseded by
+.BR getipnodebyname (3SOCKET),
+.BR getipnodebyaddr (3SOCKET),
+and \fBgetaddrinfo\fR(3SOCKET), which
 provide greater portability to applications when multithreading is performed
 or technologies such as IPv6 are used. For example, the functions described
 in the following cannot be used with applications targeted to work with
 IPv6.
 .sp
 .LP
-The \fBgethostbyname()\fR function searches for information for a host with
+The
+.B gethostbyname()
+function searches for information for a host with
 the hostname specified by the character-string parameter \fIname\fR.
 .sp
 .LP
-The \fBgethostbyaddr()\fR function searches for information for a host with
-a given host address. The parameter \fBtype\fR specifies the family of the
+The
+.B gethostbyaddr()
+function searches for information for a host with
+a given host address. The parameter
+.B type
+specifies the family of the
 address. This should be one of the address families defined in
 \fB<sys/socket.h>\fR\&. See the \fBNOTES\fR section for more information.
-Also see the \fBEXAMPLES\fR section for information on how to convert an
-Internet \fBIP\fR address notation that is separated by periods (.) into an
+Also see the
+.B EXAMPLES
+section for information on how to convert an
+Internet
+.B IP
+address notation that is separated by periods (.) into an
 \fIaddr\fR parameter. The parameter \fIlen\fR specifies the length of the
-buffer indicated by \fIaddr\fR.
+buffer indicated by
+.IR addr .
 .sp
 .LP
 All addresses are returned in network order. In order to interpret the
@@ -133,43 +150,71 @@ addresses, \fBbyteorder\fR(3SOCKET) must be used for byte order
 conversion.
 .sp
 .LP
-The \fBsethostent()\fR, \fBgethostent()\fR, and \fBendhostent()\fR
+The
+.BR sethostent() ,
+.BR gethostent() ,
+and
+.BR endhostent()
 functions are used to enumerate host entries from the database.
 .sp
 .LP
-The \fBsethostent()\fR function sets or resets the enumeration to the
+The
+.B sethostent()
+function sets or resets the enumeration to the
 beginning of the set of host entries. This function should be called before
-the first call to \fBgethostent()\fR. Calls to \fBgethostbyname()\fR and
+the first call to
+.BR gethostent() .
+Calls to
+.B gethostbyname()
+and
 \fBgethostbyaddr()\fR leave the enumeration position in an indeterminate
-state. If the \fIstayopen\fR flag is non-zero, the system can keep allocated
+state. If the
+.I stayopen
+flag is non-zero, the system can keep allocated
 resources such as open file descriptors until a subsequent call to
-\fBendhostent()\fR.
+.BR endhostent() .
 .sp
 .LP
-Successive calls to the \fBgethostent()\fR function return either
-successive entries or \fINULL,\fR indicating the end of the enumeration.
+Successive calls to the
+.B gethostent()
+function return either
+successive entries or
+.I NULL,
+indicating the end of the enumeration.
 .sp
 .LP
-The \fBendhostent()\fR function can be called to indicate that the caller
+The
+.B endhostent()
+function can be called to indicate that the caller
 expects to do no further host entry retrieval operations; the system can
 then deallocate resources it was using. It is still allowed, but possibly
 less efficient, for the process to call more host retrieval functions after
-calling \fBendhostent()\fR.
+calling
+.BR endhostent() .
 .SS "Reentrant Interfaces"
 .sp
 .LP
-The \fBgethostbyname()\fR, \fBgethostbyaddr()\fR, and \fBgethostent()\fR
+The
+.BR gethostbyname() ,
+.BR gethostbyaddr() ,
+and
+.BR gethostent()
 functions use static storage that is reused in each call, making these
 functions unsafe for use in multithreaded applications.
 .sp
 .LP
-The \fBgethostbyname_r()\fR, \fBgethostbyaddr_r()\fR, and
+The
+.BR gethostbyname_r() ,
+.BR gethostbyaddr_r() ,
+and
 \fBgethostent_r()\fR functions provide reentrant interfaces for these
 operations.
 .sp
 .LP
 Each reentrant interface performs the same operation as its non-reentrant
-counterpart, named by removing the \fB_r\fR suffix. The reentrant
+counterpart, named by removing the
+.B _r
+suffix. The reentrant
 interfaces, however, use buffers supplied by the caller to store returned
 results and the interfaces are safe for use in both single-threaded and
 multithreaded applications.
@@ -188,25 +233,34 @@ hold all of the data associated with the host entry. The parameter
 \fIbuflen\fR should give the size in bytes of the buffer indicated by
 \fIbuffer\fR. The parameter \fIh_errnop\fR should be a pointer to an
 integer. An integer error status value is stored there on certain error
-conditions. See the \fBERRORS\fR section for more information.
+conditions. See the
+.B ERRORS
+section for more information.
 .sp
 .LP
 For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads. The
 \fBsethostent()\fR function can be used in a multithreaded application but
 resets the enumeration position for all threads. If multiple threads
-interleave calls to \fBgethostent_r()\fR, the threads will enumerate
+interleave calls to
+.BR gethostent_r() ,
+the threads will enumerate
 disjoint subsets of the host database.
 .sp
 .LP
-Like their non-reentrant counterparts, \fBgethostbyname_r()\fR and
+Like their non-reentrant counterparts,
+.B gethostbyname_r()
+and
 \fBgethostbyaddr_r()\fR leave the enumeration position in an indeterminate
 state.
 .SH RETURN VALUES
 .sp
 .LP
-Host entries are represented by the \fBstruct hostent\fR structure defined
-in \fB<netdb.h>\fR:
+Host entries are represented by the
+.B "struct hostent"
+structure defined
+in
+.BR <netdb.h> :
 .sp
 .in +2
 .nf
@@ -222,70 +276,140 @@ struct hostent {
 
 .sp
 .LP
-See the \fBEXAMPLES\fR section for information about how to retrieve a
-``.'' separated Internet \fBIP\fR address string from the \fIh_addr_list\fR
-field of \fBstruct hostent\fR.
+See the
+.B EXAMPLES
+section for information about how to retrieve a
+``.'' separated Internet
+.B IP
+address string from the
+.IR h_addr_list
+field of
+.BR "struct hostent" .
 .sp
 .LP
-The \fBgethostbyname()\fR, \fBgethostbyname_r()\fR, \fBgethostbyaddr()\fR,
-and \fBgethostbyaddr_r()\fR functions each return a pointer to a \fBstruct
+The
+.BR gethostbyname() ,
+.BR gethostbyname_r() ,
+.BR gethostbyaddr() ,
+and
+.B gethostbyaddr_r()
+functions each return a pointer to a \fBstruct
 hostent\fR if they successfully locate the requested entry; otherwise they
-return \fINULL\fR.
+return
+.IR NULL .
 .sp
 .LP
-The \fBgethostent()\fR and \fBgethostent_r()\fR functions each return a
-pointer to a \fBstruct hostent\fR if they successfully enumerate an entry;
-otherwise they return \fINULL\fR, indicating the end of the enumeration.
+The
+.B gethostent()
+and
+.B gethostent_r()
+functions each return a
+pointer to a
+.B "struct hostent"
+if they successfully enumerate an entry;
+otherwise they return
+.IR NULL ,
+indicating the end of the enumeration.
 .sp
 .LP
-The \fBgethostbyname()\fR, \fBgethostbyaddr()\fR, and \fBgethostent()\fR
+The
+.BR gethostbyname() ,
+.BR gethostbyaddr() ,
+and
+.BR gethostent()
 functions use static storage, so returned data must be copied before a
 subsequent call to any of these functions if the data is to be saved.
 .sp
 .LP
 When the pointer returned by the reentrant functions
-\fBgethostbyname_r()\fR, \fBgethostbyaddr_r()\fR, and \fBgethostent_r()\fR
-is not \fINULL\fR, it is always equal to the \fIresult\fR pointer that was
+.BR gethostbyname_r() ,
+.BR gethostbyaddr_r() ,
+and
+.BR gethostent_r()
+is not
+.IR NULL ,
+it is always equal to the
+.I result
+pointer that was
 supplied by the caller.
 .sp
 .LP
-The \fBsethostent()\fR and \fBendhostent()\fR functions return \fB0\fR on
+The
+.B sethostent()
+and
+.B endhostent()
+functions return
+.B 0
+on
 success.
 .SH ERRORS
 .sp
 .LP
-The reentrant functions \fBgethostbyname_r()\fR, \fBgethostbyaddr_r()\fR,
-and \fBgethostent_r()\fR will return \fINULL\fR and set \fIerrno\fR to
+The reentrant functions
+.BR gethostbyname_r() ,
+.BR gethostbyaddr_r() ,
+and
+.B gethostent_r()
+will return
+.I NULL
+and set
+.I errno
+to
 \fBERANGE\fR if the length of the buffer supplied by caller is not large
-enough to store the result. See \fBIntro\fR(2) for the proper usage and
-interpretation of \fBerrno\fR in multithreaded applications.
+enough to store the result. See
+.BR Intro (2)
+for the proper usage and
+interpretation of
+.B errno
+in multithreaded applications.
 .sp
 .LP
-The reentrant functions \fBgethostbyname_r()\fR and \fBgethostbyaddr_r()\fR
-set the integer pointed to by \fIh_errnop\fR to one of these values in case
+The reentrant functions
+.B gethostbyname_r()
+and
+.BR gethostbyaddr_r()
+set the integer pointed to by
+.I h_errnop
+to one of these values in case
 of error.
 .sp
 .LP
-On failures, the non-reentrant functions \fBgethostbyname()\fR and
+On failures, the non-reentrant functions
+.B gethostbyname()
+and
 \fBgethostbyaddr()\fR set a global integer \fIh_errno\fR to indicate one of
-these error codes (defined in \fB<netdb.h>\fR): \fBHOST_NOT_FOUND\fR,
-\fBTRY_AGAIN\fR, \fBNO_RECOVERY\fR, \fBNO_DATA\fR, and \fBNO_ADDRESS\fR.
+these error codes (defined in
+.BR <netdb.h> ):
+.BR HOST_NOT_FOUND ,
+.BR TRY_AGAIN ,
+.BR NO_RECOVERY ,
+.BR NO_DATA ,
+and
+.BR NO_ADDRESS .
 .sp
 .LP
 If a resolver is provided with a malformed address, or if any other error
-occurs before \fBgethostbyname()\fR is resolved, then \fBgethostbyname()\fR
+occurs before
+.B gethostbyname()
+.RB "is resolved, then" " gethostbyname()"
 returns an internal error with a value of \(mi1.
 .sp
 .LP
-The \fBgethostbyname()\fR function will set \fIh_errno\fR to
+The
+.B gethostbyname()
+function will set
+.I h_errno
+to
 \fBNETDB_INTERNAL\fR when it returns a \fINULL\fR value.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBgethostbyaddr()\fR
+\fBExample 1\fR Using \fBgethostbyaddr()\fR
 .sp
 .LP
 Here is a sample program that gets the canonical name, aliases, and ``.''
-separated Internet \fBIP\fR addresses for a given ``.'' separated \fBIP\fR
+separated Internet
+.B IP
+addresses for a given ``.'' separated \fBIP\fR
 address:
 
 .sp
@@ -341,7 +465,7 @@ applications.
 .ne 2
 .mk
 .na
-\fB/etc/hosts\fR
+.B /etc/hosts
 .ad
 .RS 22n
 .rt
@@ -374,7 +498,9 @@ configuration file for the name service switch
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -393,64 +519,110 @@ T}
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBIntro\fR(3), \fBbyteorder\fR(3SOCKET),
-\fBinet\fR(3SOCKET), \fBnetdb.h\fR(3HEAD), \fBnetdir\fR(3NSL),
-\fBhosts\fR(4), \fBnetconfig\fR(4), \fBnss\fR(4), \fBnsswitch.conf\fR(4),
-\fBattributes\fR(5)
+.BR Intro (2),
+.BR Intro (3),
+.BR byteorder (3SOCKET),
+.BR inet (3SOCKET),
+.BR netdb.h (3HEAD),
+.BR netdir (3NSL),
+.BR hosts (4),
+\fBnetconfig\fR(4),
+.BR nss (4),
+\fBnsswitch.conf\fR(4),
+.BR attributes (5)
 .SH WARNINGS
 .sp
 .LP
-The reentrant interfaces \fBgethostbyname_r()\fR, \fBgethostbyaddr_r()\fR,
-and \fBgethostent_r()\fR are included in this release on an uncommitted
+The reentrant interfaces
+.BR gethostbyname_r() ,
+.BR gethostbyaddr_r() ,
+and
+.B gethostent_r()
+are included in this release on an uncommitted
 basis only and are subject to change or removal in future minor releases.
 .SH NOTES
 .sp
 .LP
 To ensure that they all return consistent results, \fBgethostbyname()\fR,
-\fBgethostbyname_r()\fR, and \fBnetdir_getbyname()\fR are implemented in
+.BR gethostbyname_r() ,
+and
+.B netdir_getbyname()
+are implemented in
 terms of the same internal library function. This function obtains the
-system-wide source lookup policy based on the \fBinet\fR family entries in
+system-wide source lookup policy based on the
+.B inet
+family entries in
 \fBnetconfig\fR(4) and the \fBhosts:\fR entry in \fBnsswitch.conf\fR(4).
-Similarly, \fBgethostbyaddr()\fR, \fBgethostbyaddr_r()\fR, and
+Similarly,
+.BR gethostbyaddr() ,
+.BR gethostbyaddr_r() ,
+and
 \fBnetdir_getbyaddr()\fR are implemented in terms of the same internal
-library function. If the \fBinet\fR family entries in \fBnetconfig\fR(4)
-have a ``-'' in the last column for \fBnametoaddr\fR libraries, then the
-entry for \fBhosts\fR in \fBnsswitch.conf\fR will be used; \fBnametoaddr\fR
+library function. If the
+.B inet
+family entries in \fBnetconfig\fR(4)
+have a ``-'' in the last column for
+.B nametoaddr
+libraries, then the
+entry for
+.B hosts
+in \fBnsswitch.conf\fR will be used; \fBnametoaddr\fR
 libraries in that column will be used, and \fBnsswitch.conf\fR will not be
 consulted.
 .sp
 .LP
-There is no analogue of \fBgethostent()\fR and \fBgethostent_r()\fR in the
+There is no analogue of
+.B gethostent()
+and
+.B gethostent_r()
+in the
 netdir functions, so these enumeration functions go straight to the
-\fBhosts\fR entry in \fBnsswitch.conf\fR. Thus enumeration can return
-results from a different source than that used by \fBgethostbyname()\fR,
-\fBgethostbyname_r()\fR, \fBgethostbyaddr()\fR, and
-\fBgethostbyaddr_r()\fR.
+\fBhosts\fR entry in
+.BR nsswitch.conf .
+Thus enumeration can return
+results from a different source than that used by
+.BR gethostbyname() ,
+.BR gethostbyname_r() ,
+.BR gethostbyaddr() ,
+and
+.BR gethostbyaddr_r() .
 .sp
 .LP
-All the functions that return a \fBstruct hostent\fR must always return the
+All the functions that return a
+.B "struct hostent"
+must always return the
 \fIcanonical name\fR in the \fIh_name\fR field. This name, by definition, is
 the well-known and official hostname shared between all aliases and all
 addresses. The underlying source that satisfies the request determines the
 mapping of the input name or address into the set of names and addresses in
-\fBhostent\fR. Different sources might do that in different ways. If there
-is more than one alias and more than one address in \fBhostent\fR, no
+.BR hostent .
+Different sources might do that in different ways. If there
+is more than one alias and more than one address in
+.BR hostent ,
+no
 pairing is implied between them.
 .sp
 .LP
 The system attempts to put those addresses that are on the same subnet as
 the caller before addresses that are on different subnets. However, if
-address sorting is disabled by setting \fBSORT_ADDRS\fR to FALSE in the
+address sorting is disabled by setting
+.B SORT_ADDRS
+to FALSE in the
 \fB/etc/default/nss\fR file, the system does not put the local subnet
-addresses first. See \fBnss\fR(4) for more information.
+addresses first. See
+.BR nss (4)
+for more information.
 .sp
 .LP
 When compiling multithreaded applications, see \fBIntro\fR(3),
-\fBMULTITHREADED APPLICATIONS\fR, for information about the use of the
+.BR "MULTITHREADED APPLICATIONS" ,
+for information about the use of the
 \fB_REENTRANT\fR flag.
 .sp
 .LP
-Use of the enumeration interfaces \fBgethostent()\fR and
+Use of the enumeration interfaces
+.B gethostent()
+and
 \fBgethostent_r()\fR is discouraged; enumeration might not be supported for
 all database sources. The semantics of enumeration are discussed further in
 \fBnsswitch.conf\fR(4).
@@ -460,7 +632,13 @@ The current implementations of these functions only return or accept
 addresses for the Internet address family (type \fBAF_INET\fR).
 .sp
 .LP
-The form for an address of type \fBAF_INET\fR is a \fBstruct in_addr\fR
+The form for an address of type
+.B AF_INET
+is a
+.BR "struct in_addr"
 defined in <\fBnetinet/in.h\fR>. The functions described in
-\fBinet\fR(3SOCKET), and illustrated in the \fBEXAMPLES\fR section, are
+.BR inet (3SOCKET),
+and illustrated in the
+.B EXAMPLES
+section, are
 helpful in constructing and manipulating addresses in this form.

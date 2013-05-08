@@ -31,31 +31,77 @@ regex \- match patterns against a string
 .SH DESCRIPTION
 .sp
 .LP
-The \fBregex\fR command takes a string from the standard input, and a list
-of \fIpattern\fR / \fItemplate\fR pairs, and runs \fBregex()\fR to compare
-the string against each \fIpattern\fR until there is a match. When a match
-occurs, \fBregex\fR writes the corresponding \fItemplate\fR to the standard
-output and returns \fBTRUE\fR. The last (or only) \fIpattern\fR does not
+The
+.B regex
+command takes a string from the standard input, and a list
+of
+.I pattern
+/
+.I template
+pairs, and runs
+.B regex()
+to compare
+the string against each
+.I pattern
+until there is a match. When a match
+occurs,
+.B regex
+writes the corresponding
+.I template
+to the standard
+output and returns
+.BR TRUE .
+The last (or only)
+.I pattern
+does not
 need a template. If that is the pattern that matches the string, the
-function simply returns \fBTRUE\fR. If no match is found, \fBregex\fR
-returns \fBFALSE\fR.
+function simply returns
+.BR TRUE .
+If no match is found, \fBregex\fR
+returns
+.BR FALSE .
 .sp
 .LP
-The argument \fIpattern\fR is a regular expression of the form described in
-\fBregex()\fR. In most cases, \fIpattern\fR should be enclosed in single
+The argument
+.I pattern
+is a regular expression of the form described in
+.BR regex() .
+In most cases,
+.I pattern
+should be enclosed in single
 quotes to turn off special meanings of characters. Note that only the final
 \fIpattern\fR in the list may lack a \fItemplate\fR.
 .sp
 .LP
-The argument \fItemplate\fR may contain the strings \fB$m0\fR through
-\fB$m9\fR, which will be expanded to the part of \fIpattern\fR enclosed in
+The argument
+.I template
+may contain the strings
+.B $m0
+through
+.BR $m9 ,
+which will be expanded to the part of
+.I pattern
+enclosed in
 \fB( .\|.\|. )$0\fR through \fB( .\|.\|. )$9\fR constructs (see examples
 below). Note that if you use this feature, you must be sure to enclose
 \fItemplate\fR in single quotes so that \fBFMLI\fR does not expand \fB$m0\fR
-through \fB$m9\fR at parse time. This feature gives \fBregex\fR much of the
-power of \fBcut\fR(1), \fBpaste\fR(1), and \fBgrep\fR(1), and some of the
-capabilities of \fBsed\fR(1). If there is no \fItemplate\fR, the default is
-\fB$m0$m1$m2$m3$m4$m5$m6$m7$m8$m9\fR.
+through
+.B $m9
+at parse time. This feature gives
+.B regex
+much of the
+power of
+.BR cut (1),
+.BR paste (1),
+and
+.BR grep (1),
+and some of the
+capabilities of
+.BR sed (1).
+If there is no
+.IR template ,
+the default is
+.BR $m0$m1$m2$m3$m4$m5$m6$m7$m8$m9 .
 .SH OPTIONS
 .sp
 .LP
@@ -64,7 +110,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 15n
 .rt
@@ -80,17 +126,22 @@ output.
 .ad
 .RS 15n
 .rt
-Uses \fIstring\fR instead of the standard input to match against
+Uses
+.I string
+instead of the standard input to match against
 patterns.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCutting letters out of a string
+\fBExample 1\fR Cutting letters out of a string
 .sp
 .LP
 To cut the 4th through 8th letters out of a string (this example will
-output \fBstrin\fR and return \fBTRUE\fR):
+output
+.B strin
+and return
+.BR TRUE ):
 
 .sp
 .in +2
@@ -101,7 +152,7 @@ output \fBstrin\fR and return \fBTRUE\fR):
 .sp
 
 .LP
-\fBExample 2 \fRValidating input in a form
+\fBExample 2\fR Validating input in a form
 .sp
 .LP
 In a form, to validate input to field 5 as an integer:
@@ -115,12 +166,20 @@ In a form, to validate input to field 5 as an integer:
 .sp
 
 .LP
-\fBExample 3 \fRTranslating an environment variable in a form
+\fBExample 3\fR Translating an environment variable in a form
 .sp
 .LP
 In a form, to translate an environment variable which contains one of the
-numbers \fB1\fR, \fB2\fR, \fB3\fR, \fB4\fR, \fB5\fR to the letters \fBa\fR,
-\fBb\fR, \fBc\fR, \fBd\fR, \fBe\fR:
+numbers
+.BR 1 ,
+.BR 2 ,
+.BR 3 ,
+.BR 4 ,
+\fB5\fR to the letters \fBa\fR,
+.BR b ,
+.BR c ,
+.BR d ,
+.BR e :
 
 .sp
 .in +2
@@ -135,13 +194,15 @@ numbers \fB1\fR, \fB2\fR, \fB3\fR, \fB4\fR, \fB5\fR to the letters \fBa\fR,
 Note the use of the pattern \fB\&'.*'\fR to mean "anything else".
 
 .LP
-\fBExample 4 \fRUsing backquoted expressions
+\fBExample 4\fR Using backquoted expressions
 .sp
 .LP
 In the example below, all three lines constitute a single backquoted
 expression. This expression, by itself, could be put in a menu definition
 file. Since backquoted expressions are expanded as they are parsed, and
-output from a backquoted expression (the \fBcat\fR command, in this example)
+output from a backquoted expression (the
+.B cat
+command, in this example)
 becomes part of the definition file being parsed, this expression would read
 \fB/etc/passwd\fR and make a dynamic menu of all the login ids on the
 system.
@@ -159,25 +220,42 @@ action=`message "$m0 is a user"`'`\fR
 .SH DIAGNOSTICS
 .sp
 .LP
-If none of the patterns match, \fBregex\fR returns \fBFALSE\fR, otherwise
-\fBTRUE\fR.
+If none of the patterns match,
+.B regex
+returns
+.BR FALSE ,
+otherwise
+.BR TRUE .
 .SH NOTES
 .sp
 .LP
 Patterns and templates must often be enclosed in single quotes to turn off
 the special meanings of characters. Especially if you use the \fB$m0\fR
-through \fB$m9\fR variables in the template, since \fBFMLI\fR will expand
+through
+.B $m9
+variables in the template, since
+.B FMLI
+will expand
 the variables (usually to "") before \fBregex\fR even sees them.
 .sp
 .LP
 Single characters in character classes (inside \fB[\|]\fR) must be listed
 before character ranges, otherwise they will not be recognized. For example,
 \fB[a-zA-Z_/]\fR will not find underscores (\fB_\fR) or slashes (\fB/\fR),
-but \fB[_/a-zA-Z]\fR will.
+but
+.B [_/a-zA-Z]
+will.
 .sp
 .LP
-The regular expressions accepted by \fBregcmp\fR differ slightly from other
-utilities (that is, \fBsed\fR, \fBgrep\fR, \fBawk\fR, \fBed\fR, and so
+The regular expressions accepted by
+.B regcmp
+differ slightly from other
+utilities (that is,
+.BR sed ,
+.BR grep ,
+.BR awk ,
+.BR ed ,
+and so
 forth).
 .sp
 .LP
@@ -209,7 +287,9 @@ would yield the desired result.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -226,5 +306,10 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBawk\fR(1), \fBcut\fR(1), \fBgrep\fR(1), \fBpaste\fR(1), \fBsed\fR(1),
-\fBregcmp\fR(3C), \fBattributes\fR(5)
+.BR awk (1),
+.BR cut (1),
+.BR grep (1),
+.BR paste (1),
+.BR sed (1),
+.BR regcmp (3C),
+.BR attributes (5)

@@ -63,21 +63,38 @@ t_accept \- accept a connection request
 .SH DESCRIPTION
 .sp
 .LP
-This routine is part of the \fBXTI\fR interfaces that evolved from the
+This routine is part of the
+.B XTI
+interfaces that evolved from the
 \fBTLI\fR interfaces. \fBXTI\fR represents the future evolution of these
-interfaces. However, \fBTLI\fR interfaces are supported for compatibility.
-When using a \fBTLI\fR routine that has the same name as an \fBXTI\fR
-routine, a different header file, \fBtiuser.h\fR, must be used.  Refer to
-the \fBTLI\fR \fBCOMPATIBILITY\fR section for a description of differences
+interfaces. However,
+.B TLI
+interfaces are supported for compatibility.
+When using a
+.B TLI
+routine that has the same name as an
+.BR XTI
+routine, a different header file,
+.BR tiuser.h ,
+must be used.  Refer to
+the
+.B "TLI COMPATIBILITY"
+section for a description of differences
 between the two interfaces.
 .sp
 .LP
 This function is issued by a transport user to accept a connection request.
 The parameter \fIfd\fR identifies the local transport endpoint where the
 connection indication arrived; \fIresfd\fR specifies the local transport
-endpoint where the connection is to be established, and \fIcall\fR contains
+endpoint where the connection is to be established, and
+.I call
+contains
 information required by the transport provider to complete the connection.
-The parameter \fIcall\fR points to a \fBt_call\fR structure which contains
+The parameter
+.I call
+points to a
+.B t_call
+structure which contains
 the following members:
 .sp
 .in +2
@@ -91,12 +108,18 @@ int sequence;
 
 .sp
 .LP
-In \fIcall\fR, \fIaddr\fR is the protocol address of the calling transport
-user, \fIopt\fR indicates any options associated with the connection,
+In
+.IR call ,
+\fIaddr\fR is the protocol address of the calling transport
+user,
+.I opt
+indicates any options associated with the connection,
 \fIudata\fR points to any user data to be returned to the caller, and
 \fIsequence\fR is the value returned by \fBt_listen\fR(3NSL) that uniquely
 associates the response with a previously received connection indication.
-The address of the caller, \fIaddr\fR may be null (length zero). Where
+The address of the caller,
+.I addr
+may be null (length zero). Where
 \fIaddr\fR is not null then it may optionally be checked by XTI.
 .sp
 .LP
@@ -106,13 +129,23 @@ indication arrived.  Before the connection can be accepted on the same
 endpoint (\fIresfd==fd\fR), the user must have responded to any previous
 connection indications received on that transport endpoint by means of
 \fBt_accept()\fR or \fBt_snddis\fR(3NSL). Otherwise, \fBt_accept()\fR will
-fail and set \fBt_errno\fR to \fBTINDOUT\fR.
+fail and set
+.B t_errno
+to
+.BR TINDOUT .
 .sp
 .LP
 If a different transport endpoint is specified (\fIresfd!=fd\fR), then the
-user may or may not choose to bind the endpoint before the \fBt_accept()\fR
-is issued. If the endpoint is not bound prior to the  \fBt_accept()\fR, the
-endpoint must be in the  \fBT_UNBND\fR state before the  \fBt_accept()\fR is
+user may or may not choose to bind the endpoint before the
+.BR t_accept()
+is issued. If the endpoint is not bound prior to the
+.BR t_accept() ,
+the
+endpoint must be in the 
+.B T_UNBND
+state before the 
+.B t_accept()
+is
 issued, and the transport provider will automatically bind it to an address
 that is appropriate for the protocol concerned. If the transport user
 chooses to bind the endpoint it must be bound to a protocol address with a
@@ -120,22 +153,40 @@ chooses to bind the endpoint it must be bound to a protocol address with a
 \fBt_accept()\fR is issued.
 .sp
 .LP
-Responding endpoints should be supplied to  \fBt_accept()\fR in the state
+Responding endpoints should be supplied to 
+.B t_accept()
+in the state
 \fBT_UNBND.\fR 
 .sp
 .LP
-The call to  \fBt_accept()\fR may fail with t_errno set to \fBTLOOK\fR if
+The call to 
+.B t_accept()
+may fail with t_errno set to
+.B TLOOK
+if
 there are indications (for example connect or disconnect) waiting to be
-received on endpoint  \fIfd\fR. Applications should be prepared for such a
+received on endpoint 
+.IR fd .
+Applications should be prepared for such a
 failure.
 .sp
 .LP
-The \fIudata\fR argument enables the called transport user to send user
+The
+.I udata
+argument enables the called transport user to send user
 data to the caller and the amount of user data must not exceed the limits
-supported by the transport provider as returned in the \fIconnect\fR field
+supported by the transport provider as returned in the
+.I connect
+field
 of the \fIinfo\fR argument of \fBt_open\fR(3NSL) or \fBt_getinfo\fR(3NSL).
-If the \fIlen\fR field of \fIudata\fR is zero, no data will be sent to the
-caller. All the \fImaxlen\fR fields are meaningless.
+If the
+.I len
+field of
+.I udata
+is zero, no data will be sent to the
+caller. All the
+.I maxlen
+fields are meaningless.
 .sp
 .LP
 When the user does not indicate any option (\fIcall\(->opt.len\fR = 0) the
@@ -144,8 +195,12 @@ responding endpoint  \fIresfd\fR.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a value of  \fB0\fR is returned.  Otherwise, a
-value of -1 is returned and \fBt_errno\fR is set to indicate an error.
+Upon successful completion, a value of 
+.B 0
+is returned.  Otherwise, a
+value of -1 is returned and
+.B t_errno
+is set to indicate an error.
 .SH VALID STATES
 .sp
 .LP
@@ -156,12 +211,14 @@ value of -1 is returned and \fBt_errno\fR is set to indicate an error.
 .SH ERRORS
 .sp
 .LP
-On failure, \fBt_errno\fR is set to one of the following:
+On failure,
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTACCES\fR
+.B TACCES
 .ad
 .RS 17n
 .rt
@@ -173,7 +230,7 @@ transport endpoint or to use the specified options.
 .ne 2
 .mk
 .na
-\fBTBADADDR\fR
+.B TBADADDR
 .ad
 .RS 17n
 .rt
@@ -185,7 +242,7 @@ illegal information.
 .ne 2
 .mk
 .na
-\fBTBADDATA\fR
+.B TBADDATA
 .ad
 .RS 17n
 .rt
@@ -197,7 +254,7 @@ transport provider.
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 17n
 .rt
@@ -209,7 +266,7 @@ endpoint.
 .ne 2
 .mk
 .na
-\fBTBADOPT\fR
+.B TBADOPT
 .ad
 .RS 17n
 .rt
@@ -221,13 +278,15 @@ information.
 .ne 2
 .mk
 .na
-\fBTBADSEQ\fR
+.B TBADSEQ
 .ad
 .RS 17n
 .rt
 Either an invalid sequence number was specified, or a valid sequence number
 was specified but the connection request was aborted by the peer. In the
-latter case, its  \fBT_DISCONNECT\fR event will be received on the listening
+latter case, its 
+.B T_DISCONNECT
+event will be received on the listening
 endpoint.
 .RE
 
@@ -235,21 +294,23 @@ endpoint.
 .ne 2
 .mk
 .na
-\fBTINDOUT\fR
+.B TINDOUT
 .ad
 .RS 17n
 .rt
 The function was called with \fIfd==resfd\fR but there are outstanding
 connection indications on the endpoint.  Those other connection indications
-must be handled either by rejecting them by means of  \fBt_snddis\fR(3NSL)
-or accepting them on a different endpoint by means of  \fBt_accept\fR.
+must be handled either by rejecting them by means of 
+.BR t_snddis (3NSL)
+or accepting them on a different endpoint by means of 
+.BR t_accept .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTLOOK\fR
+.B TLOOK
 .ad
 .RS 17n
 .rt
@@ -261,7 +322,7 @@ An asynchronous event has occurred on the transport endpoint referenced by
 .ne 2
 .mk
 .na
-\fBTNOTSUPPORT\fR
+.B TNOTSUPPORT
 .ad
 .RS 17n
 .rt
@@ -272,7 +333,7 @@ This function is not supported by the underlying transport provider.
 .ne 2
 .mk
 .na
-\fBTOUTSTATE\fR
+.B TOUTSTATE
 .ad
 .RS 17n
 .rt
@@ -284,20 +345,21 @@ in one of the states in which a call to this function is valid.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 17n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI
-error (\fBt_errno\fR).
+error
+.RB ( t_errno ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTPROVMISMATCH\fR
+.B TPROVMISMATCH
 .ad
 .RS 17n
 .rt
@@ -309,7 +371,7 @@ transport provider.
 .ne 2
 .mk
 .na
-\fBTRESADDR\fR
+.B TRESADDR
 .ad
 .RS 17n
 .rt
@@ -321,19 +383,23 @@ to the same address. This error results if they are not.
 .ne 2
 .mk
 .na
-\fBTRESQLEN\fR
+.B TRESQLEN
 .ad
 .RS 17n
 .rt
-The endpoint referenced by \fIresfd\fR (where \fIresfd\fR != \fIfd\fR) was
-bound to a protocol address with a \fIqlen\fR that is greater than zero.
+The endpoint referenced by \fIresfd\fR (where \fIresfd\fR !=
+.IR fd )
+was
+bound to a protocol address with a
+.I qlen
+that is greater than zero.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 17n
 .rt
@@ -343,14 +409,24 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-The \fBXTI\fR and \fBTLI\fR interface definitions have common names but use
+The
+.B XTI
+and
+.B TLI
+interface definitions have common names but use
 different header files. This, and other semantic differences between the two
 interfaces are described in the subsections below.
 .SS "Interface Header"
 .sp
 .LP
-The \fBXTI\fR interfaces use the header file, \fBxti.h\fR. \fBTLI\fR
-interfaces should \fInot\fR use this header. They should use the header:
+The
+.B XTI
+interfaces use the header file,
+.BR xti.h .
+.B TLI
+interfaces should
+.I not
+use this header. They should use the header:
 .sp
 .in +2
 .nf
@@ -361,13 +437,19 @@ interfaces should \fInot\fR use this header. They should use the header:
 .SS "Error Description Values"
 .sp
 .LP
-The \fBt_errno\fR values that can be set by the \fBXTI\fR interface and
-cannot be set by the \fBTLI\fR interface are:
+The
+.B t_errno
+values that can be set by the
+.B XTI
+interface and
+cannot be set by the
+.B TLI
+interface are:
 .sp
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 18n
 .rt
@@ -378,7 +460,7 @@ cannot be set by the \fBTLI\fR interface are:
 .ne 2
 .mk
 .na
-\fBTINDOUT\fR
+.B TINDOUT
 .ad
 .RS 18n
 .rt
@@ -389,7 +471,7 @@ cannot be set by the \fBTLI\fR interface are:
 .ne 2
 .mk
 .na
-\fBTPROVMISMATCH\fR
+.B TPROVMISMATCH
 .ad
 .RS 18n
 .rt
@@ -400,7 +482,7 @@ cannot be set by the \fBTLI\fR interface are:
 .ne 2
 .mk
 .na
-\fBTRESADDR\fR
+.B TRESADDR
 .ad
 .RS 18n
 .rt
@@ -411,7 +493,7 @@ cannot be set by the \fBTLI\fR interface are:
 .ne 2
 .mk
 .na
-\fBTRESQLEN\fR
+.B TRESQLEN
 .ad
 .RS 18n
 .rt
@@ -421,13 +503,21 @@ cannot be set by the \fBTLI\fR interface are:
 .SS "Option Buffer"
 .sp
 .LP
-The format of the options in an \fBopt\fR buffer is dictated by the
-transport provider. Unlike the \fBXTI\fR interface, the \fBTLI\fR interface
+The format of the options in an
+.B opt
+buffer is dictated by the
+transport provider. Unlike the
+.B XTI
+interface, the
+.B TLI
+interface
 does not specify the buffer format.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -444,9 +534,14 @@ MT LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBt_connect\fR(3NSL), \fBt_getinfo\fR(3NSL), \fBt_getstate\fR(3NSL),
-\fBt_listen\fR(3NSL), \fBt_open\fR(3NSL), \fBt_optmgmt\fR(3NSL),
-\fBt_rcvconnect\fR(3NSL), \fBt_snddis\fR(3NSL), \fBattributes\fR(5)
+.BR t_connect (3NSL),
+\fBt_getinfo\fR(3NSL), \fBt_getstate\fR(3NSL),
+.BR t_listen (3NSL),
+.BR t_open (3NSL),
+.BR t_optmgmt (3NSL),
+.BR t_rcvconnect (3NSL),
+.BR t_snddis (3NSL),
+.BR attributes (5)
 .SH WARNINGS
 .sp
 .LP
@@ -456,6 +551,7 @@ There may be transport provider-specific restrictions on address binding.
 .LP
 Some transport providers do not differentiate between a connection
 indication and the connection itself.  If the connection has already been
-established after a successful return of \fBt_listen\fR(3NSL),
+established after a successful return of
+.BR t_listen (3NSL),
 \fBt_accept()\fR will assign the existing connection to the transport
 endpoint specified by \fIresfd\fR.

@@ -69,11 +69,16 @@ watchmalloc \- debugging memory allocator
 .SH DESCRIPTION
 .sp
 .LP
-The collection of \fBmalloc()\fR functions in this shared object are an
+The collection of
+.B malloc()
+functions in this shared object are an
 optional replacement for the standard versions of the same  functions in the
 system C library. See \fBmalloc\fR(3C). They provide a more strict interface
 than the standard versions and enable enforcement of the interface through
-the watchpoint facility of \fB/proc\fR. See \fBproc\fR(4).
+the watchpoint facility of
+.BR /proc .
+See
+.BR proc (4).
 .sp
 .LP
 Any dynamically linked application can be run with these functions in place
@@ -89,7 +94,8 @@ environment (see \fBld.so.1\fR(1)):
 .sp
 .LP
 The individual function interfaces are identical to the standard ones as
-described in \fBmalloc\fR(3C). However, laxities provided in the standard
+described in
+.BR malloc "(3C). However, laxities provided in the standard"
 versions are not permitted when the watchpoint facility is enabled (see
 \fBWATCHPOINTS\fR below):
 .RS +4
@@ -102,13 +108,16 @@ Memory may not be freed more than once.
 .TP
 .ie t \(bu
 .el o
-A pointer to freed memory may not be used in a call to \fBrealloc()\fR.
+A pointer to freed memory may not be used in a call to
+.BR realloc() .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A call to \fBmalloc()\fR immediately following a call to \fBfree()\fR will
+A call to
+.B malloc()
+immediately following a call to \fBfree()\fR will
 not return the same space.
 .RE
 .RS +4
@@ -125,27 +134,40 @@ is overwritten with the pattern \fB0xdeadbeef\fR before returning from
 \fBfree()\fR. The \fBmalloc()\fR function returns with the allocated memory
 filled with the pattern \fB0xbaddcafe\fR as a precaution against
 applications incorrectly expecting to receive back unmodified memory from
-the last \fBfree()\fR. The \fBcalloc()\fR function always returns with the
+the last
+.BR free() .
+The
+.B calloc()
+function always returns with the
 memory zero-filled.
 .sp
 .LP
-Entry points for \fBmallopt()\fR and \fBmallinfo()\fR are provided as empty
-routines, and are present only because some \fBmalloc()\fR implementations
+Entry points for
+.B mallopt()
+and \fBmallinfo()\fR are provided as empty
+routines, and are present only because some
+.B malloc()
+implementations
 provide them.
 .SH WATCHPOINTS
 .sp
 .LP
-The watchpoint facility of \fB/proc\fR can be applied by a process to
-itself. The functions in \fBwatchmalloc.so.1\fR use this feature if the
+The watchpoint facility of
+.B /proc
+can be applied by a process to
+itself. The functions in
+.B watchmalloc.so.1
+use this feature if the
 following string is present in the environment:
 .sp
 .LP
 MALLOC_DEBUG=WATCH
 .sp
 .LP
-This causes every block of freed memory to be covered with \fBWA_WRITE\fR
+This causes every block of freed memory to be covered with
+.BR WA_WRITE
 watched areas. If the application attempts to write any part of freed
-memory, it will trigger a watchpoint trap, resulting in a \fBSIGTRAP\fR
+.RB "memory, it will trigger a watchpoint trap, resulting in a" " SIGTRAP"
 signal, which normally produces an  application core dump.
 .sp
 .LP
@@ -153,7 +175,8 @@ A header is maintained before each block of allocated memory. Each header
 is covered with a watched area, thereby providing a red zone before and
 after each block of allocated memory (the header for the subsequent memory
 block serves as the trailing red zone for its preceding memory block).
-Writing just before or just after a memory block returned by \fBmalloc()\fR
+Writing just before or just after a memory block returned by
+.BR malloc()
 will trigger a watchpoint trap.
 .sp
 .LP
@@ -171,22 +194,28 @@ MALLOC_DEBUG=WATCH,RW,STOP
 .ne 2
 .mk
 .na
-\fBWATCH\fR
+.B WATCH
 .ad
 .RS 9n
 .rt
-Enables \fBWA_WRITE\fR watched areas as described above.
+Enables
+.B WA_WRITE
+watched areas as described above.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRW\fR
+.B RW
 .ad
 .RS 9n
 .rt
-Enables both \fBWA_READ\fR and \fBWA_WRITE\fR watched areas. An attempt
+Enables both
+.B WA_READ
+and
+.B WA_WRITE
+watched areas. An attempt
 either to read or write freed memory or the red zones will trigger a
 watchpoint trap. This incurs even more overhead and can cause the
 application to run up to 1000 times slower.
@@ -196,39 +225,63 @@ application to run up to 1000 times slower.
 .ne 2
 .mk
 .na
-\fBSTOP\fR
+.B STOP
 .ad
 .RS 9n
 .rt
-The process will stop showing a \fBFLTWATCH\fR machine fault if it triggers
-a watchpoint trap, rather than dumping core with a \fBSIGTRAP\fR signal.
+The process will stop showing a
+.B FLTWATCH
+machine fault if it triggers
+a watchpoint trap, rather than dumping core with a
+.B SIGTRAP
+signal.
 This allows a debugger to be attached to the live process at the point where
-it underwent the watchpoint trap. Also, the various \fB/proc\fR tools
-described in \fBproc\fR(1) can be used to examine the stopped process.
+it underwent the watchpoint trap. Also, the various
+.B /proc
+tools
+described in
+.BR proc (1)
+can be used to examine the stopped process.
 .RE
 
 .sp
 .LP
-One of \fBWATCH\fR or \fBRW\fR must be specified, else the watchpoint
-facility is not engaged. \fBRW\fR overrides \fBWATCH\fR. Unrecognized
+One of
+.B WATCH
+or
+.B RW
+must be specified, else the watchpoint
+facility is not engaged.
+.B RW
+overrides
+.BR WATCH .
+Unrecognized
 options are silently ignored.
 .SH LIMITATIONS
 .sp
 .LP
-Sizes of memory blocks allocated by \fBmalloc()\fR are rounded up to the
+Sizes of memory blocks allocated by
+.B malloc()
+are rounded up to the
 worst-case alignment size, 8 bytes for 32-bit processes and 16 bytes for
 64-bit processes. Accessing the extra space allocated for a memory block is
 technically a memory violation but is in fact innocuous. Such accesses are
-not detected by the watchpoint facility of \fBwatchmalloc\fR.
+not detected by the watchpoint facility of
+.BR watchmalloc .
 .sp
 .LP
-Interposition of \fBwatchmalloc.so.1\fR fails innocuously if the target
-application is statically linked with respect to its \fBmalloc()\fR
+Interposition of
+.B watchmalloc.so.1
+fails innocuously if the target
+application is statically linked with respect to its
+.BR malloc()
 functions.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -245,7 +298,16 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBproc\fR(1), \fBbsdmalloc\fR(3MALLOC), \fBcalloc\fR(3C), \fBfree\fR(3C),
-\fBmalloc\fR(3C), \fBmalloc\fR(3MALLOC), \fBmapmalloc\fR(3MALLOC),
-\fBmemalign\fR(3C), \fBrealloc\fR(3C), \fBvalloc\fR(3C),
-\fBlibmapmalloc\fR(3LIB), \fBproc\fR(4), \fBattributes\fR(5)
+.BR proc (1),
+.BR bsdmalloc (3MALLOC),
+.BR calloc (3C),
+\fBfree\fR(3C),
+.BR malloc (3C),
+.BR malloc (3MALLOC),
+.BR mapmalloc (3MALLOC),
+.BR memalign (3C),
+.BR realloc (3C),
+.BR valloc (3C),
+.BR libmapmalloc (3LIB),
+.BR proc (4),
+.BR attributes (5)

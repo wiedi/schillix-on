@@ -40,8 +40,11 @@ getmsg, getpmsg \- get next message off a stream
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgetmsg()\fR function retrieves the contents of a message (see
-\fBIntro\fR(2)) located at  the stream head read queue from a STREAMS file,
+The
+.B getmsg()
+function retrieves the contents of a message (see
+.BR Intro (2))
+located at  the stream head read queue from a STREAMS file,
 and places the contents into user specified buffer(s). The message must
 contain either a data part, a control part, or both. The data and control
 parts of the message are placed into separate buffers,  as described below.
@@ -49,14 +52,24 @@ The semantics of each part is defined by the STREAMS module that generated
 the message.
 .sp
 .LP
-The  \fBgetpmsg()\fR function behaved like \fBgetmsg()\fR, but provides
+The 
+.B getpmsg()
+function behaved like
+.BR getmsg() ,
+but provides
 finer control over the priority of the messages received. Except where
-noted, all information pertaining to \fBgetmsg()\fR also pertains to
-\fBgetpmsg()\fR.
+noted, all information pertaining to
+.B getmsg()
+also pertains to
+.BR getpmsg() .
 .sp
 .LP
 The \fIfildes\fR argument specifies a file descriptor referencing an open
-stream. The \fIctlptr\fR and \fIdataptr\fR arguments each point to a
+stream. The
+.I ctlptr
+and
+.I dataptr
+arguments each point to a
 \fBstrbuf\fR structure, which contains the following members:
 .sp
 .in +2
@@ -70,7 +83,9 @@ char   *buf;        /* ptr to buffer */
 .sp
 .LP
 The \fBbuf\fR member points to a buffer into which the data or control
-information is to be placed, and the \fBmaxlen\fR member indicates the
+information is to be placed, and the
+.B maxlen
+member indicates the
 maximum number of bytes this buffer can hold. On return, the \fBlen\fR
 member contains the number of bytes of data or control information actually
 received; 0 if there is a zero-length control or data part; or \(mi1 if no
@@ -79,55 +94,106 @@ argument should point to an integer that indicates the type of message the
 user is able to receive, as described below.
 .sp
 .LP
-The \fIctlptr\fR argument holds the control part from the message and the
+The
+.I ctlptr
+argument holds the control part from the message and the
 \fIdataptr\fR argument  holds the data part from the message. If
-\fIctlptr\fR (or \fIdataptr\fR) is \fINULL\fR or the \fBmaxlen\fR member is
+\fIctlptr\fR (or
+.IR dataptr )
+is
+.I NULL
+or the
+.B maxlen
+member is
 \(mi1, the control (or data) part of the message is not processed and is
-left on the stream head read queue. If \fIctlptr\fR (or \fIdataptr\fR) is
-not \fINULL\fR and there is no corresponding control (or data) part of the
-messages on the stream head read queue, \fBlen\fR is set to \(mi1. If the
+left on the stream head read queue. If
+.I ctlptr
+(or
+.IR dataptr )
+is
+not
+.I NULL
+and there is no corresponding control (or data) part of the
+messages on the stream head read queue,
+.B len
+is set to \(mi1. If the
 \fBmaxlen\fR member is set to 0 and there is a zero-length control (or data)
-part, that zero-length part is removed from the read queue and \fBlen\fR is
-set to 0. If the \fBmaxlen\fR member is set to 0 and there are more than
+part, that zero-length part is removed from the read queue and
+.B len
+is
+set to 0. If the
+.B maxlen
+member is set to 0 and there are more than
 zero bytes of control (or data) information, that information is left on the
-read queue and \fBlen\fR is set to 0. If the \fBmaxlen\fR member in
+read queue and
+.B len
+is set to 0. If the
+.B maxlen
+member in
 \fIctlptr\fR or \fIdataptr\fR is less than,  respectively, the control or
-data part of the message, \fBmaxlen\fR bytes are  retrieved. In this case,
+data part of the message,
+.B maxlen
+bytes are  retrieved. In this case,
 the remainder of the message is left on the stream head read  queue and a
 non-zero return value is provided, as described below under  \fBRETURN
 VALUES\fR.
 .sp
 .LP
-By default, \fBgetmsg()\fR processes the first available message on the
+By default,
+.B getmsg()
+processes the first available message on the
 stream head read queue. A user may, however, choose to retrieve only high
 priority messages by setting  the integer pointed to by \fIflagsp\fR to
-\fBRS_HIPRI\fR. In this case, \fBgetmsg()\fR processes the next message only
+.BR RS_HIPRI .
+In this case,
+.B getmsg()
+processes the next message only
 if it is a high priority message.
 .sp
 .LP
-If the integer pointed to by \fIflagsp\fR is 0, \fBgetmsg()\fR retrieves
+If the integer pointed to by \fIflagsp\fR is 0,
+.B getmsg()
+retrieves
 any message available on the stream head read queue. In this case, on
 return, the integer pointed to by \fIflagsp\fR will be set to
 \fBRS_HIPRI\fR if a high priority message was retrieved, or to 0
 otherwise.
 .sp
 .LP
-For \fBgetpmsg()\fR, the \fIflagsp\fR argument points to a bitmask with the
-following mutually-exclusive flags defined: \fBMSG_HIPRI\fR, \fBMSG_BAND\fR,
-and \fBMSG_ANY\fR. Like \fBgetmsg()\fR, \fBgetpmsg()\fR processes the first
+For
+.BR getpmsg() ,
+the \fIflagsp\fR argument points to a bitmask with the
+following mutually-exclusive flags defined:
+.BR MSG_HIPRI ,
+.BR MSG_BAND ,
+and
+.BR MSG_ANY .
+Like
+.BR getmsg() ,
+\fBgetpmsg()\fR processes the first
 available message on the stream head read queue. A user may choose to
 retrieve only high-priority messages by setting the integer pointed to by
 \fIflagsp\fR to \fBMSG_HIPRI\fR and the integer pointed to by \fIbandp\fR to
-0. In this case, \fBgetpmsg()\fR will only process the next message if it is
+0. In this case,
+.B getpmsg()
+will only process the next message if it is
 a high-priority message. In a similar manner, a user may choose to retrieve
 a message from a particular priority band by setting the integer pointed to
 by \fIflagsp\fR to \fBMSG_BAND\fR and the integer pointed to by \fIbandp\fR
-to the priority band of interest. In this case, \fBgetpmsg()\fR will only
+to the priority band of interest. In this case,
+.B getpmsg()
+will only
 process the next message if it is in a priority band equal to, or greater
-than, the integer pointed to by \fIbandp\fR, or if it is a high-priority
+than, the integer pointed to by
+.IR bandp ,
+or if it is a high-priority
 message. If a user just wants to get the first message off the queue, the
-integer pointed to by \fIflagsp\fR should be set to \fBMSG_ANY\fR and the
-integer pointed to by \fIbandp\fR should be set to 0. On return, if the
+integer pointed to by \fIflagsp\fR should be set to
+.B MSG_ANY
+and the
+integer pointed to by
+.I bandp
+should be set to 0. On return, if the
 message retrieved was a high-priority message, the integer pointed to by
 \fIflagsp\fR will be set to \fBMSG_HIPRI\fR and the integer pointed to by
 \fIbandp\fR will be set to 0. Otherwise, the integer pointed to by
@@ -135,9 +201,19 @@ message retrieved was a high-priority message, the integer pointed to by
 \fIbandp\fR will be set to the priority band of the message.
 .sp
 .LP
-If \fBO_NDELAY\fR and \fBO_NONBLOCK\fR are clear, \fBgetmsg()\fR blocks
+If
+.B O_NDELAY
+and
+.B O_NONBLOCK
+are clear,
+.B getmsg()
+blocks
 until a message of the type specified by \fIflagsp\fR is available on the
-stream head read  queue. If \fBO_NDELAY\fR or \fBO_NONBLOCK\fR has been set
+stream head read  queue. If
+.B O_NDELAY
+or
+.B O_NONBLOCK
+has been set
 and a message of the specified type is not present on the read queue,
 \fBgetmsg()\fR fails and sets \fBerrno\fR to \fBEAGAIN\fR.
 .sp
@@ -145,34 +221,55 @@ and a message of the specified type is not present on the read queue,
 If a hangup occurs on the stream from which messages are to be retrieved,
 \fBgetmsg()\fR continues to operate normally, as described above, until the
 stream head read queue is empty. Thereafter, it returns 0 in the \fBlen\fR
-member of \fIctlptr\fR and \fIdataptr\fR.
+member of
+.I ctlptr
+and
+.IR dataptr .
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, a non-negative value is returned. A return
-value of \fB0\fR indicates that a full message was read successfully. A
-return value of \fBMORECTL\fR indicates that more control information is
-waiting for retrieval. A return value of \fBMOREDATA\fR indicates that more
-data are waiting for retrieval. A return value of \fBMORECTL\fR |
+value of
+.B 0
+indicates that a full message was read successfully. A
+return value of
+.B MORECTL
+indicates that more control information is
+waiting for retrieval. A return value of
+.B MOREDATA
+indicates that more
+data are waiting for retrieval. A return value of
+.B MORECTL
+|
 \fBMOREDATA\fR indicates that both types of information remain. Subsequent
 \fBgetmsg()\fR calls retrieve the remainder of the message. However, if a
 message of higher priority has been received by the stream head read queue,
-the next call to \fBgetmsg()\fR will retrieve that higher priority message
+the next call to
+.B getmsg()
+will retrieve that higher priority message
 before retrieving the remainder of the previously received partial
 message.
 .SH ERRORS
 .sp
 .LP
-The \fBgetmsg()\fR and \fBgetpmsg()\fR functions will fail if:
+The
+.B getmsg()
+and
+.B getpmsg()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
-The \fBO_NDELAY\fR or \fBO_NONBLOCK\fR flag is set and no messages are
+The
+.B O_NDELAY
+or
+.B O_NONBLOCK
+flag is set and no messages are
 available.
 .RE
 
@@ -180,7 +277,7 @@ available.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 11n
 .rt
@@ -192,22 +289,27 @@ reading.
 .ne 2
 .mk
 .na
-\fBEBADMSG\fR
+.B EBADMSG
 .ad
 .RS 11n
 .rt
-Queued message to be read is not valid for \fBgetmsg\fR.
+Queued message to be read is not valid for
+.BR getmsg .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 11n
 .rt
-The \fIctlptr\fR, \fIdataptr\fR, \fIbandp\fR, or \fIflagsp\fR argument
+The
+.IR ctlptr ,
+.IR dataptr ,
+.IR bandp ,
+or \fIflagsp\fR argument
 points to an illegal address.
 .RE
 
@@ -215,22 +317,26 @@ points to an illegal address.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 11n
 .rt
-A signal was caught during the execution of the \fBgetmsg\fR function.
+A signal was caught during the execution of the
+.B getmsg
+function.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-An illegal value was specified in \fIflagsp\fR, or the stream referenced by
+An illegal value was specified in
+.IR flagsp ,
+or the stream referenced by
 \fIfildes\fR is linked under a multiplexor.
 .RE
 
@@ -238,7 +344,7 @@ An illegal value was specified in \fIflagsp\fR, or the stream referenced by
 .ne 2
 .mk
 .na
-\fBENOSTR\fR
+.B ENOSTR
 .ad
 .RS 11n
 .rt
@@ -247,13 +353,19 @@ A stream is not associated with \fIfildes\fR.
 
 .sp
 .LP
-The \fBgetmsg()\fR function can also fail if a STREAMS error message had
-been received at the stream head before the call to \fBgetmsg()\fR. The
+The
+.B getmsg()
+function can also fail if a STREAMS error message had
+been received at the stream head before the call to
+.BR getmsg() .
+The
 error returned is the value contained in the STREAMS error message.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -270,8 +382,13 @@ Interface StabilityStandard
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBpoll\fR(2), \fBputmsg\fR(2), \fBread\fR(2),
-\fBwrite\fR(2), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR Intro (2),
+.BR poll (2),
+.BR putmsg (2),
+.BR read (2),
+.BR write (2),
+.BR attributes (5),
+.BR standards (5)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

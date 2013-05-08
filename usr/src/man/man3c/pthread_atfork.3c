@@ -65,29 +65,52 @@ pthread_atfork \- register fork handlers
 .sp
 .LP
 The \fBpthread_atfork()\fR function declares fork handlers to be called prior
-to and following \fBfork\fR(2), within the thread that called \fBfork()\fR. The
+to and following
+.BR fork (2),
+within the thread that called
+.BR fork() .
+The
 order of calls to \fBpthread_atfork()\fR is significant.
 .sp
 .LP
 Before \fBfork()\fR processing begins, the \fIprepare\fR fork handler is
-called. The \fIprepare\fR handler is not called if its address is \fINULL.\fR
+called. The
+.I prepare
+handler is not called if its address is
+.IR NULL.
 
 .sp
 .LP
-The \fIparent\fR fork handler is called after \fBfork()\fR processing finishes
-in the parent process, and the \fIchild\fR fork handler is called after
+The
+.I parent
+fork handler is called after \fBfork()\fR processing finishes
+in the parent process, and the
+.I child
+fork handler is called after
 \fBfork()\fR processing finishes in the child process. If the address of
-\fIparent\fR or \fIchild\fR is  \fINULL\fR, then its handler is not called.
+\fIparent\fR or \fIchild\fR is
+.IR NULL ,
+then its handler is not called.
 .sp
 .LP
-The \fIprepare\fR fork handler is called in  \fBLIFO\fR (last-in first-out)
-order, whereas the \fIparent\fR and \fIchild\fR fork handlers are called in
+The
+.I prepare
+fork handler is called in 
+.B LIFO
+(last-in first-out)
+order, whereas the
+.I parent
+and
+.I child
+fork handlers are called in
 \fBFIFO\fR (first-in first-out) order. This calling order allows applications
 to preserve locking order.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBpthread_atfork()\fR returns \fB0\fR. Otherwise,
+Upon successful completion, \fBpthread_atfork()\fR returns
+.BR 0 .
+Otherwise,
 an error number is returned.
 .SH ERRORS
 .sp
@@ -97,7 +120,7 @@ The \fBpthread_atfork()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -114,11 +137,13 @@ are interoperable. See\fBfork\fR(2) for information relating to \fBfork()\fR in
 a Solaris threads environment in Solaris 10 relative to previous releases.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRMake a library safe with respect to \fBfork()\fR.
+\fBExample 1\fR Make a library safe with respect to \fBfork()\fR.
 .sp
 .LP
 All multithreaded applications that call \fBfork()\fR in a POSIX threads
-program and do more than simply call \fBexec\fR(2) in the child of the fork
+program and do more than simply call
+.BR exec (2)
+in the child of the fork
 need to ensure that the child is protected from deadlock.
 
 .sp
@@ -132,7 +157,9 @@ the child needs this lock.
 .sp
 .LP
 The problem is more serious with locks in libraries.  Since a library writer
-does not know if the application using the library calls \fBfork()\fR, the
+does not know if the application using the library calls
+.BR fork() ,
+the
 library must protect itself from such a deadlock scenario.  If the application
 that links with this library calls \fBfork()\fR and does not call  \fBexec()\fR
 in the child, and if it needs a library lock that may be held by some other
@@ -155,7 +182,9 @@ Identify also the locking order for these locks (for example
 .TP
 2.
 Add a call to \fBpthread_atfork(f1, f2, f3)\fR in the  library's \fI\&.init\fR
-section. \fBf1\fR, \fBf2\fR, \fBf3\fR are defined as follows:
+section.
+.BR f1 ,
+\fBf2\fR, \fBf3\fR are defined as follows:
 .RE
 .sp
 .in +2
@@ -187,7 +216,9 @@ section. \fBf1\fR, \fBf2\fR, \fBf3\fR are defined as follows:
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -206,5 +237,6 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBfork\fR(2), \fBatexit\fR(3C), \fBattributes\fR(5),
-\fBstandards\fR(5) 
+.BR exec (2),
+\fBfork\fR(2), \fBatexit\fR(3C), \fBattributes\fR(5),
+.BR standards (5)

@@ -73,7 +73,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 12n
 .rt
@@ -85,7 +85,7 @@ modules that do not have an associated dev_info structure.
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 12n
 .rt
@@ -97,7 +97,7 @@ name and spaces are not allowed. The name should be unique.
 .ne 2
 .mk
 .na
-\fInthreads\fR
+.I nthreads
 .ad
 .RS 12n
 .rt
@@ -110,7 +110,7 @@ is guaranteed (tasks are processed in the order scheduled) if the
 .ne 2
 .mk
 .na
-\fIpri\fR
+.I pri
 .ad
 .RS 12n
 .rt
@@ -144,7 +144,7 @@ Callback function to call.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 12n
 .rt
@@ -164,7 +164,7 @@ Possible \fIdflags\fR are:
 .ne 2
 .mk
 .na
-\fBDDI_SLEEP\fR
+.B DDI_SLEEP
 .ad
 .RS 15n
 .rt
@@ -175,7 +175,7 @@ Allow sleeping (blocking) until memory is available.
 .ne 2
 .mk
 .na
-\fBDDI_NOSLEEP\fR
+.B DDI_NOSLEEP
 .ad
 .RS 15n
 .rt
@@ -188,7 +188,7 @@ Return DDI_FAILURE immediately if memory is not  available.
 .ne 2
 .mk
 .na
-\fItq\fR
+.I tq
 .ad
 .RS 12n
 .rt
@@ -199,7 +199,7 @@ Pointer to a task queue (ddi_taskq_t *).
 .ne 2
 .mk
 .na
-\fItp\fR
+.I tp
 .ad
 .RS 12n
 .rt
@@ -250,59 +250,103 @@ to service the list. If a task queue has a single service thread, all tasks
 are guaranteed to execute in the order they were dispatched. Otherwise they
 can be executed in any order. Note that since tasks are placed on a list,
 execution of one task and should not depend on the execution of another task
-or a deadlock may occur. A \fBtaskq\fR created with a single servicing
+or a deadlock may occur. A
+.B taskq
+created with a single servicing
 thread guarantees that all the tasks are serviced in the order in which they
 are scheduled.
 .sp
 .LP
-The \fBddi_taskq_create()\fR function creates a task queue instance.
+The
+.B ddi_taskq_create()
+function creates a task queue instance.
 .sp
 .LP
-The \fBddi_taskq_dispatch()\fR function places \fBtaskq\fR on the list for
+The
+.B ddi_taskq_dispatch()
+function places
+.B taskq
+on the list for
 later execution. The \fIdflag\fR argument specifies whether it is allowed
 sleep waiting  for memory. DDI_SLEEP dispatches can sleep and are guaranteed
 to succeed. DDI_NOSLEEP dispatches are guaranteed not to sleep but may fail
-(return \fBDDI_FAILURE\fR) if resources are not available.
+(return
+.BR DDI_FAILURE )
+if resources are not available.
 .sp
 .LP
-The \fBddi_taskq_destroy()\fR function waits for any scheduled tasks to
-complete, then destroys the \fBtaskq\fR. The caller should guarantee that no
-new tasks are scheduled for the closing \fBtaskq\fR.
+The
+.B ddi_taskq_destroy()
+function waits for any scheduled tasks to
+complete, then destroys the
+.BR taskq .
+The caller should guarantee that no
+new tasks are scheduled for the closing
+.BR taskq .
 .sp
 .LP
-The \fBddi_taskq_wait()\fR function waits for all previously scheduled
+The
+.B ddi_taskq_wait()
+function waits for all previously scheduled
 tasks to complete. Note that this function does not stop any new task
 dispatches.
 .sp
 .LP
-The \fBddi_taskq_suspend()\fR function suspends all task execution until
+The
+.B ddi_taskq_suspend()
+function suspends all task execution until
 \fBddi_taskq_resume()\fR is called. Although \fBddi_taskq_suspend()\fR
 attempts to suspend pending tasks, there are no guarantees that they will be
 suspended. The only guarantee is that all tasks dispatched after
 \fBddi_taskq_suspend()\fR will not be executed. Because it will trigger a
-deadlock, the \fBddi_taskq_suspend()\fR function should never be called by a
-task executing on a \fBtaskq\fR.
+deadlock, the
+.B ddi_taskq_suspend()
+function should never be called by a
+task executing on a
+.BR taskq .
 .sp
 .LP
-The \fBddi_taskq_suspended()\fR function returns \fBB_TRUE\fR if
+The
+.B ddi_taskq_suspended()
+function returns
+.B B_TRUE
+if
 \fBtaskq\fR is suspended, and \fBB_FALSE\fR otherwise. It is intended to
 ASSERT that the task queue is suspended.
 .sp
 .LP
-The \fBddi_taskq_resume()\fR function resumes task queue execution.
+The
+.B ddi_taskq_resume()
+function resumes task queue execution.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBddi_taskq_create()\fR function creates an opaque handle that is used
-for all other \fBtaskq\fR operations. It returns a \fBtaskq\fR pointer on
+The
+.B ddi_taskq_create()
+function creates an opaque handle that is used
+for all other
+.B taskq
+operations. It returns a
+.B taskq
+pointer on
 success and NULL on failure.
 .sp
 .LP
-The \fBddi_taskq_dispatch()\fR function returns \fBDDI_FAILURE\fR if it
-can't dispatch a task and returns \fBDDI_SUCCESS\fR if dispatch succeeded.
+The
+.B ddi_taskq_dispatch()
+function returns
+.B DDI_FAILURE
+if it
+can't dispatch a task and returns
+.B DDI_SUCCESS
+if dispatch succeeded.
 .sp
 .LP
-The \fBddi_taskq_suspended()\fR function returns \fBB_TRUE\fR if
+The
+.B ddi_taskq_suspended()
+function returns
+.B B_TRUE
+if
 \fBtaskq\fR is suspended. Otherwise \fBB_FALSE\fR is returned.
 .SH CONTEXT
 .sp
@@ -310,5 +354,7 @@ The \fBddi_taskq_suspended()\fR function returns \fBB_TRUE\fR if
 All functions may be called from the user or kernel contexts.
 .sp
 .LP
-Addtionally, the \fBddi_taskq_dispatch\fR function may be called from the
+Addtionally, the
+.B ddi_taskq_dispatch
+function may be called from the
 interrupt context only if the DDI_NOSLEEP flag is set.

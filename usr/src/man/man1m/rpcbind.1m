@@ -36,30 +36,54 @@ universal addresses. It must be running on the host to be able to make
 \fBRPC\fR calls on a server on that machine.
 .sp
 .LP
-When an \fBRPC\fR service is started, it tells \fBrpcbind\fR the address at
-which it is listening, and the \fBRPC\fR program numbers it is prepared to
-serve. When a client wishes to make an \fBRPC\fR call to a given program
-number, it first contacts \fBrpcbind\fR on the server machine to determine
-the address where \fBRPC\fR requests should be sent.
+When an
+.B RPC
+service is started, it tells
+.B rpcbind
+the address at
+which it is listening, and the
+.B RPC
+program numbers it is prepared to
+serve. When a client wishes to make an
+.B RPC
+call to a given program
+number, it first contacts
+.B rpcbind
+on the server machine to determine
+the address where
+.B RPC
+requests should be sent.
 .sp
 .LP
 \fBrpcbind\fR should be started before any other \fBRPC\fR service.
-Normally, standard \fBRPC\fR servers are started by port monitors, so
+Normally, standard
+.B RPC
+servers are started by port monitors, so
 \fBrpcbind\fR must be started before port monitors are invoked.
 .sp
 .LP
-When \fBrpcbind\fR is started, it checks that certain name-to-address
+When
+.B rpcbind
+is started, it checks that certain name-to-address
 translation-calls function correctly. If they fail, the network
-configuration databases can be corrupt. Since \fBRPC\fR services cannot
-function correctly in this situation, \fBrpcbind\fR reports the condition
+configuration databases can be corrupt. Since
+.B RPC
+services cannot
+function correctly in this situation,
+.B rpcbind
+reports the condition
 and terminates.
 .sp
 .LP
 \fBrpcbind\fR maintains an open transport end for each transport that it
-uses for indirect calls. This is the \fBUDP\fR port on most systems.
+uses for indirect calls. This is the
+.B UDP
+port on most systems.
 .sp
 .LP
-The \fBrpcbind\fR service is managed by the service management facility,
+The
+.B rpcbind
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -92,28 +116,43 @@ config/local_only = true
 
 .sp
 .LP
-The default value, \fBtrue\fR, shown above, disallows remote access; a
+The default value,
+.BR true ,
+shown above, disallows remote access; a
 value of \fBfalse\fR allows remove access. See EXAMPLES.
 .sp
 .LP
-The FMRI \fBsvc:network/rpc/bind\fR property group \fBconfig\fR contains
+The FMRI
+.B svc:network/rpc/bind
+property group \fBconfig\fR contains
 the following property settings:
 .sp
 .ne 2
 .mk
 .na
-\fBenable_tcpwrappers\fR
+.B enable_tcpwrappers
 .ad
 .RS 22n
 .rt
 Specifies that the TCP wrappers facility is used to control access to TCP
-services. The value \fBtrue\fR enables checking. The default value for
-\fBenable_tcpwrappers\fR is \fBfalse\fR. If the \fBenable_tcpwrappers\fR
-parameter is enabled, then all calls to \fBrpcbind\fR originating from
+services. The value
+.B true
+enables checking. The default value for
+\fBenable_tcpwrappers\fR is
+.BR false .
+If the
+.BR enable_tcpwrappers
+parameter is enabled, then all calls to
+.B rpcbind
+originating from
 non-local addresses are automatically wrapped by the TCP wrappers facility.
-The \fBsyslog\fR facility code daemon is used to log allowed connections
+The
+.B syslog
+facility code daemon is used to log allowed connections
 (using the \fBinfo\fR severity level) and denied traffic (using the
-\fBwarning\fR severity level). See \fBsyslog.conf\fR(4) for a description of
+\fBwarning\fR severity level). See
+.BR syslog.conf (4)
+for a description of
 \fBsyslog\fR codes and severity levels. The stability level of the TCP
 wrappers facility and its configuration files is External. As the TCP
 wrappers facility is not controlled by Sun, intrarelease incompatibilities
@@ -124,12 +163,14 @@ are not uncommon. See \fBattributes\fR(5).
 .ne 2
 .mk
 .na
-\fBverbose_logging\fR
+.B verbose_logging
 .ad
 .RS 22n
 .rt
 Specifies whether the TCP wrappers facility logs all calls orjust the
-denied calls. The default is \fBfalse\fR. This option has no effect if TCP
+denied calls. The default is
+.BR false .
+This option has no effect if TCP
 wrappers are not enabled.
 .RE
 
@@ -137,16 +178,25 @@ wrappers are not enabled.
 .ne 2
 .mk
 .na
-\fBallow_indirect\fR
+.B allow_indirect
 .ad
 .RS 22n
 .rt
-Specifies whether \fBrpcbind\fR allows indirect calls at all. By default,
+Specifies whether
+.B rpcbind
+allows indirect calls at all. By default,
 \fBrpcbind\fR allows most indirect calls, except to a number of standard
-services(\fBkeyserv\fR, \fBautomount\fR, \fBmount\fR, \fBnfs\fR,
-\fBrquota\fR, and selected NIS and \fBrpcbind\fR procedures). Setting
+services(\fBkeyserv\fR, \fBautomount\fR,
+.BR mount ,
+\fBnfs\fR,
+.BR rquota ,
+and selected NIS and
+.B rpcbind
+procedures). Setting
 \fBallow_indirect\fR to \fBfalse\fR causes all indirect calls to be dropped.
-The default is \fBtrue\fR. NIS broadcast clients rely on this functionality
+The default is
+.BR true .
+NIS broadcast clients rely on this functionality
 on NIS servers.
 .RE
 
@@ -158,11 +208,13 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 6n
 .rt
-Run in debug mode. In this mode, \fBrpcbind\fR does not fork when it
+Run in debug mode. In this mode,
+.B rpcbind
+does not fork when it
 starts. It prints additional information during operation, and aborts on
 certain errors. With this option, the name-to-address translation
 consistency checks are shown in detail.
@@ -172,13 +224,20 @@ consistency checks are shown in detail.
 .ne 2
 .mk
 .na
-\fB-w\fR
+.B -w
 .ad
 .RS 6n
 .rt
-Do a warm start. If \fBrpcbind\fR aborts or terminates on \fBSIGINT\fR or
-\fBSIGTERM\fR, it writes the current list of registered services to
-\fB/var/run/portmap.file\fR and \fB/var/run/rpcbind.file\fR. Starting
+Do a warm start. If
+.B rpcbind
+aborts or terminates on
+.B SIGINT
+or
+.BR SIGTERM ,
+it writes the current list of registered services to
+\fB/var/run/portmap.file\fR and
+.BR /var/run/rpcbind.file .
+Starting
 \fBrpcbind\fR with the \fB-w\fR option instructs it to look for these files
 and start operation with the registrations found in them. This allows
 \fBrpcbind\fR to resume operation without requiring all \fBRPC\fR services
@@ -187,10 +246,11 @@ to be restarted.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAllowing Remote Access
+\fBExample 1\fR Allowing Remote Access
 .sp
 .LP
-The following sequence of commands allows remote access to \fBrpcbind\fR.
+The following sequence of commands allows remote access to
+.BR rpcbind .
 
 .sp
 .in +2
@@ -210,7 +270,9 @@ The following sequence of commands allows remote access to \fBrpcbind\fR.
 .ad
 .RS 25n
 .rt
-Stores the information for \fBRPC\fR services registered over IP based
+Stores the information for
+.B RPC
+services registered over IP based
 transports for warm start purposes.
 .RE
 
@@ -222,14 +284,18 @@ transports for warm start purposes.
 .ad
 .RS 25n
 .rt
-Stores the information for all registered \fBRPC\fR services for warm start
+Stores the information for all registered
+.B RPC
+services for warm start
 purposes.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -252,7 +318,8 @@ TCP wrappers is External.
 .sp
 .LP
 \fBsmf\fR(5), \fBrpcinfo\fR(1M), \fBsvcadm\fR(1M), \fBsvccfg\fR(1M),
-\fBrpcbind\fR(3NSL), \fBsyslog.conf\fR(4), \fBattributes\fR(5),
+.BR rpcbind (3NSL),
+\fBsyslog.conf\fR(4), \fBattributes\fR(5),
 \fBsmf\fR(5)
 .sp
 .LP
@@ -262,12 +329,24 @@ man page, delivered as part of the Solaris operating environment in
 .SH NOTES
 .sp
 .LP
-Terminating \fBrpcbind\fR with \fBSIGKILL\fR prevents the warm-start files
+Terminating
+.B rpcbind
+with
+.B SIGKILL
+prevents the warm-start files
 from being written.
 .sp
 .LP
-All \fBRPC\fR servers are restarted if the following occurs: \fBrpcbind\fR
-crashes (or is killed with \fBSIGKILL)\fR and is unable to to write the
-warm-start files; \fBrpcbind\fR is started without the \fB-w\fR option after
+All
+.B RPC
+servers are restarted if the following occurs: \fBrpcbind\fR
+crashes (or is killed with
+.B SIGKILL)
+and is unable to to write the
+warm-start files;
+.B rpcbind
+is started without the
+.B -w
+option after
 a graceful termination. Otherwise, the warm start files are not found by
-\fBrpcbind\fR.
+.BR rpcbind .

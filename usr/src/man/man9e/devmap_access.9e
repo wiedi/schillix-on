@@ -42,7 +42,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdhp\fR
+.I dhp
 .ad
 .RS 9n
 .rt
@@ -53,7 +53,7 @@ An opaque mapping handle that the system uses to describe the mapping.
 .ne 2
 .mk
 .na
-\fIpvtp\fR
+.I pvtp
 .ad
 .RS 9n
 .rt
@@ -75,7 +75,7 @@ User offset within the logical device memory at which the access begins.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 9n
 .rt
@@ -86,7 +86,7 @@ Length (in bytes) of the memory being accessed.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 9n
 .rt
@@ -95,7 +95,7 @@ Type of access operation.  Possible values are:
 .ne 2
 .mk
 .na
-\fBDEVMAP_ACCESS\fR
+.B DEVMAP_ACCESS
 .ad
 .RS 18n
 .rt
@@ -106,7 +106,7 @@ Memory access.
 .ne 2
 .mk
 .na
-\fBDEVMAP_LOCK\fR
+.B DEVMAP_LOCK
 .ad
 .RS 18n
 .rt
@@ -117,7 +117,7 @@ Lock the memory being accessed.
 .ne 2
 .mk
 .na
-\fBDEVMAP_UNLOCK\fR
+.B DEVMAP_UNLOCK
 .ad
 .RS 18n
 .rt
@@ -130,7 +130,7 @@ Unlock the memory being accessed.
 .ne 2
 .mk
 .na
-\fIrw\fR
+.I rw
 .ad
 .RS 9n
 .rt
@@ -139,7 +139,7 @@ Direction of access.  Possible values are:
 .ne 2
 .mk
 .na
-\fBDEVMAP_READ\fR
+.B DEVMAP_READ
 .ad
 .RS 17n
 .rt
@@ -150,7 +150,7 @@ Read access attempted.
 .ne 2
 .mk
 .na
-\fBDEVMAP_WRITE\fR
+.B DEVMAP_WRITE
 .ad
 .RS 17n
 .rt
@@ -161,7 +161,7 @@ Write access attempted.
 .ne 2
 .mk
 .na
-\fBDEVMAP_EXEC\fR
+.B DEVMAP_EXEC
 .ad
 .RS 17n
 .rt
@@ -173,18 +173,27 @@ Execution access attempted.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdevmap_access()\fR entry point is an optional routine.  It notifies
-drivers whenever an access is made to a mapping described by  \fIdhp\fR that
+The
+.B devmap_access()
+entry point is an optional routine.  It notifies
+drivers whenever an access is made to a mapping described by 
+.I dhp
+that
 has not been validated or does  not have sufficient protection for the
-access. The system expects \fBdevmap_access()\fR to call either
-\fBdevmap_do_ctxmgt\fR(9F) or \fBdevmap_default_access\fR(9F) to load the
+access. The system expects
+.B devmap_access()
+to call either
+.BR devmap_do_ctxmgt (9F)
+or \fBdevmap_default_access\fR(9F) to load the
 memory address translations before it returns. For mappings that support
 context switching,  device drivers should call \fBdevmap_do_ctxmgt\fR(9F).
 For mappings that do not support context switching, the drivers should call
 \fBdevmap_default_access\fR(9F). 
 .sp
 .LP
-In  \fBdevmap_access()\fR, drivers perform memory access related operations
+In
+.BR devmap_access() ,
+drivers perform memory access related operations
 such as context switching, checking the availability of the memory  object,
 and locking and unlocking the memory object being accessed. The
 \fBdevmap_access()\fR entry point is set to  \fINULL\fR if no operations
@@ -192,19 +201,29 @@ need to be performed.
 .sp
 .LP
 \fIpvtp\fR is a pointer to the driver's private mapping data that was
-allocated and initialized in the \fBdevmap_map\fR(9E) entry point.
+allocated and initialized in the
+.BR devmap_map "(9E) entry point."
 .sp
 .LP
 \fIoff\fR and \fIlen\fR define the range to be affected by the operations
-in \fBdevmap_access()\fR. \fItype\fR defines the type of operation that
-device drivers should perform on the memory object.  If \fBtype\fR is either
+in
+.BR devmap_access() .
+\fItype\fR defines the type of operation that
+device drivers should perform on the memory object.  If
+.B type
+is either
 \fBDEVMAP_LOCK\fR or \fBDEVMAP_UNLOCK,\fR the length passed to either
-\fBdevmap_do_ctxmgt\fR(9F) or \fBdevmap_default_access\fR(9F) must be same
-as \fIlen\fR. \fIrw\fR specifies the direction of access on the memory
+.BR devmap_do_ctxmgt (9F)
+or \fBdevmap_default_access\fR(9F) must be same
+as
+.IR len .
+\fIrw\fR specifies the direction of access on the memory
 object.
 .sp
 .LP
-A non-zero return value from  \fBdevmap_access()\fR may result in a
+A non-zero return value from 
+.B devmap_access()
+may result in a
 \fBSIGSEGV\fR or \fBSIGBUS\fR signal being delivered to the process.
 .SH RETURN VALUES
 .sp
@@ -214,7 +233,7 @@ A non-zero return value from  \fBdevmap_access()\fR may result in a
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -225,11 +244,13 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fBNon-zero\fR
+.B Non-zero
 .ad
 .RS 12n
 .rt
-An error occurred.  The return value from  \fBdevmap_do_ctxmgt\fR(9F) or
+An error occurred.  The return value from 
+.BR devmap_do_ctxmgt (9F)
+or
 \fBdevmap_default_access\fR(9F) should be returned.
 .RE
 
@@ -238,9 +259,16 @@ An error occurred.  The return value from  \fBdevmap_do_ctxmgt\fR(9F) or
 \fBExample 1 \fBdevmap_access()\fR entry point
 .sp
 .LP
-The following is an example of the \fBdevmap_access()\fR entry point.  If
-the mapping supports context switching, \fBdevmap_access()\fR calls
-\fBdevmap_do_ctxmgt\fR(9F). Otherwise, \fBdevmap_access()\fR calls
+The following is an example of the
+.B devmap_access()
+entry point.  If
+the mapping supports context switching,
+.B devmap_access()
+calls
+.BR devmap_do_ctxmgt (9F).
+Otherwise,
+.B devmap_access()
+calls
 \fBdevmap_default_access\fR(9F).
 
 .sp
@@ -309,8 +337,10 @@ xxdevmap_access(devmap_cookie_t dhp, void *pvtp, offset_t off,
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap_map\fR(9E), \fBdevmap_default_access\fR(9F),
-\fBdevmap_do_ctxmgt\fR(9F), \fBdevmap_callback_ctl\fR(9S)
+.BR devmap_map (9E),
+\fBdevmap_default_access\fR(9F),
+.BR devmap_do_ctxmgt (9F),
+.BR devmap_callback_ctl (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

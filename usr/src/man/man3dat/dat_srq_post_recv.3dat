@@ -42,7 +42,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIsrq_handle\fR
+.I srq_handle
 .ad
 .RS 16n
 .rt
@@ -53,11 +53,15 @@ A handle for an instance of the SRQ.
 .ne 2
 .mk
 .na
-\fInum_segments\fR
+.I num_segments
 .ad
 .RS 16n
 .rt
-The number of \fIlmr_triplets\fR in \fIlocal_iov\fR. Can be 0 for receiving
+The number of
+.I lmr_triplets
+in
+.IR local_iov .
+Can be 0 for receiving
 a zero-size message.
 .RE
 
@@ -65,7 +69,7 @@ a zero-size message.
 .ne 2
 .mk
 .na
-\fIlocal_iov\fR
+.I local_iov
 .ad
 .RS 16n
 .rt
@@ -77,7 +81,7 @@ An I/O Vector that specifies the local buffer to be filled.  Can be
 .ne 2
 .mk
 .na
-\fIuser_cookie\fR
+.I user_cookie
 .ad
 .RS 16n
 .rt
@@ -88,24 +92,39 @@ the Receive DTO. Can be \fINULL\fR.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_srq_post_recv()\fR function posts the receive buffer that can be
-used for the incoming message into the \fIlocal_iov\fR by any connected EP
+The
+.B dat_srq_post_recv()
+function posts the receive buffer that can be
+used for the incoming message into the
+.I local_iov
+by any connected EP
 that uses SRQ.
 .sp
 .LP
-The \fInum_segments\fR argument specifies the number of segments in the
-\fIlocal_iov\fR. The \fIlocal_iov\fR segments are filled in the I/O Vector
+The
+.I num_segments
+argument specifies the number of segments in the
+.IR local_iov .
+The
+.I local_iov
+segments are filled in the I/O Vector
 order until the whole message is received. This ensures that all the front
-segments of the \fIlocal_iov\fR I/O Vector are completely filled, only one
+segments of the
+.I local_iov
+I/O Vector are completely filled, only one
 segment is partially filled, if needed, and all segments that follow it are
 not filled at all. The actual order of segment fillings is left to the
 implementation.
 .sp
 .LP
-The \fIuser_cookie\fR argument allows Consumers to have unique identifiers
+The
+.I user_cookie
+argument allows Consumers to have unique identifiers
 for each DTO. These identifiers are completely under user control and are
 opaque to the Provider. There is no requirement on the Consumer that the
-value \fIuser_cookie\fR should be unique for each DTO. The \fIuser_cookie\fR
+value
+.I user_cookie
+should be unique for each DTO. The \fIuser_cookie\fR
 is returned to the Consumer in the Completion event for the posted Receive.
 .sp
 .LP
@@ -113,24 +132,40 @@ The completion of the posted Receive is reported to the Consumer
 asynchronously through a DTO Completion event based on the configuration of
 the EP that dequeues the posted buffer and the specified
 \fIcompletion_flags\fR value for Solicited Wait for the matching Send. If EP
-Recv Completion Flag is \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR, which is the
+Recv Completion Flag is
+.BR DAT_COMPLETION_UNSIGNALLED_FLAG ,
+which is the
 default value for SRQ EP, then all posted Recvs will generate completions
 with Signal Notifications.
 .sp
 .LP
-A Consumer should not modify the \fIlocal_iov\fR or its content until the
+A Consumer should not modify the
+.I local_iov
+or its content until the
 DTO is completed. When a Consumer does not adhere to this rule, the behavior
 of the Provider and the underlying Transport is not defined. Providers that
-allow Consumers to get ownership of the \fIlocal_iov\fR but not the memory it
-specified back after the \fBdat_srq_post_recv()\fR returns should document
+allow Consumers to get ownership of the
+.I local_iov
+but not the memory it
+specified back after the
+.B dat_srq_post_recv()
+returns should document
 this behavior and also specify its support in Provider attributes. This
-behavior allows Consumer full control of the \fIlocal_iov\fR content after
+behavior allows Consumer full control of the
+.I local_iov
+content after
 \fBdat_srq_post_recv()\fR returns. Because this behavior is not guaranteed by
 all Providers, portable Consumers shall not rely on this behavior. Consumers
-shall not rely on the Provider copying \fIlocal_iov\fR information.
+shall not rely on the Provider copying
+.I local_iov
+information.
 .sp
 .LP
-The \fBDAT_SUCCESS\fR return of the \fBdat_srq_post_recv()\fR is at least
+The
+.B DAT_SUCCESS
+return of the
+.B dat_srq_post_recv()
+is at least
 the equivalent of posting a Receive operation directly by native Transport.
 Providers shall avoid resource allocation as part of
 \fBdat_srq_post_recv()\fR to ensure that this operation is nonblocking.
@@ -143,7 +178,9 @@ the Receive buffer from the Shared Receive queue.
 .LP
 The posted Recv DTO will complete with signal, equivalently to the
 completion of Recv posted directly to the Endpoint that dequeued the Recv
-buffer from SRQ with \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR value not set for
+buffer from SRQ with
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
+value not set for
 it.
 .sp
 .LP
@@ -154,7 +191,9 @@ ordering among different connections regardless if they share SRQ and
 .sp
 .LP
 If the reported status of the Completion DTO event corresponding to the
-posted RDMA Read DTO is not \fBDAT_DTO_SUCCESS\fR, the content of the
+posted RDMA Read DTO is not
+.BR DAT_DTO_SUCCESS ,
+the content of the
 \fIlocal_iov\fR is not defined and the \fItransfered_length\fR in the DTO
 Completion event is not defined.
 .sp
@@ -162,14 +201,16 @@ Completion event is not defined.
 The operation is valid for all states of the Shared Receive Queue.
 .sp
 .LP
-The \fBdat_srq_post_recv()\fR function is asynchronous, nonblocking, and its
+The
+.B dat_srq_post_recv()
+function is asynchronous, nonblocking, and its
 thread safety is Provider-dependent.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -180,18 +221,20 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
-The \fIsrq_handle\fR argument is an invalid DAT handle.
+The
+.I srq_handle
+argument is an invalid DAT handle.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -202,7 +245,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -214,13 +257,14 @@ outside its LMR.
 .ne 2
 .mk
 .na
-\fBDAT_PROTECTION_VIOLATION\fR
+.B DAT_PROTECTION_VIOLATION
 .ad
 .RS 30n
 .rt
 Protection violation for local or remote memory access.
 .sp
-Protection Zone mismatch between an LMR of one of the \fIlocal_iov\fR
+Protection Zone mismatch between an LMR of one of the
+.IR local_iov
 segments and the SRQ.
 .RE
 
@@ -228,7 +272,7 @@ segments and the SRQ.
 .ne 2
 .mk
 .na
-\fBDAT_PRIVILEGES_VIOLATION\fR
+.B DAT_PRIVILEGES_VIOLATION
 .ad
 .RS 30n
 .rt
@@ -241,9 +285,14 @@ privileges.
 .sp
 .LP
 For the best Recv operation performance, the Consumer should align each
-buffer segment of \fIlocal_iov\fR to the Optimal Buffer Alignment attribute
+buffer segment of
+.I local_iov
+to the Optimal Buffer Alignment attribute
 of the Provider. For portable applications, the Consumer should align each
-buffer segment of \fIlocal_iov\fR to the \fBDAT_OPTIMAL_ALIGNMENT\fR.
+buffer segment of
+.I local_iov
+to the
+.BR DAT_OPTIMAL_ALIGNMENT .
 .sp
 .LP
 Since any of the Endpoints that use the SRQ can dequeue the posted buffer
@@ -259,23 +308,30 @@ how DTO completion is generated. If the Endpoint Recv Completion flag is
 \fBDAT_COMPLETION_SOLICITED_WAIT_FLAG\fR then matching Send DTO completion
 flag value for Solicited Wait determines if the completion will be Signalled
 or not. If the Endpoint Recv Completion flag is not
-\fBDAT_COMPLETION_SOLICITED_WAIT_FLAG\fR, the posted Recv completion will be
+.BR DAT_COMPLETION_SOLICITED_WAIT_FLAG ,
+the posted Recv completion will be
 generated with Signal. If the Endpoint Recv Completion flag is
-\fBDAT_COMPLETION_EVD_THRESHOLD_FLAG\fR, the posted Recv completion will be
-generated with Signal and \fIdat_evd_wait\fR threshold value controls if the
+.BR DAT_COMPLETION_EVD_THRESHOLD_FLAG ,
+the posted Recv completion will be
+generated with Signal and
+.I dat_evd_wait
+threshold value controls if the
 waiter will be unblocked or not.
 .sp
 .LP
 Only the Endpoint that is in Connected or Disconnect Pending states can
 dequeue buffers from SRQ. When an Endpoint is transitioned into Disconnected
 state, all the buffers that it dequeued from SRQ are queued on the Endpoint
-\fIrecv_evd\fR. All the buffers that the Endpoint has not completed by the
+.IR recv_evd .
+All the buffers that the Endpoint has not completed by the
 time of transition into Disconnected state and that have not completed
 message reception will be flushed.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -294,6 +350,10 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_srq_create\fR(3DAT), \fBdat_srq_free\fR(3DAT),
-\fBdat_srq_query\fR(3DAT), \fBdat_srq_resize\fR(3DAT),
-\fBdat_srq_set_lw\fR(3DAT), \fBlibdat\fR(3LIB), \fBattributes\fR(5)
+.BR dat_srq_create (3DAT),
+\fBdat_srq_free\fR(3DAT),
+.BR dat_srq_query (3DAT),
+.BR dat_srq_resize (3DAT),
+.BR dat_srq_set_lw (3DAT),
+.BR libdat (3LIB),
+.BR attributes (5)

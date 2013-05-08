@@ -35,8 +35,11 @@ diskset feature is an enabler for HA configurations.)
 .LP
 Volume Manager provides support for a low-end HA solution consisting of two
 hosts that share only two strings of drives. The hosts in this type of
-configuration, referred to as \fImediators\fR, run a special daemon,
-\fBrpc.metamedd\fR(1M). The mediator hosts take on additional
+configuration, referred to as
+.IR mediators ,
+run a special daemon,
+.BR rpc.metamedd (1M).
+The mediator hosts take on additional
 responsibilities to ensure that data is available in the case of host or
 drive failures.
 .sp
@@ -54,7 +57,7 @@ The following definitions pertain to a mediator configuration:
 .ne 2
 .mk
 .na
-\fBdiskset\fR
+.B diskset
 .ad
 .sp .6
 .RS 4n
@@ -66,7 +69,7 @@ exclusively (but not concurrently) by two hosts.
 .ne 2
 .mk
 .na
-\fBVolume Manager\fR \fBstate\fR \fBdatabase\fR
+.B "Volume Manager" state database
 .ad
 .sp .6
 .RS 4n
@@ -78,11 +81,13 @@ information.
 .ne 2
 .mk
 .na
-\fBmediator\fR \fBhost\fR
+.B mediator host
 .ad
 .sp .6
 .RS 4n
-A host that runs the \fBrpc.metamedd(1M)\fR daemon and that has been added
+A host that runs the
+.B rpc.metamedd(1M)
+daemon and that has been added
 to a diskset. The mediator host participates in checking the state database
 and the mediator quorum.
 .RE
@@ -91,7 +96,7 @@ and the mediator quorum.
 .ne 2
 .mk
 .na
-\fBmediator\fR \fBquorum\fR
+.B mediator quorum
 .ad
 .sp .6
 .RS 4n
@@ -105,7 +110,7 @@ expected that there will be two mediator hosts, this number will normally be
 .ne 2
 .mk
 .na
-\fBreplica\fR
+.B replica
 .ad
 .sp .6
 .RS 4n
@@ -116,7 +121,7 @@ A single copy of the Volume Manager metadevice state database.
 .ne 2
 .mk
 .na
-\fBreplica\fR \fBquorum\fR
+.B replica quorum
 .ad
 .sp .6
 .RS 4n
@@ -128,7 +133,9 @@ configured with ten replicas, the quorum is met when six are accessible
 
 .sp
 .LP
-A mediator host running the \fBrpc.metamedd(1M)\fR daemon keeps track of
+A mediator host running the
+.B rpc.metamedd(1M)
+daemon keeps track of
 replica updates. As long as the following conditions are met, access to data
 occurs without any administrative intervention:
 .RS +4
@@ -191,18 +198,23 @@ access to the data in the diskset.
 .RE
 .sp
 .LP
-The \fBmetaset\fR(1M) command administers disksets and mediator hosts. The
-following options to the \fBmetaset\fR command pertain only to administering
+The
+.BR metaset "(1M) command administers disksets and mediator hosts. The"
+following options to the
+.B metaset
+command pertain only to administering
 mediator hosts.
 .sp
 .ne 2
 .mk
 .na
-\fB-a\fR \fB-m\fR \fImediator_host_list\fR
+\fB-a -m\fR \fImediator_host_list\fR
 .ad
 .RS 28n
 .rt
-Adds mediator hosts to the named set.  A \fImediator_host_list\fR is the
+Adds mediator hosts to the named set.  A
+.I mediator_host_list
+is the
 nodename of the mediator host to be added and up to 2 other aliases for the
 mediator host. The nodename and aliases for each mediator host are separated
 by commas. Up to 3 mediator hosts can be specified for the named diskset.
@@ -212,7 +224,7 @@ by commas. Up to 3 mediator hosts can be specified for the named diskset.
 .ne 2
 .mk
 .na
-\fB-d\fR \fB-m\fR \fImediator_host_list\fR
+\fB-d -m\fR \fImediator_host_list\fR
 .ad
 .RS 28n
 .rt
@@ -224,7 +236,7 @@ from the diskset by specifying the nodename of mediator host to delete.
 .ne 2
 .mk
 .na
-\fB-q\fR
+.B -q
 .ad
 .RS 28n
 .rt
@@ -241,13 +253,21 @@ be encountered during a take of the ownership of a diskset.
 .RS 28n
 .rt
 Takes ownership of a diskset safely, unless \fB-f\fR is used, in which case
-the take is unconditional. If \fBmetaset\fR finds that another host owns the
+the take is unconditional. If
+.B metaset
+finds that another host owns the
 set, this host will not be allowed to take ownership of the set. If the set
 is not owned by any other host, all the disks  within the set will be owned
-by the host on which \fBmetaset\fR  was executed. The metadevice state
+by the host on which
+.B metaset
+was executed. The metadevice state
 database is read in and the shared metadevices contained in the set become
-accessible. The \fB-t\fR option will take a diskset that has stale
-databases. When the databases are stale, \fBmetaset\fR will exit with code
+accessible. The
+.B -t
+option will take a diskset that has stale
+databases. When the databases are stale,
+.B metaset
+will exit with code
 66, and a message will be printed. At that point, the only operations
 permitted are the addition and deletion of replicas. Once the addition or
 deletion of the replicas has been completed, the diskset should be released
@@ -255,9 +275,15 @@ and retaken to gain full access to the data. If mediator hosts have been
 configured, some additional exit codes are  possible. If half of the
 replicas and half of the mediator hosts are operating properly, the take
 will exit with code 3. At this point, you can add or delete replicas, or use
-the \fB-y\fR option on a subsequent take. If the take operation encounters
+the
+.B -y
+option on a subsequent take. If the take operation encounters
 ``tagged data,'' the take operation will exit with code 2. You can then run
-the \fBmetaset\fR command with the  \fB-q\fR option to see an enumerated
+the
+.B metaset
+command with the 
+.B -q
+option to see an enumerated
 list of tags.
 .RE
 
@@ -269,16 +295,19 @@ list of tags.
 .ad
 .RS 28n
 .rt
-Once a tag has been selected, a subsequent take with  \fB-u\fR
+.RB "Once a tag has been selected, a subsequent take with " " -u"
 \fItagnumber\fR can be executed to select the data associated with the
-given \fItagnumber\fR.
+given
+.IR tagnumber .
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBmetaset\fR(1M), \fBmd\fR(7D), \fBrpc.metamedd\fR(1M),
-\fBrpc.metad\fR(1M)
+.BR metaset (1M),
+.BR md (7D),
+.BR rpc.metamedd (1M),
+.BR rpc.metad (1M)
 .sp
 .LP
 Sun Cluster documentation, \fISolaris Volume Manager Administration

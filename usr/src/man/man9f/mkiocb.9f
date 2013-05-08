@@ -41,33 +41,45 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIcommand\fR
+.I command
 .ad
 .RS 11n
 .rt
-ioctl command for the \fBioc_cmd\fR field.
+ioctl command for the
+.B ioc_cmd
+field.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
 STREAMS modules or drivers might need to issue an ioctl to a lower module
-or driver. The \fBmkiocb()\fR function tries to allocate (using
-\fBallocb\fR(9F)) a STREAMS \fBM_IOCTL\fR message block (\fBiocblk\fR(9S)).
+or driver. The
+.B mkiocb()
+function tries to allocate (using
+.BR allocb (9F))
+a STREAMS
+.B M_IOCTL
+message block (\fBiocblk\fR(9S)).
 Buffer allocation fails only when the system is out of memory. If no buffer
 is available, the \fBqbufcall\fR(9F) function can help a module recover from
 an allocation failure.
 .sp
 .LP
-The \fBmkiocb\fR function returns a \fBmblk_t\fR structure which is large
+The
+.B mkiocb
+function returns a
+.B mblk_t
+structure which is large
 enough to hold any of the ioctl messages (\fBiocblk\fR(9S),
-\fBcopyreq\fR(9S) or \fBcopyresp\fR(9S)), and has the following special
+.BR copyreq (9S)
+or \fBcopyresp\fR(9S)), and has the following special
 properties:
 .sp
 .ne 2
 .mk
 .na
-\fBb_wptr\fR
+.B b_wptr
 .ad
 .RS 20n
 .rt
@@ -78,22 +90,24 @@ Set to \fBb_rptr + sizeof(struct iocblk)\fR.
 .ne 2
 .mk
 .na
-\fBb_cont\fR
+.B b_cont
 .ad
 .RS 20n
 .rt
-Set to \fINULL.\fR.
+Set to
+.IR NULL. .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBb_datap->db_type\fR
+.B b_datap->db_type
 .ad
 .RS 20n
 .rt
-Set to \fBM_IOCTL\fR.
+Set to
+.BR M_IOCTL .
 .RE
 
 .sp
@@ -103,7 +117,7 @@ The fields in the iocblk structure are initialized as follows:
 .ne 2
 .mk
 .na
-\fBioc_cmd\fR
+.B ioc_cmd
 .ad
 .RS 13n
 .rt
@@ -114,7 +128,7 @@ Set to the command value passed in.
 .ne 2
 .mk
 .na
-\fBioc_id\fR
+.B ioc_id
 .ad
 .RS 13n
 .rt
@@ -125,7 +139,7 @@ Set to a unique identifier.
 .ne 2
 .mk
 .na
-\fBioc_cr\fR
+.B ioc_cr
 .ad
 .RS 13n
 .rt
@@ -137,7 +151,7 @@ privilege and which does not need to be freed in any fashion.
 .ne 2
 .mk
 .na
-\fBioc_count\fR
+.B ioc_count
 .ad
 .RS 13n
 .rt
@@ -148,7 +162,7 @@ Set to 0.
 .ne 2
 .mk
 .na
-\fBioc_rval\fR
+.B ioc_rval
 .ad
 .RS 13n
 .rt
@@ -159,7 +173,7 @@ Set to 0.
 .ne 2
 .mk
 .na
-\fBioc_error\fR
+.B ioc_error
 .ad
 .RS 13n
 .rt
@@ -174,32 +188,48 @@ Set to 0.
 .ad
 .RS 13n
 .rt
-Set to \fBIOC_NATIVE\fR to reflect that this is native to the running
+Set to
+.B IOC_NATIVE
+to reflect that this is native to the running
 kernel.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-Upon success, the \fBmkiocb()\fR function returns a pointer to the
-allocated \fBmblk_t\fR of type \fBM_IOCTL\fR.
+Upon success, the
+.B mkiocb()
+function returns a pointer to the
+allocated
+.B mblk_t
+of type
+.BR M_IOCTL .
 .sp
 .LP
 On failure, it returns a null pointer.
 .SH CONTEXT
 .sp
 .LP
-The \fBmkiocb()\fR function can be called from user, interrupt, or kernel
+The
+.B mkiocb()
+function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fBM_IOCTL\fR Allocation
 .sp
 .LP
-The first example shows an \fBM_IOCTL\fR allocation with the ioctl command
-\fBTEST_CMD\fR. If the \fBiocblk\fR(9S) cannot be allocated, \fINULL\fR is
+The first example shows an
+.B M_IOCTL
+allocation with the ioctl command
+.BR TEST_CMD .
+If the
+.BR iocblk "(9S) cannot be allocated,"
+.I NULL
+is
 returned, indicating an allocation failure (line 5). In line 11, the
-\fBputnext\fR(9F) function is used to send the message downstream.
+.BR putnext (9F)
+function is used to send the message downstream.
 
 .sp
 .in +2
@@ -221,10 +251,12 @@ returned, indicating an allocation failure (line 5). In line 11, the
 .in -2
 
 .LP
-\fBExample 2 \fRThe ioctl \fBID \fRValue
+\fBExample 2\fR The ioctl \fBID\fR Value
 .sp
 .LP
-During the read service routine, the ioctl \fBID \fRvalue for
+During the read service routine, the ioctl
+.B ID
+value for
 \fBM_IOCACK\fR or \fBM_IOCNAK\fR should equal the ioctl that was previously
 sent by this module before processing.
 
@@ -254,7 +286,7 @@ sent by this module before processing.
 .in -2
 
 .LP
-\fBExample 3 \fRAn iocblk Allocation Which Fails
+\fBExample 3\fR An iocblk Allocation Which Fails
 .sp
 .LP
 The next example shows an iocblk allocation which fails. Since the open
@@ -286,18 +318,24 @@ until memory is available.
 .SH SEE ALSO
 .sp
 .LP
-\fBallocb\fR(9F), \fBputnext\fR(9F), \fBqbufcall\fR(9F),
-\fBqwait_sig\fR(9F), \fBcopyreq\fR(9S), \fBcopyresp\fR(9S),
-\fBiocblk\fR(9S)
+.BR allocb (9F),
+.BR putnext (9F),
+\fBqbufcall\fR(9F),
+.BR qwait_sig (9F),
+.BR copyreq (9S),
+.BR copyresp (9S),
+.BR iocblk (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH WARNINGS
 .sp
 .LP
-It is the module's responsibility to remember the \fBID\fR value of the
+It is the module's responsibility to remember the
+.B ID
+value of the
 \fBM_IOCTL\fR that was allocated. This will ensure proper cleanup and
 \fBID\fR matching when the \fBM_IOCACK\fR or \fBM_IOCNAK\fR is received.

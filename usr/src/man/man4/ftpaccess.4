@@ -40,46 +40,86 @@ The following access capabilities are supported:
 .ne 2
 .mk
 .na
-\fBautogroup\fR \fIgroupname\fR \fIclass\fR \fIclass\fR.\|.\|.\fR
+.B autogroup
+.I "groupname class"
+.IR class .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
-If an \fIanonymous\fR user is a member of any of \fIclass\fR, the FTP
-Server will perform a \fBsetegid\fR(2) to \fIgroupname\fR. This allows
+If an
+.I anonymous
+user is a member of any of
+.IR class ,
+the FTP
+Server will perform a
+.BR setegid (2)
+to
+.IR groupname .
+This allows
 access to group and owner read-only files and directories to a particular
-class of anonymous users. \fIgroupname\fR is a valid group returned by
-\fBgetgrnam\fR(3C).
+class of anonymous users.
+.I groupname
+is a valid group returned by
+.BR getgrnam (3C).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBclass\fR \fIclass\fR \fItypelist\fR
+\fBclass\fR \fIclass typelist\fR
 \fIaddrglob\fIaddrglob\fR.\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
-Define \fIclass\fR of users, with source addresses of the form
-\fIaddrglob\fR. Multiple members of \fIclass\fR may be defined. There may be
-multiple \fBclass\fR commands listing additional members of the class. If
-multiple \fBclass\fR commands can apply to the current session, the first
+Define
+.I class
+of users, with source addresses of the form
+.IR addrglob .
+Multiple members of
+.I class
+may be defined. There may be
+multiple
+.B class
+commands listing additional members of the class. If
+multiple
+.B class
+commands can apply to the current session, the first
 one listed in the access file is used. If a valid class for a host is not
-defined, access will be denied. \fItypelist\fR is a comma-separated list of
-any of the keywords \fBanonymous\fR, \fBguest\fR, and \fBreal\fR. If the
+defined, access will be denied.
+.I typelist
+is a comma-separated list of
+any of the keywords
+.BR anonymous ,
+.BR guest ,
+and
+.BR real .
+If the
 \fBreal\fR keyword is included, the class can match users using FTP to
-access real accounts. If the \fBanonymous\fR keyword is included the class
-can match users using anonymous FTP. The \fBguest\fR keyword matches guest
+access real accounts. If the
+.B anonymous
+keyword is included the class
+can match users using anonymous FTP. The
+.B guest
+keyword matches guest
 access accounts.
 .sp
 \fIaddrglob\fR may be a globbed domain name or a globbed numeric IPv4
 address. It may also be the name of a file, starting with a slash ('/'),
 which contains additional address globs. IPv4 numeric addresses may also be
-specified in the form \fBaddress:netmask\fR or \fBaddress/CIDR\fR. IPv6
-numeric addresses can only be specified with an optional \fBCIDR\fR, not
+specified in the form
+.B address:netmask
+or
+.BR address/CIDR .
+IPv6
+numeric addresses can only be specified with an optional
+.BR CIDR ,
+not
 using globs or netmasks.
 .sp
-Placing an exclamation (!) before an \fIaddrglob\fR negates the test. For
+Placing an exclamation (!) before an
+.I addrglob
+negates the test. For
 example, 
 .sp
 .in +2
@@ -88,8 +128,12 @@ class rmtuser real !*.example.com
 .fi
 .in -2
 
-will classify real users from outside the \fBexample.com\fR domain as the
-class \fBrmtuser\fR. Use care with this option. Remember, the result of each
+will classify real users from outside the
+.B example.com
+domain as the
+class
+.BR rmtuser .
+Use care with this option. Remember, the result of each
 test is OR'ed with other tests on the line.
 .RE
 
@@ -101,41 +145,54 @@ test is OR'ed with other tests on the line.
 .ad
 .sp .6
 .RS 4n
-Deny access to host(s) that match \fIaddrglob\fR and display
+Deny access to host(s) that match
+.I addrglob
+and display
 \fImessage_file\fR. If the value of \fIaddrglob\fR is \fB!nameserved\fR
 access to sites without a working nameservers is denied. \fImessage_file\fR
-may contain magic cookies. See \fBmessage\fR for more details.
+may contain magic cookies. See
+.B message
+for more details.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBguestgroup\fR \fIgroupname\fR \fIgroupname\fR.\|.\|.\fR
+\fBguestgroup\fR \fIgroupname groupname\fR.\|.\|.\fR
 .ad
 .br
 .na
-\fBguestuser\fR \fIusername\fR \fIusername\fR.\|.\|.\fR
+\fBguestuser\fR \fIusername username\fR.\|.\|.\fR
 .ad
 .br
 .na
-\fBrealgroup\fR \fIgroupname\fR \fIgroupname\fR.\|.\|.\fR
+\fBrealgroup\fR \fIgroupname groupname\fR.\|.\|.\fR
 .ad
 .br
 .na
-\fBrealuser\fR \fIusername\fR \fIusername\fR.\|.\|.\fR
+\fBrealuser\fR \fIusername username\fR.\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
-For \fBguestgroup\fR, if a \fIreal\fR user is a member of any
-\fIgroupname\fR, the session is set up like anonymous FTP. \fIgroupname\fR
-is a valid group returned by \fBgetgrnam\fR(3C). The user's home directory
+For
+.BR guestgroup ,
+if a
+.I real
+user is a member of any
+.IR groupname ,
+.RI "the session is set up like anonymous FTP." " groupname"
+is a valid group returned by
+.BR getgrnam "(3C). The user's home directory"
 must be set up exactly as anonymous FTP would be. The home directory field
 of the passwd entry is divided into two directories. The first field is the
-root directory that will be the argument to the \fBchroot\fR(2) call. The
+root directory that will be the argument to the
+.BR chroot (2)
+call. The
 second field is the user's home directory, relative to the root directory.
 Use a "\fB/./\fR" to separate the two fields. For example, the following is
-the real entry in \fB/etc/passwd\fR:
+the real entry in
+.BR /etc/passwd :
 .sp
 .in +2
 .nf
@@ -143,18 +200,35 @@ guest1:x:100:92:Guest FTP:/export/home/guests/./guest1:/bin/true
 .fi
 .in -2
 
-When guest1 successfully logs in, the FTP Server will \fBchroot()\fR to
-\fB/export/home/guests\fR and then \fBchdir\fR(2) to \fB/guest1\fR. The
+When guest1 successfully logs in, the FTP Server will
+.B chroot()
+to
+\fB/export/home/guests\fR and then
+.BR chdir (2)
+to
+.BR /guest1 .
+The
 guest user will only be able to access the directory structure under
-\fB/export/home/guests\fR, which will look and act as \fB/\fR to
-\fBguest1\fR, just as an anonymous FTP user would. The d option to
+.BR /export/home/guests ,
+which will look and act as
+.B /
+to
+.BR guest1 ,
+just as an anonymous FTP user would. The d option to
 \fBftpconfig\fR(1M) is useful when creating guest FTP user accounts. The
 group name may be specified by either name or numeric ID. To use a numeric
 group ID, place a percent sign (\fB%\fR) before the number. You can give
-ranges. Use an asterisk to indicate all groups. \fBguestuser\fR works like
-\fBguestgroup\fR, except that it uses the user name or numeric ID.
+ranges. Use an asterisk to indicate all groups.
+.B guestuser
+works like
+.BR guestgroup ,
+except that it uses the user name or numeric ID.
 \fBrealuser\fR and \fBrealgroup\fR have the same syntax, but they reverse
-the effect of \fBguestuser\fR and \fBguestgroup\fR. They allow real user
+the effect of
+.B guestuser
+and
+.BR guestgroup .
+They allow real user
 access when the remote user would otherwise be determined a guest.
 .sp
 .in +2
@@ -165,7 +239,9 @@ realgroup admin
 .in -2
 
 causes all non-anonymous users to be treated as guest, with the sole
-exception of users in the \fBadmin\fR group, who are granted real user
+exception of users in the
+.B admin
+group, who are granted real user
 access.
 .RE
 
@@ -173,17 +249,34 @@ access.
 .ne 2
 .mk
 .na
-\fBnice\fR \fInice-delta\fR \fIclass\fR
+\fBnice\fR \fInice-delta class\fR
 .ad
 .sp .6
 .RS 4n
-Adjust the process \fBnice\fR value of the FTP server process by the
-indicated \fInice-delta\fR value if the remote user is a member of the named
-\fIclass\fR. If \fIclass\fR is not specified, then use \fInice-delta\fR as
-the default adjustment to the FTP server process \fBnice\fR value. This
-default \fBnice\fR value adjustment is used to adjust the \fBnice\fR value
+Adjust the process
+.B nice
+value of the FTP server process by the
+indicated
+.I nice-delta
+value if the remote user is a member of the named
+.IR class .
+If
+.I class
+is not specified, then use
+.I nice-delta
+as
+the default adjustment to the FTP server process
+.B nice
+value. This
+default
+.B nice
+value adjustment is used to adjust the
+.B nice
+value
 of the server process only for those users who do not belong to any class
-for which a class-specific \fBnice\fR directive exists in the
+for which a class-specific
+.B nice
+directive exists in the
 \fBftpaccess\fR file.
 .RE
 
@@ -191,13 +284,19 @@ for which a class-specific \fBnice\fR directive exists in the
 .ne 2
 .mk
 .na
-\fBdefumask\fR \fIumask\fR \fIclass\fR
+\fBdefumask\fR \fIumask class\fR
 .ad
 .sp .6
 .RS 4n
-Set the \fIumask\fR applied to files created by the FTP server if the
-remote user is a member of the named class. If \fIclass\fR is not specified,
-then use the \fIumask\fR as the default for classes that do not have one
+Set the
+.I umask
+applied to files created by the FTP server if the
+remote user is a member of the named class. If
+.I class
+is not specified,
+then use the
+.I umask
+as the default for classes that do not have one
 specified.. The mode of files created may be specified by using the
 \fBupload\fR directive.
 .RE
@@ -206,7 +305,9 @@ specified.. The mode of files created may be specified by using the
 .ne 2
 .mk
 .na
-\fBtcpwindow\fR \fIsize\fR class\fR
+.B tcpwindow
+.I size
+class\fR
 .ad
 .sp .6
 .RS 4n
@@ -226,19 +327,33 @@ this does, do not set it.
 .RS 4n
 Set the IP Class of Service for either the control or data connection.
 .sp
-For connections using \fBAF_INET\fR type sockets, this sets the Type of
+For connections using
+.B AF_INET
+type sockets, this sets the Type of
 Service field in the IP header to the value specified.
 .sp
-For connections using \fBAF_INET6\fR type sockets, this sets the Traffic
+For connections using
+.B AF_INET6
+type sockets, this sets the Traffic
 Class field in the IP header to the value specified.
 .sp
-When configured through \fBinetd.conf\fR(4), the socket type is controlled
+When configured through
+.BR inetd.conf (4),
+the socket type is controlled
 by the protocol field of the \fBftp\fR service. When running in standalone
-mode the default socket type is \fBAF_INET6\fR. The \fBin.ftpd\fR(1M) 4
-option selects \fBAF_INET\fR.
+mode the default socket type is
+.BR AF_INET6 .
+The \fBin.ftpd\fR(1M) 4
+option selects
+.BR AF_INET .
 .sp
 \fItypelist\fR is a comma-separated list of any of the keywords
-\fBanonymous\fR, \fBguest\fR, \fBreal\fR, and \fBclass=\fR. When
+.BR anonymous ,
+.BR guest ,
+.BR real ,
+and
+.BR class= .
+When
 \fBclass=\fR appears, it must be followed by a class name.
 .RE
 
@@ -246,13 +361,18 @@ option selects \fBAF_INET\fR.
 .ne 2
 .mk
 .na
-\fBkeepalive\fR \fByes\fR|\fBno\fR
+\fBkeepalive yes\fR|\fBno\fR
 .ad
 .sp .6
 .RS 4n
-Set the TCP \fBSO_KEEPALIVE\fR option for control and data sockets. This
-can be used to control network disconnect. If \fByes\fR, then set it. If
-\fBno\fR, then use the system default (usually off). You probably want to
+Set the TCP
+.B SO_KEEPALIVE
+option for control and data sockets. This
+can be used to control network disconnect. If
+.BR yes ,
+then set it. If
+.BR no ,
+then use the system default (usually off). You probably want to
 set this.
 .RE
 
@@ -289,7 +409,7 @@ Set various timeout conditions.
 .ne 2
 .mk
 .na
-\fBaccept\fR
+.B accept
 .ad
 .RS 11n
 .rt
@@ -301,7 +421,7 @@ The default is 120 seconds.
 .ne 2
 .mk
 .na
-\fBconnect\fR
+.B connect
 .ad
 .RS 11n
 .rt
@@ -315,7 +435,7 @@ up. The default is 120 seconds.
 .ne 2
 .mk
 .na
-\fBdata\fR
+.B data
 .ad
 .RS 11n
 .rt
@@ -329,7 +449,7 @@ and there can be quite a bit of data queued for the client. The default is
 .ne 2
 .mk
 .na
-\fBidle\fR
+.B idle
 .ad
 .RS 11n
 .rt
@@ -342,12 +462,16 @@ command-line. This access clause overrides both.
 .ne 2
 .mk
 .na
-\fBmaxidle\fR
+.B maxidle
 .ad
 .RS 11n
 .rt
-The \fBSITE IDLE\fR command allows the remote client to establish a higher
-value for the idle timeout. The \fBmaxidle\fR clause sets the upper limit
+The
+.B "SITE IDLE"
+command allows the remote client to establish a higher
+value for the idle timeout. The
+.B maxidle
+clause sets the upper limit
 that the client may request. The default can also be overridden by using the
 T option at the command-line. This access clause overrides both. The default
 is 7200 seconds.
@@ -357,13 +481,16 @@ is 7200 seconds.
 .ne 2
 .mk
 .na
-\fBRFC931\fR
+.B RFC931
 .ad
 .RS 11n
 .rt
-The maximum time the FTP server allows for the entire \fBRFC931\fR
+The maximum time the FTP server allows for the entire
+.BR RFC931
 (AUTH/ident) conversation. Setting this to zero (0) disables the server's
-use of this protocol. The information obtained by means of \fBRFC931\fR is
+use of this protocol. The information obtained by means of
+.B RFC931
+is
 recorded in the system logs and is not actually used in any authentication.
 The default is 10 seconds.
 .RE
@@ -374,15 +501,22 @@ The default is 10 seconds.
 .ne 2
 .mk
 .na
-\fBfile-limit\fR \fIraw\fR \fIin\fR|\fIout\fR|\fItotal\fR \fIcount\fR
-\fIclass\fR
+\fBfile-limit\fR \fIraw in\fR|\fIout\fR|\fItotal count\fR
+.I class
 .ad
 .sp .6
 .RS 4n
 Limit the number of data files a user in the given class may transfer. The
-limit may be placed on files \fIin\fR, \fIout\fR, or \fItotal\fR. If no
+limit may be placed on files
+.IR in ,
+.IR out ,
+or
+.IR total .
+If no
 class is specified, the limit is the default for classes which do not have a
-limit specified. The optional parameter \fIraw\fR applies the limit to the
+limit specified. The optional parameter
+.I raw
+applies the limit to the
 total traffic rather than just data files.
 .RE
 
@@ -390,17 +524,24 @@ total traffic rather than just data files.
 .ne 2
 .mk
 .na
-\fBdata-limit\fR [\fIraw\fR] \fIin\fR|\fIout\fR|\fItotal\fR \fIcount\fR
+\fBdata-limit\fR [\fIraw\fR] \fIin\fR|\fIout\fR|\fItotal count\fR
 [\fIclass\fR]\fR
 .ad
 .sp .6
 .RS 4n
 Limit the number of data bytes a user in the given class may transfer. The
-limit may be placed on bytes \fIin\fR, \fIout\fR, or \fItotal\fR. If no
+limit may be placed on bytes
+.IR in ,
+.IR out ,
+or
+.IR total .
+If no
 class is specified, the limit is the default for classes which do not have a
 limit specified. Note that once it has been exceeded, this limit will
 prevent transfers, but it will not terminate a transfer in progress. The
-optional parameter \fIraw\fR applies the limit to total traffic rather than
+optional parameter
+.I raw
+applies the limit to total traffic rather than
 just data files.
 .RE
 
@@ -408,7 +549,7 @@ just data files.
 .ne 2
 .mk
 .na
-\fBlimit-time\fR \fI*\fR|\fIanonymous\fR|\fIguest\fR \fIminutes\fR
+\fBlimit-time\fR \fI*\fR|\fIanonymous\fR|\fIguest minutes\fR
 .ad
 .sp .6
 .RS 4n
@@ -425,23 +566,34 @@ Real users are never limited.
 .sp .6
 .RS 4n
 Control which hosts may be used for anonymous access. If used without
-\fIhostname\fR, all anonymous access is denied to this site. More than one
+.IR hostname ,
+all anonymous access is denied to this site. More than one
 \fIhostname\fR may be specified. Anonymous access will only be allowed on
 the named machines. If access is denied, the user will be asked to use the
-first \fIhostname\fR listed.
+first
+.I hostname
+listed.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBlimit\fR \fIclass\fR \fIn\fR \fItimes\fR [\fImessage_file\fR]\fR
+\fBlimit\fR \fIclass n\fR \fItimes\fR [\fImessage_file\fR]\fR
 .ad
 .sp .6
 .RS 4n
-Limit \fIclass\fR to \fIn\fR users at times \fItimes\fR, displaying
+Limit
+.I class
+to
+.I n
+users at times
+.IR times ,
+displaying
 \fImessage_file\fR if the user is denied access. A \fBlimit\fR check is
-performed at login time only. If multiple \fBlimit\fR commands can apply to
+performed at login time only. If multiple
+.B limit
+commands can apply to
 the current session, the first applicable one is used. Failing to define a
 valid limit, or a limit of -1, is equivalent to no limits. The format of
 \fItimes\fR is\(cd:
@@ -452,14 +604,29 @@ valid limit, or a limit of -1, is equivalent to no limits. The format of
 .fi
 .in -2
 
-The value of \fIday\fR can be \fBSu\fR, \fBMo\fR, \fBTu\fR, \fBWe\fR,
-\fBTh\fR, \fBFr\fR, \fBSa\fR, \fBWk\fR (for any weekday Monday through
-Friday), or \fBAny\fR. \fItime-range\fR is in 24-hour clock notation. If a
+The value of
+.I day
+can be
+.BR Su ,
+.BR Mo ,
+.BR Tu ,
+.BR We ,
+.BR Th ,
+.BR Fr ,
+.BR Sa ,
+\fBWk\fR (for any weekday Monday through
+Friday), or
+.BR Any .
+\fItime-range\fR is in 24-hour clock notation. If a
 time range is not specified, any time of the day is matched. Multiple
 \fIday\fR and \fItime-range\fR may be specified by the "|" symbol. For
-example, \fBWk1730-0900|Sa|Su\fR specifies 5:30 p.m. to 9:00 a.m., Monday
+example,
+.B Wk1730-0900|Sa|Su
+specifies 5:30 p.m. to 9:00 a.m., Monday
 through Friday, and anytime on weekends. \fImessage_file\fR may contain
-magic cookies. See \fBmessage\fR for more details.
+magic cookies. See
+.B message
+for more details.
 .RE
 
 .sp
@@ -478,9 +645,16 @@ magic cookies. See \fBmessage\fR for more details.
 Always deny retrievability of these files. If \fIfilename\fR specifies a
 pathname that begins with '/' character, then only those files are marked no
 retrieve. Otherwise all files that match the \fIfilename\fR are refused
-transfer. For example, \fBnoretrieve /etc/passwd core \fR specifies no one
-will be able to retrieve the \fB/etc/passwd\fR file. You will be allowed to
-transfer any file named \fBpasswd\fR that is not in \fB/etc\fR.
+transfer. For example,
+.B "noretrieve /etc/passwd core"
+specifies no one
+will be able to retrieve the
+.B /etc/passwd
+file. You will be allowed to
+transfer any file named
+.B passwd
+that is not in
+.BR /etc .
 .sp
 On the other hand, no one will be able to get files named \fBcore\fR,
 wherever they are. Directory specifications mark all files and
@@ -493,13 +667,19 @@ noretrieve /etc /home/*/.htaccess
 .fi
 .in -2
 
-specifies that no files in \fB/etc\fR or any of its subdirectories may be
+specifies that no files in
+.B /etc
+or any of its subdirectories may be
 retrieved. Also, no files named \fB\&.htaccess\fR anywhere under the
 \fB/home\fR directory may be retrieved. The optional first parameter selects
 whether names are interpreted as absolute or relative to the current
 chroot'd environment. The default is to interpret names beginning with a
-slash as absolute. The \fBnoretrieve\fR restrictions may be placed upon
-members of particular classes. If any \fBclass=\fR is specified, the named
+slash as absolute. The
+.B noretrieve
+restrictions may be placed upon
+members of particular classes. If any
+.B class=
+is specified, the named
 files cannot be retrieved only if the current user is a member of one of the
 given classes.
 .RE
@@ -529,28 +709,43 @@ Allows retrieval of files which would otherwise be denied by noretrieve.
 .sp .6
 .RS 4n
 After \fInumber\fR login failures, log a "repeated login failures" message
-and terminate the FTP connection. The default value for \fInumber\fR is 5.
+and terminate the FTP connection. The default value for
+.I number
+is 5.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBprivate\fR \fByes\fR | \fBno\fR
+\fBprivate yes\fR | \fBno\fR
 .ad
 .sp .6
 .RS 4n
-Allow or deny use of the \fBSITE GROUP\fR and \fBSITE GPASS\fR commands
-after the user logs in. The \fBSITE GROUP\fR and \fBSITE GPASS\fR commands
+Allow or deny use of the
+.B "SITE GROUP"
+and
+.B "SITE GPASS"
+commands
+after the user logs in. The
+.B "SITE GROUP"
+and
+.B "SITE GPASS"
+commands
 specify an enhanced access group and associated password. If the group name
 and password are valid, the user becomes a member of the group specified in
 the group access file \fB/etc/ftpd/ftpgroups\fR by means of
-\fBsetegid\fR(2). See \fBftpgroups\fR(4) for the format of the file. For
+.BR setegid (2).
+See
+.BR ftpgroups (4)
+for the format of the file. For
 this option to work for anonymous FTP users, the  FTP Server must keep
 \fB/etc/group\fR permanently open and load the group access file into
 memory. This means that the FTP Server now has an additional file descriptor
 open, and the necessary passwords and access privileges granted to users by
-means of \fBSITE GROUP\fR will be static for the duration of an FTP session.
+means of
+.B "SITE GROUP"
+will be static for the duration of an FTP session.
 If you have an urgent need to change the access groups or passwords now, you
 have to kill all of the running FTP Servers.
 .RE
@@ -563,21 +758,27 @@ The following informational capabilities are supported:
 .ne 2
 .mk
 .na
-\fBgreeting\fR \fBfull\fR|\fBbrief\fR|\fBterse\fR
+\fBgreeting full\fR|\fBbrief\fR|\fBterse\fR
 .ad
 .br
 .na
-\fBgreeting\fR \fBtext\fR \fImessage\fR
+\fBgreeting text\fR \fImessage\fR
 .ad
 .sp .6
 .RS 4n
-The \fBgreeting\fR command allows you to control how much information is
-given out before the remote user logs in. \fBgreeting full\fR, which is the
+The
+.B greeting
+command allows you to control how much information is
+given out before the remote user logs in.
+.BR "greeting full" ,
+which is the
 default greeting, shows the hostname and daemon version. \fBgreeting
 brief\fR shows the hostname. \fB greeting terse\fR simply says "FTP Server
 ready." Although \fBfull\fR is the default, \fBbrief\fR is suggested.
 .sp
-The \fBtext\fR form allows you to specify any greeting message.
+The
+.B text
+form allows you to specify any greeting message.
 \fImessage\fR can be any string. Whitespace (spaces and tabs) is converted
 to a single space.
 .RE
@@ -590,12 +791,20 @@ to a single space.
 .ad
 .sp .6
 .RS 4n
-The \fBbanner\fR command operates similarly to the \fBmessage\fR command,
+The
+.B banner
+command operates similarly to the
+.B message
+command,
 except that the banner is displayed before the user enters the username. The
 \fIpath\fR is relative to the real system root, not to the base of the
-anonymous \fBFTP\fR directory.
+anonymous
+.B FTP
+directory.
 .sp
-Use of the \fBbanner\fR command can completely prevent non-compliant
+Use of the
+.B banner
+command can completely prevent non-compliant
 \fBFTP\fR clients from making use of the \fBFTP\fR Server. Not all clients
 can handle multi-line responses, which is how the banner is displayed.
 .RE
@@ -609,7 +818,9 @@ can handle multi-line responses, which is how the banner is displayed.
 .sp .6
 .RS 4n
 Use this command to define the email address for the FTP Server
-administrator. This string will be printed every time the \fB%E\fR magic
+administrator. This string will be printed every time the
+.B %E
+magic
 cookie is used in message files.
 .RE
 
@@ -622,7 +833,9 @@ cookie is used in message files.
 .sp .6
 .RS 4n
 Defines the default host name of the FTP Server. This string will be
-printed on the greeting message and every time the \fB%L\fR magic cookie is
+printed on the greeting message and every time the
+.B %L
+magic cookie is
 used. The host name for virtual servers overrides this value. If no host
 name is specified, the default host name for the local machine is used.
 .RE
@@ -635,14 +848,22 @@ name is specified, the default host name for the local machine is used.
 .ad
 .sp .6
 .RS 4n
-Define a file with \fIpath\fR such that the FTP Server will display the
+Define a file with
+.I path
+such that the FTP Server will display the
 contents of the file to the user at login time or upon using the change
-working directory command. The \fIwhen\fR parameter may be \fBLOGIN\fR or
+working directory command. The
+.I when
+parameter may be
+.B LOGIN
+or
 \fBCWD=\fIdirglob\fR. If \fIwhen\fRis \fBCWD=\fIdirglob\fR,
 \fIdirglob\fR specifies the new default directory that will trigger the
 notification. A \fIdirglob\fR of "\fB*\fR" matches all directories.
 .sp
-The optional \fIclass\fR specification allows the message to be displayed
+The optional
+.I class
+specification allows the message to be displayed
 only to members of a particular class. More than one class may be
 specified.
 .sp
@@ -652,7 +873,7 @@ replace the cookie with a specified text string:
 .ne 2
 .mk
 .na
-\fB%T\fR
+.B %T
 .ad
 .RS 6n
 .rt
@@ -663,7 +884,7 @@ Local time. For example, \fBThu Nov 15 17:12:42 1990\fR.
 .ne 2
 .mk
 .na
-\fB%F\fR
+.B %F
 .ad
 .RS 6n
 .rt
@@ -674,7 +895,7 @@ Free space in partition of CWD, in Kbytes.
 .ne 2
 .mk
 .na
-\fB%C\fR
+.B %C
 .ad
 .RS 6n
 .rt
@@ -685,7 +906,7 @@ Current working directory.
 .ne 2
 .mk
 .na
-\fB%E\fR
+.B %E
 .ad
 .RS 6n
 .rt
@@ -696,7 +917,7 @@ The email address for the FTP Server administrator.
 .ne 2
 .mk
 .na
-\fB%R\fR
+.B %R
 .ad
 .RS 6n
 .rt
@@ -707,7 +928,7 @@ Remote host name.
 .ne 2
 .mk
 .na
-\fB%L\fR
+.B %L
 .ad
 .RS 6n
 .rt
@@ -718,7 +939,7 @@ Local host name.
 .ne 2
 .mk
 .na
-\fB%U\fR
+.B %U
 .ad
 .RS 6n
 .rt
@@ -729,18 +950,20 @@ Username given at login time.
 .ne 2
 .mk
 .na
-\fB%u\fR
+.B %u
 .ad
 .RS 6n
 .rt
-Username as defined by means of \fIRFC 931\fR authentication.
+Username as defined by means of
+.I "RFC 931"
+authentication.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB%M\fR
+.B %M
 .ad
 .RS 6n
 .rt
@@ -751,7 +974,7 @@ Maximum allowed number of users in this class.
 .ne 2
 .mk
 .na
-\fB%N\fR
+.B %N
 .ad
 .RS 6n
 .rt
@@ -764,7 +987,7 @@ The following quota magic cookies are also supported but not always set
 .ne 2
 .mk
 .na
-\fB%B\fR
+.B %B
 .ad
 .RS 6n
 .rt
@@ -775,7 +998,7 @@ absolute limit on disk blocks allocated
 .ne 2
 .mk
 .na
-\fB%b\fR
+.B %b
 .ad
 .RS 6n
 .rt
@@ -786,7 +1009,7 @@ preferred limit on disk blocks
 .ne 2
 .mk
 .na
-\fB%Q\fR
+.B %Q
 .ad
 .RS 6n
 .rt
@@ -797,7 +1020,7 @@ current block count
 .ne 2
 .mk
 .na
-\fB%I\fR
+.B %I
 .ad
 .RS 6n
 .rt
@@ -808,7 +1031,7 @@ maximum number of allocated inodes (+1)
 .ne 2
 .mk
 .na
-\fB%i\fR
+.B %i
 .ad
 .RS 6n
 .rt
@@ -819,7 +1042,7 @@ preferred inode limit
 .ne 2
 .mk
 .na
-\fB%q\fR
+.B %q
 .ad
 .RS 6n
 .rt
@@ -830,7 +1053,7 @@ current number of allocated inodes
 .ne 2
 .mk
 .na
-\fB%H\fR
+.B %H
 .ad
 .RS 6n
 .rt
@@ -841,7 +1064,7 @@ time limit for excessive disk use
 .ne 2
 .mk
 .na
-\fB%h\fR
+.B %h
 .ad
 .RS 6n
 .rt
@@ -857,11 +1080,12 @@ must be relative to the base of the anonymous or guest FTP directory tree.
 .ne 2
 .mk
 .na
-\fBquota-info\fR \fIuid-range\fR [\fIuid-range\fR.\|.\|.] \fR
+\fBquota-info\fR \fIuid-range\fR [\fIuid-range\fR.\|.\|.]\fR 
 .ad
 .sp .6
 .RS 4n
-Enable retrieval of quota information for users matching \fIuid-range\fR.
+Enable retrieval of quota information for users matching
+.IR uid-range .
 This sets the quota magic cookies. Retrieving quota information might cause
 a significant delay when logging into the server.
 .sp
@@ -877,18 +1101,26 @@ percent sign(\fB%\fR) before a number. An asterisk means "all users."
 .ad
 .sp .6
 .RS 4n
-Define a file with \fIpathglob\fR such that the FTP Server will notify the
+Define a file with
+.I pathglob
+such that the FTP Server will notify the
 user at login time or upon using the change working directory command that
-the file exists and the date that it was modified. The \fIwhen\fR parameter
+the file exists and the date that it was modified. The
+.I when
+parameter
 may be \fBLOGIN\fR or \fBCWD=\fIdirglob\fR. If \fIwhen\fR is
 \fBCWD=\fIdirglob\fR, \fIdirglob\fR specifies the new default directory
 that will trigger the notification. A \fIdirglob\fR of "\fB*\fR" matches all
 directories. The message will only be displayed once, to avoid bothering
 users. Remember that when README messages are triggered by an anonymous or
-guest FTP user, the \fIpathglob\fR must be relative to the base of the
+guest FTP user, the
+.I pathglob
+must be relative to the base of the
 anonymous or guest FTP directory tree.
 .sp
-The optional \fIclass\fR specification allows the message to be displayed
+The optional
+.I class
+specification allows the message to be displayed
 only to members of a particular class. You can specify more than one
 class.
 .RE
@@ -907,7 +1139,11 @@ The following logging capabilities are supported:
 .RS 4n
 Enables logging of the individual FTP commands sent by users.
 \fItypelist\fR is a comma-separated list of any of the keywords
-\fBanonymous\fR, \fBguest\fR, and \fBreal\fR. Command logging information is
+.BR anonymous ,
+.BR guest ,
+and
+.BR real .
+Command logging information is
 written to the system log.
 .RE
 
@@ -915,14 +1151,22 @@ written to the system log.
 .ne 2
 .mk
 .na
-\fBlog transfers\fR \fItypelist\fR \fIdirections\fR
+\fBlog transfers\fR \fItypelist directions\fR
 .ad
 .sp .6
 .RS 4n
-Log file transfers made by FTP users to the \fBxferlog\fR(4) file. Logging
+Log file transfers made by FTP users to the
+.BR xferlog (4)
+file. Logging
 of incoming transfers to the server can be enabled separately from outbound
-transfers from the server. \fIdirections\fR is a comma-separated list of any
-of the two keywords \fBinbound\fR and \fBoutbound\fR, and will respectively
+transfers from the server.
+.I directions
+is a comma-separated list of any
+of the two keywords
+.B inbound
+and
+.BR outbound ,
+and will respectively
 cause transfers to be logged for files sent to and from the server.
 .RE
 
@@ -935,14 +1179,16 @@ cause transfers to be logged for files sent to and from the server.
 .sp .6
 .RS 4n
 Enables logging of violations of security rules to the system log,
-including for example, \fBnoretrieve\fR and \fB\&.notar\fR.
+including for example,
+.B noretrieve
+and \fB\&.notar\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBlog syslog\fR
+.B log syslog
 .ad
 .br
 .na
@@ -951,8 +1197,11 @@ including for example, \fBnoretrieve\fR and \fB\&.notar\fR.
 .sp .6
 .RS 4n
 Redirect the logging messages for incoming and outgoing transfers to
-\fBsyslog\fR. Without this option the messages are written to \fBxferlog\fR.
-When you specify \fBsyslog+xferlog\fR, the transfer log messages are sent to
+.BR syslog .
+Without this option the messages are written to \fBxferlog\fR.
+When you specify
+.BR syslog+xferlog ,
+the transfer log messages are sent to
 both the system log file and the \fBxferlog\fR file.
 .RE
 
@@ -974,7 +1223,7 @@ immediately after a transfer has been completed:
 .ne 2
 .mk
 .na
-\fB%Xt\fR
+.B %Xt
 .ad
 .RS 7n
 .rt
@@ -985,7 +1234,7 @@ transfer-time
 .ne 2
 .mk
 .na
-\fB%Xn\fR
+.B %Xn
 .ad
 .RS 7n
 .rt
@@ -996,7 +1245,7 @@ bytes-transferred
 .ne 2
 .mk
 .na
-\fB%XP\fR
+.B %XP
 .ad
 .RS 7n
 .rt
@@ -1007,7 +1256,7 @@ filename
 .ne 2
 .mk
 .na
-\fB%Xp\fR
+.B %Xp
 .ad
 .RS 7n
 .rt
@@ -1018,7 +1267,7 @@ chroot-filename
 .ne 2
 .mk
 .na
-\fB%Xy\fR
+.B %Xy
 .ad
 .RS 7n
 .rt
@@ -1040,7 +1289,7 @@ special-action-flag
 .ne 2
 .mk
 .na
-\fB%Xd\fR
+.B %Xd
 .ad
 .RS 7n
 .rt
@@ -1051,7 +1300,7 @@ direction
 .ne 2
 .mk
 .na
-\fB%Xm\fR
+.B %Xm
 .ad
 .RS 7n
 .rt
@@ -1062,7 +1311,7 @@ access-mode
 .ne 2
 .mk
 .na
-\fB%Xa\fR
+.B %Xa
 .ad
 .RS 7n
 .rt
@@ -1073,7 +1322,7 @@ authentication-method
 .ne 2
 .mk
 .na
-\fB%Xc\fR
+.B %Xc
 .ad
 .RS 7n
 .rt
@@ -1084,7 +1333,7 @@ completion-status
 .ne 2
 .mk
 .na
-\fB%Xs\fR
+.B %Xs
 .ad
 .RS 7n
 .rt
@@ -1095,7 +1344,7 @@ file-size
 .ne 2
 .mk
 .na
-\fB%Xr\fR
+.B %Xr
 .ad
 .RS 7n
 .rt
@@ -1126,7 +1375,9 @@ The following miscellaneous capabilities are supported:
 .ad
 .sp .6
 .RS 4n
-Define an alias, \fI string\fR, for a directory. Use this command to add
+Define an alias,
+.IR " string" ,
+for a directory. Use this command to add
 the concept of logical directories. For example: \fBalias rfc:
 /pub/doc/rfc\fR would allow the user to access \fB/pub/doc/rfc\fR from any
 directory by the command "\fBcd rfc:\fR". Aliases only apply to the \fBcd\fR
@@ -1141,7 +1392,9 @@ command.
 .ad
 .sp .6
 .RS 4n
-Define an entry in the \fBcdpath\fR. This command defines a search path
+Define an entry in the
+.BR cdpath .
+This command defines a search path
 that is used when changing directories. For example:
 .sp
 .in +2
@@ -1161,7 +1414,7 @@ searched for in the following order:
 .TP
 .ie t \(bu
 .el o
-\fB\&./foo \fR
+\fB\&./foo\fR 
 .RE
 .RS +4
 .TP
@@ -1181,7 +1434,11 @@ an alias called foo
 .el o
 \fB/.aliases/foo\fR
 .RE
-The \fBcdpath\fR is only available with the \fBcd\fR command. If you have a
+The
+.B cdpath
+is only available with the
+.B cd
+command. If you have a
 large number of aliases, you might want to set up an aliases directory with
 links to all of the areas you wish to make available to users.
 .RE
@@ -1190,7 +1447,7 @@ links to all of the areas you wish to make available to users.
 .ne 2
 .mk
 .na
-\fBcompress\fR \fByes\fR|\fBno\fR \fIclassglob\fR
+\fBcompress yes\fR|\fBno\fR \fIclassglob\fR
 [\fIclassglob\fR.\|.\|.]\fR
 .ad
 .br
@@ -1199,8 +1456,12 @@ links to all of the areas you wish to make available to users.
 .ad
 .sp .6
 .RS 4n
-Enable the use of conversions marked with the \fBO_COMPRESS\fR,
-\fBO_UNCOMPRESS\fR, and \fBO_TAR\fR options in
+Enable the use of conversions marked with the
+.BR O_COMPRESS ,
+.BR O_UNCOMPRESS ,
+and
+.B O_TAR
+options in
 \fB/etc/ftpd/ftpconversions\fR. See \fBftpconversions\fR(4).
 .RE
 
@@ -1212,13 +1473,17 @@ Enable the use of conversions marked with the \fBO_COMPRESS\fR,
 .ad
 .sp .6
 .RS 4n
-If the file pointed to by \fIpath\fR exists, the server will check the file
+If the file pointed to by
+.I path
+exists, the server will check the file
 regularly to see if the server is going to be shut down. If a shutdown is
 planned, the user is notified. New connections are denied after a specified
 time before shutdown. Current connections are dropped at a specified time
 before shutdown.
 .sp
-The format of the file specified by \fIpath\fR is:
+The format of the file specified by
+.I path
+is:
 .sp
 .in +2
 .nf
@@ -1230,7 +1495,7 @@ The format of the file specified by \fIpath\fR is:
 .ne 2
 .mk
 .na
-\fIyear\fR
+.I year
 .ad
 .RS 15n
 .rt
@@ -1241,7 +1506,7 @@ A value of 1970 or greater.
 .ne 2
 .mk
 .na
-\fImonth\fR
+.I month
 .ad
 .RS 15n
 .rt
@@ -1252,7 +1517,7 @@ A value of 0 to 11.
 .ne 2
 .mk
 .na
-\fIday\fR
+.I day
 .ad
 .RS 15n
 .rt
@@ -1263,7 +1528,7 @@ A value of 1 to 31.
 .ne 2
 .mk
 .na
-\fIhour\fR
+.I hour
 .ad
 .RS 15n
 .rt
@@ -1274,7 +1539,7 @@ A value of 0 to 23.
 .ne 2
 .mk
 .na
-\fIminute\fR
+.I minute
 .ad
 .RS 15n
 .rt
@@ -1301,17 +1566,19 @@ connections will be disconnected before the shutdown time.
 .ne 2
 .mk
 .na
-\fItext\fR
+.I text
 .ad
 .RS 15n
 .rt
-Follows the normal rules for any \fImessage\fR. The following additional
+Follows the normal rules for any
+.IR message .
+The following additional
 magic cookies are available:
 .sp
 .ne 2
 .mk
 .na
-\fB%s\fR
+.B %s
 .ad
 .RS 6n
 .rt
@@ -1322,7 +1589,7 @@ The time at which the system is going to shut down.
 .ne 2
 .mk
 .na
-\fB%r\fR
+.B %r
 .ad
 .RS 6n
 .rt
@@ -1333,7 +1600,7 @@ The time at which new connections will be denied.
 .ne 2
 .mk
 .na
-\fB%d\fR
+.B %d
 .ad
 .RS 6n
 .rt
@@ -1342,7 +1609,9 @@ The time at which current connections will be dropped.
 
 .RE
 
-All times are in the form: \fBddd MMM DD hh:mm:ss YYYY\fR. Only one
+All times are in the form:
+.BR "ddd MMM DD hh:mm:ss YYYY" .
+Only one
 \fBshutdown\fR command can be present in the configuration file. You can use
 the external program \fBftpshut\fR(1M) to automate generation of this
 file.
@@ -1366,14 +1635,20 @@ only when the FTP Server is run in standalone mode.
 .mk
 .na
 \fBvirtual\fR \fIaddress\fR \fBroot\fR|\fBbanner\fR|\fBlogfile\fR
-\fIpath\fR
+.I path
 .ad
 .sp .6
 .RS 4n
 Enable the FTP Server limited virtual hosting capabilities. The
 \fIaddress\fR is the IP address of the virtual server. The second argument
-specifies that the \fIpath\fR is either the path to the \fBroot\fR of the
-filesystem for this virtual server, the \fBbanner\fR presented to the user
+specifies that the
+.I path
+is either the path to the
+.B root
+of the
+filesystem for this virtual server, the
+.B banner
+presented to the user
 when connecting to this virtual server, or the \fBlogfile\fR where transfers
 are recorded for this virtual server. If the \fBlogfile\fR is not specified
 the default log file will be used. All other message files and permissions
@@ -1394,14 +1669,17 @@ time the FTP session begins, the hostname will not be matched.
 In contrast to limited virtual hosting, complete virtual hosting allows
 separate configuration files to be virtual host specific. See
 \fBftpservers\fR(4). The only additions that are necessary in a virtual
-host's \fBftpaccess\fR file is the \fBroot\fR directive that ensures the
+host's \fBftpaccess\fR file is the
+.B root
+directive that ensures the
 correct root directory is used for the virtual host. This only works with
 complete virtual hosting, which in contrast to limited virtual hosting,
 allows separate configuration files to be specified for each virtual host.
 .sp
 \fIpath\fR is either the root of the filesystem for this virtual server or
 the logfile where transfers for this virtual server are recorded. root and
-logfile may only be specified when not preceded by \fBvirtual\fR
+logfile may only be specified when not preceded by
+.BR virtual
 \fIaddress\fR in a virtual hosts's \fBftpaccess\fR file.
 .RE
 
@@ -1415,27 +1693,35 @@ logfile may only be specified when not preceded by \fBvirtual\fR
 .RS 4n
 Set the hostname shown in the greeting message and status command, or the
 email address used in message files and on the HELP command, to the given
-\fIstring\fR.
+.IR string .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBvirtual\fR \fIaddress\fR \fBallow\fR \fIusername\fR
+.B virtual
+.I address
+\fBallow\fR \fIusername\fR
 [\fIusername\fR.\|.\|.]\fR
 .ad
 .br
 .na
-\fBvirtual\fR \fIaddress\fR \fBdeny\fR \fIusername\fR
+.B virtual
+.I address
+\fBdeny\fR \fIusername\fR
 [\fIusername\fR.\|.\|.]\fR
 .ad
 .sp .6
 .RS 4n
 By default, real and guest users are not allowed to log in on the virtual
 server, unless they are guests that are chroot'd to the virtual root. The
-users listed on the \fBvirtual allow\fR line(s) are granted access. You can
-grant access to all users by giving '*' as the \fIusername\fR. The
+users listed on the
+.B "virtual allow"
+line(s) are granted access. You can
+grant access to all users by giving '*' as the
+.IR username .
+The
 \fBvirtual deny\fR clauses are processed after the \fBvirtual allow\fR
 clauses. Thus specific users can be denied access although all users were
 allowed in an earlier clause.
@@ -1445,7 +1731,9 @@ allowed in an earlier clause.
 .ne 2
 .mk
 .na
-\fBvirtual\fR \fIaddress\fR \fBprivate\fR
+.B virtual
+.I address
+.B private
 .ad
 .sp .6
 .RS 4n
@@ -1458,56 +1746,68 @@ is not specified.
 .ne 2
 .mk
 .na
-\fBvirtual\fR \fIaddress\fR \fBpasswd\fR \fIfile\fR
+.B virtual
+.I address
+\fBpasswd\fR \fIfile\fR
 .ad
 .sp .6
 .RS 4n
-Use a different \fBpasswd\fR file for the virtual host.
+Use a different
+.B passwd
+file for the virtual host.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBvirtual\fR \fIaddress\fR \fBshadow\fR \fIfile\fR
+.B virtual
+.I address
+\fBshadow\fR \fIfile\fR
 .ad
 .sp .6
 .RS 4n
-Use a different \fBshadow\fR file for the virtual host.
+Use a different
+.B shadow
+file for the virtual host.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdefaultserver\fR \fBdeny\fR \fIusername\fR [\fIusername\fR.\|.\|.]\fR
+\fBdefaultserver deny\fR \fIusername\fR [\fIusername\fR.\|.\|.]\fR
 .ad
 .br
 .na
-\fBdefaultserver\fR \fBallow\fR \fIusername\fR [\fIusername\fR.\|.\|.]
+\fBdefaultserver allow\fR \fIusername\fR [\fIusername\fR.\|.\|.]
 \fR
 .ad
 .sp .6
 .RS 4n
 By default, all users are allowed access to the non-virtual FTP Server. Use
-\fBdefaultserver\fR \fBdeny\fR to revoke access for specific real and guest
+\fBdefaultserver deny\fR to revoke access for specific real and guest
 users. Specify '*' to deny access to all users, except anonymous users.
 Specific real and guest users can then be allowed access by using
-\fBdefaultserver\fR \fBallow\fR.
+\fBdefaultserver allow\fR.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdefaultserver\fR \fBprivate\fR
+\fBdefaultserver private\fR
 .ad
 .sp .6
 .RS 4n
 By default, all users are allowed access to the non-virtual FTP Server. Use
-\fBdefaultserver\fR \fBprivate\fR to revoke access for anonymous users.
+\fBdefaultserver private\fR to revoke access for anonymous users.
 .sp
-The \fBvirtual\fR and \fBdefaultserver\fR \fBallow\fR, \fBdeny\fR and
+The
+.B virtual
+and
+.BR "defaultserver allow" ,
+\fBdeny\fR and
 \fBprivate\fR clauses provide a means to control which users are allowed
 access to which FTP Servers.
 .RE
@@ -1516,13 +1816,18 @@ access to which FTP Servers.
 .ne 2
 .mk
 .na
-\fBpassive\fR \fBaddress\fR \fIexternalip\fR \fIcidr\fR
+\fBpassive address\fR \fIexternalip cidr\fR
 .ad
 .sp .6
 .RS 4n
-Allow control of the address reported in response to a \fBpassive\fR
-command. When any control connection matching \fIcidr\fR requests a passive
-data connection (PASV), the \fIexternalip\fR address is reported. This does
+Allow control of the address reported in response to a
+.BR passive
+command. When any control connection matching
+.I cidr
+requests a passive
+data connection (PASV), the
+.I externalip
+address is reported. This does
 not change the address that the daemon actually listens on, only the address
 reported to the client. This feature allows the daemon to operate correctly
 behind IP renumbering firewalls. For example:
@@ -1544,13 +1849,21 @@ may be specified to handle complex, or multi-gatewayed, networks.
 .ne 2
 .mk
 .na
-\fBpassive\fR \fBports\fR \fIcidr\fR \fImin\fR \fImax\fR
+.B "passive ports"
+.I "cidr min"
+.I max
 .ad
 .sp .6
 .RS 4n
 Allows control of the TCP port numbers which may be used for a passive data
-connection. If the control connection matches the \fIcidr\fR, a port in the
-range \fImin\fR to \fImax\fR will be randomly selected for the daemon to
+connection. If the control connection matches the
+.IR cidr ,
+a port in the
+range
+.I min
+to
+.I max
+will be randomly selected for the daemon to
 listen on. This feature allows firewalls to limit the ports that remote
 clients may use to connect into the protected network.
 .sp
@@ -1560,7 +1873,11 @@ the machine address. For example, if you are using the reserved class-A
 network 10, instead of a netmask of 255.0.0.0, use a CIDR of /8, as in
 10.0.0.0/8, to represent your network.
 .sp
-When \fImin\fR and \fImax\fR are both 0, the kernel rather than the FTP
+When
+.I min
+and
+.I max
+are both 0, the kernel rather than the FTP
 server selects the TCP port to listen on. Kernel port selection is usually
 not desirable if the kernel allocates TCP ports sequentially. If in doubt,
 let the FTP server do the port selection.
@@ -1578,16 +1895,24 @@ let the FTP server do the port selection.
 .ad
 .sp .6
 .RS 4n
-Normally, the FTP Server does not allow a \fBPORT\fR command to specify an
+Normally, the FTP Server does not allow a
+.B PORT
+command to specify an
 address different than that of the control connection. Nor does it allow a
 \fBPASV\fR connection from another address.
 .sp
-The \fBport-allow\fR clause provides a list of addresses that the specified
-class of user may give on a \fBPORT\fR command. These addresses will be
+The
+.B port-allow
+clause provides a list of addresses that the specified
+class of user may give on a
+.B PORT
+command. These addresses will be
 allowed even if they do not match the IP address of the client-side of the
 control connection.
 .sp
-The \fBpasv-allow\fR clause provides a list of addresses that the specified
+The
+.B pasv-allow
+clause provides a list of addresses that the specified
 class of user may make data connections from. These addresses will be
 allowed even if they do not match the IP address of the client-side of the
 control connection.
@@ -1597,22 +1922,32 @@ control connection.
 .ne 2
 .mk
 .na
-\fBlslong\fI command\fR [\fIoptions\fR.\|.\|.] \fR
+\fBlslong\fI command\fR [\fIoptions\fR.\|.\|.]\fR 
 .ad
 .br
 .na
-\fBlsshort\fI command\fR [\fIoptions\fR.\|.\|.] \fR
+\fBlsshort\fI command\fR [\fIoptions\fR.\|.\|.]\fR 
 .ad
 .br
 .na
-\fBlsplain\fI command\fR [\fIoptions\fR.\|.\|.] \fR
+\fBlsplain\fI command\fR [\fIoptions\fR.\|.\|.]\fR 
 .ad
 .sp .6
 .RS 4n
-Use the \fBlslong\fR, \fBlsshort\fR, and \fBlsplain\fR clauses to specify
+Use the
+.BR lslong ,
+.BR lsshort ,
+and
+.B lsplain
+clauses to specify
 the commands and options to use to generate directory listings. The options
 cannot contain spaces, and the default values for these clauses are
-generally correct. Use \fBlslong\fR, \fBlsshort\fR, or \fBlsplain\fR only if
+generally correct. Use
+.BR lslong ,
+.BR lsshort ,
+or
+.B lsplain
+only if
 absolutely necessary.
 .RE
 
@@ -1627,7 +1962,9 @@ absolutely necessary.
 Specify the name of a mail server that will accept upload notifications for
 the FTP Server. Multiple mail servers may be listed. The FTP Server will
 attempt to deliver the upload notification to each, in order, until one
-accepts the message. If no mail servers are specified, \fBlocalhost\fR is
+accepts the message. If no mail servers are specified,
+.B localhost
+is
 used. This option is only meaningful if anyone is to be notified of
 anonymous uploads. See \fBincmail\fR.
 .RE
@@ -1640,11 +1977,13 @@ anonymous uploads. See \fBincmail\fR.
 .ad
 .br
 .na
-\fBvirtual\fR \fIaddress\fR \fBincmail\fR \fIemailaddress\fR
+.B virtual
+.I address
+\fBincmail\fR \fIemailaddress\fR
 .ad
 .br
 .na
-\fBdefaultserver\fR \fBincmail\fR \fIemailaddress\fR
+\fBdefaultserver incmail\fR \fIemailaddress\fR
 .ad
 .sp .6
 .RS 4n
@@ -1670,17 +2009,21 @@ do not have their own notifications.
 .ad
 .br
 .na
-\fBvirtual\fR \fIaddress\fR \fBmailfrom\fR \fIemailaddress\fR
+.B virtual
+.I address
+\fBmailfrom\fR \fIemailaddress\fR
 .ad
 .br
 .na
-\fBdefaultserver\fR \fBmailfrom\fR \fIemailaddress\fR
+\fBdefaultserver mailfrom\fR \fIemailaddress\fR
 .ad
 .sp .6
 .RS 4n
 Specify the sender's email address for anonymous upload notifications. Only
 one address may be specified. If no \fBmailfrom\fR applies, email is sent
-from the default mailbox name \fBwu-ftpd\fR. To avoid problems if the
+from the default mailbox name
+.BR wu-ftpd .
+To avoid problems if the
 recipient attempts to reply to a notification, or if downstream mail
 problems generate bounces, you should ensure the \fBmailfrom\fR address is
 deliverable.
@@ -1711,9 +2054,13 @@ no effect on ASCII transfers.
 .sp .6
 .RS 4n
 Allows or disallows the lookup of the remote host's name. Name lookups can
-be slow, but skipping them means that places where an \fIaddrglob\fR is
+be slow, but skipping them means that places where an
+.I addrglob
+is
 matched (for example, in the class capability) will match only an IP
-address, not a name. Also \fBdeny !nameserved\fR and \fBdns
+address, not a name. Also
+.B "deny !nameserved"
+and \fBdns
 refuse_no_reverse\fR or \fBrefuse_mismatch\fR will deny access when a name
 lookup is not done. The default is to lookup the remote host's name.
 .sp
@@ -1729,14 +2076,21 @@ Only IP addresses, not names, are matched in \fIaddrglob\fR.
 .sp .6
 .RS 4n
 Controls the behavior at the end of a download or directory listing. If
-\fByes\fR, shutdown the data connection for sending and wait for the client
+.BR yes ,
+shutdown the data connection for sending and wait for the client
 to close its end before sending a transfer complete reply on the control
-connection. This is the default behavior. If \fBno\fR, close the data
+connection. This is the default behavior. If
+.BR no ,
+close the data
 connection and send the transfer complete reply without waiting for the
 client. With this behavior, data loss can go undetected.
 .sp
 If a client hangs at the end of a directory listing, or the system has many
-sockets in the \fBFIN_WAIT_2\fR state, try setting to \fBno\fR as a
+sockets in the
+.B FIN_WAIT_2
+state, try setting to
+.B no
+as a
 workaround for broken client behavior.
 .RE
 
@@ -1748,41 +2102,53 @@ The following permission capabilities are supported:
 .ne 2
 .mk
 .na
-\fBchmod\fR \fByes\fR|\fBno\fR \fItypelist\fR
+\fBchmod yes\fR|\fBno\fR \fItypelist\fR
 .ad
 .br
 .na
-\fBdelete\fR \fByes\fR|\fBno\fR \fItypelist\fR
+\fBdelete yes\fR|\fBno\fR \fItypelist\fR
 .ad
 .br
 .na
-\fBoverwrite\fR \fByes\fR|\fBno\fR \fItypelist\fR
+\fBoverwrite yes\fR|\fBno\fR \fItypelist\fR
 .ad
 .br
 .na
-\fBrename\fR \fByes\fR|\fBno\fR \fItypelist\fR
+\fBrename yes\fR|\fBno\fR \fItypelist\fR
 .ad
 .br
 .na
-\fBumask\fR \fByes\fR|\fBno\fR \fItypelist\fR
+\fBumask yes\fR|\fBno\fR \fItypelist\fR
 .ad
 .sp .6
 .RS 4n
 Allows or disallows the ability to perform the specified function. By
 default, all real and guest users are allowed. Anonymous users are only
-allowed \fBoverwrite\fR and \fBumask\fR.
+allowed
+.B overwrite
+and
+.BR umask .
 .sp
 \fItypelist\fR is a comma-separated list of any of the keywords
-\fBanonymous\fR, \fBguest\fR, \fBreal\fR and \fBclass=\fR. When \fBclass=\fR
-appears, it must be followed by a classname. If any \fBclass=\fR appears,
-the \fItypelist\fR restriction applies only to users in that class.
+.BR anonymous ,
+.BR guest ,
+\fBreal\fR and
+.BR class= .
+When
+.BR class=
+appears, it must be followed by a classname. If any
+.B class=
+appears,
+the
+.I typelist
+restriction applies only to users in that class.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpasswd-check\fR \fBnone\fR|\fBtrivial\fR|\fBrfc822\fR
+\fBpasswd-check none\fR|\fBtrivial\fR|\fBrfc822\fR
 [\fBenforce\fR|\fBwarn\fR]\fR
 .ad
 .sp .6
@@ -1793,7 +2159,7 @@ Server for anonymous FTP.
 .ne 2
 .mk
 .na
-\fBnone\fR
+.B none
 .ad
 .RS 11n
 .rt
@@ -1804,7 +2170,7 @@ No password checking is performed.
 .ne 2
 .mk
 .na
-\fBtrivial\fR
+.B trivial
 .ad
 .RS 11n
 .rt
@@ -1819,14 +2185,16 @@ The password must contain an '@'.
 .ad
 .RS 11n
 .rt
-The password must be \fIRFC 822\fR compliant.
+The password must be
+.I "RFC 822"
+compliant.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwarn\fR
+.B warn
 .ad
 .RS 11n
 .rt
@@ -1855,12 +2223,16 @@ Notify and deny the login.
 .sp .6
 .RS 4n
 Consider the email address given as an argument as invalid. If
-\fBpasswd-check\fR is set to \fBenforce\fR, anonymous users giving this
+\fBpasswd-check\fR is set to
+.BR enforce ,
+anonymous users giving this
 address as a password cannot log in. That way, you can stop users from
 having stupid WWW browsers use fake addresses like IE?0User@ or mozilla@.
 (by using this, you are not shutting out users using a WWW browser for ftp -
 you just make them configure their browser correctly.) Only one address is
-allowed per line, but you can have as many \fBdeny-email\fR addresses as you
+allowed per line, but you can have as many
+.B deny-email
+addresses as you
 like.
 .RE
 
@@ -1868,7 +2240,7 @@ like.
 .ne 2
 .mk
 .na
-\fBpath-filter\fR \fItypelist\fR \fImessage\fR \fIallowed_regexp\fR
+\fBpath-filter\fR \fItypelist message\fR \fIallowed_regexp\fR
 \fR
 .ad
 .br
@@ -1877,11 +2249,15 @@ like.
 .ad
 .sp .6
 .RS 4n
-For users in \fItypelist\fR, \fBpath-filter\fR defines regular expressions
+For users in
+.IR typelist ,
+\fBpath-filter\fR defines regular expressions
 that control what characters can be used in the filename of an uploaded file
 or created directory. There may be multiple disallowed regular expressions.
 If a filename is invalid due to failure to match the regular expression
-criteria, \fImessage\fR will be displayed to the user. For example:
+criteria,
+.I message
+will be displayed to the user. For example:
 .sp
 .in +2
 .nf
@@ -1900,12 +2276,12 @@ the user.
 .mk
 .na
 \fBupload\fR [\fBabsolute\fR|\fBrelative\fR]
-[\fBclass=\fIclassname\fR].\|.\|. [\fB-\fR] \fR
+[\fBclass=\fIclassname\fR].\|.\|. [\fB-\fR]\fR 
 .ad
 .br
 .na
-\fIroot-dir\fR \fIdirglob\fR \fByes\fR|\fBno\fR \fIowner\fR \fIgroup\fR
-\fImode\fR
+\fIroot-dir dirglob\fR \fByes\fR|\fBno\fR \fIowner group\fR
+.I mode
 .ad
 .br
 .na
@@ -1913,9 +2289,14 @@ the user.
 .ad
 .sp .6
 .RS 4n
-Define a directory with \fIdirglob\fR that permits or denies uploads. If it
+Define a directory with
+.I dirglob
+that permits or denies uploads. If it
 does permit uploads, all newly created files will be owned by \fIowner\fR
-and \fIgroup\fR and will have their permissions set according to \fImode\fR.
+and
+.I group
+and will have their permissions set according to
+.IR mode .
 Existing files that are overwritten will retain their original ownership and
 permissions. Directories are matched on a best-match basis. For example:
 .sp
@@ -1927,32 +2308,55 @@ upload /var/ftp /incoming/gifs yes jlc guest 0600 nodirs
 .fi
 .in -2
 
-would only allow uploads into \fB/incoming\fR and \fB/incoming/gifs\fR.
-Files that were uploaded to \fB/incoming\fR are owned by \fBftp/daemon\fR
+would only allow uploads into
+.B /incoming
+and \fB/incoming/gifs\fR.
+Files that were uploaded to
+.B /incoming
+are owned by \fBftp/daemon\fR
 and have permissions of 0666. Files uploaded to \fB/incoming/gifs\fR are
-owned by \fBjlc/guest\fR and have permissions of 0600. The optional
+owned by
+.B jlc/guest
+and have permissions of 0600. The optional
 "\fBdirs\fR" and "\fBnodirs\fR" keywords can be specified to allow or
-disallow the creation of new subdirectories using the \fBmkdir\fR command.
-If the \fBupload\fR command is used, directory creation is allowed by
+disallow the creation of new subdirectories using the
+.B mkdir
+command.
+If the
+.B upload
+command is used, directory creation is allowed by
 default. To turn it off by default, you must specify a user, group and mode
 followed by the "nodirs" keyword as the first line where the \fBupload\fR
 command is used in this file. If directories are permitted, the optional
 \fId_mode\fR determines the permissions for a newly created directory. If
-\fId_mode\fR is omitted, the permissions are inferred from \fImode\fR. The
-permissions are 0777 if \fImode\fR is also omitted. The \fBupload\fR keyword
-only applies to users who have a home directory of \fIroot-dir\fR.
+\fId_mode\fR is omitted, the permissions are inferred from
+.IR mode .
+The
+permissions are 0777 if
+.I mode
+is also omitted. The
+.B upload
+keyword
+only applies to users who have a home directory of
+.IR root-dir .
 \fIroot-dir\fR may be specified as "*" to match any home directory. The
 \fIowner\fR or \fIgroup\fR may each be specified as "*", in which case any
 uploaded files or directories will be created with the ownership of the
 directory in which they are created. The optional first parameter selects
-whether \fIroot-dir\fR names are interpreted as absolute or relative to the
-current \fBchroot'd\fR environment. The default is to interpret
+whether
+.I root-dir
+names are interpreted as absolute or relative to the
+current
+.B chroot'd
+environment. The default is to interpret
 \fB<root-dir>\fR names as absolute. You can specify any number of
 \fBclass=\fIclassname\fR restrictions. If any are specified, this upload
 clause only takes effect if the current user is a member of one of the
 classes.
 .sp
-In the absence of any matching \fBupload\fR clause, real and guest users
+In the absence of any matching
+.B upload
+clause, real and guest users
 can upload files and make directories, but anonymous users cannot. The mode
 of uploaded files is 0666. For created directories, the mode is 0777. Both
 modes are modified by the current umask setting.
@@ -1962,21 +2366,26 @@ modes are modified by the current umask setting.
 .ne 2
 .mk
 .na
-\fBthroughput\fR \fIroot-dir\fR \fIsubdir-glob\fR \fIfile-glob-list\fR
+.B throughput
+.I "root-dir subdir-glob"
+\fIfile-glob-list\fR
 \fR
 .ad
 .br
 .na
-\fIbytes-per-second\fR \fIbytes-per-second-multiply\fR
-\fIremote-glob-list \fR
+.I bytes-per-second bytes-per-second-multiply
+\fIremote-glob-list\fR 
 .ad
 .sp .6
 .RS 4n
 Define files by means of a comma-separated \fIfile-glob-list\fR in
 \fBsubdir\fR matched by \fIsubdir-glob\fR under \fIroot-dir\fR that have
-restricted transfer throughput of \fIbytes-per-second\fR on download when
+restricted transfer throughput of
+.I bytes-per-second
+on download when
 the remote hostname or remote IP address matches the comma-separated
-\fIremote-glob-list\fR. Entries are matched on a best-match basis. For
+.IR remote-glob-list .
+Entries are matched on a best-match basis. For
 example:
 .sp
 .in +2
@@ -2000,8 +2409,11 @@ only 128 bytes per second, and so on. The string "oo" for the bytes per
 second field means no throughput restriction. A multiply factor of 1.0 or
 "-" means no change of the throughput after every successful transfer. The
 \fIroot-dir\fR here must match the home directory specified in the password
-database . The \fBthroughput\fR keyword only applies to users who have a
-home directory of \fIroot-dir\fR.
+database . The
+.B throughput
+keyword only applies to users who have a
+home directory of
+.IR root-dir .
 .RE
 
 .sp
@@ -2014,7 +2426,9 @@ home directory of \fIroot-dir\fR.
 .RS 4n
 \fIroot-dir\fR specifies the \fBchroot()\fR path for anonymous users. If no
 anonymous-root is matched, the old method of parsing the home directory for
-the FTP user is used. If no \fIclass\fR is specified, this is the root
+the FTP user is used. If no
+.I class
+is specified, this is the root
 directory for anonymous users who do not match any other anonymous-root
 specification. Multiple classes may be specified on this line. If an
 anonymous-root is chosen for the user, the FTP user's home directory in the
@@ -2029,10 +2443,19 @@ anonymous-root /home/localftp localnet
 .fi
 .in -2
 
-causes all anonymous users to be \fBchroot'd\fR to the directory
-\fB/home/ftp\fR. If the FTP user exists in \fB/home/ftp/etc/passwd\fR, their
-initial \fBCWD\fR is that home directory. Anonymous users in the class
-\fBlocalnet\fR, however, are \fBchroot'd\fR to the directory
+causes all anonymous users to be
+.B chroot'd
+to the directory
+\fB/home/ftp\fR. If the FTP user exists in
+.BR /home/ftp/etc/passwd ,
+their
+initial
+.B CWD
+is that home directory. Anonymous users in the class
+.BR localnet ,
+however, are
+.B chroot'd
+to the directory
 \fB/home/localftp\fR and their initial \fBCWD\fR is taken from the FTP
 user's home directory in \fB/home/localftp/etc/passwd\fR.
 .RE
@@ -2047,16 +2470,24 @@ user's home directory in \fB/home/localftp/etc/passwd\fR.
 .RS 4n
 \fIroot-dir\fR specifies the \fBchroot()\fR path for guest users. If no
 guest-root is matched, the old method of parsing the user's home directory
-is used. If no \fIuid-range\fR is specified, this is the root directory for
+is used. If no
+.I uid-range
+is specified, this is the root directory for
 guestusers who do not match any other guest-root specification. Multiple UID
 ranges may be given on this line. If a guest-root is chosen for the user,
 the user's home directory in the \fIroot-dir\fR/etc/passwd\fR file is
 used to determine the initial directory and the home directory in the
-system-wide \fB/etc/passwd\fR is not used. \fIuid-range\fR specifies names
+system-wide
+.B /etc/passwd
+is not used.
+.I uid-range
+specifies names
 or numeric UID values. To use numbers, put a percent sign (\fB%\fR) symbol
 before it or before the range. Ranges are specified by giving the lower and
 upper bounds (inclusive), separated by a dash. If the lower bound is
-omitted, it means \fBall up to\fR. If the upper bound is omitted, it means
+omitted, it means
+.BR "all up to" .
+If the upper bound is omitted, it means
 \fBall starting from\fR. For example:
 .sp
 .in +2
@@ -2067,18 +2498,33 @@ guest-root /home/users/owner/ftp frank
 .fi
 .in -2
 
-causes all guest users to \fBchroot()\fR to \fB/home/users\fR then starts
+causes all guest users to
+.B chroot()
+to
+.B /home/users
+then starts
 each user in the user's home directory, as specifiedin
-\fB/home/users/etc/passwd\fR. Users in the range 100 through 999, inclusive,
-and user sally, will be \fBchroot'd\fR to \fB/home/staff\fR and the
+.BR /home/users/etc/passwd .
+Users in the range 100 through 999, inclusive,
+and user sally, will be
+.B chroot'd
+to \fB/home/staff\fR and the
 \fBCWD\fR will be taken from their entries in \fB/home/staff/etc/passwd\fR.
-The single user frank will be \fBchroot'd\fR to \fB/home/users/owner/ftp\fR
-and the \fBCWD\fR will be from his entry in
+The single user frank will be
+.B chroot'd
+to \fB/home/users/owner/ftp\fR
+and the
+.B CWD
+will be from his entry in
 \fB/home/users/owner/ftp/etc/passwd\fR. 
 .sp
 The order is important for both anonymous-root and guest-root. If a user
 would match multiple clauses, only the first applies; with the exception of
-the clause which has no \fIclass\fR or \fIuid-range\fR, which applies only
+the clause which has no
+.I class
+or
+.IR uid-range ,
+which applies only
 if no other clause matches.
 .RE
 
@@ -2094,7 +2540,7 @@ if no other clause matches.
 .ad
 .br
 .na
-\fBallow-uid\fR \fIuid-range \fR [\fIuid-range\fR.\|.\|.]\fR
+\fBallow-uid\fR \fIuid-range\fR  [\fIuid-range\fR.\|.\|.]\fR
 .ad
 .br
 .na
@@ -2103,11 +2549,18 @@ if no other clause matches.
 .sp .6
 .RS 4n
 Use these clauses to specify UID and GID values that will be denied access
-to the FTP Server. The \fBallow-uid\fR and \fBallow-gid\fR clauses may be
+to the FTP Server. The
+.B allow-uid
+and
+.B allow-gid
+clauses may be
 used to allow access for UID and GID values which would otherwise be denied.
-These checks occur before all others. \fBdeny\fR is checked before
-\fBallow\fR. The default is to allow access. These clauses do not apply to
-anonymous users. Use \fBdefaultserver\fR \fBprivate\fR to deny access to
+These checks occur before all others.
+.B deny
+is checked before
+.BR allow .
+The default is to allow access. These clauses do not apply to
+anonymous users. Use \fBdefaultserver private\fR to deny access to
 anonymous users. In most cases, these clauses obviate the need for an
 \fBftpusers\fR(4) file. For example, the following clauses deny FTP Server
 access to all privileged or special users and groups, except the guest1 user
@@ -2152,15 +2605,23 @@ before the range. A "\fB*\fR" matches all UIDs or GIDs.
 .RS 4n
 These clauses control whether or not real or guest users will be allowed
 access to areas on the FTP site outside their home directories. These
-clauses are not meant to replace the use of \fBguestgroup\fR and
-\fBguestuser\fR. Instead, use these clauses to supplement the operation of
-guests. The \fBunrestricted-uid\fR and \fBunrestricted-gid\fR clauses may be
+clauses are not meant to replace the use of
+.B guestgroup
+and
+.BR guestuser .
+Instead, use these clauses to supplement the operation of
+guests. The
+.B unrestricted-uid
+and
+.B unrestricted-gid
+clauses may be
 used to allow users outside their home directories who would otherwise be
 restricted.
 .sp
 The following example shows the intended use for these clauses. Assume user
 \fBdick\fR has a home directory \fB/home/dick\fR and \fBjane\fR has a home
-directory \fB/home/jane\fR:
+directory
+.BR /home/jane :
 .sp
 .in +2
 .nf
@@ -2169,7 +2630,14 @@ restricted-uid dick jane
 .fi
 .in -2
 
-While both \fBdick\fR and \fBjane\fR are \fBchroot'd\fR to \fB/home\fR,
+While both
+.B dick
+and
+.B jane
+are
+.B chroot'd
+to
+.BR /home ,
 they cannot access each other's files because they are restricted to their
 home directories. However, you should not rely solely upon the FTP
 restrictions to control access. As with all other FTP access rules, you
@@ -2185,7 +2653,9 @@ the \fBftpaccess\fR configuration.
 .ad
 .sp .6
 .RS 4n
-The \fBSITE EXEC\fR feature traditionally limits the number of lines of
+The
+.B "SITE EXEC"
+feature traditionally limits the number of lines of
 output that may be sent to the remote client. Use this clause to set this
 limit. If this clause is omitted, the limit is 20 lines. A limit of 0 (zero)
 implies no limit. Be very careful if you choose to remove the limit. If a
@@ -2201,7 +2671,11 @@ site-exec-max-lines 25
 .fi
 .in -2
 
-limits output from \fBSITE EXEC\fR (and therefore \fBSITE INDEX\fR) to 200
+limits output from
+.B "SITE EXEC"
+(and therefore
+.BR "SITE INDEX" )
+to 200
 lines for remote users, specifies there is no limit at all for local users,
 and sets a limit of 25 lines for all other users.
 .RE
@@ -2216,7 +2690,9 @@ and sets a limit of 25 lines for all other users.
 .RS 4n
 Refuse FTP sessions when the forward and reverse lookups for the remote
 site do not match. Lookups are done using the system's name service as
-configured in \fBnsswitch.conf\fR(4). Display the named file, like a message
+configured in
+.BR nsswitch.conf (4).
+Display the named file, like a message
 file, admonishing the user. If the optional override is specified, allow the
 connection after complaining.
 .RE
@@ -2261,7 +2737,9 @@ server only once.
 
 .sp
 .LP
-Lines that begin with a \fB#\fR sign are treated as comment lines and are
+Lines that begin with a
+.B #
+sign are treated as comment lines and are
 ignored.
 .SH FILES
 .sp
@@ -2278,7 +2756,9 @@ ignored.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -2297,17 +2777,32 @@ Interface StabilityExternal
 .SH SEE ALSO
 .sp
 .LP
-\fBcompress\fR(1), \fBls\fR(1), \fBtar\fR(1), \fBftpaddhost\fR(1M),
+.BR compress (1),
+.BR ls (1),
+.BR tar (1),
+\fBftpaddhost\fR(1M),
 \fBftpconfig\fR(1M), \fBftpshut\fR(1M), \fBin.ftpd\fR(1M), \fBchroot\fR(2),
-\fBnice\fR(2), \fBumask\fR(2), \fBgetgrnam\fR(3C), \fBresolver\fR(3RESOLV),
-\fBftpconversions\fR(4), \fBftpgroups\fR(4), \fBftpservers\fR(4),
-\fBftpusers\fR(4), \fBnsswitch.conf\fR(4), \fBresolv.conf\fR(4),
-\fBtimezone\fR(4), \fBxferlog\fR(4), \fBattributes\fR(5), \fBfnmatch\fR(5)
+.BR nice (2),
+.BR umask (2),
+.BR getgrnam (3C),
+.BR resolver (3RESOLV),
+\fBftpconversions\fR(4),
+.BR ftpgroups (4),
+\fBftpservers\fR(4),
+\fBftpusers\fR(4),
+.BR nsswitch.conf (4),
+\fBresolv.conf\fR(4),
+.BR timezone (4),
+\fBxferlog\fR(4),
+.BR attributes (5),
+\fBfnmatch\fR(5)
 .sp
 .LP
 Crocker, David H. \fIRFC 822, Standard For The Format Of ARPA Internet Text
 Messages\fR. Network Information Center. August 1982.
 .sp
 .LP
-St. Johns, Michael. \fIRFC 931, Authentication Server\fR. Network Working
+St. Johns, Michael.
+.IR "RFC 931, Authentication Server" .
+Network Working
 Group. January 1985.

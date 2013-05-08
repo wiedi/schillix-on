@@ -55,12 +55,20 @@ typedef tnfctl_errcode_t (*tnfctl_probe_op_t)(
 
 .sp
 .LP
-Several predefined functions are available for use as  \fIprobe_op\fR. These
+Several predefined functions are available for use as
+.IR probe_op .
+These
 functions are described in \fBtnfctl_probe_state_get\fR(3TNF).
 .sp
 .LP
-The \fIclientdata\fR supplied in \fBtnfctl_probe_apply()\fR is passed in as
-the last argument of \fIprobe_op\fR. The \fIprobe_hndl\fR in the probe
+The
+.I clientdata
+supplied in \fBtnfctl_probe_apply()\fR is passed in as
+the last argument of
+.IR probe_op .
+The
+.I probe_hndl
+in the probe
 operation function can be used to query or change the state of  the probe.  See
 \fBtnfctl_probe_state_get\fR(3TNF). The  \fIprobe_op\fR function should return
 \fBTNFCTL_ERR_NONE\fR upon success.  It can also return an error code,  which
@@ -69,22 +77,47 @@ and return with the same error code. Note that there are five (5) error codes
 reserved that the client can use for its own semantics. See  \fBERRORS\fR.
 .sp
 .LP
-The lifetime of \fIprobe_hndl\fR is the same as the lifetime of \fIhndl\fR. It
-is good until \fIhndl\fR is closed by \fBtnfctl_close\fR(3TNF). Do not confuse
-a \fIprobe_hndl\fR with \fIhndl\fR. The \fIprobe_hndl\fR refers to a particular
-probe, while \fIhndl\fR refers to a process or the kernel. If \fIprobe_hndl\fR
+The lifetime of
+.I probe_hndl
+is the same as the lifetime of
+.IR hndl .
+It
+is good until
+.I hndl
+is closed by \fBtnfctl_close\fR(3TNF). Do not confuse
+a
+.I probe_hndl
+with
+.IR hndl .
+The
+.I probe_hndl
+refers to a particular
+probe, while
+.I hndl
+refers to a process or the kernel. If \fIprobe_hndl\fR
 is used in another \fBlibtnfctl\fR(3TNF) interface, and it references a probe
-in a library that has been  dynamically closed (see \fBdlclose\fR(3C)), then
-the error code \fBTNFCTL_ERR_INVALIDPROBE\fR will be returned by that
+in a library that has been  dynamically closed (see
+.BR dlclose (3C)),
+then
+the error code
+.B TNFCTL_ERR_INVALIDPROBE
+will be returned by that
 interface.
 .sp
 .LP
 \fBtnfctl_probe_apply_ids()\fR is very similar to \fBtnfctl_probe_apply()\fR.
-The difference is that \fIprobe_op\fR is called only for probes that match a
-probe id specified in the array of integers referenced by \fIprobe_ids\fR. The
-number of probe ids in the array should be specified in \fIprobe_count\fR. Use
+The difference is that
+.I probe_op
+is called only for probes that match a
+probe id specified in the array of integers referenced by
+.IR probe_ids .
+The
+number of probe ids in the array should be specified in
+.IR probe_count .
+Use
 \fBtnfctl_probe_state_get()\fR to get the  \fIprobe_id\fR that corresponds to
-the \fIprobe_handl\fR.
+the
+.IR probe_handl .
 .SH RETURN VALUES
 .sp
 .LP
@@ -99,7 +132,7 @@ The following errors apply to both \fBtnfctl_probe_apply()\fR and
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_INTERNAL\fR
+.B TNFCTL_ERR_INTERNAL
 .ad
 .RS 23n
 .rt
@@ -110,7 +143,7 @@ An internal error occurred.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_USR1\fR
+.B TNFCTL_ERR_USR1
 .ad
 .RS 23n
 .rt
@@ -121,7 +154,7 @@ Error code reserved for user.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_USR2\fR
+.B TNFCTL_ERR_USR2
 .ad
 .RS 23n
 .rt
@@ -132,7 +165,7 @@ Error code reserved for user.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_USR3\fR
+.B TNFCTL_ERR_USR3
 .ad
 .RS 23n
 .rt
@@ -143,7 +176,7 @@ Error code reserved for user.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_USR4\fR
+.B TNFCTL_ERR_USR4
 .ad
 .RS 23n
 .rt
@@ -154,7 +187,7 @@ Error code reserved for user.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_USR5\fR
+.B TNFCTL_ERR_USR5
 .ad
 .RS 23n
 .rt
@@ -164,7 +197,8 @@ Error code reserved for user.
 .sp
 .LP
 \fBtnfctl_probe_apply()\fR and  \fBtnfctl_probe_apply_ids()\fR also return any
-error returned by the callback function \fIprobe_op\fR.
+error returned by the callback function
+.IR probe_op .
 .sp
 .LP
 The following errors apply only to  \fBtnfctl_probe_apply_ids()\fR:
@@ -172,17 +206,18 @@ The following errors apply only to  \fBtnfctl_probe_apply_ids()\fR:
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_INVALIDPROBE\fR
+.B TNFCTL_ERR_INVALIDPROBE
 .ad
 .RS 27n
 .rt
 The probe handle is no longer valid.  For example, the probe is in a  library
-that has been closed by \fBdlclose\fR(3C).
+that has been closed by
+.BR dlclose (3C).
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fREnabling Probes
+\fBExample 1\fR Enabling Probes
 .sp
 .LP
 To enable all probes:
@@ -195,7 +230,7 @@ tnfctl_probe_apply(hndl, tnfctl_probe_enable, NULL);
 .in -2
 
 .LP
-\fBExample 2 \fRDisabling Probes
+\fBExample 2\fR Disabling Probes
 .sp
 .LP
 To disable the probes that match a certain pattern in the probe attribute
@@ -227,7 +262,9 @@ Note that these examples do not have any error handling code.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -246,10 +283,13 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBprex\fR(1), \fBTNF_PROBE\fR(3TNF), \fBdlclose\fR(3C), \fBdlopen\fR(3C),
+.BR prex (1),
+.BR TNF_PROBE (3TNF),
+.BR dlclose (3C),
+.BR dlopen (3C),
 \fBlibtnfctl\fR(3TNF), \fBtnfctl_close\fR(3TNF),
 \fBtnfctl_probe_state_get\fR(3TNF), \fBtracing\fR(3TNF),
 \fBtnf_kernel_probes\fR(4), \fBattributes\fR(5)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide

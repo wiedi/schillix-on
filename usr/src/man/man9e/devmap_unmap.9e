@@ -43,7 +43,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdhp\fR
+.I dhp
 .ad
 .RS 14n
 .rt
@@ -54,7 +54,7 @@ An opaque mapping handle that the system uses to describe the mapping.
 .ne 2
 .mk
 .na
-\fIpvtp\fR
+.I pvtp
 .ad
 .RS 14n
 .rt
@@ -77,7 +77,7 @@ begins.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 14n
 .rt
@@ -88,7 +88,7 @@ Length (in bytes) of the memory being unmapped.
 .ne 2
 .mk
 .na
-\fInew_dhp1\fR
+.I new_dhp1
 .ad
 .RS 14n
 .rt
@@ -100,7 +100,7 @@ that ends at (\fIoff\fR - 1) . \fInew_dhp1\fR may be  \fINULL\fR.
 .ne 2
 .mk
 .na
-\fInew_pvtp1\fR
+.I new_pvtp1
 .ad
 .RS 14n
 .rt
@@ -113,12 +113,14 @@ data for the new region that ends at (\fIoff\fR - 1); ignored if
 .ne 2
 .mk
 .na
-\fInew_dhp2\fR
+.I new_dhp2
 .ad
 .RS 14n
 .rt
 The opaque mapping handle that the system uses to describe the new region
-that begins at (\fIoff \fR + \fIlen\fR); \fInew_dhp2\fR may be  \fINULL\fR.
+that begins at (\fIoff\fR  +
+.IR len );
+\fInew_dhp2\fR may be  \fINULL\fR.
 
 .RE
 
@@ -126,12 +128,14 @@ that begins at (\fIoff \fR + \fIlen\fR); \fInew_dhp2\fR may be  \fINULL\fR.
 .ne 2
 .mk
 .na
-\fInew_pvtp2\fR
+.I new_pvtp2
 .ad
 .RS 14n
 .rt
 A pointer to be filled in by the driver with the driver private mapping
-data for the new region that begins at (\fIoff\fR + \fIlen\fR);  ignored if
+data for the new region that begins at (\fIoff\fR +
+.IR len );
+ignored if
 \fInew_dhp2\fR is  \fINULL\fR.
 .RE
 
@@ -140,45 +144,80 @@ data for the new region that begins at (\fIoff\fR + \fIlen\fR);  ignored if
 .LP
 \fBdevmap_unmap()\fR is called when the system removes the mapping in the
 range [ \fIoff\fR, \fIoff\fR + \fIlen\fR ], such as in the  \fBmunmap\fR(2)
-or \fBexit\fR(2) system calls. Device drivers use \fBdevmap_unmap()\fR to
-free up the resources allocated in \fBdevmap_map\fR(9E).
+or
+.BR exit (2)
+system calls. Device drivers use
+.B devmap_unmap()
+to
+free up the resources allocated in
+.BR devmap_map (9E).
 .sp
 .LP
 \fIdhp\fR is the mapping handle that uniquely identifies the mapping.   The
 driver stores the mapping attributes in the driver's private data,
-\fIpvtp\fR, when the mapping is created.  See \fBdevmap_map\fR(9E) for
+.IR pvtp ,
+when the mapping is created.  See \fBdevmap_map\fR(9E) for
 details. 
 .sp
 .LP
 \fIoff\fR and \fIlen\fR define the range to be affected by
-\fBdevmap_unmap()\fR. This range is within the boundary of the mapping
-described by \fIdhp\fR.
+.BR devmap_unmap() .
+This range is within the boundary of the mapping
+described by
+.IR dhp .
 .sp
 .LP
-If the range [ \fIoff\fR, \fIoff\fR + \fIlen\fR ] covers the entire
-mapping, the system passes  \fINULL\fR to  \fInew_dhp1\fR, \fInew_pvtp1\fR,
-\fInew_dhp2\fR, and \fInew_pvtp2\fR. The system expects device drivers to
+If the range [
+.IR off ,
+\fIoff\fR +
+.I len
+] covers the entire
+mapping, the system passes 
+.I NULL
+to
+.IR new_dhp1 ,
+.IR new_pvtp1 ,
+.IR new_dhp2 ,
+and
+.IR new_pvtp2 .
+The system expects device drivers to
 free all resources allocated for this  mapping.
 .sp
 .LP
-If \fIoff\fR is at the beginning of the mapping and  \fIlen\fR does not
-cover the entire mapping, the system sets  \fINULL\fR to \fInew_dhp1\fR and
-to \fInew_pvtp1\fR. The system expects the drivers to allocate new driver
-private data for the region that starts at \fIoff\fR + \fIlen\fR and to set
+If \fIoff\fR is at the beginning of the mapping and 
+.I len
+does not
+cover the entire mapping, the system sets 
+.I NULL
+to
+.I new_dhp1
+and
+to
+.IR new_pvtp1 .
+The system expects the drivers to allocate new driver
+private data for the region that starts at \fIoff\fR +
+.I len
+and to set
 \fI*new_pvtp2\fR to point to it. \fInew_dhp2\fR is the mapping handle of the
 newly mapped object.
 .sp
 .LP
 If \fIoff\fR is not at the beginning of the mapping, but \fIoff\fR +
 \fIlen\fR is at the end of the mapping the system passes  \fINULL\fR to
-\fInew_dhp2\fR and \fInew_pvtp2\fR. The system then expects the drivers to
+\fInew_dhp2\fR and
+.IR new_pvtp2 .
+The system then expects the drivers to
 allocate new driver private data for the region that begins at the beginning
-of the mapping (for example, stored in \fIpvtp\fR) and to set
+of the mapping (for example, stored in
+.IR pvtp )
+and to set
 \fI*new_pvtp1\fR to point to it. \fInew_dhp1\fR is the mapping handle of the
 newly mapped object.
 .sp
 .LP
-The drivers should free up the driver private data, \fIpvtp\fR, previously
+The drivers should free up the driver private data,
+.IR pvtp ,
+previously
 allocated in \fBdevmap_map\fR(9E) before returning to the system.
 .SH EXAMPLES
 .LP
@@ -230,8 +269,10 @@ xxdevmap_unmap(devmap_cookie_t dhp, void *pvtp, offset_t off,
 .SH SEE ALSO
 .sp
 .LP
-\fBexit\fR(2), \fBmunmap\fR(2), \fBdevmap_map\fR(9E),
-\fBdevmap_callback_ctl\fR(9S) 
+.BR exit (2),
+.BR munmap (2),
+.BR devmap_map (9E),
+.BR devmap_callback_ctl (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

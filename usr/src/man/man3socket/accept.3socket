@@ -35,47 +35,89 @@ accept \- accept a connection on a socket
 .SH DESCRIPTION
 .sp
 .LP
-The argument \fIs\fR is a socket that has been created with
-\fBsocket\fR(3SOCKET) and bound to an address with \fBbind\fR(3SOCKET), and
-that is listening for connections after a call to \fBlisten\fR(3SOCKET). The
+The argument
+.I s
+is a socket that has been created with
+.BR socket (3SOCKET)
+and bound to an address with
+.BR bind "(3SOCKET), and"
+that is listening for connections after a call to
+.BR listen "(3SOCKET). The"
 \fBaccept()\fR function extracts the first connection on the queue of
 pending connections, creates a new socket with the properties of \fIs\fR,
-and allocates a new file descriptor, \fIns\fR, for the socket. If no pending
+and allocates a new file descriptor,
+.IR ns ,
+for the socket. If no pending
 connections are present on the queue and the socket is not marked as
-non-blocking, \fBaccept()\fR blocks the caller until a connection is
+non-blocking,
+.B accept()
+blocks the caller until a connection is
 present. If the socket is marked as non-blocking and no pending connections
-are present on the queue, \fBaccept()\fR returns an error as described
-below. The \fBaccept()\fR function uses the \fBnetconfig\fR(4) file to
-determine the \fBSTREAMS\fR device file name associated with \fIs\fR.  This
+are present on the queue,
+.B accept()
+returns an error as described
+below. The
+.B accept()
+function uses the
+.BR netconfig (4)
+file to
+determine the
+.B STREAMS
+device file name associated with
+.IR s .
+This
 is the device on which the connect indication will be accepted. The accepted
-socket, \fIns\fR, is used to read and write data to and from the socket that
-connected to \fIns\fR. It is not used to accept more connections. The
+socket,
+.IR ns ,
+is used to read and write data to and from the socket that
+connected to
+.IR ns .
+It is not used to accept more connections. The
 original socket (\fIs\fR) remains open for accepting further connections.
 .sp
 .LP
-The argument \fIaddr\fR is a result parameter that is filled in with the
+The argument
+.I addr
+is a result parameter that is filled in with the
 address of the connecting entity as it is known to the communications layer.
-The exact format of the \fIaddr\fR parameter is determined by the domain in
+The exact format of the
+.I addr
+parameter is determined by the domain in
 which the communication occurs.
 .sp
 .LP
-The argument \fIaddrlen\fR is a value-result parameter. Initially, it
-contains the amount of space pointed to by \fIaddr\fR; on return it contains
+The argument
+.I addrlen
+is a value-result parameter. Initially, it
+contains the amount of space pointed to by
+.IR addr ;
+on return it contains
 the length in bytes of the address returned.
 .sp
 .LP
-The \fBaccept()\fR function is used with connection-based socket types,
-currently with \fBSOCK_STREAM\fR.
+The
+.B accept()
+function is used with connection-based socket types,
+currently with
+.BR SOCK_STREAM .
 .sp
 .LP
-It is possible to \fBselect\fR(3C) or \fBpoll\fR(2) a socket for the
-purpose of an \fBaccept()\fR by selecting or polling it for a read. However,
+It is possible to
+.BR select "(3C) or"
+.BR poll (2)
+a socket for the
+purpose of an
+.B accept()
+by selecting or polling it for a read. However,
 this will only indicate when a connect indication is pending; it is still
-necessary to call \fBaccept()\fR.
+necessary to call
+.BR accept() .
 .SH RETURN VALUES
 .sp
 .LP
-The \fBaccept()\fR function returns \fB\(mi1\fR on error. If it succeeds,
+The
+.B accept()
+function returns \fB\(mi1\fR on error. If it succeeds,
 it returns a non-negative integer that is a descriptor for the accepted
 socket.
 .SH ERRORS
@@ -86,7 +128,7 @@ socket.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
@@ -97,11 +139,13 @@ The descriptor is invalid.
 .ne 2
 .mk
 .na
-\fBECONNABORTED\fR
+.B ECONNABORTED
 .ad
 .RS 16n
 .rt
-The remote side aborted the connection before the \fBaccept()\fR operation
+The remote side aborted the connection before the
+.B accept()
+operation
 completed.
 .RE
 
@@ -109,29 +153,35 @@ completed.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-The \fIaddr\fR parameter or the \fIaddrlen\fR parameter is invalid.
+The
+.I addr
+parameter or the
+.I addrlen
+parameter is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 16n
 .rt
-The \fBaccept()\fR attempt was interrupted by the delivery of a signal.
+The
+.B accept()
+attempt was interrupted by the delivery of a signal.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 16n
 .rt
@@ -142,11 +192,13 @@ The per-process descriptor table is full.
 .ne 2
 .mk
 .na
-\fBENODEV\fR
+.B ENODEV
 .ad
 .RS 16n
 .rt
-The protocol family and type corresponding to  \fIs\fR could not be found
+The protocol family and type corresponding to 
+.I s
+could not be found
 in the \fBnetconfig\fR file.
 .RE
 
@@ -154,7 +206,7 @@ in the \fBnetconfig\fR file.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 16n
 .rt
@@ -165,11 +217,13 @@ There was insufficient user memory available to complete the operation.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
-There were insufficient \fBSTREAMS\fR resources available to complete the
+There were insufficient
+.B STREAMS
+resources available to complete the
 operation.
 .RE
 
@@ -177,7 +231,7 @@ operation.
 .ne 2
 .mk
 .na
-\fBENOTSOCK\fR
+.B ENOTSOCK
 .ad
 .RS 16n
 .rt
@@ -188,22 +242,25 @@ The descriptor does not reference a socket.
 .ne 2
 .mk
 .na
-\fBEOPNOTSUPP\fR
+.B EOPNOTSUPP
 .ad
 .RS 16n
 .rt
-The referenced socket is not of type \fBSOCK_STREAM\fR.
+The referenced socket is not of type
+.BR SOCK_STREAM .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPROTO\fR
+.B EPROTO
 .ad
 .RS 16n
 .rt
-A protocol error has occurred; for example, the \fBSTREAMS\fR protocol
+A protocol error has occurred; for example, the
+.B STREAMS
+protocol
 stack has not been initialized or the connection has already been
 released.
 .RE
@@ -212,7 +269,7 @@ released.
 .ne 2
 .mk
 .na
-\fBEWOULDBLOCK\fR
+.B EWOULDBLOCK
 .ad
 .RS 16n
 .rt
@@ -223,7 +280,9 @@ accepted.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -240,6 +299,11 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBpoll\fR(2), \fBbind\fR(3SOCKET), \fBconnect\fR(3SOCKET),
-\fBlisten\fR(3SOCKET), \fBselect\fR(3C), \fBsocket.h\fR(3HEAD),
-\fBsocket\fR(3SOCKET), \fBnetconfig\fR(4), \fBattributes\fR(5)
+.BR poll (2),
+.BR bind (3SOCKET),
+.BR connect (3SOCKET),
+.BR listen (3SOCKET),
+.BR select (3C),
+.BR socket.h (3HEAD),
+.BR socket (3SOCKET),
+\fBnetconfig\fR(4), \fBattributes\fR(5)

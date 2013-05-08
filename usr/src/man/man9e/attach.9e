@@ -41,7 +41,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 7n
 .rt
@@ -52,12 +52,17 @@ A pointer to the device's \fBdev_info\fR structure.
 .ne 2
 .mk
 .na
-\fIcmd\fR
+.I cmd
 .ad
 .RS 7n
 .rt
-Attach type. Possible values are \fBDDI_ATTACH\fR and \fBDDI_RESUME\fR.
-Other values are reserved. The driver must return \fBDDI_FAILURE\fR if
+Attach type. Possible values are
+.B DDI_ATTACH
+and
+.BR DDI_RESUME .
+Other values are reserved. The driver must return
+.B DDI_FAILURE
+if
 reserved values are passed to it.
 .RE
 
@@ -65,41 +70,67 @@ reserved values are passed to it.
 .sp
 .LP
 The \fBattach\fR(9E) function is the device-specific initialization entry
-point. This entry point is \fBrequired\fR and must be written.
+point. This entry point is
+.B required
+and must be written.
 .SS "DDI_ATTACH"
 .sp
 .LP
-The \fBDDI_ATTACH\fR command must be provided in the \fBattach\fR(9E) entry
-point. \fBDDI_ATTACH\fR is used to initialize a given device instance. When
-\fBattach\fR(9E) is called with \fIcmd\fR set to \fBDDI_ATTACH\fR, all
+The
+.B DDI_ATTACH
+command must be provided in the
+.BR attach "(9E) entry"
+point.
+.B DDI_ATTACH
+is used to initialize a given device instance. When
+.BR attach (9E)
+is called with
+.I cmd
+set to
+.BR DDI_ATTACH ,
+all
 normal kernel services (such as \fBkmem_alloc\fR(9F)) are available for use
 by the driver. Device interrupts are not blocked when attaching a device to
 the system.
 .sp
 .LP
 The \fBattach\fR(9E) function is called once for each instance of the
-device on the system with \fIcmd\fR set to \fBDDI_ATTACH\fR. Until
-\fBattach\fR(9E) succeeds, the only driver entry point which may be called
+device on the system with
+.I cmd
+set to
+.BR DDI_ATTACH .
+Until
+.BR attach (9E)
+succeeds, the only driver entry point which may be called
 is \fBgetinfo\fR(9E). See the \fIWriting Device Drivers\fR for more
 information. The instance number may be obtained using
-\fBddi_get_instance\fR(9F).
+.BR ddi_get_instance (9F).
 .sp
 .LP
 At attach time, all components of a power-manageable device are assumed to
 be at unknown levels. Before using the device, the driver needs to bring the
 required component(s) to a known power level. The \fBpm_raise_power\fR(9F)
 function can be used to set the power level of a component. This function
-must not be called before data structures referenced in \fBpower\fR(9E) have
+must not be called before data structures referenced in
+.BR power "(9E) have"
 been initialized.
 .SS "DDI_RESUME"
 .sp
 .LP
-The \fBattach()\fR function may be called with \fIcmd\fR set to
+The
+.B attach()
+function may be called with
+.I cmd
+set to
 \fBDDI_RESUME\fR after \fBdetach\fR(9E) has been successfully called with
 \fIcmd\fR set to \fBDDI_SUSPEND\fR.
 .sp
 .LP
-When called with \fIcmd\fR set to \fBDDI_RESUME\fR, \fBattach()\fR must
+When called with
+.I cmd
+set to
+.BR DDI_RESUME ,
+\fBattach()\fR must
 restore the hardware state of a device (power may have been removed from the
 device), allow pending requests to continue, and service new requests. In
 this case, the driver must not make any assumptions about the state of the
@@ -110,47 +141,66 @@ level of components.
 If the device driver uses the automatic device Power Management interfaces
 (driver exports the \fBpm-components\fR(9P) property), the Power Management
 framework sets its notion of the power level of each component of a device
-to \fBunknown\fR while processing a \fBDDI_RESUME\fR command.
+to
+.B unknown
+while processing a
+.B DDI_RESUME
+command.
 .sp
 .LP
-The driver can deal with components during \fBDDI_RESUME\fR in one of the
+The driver can deal with components during
+.B DDI_RESUME
+in one of the
 following ways:
 .RS +4
 .TP
 1.
 If the driver can determine the power level of the component without having
-to power it up (for example, by calling \fBddi_peek\fR(9F) or some other
+to power it up (for example, by calling
+.BR ddi_peek (9F)
+or some other
 device-specific method) then it should notify the power level to the
-framework by calling \fBpm_power_has_changed\fR(9F).
+framework by calling
+.BR pm_power_has_changed (9F).
 .RE
 .RS +4
 .TP
 2.
 The driver must also set its own notion of the power level of the component
-to \fBunknown\fR. The system will consider the component idle or busy based
-on the most recent call to \fBpm_idle_component\fR(9F) or
-\fBpm_busy_component\fR(9F) for that component. If the component is idle for
+to
+.BR unknown .
+The system will consider the component idle or busy based
+on the most recent call to
+.BR pm_idle_component "(9F) or"
+.BR pm_busy_component (9F)
+for that component. If the component is idle for
 sufficient time, the framework will call into the driver's \fBpower\fR(9E)
 entry point to turn the component off. If the driver needs to access the
-device, then it must call \fBpm_raise_power\fR(9F) to bring the component up
+device, then it must call
+.BR pm_raise_power (9F)
+to bring the component up
 to the level needed for the device access to succeed. The driver must honor
 any request to set the power level of the component, since it cannot make
 any assumption about what power level the component has (or it should have
-called \fBpm_power_has_changed\fR(9F) as outlined above). As a special case
+called
+.BR pm_power_has_changed "(9F) as outlined above). As a special case"
 of this, the driver may bring the component to a known state because it
-wants to perform an operation on the device as part of its \fBDDI_RESUME\fR
+wants to perform an operation on the device as part of its
+.BR DDI_RESUME
 processing (such as loading firmware so that it can detect hot-plug
 events).
 .RE
 .SH RETURN VALUES
 .sp
 .LP
-The \fBattach()\fR function returns:
+The
+.B attach()
+function returns:
 .sp
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 15n
 .rt
@@ -161,7 +211,7 @@ Successful completion
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 15n
 .rt
@@ -171,7 +221,9 @@ Operation failed
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -188,11 +240,20 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBcpr\fR(7), \fBpm\fR(7D), \fBpm\fR(9P), \fBpm-components\fR(9P),
-\fBdetach\fR(9E), \fBgetinfo\fR(9E), \fBidentify\fR(9E), \fBopen\fR(9E),
-\fBpower\fR(9E), \fBprobe\fR(9E), \fBddi_add_intr\fR(9F),
-\fBddi_create_minor_node\fR(9F), \fBddi_get_instance\fR(9F),
-\fBddi_map_regs\fR(9F), \fBkmem_alloc\fR(9F), \fBpm_raise_power\fR(9F)
+.BR cpr (7),
+.BR pm (7D),
+.BR pm (9P),
+.BR pm-components (9P),
+.BR detach (9E),
+\fBgetinfo\fR(9E), \fBidentify\fR(9E), \fBopen\fR(9E),
+.BR power (9E),
+.BR probe (9E),
+.BR ddi_add_intr (9F),
+.BR ddi_create_minor_node (9F),
+.BR ddi_get_instance (9F),
+.BR ddi_map_regs (9F),
+.BR kmem_alloc (9F),
+.BR pm_raise_power (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

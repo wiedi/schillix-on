@@ -30,21 +30,31 @@ ipnet, lo0 \- ipnet device driver
 .SH DESCRIPTION
 .sp
 .LP
-The \fBipnet\fR device driver creates, removes and manages nodes in the
+The
+.B ipnet
+device driver creates, removes and manages nodes in the
 \fB/dev/ipnet/\fR namespace.
 .sp
 .LP
-A node is created in \fB/dev/ipnet\fR for every IP interface on the system,
+A node is created in
+.B /dev/ipnet
+for every IP interface on the system,
 including interfaces that exist only in software and for which there is no
-hardware device. The \fBipnet\fR device also provides access to all IP
+hardware device. The
+.B ipnet
+device also provides access to all IP
 traffic to and from the system. To provide access to packets that are
-internally looped-back in IP, the \fBipnet\fR driver creates a
+internally looped-back in IP, the
+.B ipnet
+driver creates a
 \fB/dev/lo0\fR DLPI device.
 .SH APPLICATION PROGRAMMING INTERFACE
 .SS "ipnet and DLPI"
 .sp
 .LP
-Device nodes created in \fB/dev/ipnet\fR are DLPI style-1 devices. All
+Device nodes created in
+.B /dev/ipnet
+are DLPI style-1 devices. All
 \fBM_PROTO\fR and \fBM_PCPROTO\fR-type messages are interpreted as DLPI
 primitives. Because the device is read-only and packets can only be observed
 by opening them, the following subset of DLPI primitives is supported:
@@ -62,19 +72,29 @@ DLIOCRAW
 
 .sp
 .LP
-The values returned by the driver in the \fBDL_INFO_ACK\fR primitive in
-response to the \fBDL_INFO_REQ\fR are:
+The values returned by the driver in the
+.B DL_INFO_ACK
+primitive in
+response to the
+.B DL_INFO_REQ
+are:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Maximum \fBSDU\fR is \fBINT_MAX\fR
+Maximum
+.B SDU
+is
+.BR INT_MAX
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Minimum \fBSDU\fR is \fB0\fR.
+Minimum
+.B SDU
+is
+.BR 0 .
 .RE
 .RS +4
 .TP
@@ -98,7 +118,8 @@ Minimum \fBSDU\fR is \fB0\fR.
 .TP
 .ie t \(bu
 .el o
-Service mode is \fBDL_CLDLS\fR.
+Service mode is
+.BR DL_CLDLS .
 .RE
 .RS +4
 .TP
@@ -111,42 +132,72 @@ QOS fields are 0.
 .TP
 .ie t \(bu
 .el o
-Provider style is \fBDL_STYLE1\fR.
+Provider style is
+.BR DL_STYLE1 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Version is \fBDL_VERSION_2\fR.
+Version is
+.BR DL_VERSION_2 .
 .RE
 .sp
 .LP
-The \fB/dev/ipnet/*\fR and \fB/dev/lo0\fR devices only accept
+The
+.B /dev/ipnet/*
+and
+.B /dev/lo0
+devices only accept
 \fBDL_BIND_REQ\fR requests for SAPs 4 (IPv4 packets), 6 (IPv6 packets), or 0
-(all IP packets). \fBDL_BIND_REQ\fR requests for other SAP values result in
-a \fBDL_ERROR_ACK\fR of \fBDL_BADSAP\fR.
+(all IP packets).
+.B DL_BIND_REQ
+requests for other SAP values result in
+a
+.B DL_ERROR_ACK
+of
+.BR DL_BADSAP .
 .SS "ipnet primitives"
 .sp
 .LP
-For \fB/dev/ipnet/*\fR devices, the \fBDL_PROMISCON_REQ\fR and
+For
+.B /dev/ipnet/*
+devices, the
+.B DL_PROMISCON_REQ
+and
 \fBDL_PROMISCOFF_REQ\fR primitives with the \fBDL_PROMISC_PHYS\fR flag set
-in the \fBdl_level\fR field enables/disables the reception of all packets.
+in the
+.B dl_level
+field enables/disables the reception of all packets.
 When disabled, only packets with addresses matching any of the configured
 addresses on the IP interface are received. When used with the
 \fBDL_PROMISC_MULTI\fR flag set, reception of all multicast group addresses
-can be enabled/disabled. \fBDL_PROMISC_PHYS\fR and \fBDL_PROMISC_MULTI\fR
-have no effect for \fB/dev/lo0\fR. When the \fBDL_PROMISC_SAP\fR flag is
+can be enabled/disabled.
+.B DL_PROMISC_PHYS
+and
+.BR DL_PROMISC_MULTI
+have no effect for
+.BR /dev/lo0 .
+When the
+.B DL_PROMISC_SAP
+flag is
 set, reception of all IPv4/IPv6 can be enabled/disabled.
 .sp
 .LP
-The \fBDLIOCRAW\fR ioctl is supported but has no effect on the data
+The
+.B DLIOCRAW
+ioctl is supported but has no effect on the data
 returned from the device.
 .sp
 .LP
-The \fBDL_IOC_IPNET_INFO\fR ioctl enables/disables the inclusion of a
+The
+.B DL_IOC_IPNET_INFO
+ioctl enables/disables the inclusion of a
 \fBdl_ipnetinfo_t\fR structure that is prepended to the IP header when
 receiving packet data. When enabled, a non-zero integer is returned
-reflecting the current \fBDL_IOC_IPNET_INFO\fR version. The
+reflecting the current
+.B DL_IOC_IPNET_INFO
+version. The
 \fBdl_ipnetinfo_t\fR data structure is defined in \fB<sys/dlpi.h>\fR and
 includes the following fields:
 .sp
@@ -162,16 +213,20 @@ uint64_t dli_dstzone;  /* packet dest zone ID (if any) */
 
 .sp
 .LP
-The current \fBdli_version\fR is 1. To robustly support future
+The current
+.B dli_version
+is 1. To robustly support future
 \fBdl_ipnetinfo_t\fR versions, consumers should check that \fBdli_version\fR
-is a value they recognize, and must use the \fBdli_len\fR field to advance
+is a value they recognize, and must use the
+.B dli_len
+field to advance
 past the \fBdl_ipnetinfo_t\fR header.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB/dev/ipnet/*, /dev/lo0\fR
+.B /dev/ipnet/*, /dev/lo0
 .ad
 .RS 26n
 .rt
@@ -192,7 +247,9 @@ Configuration file.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -210,4 +267,5 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBdlpi\fR(7P)
+.BR attributes (5),
+.BR dlpi (7P)

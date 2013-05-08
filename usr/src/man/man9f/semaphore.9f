@@ -61,13 +61,15 @@ semaphore, sema_init, sema_destroy, sema_p, sema_p_sig, sema_v, sema_tryp
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris \fBDDI\fR specific (Solaris \fBDDI\fR).
+Solaris
+.B DDI
+specific (Solaris \fBDDI\fR).
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIsp\fR
+.I sp
 .ad
 .RS 8n
 .rt
@@ -78,7 +80,7 @@ A pointer to a semaphore, type \fBksema_t\fR.
 .ne 2
 .mk
 .na
-\fIval\fR
+.I val
 .ad
 .RS 8n
 .rt
@@ -89,7 +91,7 @@ Initial value for semaphore.
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 8n
 .rt
@@ -101,11 +103,13 @@ Descriptive string. This is obsolete and should be \fINULL\fR.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 8n
 .rt
-Variant type of the semaphore. Currently, only \fBSEMA_DRIVER\fR is
+Variant type of the semaphore. Currently, only
+.B SEMA_DRIVER
+is
 supported.
 .RE
 
@@ -113,7 +117,7 @@ supported.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 8n
 .rt
@@ -124,34 +128,52 @@ Type-specific argument; should be \fINULL\fR.
 .sp
 .LP
 These functions implement counting semaphores as described by Dijkstra. A
-semaphore has a value which is atomically decremented by \fBsema_p()\fR and
-atomically incremented by \fBsema_v()\fR. The value must always be greater
-than or equal to zero. If \fBsema_p()\fR is called and the value is zero,
-the calling thread is blocked until another thread performs a \fBsema_v()\fR
+semaphore has a value which is atomically decremented by
+.B sema_p()
+and
+atomically incremented by
+.BR sema_v() .
+The value must always be greater
+than or equal to zero. If
+.B sema_p()
+is called and the value is zero,
+the calling thread is blocked until another thread performs a
+.BR sema_v()
 operation on the semaphore.
 .sp
 .LP
-Semaphores are initialized by calling \fBsema_init()\fR. The argument,
-\fBval\fR, gives the initial value for the semaphore. The semaphore storage
+Semaphores are initialized by calling
+.BR sema_init() .
+The argument,
+.BR val ,
+gives the initial value for the semaphore. The semaphore storage
 is provided by the caller but more may be dynamically allocated, if
-necessary, by \fBsema_init()\fR. For this reason, \fBsema_destroy()\fR
+necessary, by
+.BR sema_init() .
+.RB "For this reason," " sema_destroy()"
 should be called before deallocating the storage containing the semaphore.
 .sp
 .LP
-The \fBsema_p_sig()\fR function decrements the semaphore, as does
-\fBsema_p()\fR. However, if the semaphore value is zero, \fBsema_p_sig()\fR
+The
+.B sema_p_sig()
+function decrements the semaphore, as does
+.BR sema_p() .
+However, if the semaphore value is zero, \fBsema_p_sig()\fR
 will return without decrementing the value if a signal (that is, from
-\fBkill\fR(2)) is pending for the thread.
+.BR kill (2))
+is pending for the thread.
 .sp
 .LP
-The \fBsema_tryp()\fR function will decrement the semaphore value only if
+The
+.B sema_tryp()
+function will decrement the semaphore value only if
 it is greater than zero, and will not block.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -163,7 +185,7 @@ zero.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -175,19 +197,31 @@ detected a pending signal.
 .sp
 .LP
 These functions can be called from user, interrupt, or kernel context,
-except for \fBsema_init()\fR and \fBsema_destroy()\fR, which can be called
+except for
+.B sema_init()
+and
+.BR sema_destroy() ,
+which can be called
 from user or kernel context only. None of these functions can be called from
-a high-level interrupt context. In most cases, \fBsema_v()\fR and
+a high-level interrupt context. In most cases,
+.B sema_v()
+and
 \fBsema_p()\fR should not be called from any interrupt context.
 .sp
 .LP
-If \fBsema_p()\fR is used from interrupt context, lower-priority interrupts
+If
+.B sema_p()
+is used from interrupt context, lower-priority interrupts
 will not be serviced during the wait. This means that if the thread that
-will eventually perform the \fBsema_v()\fR becomes blocked on anything that
+will eventually perform the
+.B sema_v()
+becomes blocked on anything that
 requires the lower-priority interrupt, the system will hang.
 .sp
 .LP
-For example, the thread that will perform the \fBsema_v()\fR may need to
+For example, the thread that will perform the
+.B sema_v()
+may need to
 first allocate memory. This memory allocation may require waiting for paging
 \fBI/O\fR to complete, which may require a lower-priority disk or network
 interrupt to be serviced. In general, situations like this are hard to
@@ -196,7 +230,9 @@ variables in an interrupt context.
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(2), \fBcondvar\fR(9F), \fBmutex\fR(9F)
+.BR kill (2),
+.BR condvar (9F),
+.BR mutex (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

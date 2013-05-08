@@ -46,12 +46,12 @@ Solaris DDI specific (Solaris DDI).
 .SH PARAMETERS
 .sp
 .LP
-\fBddi_intr_alloc()\fR
+.B ddi_intr_alloc()
 .sp
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 12n
 .rt
@@ -62,7 +62,7 @@ Pointer to the \fBdev_info\fR structure
 .ne 2
 .mk
 .na
-\fIh_array\fR
+.I h_array
 .ad
 .RS 12n
 .rt
@@ -73,7 +73,7 @@ Pointer to an array of DDI interrupt handles
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 12n
 .rt
@@ -84,7 +84,7 @@ Interrupt type
 .ne 2
 .mk
 .na
-\fIinum\fR
+.I inum
 .ad
 .RS 12n
 .rt
@@ -95,20 +95,22 @@ Interrupt number
 .ne 2
 .mk
 .na
-\fIcount\fR
+.I count
 .ad
 .RS 12n
 .rt
-Number of interrupts requested. The \fIcount\fR should not exceed the total
+Number of interrupts requested. The
+.I count
+should not exceed the total
 number of interrupts supported by the device, as returned by a call to
-\fBddi_intr_get_nintrs\fR(9F).
+.BR ddi_intr_get_nintrs (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIactualp\fR
+.I actualp
 .ad
 .RS 12n
 .rt
@@ -119,7 +121,7 @@ Pointer to the number of interrupts actually allocated
 .ne 2
 .mk
 .na
-\fIbehavior\fR
+.I behavior
 .ad
 .RS 12n
 .rt
@@ -133,7 +135,7 @@ Flag to determine the allocation algorithm
 .ne 2
 .mk
 .na
-\fIh\fR
+.I h
 .ad
 .RS 5n
 .rt
@@ -143,53 +145,110 @@ DDI interrupt handle
 .SH DESCRIPTION
 .sp
 .LP
-The \fBddi_intr_alloc()\fR function allocates interrupts of the interrupt
-type given by the \fItype\fR argument beginning at the interrupt number
-\fIinum\fR. If \fBddi_intr_alloc()\fR allocates any interrupts, it returns
+The
+.B ddi_intr_alloc()
+function allocates interrupts of the interrupt
+type given by the
+.I type
+argument beginning at the interrupt number
+.IR inum .
+If
+.B ddi_intr_alloc()
+allocates any interrupts, it returns
 the actual number of interrupts allocated in the integer pointed to by the
 \fIactualp\fR argument and returns the number of interrupt handles in the
-interrupt handle array pointed to by the \fIh_array\fR argument.
+interrupt handle array pointed to by the
+.I h_array
+argument.
 .sp
 .LP
 Specific interrupts are always specified by the combination of interrupt
-\fItype\fR and \fIinum\fR. For legacy devices, \fIinum\fR refers to the nth
-interrupt, typically as defined by the devices \fBinterrupts\fR property.
-For PCI fixed interrupts, \fIinum\fR refers to the interrupt number. The
+\fItype\fR and
+.IR inum .
+For legacy devices,
+.I inum
+refers to the nth
+interrupt, typically as defined by the devices
+.B interrupts
+property.
+For PCI fixed interrupts,
+.I inum
+refers to the interrupt number. The
 \fIinum\fR is the relative interrupt vector number, from \fB0\fR to \fB31\fR
-for MSI, from \fB0\fR to \fB2047\fR for MSI-X. The first interrupt vector is
-\fB0\fR. The last relative vector is \fB31\fR for MSI or \fB2047\fR for
+for MSI, from
+.B 0
+to
+.B 2047
+for MSI-X. The first interrupt vector is
+.BR 0 .
+The last relative vector is
+.B 31
+for MSI or
+.B 2047
+for
 MSI-X.
 .sp
 .LP
-The \fIh_array\fR must be pre-allocated by the caller as a \fIcount\fR
+The
+.I h_array
+.RI "must be pre-allocated by the caller as a" " count"
 sized array of ddi_intr_handle_t's.
 .sp
 .LP
-If MSI interrupts are being allocated, the \fIcount\fR argument passed
-should be a number between \fB1\fR and \fB32\fR, specified as a power of
-two. If \fIcount\fR is not specified as a power of two, the error
+If MSI interrupts are being allocated, the
+.I count
+argument passed
+should be a number between
+.B 1
+and
+.BR 32 ,
+specified as a power of
+two. If
+.I count
+is not specified as a power of two, the error
 \fBDDI_EINVAL\fR is returned.
 .sp
 .LP
 The behavior flag controls the interrupt allocation algorithm. It takes one
-of two input values: \fBDDI_INTR_ALLOC_NORMAL\fR or
-\fBDDI_INTR_ALLOC_STRICT\fR. If the \fIcount\fR value used is greater than
-\fBNINTRs\fR, then the call fails with \fBDDI_EINVAL\fR unconditionally.
-When set to \fBDDI_INTR_ALLOC_STRICT\fR, the call succeeds if and only if
+of two input values:
+.B DDI_INTR_ALLOC_NORMAL
+or
+.BR DDI_INTR_ALLOC_STRICT .
+If the
+.I count
+value used is greater than
+.BR NINTRs ,
+then the call fails with
+.B DDI_EINVAL
+unconditionally.
+When set to
+.BR DDI_INTR_ALLOC_STRICT ,
+the call succeeds if and only if
 \fIcount\fR interrupts are allocated. Otherwise, the call fails, and the
-number of available interrupts is returned in \fIactualp\fR. When set to
-\fBDDI_INTR_ALLOC_NORMAL\fR, the call succeeds if at least one interrupt is
+number of available interrupts is returned in
+.IR actualp .
+When set to
+.BR DDI_INTR_ALLOC_NORMAL ,
+the call succeeds if at least one interrupt is
 allocated, and the number of allocated interrupts is returned in actualp.
 .sp
 .LP
 The handle for each allocated interrupt, if any, is returned in the array
-of handles given by the \fIh_array\fR argument.
+of handles given by the
+.I h_array
+argument.
 .sp
 .LP
 The \fBddi_intr_free()\fR function releases the system resources and
-interrupt vectors associated with the ddi_intr_handle_t \fIh\fR, including
-any resources associated with the handle \fIh\fR itself. Once freed, the
-handle \fIh\fR should not be used in any further calls.
+interrupt vectors associated with the ddi_intr_handle_t
+.IR h ,
+including
+any resources associated with the handle
+.I h
+itself. Once freed, the
+handle
+.I h
+should not be used in any further calls.
 .sp
 .LP
 The \fBddi_intr_free()\fR function should be called once for each handle in
@@ -197,12 +256,14 @@ the handle array.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBddi_intr_alloc()\fR and \fBddi_intr_free()\fR functions return:
+The
+.B ddi_intr_alloc()
+and \fBddi_intr_free()\fR functions return:
 .sp
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 21n
 .rt
@@ -213,7 +274,7 @@ On success.
 .ne 2
 .mk
 .na
-\fBDDI_EAGAIN\fR
+.B DDI_EAGAIN
 .ad
 .RS 21n
 .rt
@@ -224,7 +285,7 @@ Not enough interrupt resources.
 .ne 2
 .mk
 .na
-\fBDDI_EINVAL\fR
+.B DDI_EINVAL
 .ad
 .RS 21n
 .rt
@@ -235,7 +296,7 @@ On encountering invalid input parameters.
 .ne 2
 .mk
 .na
-\fBDDI_INTR_NOTFOUND\fR
+.B DDI_INTR_NOTFOUND
 .ad
 .RS 21n
 .rt
@@ -246,7 +307,7 @@ On failure to find the interrupt.
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 21n
 .rt
@@ -256,12 +317,16 @@ On any implementation specific failure.
 .SH CONTEXT
 .sp
 .LP
-The \fBddi_intr_alloc()\fR and \fBddi_intr_free()\fR functions can be
+The
+.B ddi_intr_alloc()
+and \fBddi_intr_free()\fR functions can be
 called from kernel non-interrupt context.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -278,23 +343,36 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_intr_add_handler\fR(9F),
-\fBddi_intr_block_enable\fR(9F), \fBddi_intr_disable\fR(9F),
-\fBddi_intr_enable\fR(9F), \fBddi_intr_get_cap\fR(9F),
-\fBddi_intr_get_nintrs\fR(9F), \fBddi_intr_get_pri\fR(9F),
-\fBddi_intr_get_supported_types\fR(9F), \fBddi_intr_remove_handler\fR(9F)
+.BR attributes (5),
+.BR ddi_intr_add_handler (9F),
+.BR ddi_intr_block_enable (9F),
+.BR ddi_intr_disable (9F),
+.BR ddi_intr_enable (9F),
+.BR ddi_intr_get_cap (9F),
+.BR ddi_intr_get_nintrs (9F),
+.BR ddi_intr_get_pri (9F),
+.BR ddi_intr_get_supported_types (9F),
+.BR ddi_intr_remove_handler (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
 Consumers of these interfaces should verify that the return value is not
-equal to \fBDDI_SUCCESS\fR. Incomplete checking for failure codes could
+equal to
+.BR DDI_SUCCESS .
+Incomplete checking for failure codes could
 result in inconsistent behavior among platforms.
 .sp
 .LP
-If a device driver that uses \fBMSI\fR and \fBMSI-X\fR interrupts resets
+If a device driver that uses
+.B MSI
+and
+.B MSI-X
+interrupts resets
 the device, the device might reset its configuration space modifications.
-Such a reset could cause a device driver to lose any \fBMSI\fR and
+Such a reset could cause a device driver to lose any
+.B MSI
+and
 \fBMSI-X\fR interrupt usage settings that have been applied.

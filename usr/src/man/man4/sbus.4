@@ -25,7 +25,9 @@ sbus \- configuration files for SBus device drivers
 .SH DESCRIPTION
 .sp
 .LP
-The \fBSBus\fR is a geographically addressed peripheral bus present on many
+The
+.B SBus
+is a geographically addressed peripheral bus present on many
 \fBSPARC\fR hardware platforms. \fBSBus\fR devices are
 \fIself-identifying\fR \(em that is to say the \fBSBus\fR card itself
 provides information to the system so that it can identify the device driver
@@ -35,31 +37,41 @@ the system in the form of name-value pairs that can be retrieved using the
 .sp
 .LP
 The information is usually derived from a small Forth program stored in the
-\fBFCode\fR \fBPROM\fR on the card, so driver configuration files should be
+\fBFCode PROM\fR on the card, so driver configuration files should be
 completely unnecessary for these devices. However, on some occasions,
-drivers for \fBSBus\fR devices may need to use driver configuration files to
-augment the information provided by the \fBSBus\fR card. See
+drivers for
+.B SBus
+devices may need to use driver configuration files to
+augment the information provided by the
+.B SBus
+card. See
 \fBdriver.conf\fR(4) for further details.
 .sp
 .LP
-When they are needed, configuration files for \fBSBus\fR device drivers
-should identify the parent bus driver implicitly using the \fIclass\fR
+When they are needed, configuration files for
+.B SBus
+device drivers
+should identify the parent bus driver implicitly using the
+.IR class
 keyword. This removes the dependency on the particular bus driver involved
 since this may be named differently on different platforms.
 .sp
 .LP
-All bus drivers of class \fBsbus\fR recognise the following properties:
+All bus drivers of class
+.B sbus
+recognise the following properties:
 .sp
 .ne 2
 .mk
 .na
-\fBreg\fR
+.B reg
 .ad
 .RS 14n
 .rt
 An arbitrary length array where each element of the array consists of a
 3-tuple of integers.  Each array element describes a logically contiguous
-mappable resource on the \fBSBus.\fR
+mappable resource on the
+.BR SBus.
 .sp
 The first integer of each tuple specifies the slot number the card is
 plugged into. The second integer of each 3-tuple specifies the offset in the
@@ -67,11 +79,18 @@ slot address space identified by the first element. The third integer of
 each 3-tuple specifies the size in bytes of the mappable resource.
 .sp
 The driver can refer to the elements of this array by index, and construct
-kernel mappings to these addresses using \fBddi_map_regs\fR(9F). The index
-into the array is passed as the \fIrnumber\fR argument of
-\fBddi_map_regs()\fR.
+kernel mappings to these addresses using
+.BR ddi_map_regs "(9F). The index"
+into the array is passed as the
+.I rnumber
+argument of
+.BR ddi_map_regs() .
 .sp
-You can use the \fBddi_get*\fR and \fBddi_put*\fR family of functions to
+You can use the
+.B ddi_get*
+and
+.B ddi_put*
+family of functions to
 access register space from a high-level interrupt context.
 .RE
 
@@ -79,31 +98,37 @@ access register space from a high-level interrupt context.
 .ne 2
 .mk
 .na
-\fBinterrupts\fR
+.B interrupts
 .ad
 .RS 14n
 .rt
 An arbitrary length array where each element of the array consists of a
-single integer. Each array element describes a possible \fBSBus\fR interrupt
+single integer. Each array element describes a possible
+.B SBus
+interrupt
 level that the device might generate.
 .sp
 The driver can refer to the elements of this array by index, and register
-interrupt handlers with the system using \fBddi_add_intr\fR(9F). The index
-into the array is passed as the \fIinumber\fR argument of
-\fBddi_add_intr()\fR.
+interrupt handlers with the system using
+.BR ddi_add_intr "(9F). The index"
+into the array is passed as the
+.I inumber
+argument of
+.BR ddi_add_intr() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBregisters\fR
+.B registers
 .ad
 .RS 14n
 .rt
 An arbitrary length array where each element of the array consists of a
 3-tuple of integers.  Each array element describes a logically contiguous
-mappable resource on the \fBSBus.\fR
+mappable resource on the
+.BR SBus.
 .sp
 The first integer of each tuple should be set to \fB\(mi1\fR, specifying
 that any SBus slot may be matched. The second integer of each 3-tuple
@@ -111,62 +136,104 @@ specifies the offset in the slot address space identified by the first
 element. The third integer of each 3-tuple specifies the size in bytes of
 the mappable resoure.
 .sp
-The \fBregisters\fR property can only be used to augment an incompletely
-specified \fBreg\fR property with information from a driver configuration
+The
+.B registers
+property can only be used to augment an incompletely
+specified
+.B reg
+property with information from a driver configuration
 file. It may only be specified in a driver configuration file.
 .RE
 
 .sp
 .LP
-All \fBSBus\fR devices must provide \fBreg\fR properties to the system. The
-first two integer elements of the \fBreg\fR property are used to construct
-the address part of the device name under \fB/devices\fR.
+All
+.B SBus
+devices must provide
+.B reg
+properties to the system. The
+first two integer elements of the
+.B reg
+property are used to construct
+the address part of the device name under
+.BR /devices .
 .sp
 .LP
-Only devices that generate interrupts need to provide \fBinterrupts\fR
+Only devices that generate interrupts need to provide
+.BR interrupts
 properties.
 .sp
 .LP
 Occasionally, it may be necessary to override or augment the configuration
-information supplied by the \fBSBus\fR device. This can be achieved by
+information supplied by the
+.B SBus
+device. This can be achieved by
 writing a driver configuration file that describes a prototype device
 information (devinfo) node specification, containing the additional
 properties required.
 .sp
 .LP
 For the system to merge the information, certain conditions must be met.
-First, the \fBname\fR property must be the same. Second, either the first
-two integers (slot number and offset) of the two \fBreg\fR properties must
-be the same, or the second integer (offset) of the \fBreg\fR and
+First, the
+.B name
+property must be the same. Second, either the first
+two integers (slot number and offset) of the two
+.B reg
+properties must
+be the same, or the second integer (offset) of the
+.B reg
+and
 \fBregisters\fR properties must be the same.
 .sp
 .LP
-In the event that the \fBSBus\fR card has no \fBreg\fR property at all, the
+In the event that the
+.B SBus
+card has no
+.B reg
+property at all, the
 self-identifying information cannot be used, so all the details of the card
 must be specified in a driver configuration file.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRA sample configuration file.
+\fBExample 1\fR A sample configuration file.
 .sp
 .LP
-Here is a configuration file for an \fBSBus\fR card called
-\fBSUNW,netboard\fR. The card already has a simple \fBFCode\fR \fBPROM\fR
-that creates \fBname\fR and \fBreg\fR properties, and will have a complete
+Here is a configuration file for an
+.B SBus
+card called
+.BR SUNW,netboard .
+The card already has a simple
+.BR "FCode PROM"
+that creates
+.B name
+and
+.B reg
+properties, and will have a complete
 set of properties for normal use once the driver and firmware is complete.
 
 .sp
 .LP
 In this example, we want to augment the properties given to us by the
-firmware. We use the same \fBname\fR property, and use the \fBregisters\fR
-property to match the firmware \fBreg\fR property. That way we don't have to
+firmware. We use the same
+.B name
+.RB "property, and use the" " registers"
+property to match the firmware
+.B reg
+property. That way we don't have to
 worry about which slot the card is really plugged into.
 
 .sp
 .LP
-We want to add an \fBinterrupts\fR property while we are developing the
+We want to add an
+.B interrupts
+property while we are developing the
 firmware and driver so that we can start to experiment with interrupts. The
-device can generate interrupts at \fBSBus\fR level 3. Additionally, we want
-to set a \fBdebug-level\fR property to 4.
+device can generate interrupts at
+.B SBus
+level 3. Additionally, we want
+to set a
+.B debug-level
+property to 4.
 
 .sp
 .in +2
@@ -185,7 +252,9 @@ name="SUNW,netboard" class="sbus"
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -202,14 +271,19 @@ ArchitectureSPARC
 .SH SEE ALSO
 .sp
 .LP
-\fBdriver.conf\fR(4), \fBattributes\fR(5), \fBddi_add_intr\fR(9F),
-\fBddi_map_regs\fR(9F), \fBddi_prop_op\fR(9F)
+\fBdriver.conf\fR(4),
+.BR attributes (5),
+.BR ddi_add_intr (9F),
+.BR ddi_map_regs (9F),
+.BR ddi_prop_op (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-The wildcarding mechanism of the \fBregisters\fR property matches every
+The wildcarding mechanism of the
+.B registers
+property matches every
 instance of the particular device attached to the system. This may not
 always be what is wanted.

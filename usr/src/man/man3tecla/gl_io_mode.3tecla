@@ -75,18 +75,24 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-ltecla\fR [ \fIlibrary\fR\&.\
 .sp
 .LP
 The \fBgl_get_line\fR(3TECLA) function supports two different I/O modes. These
-are selected by calling the \fBgl_io_mode()\fR function. The \fImode\fR
-argument of \fBgl_io_mode()\fR specifies the new I/O mode and must be one of
+are selected by calling the
+.B gl_io_mode()
+function. The \fImode\fR
+argument of
+.B gl_io_mode()
+specifies the new I/O mode and must be one of
 the following.
 .sp
 .ne 2
 .mk
 .na
-\fBGL_NORMAL_MODE\fR
+.B GL_NORMAL_MODE
 .ad
 .RS 18n
 .rt
-Select the normal blocking-I/O mode. In this mode \fBgl_get_line()\fR does not
+Select the normal blocking-I/O mode. In this mode
+.B gl_get_line()
+does not
 return until either an error occurs of the user finishes entering a new line.
 .RE
 
@@ -94,7 +100,7 @@ return until either an error occurs of the user finishes entering a new line.
 .ne 2
 .mk
 .na
-\fBGL_SERVER_MODE\fR
+.B GL_SERVER_MODE
 .ad
 .RS 18n
 .rt
@@ -111,16 +117,22 @@ non-blocking server mode requires an initial call to \fBgl_io_mode()\fR.
 .sp
 .LP
 In non-blocking server I/O mode, the application is required to have an event
-loop that calls \fBgl_get_line()\fR whenever the terminal file descriptor can
-perform the type I/O that \fBgl_get_line()\fR is waiting for. To determine
-which type of I/O \fBgl_get_line()\fR is waiting for, the application calls the
+loop that calls
+.B gl_get_line()
+whenever the terminal file descriptor can
+perform the type I/O that
+.B gl_get_line()
+is waiting for. To determine
+which type of I/O
+.B gl_get_line()
+is waiting for, the application calls the
 \fBgl_pending_io()\fR function.  The return value is one of the following two
 enumerated values.
 .sp
 .ne 2
 .mk
 .na
-\fBGLP_READ\fR
+.B GLP_READ
 .ad
 .RS 13n
 .rt
@@ -131,7 +143,7 @@ enumerated values.
 .ne 2
 .mk
 .na
-\fBGLP_WRITE\fR
+.B GLP_WRITE
 .ad
 .RS 13n
 .rt
@@ -142,125 +154,190 @@ enumerated values.
 .LP
 If the application is using either the \fBselect\fR(3C) or \fBpoll\fR(2)
 function to watch for I/O on a group of file descriptors, then it should call
-the \fBgl_pending_io()\fR function before each call to these functions to
+the
+.B gl_pending_io()
+function before each call to these functions to
 determine which direction of I/O it should tell them to watch for, and
 configure their arguments accordingly. In the case of the \fBselect()\fR
-function, this means using the \fBFD_SET()\fR macro to add the terminal file
+function, this means using the
+.B FD_SET()
+macro to add the terminal file
 descriptor either to the set of file descriptors to be watched for readability
 or the set to be watched for writability.
 .sp
 .LP
-As in normal I/O mode, the return value of \fBgl_get_line()\fR is either a
-pointer to a completed input line or \fINULL\fR. However, whereas in normal I/O
-mode a \fINULL\fR return value always means that an error occurred, in
-non-blocking server mode, \fINULL\fR is also returned when \fBgl_get_line()\fR
+As in normal I/O mode, the return value of
+.B gl_get_line()
+is either a
+pointer to a completed input line or
+.IR NULL .
+However, whereas in normal I/O
+mode a
+.I NULL
+return value always means that an error occurred, in
+non-blocking server mode,
+.I NULL
+is also returned when
+.BR gl_get_line()
 cannot read or write to the terminal without blocking. Thus in non-blocking
-server mode, in order to determine when a \fINULL\fR return value signifies
+server mode, in order to determine when a
+.I NULL
+return value signifies
 that an error occurred or not, it is necessary to call the
 \fBgl_return_status()\fR function. If this function returns the enumerated
-value \fBGLR_BLOCKED\fR, \fBgl_get_line()\fR is waiting for I/O and no error
+value
+.BR GLR_BLOCKED ,
+\fBgl_get_line()\fR is waiting for I/O and no error
 has occurred.
 .sp
 .LP
-When \fBgl_get_line()\fR returns \fINULL\fR and \fBgl_return_status()\fR
+When
+.B gl_get_line()
+returns
+.I NULL
+and
+.BR gl_return_status()
 indicates that this is due to blocked terminal I/O, the application should call
 \fBgl_get_line()\fR again when the type of I/O reported by
-\fBgl_pending_io()\fR becomes possible. The \fIprompt\fR, \fIstart_line\fR and
+\fBgl_pending_io()\fR becomes possible. The
+.IR prompt ,
+\fIstart_line\fR and
 \fIstart_pos\fR arguments of \fBgl_get_line()\fR will be ignored on these
 calls. If you need to change the prompt of the line that is currently being
 edited, you can call the \fBgl_replace_prompt\fR(3TECLA) function between calls
-to \fBgl_get_line()\fR.
+to
+.BR gl_get_line() .
 .SS "Giving Up The Terminal"
 .sp
 .LP
 A complication that is unique to non-blocking server mode is that it requires
-that the terminal be left in raw mode between calls to \fBgl_get_line()\fR. If
+that the terminal be left in raw mode between calls to
+.BR gl_get_line() .
+If
 this were not the case, the external event loop would not be able to detect
 individual key-presses, and the basic line editing implemented by the terminal
-driver would clash with the editing provided by \fBgl_get_line()\fR. When the
+driver would clash with the editing provided by
+.BR gl_get_line() .
+When the
 terminal needs to be used for purposes other than entering a new input line
-with \fBgl_get_line()\fR, it needs to be restored to a usable state. In
+with
+.BR gl_get_line() ,
+it needs to be restored to a usable state. In
 particular, whenever the process is suspended or terminated, the terminal must
 be returned to a normal state. If this is not done, then depending on the
 characteristics of the shell that was used to invoke the program, the user
-could end up with a hung terminal. To this end, the \fBgl_normal_io()\fR
+.RB "could end up with a hung terminal. To this end, the" " gl_normal_io()"
 function is provided for switching the terminal back to the state that it was
 in when raw mode was last established.
 .sp
 .LP
-The \fBgl_normal_io()\fR function first flushes any pending output to the
+The
+.B gl_normal_io()
+function first flushes any pending output to the
 terminal, then moves the cursor to the start of the terminal line which follows
 the end of the incompletely entered input line. At this point it is safe to
 suspend or terminate the process, and it is safe for the application to read
 and write to the terminal. To resume entry of the input line, the application
-should call the \fBgl_raw_io()\fR function.
+should call the
+.B gl_raw_io()
+function.
 .sp
 .LP
-The \fBgl_normal_io()\fR function starts a new line, redisplays the partially
+The
+.B gl_normal_io()
+function starts a new line, redisplays the partially
 completed input line (if any), restores the cursor position within this line to
-where it was when \fBgl_normal_io()\fR was called, then switches back to raw,
+where it was when
+.B gl_normal_io()
+was called, then switches back to raw,
 non-blocking terminal mode ready to continue entry of the input line when
 \fBgl_get_line()\fR is next called.
 .sp
 .LP
-Note that in non-blocking server mode, if \fBgl_get_line()\fR is called after
-a call to \fBgl_normal_io()\fR, without an intervening call to
-\fBgl_raw_io()\fR, \fBgl_get_line()\fR will call \fBgl_raw_mode()\fR itself,
-and the terminal will remain in this mode when \fBgl_get_line()\fR returns.
+Note that in non-blocking server mode, if
+.B gl_get_line()
+is called after
+a call to
+.BR gl_normal_io() ,
+without an intervening call to
+.BR gl_raw_io() ,
+\fBgl_get_line()\fR will call \fBgl_raw_mode()\fR itself,
+and the terminal will remain in this mode when
+.B gl_get_line()
+returns.
 .SS "Signal Handling"
 .sp
 .LP
 In the previous section it was pointed out that in non-blocking server mode,
 the terminal must be restored to a sane state whenever a signal is received
 that either suspends or terminates the process. In normal I/O mode, this is
-done for you by \fBgl_get_line()\fR, but in non-blocking server mode, since the
-terminal is left in raw mode between calls to \fBgl_get_line()\fR, this signal
+done for you by
+.BR gl_get_line() ,
+but in non-blocking server mode, since the
+terminal is left in raw mode between calls to
+.BR gl_get_line() ,
+this signal
 handling has to be done by the application. Since there are many signals that
 can suspend or terminate a process, as well as other signals that are important
-to \fBgl_get_line()\fR, such as the \fBSIGWINCH\fR signal, which tells it when
-the terminal size has changed, the \fBgl_tty_signals()\fR function is provided
+to
+.BR gl_get_line() ,
+such as the
+.B SIGWINCH
+signal, which tells it when
+the terminal size has changed, the
+.B gl_tty_signals()
+function is provided
 for installing signal handlers for all pertinent signals.
 .sp
 .LP
-The \fBgl_tty_signals()\fR function uses \fBgl_get_line()\fR's internal list
+The
+.B gl_tty_signals()
+function uses
+.BR gl_get_line() "'s internal list"
 of signals to assign specified signal handlers to groups of signals. The
 arguments of this function are as follows.
 .sp
 .ne 2
 .mk
 .na
-\fIterm_handler\fR
+.I term_handler
 .ad
 .RS 16n
 .rt
 This is the signal handler that is used to trap signals that by default
-terminate any process that receives them (for example, \fBSIGINT\fR or
-\fBSIGTERM\fR).
+terminate any process that receives them (for example,
+.B SIGINT
+or
+.BR SIGTERM ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIsusp_handler\fR
+.I susp_handler
 .ad
 .RS 16n
 .rt
 This is the signal handler that is used to trap signals that by default
-suspend any process that receives them, (for example, \fBSIGTSTP\fR or
-\fBSIGTTOU\fR).
+suspend any process that receives them, (for example,
+.B SIGTSTP
+or
+.BR SIGTTOU ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIcont_handler\fR
+.I cont_handler
 .ad
 .RS 16n
 .rt
 This is the signal handler that is used to trap signals that are usually sent
-when a process resumes after being suspended (usually \fBSIGCONT\fR). Beware
+when a process resumes after being suspended (usually
+.BR SIGCONT ).
+Beware
 that there is nothing to stop a user from sending one of these signals at other
 times.
 .RE
@@ -269,38 +346,63 @@ times.
 .ne 2
 .mk
 .na
-\fIsize_handler\fR
+.I size_handler
 .ad
 .RS 16n
 .rt
 This signal handler is used to trap signals that are sent to processes when
 their controlling terminals are resized by the user (for example,
-\fBSIGWINCH\fR).
+.BR SIGWINCH ).
 .RE
 
 .sp
 .LP
-These arguments can all be the same, if so desired, and \fBSIG_IGN\fR (ignore
-this signal) or \fBSIG_DFL\fR (use the system-provided default signal handler)
+These arguments can all be the same, if so desired, and
+.B SIG_IGN
+(ignore
+this signal) or
+.B SIG_DFL
+(use the system-provided default signal handler)
 can be specified instead of a function where pertinent. In particular, it is
-rarely useful to trap \fBSIGCONT\fR, so the \fIcont_handler\fR argument will
-usually be \fBSIG_DFL\fR or \fBSIG_IGN\fR.
+rarely useful to trap
+.BR SIGCONT ,
+so the
+.I cont_handler
+argument will
+usually be
+.B SIG_DFL
+or
+.BR SIG_IGN .
 .sp
 .LP
-The \fBgl_tty_signals()\fR function uses the POSIX \fBsigaction\fR(2) function
+The
+.B gl_tty_signals()
+function uses the POSIX
+.BR sigaction (2)
+function
 to install these signal handlers, and it is careful to use the \fIsa_mask\fR
-member of each \fBsigaction\fR structure to ensure that only one of these
+member of each
+.B sigaction
+structure to ensure that only one of these
 signals is ever delivered at a time. This guards against different instances of
 these signal handlers from simultaneously trying to write to common global
 data, such as a shared \fBsigsetjmp\fR(3C) buffer or a signal-received flag.
 The signal handlers installed by this function should call the
-\fBgl_handle_signal()\fR.
+.BR gl_handle_signal() .
 .sp
 .LP
-The \fIsigno\fR argument tells this function which signal it is being asked to
-respond to, and the \fIgl\fR argument should be a pointer to the first element
-of an array of \fIngl\fR \fBGetLine\fR objects. If your application has only
-one of these objects, pass its pointer as the \fIgl\fR argument and specify
+The
+.I signo
+argument tells this function which signal it is being asked to
+respond to, and the
+.I gl
+argument should be a pointer to the first element
+of an array of
+.I ngl
+\fBGetLine\fR objects. If your application has only
+one of these objects, pass its pointer as the
+.I gl
+argument and specify
 \fIngl\fR as 1.
 .sp
 .LP
@@ -310,7 +412,9 @@ things.
 .sp
 .LP
 If the signal that was caught is one of those that by default terminates any
-process that receives it, then \fBgl_handle_signal()\fR does the following
+process that receives it, then
+.B gl_handle_signal()
+does the following
 steps.
 .RS +4
 .TP
@@ -321,7 +425,9 @@ First it blocks the delivery of all signals that can be blocked (ie.
 .RS +4
 .TP
 2.
-Next it calls \fBgl_normal_io()\fR for each of the ngl GetLine objects. Note
+Next it calls
+.B gl_normal_io()
+for each of the ngl GetLine objects. Note
 that this does nothing to any of the GetLine objects that are not currently in
 raw mode.
 .RE
@@ -347,7 +453,9 @@ being terminated.
 .LP
 If the default disposition of the signal is to suspend the process, the same
 steps are executed as for process termination signals, except that when the
-process is later resumed, \fBgl_handle_signal()\fR continues, and does the
+process is later resumed,
+.B gl_handle_signal()
+continues, and does the
 following steps.
 .RS +4
 .TP
@@ -365,7 +473,8 @@ when its default disposition was substituted.
 3.
 For any of the GetLine objects that were in raw mode when
 \fBgl_handle_signal()\fR was called, \fBgl_handle_signal()\fR then calls
-\fBgl_raw_io()\fR, to resume entry of the input lines on those terminals.
+.BR gl_raw_io() ,
+to resume entry of the input lines on those terminals.
 .RE
 .RS +4
 .TP
@@ -376,25 +485,45 @@ Finally, it restores the signal process mask to how it was when
 .sp
 .LP
 Note that the process is suspended or terminated using the original signal
-that was caught, rather than using the uncatchable \fBSIGSTOP\fR and
+that was caught, rather than using the uncatchable
+.B SIGSTOP
+and
 \fBSIGKILL\fR signals. This is important, because when a process is suspended
 or terminated, the parent of the process may wish to use the status value
 returned by the wait system call to figure out which signal was responsible. In
 particular, most shells use this information to print a corresponding message
 to the terminal. Users would be rightly confused if when their process received
-a \fBSIGPIPE\fR signal, the program responded by sending itself a \fBSIGKILL\fR
+a
+.B SIGPIPE
+signal, the program responded by sending itself a \fBSIGKILL\fR
 signal, and the shell then printed out the provocative statement, "Killed!".
 .SS "Interrupting The Event Loop"
 .sp
 .LP
 If a signal is caught and handled when the application's event loop is waiting
-in \fBselect()\fR or \fBpoll()\fR, these functions will be aborted with
-\fBerrno\fR set to \fBEINTR\fR. When this happens the event loop should call
+in
+.B select()
+or
+.BR poll() ,
+these functions will be aborted with
+\fBerrno\fR set to
+.BR EINTR .
+When this happens the event loop should call
 \fBgl_pending_io()\fR before calling \fBselect()\fR or \fBpoll()\fR again. It
-should then arrange for \fBselect()\fR or \fBpoll()\fR to wait for the type of
-I/O that \fBgl_pending_io()\fR reports. This is necessary because any signal
-handler that calls \fBgl_handle_signal()\fR will frequently change the type of
-I/O that \fBgl_get_line()\fR is waiting for.
+should then arrange for
+.B select()
+or
+.B poll()
+to wait for the type of
+I/O that
+.B gl_pending_io()
+reports. This is necessary because any signal
+handler that calls
+.B gl_handle_signal()
+will frequently change the type of
+I/O that
+.B gl_get_line()
+is waiting for.
 .sp
 .LP
 If a signal arrives between the statements that configure the arguments of
@@ -410,35 +539,56 @@ illustrate this.
 .RS +4
 .TP
 1.
-Block all of the signals that \fBgl_get_line()\fR catches, by passing the
-signal set returned by \fBgl_list_signals()\fR to \fBsigprocmask\fR(2).
+Block all of the signals that
+.B gl_get_line()
+catches, by passing the
+signal set returned by
+.B gl_list_signals()
+to
+.BR sigprocmask (2).
 .RE
 .RS +4
 .TP
 2.
-Call \fBgl_pending_io()\fR and set up the arguments of \fBselect()\fR or
+Call
+.B gl_pending_io()
+and set up the arguments of
+.B select()
+or
 \fBpoll()\fR accordingly.
 .RE
 .RS +4
 .TP
 3.
-Call \fBsigsetjmp\fR(3C) with a non-zero \fIsavemask\fR argument.
+Call
+.BR sigsetjmp "(3C) with a non-zero"
+.I savemask
+argument.
 .RE
 .RS +4
 .TP
 4.
-Initially this \fBsigsetjmp()\fR statement will return zero, indicating that
-control is not resuming there after a matching call to \fBsiglongjmp\fR(3C).
+Initially this
+.B sigsetjmp()
+statement will return zero, indicating that
+control is not resuming there after a matching call to
+.BR siglongjmp (3C).
 .RE
 .RS +4
 .TP
 5.
-Replace all of the handlers of the signals that \fBgl_get_line()\fR is
+Replace all of the handlers of the signals that
+.B gl_get_line()
+is
 configured to catch, with a signal handler that first records the number of the
 signal that was caught, in a file-scope variable, then calls \fBsiglongjmp()\fR
-with a non-zero \fIval\fR argument, to return execution to the above
+with a non-zero
+.I val
+argument, to return execution to the above
 \fBsigsetjmp()\fR statement. Registering these signal handlers can conveniently
-be done using the \fBgl_tty_signals()\fR function.
+be done using the
+.B gl_tty_signals()
+function.
 .RE
 .RS +4
 .TP
@@ -458,7 +608,10 @@ these signals again.
 .RS +4
 .TP
 8.
-Now call \fBselect()\fR or \fBpoll()\fR.
+Now call
+.B select()
+or
+.BR poll() .
 .RE
 .RS +4
 .TP
@@ -466,13 +619,18 @@ Now call \fBselect()\fR or \fBpoll()\fR.
 When select returns, again block the signals that were unblocked in step 7.
 .sp
 If a signal is arrived any time during the above steps, our signal handler
-will be triggered and cause control to return to the \fBsigsetjmp()\fR
-statement, where this time, \fBsigsetjmp()\fR will return non-zero, indicating
+will be triggered and cause control to return to the
+.BR sigsetjmp()
+statement, where this time,
+.B sigsetjmp()
+will return non-zero, indicating
 that a signal was caught. When this happens we simply skip the above block of
 statements, and continue with the following statements, which are executed
 regardless of whether or not a signal is caught. Note that when
 \fBsigsetjmp()\fR returns, regardless of why it returned, the process signal
-mask is returned to how it was when \fBsigsetjmp()\fR was called. Thus the
+mask is returned to how it was when
+.B sigsetjmp()
+was called. Thus the
 following statements are always executed with all of our signals blocked.
 .RE
 .RS +4
@@ -502,19 +660,30 @@ Unblock all of the signals that were blocked in step 7.
 .sp
 .LP
 Since the application is expected to handle signals in non-blocking server
-mode, \fBgl_get_line()\fR does not attempt to duplicate this when it is being
+mode,
+.B gl_get_line()
+does not attempt to duplicate this when it is being
 called. If one of the signals that it is configured to catch is sent to the
-application while \fBgl_get_line()\fR is being called, \fBgl_get_line()\fR
+application while
+.B gl_get_line()
+.RB "is being called," " gl_get_line()"
 reinstates the caller's signal handlers, then immediately before returning,
 re-sends the signal to the process to let the application's signal handler
 handle it. If the process is not terminated by this signal, \fBgl_get_line()\fR
-returns \fINULL\fR, and a following call to \fBgl_return_status()\fR returns
-the enumerated value \fBGLR_SIGNAL\fR.
+returns
+.IR NULL ,
+and a following call to
+.B gl_return_status()
+returns
+the enumerated value
+.BR GLR_SIGNAL .
 .SS "Aborting Line Input"
 .sp
 .LP
 Often, rather than letting it terminate the process, applications respond to
-the \fBSIGINT\fR user-interrupt signal by aborting the current input line. This
+the
+.B SIGINT
+user-interrupt signal by aborting the current input line. This
 can be accomplished in non-blocking server-I/O mode by not calling
 \fBgl_handle_signal()\fR when this signal is caught, but by calling instead the
 \fBgl_abandon_line()\fR function. This function arranges that when
@@ -525,50 +694,93 @@ line, and finally starts accepting input of a new input line from the user.
 .sp
 .LP
 Provided that certain rules are followed, the \fBgl_normal_io()\fR,
-\fBgl_raw_io()\fR, \fBgl_handle_signal()\fR, and \fBgl_abandon_line()\fR
+.BR gl_raw_io() ,
+.BR gl_handle_signal() ,
+and
+.BR gl_abandon_line()
 functions can be written to be safely callable from signal handlers. Other
 functions in this library should not be called from signal handlers. For this
 to be true, all signal handlers that call these functions must be registered in
 such a way that only one instance of any one of them can be running at one
-time. The way to do this is to use the POSIX \fBsigaction()\fR function to
-register all signal handlers, and when doing this, use the \fIsa_mask\fR member
-of the corresponding \fBsigaction\fR structure to indicate that all of the
+time. The way to do this is to use the POSIX
+.B sigaction()
+function to
+register all signal handlers, and when doing this, use the
+.I sa_mask
+member
+of the corresponding
+.B sigaction
+structure to indicate that all of the
 signals whose handlers invoke the above functions should be blocked when the
 current signal is being handled. This prevents two signal handlers from
-operating on a \fBGetLine\fR object at the same time.
+operating on a
+.B GetLine
+object at the same time.
 .sp
 .LP
-To prevent signal handlers from accessing a \fBGetLine\fR object while
+To prevent signal handlers from accessing a
+.B GetLine
+object while
 \fBgl_get_line()\fR or any of its associated public functions are operating on
-it, all public functions associated with \fBgl_get_line()\fR, including
+it, all public functions associated with
+.BR gl_get_line() ,
+including
 \fBgl_get_line()\fR itself, temporarily block the delivery of signals when they
-are accessing \fBGetLine\fR objects. Beware that the only signals that they
-block are the signals that \fBgl_get_line()\fR is currently configured to
+are accessing
+.B GetLine
+objects. Beware that the only signals that they
+block are the signals that
+.B gl_get_line()
+is currently configured to
 catch, so be sure that if you call any of the above functions from signal
 handlers, that the signals that these handlers are assigned to are configured
-to be caught by \fBgl_get_line()\fR. See \fBgl_trap_signal\fR(3TECLA).
+to be caught by
+.BR gl_get_line() .
+See
+.BR gl_trap_signal (3TECLA).
 .SS "Using Timeouts To Poll"
 .sp
 .LP
-If instead of using \fBselect()\fR or \fBpoll()\fR to wait for I/O your
-application needs only to get out of \fBgl_get_line()\fR periodically to
+If instead of using
+.B select()
+or
+.B poll()
+to wait for I/O your
+application needs only to get out of
+.B gl_get_line()
+periodically to
 briefly do something else before returning to accept input from the user, use
 the \fBgl_inactivity_timeout\fR(3TECLA) function in non-blocking server mode to
-specify that a callback function that returns \fBGLTO_CONTINUE\fR should be
-called whenever \fBgl_get_line()\fR has been waiting for I/O for more than a
+specify that a callback function that returns
+.B GLTO_CONTINUE
+should be
+called whenever
+.B gl_get_line()
+has been waiting for I/O for more than a
 specified amount of time. When this callback is triggered, \fBgl_get_line()\fR
-will return \fINULL\fR and a following call to \fBgl_return_status()\fR will
-return \fBGLR_BLOCKED\fR.
+will return
+.I NULL
+and a following call to
+.B gl_return_status()
+will
+return
+.BR GLR_BLOCKED .
 .sp
 .LP
-The \fBgl_get_line()\fR function will not return until the user has not typed
+The
+.B gl_get_line()
+function will not return until the user has not typed
 a key for the specified interval, so if the interval is long and the user keeps
-typing, \fBgl_get_line()\fR might not return for a while. There is no guarantee
+typing,
+.B gl_get_line()
+might not return for a while. There is no guarantee
 that it will return in the time specified.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -587,6 +799,10 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBcpl_complete_word\fR(3TECLA), \fBef_expand_file\fR(3TECLA),
-\fBgl_get_line\fR(3TECLA), \fBlibtecla\fR(3LIB), \fBpca_lookup_file\fR(3TECLA),
-\fBattributes\fR(5), \fBtecla\fR(5)
+.BR cpl_complete_word (3TECLA),
+\fBef_expand_file\fR(3TECLA),
+.BR gl_get_line (3TECLA),
+.BR libtecla (3LIB),
+\fBpca_lookup_file\fR(3TECLA),
+.BR attributes (5),
+.BR tecla (5)

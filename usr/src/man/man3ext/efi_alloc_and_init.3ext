@@ -56,9 +56,13 @@ cc [ \fIflag \&.\|.\|.\fR ] \fIfile\fR\&.\|.\|. \fB-lefi\fR [ \fIlibrary \&.\|.\
 .sp
 .LP
 The \fBefi_alloc_and_init()\fR function initializes the \fBdk_gpt_t\fR
-structure specified by \fIvtoc\fR in preparation for a call to
+structure specified by
+.I vtoc
+in preparation for a call to
 \fBefi_write()\fR. It calculates and initializes the \fBefi_version\fR,
-\fBefi_lbasize\fR, \fBefi_nparts\fR, \fBefi_first_u_lba\fR,
+\fBefi_lbasize\fR,
+.BR efi_nparts ,
+\fBefi_first_u_lba\fR,
 \fBefi_last_lba\fR, and \fBefi_last_u_lba\fR members of this sturcture. The
 caller can then set the \fBefi_nparts\fR member.
 .sp
@@ -80,13 +84,21 @@ before the reserved slice (from slice 0 to slice 6 or unallocated space).
 .sp
 .LP
 The \fIfd\fR argument refers to any slice on a raw disk, opened with
-\fBO_NDELAY\fR. See \fBopen\fR(2).
+.BR O_NDELAY .
+See
+.BR open (2).
 .sp
 .LP
-The \fInparts\fR argument specifies the number of desired partitions.
+The
+.I nparts
+argument specifies the number of desired partitions.
 .sp
 .LP
-The \fIvtoc\fR argument is a \fBdk_gpt_t\fR structure that describes an EFI
+The
+.I vtoc
+argument is a
+.B dk_gpt_t
+structure that describes an EFI
 partition table and contains at least the following members:
 .sp
 .in +2
@@ -105,7 +117,9 @@ struct dk_part  efi_parts[];     /* array of partitions */
 .sp
 .LP
 Upon successful completion, \fBefi_alloc_and_init()\fR returns 0. Otherwise
-it returns \fBVT_EIO\fR if an I/O operation to the disk fails.
+it returns
+.B VT_EIO
+if an I/O operation to the disk fails.
 .sp
 .LP
 Upon successful completion, \fBefi_alloc_and_read()\fR returns a positive
@@ -115,7 +129,7 @@ Otherwise, it returns a negative integer to indicate one of the following:
 .ne 2
 .mk
 .na
-\fBVT_EIO\fR
+.B VT_EIO
 .ad
 .RS 13n
 .rt
@@ -126,7 +140,7 @@ An I/O error occurred.
 .ne 2
 .mk
 .na
-\fBVT_ERROR\fR
+.B VT_ERROR
 .ad
 .RS 13n
 .rt
@@ -137,7 +151,7 @@ An unknown error occurred.
 .ne 2
 .mk
 .na
-\fBVT_EINVAL\fR
+.B VT_EINVAL
 .ad
 .RS 13n
 .rt
@@ -152,7 +166,7 @@ returns a negative integer to indicate one of the following:
 .ne 2
 .mk
 .na
-\fBVT_EIO\fR
+.B VT_EIO
 .ad
 .RS 13n
 .rt
@@ -163,7 +177,7 @@ An I/O error occurred.
 .ne 2
 .mk
 .na
-\fBVT_ERROR\fR
+.B VT_ERROR
 .ad
 .RS 13n
 .rt
@@ -174,7 +188,7 @@ An unknown error occurred.
 .ne 2
 .mk
 .na
-\fBVT_EINVAL\fR
+.B VT_EINVAL
 .ad
 .RS 13n
 .rt
@@ -189,7 +203,7 @@ Otherwise, it returns a negative integer to indicate one of the following:
 .ne 2
 .mk
 .na
-\fBVT_EIO\fR
+.B VT_EIO
 .ad
 .RS 13n
 .rt
@@ -200,7 +214,7 @@ An I/O error occurred.
 .ne 2
 .mk
 .na
-\fBVT_ERROR\fR
+.B VT_ERROR
 .ad
 .RS 13n
 .rt
@@ -211,7 +225,7 @@ An unknown error occurred.
 .ne 2
 .mk
 .na
-\fBVT_EINVAL\fR
+.B VT_EINVAL
 .ad
 .RS 13n
 .rt
@@ -222,7 +236,7 @@ The label contains incorrect data.
 .ne 2
 .mk
 .na
-\fBVT_ENOSPC\fR
+.B VT_ENOSPC
 .ad
 .RS 13n
 .rt
@@ -235,12 +249,19 @@ Space out of label was not found.
 The EFI label is used on disks with more than 1^32-1 blocks. For
 compatibility reasons, the \fBread_vtoc\fR(3EXT) and \fBwrite_vtoc()\fR
 functions should be used on smaller disks. The application should attempt
-the \fBread_vtoc()\fR or \fBwrite_vtoc()\fR call, check for an error of
-\fBVT_ENOTSUP\fR, then call the analogous EFI function.
+the
+.B read_vtoc()
+or
+.B write_vtoc()
+call, check for an error of
+.BR VT_ENOTSUP ,
+then call the analogous EFI function.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -260,5 +281,7 @@ MT-LevelUnsafe
 .sp
 .LP
 \fBfmthard\fR(1M), \fBformat\fR(1M), \fBprtvtoc\fR(1M), \fBioctl\fR(2),
-\fBopen\fR(2), \fBlibefi\fR(3LIB), \fBread_vtoc\fR(3EXT),
-\fBattributes\fR(5), \fBdkio\fR(7I)
+.BR open (2),
+\fBlibefi\fR(3LIB), \fBread_vtoc\fR(3EXT),
+.BR attributes (5),
+.BR dkio (7I)

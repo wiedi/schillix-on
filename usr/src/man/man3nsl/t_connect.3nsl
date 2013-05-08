@@ -61,19 +61,35 @@ t_connect \- establish a connection with another transport user
 .SH DESCRIPTION
 .sp
 .LP
-This routine is part of the \fBXTI\fR interfaces which evolved from the
+This routine is part of the
+.B XTI
+interfaces which evolved from the
 \fBTLI\fR interfaces. \fBXTI\fR represents the future evolution of these
-interfaces. However, \fBTLI\fR interfaces are supported for compatibility.
-When using a \fBTLI\fR routine that has the same name as an \fBXTI\fR
-routine, the  \fBtiuser.h\fR header file must be used.  Refer to the
-\fBTLI\fR \fBCOMPATIBILITY\fR section for a description of differences
+interfaces. However,
+.B TLI
+interfaces are supported for compatibility.
+When using a
+.B TLI
+routine that has the same name as an
+.BR XTI
+routine, the 
+.B tiuser.h
+header file must be used.  Refer to the
+\fBTLI COMPATIBILITY\fR section for a description of differences
 between the two interfaces. This function enables a transport user to
 request a connection to the specified destination transport user.
 .sp
 .LP
-This function can only be issued in the  \fBT_IDLE\fR state. The parameter
+This function can only be issued in the 
+.B T_IDLE
+state. The parameter
 \fIfd\fR identifies the local transport endpoint where communication will be
-established, while \fIsndcall\fR and \fIrcvcall\fR point to a \fBt_call\fR
+established, while
+.I sndcall
+and
+.I rcvcall
+point to a
+.BR t_call
 structure which contains the following members:
 .sp
 .in +2
@@ -87,101 +103,167 @@ int sequence;
 
 .sp
 .LP
-The parameter \fIsndcall\fR specifies information needed by the transport
-provider to establish a connection and \fIrcvcall\fR specifies information
+The parameter
+.I sndcall
+specifies information needed by the transport
+provider to establish a connection and
+.I rcvcall
+specifies information
 that is associated with the newly established connection.
 .sp
 .LP
-In \fIsndcall\fR, \fIaddr\fR specifies the protocol address of the
-destination transport user, \fIopt\fR presents any protocol-specific
+In
+.IR sndcall ,
+\fIaddr\fR specifies the protocol address of the
+destination transport user,
+.I opt
+presents any protocol-specific
 information that might be needed by the transport provider, \fIudata\fR
 points to optional user data that may be passed to the destination transport
-user during connection establishment, and \fIsequence\fR has no meaning for
+user during connection establishment, and
+.I sequence
+has no meaning for
 this function.
 .sp
 .LP
-On return, in \fIrcvcall\fR, \fIaddr\fR contains the protocol address
-associated with the responding transport endpoint, \fIopt\fR represents any
+On return, in
+.IR rcvcall ,
+\fIaddr\fR contains the protocol address
+associated with the responding transport endpoint,
+.I opt
+represents any
 protocol-specific information associated with the connection, \fIudata\fR
 points to optional user data that may be returned by the destination
-transport user during connection establishment, and \fIsequence\fR has no
+transport user during connection establishment, and
+.I sequence
+has no
 meaning for this function.
 .sp
 .LP
-The \fIopt\fR argument permits users to define the options that may be
+The
+.I opt
+argument permits users to define the options that may be
 passed to the transport provider. The user may choose not to negotiate
-protocol options by setting the \fIlen\fR field of \fIopt\fR to zero. In
+protocol options by setting the
+.I len
+field of
+.I opt
+to zero. In
 this case, the provider uses the option values currently set for the
 communications endpoint.
 .sp
 .LP
 If used, \fIsndcall\(->opt.buf\fR must point to a buffer with the
 corresponding options, and  \fIsndcall\(->opt.len\fR must specify its
-length. The \fImaxlen\fR and \fIbuf\fR fields of the \fBnetbuf\fR structure
+length. The
+.I maxlen
+and \fIbuf\fR fields of the \fBnetbuf\fR structure
 pointed by \fIrcvcall\(->addr\fR and \fIrcvcall\(->opt\fR must be set before
 the call.
 .sp
 .LP
-The \fIudata\fR argument enables the caller to pass user data to the
+The
+.I udata
+argument enables the caller to pass user data to the
 destination transport user and receive user data from the destination user
 during connection establishment. However, the amount of user data must not
 exceed the limits supported by the transport provider as returned in the
 \fIconnect\fR field of the \fIinfo\fR argument of \fBt_open\fR(3NSL) or
 \fBt_getinfo\fR(3NSL). If the \fIlen\fR of \fIudata\fR is zero in
-\fIsndcall\fR, no data will be sent to the destination transport user.
+.IR sndcall ,
+no data will be sent to the destination transport user.
 .sp
 .LP
-On return, the \fIaddr\fR, \fIopt\fR and \fIudata\fR fields of
+On return, the
+.IR addr ,
+\fIopt\fR and \fIudata\fR fields of
 \fIrcvcall\fR will be updated to reflect values associated with the
-connection. Thus, the \fImaxlen\fR field of each argument must be set before
+connection. Thus, the
+.I maxlen
+field of each argument must be set before
 issuing this function to indicate the maximum size of the buffer for each.
-However, \fImaxlen\fR can be set to zero, in which case no information to
+However,
+.I maxlen
+can be set to zero, in which case no information to
 this specific argument is given to the user on the return from
-\fBt_connect()\fR. If maxlen is greater than zero and less than the length
-of the value,  \fBt_connect()\fR fails with  \fBt_errno\fR set to
-\fBTBUFOVFLW\fR. If  \fIrcvcall\fR is set to  \fINULL,\fR no information at
+.BR t_connect() .
+If maxlen is greater than zero and less than the length
+of the value, 
+.B t_connect()
+fails with 
+.B t_errno
+set to
+.BR TBUFOVFLW .
+If 
+.I rcvcall
+is set to 
+.I NULL,
+no information at
 all is returned.
 .sp
 .LP
-By default, \fBt_connect()\fR executes in synchronous mode, and will wait
+By default,
+.B t_connect()
+executes in synchronous mode, and will wait
 for the destination user's response before returning control to the local
 user. A successful return (that is, return value of zero) indicates that the
-requested connection has been established. However, if  \fBO_NONBLOCK\fR is
-set by means of \fBt_open\fR(3NSL) or \fBfcntl\fR(2), \fBt_connect()\fR
+requested connection has been established. However, if 
+.B O_NONBLOCK
+is
+set by means of
+.BR t_open "(3NSL) or"
+.BR fcntl (2),
+.B t_connect()
 executes in asynchronous mode. In this case, the call will not wait for the
 remote user's response, but will return control immediately to the local
-user and return  -1 with \fBt_errno\fR set to \fBTNODATA\fR to indicate that
+user and return  -1 with
+.B t_errno
+set to
+.B TNODATA
+to indicate that
 the connection has not yet been established. In this way, the function
 simply initiates the connection establishment procedure by sending a
 connection request to the destination transport user. The
-\fBt_rcvconnect\fR(3NSL) function is used in conjunction with
+.BR t_rcvconnect (3NSL)
+function is used in conjunction with
 \fBt_connect()\fR to determine the status of the requested connection.
 .sp
 .LP
-When a synchronous \fBt_connect()\fR call is interrupted by the arrival of
+When a synchronous
+.B t_connect()
+call is interrupted by the arrival of
 a signal, the state of the corresponding transport endpoint is
 \fBT_OUTCON,\fR allowing a further call to either \fBt_rcvconnect\fR(3NSL),
-\fBt_rcvdis\fR(3NSL) or \fBt_snddis\fR(3NSL). When an asynchronous
+.BR t_rcvdis (3NSL)
+or
+.BR t_snddis "(3NSL). When an asynchronous"
 \fBt_connect()\fR call is interrupted by the arrival of a signal,  the state
-of the corresponding transport endpoint is  \fBT_IDLE.\fR
+of the corresponding transport endpoint is 
+.BR T_IDLE.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a value of  \fB0\fR is returned.  Otherwise, a
-value of  -1 is returned and \fBt_errno\fR is set to indicate an error.
+Upon successful completion, a value of 
+.B 0
+is returned.  Otherwise, a
+value of  -1 is returned and
+.B t_errno
+is set to indicate an error.
 .SH VALID STATES
 .sp
 .LP
-\fBT_IDLE\fR
+.B T_IDLE
 .SH ERRORS
 .sp
 .LP
-On failure, \fBt_errno\fR is set to one of the following:
+On failure,
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTACCES\fR
+.B TACCES
 .ad
 .RS 15n
 .rt
@@ -193,7 +275,7 @@ options.
 .ne 2
 .mk
 .na
-\fBTADDRBUSY\fR
+.B TADDRBUSY
 .ad
 .RS 15n
 .rt
@@ -206,7 +288,7 @@ exists.
 .ne 2
 .mk
 .na
-\fBTBADADDR\fR
+.B TBADADDR
 .ad
 .RS 15n
 .rt
@@ -218,7 +300,7 @@ illegal information.
 .ne 2
 .mk
 .na
-\fBTBADDATA\fR
+.B TBADDATA
 .ad
 .RS 15n
 .rt
@@ -230,7 +312,7 @@ transport provider.
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 15n
 .rt
@@ -241,7 +323,7 @@ The specified file descriptor does not refer to a transport endpoint.
 .ne 2
 .mk
 .na
-\fBTBADOPT\fR
+.B TBADOPT
 .ad
 .RS 15n
 .rt
@@ -253,14 +335,18 @@ illegal information.
 .ne 2
 .mk
 .na
-\fBTBUFOVFLW\fR
+.B TBUFOVFLW
 .ad
 .RS 15n
 .rt
-The number of bytes allocated for an incoming argument \fI(maxlen)\fR is
+The number of bytes allocated for an incoming argument
+.I (maxlen)
+is
 greater than 0 but not sufficient to store the value of that argument. If
 executed in synchronous mode, the provider's state, as seen by the user,
-changes to \fBT_DATAXFER,\fR and the information to be returned in
+changes to
+.B T_DATAXFER,
+and the information to be returned in
 \fIrcvcall\fR is discarded.
 .RE
 
@@ -268,7 +354,7 @@ changes to \fBT_DATAXFER,\fR and the information to be returned in
 .ne 2
 .mk
 .na
-\fBTLOOK\fR
+.B TLOOK
 .ad
 .RS 15n
 .rt
@@ -280,7 +366,7 @@ immediate attention.
 .ne 2
 .mk
 .na
-\fBTNODATA\fR
+.B TNODATA
 .ad
 .RS 15n
 .rt
@@ -293,7 +379,7 @@ remote user.
 .ne 2
 .mk
 .na
-\fBTNOTSUPPORT\fR
+.B TNOTSUPPORT
 .ad
 .RS 15n
 .rt
@@ -304,7 +390,7 @@ This function is not supported by the underlying transport provider.
 .ne 2
 .mk
 .na
-\fBTOUTSTATE\fR
+.B TOUTSTATE
 .ad
 .RS 15n
 .rt
@@ -316,20 +402,21 @@ states in which a call to this function is valid.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 15n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI
-error \fB(t_errno)\fR.
+error
+.BR (t_errno) .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 15n
 .rt
@@ -339,14 +426,24 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-The \fBXTI\fR and \fBTLI\fR interface definitions have common names but use
+The
+.B XTI
+and
+.B TLI
+interface definitions have common names but use
 different header files. This, and other semantic differences between the two
 interfaces are described in the subsections below.
 .SS "Interface Header"
 .sp
 .LP
-The \fBXTI\fR interfaces use the header file, \fBxti.h\fR. \fBTLI\fR
-interfaces should \fInot\fR use this header.  They should use the header:
+The
+.B XTI
+interfaces use the header file,
+.BR xti.h .
+.B TLI
+interfaces should
+.I not
+use this header.  They should use the header:
 .sp
 .in +2
 .nf
@@ -357,24 +454,44 @@ interfaces should \fInot\fR use this header.  They should use the header:
 .SS "Error Description Values"
 .sp
 .LP
-The \fBTPROTO\fR and \fBTADDRBUSY\fR \fBt_errno\fR values can be set by the
+The
+.B TPROTO
+and
+.B "TADDRBUSY t_errno"
+values can be set by the
 \fBXTI\fR interface but not by the \fBTLI\fR interface.
 .sp
 .LP
-A \fBt_errno\fR value that this routine can return under different
-circumstances than its \fBXTI\fR counterpart is \fBTBUFOVFLW\fR. It can be
-returned even when the \fBmaxlen\fR field of the corresponding buffer has
+A
+.B t_errno
+value that this routine can return under different
+circumstances than its
+.B XTI
+counterpart is
+.BR TBUFOVFLW .
+It can be
+returned even when the
+.B maxlen
+field of the corresponding buffer has
 been set to zero.
 .SS "Option Buffers"
 .sp
 .LP
-The format of the options in an \fBopt\fR buffer is dictated by the
-transport provider. Unlike the \fBXTI\fR interface, the \fBTLI\fR interface
+The format of the options in an
+.B opt
+buffer is dictated by the
+transport provider. Unlike the
+.B XTI
+interface, the
+.B TLI
+interface
 does not fix the buffer format.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -393,5 +510,8 @@ MT LevelSafe
 .LP
 \fBfcntl\fR(2), \fBt_accept\fR(3NSL), \fBt_alloc\fR(3NSL),
 \fBt_getinfo\fR(3NSL), \fBt_listen\fR(3NSL), \fBt_open\fR(3NSL),
-\fBt_optmgmt\fR(3NSL), \fBt_rcvconnect\fR(3NSL), \fBt_rcvdis\fR(3NSL),
-\fBt_snddis\fR(3NSL), \fBattributes\fR
+.BR t_optmgmt (3NSL),
+.BR t_rcvconnect (3NSL),
+.BR t_rcvdis (3NSL),
+.BR t_snddis (3NSL),
+.B attributes

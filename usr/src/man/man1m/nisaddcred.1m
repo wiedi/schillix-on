@@ -36,14 +36,20 @@ nisaddcred \- create NIS+ credentials
 .SH DESCRIPTION
 .sp
 .LP
-The \fBnisaddcred\fR command is used to create security credentials for
+The
+.B nisaddcred
+command is used to create security credentials for
 NIS+ principals. NIS+ credentials serve two purposes. The first is to
 provide authentication information to various services; the second is to map
 the authentication service name into a NIS+ principal name.
 .sp
 .LP
-When the \fBnisaddcred\fR command is run, these credentials get created and
-stored in a table named \fBcred.org_dir\fR in the default NIS+ domain. If
+When the
+.B nisaddcred
+command is run, these credentials get created and
+stored in a table named
+.B cred.org_dir
+in the default NIS+ domain. If
 \fIdomain_name\fR is specified, the entries are stored in the
 \fBcred.org_dir\fR of the specified domain. The specified domain must either
 be the one to which you belong, or one in which you are authenticated and
@@ -52,7 +58,8 @@ credentials of normal users must be stored in the same domain as their
 passwords.
 .sp
 .LP
-It is simpler to add credentials using \fBnisclient\fR(1M), because it
+It is simpler to add credentials using
+.BR nisclient "(1M), because it"
 obtains the required information itself. \fBnispopulate\fR(1M) is used for
 "bulk" updates and can also be used to add credentials for entries in the
 \fBhosts\fR and the \fBpasswd\fR NIS+ tables.
@@ -60,12 +67,20 @@ obtains the required information itself. \fBnispopulate\fR(1M) is used for
 .LP
 NIS+ principal names are used in specifying clients that have access rights
 to NIS+ objects. For more details, refer to the "Principal Names" subsection
-of the \fBNIS+\fR(1) manual page. See \fBnischmod\fR(1), \fBnischown\fR(1),
-\fBnis_objects\fR(3NSL), and \fBnis_groups\fR(3NSL). Various other services
+of the
+.BR NIS+ (1)
+manual page. See
+.BR nischmod (1),
+.BR nischown (1),
+.BR nis_objects (3NSL),
+and
+.BR nis_groups "(3NSL). Various other services"
 can also implement access control based on these principal names.
 .sp
 .LP
-The \fBcred.org_dir\fR table is organized as follows:
+The
+.B cred.org_dir
+table is organized as follows:
 .sp
 
 .sp
@@ -85,111 +100,199 @@ user1.foo.com.DHmmm-nunix.2990@foo.com248.\|.\|.428a42.\|.\|.f32
 
 .sp
 .LP
-The \fBcname\fR column contains a canonical representation of the NIS+
+The
+.B cname
+column contains a canonical representation of the NIS+
 principal name. By convention, this name is the login name of a user, or the
 host name of a machine, followed by a dot ('.') followed by the fully
 qualified "home" domain of that principal. For users, the home domain is
-defined to be the domain where their \fBDES\fR credentials are kept. For
+defined to be the domain where their
+.B DES
+credentials are kept. For
 hosts, their home domain is defined to be the domain name returned by the
-\fBdomainname\fR(1M) command executed on that host.
+.BR domainname (1M)
+command executed on that host.
 .sp
 .LP
-There are two basic types of \fIauth_type\fR entries in the
+There are two basic types of
+.I auth_type
+entries in the
 \fBcred.org_dir\fR table, those with authentication type \fBLOCAL,\fR and
-those with authentication type \fBDES,\fR \fIauth_type\fR, specified on the
-command line in upper or lower case, should be either \fIlocal\fR or
-\fBdes\fR.
+those with authentication type
+.BR DES,
+.IR auth_type ,
+specified on the
+command line in upper or lower case, should be either
+.I local
+or
+.BR des .
 .sp
 .LP
-However, the \fBcred.org_dir\fR table may also be used to hold data for
-other values of \fIauth_type\fR. Currently, this is limited to the
+However, the
+.B cred.org_dir
+table may also be used to hold data for
+other values of
+.IR auth_type .
+Currently, this is limited to the
 mechanisms listed on the \fBnisauthconf\fR(1M) man page, for which the
-\fBnisaddcred\fR \fIauth_type\fR argument is the same as the name of the
+.B nisaddcred
+.I auth_type
+argument is the same as the name of the
 mechanism. These mechanisms use a modified form of Secure RPC, and they are
-similar to the \fBDES\fR authentication type.
+similar to the
+.B DES
+authentication type.
 .sp
 .LP
-If the \fIauth_type\fR is \fBdes\fR, and other authentication mechanisms
+If the
+.I auth_type
+is
+.BR des ,
+and other authentication mechanisms
 are configured with \fBnisauthconf\fR(1M), then credential entries are added
 or updated for each mechanism configured. To only add or update 1992-bit
-Diffie Hellman credentials, that is, those with the \fIauth_type\fR of
+Diffie Hellman credentials, that is, those with the
+.I auth_type
+of
 \fBDES,\fR use dh192-0 on the command line. If there are no authentication
-mechanisms configured, using \fBdes\fR on the command line will only add or
+mechanisms configured, using
+.B des
+on the command line will only add or
 update 192-bit Diffie Hellman credentials.
 .sp
 .LP
-Entries of type \fBLOCAL\fR are used by the \fBNIS+\fR service to determine
-the correspondence between fully qualified \fBNIS+\fR principal names and
-users identified by \fBUIDs\fR in the domain containing the
+Entries of type
+.B LOCAL
+are used by the
+.B NIS+
+service to determine
+the correspondence between fully qualified
+.B NIS+
+principal names and
+users identified by
+.B UIDs
+in the domain containing the
 \fBcred.org_dir\fR table. This correspondence is required when associating
-requests made using the \fBAUTH_SYS\fR RPC authentication flavor (see
-\fBrpc_clnt_auth\fR(3NSL)) to a NIS+ principal name. It is also required for
-mapping a \fB UID\fR in one domain to its fully qualified NIS+ principal
+requests made using the
+.B AUTH_SYS
+RPC authentication flavor (see
+.BR rpc_clnt_auth (3NSL))
+to a NIS+ principal name. It is also required for
+mapping a
+.B " UID"
+in one domain to its fully qualified NIS+ principal
 name whose home domain may be elsewhere. The principal's credentials for any
-authentication flavor may then be sought for within the \fBcred.org_dir\fR
+authentication flavor may then be sought for within the
+.BR cred.org_dir
 table in the principal's home domain (extracted from the principal name).
-The same \fBNIS+\fR principal may have \fBLOCAL\fR credential entries in
-more than one domain. Only users, and not machines, have \fBLOCAL\fR
-credentials. In their home domain, users of \fBNIS+\fR should have both
+The same
+.B NIS+
+principal may have
+.B LOCAL
+credential entries in
+.RB "more than one domain. Only users, and not machines, have" " LOCAL"
+credentials. In their home domain, users of
+.B NIS+
+should have both
 types of credentials.
 .sp
 .LP
-The \fIauth_name\fR associated with the \fBLOCAL\fR type entry is a
+The
+.I auth_name
+associated with the
+.B LOCAL
+type entry is a
 \fBUID\fR that is valid for the principal in the domain containing the
 \fBcred.org_dir\fR table. This may differ from that in the principal's home
-domain. The public information stored in \fIpublic_data\fR for this type
-contains a list of \fBGIDs\fR for groups in which the user is a member. The
+domain. The public information stored in
+.I public_data
+for this type
+contains a list of
+.B GIDs
+for groups in which the user is a member. The
 \fBGIDs\fR also apply to the domain in which the table resides. There is no
-private data associated with this type. Neither a \fBUID\fR nor a principal
-name should appear more than once among the \fBLOCAL\fR entries in any one
+private data associated with this type. Neither a
+.B UID
+nor a principal
+name should appear more than once among the
+.B LOCAL
+entries in any one
 \fBcred.org_dir\fR table.
 .sp
 .LP
-The \fBDES\fR \fIauth_type\fR is used for Secure RPC authentication (see
-\fBsecure_rpc\fR(3NSL)).
+The
+.B DES
+\fIauth_type\fR is used for Secure RPC authentication (see
+.BR secure_rpc (3NSL)).
 .sp
 .LP
-The authentication name associated with the \fBDES\fR \fIauth_type\fR is a
-Secure RPC \fInetname\fR. A Secure RPC netname has the form
+The authentication name associated with the
+.B DES
+\fIauth_type\fR is a
+Secure RPC
+.IR netname .
+A Secure RPC netname has the form
 \fBunix.\fBid\fB@\fIdomain.com,\fR where \fIdomain\fR must be the
 same as the domain of the principal. For principals that are users the
 \fBid\fR must be the \fBUID\fR of the principal in the principal's home
-domain. For principals that are hosts, the \fBid\fR is the host's name. In
-Secure RPC, processes running under effective \fBUID\fR 0 (root) are
-identified with the host principal. Unlike \fBLOCAL\fR, there cannot be more
-than one \fBDES\fR credential entry for one NIS+ principal in the NIS+
+domain. For principals that are hosts, the
+.B id
+is the host's name. In
+Secure RPC, processes running under effective
+.B UID
+0 (root) are
+identified with the host principal. Unlike
+.BR LOCAL ,
+there cannot be more
+than one
+.B DES
+credential entry for one NIS+ principal in the NIS+
 namespace.
 .sp
 .LP
-The public information in an entry of authentication type \fBDES\fR is the
+The public information in an entry of authentication type
+.B DES
+is the
 public key for the principal. The private information in this entry is the
 private key of the principal encrypted by the principal's network
 password.
 .sp
 .LP
 User clients of NIS+ should have credentials of both types in their home
-domain. In addition, a principal must have a \fBLOCAL\fR entry in the
+domain. In addition, a principal must have a
+.B LOCAL
+entry in the
 \fBcred.org_dir\fR table of each domain from which the principal wishes to
 make authenticated requests. A client of NIS+ that makes a request from a
-domain in which it does not have a \fBLOCAL\fR entry will be unable to
-acquire \fBDES\fR credentials. A NIS+ service running at security level 2 or
+domain in which it does not have a
+.B LOCAL
+entry will be unable to
+acquire
+.B DES
+credentials. A NIS+ service running at security level 2 or
 higher will consider such users unauthenticated and assign them the name
 \fInobody\fR for determining access rights.
 .sp
 .LP
 This command can only be run by those NIS+ principals who are authorized to
-add or delete the entries in the \fBcred\fR table.
+add or delete the entries in the
+.B cred
+table.
 .sp
 .LP
 If credentials are being added for the caller itself, \fBnisaddcred\fR
 automatically performs a keylogin for the caller.
 .sp
 .LP
-You can list the \fBcred\fR entries for a particular principal with
-\fBnismatch\fR(1).
+You can list the
+.B cred
+entries for a particular principal with
+.BR nismatch (1).
 .sp
 .LP
-The \fBcred.org_dir\fR \fBNIS+\fR table replaces the maps
+The
+.B "cred.org_dir NIS+"
+table replaces the maps
 \fIpublickey.byname\fR and \fInetid.byname\fR used in \fBNIS (YP).\fR
 .SH OPTIONS
 .sp
@@ -203,12 +306,20 @@ The following options are supported:
 .ad
 .RS 22n
 .rt
-The name \fIprincipal\fR specifies the name of the principal as defined by
+The name
+.I principal
+specifies the name of the principal as defined by
 the naming rules for that specific mechanism. For example, \fBLOCAL\fR
 credential names are supplied with this option by including a string
-specifying a \fBUID.\fR For \fBDES\fR credentials, the name should be a
+specifying a
+.B UID.
+For
+.B DES
+credentials, the name should be a
 Secure RPC netname of the form \fBunix.\fBid\fB@\fIdomain.com,\fR
-as described earlier. If the \fB-p\fR option is not specified, the
+as described earlier. If the
+.B -p
+option is not specified, the
 \fIauth_name\fR field is constructed from the effective UID of the current
 process and the name of the local domain.
 .RE
@@ -221,18 +332,44 @@ process and the name of the local domain.
 .ad
 .RS 22n
 .rt
-Use the \fBNIS+\fR principal name \fInis_principal\fR. This option should
-be used when creating \fBLOCAL\fR or \fBDES\fR credentials for users whose
+Use the
+.B NIS+
+principal name
+.IR nis_principal .
+This option should
+be used when creating
+.B LOCAL
+or
+.B DES
+credentials for users whose
 home domain is different than the local machine's default domain.
 .sp
-Whenever the \fB-P\fR option is not specified, \fBnisaddcred\fR constructs
+Whenever the
+.B -P
+option is not specified,
+.B nisaddcred
+constructs
 a principal name for the entry as follows. When it is not creating an entry
-of type \fBLOCAL,\fR \fBnisaddcred\fR calls \fBnis_local_principal\fR, which
-looks for an existing \fBLOCAL\fR entry for the effective \fBUID\fR of the
-current process in the \fBcred.org_dir\fR table and uses the associated
+of type
+.B "LOCAL, nisaddcred"
+calls
+.BR nis_local_principal ,
+which
+looks for an existing
+.B LOCAL
+entry for the effective
+.B UID
+of the
+current process in the
+.B cred.org_dir
+table and uses the associated
 principal name for the new entry. When creating an entry of authentication
-type \fBLOCAL\fR, \fBnisaddcred\fR constructs a default NIS+ principal name
-by taking the login name of the effective \fBUID\fR for its own process, and
+type
+.BR LOCAL ,
+\fBnisaddcred\fR constructs a default NIS+ principal name
+by taking the login name of the effective
+.B UID
+for its own process, and
 appending to it a dot ('.') followed by the local machine's default domain.
 If the caller is a superuser, the machine name is used instead of the login
 name.
@@ -246,12 +383,18 @@ name.
 .ad
 .RS 22n
 .rt
-Use the \fIlogin_password\fR specified as the password to encrypt the
+Use the
+.I login_password
+specified as the password to encrypt the
 secret key for the credential entry. This overrides the prompting for a
 password from the shell. This option is intended for administration scripts
 only. Prompting guarantees not only that no one can see your password on the
-command line using \fBps\fR(1) but it also checks to make sure you have not
-made any mistakes. \fIlogin_password\fR does not really have to be the
+command line using
+.BR ps (1)
+but it also checks to make sure you have not
+made any mistakes.
+.I login_password
+does not really have to be the
 user's password but if it is, it simplifies logging in.
 .RE
 
@@ -263,22 +406,42 @@ user's password but if it is, it simplifies logging in.
 .ad
 .RS 22n
 .rt
-Remove all credentials associated with the principal \fInis_principal\fR
-from the \fBcred.org_dir\fR table. This option can be used when removing a
-client or user from the system. If \fInis_principal\fR is not specified the
-default is to remove credentials for the current \fIuser\fR. If
+Remove all credentials associated with the principal
+.IR nis_principal
+from the
+.B cred.org_dir
+table. This option can be used when removing a
+client or user from the system. If
+.I nis_principal
+is not specified the
+default is to remove credentials for the current
+.IR user .
+If
 \fIdomain_name\fR is not specified, the operation is executed in the default
 NIS+ domain.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAdding the \fBLOCAL\fR and \fBDES\fR Credentials
+\fBExample 1\fR Adding the \fBLOCAL\fR and \fBDES\fR Credentials
 .sp
 .LP
-The following examples illustrate how to add the \fBLOCAL\fR and \fBDES\fR
-credentials for some user, \fBuser1\fR, with a \fBUID\fR of \fB2990\fR, who
-is an \fBNIS+\fR user principal in the \fBsome.domain.com.\fR NIS+ domain:
+The following examples illustrate how to add the
+.B LOCAL
+and
+.BR DES
+credentials for some user,
+.BR user1 ,
+with a
+.B UID
+of
+.BR 2990 ,
+who
+is an
+.B NIS+
+user principal in the
+.B some.domain.com.
+NIS+ domain:
 
 .sp
 .in +2
@@ -290,16 +453,26 @@ example% \fBnisaddcred -p 2990 -P user1.some.domain.com. local\fR
 
 .sp
 .LP
-Note that credentials are always added in the \fBcred.org_dir\fR table in
-the domain where \fBnisaddcred\fR is run, unless \fIdomain_name\fR is
+Note that credentials are always added in the
+.B cred.org_dir
+table in
+the domain where
+.B nisaddcred
+is run, unless
+.I domain_name
+is
 specified as the last parameter on the command line. If credentials are
 being added from the domain server for its clients, then \fIdomain_name\fR
 should be specified. The caller should have adequate permissions to create
-entries in the \fBcred.org_dir\fR table.
+entries in the
+.B cred.org_dir
+table.
 
 .sp
 .LP
-The system administrator can add a \fBDES\fR credential for the same user,
+The system administrator can add a
+.B DES
+credential for the same user,
 using the following example:
 
 .sp
@@ -312,7 +485,9 @@ example% \fBnisaddcred -p unix.2990@some.domain.com -P user1.some.domain.com. de
 
 .sp
 .LP
-Please note that \fBDES\fR credentials can be added only after the
+Please note that
+.B DES
+credentials can be added only after the
 \fBLOCAL\fR credentials have been added. Also, if the system is configured
 to use more than one authentication mechanism, credentials will be made for
 each mechanism configured. See \fBnisauthconf\fR(1M).
@@ -320,12 +495,16 @@ each mechanism configured. See \fBnisauthconf\fR(1M).
 .sp
 .LP
 Note that the secure RPC netname does not end with a dot ('.') while the
-NIS+ principal name, specified with the \fB-P\fR option, does. This command
+NIS+ principal name, specified with the
+.B -P
+option, does. This command
 should be executed from a machine in the same domain as is the user.
 
 .sp
 .LP
-The following example shows how to add a machine's \fBDES\fR credentials in
+The following example shows how to add a machine's
+.B DES
+credentials in
 the same domain:
 
 .sp
@@ -338,12 +517,18 @@ example% nisaddcred -p unix.foo@some.domain.com -P foo.some.domain.com. des
 
 .sp
 .LP
-Please note that no \fBLOCAL\fR credentials are needed in this case.
+Please note that no
+.B LOCAL
+credentials are needed in this case.
 
 .sp
 .LP
-The following example illustrates how to add a \fBNIS+\fR workstation's
-principal \fBDES\fR credential:
+The following example illustrates how to add a
+.B NIS+
+workstation's
+principal
+.B DES
+credential:
 
 .sp
 .in +2
@@ -358,12 +543,16 @@ example% \fBnisaddcred -p unix.host1@sub.some.domain.com \e
 .LP
 This format is particularly useful if you are running this command from a
 server which is in a higher domain than sub.some.domain.com. Without the
-last option for domain name, \fBnisaddcred\fR would fail because it would
+last option for domain name,
+.B nisaddcred
+would fail because it would
 attempt to use the default domain of some.domain.com.
 
 .sp
 .LP
-The following example illustrates adding \fBDES\fR credentials without
+The following example illustrates adding
+.B DES
+credentials without
 being prompted for the root login password:
 
 .sp
@@ -380,7 +569,8 @@ example% \fBnisaddcred -p unix.2990@some.domain.com \e
 The following example shows how to add a credential for a user using a
 specific authentication mechanism that was previously configured with
 \fBnisauthconf\fR(1M). See \fBnisauthconf\fR(1M) for a list of the valid
-values of \fIauth_type\fR:
+values of
+.IR auth_type :
 
 .sp
 .in +2
@@ -395,12 +585,18 @@ example% \fBnisaddcred -p unix.2990@some.domain.com \e
 .LP
 The password should be the same for all the credentials that belong to the
 user. Otherwise, only the credentials encrypted with the user's password
-will be used at login, and the user will have to run \fBchkey\fR(1) using
-the \fB-p\fR option.
+will be used at login, and the user will have to run
+.BR chkey (1)
+using
+the
+.B -p
+option.
 
 .sp
 .LP
-The following example shows how to add a \fBDES\fR credential when other
+The following example shows how to add a
+.B DES
+credential when other
 authentication mechanisms are configured on the system:
 
 .sp
@@ -420,7 +616,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -431,7 +627,7 @@ Successful operation.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -441,7 +637,9 @@ Operation failed.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -458,12 +656,23 @@ AvailabilitySUNWnisu
 .SH SEE ALSO
 .sp
 .LP
-\fBchkey\fR(1), \fBkeylogin\fR(1), \fBNIS+\fR(1), \fBnischmod\fR(1),
-\fBnischown\fR(1), \fBnismatch\fR(1), \fBnistbladm\fR(1), \fBps\fR(1),
-\fBdomainname\fR(1M), \fBnisclient\fR(1M), \fBnispopulate\fR(1M),
-\fBnis_groups\fR(3NSL), \fBnis_local_names\fR(3NSL),
-\fBnis_objects\fR(3NSL), \fBrpc_clnt_auth\fR(3NSL), \fBsecure_rpc\fR(3NSL),
-\fBattributes\fR(5)
+.BR chkey (1),
+.BR keylogin (1),
+.BR NIS+ (1),
+.BR nischmod (1),
+.BR nischown (1),
+.BR nismatch (1),
+.BR nistbladm (1),
+.BR ps (1),
+.BR domainname (1M),
+.BR nisclient (1M),
+.BR nispopulate (1M),
+.BR nis_groups (3NSL),
+.BR nis_local_names (3NSL),
+.BR nis_objects (3NSL),
+.BR rpc_clnt_auth (3NSL),
+.BR secure_rpc (3NSL),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP

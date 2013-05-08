@@ -46,7 +46,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIqp\fR
+.I qp
 .ad
 .RS 6n
 .rt
@@ -57,39 +57,64 @@ Pointer to the queue that is being opened or closed.
 .sp
 .LP
 \fBqwait()\fR and \fBqwait_sig()\fR are used to wait for a message to
-arrive to the \fBput\fR(9E) or \fBsrv\fR(9E) procedures. \fBqwait()\fR and
+arrive to the
+.BR put "(9E) or"
+.BR srv (9E)
+procedures.
+.B qwait()
+and
 \fBqwait_sig()\fR can also be used to wait for \fBqbufcall\fR(9F) or
-\fBqtimeout\fR(9F) callback procedures to execute. These routines can be
-used in the \fBopen\fR(9E) and \fBclose\fR(9E) procedures in a STREAMS
+.BR qtimeout (9F)
+callback procedures to execute. These routines can be
+used in the
+.BR open "(9E) and"
+.BR close (9E)
+procedures in a STREAMS
 driver or module.
 .sp
 .LP
-The thread that calls \fBclose()\fR does not necessarily have the ability
-to receive signals, particularly when called by \fBexit\fR(2). In this case,
-\fBqwait_sig()\fR behaves exactly as \fBqwait()\fR. Driver writers may use
-\fBddi_can_receive_sig\fR(9F) to determine when this is the case, and, if
+The thread that calls
+.B close()
+does not necessarily have the ability
+to receive signals, particularly when called by
+.BR exit (2).
+In this case,
+\fBqwait_sig()\fR behaves exactly as
+.BR qwait() .
+Driver writers may use
+.BR ddi_can_receive_sig (9F)
+to determine when this is the case, and, if
 so, arrange some means to avoid blocking indefinitely (for example, by using
-\fBqtimeout\fR(9F).
+.BR qtimeout (9F).
 .sp
 .LP
 \fBqwait()\fR and \fBqwait_sig()\fR atomically exit the inner and outer
 perimeters associated with the queue, and wait for a thread to leave the
 module's \fBput\fR(9E), \fBsrv\fR(9E), or \fBqbufcall\fR(9F) /
-\fBqtimeout\fR(9F) callback procedures. Upon return they re-enter the inner
+.BR qtimeout (9F)
+callback procedures. Upon return they re-enter the inner
 and outer perimeters.
 .sp
 .LP
 This can be viewed as there being an implicit wakeup when a thread leaves a
-\fBput\fR(9E) or \fBsrv\fR(9E) procedure or after a \fBqtimeout\fR(9F) or
+.BR put (9E)
+or \fBsrv\fR(9E) procedure or after a
+.BR qtimeout (9F)
+or
 \fBqbufcall\fR(9F) callback procedure has been run in the same perimeter.
 .sp
 .LP
-\fBqprocson\fR(9F) must be called before calling \fBqwait()\fR or
-\fBqwait_sig()\fR. 
+.BR qprocson (9F)
+must be called before calling
+.B qwait()
+or
+.BR qwait_sig() .
 .sp
 .LP
 \fBqwait()\fR is not interrupted by a signal, whereas \fBqwait_sig()\fR is
-interrupted by a signal. \fBqwait_sig()\fR normally returns non-zero, and
+interrupted by a signal.
+.B qwait_sig()
+normally returns non-zero, and
 returns zero when the waiting was interrupted by a signal.
 .sp
 .LP
@@ -102,28 +127,42 @@ perimeter. See \fBcondvar\fR(9F).
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
-For \fBqwait_sig()\fR, indicates that the condition was not necessarily
+For
+.BR qwait_sig() ,
+indicates that the condition was not necessarily
 signaled, and the function returned because a signal was pending.
 .RE
 
 .SH CONTEXT
 .sp
 .LP
-These functions can only be called from an \fBopen\fR(9E) or
-\fBclose\fR(9E) routine.
+These functions can only be called from an
+.BR open "(9E) or"
+.BR close (9E)
+routine.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBqwait()\fR
+\fBExample 1\fR Using \fBqwait()\fR
 .sp
 .LP
-The open routine sends down a \fBT_INFO_REQ\fR message and waits for the
-\fBT_INFO_ACK\fR. The arrival of the \fBT_INFO_ACK\fR is recorded by
-resetting a flag in the unit structure (\fBWAIT_INFO_ACK\fR). The example
-assumes that the module is \fBD_MTQPAIR\fR or \fBD_MTPERMOD\fR.
+The open routine sends down a
+.B T_INFO_REQ
+message and waits for the
+.BR T_INFO_ACK .
+The arrival of the
+.B T_INFO_ACK
+is recorded by
+resetting a flag in the unit structure
+.RB ( WAIT_INFO_ACK ).
+The example
+assumes that the module is
+.B D_MTQPAIR
+or
+.BR D_MTPERMOD .
 
 .sp
 .in +2
@@ -165,12 +204,17 @@ xxrput(qp, mp)
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(9E), \fBopen\fR(9E), \fBput\fR(9E), \fBsrv\fR(9E),
-\fBcondvar\fR(9F), \fBddi_can_receive_sig\fR(9F), \fBmt-streams\fR(9F),
+.BR close (9E),
+.BR open (9E),
+.BR put (9E),
+.BR srv (9E),
+.BR condvar (9F),
+.BR ddi_can_receive_sig (9F),
+.BR mt-streams (9F),
 \fBqbufcall\fR(9F), \fBqprocson\fR(9F), \fBqtimeout\fR(9F)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

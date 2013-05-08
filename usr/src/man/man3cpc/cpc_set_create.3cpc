@@ -54,18 +54,29 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lcpc\fR [ \fIlibrary\fR\&.\|.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBcpc_set_create()\fR function returns an initialized and empty CPC
+The
+.B cpc_set_create()
+function returns an initialized and empty CPC
 set. A CPC set contains some number of requests, where a request represents
 a specific configuration of a hardware performance instrumentation counter
-present on the processor. The \fBcpc_set_t\fR data structure is opaque and
+present on the processor. The
+.B cpc_set_t
+data structure is opaque and
 must not be accessed directly by the application.
 .sp
 .LP
 Applications wanting to program one or more performance counters must
-create an empty set with \fBcpc_set_create()\fR and add requests to the set
-with \fBcpc_set_add_request()\fR. Once all requests have been added to a
+create an empty set with
+.B cpc_set_create()
+and add requests to the set
+with
+.BR cpc_set_add_request() .
+Once all requests have been added to a
 set, the set must be bound to the hardware performance counters (see
-\fBcpc_bind_curlwp()\fR, \fBcpc_bind_pctx()\fR, and \fBcpc_bind_cpu()\fR,
+.BR cpc_bind_curlwp() ,
+.BR cpc_bind_pctx() ,
+and
+.BR cpc_bind_cpu() ,
 all described on \fBcpc_bind_curlwp\fR(3CPC)) before counting events. At
 bind time, the system attempts to match each request with an available
 physical counter capable of counting the event specified in the request. If
@@ -75,19 +86,28 @@ managed in CPC buffers separate from the CPC set whose requests are being
 counted. See \fBcpc_buf_create\fR(3CPC) and \fBcpc_set_sample\fR(3CPC).
 .sp
 .LP
-The \fBcpc_set_add_request()\fR function specifies a configuration of a
-hardware counter.  The arguments to \fBcpc_set_add_request()\fR are:
+The
+.B cpc_set_add_request()
+function specifies a configuration of a
+hardware counter.  The arguments to
+.B cpc_set_add_request()
+are:
 .sp
 .ne 2
 .mk
 .na
-\fIevent\fR
+.I event
 .ad
 .RS 17n
 .rt
 A string containing the name of an event supported by the system's
-processor. The \fBcpc_walk_events_all()\fR and \fBcpc_walk_events_pic()\fR
-functions (both described on \fBcpc_npic\fR(3CPC)) can be used to query the
+processor. The
+.B cpc_walk_events_all()
+and
+.BR cpc_walk_events_pic()
+functions (both described on
+.BR cpc_npic (3CPC))
+can be used to query the
 processor for the names of available events. Certain processors allow the
 use of raw event codes, in which case a string representation of an event
 code in a form acceptable to \fBstrtol\fR(3C) can be used as the \fIevent\fR
@@ -98,7 +118,7 @@ argument.
 .ne 2
 .mk
 .na
-\fIpreset\fR
+.I preset
 .ad
 .RS 17n
 .rt
@@ -119,7 +139,7 @@ behalf of this request:
 .ne 2
 .mk
 .na
-\fBCPC_COUNT_USER\fR
+.B CPC_COUNT_USER
 .ad
 .sp .6
 .RS 4n
@@ -131,7 +151,7 @@ mode.
 .ne 2
 .mk
 .na
-\fBCPC_COUNT_SYSTEM\fR
+.B CPC_COUNT_SYSTEM
 .ad
 .sp .6
 .RS 4n
@@ -143,18 +163,24 @@ privileged mode.
 .ne 2
 .mk
 .na
-\fBCPC_OVF_NOTIFY_EMT\fR
+.B CPC_OVF_NOTIFY_EMT
 .ad
 .sp .6
 .RS 4n
 Request a signal to be sent to the application when the physical counter
-overflows. A \fBSIGEMT\fR signal is delivered if the processor is capable of
+overflows. A
+.B SIGEMT
+signal is delivered if the processor is capable of
 delivering an interrupt when the counter counts past its maximum value. All
 requests in the set containing the counter that overflowed are stopped until
 the set is rebound.
 .RE
 
-At least one of \fBCPC_COUNT_USER\fR or \fBCPC_COUNT_SYSTEM\fR must be
+At least one of
+.B CPC_COUNT_USER
+or
+.B CPC_COUNT_SYSTEM
+must be
 specified to program the hardware for counting.
 .RE
 
@@ -162,40 +188,68 @@ specified to program the hardware for counting.
 .ne 2
 .mk
 .na
-\fInattrs\fR, \fIattrs\fR
+.IR nattrs ,
+.I attrs
 .ad
 .RS 17n
 .rt
-The \fInattrs\fR argument specifies the number of attributes pointed to by
-the \fIattrs\fR argument, which is an array of \fBcpc_attr_t\fR structures
+The
+.I nattrs
+argument specifies the number of attributes pointed to by
+the
+.I attrs
+argument, which is an array of
+.B cpc_attr_t
+structures
 containing processor-specific attributes that modify the request's
-configuration. The \fBcpc_walk_attrs()\fR function (see
-\fBcpc_npic\fR(3CPC)) can be used to query the processor for the list of
+configuration. The
+.B cpc_walk_attrs()
+function (see
+.BR cpc_npic (3CPC))
+can be used to query the processor for the list of
 attributes it accepts. The library makes a private copy of the \fIattrs\fR
 array, allowing the application to dispose of it immediately after calling
-\fBcpc_set_add_request()\fR.
+.BR cpc_set_add_request() .
 .RE
 
 .sp
 .LP
-The \fBcpc_walk_requests()\fR function calls the action function on each
-request that has been added to the set. The \fIarg\fR argument is passed
-unmodified to the \fIaction\fR function with each call.
+The
+.B cpc_walk_requests()
+function calls the action function on each
+request that has been added to the set. The
+.I arg
+argument is passed
+unmodified to the
+.I action
+function with each call.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBcpc_set_create()\fR returns a handle to the
-opaque \fBcpc_set_t\fR data structure. Otherwise, NULL is returned and
+Upon successful completion,
+.B cpc_set_create()
+returns a handle to the
+opaque
+.B cpc_set_t
+data structure. Otherwise, NULL is returned and
 \fBerrno\fR is set to indicate the error.
 .sp
 .LP
-Upon successful completion, \fBCpc_set_destroy()\fR returns 0. Otherwise,
--1 is returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B Cpc_set_destroy()
+returns 0. Otherwise,
+-1 is returned and
+.B errno
+is set to indicate the error.
 .sp
 .LP
-Upon successful completion, \fBcpc_set_add_request()\fR returns an integer
+Upon successful completion,
+.B cpc_set_add_request()
+returns an integer
 index used to refer to the data generated by that request during data
-retrieval. Otherwise, -1 is returned and \fBerrno\fR is set to indicate the
+retrieval. Otherwise, -1 is returned and
+.B errno
+is set to indicate the
 error.
 .SH ERRORS
 .sp
@@ -205,14 +259,20 @@ These functions will fail if:
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-An event, attribute, or flag passed to \fBcpc_set_add_request()\fR was
+An event, attribute, or flag passed to
+.B cpc_set_add_request()
+was
 invalid.
 .sp
-For \fBcpc_set_destroy()\fR and \fBcpc_set_add_request()\fR, the set
+For
+.B cpc_set_destroy()
+and
+.BR cpc_set_add_request() ,
+the set
 parameter was not created with the given cpc_t.
 .RE
 
@@ -220,7 +280,7 @@ parameter was not created with the given cpc_t.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -231,7 +291,9 @@ library's data structures.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -250,30 +312,49 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBcpc_bind_curlwp\fR(3CPC), \fBcpc_buf_create\fR(3CPC),
-\fBcpc_npic\fR(3CPC), \fBcpc_seterrhndlr\fR(3CPC), \fBlibcpc\fR(3LIB),
-\fBstrtol\fR(3C), \fBattributes\fR(5)
+.BR cpc_bind_curlwp (3CPC),
+\fBcpc_buf_create\fR(3CPC),
+.BR cpc_npic (3CPC),
+.BR cpc_seterrhndlr (3CPC),
+.BR libcpc (3LIB),
+.BR strtol (3C),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
 The system automatically determines which particular physical counter to
 use to count the events specified by each request. Applications can force
 the system to use a particular counter by specifying the counter number in
-an attribute named \fIpicnum\fR that is passed to
-\fBcpc_set_add_request()\fR. Counters are numbered from 0 to \fIn\fR - 1,
+an attribute named
+.I picnum
+that is passed to
+.BR cpc_set_add_request() .
+Counters are numbered from 0 to
+.I n
+- 1,
 where n is the number of counters in the processor as returned by
-\fBcpc_npic\fR(3CPC).
+.BR cpc_npic (3CPC).
 .sp
 .LP
 Some processors, such as UltraSPARC, do not allow the hardware counters to
 be programmed differently. In this case, all requests in the set must have
 the same configuration, or an attempt to bind the set will return
-\fBEINVAL\fR. If a \fBcpc_errhndlr_t\fR has been registered with
-\fBcpc_seterrhndlr\fR(3CPC), the error handler is called with subcode
-\fBCPC_CONFLICTING_REQS\fR. For example, on UltraSPARC \fBpic0\fR and
+.BR EINVAL .
+If a
+.B cpc_errhndlr_t
+has been registered with
+.BR cpc_seterrhndlr (3CPC),
+the error handler is called with subcode
+.BR CPC_CONFLICTING_REQS .
+For example, on UltraSPARC
+.B pic0
+and
 \fBpic1\fR must both program events in the same processor mode (user mode,
-kernel mode, or both). For example, \fBpic0\fR cannot be programmed with
+kernel mode, or both). For example,
+.B pic0
+cannot be programmed with
 \fBCPC_COUNT_USER\fR while \fBpic1\fR is programmed with
-\fBCPC_COUNT_SYSTEM\fR. Refer to the hardware documentation referenced by
+.BR CPC_COUNT_SYSTEM .
+Refer to the hardware documentation referenced by
 \fBcpc_cpuref\fR(3CPC) for details about a particular processor's
 performance instrumentation hardware.

@@ -42,7 +42,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdhp\fR
+.I dhp
 .ad
 .RS 9n
 .rt
@@ -53,7 +53,7 @@ An opaque mapping handle that the system uses to describe the mapping.
 .ne 2
 .mk
 .na
-\fIpvtp\fR
+.I pvtp
 .ad
 .RS 9n
 .rt
@@ -75,7 +75,7 @@ User offset within the logical device memory at which the access begins.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 9n
 .rt
@@ -86,7 +86,7 @@ Length (in bytes) of the memory being accessed.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 9n
 .rt
@@ -95,7 +95,7 @@ Type of access operation. Possible values are:
 .ne 2
 .mk
 .na
-\fBDEVMAP_ACCESS\fR
+.B DEVMAP_ACCESS
 .ad
 .RS 18n
 .rt
@@ -106,7 +106,7 @@ Memory access.
 .ne 2
 .mk
 .na
-\fBDEVMAP_LOCK\fR
+.B DEVMAP_LOCK
 .ad
 .RS 18n
 .rt
@@ -117,7 +117,7 @@ Lock the memory being accessed.
 .ne 2
 .mk
 .na
-\fBDEVMAP_UNLOCK\fR
+.B DEVMAP_UNLOCK
 .ad
 .RS 18n
 .rt
@@ -130,7 +130,7 @@ Unlock the memory being accessed.
 .ne 2
 .mk
 .na
-\fIrw\fR
+.I rw
 .ad
 .RS 9n
 .rt
@@ -139,7 +139,7 @@ Direction of access. Possible values are:
 .ne 2
 .mk
 .na
-\fBDEVMAP_READ\fR
+.B DEVMAP_READ
 .ad
 .RS 17n
 .rt
@@ -150,7 +150,7 @@ Read access attempted.
 .ne 2
 .mk
 .na
-\fBDEVMAP_WRITE\fR
+.B DEVMAP_WRITE
 .ad
 .RS 17n
 .rt
@@ -165,48 +165,73 @@ Write access attempted.
 \fBdevmap_contextmgt()\fR is a driver-supplied function that performs
 device context switching on a  mapping.  Device drivers pass
 \fBdevmap_contextmgt()\fR as an argument to \fBdevmap_do_ctxmgt\fR(9F) in
-the \fBdevmap_access\fR(9E) entry point. The system will call
+the
+.BR devmap_access "(9E) entry point. The system will call"
 \fBdevmap_contextmgt()\fR when memory is accessed. The system expects
 \fBdevmap_contextmgt()\fR to load the memory address translations of the
 mapping by calling \fBdevmap_load\fR(9F) before returning.
 .sp
 .LP
 \fIdhp\fR uniquely identifies the mapping and is used as an argument to
-\fBdevmap_load\fR(9F) to validate the mapping. \fIoff\fR and \fIlen\fR
+.BR devmap_load (9F)
+to validate the mapping. \fIoff\fR and \fIlen\fR
 define the range to be affected by the operations in
-\fBdevmap_contextmgt()\fR. 
+.BR devmap_contextmgt() .
 .sp
 .LP
 The driver must check if there is already a mapping established at
 \fIoff\fR that needs to be unloaded. If a mapping exists at \fIoff\fR,
 \fBdevmap_contextmgt()\fR must call  \fBdevmap_unload\fR(9F) on the current
-mapping. \fBdevmap_unload\fR(9F) must be followed by \fBdevmap_load()\fR on
-the mapping that generated this call to \fBdevmap_contextmgt()\fR.
-\fBdevmap_unload\fR(9F) unloads the current mapping so that a call to
-\fBdevmap_access\fR(9E), which causes the system to call
-\fBdevmap_contextmgt()\fR, will be generated the next time the mapping is
+mapping. \fBdevmap_unload\fR(9F) must be followed by
+.B devmap_load()
+on
+the mapping that generated this call to
+.BR devmap_contextmgt() .
+.BR devmap_unload (9F)
+unloads the current mapping so that a call to
+.BR devmap_access (9E),
+which causes the system to call
+.BR devmap_contextmgt() ,
+will be generated the next time the mapping is
 accessed. 
 .sp
 .LP
 \fIpvtp\fR is a pointer to the driver's private mapping data that was
-allocated and initialized in the \fBdevmap_map\fR(9E) entry point.
+allocated and initialized in the
+.BR devmap_map "(9E) entry point."
 \fItype\fR defines the type of operation that device drivers should perform
-on the memory object.  If \fItype\fR is either \fBDEVMAP_LOCK\fR or
-\fBDEVMAP_UNLOCK\fR, the length passed to either \fBdevmap_unload\fR(9F) or
-\fBdevmap_load\fR(9F) must be same as \fIlen\fR. \fIrw\fR specifies the
+on the memory object.  If
+.I type
+is either
+.B DEVMAP_LOCK
+or
+.BR DEVMAP_UNLOCK ,
+the length passed to either
+.BR devmap_unload "(9F) or"
+.BR devmap_load (9F)
+must be same as
+.IR len .
+\fIrw\fR specifies the
 access direction on the memory object.
 .sp
 .LP
-A non-zero return value from  \fBdevmap_contextmgt()\fR will be returned to
-\fBdevmap_access\fR(9E) and will cause the corresponding operation to fail.
-The failure may result in a \fBSIGSEGV\fR or \fBSIGBUS\fR signal being
+A non-zero return value from 
+.B devmap_contextmgt()
+will be returned to
+.BR devmap_access (9E)
+and will cause the corresponding operation to fail.
+The failure may result in a
+.B SIGSEGV
+or
+.B SIGBUS
+signal being
 delivered to the process.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -217,7 +242,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fBNon-zero\fR
+.B Non-zero
 .ad
 .RS 12n
 .rt
@@ -226,7 +251,7 @@ An error occurred.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRmanaging a device context
+\fBExample 1\fR managing a device context
 .sp
 .LP
 The following shows an example of managing a device context.
@@ -277,8 +302,10 @@ xxdevmap_contextmgt(devmap_cookie_t dhp, void *pvtp, offset_t off,
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap_access\fR(9E), \fBdevmap_do_ctxmgt\fR(9F) \fBdevmap_load\fR(9F),
-\fBdevmap_unload\fR(9F) 
+.BR devmap_access (9E),
+.BR devmap_do_ctxmgt (9F)
+.BR devmap_load (9F),
+.BR devmap_unload (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

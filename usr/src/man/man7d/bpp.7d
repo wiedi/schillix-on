@@ -30,63 +30,109 @@ bpp \- bi-directional parallel port driver
 .SH DESCRIPTION
 .sp
 .LP
-The \fBbpp\fR driver provides a general-purpose bi-directional interface to
+The
+.B bpp
+driver provides a general-purpose bi-directional interface to
 parallel devices. It supports a variety of output (printer) and input
 (scanner) devices, using programmable timing relationships between the
 various handshake signals.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
 .LP
-The \fBbpp\fR driver is an  \fIexclusive-use\fR device. If the device has
+The
+.B bpp
+driver is an 
+.I exclusive-use
+device. If the device has
 already been opened, subsequent opens fail with  \fBEBUSY.\fR
 .SS "Default Operation"
 .sp
 .LP
-Each time the  \fBbpp\fR device is opened, the default configuration is
+Each time the 
+.B bpp
+device is opened, the default configuration is
 \fBBPP_ACK_BUSY_HS\fR for read handshake, \fBBPP_ACK_HS\fR for write
 handshake, 1 microsecond for all setup times and strobe widths, and 60
 seconds for both timeouts. This configuration (in the write mode) drives
 many common personal computer parallel printers with Centronics-type
-interfaces. The application should use the  \fBBPPIOC_SETPARMS\fR ioctl
-request to configure the \fBbpp\fR for the particular device which is
+interfaces. The application should use the 
+.B BPPIOC_SETPARMS
+ioctl
+request to configure the
+.B bpp
+for the particular device which is
 attached, if necessary.
 .SS "Write Operation"
 .sp
 .LP
-If a failure or error condition occurs during a \fBwrite\fR(2), the number
+If a failure or error condition occurs during a
+.BR write (2),
+the number
 of bytes successfully written is returned (short write). Note that
 \fBerrno\fR will not be set. The contents of certain status bits will be
 captured at the time of the error, and can be retrieved by the application
-program, using the \fBBPPIOC_GETERR\fR ioctl request. Subsequent
-\fBwrite\fR(2) calls may fail with the system error  \fBENXIO\fR if the
+program, using the
+.B BPPIOC_GETERR
+ioctl request. Subsequent
+.BR write (2)
+calls may fail with the system error 
+.B ENXIO
+if the
 error condition is not rectified. The captured status information will be
-overwritten each time an attempted transfer or a \fBBPPIOC_TESTIO\fR ioctl
+overwritten each time an attempted transfer or a
+.B BPPIOC_TESTIO
+ioctl
 request occurs.
 .SS "Read Operations"
 .sp
 .LP
-If a failure or error condition occurs during a \fBread\fR(2), the number
+If a failure or error condition occurs during a
+.BR read (2),
+the number
 of bytes successfully read is returned (short read). Note that \fBerrno\fR
 will not be set. The contents of certain status bits will be captured at the
 time of the error, and can be retrieved by the application, using the
-\fBBPPIOC_GETERR\fR ioctl request. Subsequent \fBread\fR(2) calls may fail
-with \fBENXIO\fR if the error condition is not rectified. The captured
+\fBBPPIOC_GETERR\fR ioctl request. Subsequent
+.BR read (2)
+calls may fail
+with
+.B ENXIO
+if the error condition is not rectified. The captured
 register information will be overwritten each time an attempted transfer or
-a \fBBPPIOC_TESTIO\fR ioctl request.
+a
+.B BPPIOC_TESTIO
+ioctl request.
 .sp
 .LP
-If the  \fBread_handshake\fR element of the  \fBbpp_transfer_parms\fR
-structure (see below) is set to \fBBPP_CLEAR_MEM\fR or \fBBPP_SET_MEM\fR,
+If the 
+.B read_handshake
+element of the  \fBbpp_transfer_parms\fR
+structure (see below) is set to
+.B BPP_CLEAR_MEM
+or
+.BR BPP_SET_MEM ,
 zeroes or ones, respectively, are written into the user buffer.
 .SS "Read/Write Operation"
 .sp
 .LP
 When the driver is opened for reading and writing, it is assumed that
 scanning will take place, as scanners are the only devices supported by this
-mode. Most scanners require that the  \fBSLCT_IN\fR or \fBAFX\fR pin be set
-to tell the scanner the direction of the transfer. The  \fBAFX\fR line is
-set when the  \fBread_handshake\fR element of the \fBbpp_transfer_parms\fR
-structure is set to \fBBPP_HSCAN_HS\fR, otherwise the \fBSLCT_IN\fR pin is
+mode. Most scanners require that the 
+.B SLCT_IN
+or
+.B AFX
+pin be set
+to tell the scanner the direction of the transfer. The 
+.B AFX
+line is
+set when the 
+.B read_handshake
+element of the \fBbpp_transfer_parms\fR
+structure is set to
+.BR BPP_HSCAN_HS ,
+otherwise the
+.B SLCT_IN
+pin is
 set. Normally, scanning starts by writing a command to the scanner, at which
 time the pin is set.  When the scan data is read back, the pin is reset.
 .SH IOCTLS
@@ -97,7 +143,7 @@ The following  ioctl requests are supported:
 .ne 2
 .mk
 .na
-\fBBPPIOC_SETPARMS\fR
+.B BPPIOC_SETPARMS
 .ad
 .RS 21n
 .rt
@@ -105,14 +151,16 @@ Set transfer parameters.
 .sp
 The argument is a pointer to a  \fBbpp_transfer_parms\fR structure. See
 below for a description of the elements of this structure. If a parameter is
-out of range, \fBEINVAL\fR is returned.
+out of range,
+.B EINVAL
+is returned.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBBPPIOC_GETPARMS\fR
+.B BPPIOC_GETPARMS
 .ad
 .RS 21n
 .rt
@@ -129,26 +177,30 @@ Operation\fR above).
 .ne 2
 .mk
 .na
-\fBBPPIOC_SETOUTPINS\fR
+.B BPPIOC_SETOUTPINS
 .ad
 .RS 21n
 .rt
 Set output pin values.
 .sp
-The argument is a pointer to a  \fBbpp_pins\fR structure. See below for a
+The argument is a pointer to a 
+.B bpp_pins
+structure. See below for a
 description of the elements of this structure. If a parameter is out of
-range, \fBEINVAL\fR is returned.
+range,
+.B EINVAL
+is returned.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBBPPIOC_GETOUTPINS\fR
+.B BPPIOC_GETOUTPINS
 .ad
 .RS 21n
 .rt
-Read output pin values. The argument is a pointer to a  \fBbpp_pins\fR
+.RB "Read output pin values. The argument is a pointer to a " " bpp_pins"
 structure. See below for a description of the elements of this structure.
 .RE
 
@@ -156,18 +208,28 @@ structure. See below for a description of the elements of this structure.
 .ne 2
 .mk
 .na
-\fBBPPIOC_GETERR\fR
+.B BPPIOC_GETERR
 .ad
 .RS 21n
 .rt
 Get last error status.
 .sp
-The argument is a pointer to a \fBbpp_error_status\fR structure. See below
+The argument is a pointer to a
+.B bpp_error_status
+structure. See below
 for a description of the elements of this structure. This structure
 indicates the status of all the appropriate  status bits at the time of the
-most recent error condition during a \fBread\fR(2) or \fBwrite\fR(2) call,
-or the status of the bits at the most recent  \fBBPPIOC_TESTIO\fR ioctl
-request. Note:  The bits in the  \fBpin_status\fR element indicate whether
+most recent error condition during a
+.BR read (2)
+or
+.BR write (2)
+call,
+or the status of the bits at the most recent 
+.B BPPIOC_TESTIO
+ioctl
+request. Note:  The bits in the 
+.B pin_status
+element indicate whether
 the associated pin is active, not the actual polarity. The application can
 check transfer readiness without attempting another transfer using the
 \fBBPPIOC_TESTIO\fR ioctl.  Note:  The \fBtimeout_occurred\fR and
@@ -179,7 +241,7 @@ only by an actual failed transfer.
 .ne 2
 .mk
 .na
-\fBBPPIOC_TESTIO\fR
+.B BPPIOC_TESTIO
 .ad
 .RS 21n
 .rt
@@ -187,8 +249,16 @@ Test transfer readiness.
 .sp
 This command checks to see if a read or write transfer would succeed based
 on pin status, opened mode, and handshake selected. If a handshake would
-succeed, \fB0\fR is returned. If a transfer would fail,  \fB-1\fR is
-returned, and \fBerrno\fR is set to \fBEIO,\fR and the error status
+succeed,
+.B 0
+is returned. If a transfer would fail, 
+.B -1
+is
+returned, and
+.B errno
+is set to
+.B EIO,
+and the error status
 information is captured. The captured status can be retrieved using the
 \fBBPPIOC_GETERR\fR ioctl call.  Note that the \fBtimeout_occurred\fR and
 \fBbus_error\fR fields will never be set by this ioctl.
@@ -250,36 +320,76 @@ struct bpp_transfer_parms {
 
 .sp
 .LP
-The  \fBread_setup_time\fR field controls the time between dstrb falling
-edge to bsy rising edge if the  \fBread_handshake\fR field is set to
-\fBBPP_NO_HS\fR or \fBBPP_ACK_HS\fR. It controls the time between dstrb
-falling edge to ack rising edge if the \fBread_handshake\fR field is set to
-\fBBPP_ACK_HS\fR or \fBBPP_ACK_BUSY_HS\fR. It controls the time between ack
-falling edge to dstrb rising edge if the \fBread_handshake\fR field is set
-to \fBBPP_XSCAN_HS\fR.
+The 
+.B read_setup_time
+field controls the time between dstrb falling
+edge to bsy rising edge if the 
+.B read_handshake
+field is set to
+\fBBPP_NO_HS\fR or
+.BR BPP_ACK_HS .
+It controls the time between dstrb
+falling edge to ack rising edge if the
+.B read_handshake
+field is set to
+\fBBPP_ACK_HS\fR or
+.BR BPP_ACK_BUSY_HS .
+It controls the time between ack
+falling edge to dstrb rising edge if the
+.B read_handshake
+field is set
+to
+.BR BPP_XSCAN_HS .
 .sp
 .LP
-The  \fBread_strobe_width\fR field controls the time between ack rising
-edge and ack falling edge if the \fBread_handshake\fR field is set to
-\fBBPP_NO_HS\fR or \fBBPP_ACK_BUSY_HS\fR. It controls the time between dstrb
-rising edge to dstrb falling edge if the \fBread_handshake\fR field is set
-to \fBBPP_XSCAN_HS\fR.
+The 
+.B read_strobe_width
+field controls the time between ack rising
+edge and ack falling edge if the
+.B read_handshake
+field is set to
+\fBBPP_NO_HS\fR or
+.BR BPP_ACK_BUSY_HS .
+It controls the time between dstrb
+rising edge to dstrb falling edge if the
+.B read_handshake
+field is set
+to
+.BR BPP_XSCAN_HS .
 .sp
 .LP
-The values allowed for the \fBwrite_handshake\fR field are duplicates of
-the definitions for the \fBread_handshake\fR field. Note that some of these
+The values allowed for the
+.B write_handshake
+field are duplicates of
+the definitions for the
+.B read_handshake
+field. Note that some of these
 handshake definitions are only valid in one mode or the other.
 .sp
 .LP
-The  \fBwrite_setup_time\fR field controls the time between data valid to
-dstrb rising edge for all values of the  \fBwrite_handshake\fR field.
+The 
+.B write_setup_time
+field controls the time between data valid to
+dstrb rising edge for all values of the 
+.B write_handshake
+field.
 .sp
 .LP
-The  \fBwrite_strobe_width\fR field controls the time between dstrb rising
-edge and dstrb falling edge if the \fBwrite_handshake\fR field is not set to
-\fBBPP_VPRINT_HS\fR or \fBBPP_VPLOT_HS\fR. It controls the minimum time
-between dstrb rising edge to dstrb falling edge if the \fBwrite_handshake\fR
-field is set to  \fBBPP_VPRINT_HS\fR or \fBBPP_VPLOT_HS\fR.
+The 
+.B write_strobe_width
+field controls the time between dstrb rising
+edge and dstrb falling edge if the
+.B write_handshake
+field is not set to
+\fBBPP_VPRINT_HS\fR or
+.BR BPP_VPLOT_HS .
+It controls the minimum time
+between dstrb rising edge to dstrb falling edge if the
+.BR write_handshake
+field is set to 
+.B BPP_VPRINT_HS
+or
+.BR BPP_VPLOT_HS .
 .SS "Transfer Pins Structure"
 .sp
 .LP
@@ -334,7 +444,7 @@ struct bpp_error_status {
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -346,7 +456,7 @@ device is opened for read-only access and a write is attempted.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
@@ -358,13 +468,19 @@ been made to unload the driver while one of the units is open.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-A \fBBPPIOC_SETPARMS ioctl\fR is attempted with an out of range value in
-the \fBbpp_transfer_parms\fR structure. A  \fBBPPIOC_SETOUTPINS ioctl\fR is
-attempted with an invalid value in the pins structure. An  \fBioctl\fR is
+A
+.B "BPPIOC_SETPARMS ioctl"
+is attempted with an out of range value in
+the \fBbpp_transfer_parms\fR structure. A 
+.B "BPPIOC_SETOUTPINS ioctl"
+is
+attempted with an invalid value in the pins structure. An 
+.B ioctl
+is
 attempted with an invalid value in the command argument. An invalid command
 argument is received  during \fBmodload\fR(1M) or \fBmodunload\fR(1M).
 .RE
@@ -373,7 +489,7 @@ argument is received  during \fBmodload\fR(1M) or \fBmodunload\fR(1M).
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 10n
 .rt
@@ -382,7 +498,9 @@ The driver encountered an SBus bus error when attempting an access.
 A read or write does not complete properly, due to a peripheral error or a
 transfer timeout.
 .sp
-A \fBBPPIOC_TESTIO ioctl\fR call is attempted while a condition exists
+A
+.B "BPPIOC_TESTIO ioctl"
+call is attempted while a condition exists
 which would prevent a transfer (such as a peripheral error).
 .RE
 
@@ -390,7 +508,7 @@ which would prevent a transfer (such as a peripheral error).
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
@@ -415,4 +533,7 @@ bi-directional parallel port devices
 .SH SEE ALSO
 .sp
 .LP
-\fBioctl\fR(2), \fBread\fR(2), \fBwrite\fR(2), \fBsbus\fR(4)
+.BR ioctl (2),
+.BR read (2),
+.BR write (2),
+.BR sbus (4)

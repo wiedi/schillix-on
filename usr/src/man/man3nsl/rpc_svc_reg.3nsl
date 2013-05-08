@@ -25,15 +25,20 @@ xprt_unregister \- library routines for registering servers
 .SH DESCRIPTION
 .sp
 .LP
-These routines are a part of the \fBRPC\fR library which allows the
+These routines are a part of the
+.B RPC
+library which allows the
 \fBRPC\fR servers to register themselves with \fBrpcbind()\fR (see
-\fBrpcbind\fR(1M)), and associate the given program and version number with
+.BR rpcbind (1M)),
+and associate the given program and version number with
 the dispatch function. When the RPC server receives a RPC request, the
 library invokes the dispatch routine with the appropriate arguments.
 .SS "Routines"
 .sp
 .LP
-See \fBrpc\fR(3NSL) for the definition of the  \fBSVCXPRT\fR data
+See \fBrpc\fR(3NSL) for the definition of the 
+.B SVCXPRT
+data
 structure.
 .sp
 .in +2
@@ -48,22 +53,47 @@ structure.
 .mk
 .na
 \fBbool_t rpc_reg(const rpcprog_t \fIprognum\fR, const rpcvers_t
-\fIversnum\fR, const rpcproc_t \fIprocnum\fR, char * (*\fIprocname\fR)(\|),
-const xdrproc_t \fIinproc\fR, const xdrproc_t \fIoutproc\fR, const char
+.IR versnum ,
+const rpcproc_t
+.IR procnum ,
+char * (*\fIprocname\fR)(\|),
+const xdrproc_t
+.IR inproc ,
+const xdrproc_t
+.IR outproc ,
+const char
 *\fInettype\fR);\fR
 .ad
 .sp .6
 .RS 4n
-Register program \fIprognum\fR, procedure \fIprocname\fR, and version
+Register program
+.IR prognum ,
+procedure
+.IR procname ,
+and version
 \fIversnum\fR with the \fBRPC\fR service package. If a request arrives for
-program \fIprognum\fR, version \fIversnum\fR, and procedure \fIprocnum\fR,
+program
+.IR prognum ,
+version
+.IR versnum ,
+and procedure
+.IR procnum ,
 \fIprocname\fR is called with a pointer to its parameter(s); \fIprocname\fR
-should return a pointer to its \fBstatic\fR result(s). The \fIarg\fR
-parameter to \fIprocname\fR is a pointer to the (decoded) procedure
-argument. \fIinproc\fR is the XDR function used to decode the parameters
-while \fIoutproc\fR is the XDR function used to encode the results.
+should return a pointer to its
+.B static
+.RI "result(s). The" " arg"
+parameter to
+.I procname
+is a pointer to the (decoded) procedure
+argument.
+.I inproc
+is the XDR function used to decode the parameters
+while
+.I outproc
+is the XDR function used to encode the results.
 Procedures are registered on all available transports of the class
-\fInettype\fR. See \fBrpc\fR(3NSL). This routine returns \fB0\fR if the
+.IR nettype .
+See \fBrpc\fR(3NSL). This routine returns \fB0\fR if the
 registration succeeded, \fB\(mi1\fR otherwise.
 .RE
 
@@ -72,21 +102,44 @@ registration succeeded, \fB\(mi1\fR otherwise.
 .mk
 .na
 \fBint svc_reg(const SVCXPRT *\fIxprt\fR, const rpcprog_t \fIprognum\fR,
-const rpcvers_t \fIversnum\fR, const void (*\fIdispatch\fR)(\|), const
+const rpcvers_t
+.IR versnum ,
+const void (*\fIdispatch\fR)(\|), const
 struct netconfig *\fInetconf\fR);\fR
 .ad
 .sp .6
 .RS 4n
-Associates \fIprognum\fR and \fIversnum\fR with the service dispatch
-procedure, \fIdispatch\fR. If \fInetconf\fR is \fINULL\fR, the service is
-not registered with the \fBrpcbind\fR service.  For example, if a service
-has already been registered using some other means, such as \fBinetd\fR (see
-\fBinetd\fR(1M)), it will not need to be registered again. If \fInetconf\fR
+Associates
+.I prognum
+and
+.I versnum
+with the service dispatch
+procedure,
+.IR dispatch .
+If \fInetconf\fR is
+.IR NULL ,
+the service is
+not registered with the
+.B rpcbind
+service.  For example, if a service
+has already been registered using some other means, such as
+.B inetd
+(see
+.BR inetd (1M)),
+it will not need to be registered again. If \fInetconf\fR
 is non-zero, then a mapping of the triple [\fIprognum\fR, \fI versnum\fR,
-\fInetconf\fR->\fI]\fR to \fIxprt\fR-> \fIxp_ltaddr\fR is established with
-the local \fBrpcbind\fR service.
+\fInetconf\fR->\fI]\fR to
+.IR xprt ->
+\fIxp_ltaddr\fR is established with
+the local
+.B rpcbind
+service.
 .sp
-The \fBsvc_reg()\fR routine returns \fB1\fR if it succeeds, and \fB0\fR
+The
+.B svc_reg()
+routine returns
+.B 1
+if it succeeds, and \fB0\fR
 otherwise.
 .RE
 
@@ -99,7 +152,9 @@ otherwise.
 .ad
 .sp .6
 .RS 4n
-Remove from the \fBrpcbind\fR service, all mappings of the triple
+Remove from the
+.B rpcbind
+service, all mappings of the triple
 [\fIprognum\fR, \fIversnum\fR, \fIall-transports\fR] to network address and
 all mappings within the RPC service package of the double [\fIprognum\fR,
 \fIversnum\fR] to dispatch routines.
@@ -109,28 +164,49 @@ all mappings within the RPC service package of the double [\fIprognum\fR,
 .ne 2
 .mk
 .na
-\fBint svc_auth_reg(const int \fIcred_flavor\fR, const enum auth_stat
+\fBint svc_auth_reg(const int
+.IR cred_flavor ,
+const enum auth_stat
 (*handler)(\|));\fR
 .ad
 .sp .6
 .RS 4n
-Registers the service authentication routine \fIhandler\fR with the
+Registers the service authentication routine
+.I handler
+with the
 dispatch mechanism so that it can be invoked to authenticate RPC requests
-received with authentication type \fIcred_flavor\fR. This interface allows
+received with authentication type
+.IR cred_flavor .
+This interface allows
 developers to add new authentication types to their RPC applications without
 needing to modify the libraries. Service implementors usually do not need
 this routine.
 .sp
-Typical service application would call \fBsvc_auth_reg()\fR after
-registering the service and prior to calling \fBsvc_run()\fR. When needed to
-process an RPC credential of type \fIcred_flavor\fR, the \fIhandler\fR
+Typical service application would call
+.B svc_auth_reg()
+after
+registering the service and prior to calling
+.BR svc_run() .
+When needed to
+process an RPC credential of type
+.IR cred_flavor ,
+the
+.IR handler
 procedure will be called with two parameters \fB (struct svc_req
 *\fIrqst\fB,\fR \fBstruct rpc_msg *\fImsg\fB)\fR and is expected
-to return a valid \fBenum auth_stat\fR value. There is no provision to
+to return a valid
+.B "enum auth_stat"
+value. There is no provision to
 change or delete an authentication handler once registered.
 .sp
-The \fBsvc_auth_reg()\fR routine returns \fB0\fR if the registration is
-successful, \fB1\fR if \fIcred_flavor\fR already has an authentication
+The
+.B svc_auth_reg()
+routine returns
+.B 0
+if the registration is
+successful,
+.B 1
+if \fIcred_flavor\fR already has an authentication
 handler registered for it, and \fB\(mi1\fR otherwise.
 .RE
 
@@ -142,9 +218,17 @@ handler registered for it, and \fB\(mi1\fR otherwise.
 .ad
 .sp .6
 .RS 4n
-After \fBRPC\fR service transport handle \fIxprt\fR is created, it is
-registered with the \fBRPC\fR service package. This routine modifies the
-global variable \fBsvc_fdset\fR (see \fBrpc_svc_calls\fR(3NSL)). Service
+After
+.B RPC
+service transport handle
+.I xprt
+is created, it is
+registered with the
+.B RPC
+service package. This routine modifies the
+global variable \fBsvc_fdset\fR (see
+.BR rpc_svc_calls (3NSL)).
+Service
 implementors usually do not need this routine.
 .RE
 
@@ -156,16 +240,26 @@ implementors usually do not need this routine.
 .ad
 .sp .6
 .RS 4n
-Before an \fBRPC\fR service transport handle \fIxprt\fR is destroyed, it
-unregisters itself with the \fBRPC\fR service package. This routine modifies
-the global variable \fBsvc_fdset\fR (see \fBrpc_svc_calls\fR(3NSL)). Service
+Before an
+.B RPC
+service transport handle
+.I xprt
+is destroyed, it
+unregisters itself with the
+.B RPC
+service package. This routine modifies
+the global variable \fBsvc_fdset\fR (see
+.BR rpc_svc_calls (3NSL)).
+Service
 implementors usually do not need this routine.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -182,7 +276,12 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBinetd\fR(1M), \fBrpcbind\fR(1M), \fBrpc\fR(3NSL),
-\fBrpc_svc_calls\fR(3NSL), \fBrpc_svc_create\fR(3NSL),
-\fBrpc_svc_err\fR(3NSL), \fBrpcbind\fR(3NSL), \fBselect\fR(3C),
-\fBattributes\fR(5)
+.BR inetd (1M),
+.BR rpcbind (1M),
+.BR rpc (3NSL),
+.BR rpc_svc_calls (3NSL),
+.BR rpc_svc_create (3NSL),
+.BR rpc_svc_err (3NSL),
+.BR rpcbind (3NSL),
+.BR select (3C),
+.BR attributes (5)

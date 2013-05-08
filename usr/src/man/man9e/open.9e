@@ -58,14 +58,15 @@ open \- gain access to a device
 .sp
 .LP
 Architecture independent level 1 (DDI/DKI). This entry point is required, but
-it can be \fBnulldev\fR(9F)
+it can be
+.BR nulldev (9F)
 .SH PARAMETERS
 .SS "Block and Character"
 .sp
 .ne 2
 .mk
 .na
-\fIdevp\fR
+.I devp
 .ad
 .RS 10n
 .rt
@@ -80,13 +81,15 @@ Pointer to a device number.
 .ad
 .RS 10n
 .rt
-A bit field passed from the user program \fBopen\fR(2) system call that
+A bit field passed from the user program
+.BR open (2)
+system call that
 instructs the driver on how to open the file. Valid settings are:
 .sp
 .ne 2
 .mk
 .na
-\fBFEXCL\fR
+.B FEXCL
 .ad
 .RS 11n
 .rt
@@ -98,7 +101,7 @@ device.
 .ne 2
 .mk
 .na
-\fBFNDELAY\fR
+.B FNDELAY
 .ad
 .RS 11n
 .rt
@@ -110,7 +113,7 @@ something is wrong.
 .ne 2
 .mk
 .na
-\fBFREAD\fR
+.B FREAD
 .ad
 .RS 11n
 .rt
@@ -122,11 +125,13 @@ allow both read and write access.
 .ne 2
 .mk
 .na
-\fBFWRITE\fR
+.B FWRITE
 .ad
 .RS 11n
 .rt
-Open a device with write-only permission. If ORed with \fBFREAD\fR, allow
+Open a device with write-only permission. If ORed with
+.BR FREAD ,
+allow
 both read and write access.
 .RE
 
@@ -136,25 +141,41 @@ both read and write access.
 .ne 2
 .mk
 .na
-\fIotyp\fR
+.I otyp
 .ad
 .RS 10n
 .rt
 Parameter supplied for driver to determine how many times a device was opened
-and for what reasons. For \fBOTYP_BLK\fR and \fBOTYP_CHR\fR, the \fBopen()\fR
+and for what reasons. For
+.B OTYP_BLK
+and
+.BR OTYP_CHR ,
+the
+.BR open()
 function can be called many times, but the \fBclose\fR(9E) function is called
 only when the last reference to a device is removed. If the device is accessed
-through file descriptors, it is done by a call to \fBclose\fR(2) or
-\fBexit\fR(2). If the device is accessed through memory mapping, it is done by
-a call to  \fBmunmap\fR(2) or \fBexit\fR(2). For \fBOTYP_LYR\fR, there is
-exactly one \fBclose\fR(9E) for each \fBopen()\fR operation that is called.
+through file descriptors, it is done by a call to
+.BR close (2)
+or
+.BR exit (2).
+If the device is accessed through memory mapping, it is done by
+a call to 
+.BR munmap (2)
+or
+.BR exit (2).
+For
+.BR OTYP_LYR ,
+there is
+exactly one \fBclose\fR(9E) for each
+.B open()
+operation that is called.
 This permits software drivers to exist above hardware drivers and removes any
 ambiguity from the hardware driver regarding how a device is used.
 .sp
 .ne 2
 .mk
 .na
-\fBOTYP_BLK\fR
+.B OTYP_BLK
 .ad
 .RS 12n
 .rt
@@ -165,7 +186,7 @@ Open occurred through block interface for the device.
 .ne 2
 .mk
 .na
-\fBOTYP_CHR\fR
+.B OTYP_CHR
 .ad
 .RS 12n
 .rt
@@ -176,12 +197,14 @@ Open occurred through the raw/character interface for the device.
 .ne 2
 .mk
 .na
-\fBOTYP_LYR\fR
+.B OTYP_LYR
 .ad
 .RS 12n
 .rt
 Open a layered process. This flag is used when one driver calls another
-driver's \fBopen()\fR or \fBclose\fR(9E) function. The calling driver ensures
+driver's
+.B open()
+or \fBclose\fR(9E) function. The calling driver ensures
 that there is one-layered close for each layered open. This flag applies to
 both block and character devices.
 .RE
@@ -192,7 +215,7 @@ both block and character devices.
 .ne 2
 .mk
 .na
-\fIcred_p\fR
+.I cred_p
 .ad
 .RS 10n
 .rt
@@ -204,22 +227,27 @@ Pointer to the user credential structure.
 .ne 2
 .mk
 .na
-\fIq\fR
+.I q
 .ad
 .RS 10n
 .rt
-A pointer to the read \fBqueue\fR.
+A pointer to the read
+.BR queue .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIdevp\fR
+.I devp
 .ad
 .RS 10n
 .rt
-Pointer to a device number. For \fBSTREAMS \fRmodules, \fIdevp\fR always
+Pointer to a device number. For
+.B STREAMS
+modules,
+.I devp
+always
 points to the device number associated with the driver at the end (tail) of
 the stream.
 .RE
@@ -232,8 +260,14 @@ the stream.
 .ad
 .RS 10n
 .rt
-Valid \fIoflag\fR values are \fBFEXCL\fR, \fBFNDELAY\fR, \fBFREAD\fR, and
-\fBFWRITEL\fR \(em the same as those listed above for \fIflag.\fR. For
+Valid \fIoflag\fR values are
+.BR FEXCL ,
+.BR FNDELAY ,
+.BR FREAD ,
+and
+\fBFWRITEL\fR \(em the same as those listed above for
+.IR flag. .
+For
 \fBSTREAMS\fR modules, \fIoflag\fR is always set to \fB0\fR.
 .RE
 
@@ -250,11 +284,13 @@ Valid values are as follows:
 .ne 2
 .mk
 .na
-\fBCLONEOPEN\fR
+.B CLONEOPEN
 .ad
 .RS 13n
 .rt
-Indicates that the \fBopen()\fR function is called through the clone driver.
+Indicates that the
+.B open()
+function is called through the clone driver.
 The driver should return a unique device number.
 .RE
 
@@ -262,7 +298,7 @@ The driver should return a unique device number.
 .ne 2
 .mk
 .na
-\fBMODOPEN\fR
+.B MODOPEN
 .ad
 .RS 13n
 .rt
@@ -276,7 +312,7 @@ value.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 13n
 .rt
@@ -289,7 +325,7 @@ Indicates a driver is opened directly, without calling the clone driver.
 .ne 2
 .mk
 .na
-\fIcred_p\fR
+.I cred_p
 .ad
 .RS 10n
 .rt
@@ -299,47 +335,79 @@ Pointer to the user credential structure.
 .SH DESCRIPTION
 .sp
 .LP
-The driver's  \fBopen()\fR function is called by the kernel during an
-\fBopen\fR(2) or a \fBmount\fR(2) on the special file for the device. A device
-can be opened simultaneously by multiple processes and the \fBopen()\fR driver
+The driver's 
+.B open()
+function is called by the kernel during an
+.BR open (2)
+or a
+.BR mount (2)
+on the special file for the device. A device
+can be opened simultaneously by multiple processes and the
+.B open()
+driver
 operation is called for each open. Note that a device is referenced once its
 associated \fBopen\fR(9E) function is entered, and thus \fBopen\fR(9E)
 operations which have not yet completed will prevent \fBclose\fR(9E) from
 being called. The function should verify that the minor number component of
 \fI*devp\fR is valid, that the type of access requested by \fIotyp\fR and
 \fIflag\fR is appropriate for the device, and, if required, check permissions
-using the user credentials pointed to by \fIcred_p\fR.
+using the user credentials pointed to by
+.IR cred_p .
 .sp
 .LP
-The kernel provides \fBopen()\fR \fBclose()\fR exclusion guarantees to the
+The kernel provides
+.B "open() close()"
+exclusion guarantees to the
 driver at *\fIdevp\fR, \fIotyp\fR granularity. This delays new \fBopen()\fR
-calls to the driver while a last-reference \fBclose()\fR call is executing. If
-the driver has indicated that an \fBEINTR\fR returns safe via the
-\fBD_OPEN_RETURNS_EINTR\fR \fBcb_ops\fR(9S) \fBcb_flag\fR, a delayed
+calls to the driver while a last-reference
+.B close()
+call is executing. If
+the driver has indicated that an
+.B EINTR
+returns safe via the
+.BR "D_OPEN_RETURNS_EINTR cb_ops" (9S)
+.BR cb_flag ,
+a delayed
 \fBopen()\fR may be interrupted by a signal that results in an \fBEINTR\fR
 return.
 .sp
 .LP
-Last-reference accounting and \fBopen()\fR \fBclose()\fR exclusion typically
+Last-reference accounting and
+.B "open() close()"
+exclusion typically
 simplify driver writing. In some cases, however, they might be an impediment
 for certain types of drivers. To overcome any impediment, the driver can
-change minor numbers in \fBopen\fR(9E), as described below, or implement
+change minor numbers in
+.BR open "(9E), as described below, or implement"
 multiple minor nodes for the same device. Both techniques give the driver
-control over when \fBclose()\fR calls occur and whether additional
+control over when
+.B close()
+calls occur and whether additional
 \fBopen()\fR calls will be delayed while \fBclose()\fR is executing.
 .sp
 .LP
-The \fBopen()\fR function is passed a pointer to a device number so that the
+The
+.B open()
+function is passed a pointer to a device number so that the
 driver can change the minor number. This allows drivers to dynamically create
 minor instances of the device. An example of this might be a pseudo-terminal
 driver that creates a new pseudo-terminal whenever it is opened. A driver that
 chooses the minor number dynamically, normally creates only one minor device
-node in \fBattach\fR(9E) with \fBddi_create_minor_node\fR(9F). It then changes
-the minor number component of \fI*devp\fR using \fBmakedevice\fR(9F) and
-\fBgetmajor\fR(9F). The driver needs to keep track of available minor numbers
+node in
+.BR attach "(9E) with"
+.BR ddi_create_minor_node (9F).
+It then changes
+the minor number component of
+.I *devp
+using
+.BR makedevice "(9F) and"
+.BR getmajor (9F).
+The driver needs to keep track of available minor numbers
 internally. A driver that dynamically creates minor numbers might want to
 avoid returning the original minor number since returning the original minor
-will result in postponed dynamic opens when original minor \fBclose()\fR call
+will result in postponed dynamic opens when original minor
+.B close()
+call
 occurs.
 .sp
 .in +2
@@ -351,22 +419,36 @@ occurs.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBopen()\fR function should return \fB0\fR for success, or the
+The
+.B open()
+function should return
+.B 0
+for success, or the
 appropriate error number.
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(2), \fBexit\fR(2), \fBmmap\fR(2), \fBmount\fR(2),
-\fBmunmap\fR(2), \fBopen\fR(2), \fBIntro\fR(9E), \fBattach\fR(9E),
-\fBclose\fR(9E), \fBddi_create_minor_node\fR(9F), \fBgetmajor\fR(9F),
-\fBgetminor\fR(9F), \fBmakedevice\fR(9F), \fBnulldev\fR(9F),
-\fBcb_ops\fR(9S)
+.BR close (2),
+.BR exit (2),
+.BR mmap (2),
+.BR mount (2),
+.BR munmap (2),
+.BR open (2),
+.BR Intro (9E),
+.BR attach (9E),
+.BR close (9E),
+.BR ddi_create_minor_node (9F),
+.BR getmajor (9F),
+.BR getminor (9F),
+.BR makedevice (9F),
+.BR nulldev (9F),
+.BR cb_ops (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH WARNINGS
 .sp
 .LP
@@ -378,5 +460,8 @@ major number portion of the device number. Unless CLONEOPEN is specified, the
 modified device number must map to the same driver instance indicated by the
 driver's getinfo(9e) implementation. In other words, cloning across different
 drivers is not supported. Cloning across different instances of the same
-driver in only permitted if the driver specified in \fBCLONE_DEV\fR in
-\fBddi_create_minor_node\fR(9F) is not supported.
+driver in only permitted if the driver specified in
+.B CLONE_DEV
+in
+.BR ddi_create_minor_node (9F)
+is not supported.

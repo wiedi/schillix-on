@@ -47,40 +47,43 @@ The following parameters are supported:
 .ne 2
 .mk
 .na
-\fIdevp\fR
+.I devp
 .ad
 .RS 14n
 .rt
-Pointer to the \fBscsi_device\fR(9S) structure.
+Pointer to the
+.BR scsi_device "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpktp\fR
+.I pktp
 .ad
 .RS 14n
 .rt
-Pointer to a \fBscsi_pkt\fR(9S) structure.
+Pointer to a
+.BR scsi_pkt "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIdrv_name\fR
+.I drv_name
 .ad
 .RS 14n
 .rt
-String used by \fBscsi_log\fR(9F).
+String used by
+.BR scsi_log (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIseverity\fR
+.I severity
 .ad
 .RS 14n
 .rt
@@ -91,7 +94,7 @@ Error severity level, maps to severity strings below.
 .ne 2
 .mk
 .na
-\fIblkno\fR
+.I blkno
 .ad
 .RS 14n
 .rt
@@ -102,7 +105,7 @@ Requested block number.
 .ne 2
 .mk
 .na
-\fIerr_blkno\fR
+.I err_blkno
 .ad
 .RS 14n
 .rt
@@ -113,7 +116,7 @@ Error block number.
 .ne 2
 .mk
 .na
-\fIcmdlist\fR
+.I cmdlist
 .ad
 .RS 14n
 .rt
@@ -124,23 +127,26 @@ An array of SCSI command description strings.
 .ne 2
 .mk
 .na
-\fIsensep\fR
+.I sensep
 .ad
 .RS 14n
 .rt
-A pointer to a \fBscsi_extended_sense\fR(9S) structure.
+A pointer to a
+.BR scsi_extended_sense "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIasc_list\fR
+.I asc_list
 .ad
 .RS 14n
 .rt
 A pointer to a array of asc and ascq message list.The list must be
-terminated with \fB-1\fR asc value.
+terminated with
+.B -1
+asc value.
 .RE
 
 .sp
@@ -157,23 +163,35 @@ structure to identify the device. Second argument will be a pointer to a
 buffer of length specified by third argument. The fourth argument will be
 the FRU byte. \fIdecode_fru\fR might be \fINULL\fR if no special decoding is
 required. \fIdecode_fru\fR is expected to return pointer to a char string if
-decoding possible and \fINULL\fR if no decoding is possible.
+decoding possible and
+.I NULL
+if no decoding is possible.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-This function is very similar to \fBscsi_errmsg\fR(9F) but allows decoding
+This function is very similar to
+.BR scsi_errmsg "(9F) but allows decoding"
 of vendor-unique ASC/ASCQ and FRU information.
 .sp
 .LP
-The \fBscsi_vu_errmsg()\fR function interprets the request sense
-information in the \fIsensep\fR pointer and generates a standard message
+The
+.B scsi_vu_errmsg()
+function interprets the request sense
+information in the
+.I sensep
+pointer and generates a standard message
 that is displayed using \fBscsi_log\fR(9F). It first searches the list array
 for a matching vendor unique code if supplied. If it does not find one in
 the list then the standard list is searched. The first line of the message
-is always a \fBCE_WARN\fR, with the continuation lines being \fBCE_CONT\fR.
-\fIsensep\fR may be \fINULL\fR, in which case no sense key or vendor
+is always a
+.BR CE_WARN ,
+with the continuation lines being
+.BR CE_CONT .
+\fIsensep\fR may be
+.IR NULL ,
+in which case no sense key or vendor
 information is displayed.
 .sp
 .LP
@@ -182,7 +200,10 @@ based on the severity of the failure and the severity level that the driver
 wants to report.
 .sp
 .LP
-The \fBscsi_device\fR(9S) structure denoted by \fIdevp\fR supplies the
+The
+.BR scsi_device "(9S) structure denoted by"
+.I devp
+supplies the
 identification of the device that requested the display. \fIseverity\fR
 selects which string is used in the Error Level: reporting, according to the
 table below:
@@ -202,12 +223,16 @@ table below:
 .sp
 .LP
 \fIblkno\fR is the block number of the original request that generated the
-error. \fIerr_blkno\fR is the block number where the error occurred.
+error.
+.I err_blkno
+is the block number where the error occurred.
 \fIcmdlist\fR is a mapping table for translating the SCSI command code in
 pktp to the actual command string.
 .sp
 .LP
-The \fIcmdlist\fR is described in the structure below:
+The
+.I cmdlist
+is described in the structure below:
 .sp
 .in +2
 .nf
@@ -254,11 +279,13 @@ For a basic SCSI disk, the following list is appropriate:
 .SH CONTEXT
 .sp
 .LP
-The \fBscsi_vu_errmsg()\fR function may be called from user, interrupt, or
+The
+.B scsi_vu_errmsg()
+function may be called from user, interrupt, or
 kernel context.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBscsi_vu_errmsg()\fR
+\fBExample 1\fR Using \fBscsi_vu_errmsg()\fR
 .sp
 .in +2
 .nf
@@ -295,12 +322,17 @@ WARNING: /sbus@1,f8000000/esp@0,800000/sd@1,0 (sd1):
 .SH SEE ALSO
 .sp
 .LP
-\fBcmn_err\fR(9F), \fBscsi_errmsg\fR(9F), \fBscsi_log\fR(9F),
-\fBscsi_errmsg\fR(9F), \fBscsi_asc_key_strings\fR(9S),
-\fBscsi_device\fR(9S), \fBscsi_extended_sense\fR(9S), \fBscsi_pkt\fR(9S)
+.BR cmn_err (9F),
+.BR scsi_errmsg (9F),
+.BR scsi_log (9F),
+.BR scsi_errmsg (9F),
+.BR scsi_asc_key_strings (9S),
+.BR scsi_device (9S),
+.BR scsi_extended_sense (9S),
+.BR scsi_pkt (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

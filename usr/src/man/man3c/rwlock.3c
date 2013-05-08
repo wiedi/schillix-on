@@ -73,33 +73,45 @@ protect data that is frequently searched.
 .LP
 Readers/writer locks can synchronize threads in this process and other
 processes if they are allocated in writable memory  and shared among
-cooperating processes (see \fBmmap\fR(2)), and are initialized for this
+cooperating processes (see
+.BR mmap (2)),
+and are initialized for this
 purpose.
 .sp
 .LP
 Additionally, readers/writer locks must be initialized prior to use.
 \fBrwlock_init()\fR The readers/writer lock pointed to by \fIrwlp\fR is
-initialized by  \fBrwlock_init()\fR. A readers/writer lock is capable of
+initialized by
+.BR rwlock_init() .
+A readers/writer lock is capable of
 having several types of behavior, which is specified by \fBtype\fR.
 \fIarg\fR is currently not used, although a future type may define  new
-behavior parameters by way of  \fIarg\fR.
+behavior parameters by way of 
+.IR arg .
 .sp
 .LP
-The \fItype\fR argument can be one of the following:
+The
+.I type
+argument can be one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBUSYNC_PROCESS\fR
+.B USYNC_PROCESS
 .ad
 .RS 18n
 .rt
 The readers/writer lock can synchronize threads in this process and other
 processes. The readers/writer lock should be initialized by only one
-process. \fIarg\fR is ignored. A readers/writer lock initialized with this
+process.
+.I arg
+is ignored. A readers/writer lock initialized with this
 type, must be allocated in memory shared between processses, i.e. either in
-Sys V shared memory (see \fBshmop\fR(2)) or in memory mapped to a file (see
-\fBmmap\fR(2)). It is illegal to initialize the object this way and to not
+Sys V shared memory (see
+.BR shmop (2))
+or in memory mapped to a file (see
+.BR mmap (2)).
+It is illegal to initialize the object this way and to not
 allocate it in such shared memory.
 .RE
 
@@ -107,7 +119,7 @@ allocate it in such shared memory.
 .ne 2
 .mk
 .na
-\fBUSYNC_THREAD\fR
+.B USYNC_THREAD
 .ad
 .RS 18n
 .rt
@@ -118,7 +130,11 @@ The readers/writer lock can synchronize  threads in this process, only.
 .sp
 .LP
 Additionally, readers/writer locks can be initialized by allocation  in
-zeroed memory. A \fBtype\fR of \fBUSYNC_THREAD\fR is assumed in this case.
+zeroed memory. A
+.B type
+of
+.B USYNC_THREAD
+is assumed in this case.
 Multiple threads must not simultaneously initialize the same  readers/writer
 lock. And a readers/writer lock must not be re-initialized while in use by
 other threads.
@@ -168,31 +184,40 @@ rwlock_init(&rwlp, USYNC_PROCESS, NULL);
 
 .sp
 .LP
-Any state associated with the readers/writer lock pointed to by \fIrwlp\fR
-are destroyed by  \fBrwlock_destroy()\fR and the readers/writer lock storage
+.RI "Any state associated with the readers/writer lock pointed to by" " rwlp"
+are destroyed by 
+.B rwlock_destroy()
+and the readers/writer lock storage
 space is not released.
 .sp
 .LP
 \fBrw_rdlock()\fR gets a read lock on the readers/writer lock pointed to by
-\fIrwlp\fR. If the readers/writer lock is currently locked for writing, the
+.IR rwlp .
+If the readers/writer lock is currently locked for writing, the
 calling thread blocks until the write lock is freed. Multiple threads may
 simultaneously hold a read lock on a  readers/writer lock.
 .sp
 .LP
 \fBrw_tryrdlock()\fR trys to get a read lock on the readers/writer lock
-pointed to by \fIrwlp\fR. If the readers/writer lock is locked for writing,
+pointed to by
+.IR rwlp .
+If the readers/writer lock is locked for writing,
 it returns an error; otherwise, the read lock is acquired.
 .sp
 .LP
 \fBrw_wrlock()\fR gets a write lock on the readers/writer lock pointed to
-by \fIrwlp\fR. If the readers/writer lock is currently locked for reading or
+by
+.IR rwlp .
+If the readers/writer lock is currently locked for reading or
 writing, the calling thread blocks until all the read and write locks are
 freed. At any given time, only one thread may have a write lock on a
 readers/writer lock.
 .sp
 .LP
 \fBrw_trywrlock()\fR trys to get a write lock on the readers/writer lock
-pointed to by \fIrwlp\fR. If the readers/writer lock is currently locked for
+pointed to by
+.IR rwlp .
+If the readers/writer lock is currently locked for
 reading or writing, it returns an error.
 .sp
 .LP
@@ -206,17 +231,21 @@ behavior is unknown.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, these functions return \fB0\fR. Otherwise, a non-zero value
+If successful, these functions return
+.BR 0 .
+Otherwise, a non-zero value
 is returned to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBrwlock_init()\fR function will fail if:
+The
+.B rwlock_init()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
@@ -225,16 +254,22 @@ The \fBrwlock_init()\fR function will fail if:
 
 .sp
 .LP
-The  \fBrw_tryrdlock()\fR or \fBrw_trywrlock()\fR functions will fail if:
+The 
+.B rw_tryrdlock()
+or
+.B rw_trywrlock()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
-The reader or writer lock pointed to by \fIrwlp\fR was already locked.
+The reader or writer lock pointed to by
+.I rwlp
+was already locked.
 .RE
 
 .sp
@@ -244,7 +279,7 @@ These functions may fail if:
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 11n
 .rt
@@ -254,7 +289,9 @@ These functions may fail if:
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -271,14 +308,15 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBmmap\fR(2), \fBattributes\fR(5)
+.BR mmap (2),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
 These interfaces also available by way of:
 .sp
 .LP
-\fB#include\fR \fB<thread.h>\fR
+.B #include <thread.h>
 .sp
 .LP
 If multiple threads are waiting for a readers/writer lock, the acquisition

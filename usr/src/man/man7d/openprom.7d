@@ -50,8 +50,11 @@ The internal encoding of the configuration information stored in
 \fBEEPROM\fR or \fBNVRAM\fR varies from model to model, and on some systems
 the encoding is "hidden" by the firmware. The \fBopenprom\fR driver provides
 a consistent interface that allows a user or program to inspect and modify
-that configuration, using \fBioctl\fR(2) requests. These requests are
-defined in \fB<sys/openpromio.h>\fR:
+that configuration, using
+.BR ioctl (2)
+requests. These requests are
+defined in
+.BR <sys/openpromio.h> :
 .sp
 .in +2
 .nf
@@ -71,12 +74,19 @@ struct openpromio {
 
 .sp
 .LP
-For all \fBioctl\fR(2) requests, the third parameter is a pointer to a
-\fBstruct openpromio\fR. All property names and values are null-terminated
-strings; the value of a numeric option is its \fBASCII\fR representation.
+For all
+.BR ioctl (2)
+requests, the third parameter is a pointer to a
+.BR "struct openpromio" .
+All property names and values are null-terminated
+strings; the value of a numeric option is its
+.B ASCII
+representation.
 .sp
 .LP
-For the raw \fBioctl\fR(2) operations shown below that explicitly or
+For the raw
+.BR ioctl (2)
+operations shown below that explicitly or
 implicitly specify a nodeid, an error may be returned. This is due to the
 removal of the node from the firmware device tree by a Dynamic
 Reconfiguration operation. Programs should decide if the appropriate
@@ -87,13 +97,17 @@ terminate, informing the user that the tree has changed.
 .ne 2
 .mk
 .na
-\fBOPROMGETOPT\fR
+.B OPROMGETOPT
 .ad
 .RS 19n
 .rt
 This ioctl takes the null-terminated name of a property in the
 \fIoprom_array\fR and returns its null-terminated value (overlaying its
-name). \fIoprom_size\fR should be set to the size of \fIoprom_array\fR; on
+name).
+.I oprom_size
+should be set to the size of
+.IR oprom_array ;
+on
 return it will contain the size of the returned value. If the named property
 does not exist, or if there is not enough space to hold its value, then
 \fIoprom_size\fR will be set to zero. See \fBBUGS\fR below.
@@ -103,11 +117,13 @@ does not exist, or if there is not enough space to hold its value, then
 .ne 2
 .mk
 .na
-\fBOPROMSETOPT\fR
+.B OPROMSETOPT
 .ad
 .RS 19n
 .rt
-This ioctl takes two adjacent strings in \fIoprom_array\fR; the
+This ioctl takes two adjacent strings in
+.IR oprom_array ;
+the
 null-terminated property name followed by the null-terminated value.
 .RE
 
@@ -115,11 +131,13 @@ null-terminated property name followed by the null-terminated value.
 .ne 2
 .mk
 .na
-\fBOPROMSETOPT2\fR
+.B OPROMSETOPT2
 .ad
 .RS 19n
 .rt
-This ioctl is similar to  \fBOPROMSETOPT,\fR except that it uses the
+This ioctl is similar to 
+.B OPROMSETOPT,
+except that it uses the
 difference between the actual user array size and the length of the property
 name plus its null terminator.
 .RE
@@ -128,15 +146,21 @@ name plus its null terminator.
 .ne 2
 .mk
 .na
-\fBOPROMNXTOPT\fR
+.B OPROMNXTOPT
 .ad
 .RS 19n
 .rt
 This ioctl is used to retrieve properties sequentially. The null-terminated
-name of a property is placed into \fIoprom_array\fR and on return it is
+name of a property is placed into
+.I oprom_array
+and on return it is
 replaced with the null-terminated name of the next property in the sequence,
-with \fIoprom_size\fR set to its length. A null string on input means return
-the name of the first property; an \fIoprom_size\fR of zero on output means
+with
+.I oprom_size
+set to its length. A null string on input means return
+the name of the first property; an
+.I oprom_size
+of zero on output means
 there are no more properties.
 .RE
 
@@ -144,24 +168,26 @@ there are no more properties.
 .ne 2
 .mk
 .na
-\fBOPROMNXT\fR
+.B OPROMNXT
 .ad
 .br
 .na
-\fBOPROMCHILD\fR
+.B OPROMCHILD
 .ad
 .br
 .na
-\fBOPROMGETPROP\fR
+.B OPROMGETPROP
 .ad
 .br
 .na
-\fBOPROMNXTPROP\fR
+.B OPROMNXTPROP
 .ad
 .RS 19n
 .rt
 These ioctls provide an interface to the raw \fIconfig_ops\fR operations in
-the \fBPROM\fR monitor. One can use them to traverse the system device tree;
+the
+.B PROM
+monitor. One can use them to traverse the system device tree;
 see \fBprtconf\fR(1M).
 .RE
 
@@ -169,13 +195,17 @@ see \fBprtconf\fR(1M).
 .ne 2
 .mk
 .na
-\fBOPROMGETPROPLEN\fR
+.B OPROMGETPROPLEN
 .ad
 .RS 19n
 .rt
-This ioctl provides an interface to the \fIproperty length\fR raw config
+This ioctl provides an interface to the
+.I "property length"
+raw config
 op. It takes the name of a property in the buffer, and returns an integer in
-the buffer. It returns the integer \fB-1\fR if the property does not exist;
+the buffer. It returns the integer
+.B -1
+if the property does not exist;
 \fB0\fR if the property exists, but has no value (a boolean property); or a
 positive integer which is the length of the property as reported by the
 \fBPROM\fR monitor. See \fBBUGS\fR below.
@@ -185,12 +215,14 @@ positive integer which is the length of the property as reported by the
 .ne 2
 .mk
 .na
-\fBOPROMGETVERSION\fR
+.B OPROMGETVERSION
 .ad
 .RS 19n
 .rt
 This ioctl returns an arbitrary and platform-dependent NULL-terminated
-string in \fIoprom_array\fR, representing the underlying version of the
+string in
+.IR oprom_array ,
+representing the underlying version of the
 firmware.
 .RE
 
@@ -199,33 +231,39 @@ firmware.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
-There are too many opens of the \fB/dev/openprom\fR device.
+There are too many opens of the
+.B /dev/openprom
+device.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-A bad address has been passed to an \fBioctl\fR(2) routine.
+A bad address has been passed to an
+.BR ioctl (2)
+routine.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The size value was invalid, or (for \fBOPROMSETOPT\fR) the       property
+The size value was invalid, or (for
+.BR OPROMSETOPT )
+the       property
 does not exist, or an invalid ioctl is being issued, or the ioctl is not
 supported by the firmware, or the nodeid specified does not exist in the
 firmware device tree.
@@ -235,7 +273,7 @@ firmware device tree.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -246,7 +284,7 @@ The kernel could not allocate space to copy the user's structure.
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
@@ -258,7 +296,7 @@ write only entity.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
@@ -270,7 +308,9 @@ Attempting to open a non-existent device.
 \fBExample 1 \fIoprom_array\fR Data Allocation and Reuse
 .sp
 .LP
-The following example shows how the \fIoprom_array\fR is allocated and
+The following example shows how the
+.I oprom_array
+is allocated and
 reused for data returned by the driver.
 
 .sp
@@ -416,7 +456,7 @@ main(void)
 .ne 2
 .mk
 .na
-\fB/dev/openprom\fR
+.B /dev/openprom
 .ad
 .RS 17n
 .rt
@@ -426,8 +466,10 @@ PROM monitor configuration interface
 .SH SEE ALSO
 .sp
 .LP
-\fBeeprom\fR(1M), \fBmonitor\fR(1M), \fBprtconf\fR(1M), \fBioctl\fR(2),
-\fBmem\fR(7D)
+.BR eeprom (1M),
+.BR monitor (1M),
+\fBprtconf\fR(1M), \fBioctl\fR(2),
+.BR mem (7D)
 .SH BUGS
 .sp
 .LP
@@ -435,19 +477,36 @@ There should be separate return values for non-existent properties as
 opposed to not enough space for the value.
 .sp
 .LP
-An attempt to set a property to an illegal value results in the \fBPROM\fR
+An attempt to set a property to an illegal value results in the
+.BR PROM
 setting it to some legal value, with no error being returned. An
 \fBOPROMGETOPT\fR should be performed after an \fBOPROMSETOPT\fR to verify
 that the set worked.
 .sp
 .LP
-Some \fBPROMS\fR \fIlie\fR about the property length of some string
-properties, omitting the  \fBNULL\fR terminator from the property length.
-The \fBopenprom\fR driver attempts to \fItransparently\fR compensate for
-these bugs when returning property values by  \fBNULL\fR terminating an
+Some
+.B PROMS
+\fIlie\fR about the property length of some string
+properties, omitting the 
+.B NULL
+terminator from the property length.
+The
+.B openprom
+driver attempts to
+.I transparently
+compensate for
+these bugs when returning property values by 
+.B NULL
+terminating an
 extra character in the user buffer if space is available in the user buffer.
-This extra character is excluded from the \fIoprom_size\fR field returned
-from \fBOPROMGETPROP\fR and \fBOPROMGETOPT\fR and excluded in the
+This extra character is excluded from the
+.I oprom_size
+field returned
+from
+.B OPROMGETPROP
+and
+.B OPROMGETOPT
+and excluded in the
 \fIoprom_len\fR field returned from \fBOPROMGETPROPLEN\fR but is returned in
 the user buffer from the calls that return data, if the user buffer is
 allocated at least one byte larger than the property length.

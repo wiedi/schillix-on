@@ -39,24 +39,43 @@ the port
 .SH DESCRIPTION
 .sp
 .LP
-The \fBport_associate()\fR function associates specific \fIevents\fR of a
-given \fIobject\fR with a \fIport\fR.  Only objects associated with a
+The
+.B port_associate()
+function associates specific
+.I events
+of a
+given
+.I object
+with a
+.IR port .
+Only objects associated with a
 particular port are able to generate events that can be retrieved using
-\fBport_get\fR(3C) or \fBport_getn\fR(3C). The delivery event has its
+.BR port_get (3C)
+or
+.BR port_getn "(3C). The delivery event has its"
 \fBportev_user\fR member set to the value specified in the \fIuser\fR
 parameter. If the specified object is already associated with the specified
-port, the \fBport_associate()\fR function serves to update the \fIevents\fR
-and \fIuser\fR arguments of the association.  The \fBport_dissociate()\fR
+port, the
+.B port_associate()
+function serves to update the
+.IR events
+and
+.I user
+arguments of the association.  The \fBport_dissociate()\fR
 function removes the association of an object with a port.
 .sp
 .LP
 The objects that can be associated with a port by way of the
 \fBport_associate()\fR function are objects of type \fBPORT_SOURCE_FD\fR and
-\fBPORT_SOURCE_FILE\fR. Objects of other types have type-specific
+.BR PORT_SOURCE_FILE .
+Objects of other types have type-specific
 association mechanisms. A \fBport_notify_t\fR structure, defined in
-\fB<port.h>\fR, is used to specify the event port and an application-defined
-cookie to associate with these event sources. See \fBport_create\fR(3C) and
-\fBsignal.h\fR(3HEAD).
+.BR <port.h> ,
+is used to specify the event port and an application-defined
+cookie to associate with these event sources. See
+.BR port_create (3C)
+and
+.BR signal.h (3HEAD).
 .sp
 .LP
 The \fBport_notify_t\fR structure contains the following members:
@@ -70,17 +89,27 @@ void      *portntfy_user; /* user defined cookie */
 
 .sp
 .LP
-Objects of type \fBPORT_SOURCE_FD\fR are file descriptors. The event types
-for \fBPORT_SOURCE_FD\fR objects are described in \fBpoll\fR(2). At most one
+Objects of type
+.B PORT_SOURCE_FD
+are file descriptors. The event types
+for
+.B PORT_SOURCE_FD
+objects are described in
+.BR poll (2).
+At most one
 event notification will be generated per associated file descriptor.  For
 example, if a file descriptor is associated with a port for the
 \fBPOLLRDNORM\fR event and data is available on the file descriptor at the
-time the \fBport_associate()\fR function is called, an event is immediately
+time the
+.B port_associate()
+function is called, an event is immediately
 sent to the port. If data is not yet available, one event is sent to the
 port when data first becomes available.
 .sp
 .LP
-When an event for a \fBPORT_SOURCE_FD\fR object is retrieved, the object no
+When an event for a
+.B PORT_SOURCE_FD
+object is retrieved, the object no
 longer has an association with the port.  The event can be processed without
 the possibility that another thread can retrieve a subsequent event for the
 same object.  After processing of the file descriptor is completed, the
@@ -88,14 +117,21 @@ same object.  After processing of the file descriptor is completed, the
 the port.
 .sp
 .LP
-Objects of type \fBPORT_SOURCE_FILE\fR are pointer to the structure
-\fBfile_obj\fR defined in \fB<sys/port.h>\fR. This event source provides
+Objects of type
+.B PORT_SOURCE_FILE
+are pointer to the structure
+\fBfile_obj\fR defined in
+.BR <sys/port.h> .
+This event source provides
 event notification when the specified file/directory is accessed or modified
 or when its status changes. The path name of the file/directory to be
 watched is passed in the \fBstruct file_obj\fR along with the \fBaccess\fR,
 \fBmodification\fR, and \fBchange\fR time stamps acquired from a
-\fBstat\fR(2) call. If the file name is a symbolic links, it is followed by
-default. The \fBFILE_NOFOLLOW\fR needs to be passed in along with the
+.BR stat (2)
+call. If the file name is a symbolic links, it is followed by
+default. The
+.B FILE_NOFOLLOW
+needs to be passed in along with the
 specified events if the symbolic link itself needs to be watched and
 \fBlstat()\fR needs to be used to get the file status of the symbolic link
 file.
@@ -114,19 +150,33 @@ char            *fo_name;  /* Pointer to a null terminated path name */
 
 .sp
 .LP
-At the time the \fBport_associate()\fR function is called, the time stamps
+At the time the
+.B port_associate()
+function is called, the time stamps
 passed in the structure \fBfile_obj\fR are compared with the file or
 directory's current time stamps and, if there has been a change, an event is
 immediately sent to the port. If not, an event will be sent when such a
 change occurs.
 .sp
 .LP
-The event types that can be specified at \fBport_associate()\fR time for
-\fBPORT_SOURCE_FILE\fR are \fBFILE_ACCESS\fR, \fBFILE_MODIFIED\fR, and
-\fBFILE_ATTRIB\fR, corresponding to the three time stamps. An \fBfo_atime\fR
-change results in the \fBFILE_ACCESS\fR event, an \fBfo_mtime\fR change
-results in the \fBFILE_MODIFIED\fR event, and an \fBfo_time\fR change
-results in the \fBFILE_ATTRIB\fR event.
+The event types that can be specified at
+.B port_associate()
+time for
+\fBPORT_SOURCE_FILE\fR are
+.BR FILE_ACCESS ,
+.BR FILE_MODIFIED ,
+and
+.BR FILE_ATTRIB ,
+corresponding to the three time stamps. An \fBfo_atime\fR
+change results in the
+.B FILE_ACCESS
+event, an \fBfo_mtime\fR change
+results in the
+.B FILE_MODIFIED
+event, and an \fBfo_time\fR change
+results in the
+.B FILE_ATTRIB
+event.
 .sp
 .LP
 The following exception events are delivered when they occur. These event
@@ -148,7 +198,9 @@ At most one event notification will be generated per associated
 \fBfile_obj\fR. When the event for the associated \fBfile_obj\fR is
 retrieved, the object is no longer associated with the port. The event can
 be processed without the possibility that another thread can retrieve a
-subsequent event for the same object. The \fBport_associate()\fR can be
+subsequent event for the same object. The
+.B port_associate()
+can be
 called to reassociate the \fBfile_obj\fR object with the port.
 .sp
 .LP
@@ -157,7 +209,9 @@ The association is also removed if the port gets closed or when
 .sp
 .LP
 The parent and child processes are allowed to retrieve events from file
-descriptors shared after a call to \fBfork\fR(2). The process performing the
+descriptors shared after a call to
+.BR fork (2).
+The process performing the
 first association with a port (parent or child process) is designated as the
 owner of the association. Only the owner of an association is allowed to
 dissociate the file descriptor from a port. The association is removed if
@@ -174,28 +228,38 @@ Upon succesful completion, 0 is returned. Otherwise, \(mi1 is returned and
 .SH ERRORS
 .sp
 .LP
-The \fBport_associate()\fR and \fBport_dissociate()\fR functions will fail
+The
+.B port_associate()
+and
+.B port_dissociate()
+functions will fail
 if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
-The \fIport\fR identifier is not valid.
+The
+.I port
+identifier is not valid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEBADFD\fR
+.B EBADFD
 .ad
 .RS 10n
 .rt
-The \fIsource\fR argument is of type \fBPORT_SOURCE_FD\fR and the object
+The
+.I source
+argument is of type
+.B PORT_SOURCE_FD
+and the object
 argument is not a valid file descriptor.
 .RE
 
@@ -203,25 +267,31 @@ argument is not a valid file descriptor.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIsource\fR argument is not valid.
+The
+.I source
+argument is not valid.
 .RE
 
 .sp
 .LP
-The \fBport_associate()\fR function will fail if:
+The
+.B port_associate()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 11n
 .rt
-The source argument is \fBPORT_SOURCE_FILE\fR and, Search permission is
+The source argument is
+.B PORT_SOURCE_FILE
+and, Search permission is
 denied on a component of path prefix or the file exists and the permissions,
 corresponding to the events argument, are denied.
 .RE
@@ -230,13 +300,15 @@ corresponding to the events argument, are denied.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
 The maximum number of objects associated with the port was exceeded. The
 maximum allowable number of events or association of objects per port is the
-minimum value of the \fBprocess.max-port-events\fR resource control at the
+minimum value of the
+.B process.max-port-events
+resource control at the
 time \fBport_create\fR(3C) was used to create the port. See \fBsetrctl\fR(2)
 and \fBrctladm\fR(1M) for information on using resource controls.
 .sp
@@ -249,11 +321,13 @@ resource types. Some of the source types do not explicitly use the
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 11n
 .rt
-The source argument is \fBPORT_SOURCE_FILE\fR and the file does not exist
+The source argument is
+.B PORT_SOURCE_FILE
+and the file does not exist
 or the path prefix does not exist or the path points to an empty string.
 .RE
 
@@ -261,7 +335,7 @@ or the path prefix does not exist or the path points to an empty string.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -272,23 +346,27 @@ The physical memory limits of the system have been exceeded.
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 11n
 .rt
-The source argument is \fBPORT_SOURCE_FILE\fR and the file system on which
+The source argument is
+.B PORT_SOURCE_FILE
+and the file system on which
 the specified file resides, does not support watching for file events
 notifications.
 .RE
 
 .sp
 .LP
-The \fBport_dissociate()\fR function will fail if:
+The
+.B port_dissociate()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
@@ -299,7 +377,7 @@ The process is not the owner of the association.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 10n
 .rt
@@ -308,7 +386,7 @@ The specified object is not associated with the port.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRRetrieve data from a pipe file descriptor.
+\fBExample 1\fR Retrieve data from a pipe file descriptor.
 .sp
 .LP
 The following example retrieves data from a pipe file descriptor.
@@ -378,7 +456,7 @@ for (.\|.\|.) {
 .in -2
 
 .LP
-\fBExample 2 \fRBind AIO transaction to a specific port.
+\fBExample 2\fR Bind AIO transaction to a specific port.
 .sp
 .LP
 The following example binds the AIO transaction to a specific port.
@@ -445,7 +523,9 @@ my_status = aio_return(aiocbp);
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -468,6 +548,12 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBrctladm\fR(1M), \fBpoll\fR(2), \fBsetrctl\fR(2), \fBport_alert\fR(3C),
-\fBport_create\fR(3C), \fBport_get\fR(3C), \fBport_send\fR(3C),
-\fBsignal.h\fR(3HEAD), \fBattributes\fR(5)
+.BR rctladm (1M),
+.BR poll (2),
+.BR setrctl (2),
+.BR port_alert (3C),
+.BR port_create (3C),
+.BR port_get (3C),
+.BR port_send (3C),
+.BR signal.h (3HEAD),
+.BR attributes (5)

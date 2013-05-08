@@ -42,7 +42,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIia_handle\fR
+.I ia_handle
 .ad
 .RS 14n
 .rt
@@ -53,7 +53,7 @@ A handle for an open instance of the IA to which the created SRQ belongs.
 .ne 2
 .mk
 .na
-\fIpz_handle\fR
+.I pz_handle
 .ad
 .RS 14n
 .rt
@@ -64,7 +64,7 @@ A handle for an instance of the Protection Zone.
 .ne 2
 .mk
 .na
-\fIsrq_attr\fR
+.I srq_attr
 .ad
 .RS 14n
 .rt
@@ -75,7 +75,7 @@ A pointer to a structure that contains Consumer-requested SRQ attributes.
 .ne 2
 .mk
 .na
-\fIsrq_handle\fR
+.I srq_handle
 .ad
 .RS 14n
 .rt
@@ -85,31 +85,51 @@ A handle for the created instance of a Shared Receive Queue.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_srq_create()\fR function creates an instance of a Shared Receive
-Queue (SRQ) that is provided to the Consumer as \fIsrq_handle\fR. If the
-value of \fBDAT_RETURN\fR is not \fBDAT_SUCCESS\fR, the value of
+The
+.B dat_srq_create()
+function creates an instance of a Shared Receive
+Queue (SRQ) that is provided to the Consumer as
+.IR srq_handle .
+If the
+value of
+.B DAT_RETURN
+is not
+.BR DAT_SUCCESS ,
+the value of
 \fIsrq_handle\fR is not defined.
 .sp
 .LP
 The created SRQ is unattached to any Endpoints.
 .sp
 .LP
-The Protection Zone \fIpz_handle\fR allows Consumers to control what local
+The Protection Zone
+.I pz_handle
+allows Consumers to control what local
 memory can be used for the Recv DTO buffers posted to the SRQ. Only memory
 referred to by LMRs of the posted Recv buffers that match the SRQ Protection
 Zone can be accessed by the SRQ.
 .sp
 .LP
-The \fIsrq_attributes\fR argument specifies the initial attributes of the
+The
+.I srq_attributes
+argument specifies the initial attributes of the
 created SRQ. If the operation is successful, the created SRQ will have the
-queue size at least \fImax_recv_dtos\fR and the number of entries on the
-posted Recv scatter list of at lease \fImax_recv_iov\fR. The created SRQ can
+queue size at least
+.I max_recv_dtos
+and the number of entries on the
+posted Recv scatter list of at lease
+.IR max_recv_iov .
+The created SRQ can
 have the queue size and support number of entries on post Recv buffers
 larger than requested. Consumer can query SRQ to find out the actual
 supported queue size and maximum Recv IOV.
 .sp
 .LP
-The Consumer must set \fIlow_watermark\fR to \fBDAT_SRQ_LW_DEFAULT\fR to
+The Consumer must set
+.I low_watermark
+to
+.B DAT_SRQ_LW_DEFAULT
+to
 ensure that an asynchronous event will not be generated immediately, since
 there are no buffers in the created SRQ. The Consumer should set the Maximum
 Receive DTO attribute and the Maximum number of elements in IOV for posted
@@ -124,7 +144,7 @@ buffers on the EP Recv Work Queue.
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -135,7 +155,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -146,18 +166,22 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
-Either \fIia_handle\fR or \fIpz_handle\fR is an invalid DAT handle.
+Either
+.I ia_handle
+or
+.I pz_handle
+is an invalid DAT handle.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -169,7 +193,7 @@ attributes was invalid or a combination of attributes is invalid.
 .ne 2
 .mk
 .na
-\fBDAT_MODEL_NOT_SUPPORTED\fR
+.B DAT_MODEL_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
@@ -183,7 +207,8 @@ SRQ is created by the Consumer prior to creation of the EPs that will be
 using it.  Some Providers might restrict whether multiple EPs that share a
 SRQ can have different Protection Zones. Check the
 \fIsrq_ep_pz_difference_support\fR Provider attribute. The EPs that use SRQ
-might or might not use the same \fIrecv_evd\fR.
+might or might not use the same
+.IR recv_evd .
 .sp
 .LP
 Since a Recv buffer of SRQ can be used by any EP that is using SRQ, the
@@ -193,9 +218,11 @@ receive an incoming message on any of the EPs.
 .LP
 If Consumers do not want to receive an asynchronous event when the number
 of buffers in SRQ falls below the Low Watermark, they should leave its value
-as \fBDAT_SRQ_LW_DEFAULT\fR. If Consumers do want to receive a notification,
+as
+.BR DAT_SRQ_LW_DEFAULT .
+If Consumers do want to receive a notification,
 they can set the value to the desired one by calling
-\fBdat_srq_set_lw\fR(3DAT).
+.BR dat_srq_set_lw (3DAT).
 .sp
 .LP
 SRQ allows the Consumer to use fewer Recv buffers then posting the maximum
@@ -210,22 +237,28 @@ bound.
 Depending on the underlying Transport, one or more messages can arrive
 simultaneously on an EP that is using SRQ. Thus, the same EP can have
 multiple Recv buffers in its possession without these buffers being on SRQ
-or \fIrecv_evd\fR.
+or
+.IR recv_evd .
 .sp
 .LP
 Since Recv buffers can be used by multiple connections of the local EPs
 that are using SRQ, the completion order of the Recv buffers is no longer
-guaranteed even when they use of the same \fIrecv_evd\fR. For each
+guaranteed even when they use of the same
+.IR recv_evd .
+For each
 connection the Recv buffers completion order is guaranteed to be in the
 order of the posted matching Sends to the other end of the connection.
 There is no ordering guarantee that Receive buffers will be returned in the
 order they were posted even if there is only a single connection (Endpoint)
 associated with the SRQ. There is no ordering guarantee between different
-connections or between different \fIrecv_evd\fRs.
+connections or between different
+.IR recv_evd s.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -245,5 +278,8 @@ MT-LevelSafe
 .sp
 .LP
 \fBdat_srq_free\fR(3DAT), \fBdat_srq_post_recv\fR(3DAT),
-\fBdat_srq_query\fR(3DAT), \fBdat_srq_resize\fR(3DAT),
-\fBdat_srq_set_lw\fR(3DAT), \fBlibdat\fR(3LIB), \fBattributes\fR(5)
+.BR dat_srq_query (3DAT),
+.BR dat_srq_resize (3DAT),
+.BR dat_srq_set_lw (3DAT),
+.BR libdat (3LIB),
+.BR attributes (5)

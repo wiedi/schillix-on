@@ -61,52 +61,115 @@ process and LWP control in libthread_db
 .sp
 .LP
 \fBThe ps_pstop()\fR function stops the target process identified by
-\fIph\fR, while the \fBps_pcontinue()\fR function allows it to resume.
+.IR ph ,
+while the
+.B ps_pcontinue()
+function allows it to resume.
 .sp
 .LP
-The \fBlibthread_db()\fR function uses \fBps_pstop()\fR to freeze the
+The
+.B libthread_db()
+function uses
+.B ps_pstop()
+to freeze the
 target process while it is under inspection. Within the scope of any single
-call from outside \fBlibthread_db\fR to a \fBlibthread_db\fR routine,
-\fBlibthread_db\fR will call \fBps_pstop()\fR, at most once. If it does, it
-will call \fBps_pcontinue()\fR within the scope of the same routine.
+call from outside
+.B libthread_db
+to a
+.B libthread_db
+routine,
+\fBlibthread_db\fR will call
+.BR ps_pstop() ,
+at most once. If it does, it
+will call
+.B ps_pcontinue()
+within the scope of the same routine.
 .sp
 .LP
 The controlling process may already have stopped the target process when it
-calls \fBlibthread_db\fR. In that case, it is not obligated to resume the
-target process when \fBlibthread_db\fR calls \fBps_pcontinue()\fR. In other
-words, \fBps_pstop()\fR is mandatory, while \fBps_pcontinue()\fR is
-advisory. After \fBps_pstop()\fR, the target process must be stopped; after
-\fBps_pcontinue()\fR, the target process may be running.
+calls
+.BR libthread_db .
+In that case, it is not obligated to resume the
+target process when
+.B libthread_db
+calls
+.BR ps_pcontinue() .
+In other
+words,
+.B ps_pstop()
+is mandatory, while
+.B ps_pcontinue()
+is
+advisory. After
+.BR ps_pstop() ,
+the target process must be stopped; after
+.BR ps_pcontinue() ,
+the target process may be running.
 .sp
 .LP
-The \fBps_lstop()\fR and \fBps_lcontinue()\fR functions stop and resume a
+The
+.B ps_lstop()
+and
+.B ps_lcontinue()
+functions stop and resume a
 single lightweight process (\fBLWP\fR) within the target process \fIph\fR.
 .sp
 .LP
-The \fBps_lrolltoaddr()\fR function is used to roll an \fBLWP\fR forward
+The
+.B ps_lrolltoaddr()
+function is used to roll an
+.B LWP
+forward
 out of a critical section when the process is stopped. It is also used to
-run the \fBlibthread_db\fR agent thread on behalf of \fBlibthread\fR. The
+run the
+.B libthread_db
+agent thread on behalf of
+.BR libthread .
+The
 \fBps_lrolltoaddr()\fR function is always called with the target process
-stopped, that is, there has been a preceding call to \fBps_pstop()\fR. The
-specified \fBLWP\fR must be continued at the address \fIgo_addr\fR, or at
-its current address if \fIgo_addr\fR is \fINULL\fR. It should then be
-stopped when its execution reaches \fIstop_addr\fR. This routine does not
-return until the \fBLWP\fR has stopped at \fIstop_addr\fR.
+stopped, that is, there has been a preceding call to
+.BR ps_pstop() .
+The
+specified
+.B LWP
+must be continued at the address
+.IR go_addr ,
+or at
+its current address if
+.I go_addr
+is
+.IR NULL .
+It should then be
+stopped when its execution reaches
+.IR stop_addr .
+This routine does not
+return until the
+.B LWP
+has stopped at
+.IR stop_addr .
 .sp
 .LP
-The \fBps_kill()\fR function directs the signal \fIsignum\fR to the target
-process for which the handle is \fIph\fR. It has the same semantics as
-\fBkill\fR(2). 
+The
+.B ps_kill()
+function directs the signal
+.I signum
+to the target
+process for which the handle is
+.IR ph .
+It has the same semantics as
+.BR kill (2).
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBPS_OK\fR
+.B PS_OK
 .ad
 .RS 14n
 .rt
-The call completed successfully. In the case of \fBps_pstop()\fR, the
+The call completed successfully. In the case of
+.BR ps_pstop() ,
+the
 target process is stopped.
 .RE
 
@@ -114,19 +177,25 @@ target process is stopped.
 .ne 2
 .mk
 .na
-\fBPS_BADLID\fR
+.B PS_BADLID
 .ad
 .RS 14n
 .rt
-For \fBps_lstop()\fR, \fBps_lcontinue()\fR and \fBps_lrolltoaddr()\fR;
-there is no \fBLWP\fR with id \fIlwipd\fR in the target process.
+For
+.BR ps_lstop() ,
+\fBps_lcontinue()\fR and \fBps_lrolltoaddr()\fR;
+there is no
+.B LWP
+with id
+.I lwipd
+in the target process.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBPS_ERR\fR
+.B PS_ERR
 .ad
 .RS 14n
 .rt
@@ -136,7 +205,9 @@ The function did not return successfully.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -153,5 +224,8 @@ MT LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(2), \fBlibc_db\fR(3LIB), \fBproc_service\fR(3PROC),
-\fBattributes\fR(5), \fBthreads\fR(5)
+.BR kill (2),
+.BR libc_db (3LIB),
+.BR proc_service (3PROC),
+.BR attributes (5),
+.BR threads (5)

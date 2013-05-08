@@ -66,10 +66,18 @@ t_sndvudata \- send a data unit from one or more noncontiguous buffers
 .LP
 This function is used in connectionless mode to send a data unit to another
 transport user.  The argument  \fIfd\fR identifies the local transport endpoint
-through which data will be sent,  \fIiovcount\fR contains the number of
-non-contiguous \fIudata\fR buffers and is limited to an implementation-defined
-value given by  \fBT_IOV_MAX\fR which is at least 16, and  \fIunitdata\fR
-points to a  \fBt_unitdata\fR structure containing the following members:
+through which data will be sent, 
+.I iovcount
+contains the number of
+non-contiguous
+.I udata
+buffers and is limited to an implementation-defined
+value given by 
+.B T_IOV_MAX
+.RI "which is at least 16, and " " unitdata"
+points to a 
+.B t_unitdata
+structure containing the following members:
 .sp
 .in +2
 .nf
@@ -81,15 +89,27 @@ struct netbuf udata;
 
 .sp
 .LP
-If the limit on  \fIiovcount\fR is exceeded, the function fails with
-\fBTBADDATA\fR.
+If the limit on 
+.I iovcount
+is exceeded, the function fails with
+.BR TBADDATA .
 .sp
 .LP
-In  \fBunitdata\fR, \fIaddr\fR specifies the protocol address of the
-destination user, and  \fIopt\fR identifies options that the user wants
-associated with this request. The  \fIudata\fR field is not used.  The user may
+In
+.BR unitdata ,
+\fIaddr\fR specifies the protocol address of the
+destination user, and 
+.I opt
+identifies options that the user wants
+associated with this request. The 
+.I udata
+field is not used.  The user may
 choose not to specify what protocol options are associated with the transfer by
-setting the  \fIlen\fR field of  \fIopt\fR to zero.  In this case, the provider
+setting the 
+.I len
+field of 
+.I opt
+to zero.  In this case, the provider
 may use default options.
 .sp
 .LP
@@ -109,15 +129,22 @@ passed:
 .sp
 .LP
 may be constrained by implementation limits. If no other constraint applies,
-it will be limited by \fBINT_MAX\fR. In practice, the availability of memory to
+it will be limited by
+.BR INT_MAX .
+In practice, the availability of memory to
 an application is likely to impose a lower limit on the amount of data that can
 be sent or received using scatter/gather functions.
 .sp
 .LP
-By default,  \fBt_sndvudata()\fR operates in synchronous mode and may wait if
+By default, 
+.B t_sndvudata()
+operates in synchronous mode and may wait if
 flow control restrictions prevent the data from being accepted by the local
 transport provider at the time the call is made.  However, if  \fBO_NONBLOCK\fR
-is set by means of  \fBt_open\fR(3NSL) or  \fBfcntl\fR(2), \fBt_sndvudata()\fR
+is set by means of 
+.BR t_open "(3NSL) or "
+.BR fcntl (2),
+.B t_sndvudata()
 executes in asynchronous mode and will fail under such conditions.  The process
 can arrange to be notified of the clearance of a flow control restriction by
 means of either  \fBt_look\fR(3NSL) or the EM interface.
@@ -127,34 +154,49 @@ If the amount of data specified in  \fIiov\fB0\fR through \fIiov
 [iovcount-1]\fR exceeds the TSDU size as returned in the  \fItsdu\fR field of
 the \fIinfo\fR argument of \fBt_open\fR(3NSL) or  \fBt_getinfo\fR(3NSL), or is
 zero and sending of zero octets is not supported by the underlying transport
-service, a \fBTBADDATA\fR error is generated.  If  \fBt_sndvudata()\fR is
+service, a
+.B TBADDATA
+error is generated.  If 
+.B t_sndvudata()
+is
 called before the destination user has activated its transport endpoint (see
 \fBt_bind\fR(3NSL)\|), the data unit may be discarded.
 .sp
 .LP
 If it is not possible for the transport provider to immediately detect the
-conditions that cause the errors \fBTBADDADDR\fR and \fBTBADOPT\fR, these
-errors will alternatively be returned by  \fBt_rcvuderr\fR(3NSL). An
+conditions that cause the errors
+.B TBADDADDR
+and
+.BR TBADOPT ,
+these
+errors will alternatively be returned by 
+.BR t_rcvuderr "(3NSL). An"
 application must therefore be prepared to receive these errors in both of these
 ways.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a value of  \fB0\fR is returned. Otherwise, a
-value of  -1 is returned and  \fBt_errno\fR is set to indicate an error.
+Upon successful completion, a value of 
+.B 0
+is returned. Otherwise, a
+value of  -1 is returned and 
+.B t_errno
+is set to indicate an error.
 .SH VALID STATES
 .sp
 .LP
-\fBT_IDLE\fR.
+.BR T_IDLE .
 .SH ERRORS
 .sp
 .LP
-On failure,  \fBt_errno\fR is set to one of the following:
+On failure, 
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTBADADDR\fR
+.B TBADADDR
 .ad
 .RS 15n
 .rt
@@ -166,7 +208,7 @@ information.
 .ne 2
 .mk
 .na
-\fBTBADDATA\fR
+.B TBADDATA
 .ad
 .RS 15n
 .rt
@@ -191,7 +233,7 @@ provider.
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 15n
 .rt
@@ -202,7 +244,7 @@ The specified file descriptor does not refer to a transport endpoint.
 .ne 2
 .mk
 .na
-\fBTBADOPT\fR
+.B TBADOPT
 .ad
 .RS 15n
 .rt
@@ -214,11 +256,11 @@ information.
 .ne 2
 .mk
 .na
-\fBTFLOW\fR
+.B TFLOW
 .ad
 .RS 15n
 .rt
-\fBO_NONBLOCK\fR \fBi\fR was set, but the flow control mechanism prevented the
+\fBO_NONBLOCK i\fR was set, but the flow control mechanism prevented the
 transport provider from accepting any data at this time.
 .RE
 
@@ -226,7 +268,7 @@ transport provider from accepting any data at this time.
 .ne 2
 .mk
 .na
-\fBTLOOK\fR
+.B TLOOK
 .ad
 .RS 15n
 .rt
@@ -237,7 +279,7 @@ An asynchronous event has occurred on this transport endpoint.
 .ne 2
 .mk
 .na
-\fBTNOTSUPPORT\fR
+.B TNOTSUPPORT
 .ad
 .RS 15n
 .rt
@@ -248,7 +290,7 @@ This function is not supported by the underlying transport provider.
 .ne 2
 .mk
 .na
-\fBTOUTSTATE\fR
+.B TOUTSTATE
 .ad
 .RS 15n
 .rt
@@ -260,20 +302,20 @@ in which a call to this function is valid.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 15n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI error
-\fB(t_errno)\fR. 
+.BR (t_errno) .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 15n
 .rt
@@ -283,12 +325,16 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-In the \fBTLI\fR interface definition, no counterpart of this routine was
+In the
+.B TLI
+interface definition, no counterpart of this routine was
 defined.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -306,5 +352,8 @@ MT LevelSafe
 .sp
 .LP
 \fBfcntl\fR(2), \fBt_alloc\fR(3NSL), \fBt_open\fR(3NSL),
-\fBt_rcvudata\fR(3NSL), \fBt_rcvvudata\fR(3NSL) \fBt_rcvuderr\fR(3NSL),
-\fBt_sndudata\fR(3NSL), \fBattributes\fR(5)
+.BR t_rcvudata (3NSL),
+.BR t_rcvvudata (3NSL)
+.BR t_rcvuderr (3NSL),
+.BR t_sndudata (3NSL),
+.BR attributes (5)

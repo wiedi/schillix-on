@@ -25,56 +25,102 @@ dhcp_network \- DHCP network tables
 .sp
 .LP
 The Dynamic Host Configuration Protocol (\fBDHCP\fR) network tables are
-used to map the client identifiers of \fBDHCP\fR clients to \fBIP\fR
+used to map the client identifiers of
+.B DHCP
+clients to
+.BR IP
 addresses and the associated configuration parameters of that address. One
 \fBDHCP\fR network table exists for each network served by the \fBDHCP\fR
-server, and each table is named using the network's \fBIP\fR address. There
-is no table or file with the name \fBdhcp_network\fR.
+server, and each table is named using the network's
+.B IP
+address. There
+is no table or file with the name
+.BR dhcp_network .
 .sp
 .LP
-The \fBDHCP\fR network tables can exist as \fBASCII\fR text files, binary
-text files, or \fBNIS+\fR tables, depending on the data store used. Since
+The
+.B DHCP
+network tables can exist as
+.B ASCII
+text files, binary
+text files, or
+.B NIS+
+tables, depending on the data store used. Since
 the format of the file could change, the preferred method of managing the
 \fBDHCP\fR network tables is through the use of \fBdhcpmgr\fR(1M) or the
-\fBpntadm\fR(1M) command.
+.BR pntadm (1M)
+command.
 .sp
 .LP
-The \fBdhcp_network\fR file is used as a policy mechanism for whether
-\fBin.dhcpd\fR(1M) leases addresses on a given network. If the \fBDHCP\fR
+The
+.B dhcp_network
+file is used as a policy mechanism for whether
+.BR in.dhcpd (1M)
+leases addresses on a given network. If the \fBDHCP\fR
 server is not serving leases or information to a network, there should be no
 \fBdhcp_network\fR file for that network. To set the \fBDHCP\fR server in
 \fBinformational\fR mode, where it responds to \fBINFORM\fR messages but
-does not lease addresses on that network, create an empty \fBdhcp_network\fR
-file for that network. For normal operations, where the \fBDHCP\fR server
-both leases addresses and responds to \fBINFORM\fR packets, create a
+.RB "does not lease addresses on that network, create an empty" " dhcp_network"
+file for that network. For normal operations, where the
+.B DHCP
+server
+both leases addresses and responds to
+.B INFORM
+packets, create a
 \fBdhcp_network\fR file using \fBdhcpmgr\fR(1M) or \fBpntadm\fR(1M) and
 populate it with leasable addresses.
 .sp
 .LP
-The format of the records in a \fBDHCP\fR network table depends on the data
-store used to maintain the table. However, an entry in a \fBDHCP\fR network
+The format of the records in a
+.B DHCP
+network table depends on the data
+store used to maintain the table. However, an entry in a
+.B DHCP
+network
 table must contain the following fields:
 .sp
 .ne 2
 .mk
 .na
-\fBClient_ID\fR
+.B Client_ID
 .ad
 .RS 14n
 .rt
-The client identifier field, \fBClient_ID\fR, is an \fBASCII\fR hexadecimal
-representation of the unique octet string value of the \fBDHCP\fR Client
-Identifier Option (code 61) which identifies a \fBDHCP\fR client. In the
-absence of the \fBDHCP\fR Client Identifier Option, the \fBDHCP\fR client is
-identified using the form given below for \fBBOOTP\fR clients. The number of
+The client identifier field,
+.BR Client_ID ,
+is an
+.B ASCII
+hexadecimal
+representation of the unique octet string value of the
+.B DHCP
+Client
+Identifier Option (code 61) which identifies a
+.B DHCP
+client. In the
+absence of the
+.B DHCP
+Client Identifier Option, the
+.B DHCP
+client is
+identified using the form given below for
+.B BOOTP
+clients. The number of
 characters in this field must be an even number, with a maximum length of 64
-characters. Valid characters are \fB0\fR \fB-\fR \fB9\fR and
+characters. Valid characters are
+.B "0 -"
+\fB9\fR and
 \fBA\fR-\fBF\fR. Entries with values of \fB00\fR are freely available for
-dynamic allocation to requesting clients. \fBBOOTP\fR clients are identified
+dynamic allocation to requesting clients.
+.B BOOTP
+clients are identified
 by the concatenation of the network's hardware type (as defined by \fBRFC\fR
 1340, titled "Assigned Numbers") and the client's hardware address. For
-example, the following \fBBOOTP\fR client has a hardware type of '\fB01\fR'
-(10mb ethernet) and a hardware address of \fB8:0:20:11:12:b7\fR, so its
+example, the following
+.B BOOTP
+client has a hardware type of '\fB01\fR'
+(10mb ethernet) and a hardware address of
+.BR 8:0:20:11:12:b7 ,
+so its
 client identifier would be: \fB010800201112B7\fR
 .RE
 
@@ -82,22 +128,28 @@ client identifier would be: \fB010800201112B7\fR
 .ne 2
 .mk
 .na
-\fBFlags\fR
+.B Flags
 .ad
 .RS 14n
 .rt
-The \fBFlags\fR field is a decimal value, the bit fields of which can have
+The
+.B Flags
+field is a decimal value, the bit fields of which can have
 a combination of the following values:
 .sp
 .ne 2
 .mk
 .na
-\fB1 (PERMANENT)\fR
+.B 1 (PERMANENT)
 .ad
 .RS 18n
 .rt
-Evaluation of the \fBLease\fR field is turned off (lease is permanent). If
-this bit is not set, Evaluation of the \fBLease\fR field is enabled and the
+Evaluation of the
+.B Lease
+field is turned off (lease is permanent). If
+this bit is not set, Evaluation of the
+.B Lease
+field is enabled and the
 \fBLease\fR is \fBDYNAMIC.\fR
 .RE
 
@@ -105,11 +157,13 @@ this bit is not set, Evaluation of the \fBLease\fR field is enabled and the
 .ne 2
 .mk
 .na
-\fB2 (MANUAL)\fR
+.B 2 (MANUAL)
 .ad
 .RS 18n
 .rt
-This entry has a manual client \fBID\fR binding (cannot be reclaimed by
+This entry has a manual client
+.B ID
+binding (cannot be reclaimed by
 \fBDHCP\fR server). Client will not be allocated another address.
 .RE
 
@@ -117,25 +171,33 @@ This entry has a manual client \fBID\fR binding (cannot be reclaimed by
 .ne 2
 .mk
 .na
-\fB4 (UNUSABLE)\fR
+.B 4 (UNUSABLE)
 .ad
 .RS 18n
 .rt
-When set, this value means that either through \fBICMP\fR echo or client
+When set, this value means that either through
+.B ICMP
+echo or client
 \fBDECLINE,\fR this address has been found to be unusable. Can also be used
-by the network administrator to \fIprevent\fR a certain client from booting,
-if used in conjunction with the \fBMANUAL\fR flag.
+by the network administrator to
+.I prevent
+a certain client from booting,
+if used in conjunction with the
+.B MANUAL
+flag.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB8 (BOOTP)\fR
+.B 8 (BOOTP)
 .ad
 .RS 18n
 .rt
-This entry is reserved for allocation to \fBBOOTP\fR clients only.
+This entry is reserved for allocation to
+.B BOOTP
+clients only.
 .RE
 
 .RE
@@ -144,11 +206,15 @@ This entry is reserved for allocation to \fBBOOTP\fR clients only.
 .ne 2
 .mk
 .na
-\fBClient_IP\fR
+.B Client_IP
 .ad
 .RS 14n
 .rt
-The \fBClient_IP\fR field holds the \fBIP\fR address for this entry. This
+The
+.B Client_IP
+field holds the
+.B IP
+address for this entry. This
 value must be unique in the database.
 .RE
 
@@ -156,27 +222,38 @@ value must be unique in the database.
 .ne 2
 .mk
 .na
-\fBServer_IP\fR
+.B Server_IP
 .ad
 .RS 14n
 .rt
-This field holds the \fBIP\fR address of the \fBDHCP\fR server which
+This field holds the
+.B IP
+address of the
+.B DHCP
+server which
 \fIowns\fR this client \fBIP\fR address, and thus is responsible for initial
 allocation to a requesting client. On a multi-homed DHCP server, this IP
-address must be the first address returned by \fBgethostbyname\fR(3NSL).
+address must be the first address returned by
+.BR gethostbyname (3NSL).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBLease\fR
+.B Lease
 .ad
 .RS 14n
 .rt
 This numeric field holds the entry's absolute lease expiration time, and is
-in seconds since \fBJanuary 1, 1970\fR. It can be decimal, or hexadecimal
-(if \fB0x\fR prefixes number). The special value \fB-1\fR is used to denote
+in seconds since
+.BR "January 1, 1970" .
+It can be decimal, or hexadecimal
+(if
+.B 0x
+prefixes number). The special value
+.B -1
+is used to denote
 a permanent lease.
 .RE
 
@@ -184,11 +261,15 @@ a permanent lease.
 .ne 2
 .mk
 .na
-\fBMacro\fR
+.B Macro
 .ad
 .RS 14n
 .rt
-This \fBASCII\fR text field contains the \fBdhcptab\fR macro name used to
+This
+.B ASCII
+text field contains the
+.B dhcptab
+macro name used to
 look up this entry's configuration parameters in the \fBdhcptab\fR(4)
 database.
 .RE
@@ -197,54 +278,88 @@ database.
 .ne 2
 .mk
 .na
-\fBComment\fR
+.B Comment
 .ad
 .RS 14n
 .rt
-This \fBASCII\fR text field contains an optional comment.
+This
+.B ASCII
+text field contains an optional comment.
 .RE
 
 .SS "TREATISE ON LEASES"
 .sp
 .LP
-This section describes how the \fBDHCP/BOOTP\fR server calculates a
+This section describes how the
+.B DHCP/BOOTP
+server calculates a
 client's configuration lease using information contained in the
-\fBdhcptab\fR(4) and \fBDHCP\fR network tables. The server consults the
-\fBLeaseTim\fR and \fBLeaseNeg\fR symbols in the \fBdhcptab\fR, and the
+.BR dhcptab (4)
+and
+.B DHCP
+network tables. The server consults the
+\fBLeaseTim\fR and \fBLeaseNeg\fR symbols in the
+.BR dhcptab ,
+and the
 \fBFlags\fR and \fBLease\fR fields of the chosen IP address record in the
 \fBDHCP\fR network table.
 .sp
 .LP
-The server first examines the \fBFlags\fR field for the identified
+The server first examines the
+.B Flags
+field for the identified
 \fBDHCP\fR network table record. If the \fBPERMANENT\fR flag is on, then the
 client's lease is considered permanent.
 .sp
 .LP
-If the \fBPERMANENT\fR flag is not on, the server checks if the client's
-lease as represented by the \fBLease\fR field in the network table record
+If the
+.B PERMANENT
+flag is not on, the server checks if the client's
+lease as represented by the
+.B Lease
+field in the network table record
 has expired. If the lease is not expired, the server checks if the client
-has requested a new lease. If the \fBLeaseNeg\fR symbol has not been
-included in the client's \fBdhcptab\fR parameters, then the client's
+has requested a new lease. If the
+.B LeaseNeg
+symbol has not been
+included in the client's
+.B dhcptab
+parameters, then the client's
 requested lease extension is ignored, and the lease is set to be the time
-remaining as shown by the \fBLease\fR field. If the \fBLeaseNeg\fR symbol
+remaining as shown by the
+.B Lease
+field. If the
+.B LeaseNeg
+symbol
 \fIhas\fR been included, then the server will extend the client's lease to
 the value it requested if this requested lease is less than or equal to the
-current time plus the value of the client's \fBLeaseTim\fR \fBdhcptab\fR
+current time plus the value of the client's \fBLeaseTim dhcptab\fR
 parameter.
 .sp
 .LP
 If the client's requested lease is greater than policy allows (value of
-\fBLeaseTim\fR), then the client is given a lease equal to the current time
-plus the value of \fBLeaseTim\fR. If \fBLeaseTim\fR is not set, then the
-default \fBLeaseTim\fR value is one hour.
+.BR LeaseTim ),
+then the client is given a lease equal to the current time
+plus the value of
+.BR LeaseTim .
+If
+.B LeaseTim
+is not set, then the
+default
+.B LeaseTim
+value is one hour.
 .sp
 .LP
-For more information about the \fBdhcptab\fR symbols, see \fBdhcptab\fR(4).
+For more information about the
+.B dhcptab
+symbols, see \fBdhcptab\fR(4).
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attribute:
+See
+.BR attributes (5)
+for a description of the following attribute:
 .sp
 
 .sp
@@ -264,15 +379,21 @@ Interface StabilityEvolving
 .sp
 .LP
 \fBdhcpconfig\fR(1M), \fBdhcpmgr\fR(1M), \fBdhtadm\fR(1M),
-\fBin.dhcpd\fR(1M), \fBpntadm\fR(1M), \fBdhcptab\fR(4), \fBdhcp\fR(5),
-\fBdhcp_modules\fR(5), \fBattributes\fR(5)
+.BR in.dhcpd (1M),
+.BR pntadm (1M),
+.BR dhcptab (4),
+.BR dhcp (5),
+.BR dhcp_modules (5),
+.BR attributes (5)
 .sp
 .LP
 \fISolaris DHCP Service Developer\&'s Guide\fR
 .sp
 .LP
-\fISystem Administration Guide: IP Services\fR
+.I System Administration Guide: IP Services
 .sp
 .LP
-Reynolds, J. and J. Postel, \fIAssigned Numbers\fR, STD 2, RFC 1340,
+Reynolds, J. and J. Postel,
+.IR "Assigned Numbers" ,
+STD 2, RFC 1340,
 USC/Information Sciences Institute, July 1992.

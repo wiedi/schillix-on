@@ -34,18 +34,31 @@ __sparc_utrap_install \- install a SPARC V9 user trap handler
 .SH DESCRIPTION
 .sp
 .LP
-The \fB__sparc_utrap_install()\fR function establishes \fInew_precise\fR
+The
+.B __sparc_utrap_install()
+function establishes
+.IR new_precise
 and \fInew_deferred\fR user trap handlers as the new values for the
-specified \fItype\fR and returns the existing user trap handler values in
+specified
+.I type
+and returns the existing user trap handler values in
 \fB*\fIold_precise\fR and \fB*\fIold_deferred\fR in a single atomic
-operation. A new handler address of \fINULL\fR means no user handler of that
-type will be installed. A new handler address of \fBUTH_NOCHANGE\fR means
+operation. A new handler address of
+.I NULL
+means no user handler of that
+type will be installed. A new handler address of
+.B UTH_NOCHANGE
+means
 that the user handler for that type should not be changed. An old handler
-pointer of \fINULL\fR means that the user is not interested in the old
+pointer of
+.I NULL
+means that the user is not interested in the old
 handler address.
 .sp
 .LP
-A \fIprecise trap\fR is caused by a specific instruction and occurs before
+A
+.I "precise trap"
+is caused by a specific instruction and occurs before
 any program-visible state has been changed by this instruction. When a
 precise trap occurs, the program counter (PC) saved in the Trap Program
 Counter (TPC) register points to the instruction that induced the trap; all
@@ -63,7 +76,9 @@ The list that follows contains hardware traps and their corresponding user
 trap types. User trap types marked with a plus-sign (\fB+\fR) are required
 and must be provided by all ABI-conforming implementations.  The others may
 not be present on every implementation; an attempt to install a user trap
-handler for those conditions will return \fBEINVAL\fR. User trap types
+handler for those conditions will return
+.BR EINVAL .
+User trap types
 marked with an asterisk (\fB*\fR) are implemented as precise traps only.
 .sp
 
@@ -122,11 +137,12 @@ not self-explanatory.
 .ne 2
 .mk
 .na
-\fBUT_ILLTRAP_INSTRUCTION\fR
+.B UT_ILLTRAP_INSTRUCTION
 .ad
 .sp .6
 .RS 4n
-This trap is raised by user execution of the \fBILLTRAP\fR
+This trap is raised by user execution of the
+.BR ILLTRAP
 \fBINSTRUCTION.\fR It is always precise.
 .RE
 
@@ -134,7 +150,7 @@ This trap is raised by user execution of the \fBILLTRAP\fR
 .ne 2
 .mk
 .na
-\fBUT_ILLEGAL_INSTRUCTION\fR
+.B UT_ILLEGAL_INSTRUCTION
 .ad
 .sp .6
 .RS 4n
@@ -147,7 +163,7 @@ only specifies the interface. The trap may be precise or deferred.
 .ne 2
 .mk
 .na
-\fBUT_PRIVILEGED_OPCODE\fR
+.B UT_PRIVILEGED_OPCODE
 .ad
 .sp .6
 .RS 4n
@@ -160,7 +176,7 @@ ABI only specifies the interface.
 .ne 2
 .mk
 .na
-\fBUT_DATA_EXCEPTION,\fR \fBUT_INSTRUCTION_EXCEPTION\fR
+.B UT_DATA_EXCEPTION, UT_INSTRUCTION_EXCEPTION
 .ad
 .sp .6
 .RS 4n
@@ -172,7 +188,7 @@ instruction access, respectively.
 .ne 2
 .mk
 .na
-\fBUT_DATA_PROTECTION,\fR \fBUT_INSTRUCTION_PROTECTION\fR
+.B UT_DATA_PROTECTION, UT_INSTRUCTION_PROTECTION
 .ad
 .sp .6
 .RS 4n
@@ -185,13 +201,15 @@ access, respectively.
 .ne 2
 .mk
 .na
-\fBUT_DATA_ERROR,\fR \fBUT_INSTRUCTION_ERROR\fR
+.B UT_DATA_ERROR, UT_INSTRUCTION_ERROR
 .ad
 .sp .6
 .RS 4n
 A valid mapping exists, and both user privilege and the type of access are
 allowed, but an unrecoverable error occurred in attempting the access, for a
-data or instruction access, respectively. \fB%l1\fR will contain either
+data or instruction access, respectively.
+.B %l1
+will contain either
 \fBBUS_ADDRERR\fR or \fBBUS_OBJERR.\fR
 .RE
 
@@ -199,7 +217,7 @@ data or instruction access, respectively. \fB%l1\fR will contain either
 .ne 2
 .mk
 .na
-\fBUT_FP_DISABLED\fR
+.B UT_FP_DISABLED
 .ad
 .sp .6
 .RS 4n
@@ -215,21 +233,47 @@ instruction.
 For all traps, the handler executes in a new register window, where the
 \fIin\fR registers are the \fIout\fR registers of the previous frame and
 have the value they contained at the time of the trap, similar to a normal
-subroutine call after the \fBsave\fR instruction. The \fIglobal\fR registers
-(including the special registers \fB%ccr\fR, \fB%asi\fR, and \fB%y\fR) and
+subroutine call after the
+.B save
+instruction. The
+.I global
+registers
+(including the special registers
+.BR %ccr ,
+.BR %asi ,
+and
+.BR %y )
+and
 the \fIfloating-point\fR registers have their values from the time of the
-trap. The stack pointer register \fB%sp\fR plus the BIAS will point to a
+trap. The stack pointer register
+.B %sp
+plus the BIAS will point to a
 properly-aligned 128-byte register save area; if the handler needs scratch
 space, it should decrement the stack pointer to obtain it. If the handler
-needs access to the previous frame's \fIin\fR registers or \fIlocal\fR
-registers, it should execute a \fBFLUSHW\fR instruction, and then access
+needs access to the previous frame's
+.I in
+registers or
+.IR local
+registers, it should execute a
+.B FLUSHW
+instruction, and then access
 them off of the frame pointer. If the handler calls an ABI-conforming
-function, it must set the \fB%asi\fR register to \fBASI_PRIMARY_NOFAULT\fR
+function, it must set the
+.B %asi
+register to
+.BR ASI_PRIMARY_NOFAULT
 before the call.
 .sp
 .LP
-On entry to a precise user trap handler  \fB%l6\fR contains the \fB%pc\fR
-and \fB%l7\fR contains the \fB%npc\fR at the time of the trap.  To return
+On entry to a precise user trap handler 
+.B %l6
+contains the
+.BR %pc
+and
+.B %l7
+contains the
+.B %npc
+at the time of the trap.  To return
 from a handler and reexecute the trapped instruction, the handler would
 execute:
 .sp
@@ -256,10 +300,18 @@ return %l7 + 4 ! Trapped nPC + 4
 
 .sp
 .LP
-On entry to a deferred trap handler \fB%o0\fR contains the address of the
-instruction that caused the trap and \fB%o1\fR contains the actual
+On entry to a deferred trap handler
+.B %o0
+contains the address of the
+instruction that caused the trap and
+.B %o1
+contains the actual
 instruction (right-justified, zero-extended), if the information is
-available. Otherwise \fB%o0\fR contains the value \(mi1 and \fB%o1\fR is
+available. Otherwise
+.B %o0
+contains the value \(mi1 and
+.B %o1
+is
 undefined. Additional information may be made available for certain cases of
 deferred traps, as indicated in the following table.
 .sp
@@ -331,44 +383,67 @@ if (precise trap) {
 
 .sp
 .LP
-User trap handlers must preserve all registers except the \fIlocals\fR
-(\fB%l0-7\fR) and the \fIouts\fR (\fB%o0-7\fR), that is, \fB%i0-7\fR,
-\fB%g1-7\fR, \fB%d0-d62\fR, \fB%asi\fR, \fB%fsr\fR, \fB%fprs\fR, \fB%ccr\fR,
-and \fB%y,\fR except to the extent that modifying the registers is part of
+User trap handlers must preserve all registers except the
+.IR locals
+(\fB%l0-7\fR) and the \fIouts\fR
+.RB ( %o0-7 ),
+that is, \fB%i0-7\fR,
+.BR %g1-7 ,
+.BR %d0-d62 ,
+.BR %asi ,
+\fB%fsr\fR,
+.BR %fprs ,
+.BR %ccr ,
+and
+.B %y,
+except to the extent that modifying the registers is part of
 the desired functionality of the handler. For example, the handler for
 \fBUT_FP_DISABLED\fR may load floating-point registers.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. Otherwise, a non-zero
-value is returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B 0
+is returned. Otherwise, a non-zero
+value is returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fB__sparc_utrap_install()\fR function will fail if:
+The
+.B __sparc_utrap_install()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fItype\fR argument is not a supported user trap type; the new user
+The
+.I type
+argument is not a supported user trap type; the new user
 trap handler address is not word aligned; the old user trap handler address
 cannot be returned; or the user program is not a 64-bit executable.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRA sample program using the \fB__sparc_utrap_install()\fR
+\fBExample 1\fR A sample program using the \fB__sparc_utrap_install()\fR
 function.
 .sp
 .LP
-The \fB__sparc_utrap_install()\fR function is normally used by user
+The
+.B __sparc_utrap_install()
+function is normally used by user
 programs that wish to provide their own tailored exception handlers as a
-faster alternative to \fBsignal\fR(3C), or to handle exceptions that are not
-directly supported by the \fBsignal()\fR interface, such as
+faster alternative to
+.BR signal "(3C), or to handle exceptions that are not"
+directly supported by the
+.B signal()
+interface, such as
 \fBfp_disabled\fR.
 
 .sp
@@ -404,7 +479,9 @@ for illustrative purposes only.)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -421,10 +498,11 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBsignal\fR(3C), \fBattributes\fR(5)
+.BR signal (3C),
+.BR attributes (5)
 .sp
 .LP
-\fISPARC Architecture Manual, Version 9\fR
+.I SPARC Architecture Manual, Version 9
 .sp
 .LP
 Manufacturer's processor chip user manuals

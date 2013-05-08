@@ -73,7 +73,7 @@ The function takes the following arguments:
 .ne 2
 .mk
 .na
-\fIsocket\fR
+.I socket
 .ad
 .RS 15n
 .rt
@@ -95,7 +95,7 @@ Points to the buffer where the message should be stored.
 .ne 2
 .mk
 .na
-\fIlength\fR
+.I length
 .ad
 .RS 15n
 .rt
@@ -117,7 +117,7 @@ formed by logically OR'ing zero or more of the following values:
 .ne 2
 .mk
 .na
-\fBMSG_PEEK\fR
+.B MSG_PEEK
 .ad
 .RS 15n
 .rt
@@ -129,7 +129,7 @@ Peeks at an incoming message.  The data is treated as unread and the next
 .ne 2
 .mk
 .na
-\fBMSG_OOB\fR
+.B MSG_OOB
 .ad
 .RS 15n
 .rt
@@ -141,7 +141,7 @@ data are protocol-specific.
 .ne 2
 .mk
 .na
-\fBMSG_WAITALL\fR
+.B MSG_WAITALL
 .ad
 .RS 15n
 .rt
@@ -157,11 +157,13 @@ specified, or if an error is pending for the socket.
 .ne 2
 .mk
 .na
-\fIaddress\fR
+.I address
 .ad
 .RS 15n
 .rt
-A null pointer, or points to a \fBsockaddr\fR structure in which the
+A null pointer, or points to a
+.B sockaddr
+structure in which the
 sending address is to be stored.  The length and format of the address
 depend on the address family of the socket.
 .RE
@@ -170,11 +172,13 @@ depend on the address family of the socket.
 .ne 2
 .mk
 .na
-\fIaddress_len\fR
+.I address_len
 .ad
 .RS 15n
 .rt
-Specifies the length of the \fBsockaddr\fR structure pointed to by the
+Specifies the length of the
+.B sockaddr
+structure pointed to by the
 \fIaddress\fR argument.
 .RE
 
@@ -182,45 +186,72 @@ Specifies the length of the \fBsockaddr\fR structure pointed to by the
 .LP
 The \fBrecvfrom()\fR function returns the length of the message written to
 the buffer pointed to by the \fIbuffer\fR argument.  For message-based
-sockets such as \fBSOCK_DGRAM\fR and \fBSOCK_SEQPACKET\fR, the entire
+sockets such as
+.B SOCK_DGRAM
+and
+.BR SOCK_SEQPACKET ,
+the entire
 message must be read in a single operation.  If a message is too long to fit
-in the supplied buffer, and \fBMSG_PEEK\fR is not set in the \fIflags\fR
+in the supplied buffer, and
+.B MSG_PEEK
+is not set in the \fIflags\fR
 argument, the excess bytes are discarded.  For stream-based sockets such as
-\fBSOCK_STREAM\fR, message boundaries are ignored.  In this case, data is
+.BR SOCK_STREAM ,
+message boundaries are ignored.  In this case, data is
 returned to the user as soon as it becomes available, and no data is
 discarded.
 .sp
 .LP
-If the \fBMSG_WAITALL\fR flag is not set, data will be returned only up to
+If the
+.B MSG_WAITALL
+flag is not set, data will be returned only up to
 the end of the first message.
 .sp
 .LP
 Not all protocols provide the source address for messages.  If the
 \fIaddress\fR argument is not a null pointer and the protocol provides the
 source address of messages, the source address of the received message is
-stored in the \fBsockaddr\fR structure pointed to by the \fIaddress\fR
+stored in the
+.B sockaddr
+structure pointed to by the
+.IR address
 argument, and the length of this address is stored in the object pointed to
-by the \fIaddress_len\fR argument.
+by the
+.I address_len
+argument.
 .sp
 .LP
 If the actual length of the address is greater than the length of the
-supplied \fBsockaddr\fR structure, the stored address will be truncated.
+supplied
+.B sockaddr
+structure, the stored address will be truncated.
 .sp
 .LP
-If the \fIaddress\fR argument is not a null pointer and the protocol does
+If the
+.I address
+argument is not a null pointer and the protocol does
 not provide the source address of messages, the the value stored in the
-object pointed to by \fIaddress\fR is unspecified.
+object pointed to by
+.I address
+is unspecified.
 .sp
 .LP
-If no messages are available at the socket and \fBO_NONBLOCK\fR is not set
+If no messages are available at the socket and
+.B O_NONBLOCK
+is not set
 on the socket's file descriptor, \fBrecvfrom()\fR blocks until a message
-arrives. If no messages are available at the socket and \fBO_NONBLOCK\fR is
+arrives. If no messages are available at the socket and
+.B O_NONBLOCK
+is
 set on the socket's file descriptor, \fBrecvfrom()\fR fails and sets
 \fBerrno\fR to \fBEAGAIN\fR or \fBEWOULDBLOCK\fR.
 .SH USAGE
 .sp
 .LP
-The \fBselect\fR(3C) and \fBpoll\fR(2) functions can be used to determine
+The
+.BR select "(3C) and"
+.BR poll (2)
+functions can be used to determine
 when data is available to be received.
 .SH RETURN VALUES
 .sp
@@ -228,7 +259,9 @@ when data is available to be received.
 Upon successful completion, \fBrecvfrom()\fR returns the length of the
 message in bytes.  If no messages are available to be received and the peer
 has performed an orderly shutdown, \fBrecvfrom()\fR returns 0.  Otherwise
-the function returns \(mi1 and sets \fBerrno\fR to indicate the error.
+the function returns \(mi1 and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -237,16 +270,20 @@ The \fBrecvfrom()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .br
 .na
-\fBEWOULDBLOCK\fR
+.B EWOULDBLOCK
 .ad
 .RS 15n
 .rt
-The socket's file descriptor is marked \fBO_NONBLOCK\fR and no data is
-waiting to be received, or \fBMSG_OOB\fR is set and no out-of-band data is
+The socket's file descriptor is marked
+.B O_NONBLOCK
+and no data is
+waiting to be received, or
+.B MSG_OOB
+is set and no out-of-band data is
 available and either the socket's file descriptor is marked \fBO_NONBLOCK\fR
 or the socket does not support blocking to await out-of-band data.
 .RE
@@ -255,18 +292,20 @@ or the socket does not support blocking to await out-of-band data.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 15n
 .rt
-The \fIsocket\fR argument is not a valid file descriptor.
+The
+.I socket
+argument is not a valid file descriptor.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBECONNRESET\fR
+.B ECONNRESET
 .ad
 .RS 15n
 .rt
@@ -277,11 +316,13 @@ A connection was forcibly closed by a peer.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 15n
 .rt
-The  \fIbuffer\fR, \fIaddress\fR or  \fIaddress_len\fR parameter can not be
+The 
+.IR buffer ,
+\fIaddress\fR or  \fIaddress_len\fR parameter can not be
 accessed or written.
 .RE
 
@@ -289,7 +330,7 @@ accessed or written.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 15n
 .rt
@@ -300,18 +341,20 @@ A signal interrupted \fBrecvfrom()\fR before any data was available.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 15n
 .rt
-The \fBMSG_OOB\fR flag is set and no out-of-band data is available.
+The
+.B MSG_OOB
+flag is set and no out-of-band data is available.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOTCONN\fR
+.B ENOTCONN
 .ad
 .RS 15n
 .rt
@@ -322,18 +365,20 @@ A receive is attempted on a connection-mode socket that is not connected.
 .ne 2
 .mk
 .na
-\fBENOTSOCK\fR
+.B ENOTSOCK
 .ad
 .RS 15n
 .rt
-The \fIsocket\fR argument does not refer to a socket.
+The
+.I socket
+argument does not refer to a socket.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEOPNOTSUPP\fR
+.B EOPNOTSUPP
 .ad
 .RS 15n
 .rt
@@ -344,7 +389,7 @@ The specified flags are not supported for this socket type.
 .ne 2
 .mk
 .na
-\fBETIMEDOUT\fR
+.B ETIMEDOUT
 .ad
 .RS 15n
 .rt
@@ -359,7 +404,7 @@ The \fBrecvfrom()\fR function may fail if:
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 11n
 .rt
@@ -370,7 +415,7 @@ An I/O error occurred while reading from or writing to the file system.
 .ne 2
 .mk
 .na
-\fBENOBUFS\fR
+.B ENOBUFS
 .ad
 .RS 11n
 .rt
@@ -382,7 +427,7 @@ operation.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -393,7 +438,7 @@ Insufficient memory was available to fulfill the request.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 11n
 .rt
@@ -404,7 +449,9 @@ complete.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -423,7 +470,14 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBpoll\fR(2), \fBrecv\fR(3XNET), \fBrecvmsg\fR(3XNET), \fBselect\fR(3C)
-\fBsend\fR(3XNET), \fBsendmsg\fR(3XNET), \fBsendto\fR(3XNET),
-\fBshutdown\fR(3XNET), \fBsocket\fR(3XNET), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR poll (2),
+.BR recv (3XNET),
+.BR recvmsg (3XNET),
+.BR select (3C)
+.BR send (3XNET),
+.BR sendmsg (3XNET),
+.BR sendto (3XNET),
+.BR shutdown (3XNET),
+.BR socket (3XNET),
+.BR attributes (5),
+.BR standards (5)

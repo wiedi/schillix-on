@@ -67,52 +67,79 @@ cc [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. -lc_db [ \fIlibrary\fR.\|.\|. ]
 .sp
 .LP
 These functions read and write the register sets associated with thread
-\fIth_p\fR. The \fBtd_thr_getgregs()\fR and \fBtd_thr_setgregs()\fR
+.IR th_p .
+The
+.B td_thr_getgregs()
+and
+.BR td_thr_setgregs()
 functions get and set, respectively, the general registers of thread
-\fIth_p\fR. The \fBtd_thr_getfpregs()\fR and \fBtd_thr_setfpregs()\fR
+.IR th_p .
+The \fBtd_thr_getfpregs()\fR and \fBtd_thr_setfpregs()\fR
 functions get and set, respectively, the thread's floating point register
-set. The \fBtd_thr_getxregsize()\fR, \fBtd_thr_getxregs()\fR, and
+set. The
+.BR td_thr_getxregsize() ,
+.BR td_thr_getxregs() ,
+and
 \fBtd_thr_setxregs()\fR functions are SPARC-specific. The
 \fBtd_thr_getxregsize()\fR function returns in *\fIxregsize\fR the size of
 the architecture-dependent extra state registers. The
 \fBtd_thr_getxregs()\fR and \fBtd_thr_setxregs()\fR functions get and set,
 respectively, those extra state registers. On non-SPARC architectures, these
-functions return \fBTD_NOXREGS\fR.
+functions return
+.BR TD_NOXREGS .
 .sp
 .LP
-If the thread specified by \fIth_p\fR is currently executing on a
-lightweight process ( \fBLWP),\fR these functions read or write,
-respectively, the appropriate register set to the \fBLWP\fR using the
+If the thread specified by
+.I th_p
+is currently executing on a
+lightweight process (
+.B LWP),
+these functions read or write,
+respectively, the appropriate register set to the
+.B LWP
+using the
 imported interface. If the thread is not  currently executing on an
-\fBLWP\fR, the floating point and extra state registers may cannot be read
+.BR LWP ,
+the floating point and extra state registers may cannot be read
 or written. Some of the general registers might also not be readable or
 writable, depending on the architecture, in which case
 \fBtd_thr_getfpregs()\fR and \fBtd_thr_setfpregs()\fR return
 \fBTD_NOFPREGS\fR and \fBtd_thr_getxregs()\fR and \fBtd_thr_setxregs()\fR
-will \fBTD_NOXREGS\fR. Calls to \fBtd_thr_getgregs()\fR and
+will
+.BR TD_NOXREGS .
+Calls to
+.B td_thr_getgregs()
+and
 \fBtd_thr_setgregs()\fR succeed, but values returned for unreadable
 registers are undefined, values specified for unwritable registers are
-ignored. In this instance, and \fBTD_PARTIALREGS\fR is returned.  See the
+ignored. In this instance, and
+.B TD_PARTIALREGS
+is returned.  See the
 architecture-specific notes that follow regarding the registers that may be
-read and written for a thread not currently executing on an \fBLWP\fR.
+read and written for a thread not currently executing on an
+.BR LWP .
 .SS "SPARC"
 .sp
 .LP
-On a thread not currently assigned to an \fBLWP\fR, only %i0-%i7, %l0-%l7,
+On a thread not currently assigned to an
+.BR LWP ,
+only %i0-%i7, %l0-%l7,
 %g7, %pc, and %sp (%o6) can be read or written.  %pc and %sp refer to the
 program counter and stack pointer that the thread will have when it resumes
 execution.
 .SS "x86 Architecture"
 .sp
 .LP
-On a thread not currently assigned to an \fBLWP,\fR only %pc, %sp, %ebp,
+On a thread not currently assigned to an
+.B LWP,
+only %pc, %sp, %ebp,
 %edi, %edi, and %ebx can be read.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBTD_OK\fR
+.B TD_OK
 .ad
 .RS 18n
 .rt
@@ -123,7 +150,7 @@ The call completed successfully.
 .ne 2
 .mk
 .na
-\fBTD_BADTH\fR
+.B TD_BADTH
 .ad
 .RS 18n
 .rt
@@ -134,7 +161,7 @@ An invalid thread handle was passed in.
 .ne 2
 .mk
 .na
-\fBTD_DBERR\fR
+.B TD_DBERR
 .ad
 .RS 18n
 .rt
@@ -145,13 +172,18 @@ A call to one of the imported interface routines failed.
 .ne 2
 .mk
 .na
-\fBTD_PARTIALREGS\fR
+.B TD_PARTIALREGS
 .ad
 .RS 18n
 .rt
-Because the thread is not currently assigned to a \fBLWP,\fR not all
-registers were read or written. See \fBDESCRIPTION\fR for a discussion about
-which registers are not saved when a thread is not assigned to an \fBLWP\fR.
+Because the thread is not currently assigned to a
+.B LWP,
+not all
+registers were read or written. See
+.B DESCRIPTION
+for a discussion about
+which registers are not saved when a thread is not assigned to an
+.BR LWP .
 
 .RE
 
@@ -159,12 +191,14 @@ which registers are not saved when a thread is not assigned to an \fBLWP\fR.
 .ne 2
 .mk
 .na
-\fBTD_NOFPREGS\fR
+.B TD_NOFPREGS
 .ad
 .RS 18n
 .rt
 Floating point registers could not be read or written, either because the
-thread is not currently assigned to an \fBLWP\fR, or because the
+thread is not currently assigned to an
+.BR LWP ,
+or because the
 architecture does not have such registers.
 .RE
 
@@ -172,12 +206,14 @@ architecture does not have such registers.
 .ne 2
 .mk
 .na
-\fBTD_NOXREGS\fR
+.B TD_NOXREGS
 .ad
 .RS 18n
 .rt
 Architecture-dependent extra state registers could not be read or written,
-either because the thread is not currently assigned to an \fBLWP\fR, or
+either because the thread is not currently assigned to an
+.BR LWP ,
+or
 because the architecture does not have such registers, or because the
 architecture is not a SPARC architecture.
 .RE
@@ -186,17 +222,21 @@ architecture is not a SPARC architecture.
 .ne 2
 .mk
 .na
-\fBTD_ERR\fR
+.B TD_ERR
 .ad
 .RS 18n
 .rt
-A \fBlibc_db\fR internal error occurred.
+A
+.B libc_db
+internal error occurred.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -213,4 +253,5 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibc_db\fR(3LIB), \fBattributes\fR(5)
+.BR libc_db (3LIB),
+.BR attributes (5)

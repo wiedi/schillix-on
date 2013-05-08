@@ -89,23 +89,48 @@ accounting
 .sp
 .LP
 \fBchargefee\fR can be invoked to charge a \fInumber\fR of units to
-\fIlogin-name\fR. A record is written to \fB/var/adm/fee\fR, to be merged
-with other accounting records by \fBrunacct\fR(1M).
+.IR login-name .
+A record is written to
+.BR /var/adm/fee ,
+to be merged
+with other accounting records by
+.BR runacct (1M).
 .SS "ckpacct Command"
 .sp
 .LP
 \fBckpacct\fR should be initiated using \fBcron\fR(1M) to periodically
-check the size of \fB/var/adm/pacct\fR. If the size exceeds \fIblocks\fR,
+check the size of
+.BR /var/adm/pacct .
+If the size exceeds
+.IR blocks ,
 \fB500\fR by default, \fBturnacct\fR will be invoked with argument
-\fBswitch\fR. To avoid a conflict with \fBturnacct switch\fR execution in
-\fBrunacct\fR, do not run \fBckpacct\fR and \fBrunacct\fR simultaneously. If
-the number of free disk blocks in the \fB/var\fR file system falls below
-\fB500\fR, \fBckpacct\fR will automatically turn off the collection of
+.BR switch .
+To avoid a conflict with
+.B "turnacct switch"
+execution in
+.BR runacct ,
+do not run
+.B ckpacct
+and
+.B runacct
+simultaneously. If
+the number of free disk blocks in the
+.B /var
+file system falls below
+.BR 500 ,
+\fBckpacct\fR will automatically turn off the collection of
 process accounting records via the \fBoff\fR argument to \fBturnacct\fR.
-When at least  \fB500\fR blocks are restored,  the accounting will be
-activated again on the next invocation of \fBckpacct\fR. This feature is
-sensitive to the frequency at which \fBckpacct\fR is executed, usually by
-the \fBcron\fR(1M) command.
+When at least 
+.B 500
+blocks are restored,  the accounting will be
+activated again on the next invocation of
+.BR ckpacct .
+This feature is
+sensitive to the frequency at which
+.B ckpacct
+is executed, usually by
+the
+.BR cron "(1M) command."
 .SS "dodisk Command"
 .sp
 .LP
@@ -115,7 +140,8 @@ accounting functions.
 .sp
 .LP
 \fBlastlogin\fR is invoked by \fBrunacct\fR(1M) to update
-\fB/var/adm/acct/sum/loginlog\fR, which shows the last date on which each
+.BR /var/adm/acct/sum/loginlog ,
+which shows the last date on which each
 person logged in.
 .SS "monacct Command"
 .sp
@@ -123,22 +149,28 @@ person logged in.
 \fBmonacct\fR should be invoked once each month or each accounting period.
 \fInumber\fR indicates which month or period it is. If \fInumber\fR is not
 given, it defaults to the current month (01\(mi12). This default is useful
-if \fBmonacct\fR is to executed using \fBcron\fR(1M) on the first day of
-each month. \fBmonacct\fR creates summary files in
+if
+.B monacct
+is to executed using \fBcron\fR(1M) on the first day of
+each month.
+.B monacct
+creates summary files in
 \fB/var/adm/acct/fiscal\fR and restarts the summary files in
-\fB/var/adm/acct/sum\fR.
+.BR /var/adm/acct/sum .
 .SS "nulladm Command"
 .sp
 .LP
 \fBnulladm\fR creates \fIfilename\fR with mode 664 and ensures that owner
-and group are \fBadm\fR. It is called by various accounting shell
+and group are
+.BR adm .
+It is called by various accounting shell
 procedures.
 .SS "prctmp Command"
 .sp
 .LP
 \fBprctmp\fR can be used to print the session record file (normally
 \fB/var/adm/acct/nite/ctmp\fR created by \fBacctcon1\fR (see
-\fBacctcon\fR(1M)).
+.BR acctcon (1M)).
 .SS "prdaily Command"
 .sp
 .LP
@@ -146,7 +178,8 @@ procedures.
 previous day's accounting data. The report resides in
 \fB/var/adm/acct/sum/rprt/mmdd\fR where \fImmdd\fR is the month and day of
 the report. The current daily accounting reports may be printed by typing
-\fBprdaily\fR. Previous days' accounting reports can be printed by using the
+.BR prdaily .
+Previous days' accounting reports can be printed by using the
 \fImmdd\fR option and specifying the exact report date desired.
 .SS "prtacct Command"
 .sp
@@ -157,7 +190,10 @@ the report. The current daily accounting reports may be printed by typing
 .sp
 .LP
 \fBshutacct\fR is invoked during a system shutdown to turn process
-accounting off and append a  \fIreason\fR record to \fB/var/adm/wtmpx\fR.
+accounting off and append a 
+.I reason
+record to
+.BR /var/adm/wtmpx .
 .SS "startup Command"
 .sp
 .LP
@@ -167,14 +203,27 @@ state to turn process accounting on.
 .sp
 .LP
 \fBturnacct\fR is an interface to \fBaccton\fR (see \fBacct\fR(1M)) to turn
-process accounting \fBon\fR or \fBoff\fR. The \fBswitch\fR argument moves
-the current \fB/var/adm/pacct\fR to the next free name in
+process accounting
+.B on
+or
+.BR off .
+The
+.B switch
+argument moves
+the current
+.B /var/adm/pacct
+to the next free name in
 \fB/var/adm/pacct.\fIincr\fR (where \fIincr\fR is a number starting with
 \fB0\fR and incrementing by one  for each additional \fBpacct\fR file), then
-turns accounting back on again. This procedure is called by \fBckpacct\fR
-and thus can be taken care of by the \fBcron\fR(1M) command and used to keep
+.RB "turns accounting back on again. This procedure is called by" " ckpacct"
+and thus can be taken care of by the
+.BR cron "(1M) command and used to keep"
 \fBpacct\fR to a reasonable size.   \fBshutacct\fR uses \fBturnacct\fR to
-stop process accounting.   \fBstartup\fR uses \fBturnacct\fR to start
+stop process accounting.  
+.B startup
+uses
+.B turnacct
+to start
 process accounting.
 .SH OPTIONS
 .sp
@@ -184,7 +233,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .RS 6n
 .rt
@@ -196,29 +245,36 @@ may be used on current day's accounting data only.
 .ne 2
 .mk
 .na
-\fB-l\fR
+.B -l
 .ad
 .RS 6n
 .rt
 This option prints a report of exceptional usage by login id for the
 specified date. Previous daily reports are cleaned up and therefore
-inaccessible after each invocation of \fBmonacct\fR.
+inaccessible after each invocation of
+.BR monacct .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .RS 6n
 .rt
-This option uses \fBacctdusg\fR (see \fBacct\fR(1M)) to do a slower version
+This option uses
+.B acctdusg
+(see \fBacct\fR(1M)) to do a slower version
 of disk accounting by login directory. \fIfilename\fRs specifies the one or
 more filesystem names where disk accounting will be done.  If
 \fIfilename\fRs are used, disk accounting will be done on these filesystems
-only. If the \fB-o\fR option is used, \fIfilename\fRs should be mount points
-of mounted filesystems. If the \fB-o\fR option is omitted, \fIfilename\fRs
+only. If the
+.B -o
+option is used, \fIfilename\fRs should be mount points
+of mounted filesystems. If the
+.B -o
+option is omitted, \fIfilename\fRs
 should be the special file names of mountable filesystems.
 .RE
 
@@ -231,25 +287,28 @@ should be the special file names of mountable filesystems.
 .ad
 .RS 30n
 .rt
-Configuration file for the \fBlogadm\fR(1M) command
+Configuration file for the
+.BR logadm "(1M) command"
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/acct\fR
+.B /usr/lib/acct
 .ad
 .RS 30n
 .rt
-Holds all accounting commands listed in section \fB1M\fR of this manual
+Holds all accounting commands listed in section
+.B 1M
+of this manual
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/acct/ptecms.awk\fR
+.B /usr/lib/acct/ptecms.awk
 .ad
 .RS 30n
 .rt
@@ -260,11 +319,12 @@ Contains the limits for exceptional usage by command name
 .ne 2
 .mk
 .na
-\fB/usr/lib/acct/ptelus.awk\fR
+.B /usr/lib/acct/ptelus.awk
 .ad
 .RS 30n
 .rt
-Contains the limits for exceptional usage by login \fBID\fR
+Contains the limits for exceptional usage by login
+.BR ID
 .RE
 
 .sp
@@ -282,7 +342,7 @@ Fiscal reports directory
 .ne 2
 .mk
 .na
-\fB/var/adm/acct/nite\fR
+.B /var/adm/acct/nite
 .ad
 .RS 30n
 .rt
@@ -293,18 +353,19 @@ Working directory
 .ne 2
 .mk
 .na
-\fB/var/adm/acct/sum\fR
+.B /var/adm/acct/sum
 .ad
 .RS 30n
 .rt
-Summary directory that contains information for \fBmonacct\fR
+Summary directory that contains information for
+.BR monacct
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/var/adm/acct/sum/loginlog\fR
+.B /var/adm/acct/sum/loginlog
 .ad
 .RS 30n
 .rt
@@ -326,7 +387,7 @@ Accumulator for fees
 .ne 2
 .mk
 .na
-\fB/var/adm/pacct\fR
+.B /var/adm/pacct
 .ad
 .RS 30n
 .rt
@@ -341,7 +402,9 @@ Current file for per-process accounting
 .ad
 .RS 30n
 .rt
-Used if \fBpacct\fR gets large and during execution of daily accounting
+Used if
+.B pacct
+gets large and during execution of daily accounting
 procedure
 .RE
 
@@ -349,7 +412,7 @@ procedure
 .ne 2
 .mk
 .na
-\fB/var/adm/wtmpx\fR
+.B /var/adm/wtmpx
 .ad
 .RS 30n
 .rt
@@ -359,7 +422,9 @@ History of user access and administration information
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -376,10 +441,20 @@ AvailabilitySUNWaccu
 .SH SEE ALSO
 .sp
 .LP
-\fBacctcom\fR(1), \fBacct\fR(1M), \fBacctcms\fR(1M), \fBacctcon\fR(1M),
-\fBacctmerg\fR(1M), \fBacctprc\fR(1M), \fBcron\fR(1M), \fBfwtmp\fR(1M),
-\fBlogadm\fR(1M), \fBrunacct\fR(1M), \fBacct\fR(2), \fBacct.h\fR(3HEAD),
-\fButmpx\fR(4), \fBattributes\fR(5)
+.BR acctcom (1),
+.BR acct (1M),
+.BR acctcms (1M),
+.BR acctcon (1M),
+.BR acctmerg (1M),
+.BR acctprc (1M),
+.BR cron (1M),
+\fBfwtmp\fR(1M),
+.BR logadm (1M),
+.BR runacct (1M),
+.BR acct (2),
+.BR acct.h (3HEAD),
+.BR utmpx (4),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP

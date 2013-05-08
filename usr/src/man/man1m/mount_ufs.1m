@@ -38,24 +38,44 @@ mount_ufs \- mount ufs file systems
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmount\fR utility attaches a \fBufs\fR file system to the file system
-hierarchy at the \fImount_point\fR, which is the pathname of a directory. If
+The
+.B mount
+utility attaches a \fBufs\fR file system to the file system
+hierarchy at the
+.IR mount_point ,
+which is the pathname of a directory. If
 \fImount_point\fR has any contents prior to the \fBmount\fR operation, these
 are hidden until the file system is unmounted.
 .sp
 .LP
 The \fBufs\fR file system supports direct mounting of files containing the
-file system as well as block devices. See \fBmount\fR(1M) and
+file system as well as block devices. See
+.BR mount (1M)
+and
 \fBlofiadm\fR(1M).
 .sp
 .LP
-If \fBmount\fR is invoked with \fIspecial\fR or \fImount_point\fR as the
-only arguments, \fBmount\fR will search \fB/etc/vfstab\fR to fill in the
-missing arguments, including the \fIspecific_options\fR. See
-\fBmount\fR(1M).
+If
+.B mount
+is invoked with
+.I special
+or
+.I mount_point
+as the
+only arguments,
+.B mount
+will search \fB/etc/vfstab\fR to fill in the
+missing arguments, including the
+.IR specific_options .
+See
+.BR mount (1M).
 .sp
 .LP
-If \fIspecial\fR and \fImount_point\fR are specified without any
+If
+.I special
+and
+.I mount_point
+are specified without any
 \fIspecific_options\fR, the default is \fBrw\fR.
 .sp
 .LP
@@ -94,8 +114,11 @@ By default, writing access time updates to the disk may be deferred
 other than updating access times. \fBnodfratime\fR disables this behavior.
 .sp
 If power management is enabled on the system, do not set \fBnodfratime\fR
-unless \fBnoatime\fR is also set. If you set \fBnodfratime\fR without setting
-\fBnoatime\fR, the disk is spun up every time a file within a file system on
+unless
+.B noatime
+is also set. If you set \fBnodfratime\fR without setting
+.BR noatime ,
+the disk is spun up every time a file within a file system on
 the disk is accessed - even if the file is not modified.
 .RE
 
@@ -108,8 +131,12 @@ the disk is accessed - even if the file is not modified.
 .sp .6
 .RS 4n
 If \fBforcedirectio\fR is specified and supported by the file system, then
-for the duration of the mount, forced direct \fBI/O\fR will be used. If the
-filesystem is mounted using \fBforcedirectio\fR, data is transferred directly
+for the duration of the mount, forced direct
+.B I/O
+will be used. If the
+filesystem is mounted using
+.BR forcedirectio ,
+data is transferred directly
 between user address space and the disk. If the filesystem is mounted using
 \fBnoforcedirectio\fR, data is buffered in kernel address space when data is
 transferred between user address space and the disk. \fBforcedirectio\fR is a
@@ -125,9 +152,13 @@ transfers. The default behavior is \fBnoforcedirectio\fR.
 .ad
 .sp .6
 .RS 4n
-If \fBglobal\fR is specified and supported on the file system, and the
+If
+.B global
+is specified and supported on the file system, and the
 system in question is part of a cluster, the file system will be globally
-visible on all nodes of the cluster. If \fBnoglobal\fR is specified, the
+visible on all nodes of the cluster. If
+.B noglobal
+is specified, the
 mount will not be globally visible. The default behavior is \fBnoglobal\fR.
 
 .RE
@@ -167,7 +198,9 @@ on the file system. The large file need not be present in the file system at
 the time of the mount for the mount to fail; it could have been created
 previously and destroyed. Invoking \fBfsck\fR (see \fBfsck_ufs\fR(1M)) on the
 file system will reset the file system state if no large files are present.
-After invoking \fBfsck\fR, a successful mount of the file system with
+After invoking
+.BR fsck ,
+a successful mount of the file system with
 \fBnolargefiles\fR specified indicates the absence of large files in the file
 system; an unsuccessful mount attempt indicates the presence of at least one
 large file.
@@ -181,23 +214,32 @@ large file.
 .ad
 .sp .6
 .RS 4n
-If \fBlogging\fR is specified, then logging is enabled for the duration of
+If
+.B logging
+is specified, then logging is enabled for the duration of
 the mounted file system. Logging is the process of storing transactions
-(changes that make up a complete \fBUFS\fR operation) in a log before the
+(changes that make up a complete
+.B UFS
+operation) in a log before the
 transactions are applied to the file system. Once a transaction is stored,
 the transaction can be applied to the file system later.  This prevents file
 systems from becoming inconsistent, therefore reducing  the possibility that
 \fBfsck\fR might run. And, if \fBfsck\fR is bypassed, logging generally
 reduces the time required to reboot a system.
 .sp
-The default behavior is \fBlogging\fR for all UFS file systems.
+The default behavior is
+.B logging
+for all UFS file systems.
 .sp
 The log is allocated from free blocks in the file system, and is sized
 approximately 1 Mbyte per 1 Gbyte of file system, up to a maximum of 256
 Mbytes. The log size may be larger (up to a maximum of 512 Mbytes) dependent
 upon the  number of cylinder groups present in the file system.
 .sp
-Logging is enabled on any \fBUFS\fR file system, including root (\fB/\fR),
+Logging is enabled on any
+.B UFS
+file system, including root
+.RB ( / ),
 except under the following conditions:
 .RS +4
 .TP
@@ -222,7 +264,9 @@ following message is displayed and file system is still mounted:
 .sp
 
 .RE
-The log created by \fBUFS\fR logging is continually flushed as it fills up.
+The log created by
+.B UFS
+logging is continually flushed as it fills up.
 The log is totally flushed when the file system is unmounted or as a result
 of the \fBlockfs -f\fR command.
 .RE
@@ -231,25 +275,32 @@ of the \fBlockfs -f\fR command.
 .ne 2
 .mk
 .na
-\fBm\fR
+.B m
 .ad
 .sp .6
 .RS 4n
-Mount the file system without making an entry in \fB/etc/mnttab\fR.
+Mount the file system without making an entry in
+.BR /etc/mnttab .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoatime\fR
+.B noatime
 .ad
 .sp .6
 .RS 4n
 By default, the file system is mounted with normal access time (\fBatime\fR)
-recording. If \fBnoatime\fR is specified, the file system will ignore access
+recording. If
+.B noatime
+is specified, the file system will ignore access
 time updates on files, except when they coincide with updates to the
-\fBctime\fR or \fBmtime\fR. See \fBstat\fR(2). This option reduces disk
+\fBctime\fR or
+.BR mtime .
+See
+.BR stat (2).
+This option reduces disk
 activity on file systems where access times are unimportant (for example, a
 Usenet news spool).
 .sp
@@ -264,13 +315,15 @@ The POSIX standard requires that access times be marked on files.
 .ne 2
 .mk
 .na
-\fBnosec\fR
+.B nosec
 .ad
 .sp .6
 .RS 4n
 By default, Access Control Lists (ACLs) are supported on a mounted UFS file
 system. Use this option to disallow the setting or any modification of an ACL
-on a file within a mounted UFS file system. See \fBgetfacl\fR(1) for
+on a file within a mounted UFS file system. See
+.BR getfacl (1)
+for
 background on ACLs.
 .RE
 
@@ -282,9 +335,17 @@ background on ACLs.
 .ad
 .sp .6
 .RS 4n
-This option specifies the action that \fBUFS\fR should take to recover from
-an internal inconsistency on a file system. Specify \fIaction\fR as
-\fBpanic\fR, \fBlock\fR, or \fBumount\fR. These values cause a forced system
+This option specifies the action that
+.B UFS
+should take to recover from
+an internal inconsistency on a file system. Specify
+.I action
+as
+.BR panic ,
+.BR lock ,
+or
+.BR umount .
+These values cause a forced system
 shutdown, a file system lock to be applied to the file system, or the file
 system to be forcibly unmounted, respectively. The default is \fBpanic\fR.
 .RE
@@ -293,7 +354,7 @@ system to be forcibly unmounted, respectively. The default is \fBpanic\fR.
 .ne 2
 .mk
 .na
-\fBquota\fR
+.B quota
 .ad
 .sp .6
 .RS 4n
@@ -304,19 +365,21 @@ Quotas are turned on for the file system.
 .ne 2
 .mk
 .na
-\fBremount\fR
+.B remount
 .ad
 .sp .6
 .RS 4n
 Remounts a file system with a new set of options. All options not explicitly
-set with \fBremount\fR revert to their default values.
+set with
+.B remount
+revert to their default values.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrq\fR
+.B rq
 .ad
 .sp .6
 .RS 4n
@@ -334,7 +397,11 @@ Read-write with quotas turned on. Equivalent to \fBrw, quota\fR.
 .sp .6
 .RS 4n
 Allow or disallow the creation and manipulation of extended attributes. The
-default is \fBxattr\fR. See \fBfsattr\fR(5) for a description of extended
+default is
+.BR xattr .
+See
+.BR fsattr (5)
+for a description of extended
 attributes.
 .RE
 
@@ -342,7 +409,7 @@ attributes.
 .ne 2
 .mk
 .na
-\fB-O\fR
+.B -O
 .ad
 .sp .6
 .RS 4n
@@ -354,7 +421,7 @@ will fail, producing the error "device busy".
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRTurning Off (and On) Logging
+\fBExample 1\fR Turning Off (and On) Logging
 .sp
 .LP
 The following command turns off logging on an already mounted file system.
@@ -371,14 +438,14 @@ The subsequent command restores logging.
 
 .sp
 .LP
-In the preceding commands, the \fB-F\fR \fBufs\fR option is not necessary.
+In the preceding commands, the \fB-F ufs\fR option is not necessary.
 
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/mnttab\fR
+.B /etc/mnttab
 .ad
 .sp .6
 .RS 4n
@@ -399,7 +466,9 @@ list of default parameters for each file system
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -417,13 +486,21 @@ AvailabilitySUNWcsu
 .sp
 .LP
 \fBgetfacl\fR(1), \fBfsck\fR(1M), \fBfsck_ufs\fR(1M), \fBlofiadm\fR(1M),
-\fBmount\fR(1M), \fBmountall\fR(1M), \fBfcntl\fR(2), \fBmount\fR(2),
-\fBstat\fR(2), \fBmnttab\fR(4), \fBvfstab\fR(4), \fBattributes\fR(5),
+.BR mount (1M),
+.BR mountall (1M),
+\fBfcntl\fR(2), \fBmount\fR(2),
+.BR stat (2),
+.BR mnttab (4),
+\fBvfstab\fR(4), \fBattributes\fR(5),
 \fBfsattr\fR(5), \fBlargefile\fR(5)
 .SH NOTES
 .sp
 .LP
 Since the root (\fB/\fR) file system is mounted read-only by the kernel
-during the boot process, only the \fBremount\fR option (and options that can
-be used in conjunction with \fBremount\fR) affect the root (\fB/\fR) entry in
+during the boot process, only the
+.B remount
+option (and options that can
+be used in conjunction with
+.BR remount )
+affect the root (\fB/\fR) entry in
 the \fB/etc/vfstab\fR file.

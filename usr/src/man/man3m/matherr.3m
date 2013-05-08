@@ -33,13 +33,25 @@ matherr \- math library exception-handling function
 .sp
 .LP
 The System V Interface Definition, Third Edition (SVID3) specifies that
-certain \fBlibm\fR functions call \fBmatherr()\fR when exceptions are
+certain
+.B libm
+functions call
+.B matherr()
+when exceptions are
 detected. Users may define their own mechanisms for handling exceptions, by
-including a function named \fBmatherr()\fR in their programs. The
+including a function named
+.B matherr()
+in their programs. The
 \fBmatherr()\fR function is of the form described above. When an exception
-occurs, a pointer to the exception structure \fIexc\fR will be passed to the
-user-supplied \fBmatherr()\fR function.  This structure, which is defined in
-the \fB<math.h>\fR header file, is as follows:
+occurs, a pointer to the exception structure
+.I exc
+will be passed to the
+user-supplied
+.B matherr()
+function.  This structure, which is defined in
+the
+.B <math.h>
+header file, is as follows:
 .sp
 .in +2
 .nf
@@ -53,14 +65,16 @@ struct exception {
 
 .sp
 .LP
-The \fBtype\fR member is an integer describing the type of exception that
+The
+.B type
+member is an integer describing the type of exception that
 has occurred, from the following list of constants (defined in the header
 file):
 .sp
 .ne 2
 .mk
 .na
-\fBDOMAIN\fR
+.B DOMAIN
 .ad
 .RS 13n
 .rt
@@ -71,7 +85,7 @@ argument domain exception
 .ne 2
 .mk
 .na
-\fBSING\fR
+.B SING
 .ad
 .RS 13n
 .rt
@@ -82,7 +96,7 @@ argument singularity
 .ne 2
 .mk
 .na
-\fBOVERFLOW\fR
+.B OVERFLOW
 .ad
 .RS 13n
 .rt
@@ -93,7 +107,7 @@ overflow range exception
 .ne 2
 .mk
 .na
-\fBUNDERFLOW\fR
+.B UNDERFLOW
 .ad
 .RS 13n
 .rt
@@ -104,7 +118,7 @@ underflow range exception
 .ne 2
 .mk
 .na
-\fBTLOSS\fR
+.B TLOSS
 .ad
 .RS 13n
 .rt
@@ -115,7 +129,7 @@ total loss of significance
 .ne 2
 .mk
 .na
-\fBPLOSS\fR
+.B PLOSS
 .ad
 .RS 13n
 .rt
@@ -124,38 +138,67 @@ partial loss of significance
 
 .sp
 .LP
-Both \fBTLOSS\fR and \fBPLOSS\fR reflect limitations of particular
+Both
+.B TLOSS
+and
+.B PLOSS
+reflect limitations of particular
 algorithms for trigonometric functions that suffer abrupt declines in
 accuracy at definite boundaries. Since the implementation does not suffer
-such abrupt declines, \fBPLOSS\fR is never signaled. \fBTLOSS\fR is signaled
-for Bessel functions \fIonly\fR to satisfy SVID3 requirements.
+such abrupt declines,
+.B PLOSS
+is never signaled.
+.B TLOSS
+is signaled
+for Bessel functions
+.I only
+to satisfy SVID3 requirements.
 .sp
 .LP
-The \fBname\fR member points to a string containing the name of the
-function that incurred the exception. The \fBarg1\fR and \fBarg2\fR members
-are the arguments with which the function was invoked. \fBretval\fR is set
+The
+.B name
+member points to a string containing the name of the
+function that incurred the exception. The
+.B arg1
+and
+.B arg2
+members
+are the arguments with which the function was invoked.
+.B retval
+is set
 to the default value that will be returned by the function unless the user's
 \fBmatherr()\fR sets it to a different value.
 .sp
 .LP
-If the user's \fBmatherr()\fR function returns non-zero, no exception
-message will be printed and \fBerrno\fR is not set.
+If the user's
+.B matherr()
+function returns non-zero, no exception
+message will be printed and
+.B errno
+is not set.
 .SH SVID3 STANDARD CONFORMANCE
 .sp
 .LP
 When an application is built as a SVID3 conforming application (see
-\fBstandards\fR(5)), if \fBmatherr()\fR is not supplied by the user, the
+.BR standards (5)),
+if
+.B matherr()
+is not supplied by the user, the
 default matherr exception-handling mechanisms, summarized in the table
 below, are invoked upon exception:
 .sp
 .ne 2
 .mk
 .na
-\fBDOMAIN\fR
+.B DOMAIN
 .ad
 .RS 13n
 .rt
-0.0 is usually returned, \fBerrno\fR is set to \fBEDOM\fR and a message is
+0.0 is usually returned,
+.B errno
+is set to
+.B EDOM
+and a message is
 usually printed on standard error.
 .RE
 
@@ -163,12 +206,18 @@ usually printed on standard error.
 .ne 2
 .mk
 .na
-\fBSING\fR
+.B SING
 .ad
 .RS 13n
 .rt
-The largest finite single-precision number, \fBHUGE\fR of appropriate sign,
-is returned, \fBerrno\fR is set to \fBEDOM\fR, and a message is printed on
+The largest finite single-precision number,
+.B HUGE
+of appropriate sign,
+is returned,
+.B errno
+is set to
+.BR EDOM ,
+and a message is printed on
 standard error.
 .RE
 
@@ -176,40 +225,54 @@ standard error.
 .ne 2
 .mk
 .na
-\fBOVERFLOW\fR
+.B OVERFLOW
 .ad
 .RS 13n
 .rt
-The largest finite single-precision number, \fBHUGE\fR of appropriate sign,
-is usually returned and \fBerrno\fR is set to \fBERANGE\fR.
+The largest finite single-precision number,
+.B HUGE
+of appropriate sign,
+is usually returned and
+.B errno
+is set to
+.BR ERANGE .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBUNDERFLOW\fR
+.B UNDERFLOW
 .ad
 .RS 13n
 .rt
-0.0 is returned and \fBerrno\fR is set to \fBERANGE\fR.
+0.0 is returned and
+.B errno
+is set to
+.BR ERANGE .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTLOSS\fR
+.B TLOSS
 .ad
 .RS 13n
 .rt
-0.0 is returned, \fBerrno\fR is set to \fBERANGE\fR, and a message is
+0.0 is returned,
+.B errno
+is set to
+.BR ERANGE ,
+and a message is
 printed on standard error.
 .RE
 
 .sp
 .LP
-In general, \fBerrno\fR is not a reliable error indicator because it can be
+In general,
+.B errno
+is not a reliable error indicator because it can be
 unexpectedly set by a function in a handler for an asynchronous signal.
 .SS "SVID3 ERROR HANDLING PROCEDURES (compile with cc \e-Xt)"
 .sp
@@ -275,7 +338,7 @@ Y0, Y1, YN:
 .ne 2
 .mk
 .na
-\fBMd\fR
+.B Md
 .ad
 .RS 12n
 .rt
@@ -286,7 +349,7 @@ Message is printed (DOMAIN error).
 .ne 2
 .mk
 .na
-\fBMs\fR
+.B Ms
 .ad
 .RS 12n
 .rt
@@ -297,7 +360,7 @@ Message is printed (SING error).
 .ne 2
 .mk
 .na
-\fBMt\fR
+.B Mt
 .ad
 .RS 12n
 .rt
@@ -308,7 +371,7 @@ Message is printed (TLOSS error).
 .ne 2
 .mk
 .na
-\fBNaN\fR
+.B NaN
 .ad
 .RS 12n
 .rt
@@ -319,7 +382,7 @@ IEEE NaN result and invalid operation exception.
 .ne 2
 .mk
 .na
-\fBHUGE\fR
+.B HUGE
 .ad
 .RS 12n
 .rt
@@ -330,7 +393,7 @@ Maximum finite single-precision floating-point number.
 .ne 2
 .mk
 .na
-\fBHUGE_VAL\fR
+.B HUGE_VAL
 .ad
 .RS 12n
 .rt
@@ -341,7 +404,7 @@ IEEE \(if result and division-by-zero exception.
 .ne 2
 .mk
 .na
-\fBX_TLOSS\fR
+.B X_TLOSS
 .ad
 .RS 12n
 .rt
@@ -350,7 +413,9 @@ The value X_TLOSS is defined in <values.h>.
 
 .sp
 .LP
-The interaction of IEEE arithmetic and \fBmatherr()\fR is not defined when
+The interaction of IEEE arithmetic and
+.B matherr()
+is not defined when
 executing under IEEE rounding modes other than the default round to nearest:
 \fBmatherr()\fR is not always called on overflow or underflow and can return
 results that differ from those in this table.
@@ -358,10 +423,11 @@ results that differ from those in this table.
 .sp
 .LP
 The X/Open System Interfaces and Headers (XSH) Issue 3 and later revisions
-of that specification no longer sanctions the use of the \fBmatherr\fR
+of that specification no longer sanctions the use of the
+.BR matherr
 interface. The following table summarizes the values returned in the
 exceptional cases.  In general, XSH dictates that as long as one of the
-input argument(s) is a NaN, NaN is returned. In particular, \fBpow(NaN,0)\fR
+.RB "input argument(s) is a NaN, NaN is returned. In particular," " pow(NaN,0)"
 = NaN.
 .SS "CAE SPECIFICATION ERROR HANDLING PROCEDURES (compile with cc \fB-Xa\fR)"
 .sp
@@ -428,7 +494,7 @@ Y0, Y1, YN:
 .ne 2
 .mk
 .na
-\fBNaN\fR
+.B NaN
 .ad
 .RS 12n
 .rt
@@ -439,7 +505,7 @@ IEEE NaN result and invalid operation exception.
 .ne 2
 .mk
 .na
-\fBHUGE_VAL\fR
+.B HUGE_VAL
 .ad
 .RS 12n
 .rt
@@ -450,7 +516,7 @@ IEEE \(if result and division-by-zero exception.
 .ne 2
 .mk
 .na
-\fBX_TLOSS\fR
+.B X_TLOSS
 .ad
 .RS 12n
 .rt
@@ -503,7 +569,7 @@ SQRT\|(x < 0):0.0\(mi\(mi\(mi
 .ne 2
 .mk
 .na
-\fBNaN\fR
+.B NaN
 .ad
 .RS 12n
 .rt
@@ -514,7 +580,7 @@ IEEE NaN result and invalid operation exception.
 .ne 2
 .mk
 .na
-\fBHUGE_VAL\fR
+.B HUGE_VAL
 .ad
 .RS 12n
 .rt
@@ -523,7 +589,7 @@ IEEE \(if result and division-by-zero.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExample of \fBmatherr()\fR function
+\fBExample 1\fR Example of \fBmatherr()\fR function
 .sp
 .in +2
 .nf
@@ -555,7 +621,9 @@ matherr(struct exception *x) {
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -572,4 +640,5 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR attributes (5),
+.BR standards (5)

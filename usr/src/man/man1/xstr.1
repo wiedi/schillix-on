@@ -59,15 +59,25 @@ The command:
 .LP
 extracts the strings from the C source in name, replacing string references
 by expressions of the form \fB&xstr[\fInumber\fB]\fR for some number.
-An appropriate declaration of \fBxstr\fR is prepended to the file.  The
-resulting C text is placed in the file \fBx.c\fR, to then be compiled.  The
-strings from this file are placed in the \fBstrings\fR data base if they are
+An appropriate declaration of
+.B xstr
+is prepended to the file.  The
+resulting C text is placed in the file
+.BR x.c ,
+to then be compiled.  The
+strings from this file are placed in the
+.B strings
+data base if they are
 not there already. Repeated strings and strings which are suffixes of
 existing strings do not cause changes to the data base.
 .sp
 .LP
 After all components of a large program have been compiled, a file
-declaring the common \fBxstr\fR space called \fBxs.c\fR can be created by a
+declaring the common
+.B xstr
+space called
+.B xs.c
+can be created by a
 command of the form:
 .sp
 .in +2
@@ -79,7 +89,9 @@ command of the form:
 
 .sp
 .LP
-This \fBxs.c\fR file should then be compiled and loaded with the rest of
+This
+.B xs.c
+file should then be compiled and loaded with the rest of
 the program.  If possible, the array can be made read-only (shared) saving
 space and swap overhead.
 .sp
@@ -90,15 +102,27 @@ space and swap overhead.
 \fBexample% xstr \fIfilename\fR
 .sp
 .LP
-creates files \fBx.c\fR and \fBxs.c\fR as before, without using or
-affecting any \fBstrings\fR file in the same directory.
+creates files
+.B x.c
+and
+.B xs.c
+as before, without using or
+affecting any
+.B strings
+file in the same directory.
 .sp
 .LP
-It may be useful to run \fBxstr\fR after the C preprocessor if any macro
+It may be useful to run
+.B xstr
+after the C preprocessor if any macro
 definitions yield strings or if there is conditional code which contains
-strings which may not, in fact, be needed. \fBxstr\fR reads from the
+strings which may not, in fact, be needed.
+.B xstr
+reads from the
 standard input when the argument `\fB\(mi\fR\&' is given. An appropriate
-command sequence for running \fBxstr\fR after the C preprocessor is:
+command sequence for running
+.B xstr
+after the C preprocessor is:
 .sp
 .in +2
 .nf
@@ -112,7 +136,11 @@ example% mv x.o name.o\fR
 .sp
 .LP
 \fBxstr\fR does not touch the file \fBstrings\fR unless new items are
-added; thus \fBmake\fR(1S) can avoid remaking \fBxs.o\fR unless truly
+added; thus
+.BR make (1S)
+can avoid remaking
+.B xs.o
+unless truly
 necessary.
 .SH OPTIONS
 .sp
@@ -130,7 +158,7 @@ Take C source text from \fIfilename\fR.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 18n
 .rt
@@ -146,8 +174,11 @@ strings were found.
 .ad
 .RS 18n
 .rt
-Specify the named  \fIarray\fR in program references to abstracted strings.
-The default array name is \fBxstr\fR.
+Specify the named 
+.I array
+in program references to abstracted strings.
+The default array name is
+.BR xstr .
 .RE
 
 .SH FILES
@@ -155,7 +186,7 @@ The default array name is \fBxstr\fR.
 .ne 2
 .mk
 .na
-\fBstrings\fR
+.B strings
 .ad
 .RS 12n
 .rt
@@ -166,7 +197,7 @@ data base of strings
 .ne 2
 .mk
 .na
-\fBx.c\fR
+.B x.c
 .ad
 .RS 12n
 .rt
@@ -177,7 +208,7 @@ massaged C source
 .ne 2
 .mk
 .na
-\fBxs.c\fR
+.B xs.c
 .ad
 .RS 12n
 .rt
@@ -188,7 +219,7 @@ C source for definition of array "xstr*(rq
 .ne 2
 .mk
 .na
-\fB/tmp/xs*\fR
+.B /tmp/xs*
 .ad
 .RS 12n
 .rt
@@ -198,7 +229,9 @@ temp file when \fBxstr \fIfilename\fR doesn't touch \fBstrings\fR
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -215,28 +248,39 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBmake\fR(1S), \fBattributes\fR(5)
+.BR make (1S),
+.BR attributes (5)
 .SH BUGS
 .sp
 .LP
 If a string is a suffix of another string in the data base, but the shorter
-string is seen first by \fBxstr\fR both strings will be placed in the data
+string is seen first by
+.B xstr
+both strings will be placed in the data
 base, when just placing the longer one there would do.
 .SH NOTES
 .sp
 .LP
-Be aware that \fBxstr\fR indiscriminately replaces all strings with
+Be aware that
+.B xstr
+indiscriminately replaces all strings with
 expressions of the form \fB&xstr[\fInumber\fB]\fR regardless of the
 way the original C code might have used the string.  For example, you will
 encounter a problem with  code that uses \fBsizeof()\fR to determine the
-length of a literal string because \fBxstr\fR will replace the literal
+length of a literal string because
+.B xstr
+will replace the literal
 string with a pointer that most likely will have a different size than the
 string's. To circumvent this problem:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-use \fBstrlen()\fR instead of  \fBsizeof()\fR; note that  \fBsizeof()\fR
+use
+.B strlen()
+instead of 
+.BR sizeof() ;
+note that  \fBsizeof()\fR
 returns the size of the array (including the null byte at the end), whereas
 \fBstrlen()\fR doesn't count the null byte. The equivalent of
 \fBsizeof("\fIxxx\fB")\fR really is
@@ -247,7 +291,9 @@ returns the size of the array (including the null byte at the end), whereas
 .ie t \(bu
 .el o
 use \fB#define\fR for operands of \fBsizeof()\fR and use the \fBdefine\fR'd
-version. \fBxstr\fR ignores \fB#define\fR statements.  Make sure you run
+version.
+.B xstr
+ignores \fB#define\fR statements.  Make sure you run
 \fBxstr\fR on \fIfilename\fR before you run it on the preprocessor.
 .RE
 .sp

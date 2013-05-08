@@ -59,8 +59,14 @@ mbrlen \- get number of bytes in a character (restartable)
 .SH DESCRIPTION
 .sp
 .LP
-If \fIs\fR is not a null pointer,  \fBmbrlen()\fR determines the number of
-bytes constituting the character pointed to by  \fIs\fR. It is equivalent
+If
+.I s
+is not a null pointer, 
+.B mbrlen()
+determines the number of
+bytes constituting the character pointed to by
+.IR s .
+It is equivalent
 to:
 .sp
 .in +2
@@ -72,30 +78,47 @@ mbrtowc(NULL, s, n, ps != NULL ? ps : &internal);
 
 .sp
 .LP
-If \fIps\fR is a null pointer, the \fBmbrlen()\fR function uses its own
-internal \fBmbstate_t\fR object, which is initialized at program startup to
-the initial conversion state.   Otherwise, the  \fBmbstate_t\fR object
-pointed to by \fIps\fR is used to completely describe the current conversion
+If
+.I ps
+is a null pointer, the
+.B mbrlen()
+function uses its own
+internal
+.B mbstate_t
+object, which is initialized at program startup to
+the initial conversion state.   Otherwise, the 
+.B mbstate_t
+object
+pointed to by
+.I ps
+is used to completely describe the current conversion
 state of the associated character sequence. Solaris will behave as if no
-function defined in the Solaris Reference Manual calls \fBmbrlen()\fR.
+function defined in the Solaris Reference Manual calls
+.BR mbrlen() .
 .sp
 .LP
-The behavior of this function is affected by the \fBLC_CTYPE\fR category of
+The behavior of this function is affected by the
+.B LC_CTYPE
+category of
 the current locale.  See \fBenviron\fR(5).
 .SH RETURN VALUES
 .sp
 .LP
-The \fBmbrlen()\fR function returns the first of the following that
+The
+.B mbrlen()
+function returns the first of the following that
 applies:
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 17n
 .rt
-If the next \fIn\fR or fewer bytes complete the character that corresponds
+If the next
+.I n
+or fewer bytes complete the character that corresponds
 to the null wide-character.
 .RE
 
@@ -103,11 +126,13 @@ to the null wide-character.
 .ne 2
 .mk
 .na
-\fBpositive\fR
+.B positive
 .ad
 .RS 17n
 .rt
-If the next \fIn\fR or fewer bytes complete a valid character; the value
+If the next
+.I n
+or fewer bytes complete a valid character; the value
 returned is the number of bytes that complete the character.
 .RE
 
@@ -119,9 +144,17 @@ returned is the number of bytes that complete the character.
 .ad
 .RS 17n
 .rt
-If the next \fIn\fR bytes contribute to an incomplete but potentially valid
-character, and all \fIn\fR bytes have been processed. When \fIn\fR has at
-least the value of the \fBMB_CUR_MAX\fR macro, this case can only occur if
+If the next
+.I n
+bytes contribute to an incomplete but potentially valid
+character, and all
+.I n
+bytes have been processed. When
+.I n
+has at
+least the value of the
+.B MB_CUR_MAX
+macro, this case can only occur if
 \fIs\fR points at a sequence of redundant shift sequences (for
 implementations with state-dependent encodings).
 .RE
@@ -134,7 +167,9 @@ implementations with state-dependent encodings).
 .ad
 .RS 17n
 .rt
-If an encoding error occurs, in which case the next \fIn\fR or fewer bytes
+If an encoding error occurs, in which case the next
+.I n
+or fewer bytes
 do not contribute to a complete and valid  character.  In this case,
 \fBEILSEQ\fR is stored in \fBerrno\fR and the conversion state is
 undefined.
@@ -143,16 +178,20 @@ undefined.
 .SH ERRORS
 .sp
 .LP
-The \fBmbrlen()\fR function may fail if:
+The
+.B mbrlen()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIps\fR argument points to an object that contains an invalid
+The
+.I ps
+argument points to an object that contains an invalid
 conversion state.
 .RE
 
@@ -160,7 +199,7 @@ conversion state.
 .ne 2
 .mk
 .na
-\fBEILSEQ\fR
+.B EILSEQ
 .ad
 .RS 10n
 .rt
@@ -170,7 +209,9 @@ Invalid character sequence is detected.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -189,14 +230,31 @@ MT-LevelSee NOTES below
 .SH SEE ALSO
 .sp
 .LP
-\fBmbrtowc\fR(3C), \fBmbsinit\fR(3C), \fBsetlocale\fR(3C),
-\fBattributes\fR(5), \fBenviron\fR(5), \fBstandards\fR(5)
+.BR mbrtowc (3C),
+.BR mbsinit (3C),
+.BR setlocale (3C),
+.BR attributes (5),
+.BR environ (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
-If \fIps\fR is not a null pointer, \fBmbrlen()\fR uses the \fBmbstate_t\fR
-object pointed to by \fIps\fR and the function can be used safely in
-multithreaded applications, as long as \fBsetlocale\fR(3C) is not being
-called to change the locale. If \fIps\fR is a null pointer, \fBmbrlen()\fR
-uses its internal \fBmbstate_t\fR object and the function is Unsafe in
+If
+.I ps
+is not a null pointer,
+.B mbrlen()
+uses the
+.BR mbstate_t
+object pointed to by
+.I ps
+and the function can be used safely in
+multithreaded applications, as long as
+.BR setlocale (3C)
+is not being
+called to change the locale. If
+.I ps
+.RB "is a null pointer," " mbrlen()"
+uses its internal
+.B mbstate_t
+object and the function is Unsafe in
 multithreaded applications.

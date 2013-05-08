@@ -30,9 +30,11 @@ ar.h, ar \- archive file format
 .SH DESCRIPTION
 .sp
 .LP
-The archive command \fBar\fR is used to combine several files into one.
+The archive command
+.B ar
+is used to combine several files into one.
 Archives are used mainly as libraries to be searched by the link editor
-\fBld\fR. 
+.BR ld .
 .sp
 .LP
 Each archive begins with the archive magic string.
@@ -69,22 +71,34 @@ struct  ar_hdr                  /* file member header */
 
 .sp
 .LP
-All information in the file member headers is in printable \fBASCII.\fR The
+All information in the file member headers is in printable
+.B ASCII.
+The
 numeric information contained in the headers is stored as decimal numbers
-(except for \fIar_mode\fR which is in octal). Thus, if the archive contains
+(except for
+.I ar_mode
+which is in octal). Thus, if the archive contains
 printable files, the archive itself is printable.
 .sp
 .LP
-If the file member name fits, the \fIar_name\fR field contains the name
+If the file member name fits, the
+.I ar_name
+field contains the name
 directly, and is terminated by a slash (\fB/\fR) and padded with blanks on
-the right. If the member's name does not fit, \fIar_name\fR contains a slash
+the right. If the member's name does not fit,
+.I ar_name
+contains a slash
 (\fB/\fR) followed by a decimal representation of the name's offset in the
 archive string table described below.
 .sp
 .LP
-The \fIar_date\fR field is the modification date of the file at the time of
+The
+.I ar_date
+field is the modification date of the file at the time of
 its insertion into the archive. Common format archives can be moved from
-system to system as long as the portable archive command \fBar\fR is used.
+system to system as long as the portable archive command
+.B ar
+is used.
 .sp
 .LP
 Each archive file member begins on an even byte boundary; a newline is
@@ -95,16 +109,21 @@ the actual size of the file exclusive of padding.
 Notice there is no provision for empty areas in an archive file.
 .sp
 .LP
-Each archive that contains object files (see  \fBa.out\fR(4)) includes an
-archive symbol table. This symbol table is used by the link editor  \fBld\fR
+Each archive that contains object files (see 
+.BR a.out (4))
+includes an
+.RB "archive symbol table. This symbol table is used by the link editor " " ld"
 to determine which archive members must be loaded during the link edit
 process. The archive symbol table (if it exists) is always the first file in
 the archive (but is never listed) and is automatically created and/or
-updated by  \fBar\fR.
+updated by 
+.BR ar .
 .sp
 .LP
 The archive symbol table has a zero length name (that is,  \fBar_name[0]\fR
-is \fB\&'/'\fR),  \fBar_name[1]==' '\fR, etc.). All ``words'' in this symbol
+is \fB\&'/'\fR), 
+.BR "ar_name[1]==' '" ,
+etc.). All ``words'' in this symbol
 table have four bytes, using the machine-independent encoding shown below.
 All machines use the encoding described here for the symbol table, even if
 the machine's ``natural'' byte order is different.
@@ -133,16 +152,22 @@ of symbols''.
 .RS +4
 .TP
 3.
-The name string table.  Length: \fIar_size\fR - 4 bytes * (``the number of
+The name string table.  Length:
+.I ar_size
+- 4 bytes * (``the number of
 symbols'' + 1).
 .RE
 .sp
 .LP
 As an example, the following symbol table defines 4 symbols. The archive
-member at file offset 114 defines \fIname\fR. The archive member at file
-offset 122 defines \fIobject\fR. The archive member at file offset 426
+member at file offset 114 defines
+.IR name .
+The archive member at file
+offset 122 defines
+.IR object .
+The archive member at file offset 426
 defines \fBfunction\fR and the archive member at file offset 434 defines
-\fIname2\fR. 
+.IR name2 .
 .SS "Example Symbol Table"
 .sp
 .in +2
@@ -190,11 +215,15 @@ If some archive member's name is more than 15 bytes long, a special archive
 member contains a table of file names, each followed by a slash and a
 new-line. This string table member, if present, will precede all ``normal''
 archive members. The special archive symbol table is not a ``normal''
-member, and must be first if it exists. The \fBar_name\fR entry of the
+member, and must be first if it exists. The
+.B ar_name
+entry of the
 string table's member header holds a zero length name \fBar_name[0]=='/'\fR,
 followed by one trailing slash (\fBar_name[1]=='/'\fR), followed by blanks
 (\fBar_name[2]==' '\fR, etc.). Offsets into the string table begin at zero.
-Example \fIar_name\fR values for short and long file names appear below.
+Example
+.I ar_name
+values for short and long file names appear below.
 .sp
 .in +2
 .nf
@@ -228,11 +257,19 @@ _____________________|______________|___________________________
 .SH SEE ALSO
 .sp
 .LP
-\fBar\fR(1), \fBld\fR(1), \fBstrip\fR(1), \fBa.out\fR(4)
+.BR ar (1),
+.BR ld (1),
+.BR strip (1),
+.BR a.out (4)
 .SH NOTES
 .sp
 .LP
-The \fBstrip\fR utility will remove all archive symbol entries from the
-header. The archive symbol entries must be restored with the \fB-ts\fR
-options of the \fBar\fR command before the archive can be used with the link
-editor \fBld\fR.
+The
+.B strip
+utility will remove all archive symbol entries from the
+.RB "header. The archive symbol entries must be restored with the" " -ts"
+options of the
+.B ar
+command before the archive can be used with the link
+editor
+.BR ld .

@@ -33,7 +33,10 @@ msgsnap \- message queue snapshot operation
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmsgsnap()\fR function reads all of the messages of type \fImsgtyp\fR
+The
+.B msgsnap()
+function reads all of the messages of type
+.IR msgtyp
 from the queue associated with the message queue identifier specified by
 \fImsqid\fR and places them in the user-defined buffer pointed to by
 \fIbuf\fR.
@@ -53,7 +56,9 @@ struct msgsnap_head {
 
 .sp
 .LP
-followed by \fBmsgsnap_nmsg\fR messages, each of which starts with a
+followed by
+.B msgsnap_nmsg
+messages, each of which starts with a
 message header:
 .sp
 .in +2
@@ -67,7 +72,9 @@ struct msgsnap_mhead {
 
 .sp
 .LP
-and followed by \fBmsgsnap_mlen\fR bytes containing the message contents.
+and followed by
+.B msgsnap_mlen
+bytes containing the message contents.
 .sp
 .LP
 Each subsequent message header is located at the first byte following the
@@ -75,70 +82,98 @@ previous message contents, rounded up to a \fBsizeof(size_t)\fR boundary.
 .sp
 .LP
 The \fIbufsz\fR argument specifies the size  of \fIbuf\fR in bytes.  If
-\fIbufsz\fR is less than \fBsizeof(msgsnap_head)\fR, \fBmsgsnap()\fR fails
-with \fBEINVAL\fR.  If \fIbufsz\fR is insufficient to contain all of the
-requested messages, \fBmsgsnap()\fR succeeds but returns with
+\fIbufsz\fR is less than
+.BR sizeof(msgsnap_head) ,
+\fBmsgsnap()\fR fails
+with
+.BR EINVAL .
+If \fIbufsz\fR is insufficient to contain all of the
+requested messages,
+.B msgsnap()
+succeeds but returns with
 \fBmsgsnap_nmsg\fR set to 0 and with \fBmsgsnap_size\fR set to the required
 size of the buffer in bytes.
 .sp
 .LP
-The \fImsgtyp\fR argument specifies the types of messages requested as
+The
+.I msgtyp
+argument specifies the types of messages requested as
 follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is 0, all of the messages on the queue are read.
+If
+.I msgtyp
+is 0, all of the messages on the queue are read.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is greater than 0, all messages of type \fImsgtyp\fR are
+If
+.I msgtyp
+is greater than 0, all messages of type
+.I msgtyp
+are
 read.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fImsgtyp\fR is less than 0, all messages with type less than or equal
-to the absolute value of \fImsgtyp\fR are read.
+If
+.I msgtyp
+is less than 0, all messages with type less than or equal
+to the absolute value of
+.I msgtyp
+are read.
 .RE
 .sp
 .LP
-The \fBmsgsnap()\fR function is a non-destructive operation. Upon
+The
+.B msgsnap()
+function is a non-destructive operation. Upon
 completion, no changes are made to the data structures associated with
-\fImsqid\fR.
+.IR msqid .
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBmsgsnap()\fR returns \fB0\fR.  Otherwise,
+Upon successful completion,
+.B msgsnap()
+returns
+.BR 0 .
+Otherwise,
 \fB\(mi1\fR is returned and \fBerrno\fR is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBmsgsnap()\fR function will fail if:
+The
+.B msgsnap()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
 Operation permission is denied to the calling process.  See
-\fBIntro\fR(2).
+.BR Intro (2).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fImsqid\fR argument is not a valid message queue identifier or the
+The
+.I msqid
+argument is not a valid message queue identifier or the
 value of \fIbufsz\fR is less than \fBsizeof(struct msgsnap_head)\fR.
 .RE
 
@@ -146,7 +181,7 @@ value of \fIbufsz\fR is less than \fBsizeof(struct msgsnap_head)\fR.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
@@ -156,16 +191,19 @@ The \fIbuf\fR argument points to an illegal address.
 .SH USAGE
 .sp
 .LP
-The \fBmsgsnap()\fR function returns a snapshot of messages on a message
+The
+.B msgsnap()
+function returns a snapshot of messages on a message
 queue at one point in time.  The queue contents can change immediately
-following return from \fBmsgsnap()\fR.
+following return from
+.BR msgsnap() .
 .SH EXAMPLES
 .LP
 \fBExample 1 \fBmsgsnap()\fR example
 .sp
 .LP
 This is sample C code indicating how to use the msgsnap function (see
-\fBmsgids\fR(2)).
+.BR msgids (2)).
 
 .sp
 .in +2
@@ -216,7 +254,9 @@ process_msgid(int msqid)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -233,6 +273,12 @@ MT-LevelAsync-Signal-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBipcrm\fR(1), \fBipcs\fR(1), \fBIntro\fR(2), \fBmsgctl\fR(2),
-\fBmsgget\fR(2), \fBmsgids\fR(2), \fBmsgrcv\fR(2), \fBmsgsnd\fR(2),
-\fBattributes\fR(5)
+.BR ipcrm (1),
+.BR ipcs (1),
+.BR Intro (2),
+.BR msgctl (2),
+.BR msgget (2),
+.BR msgids (2),
+.BR msgrcv (2),
+.BR msgsnd (2),
+.BR attributes (5)

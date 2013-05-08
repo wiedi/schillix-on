@@ -39,7 +39,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIldi_handle_t lh\fR
+.I ldi_handle_t lh
 .ad
 .sp .6
 .RS 4n
@@ -51,19 +51,19 @@ requested.
 .ne 2
 .mk
 .na
-\fIldi_ev_cookie_t *cookie\fR
+.I ldi_ev_cookie_t *cookie
 .ad
 .sp .6
 .RS 4n
 An opaque event cookie for the event type returned by a previous call to
-\fBldi_ev_get_cookie\fR(9F).
+.BR ldi_ev_get_cookie (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIldi_ev_callback_t *callb\fR
+.I ldi_ev_callback_t *callb
 .ad
 .sp .6
 .RS 4n
@@ -90,11 +90,13 @@ where
 .ne 2
 .mk
 .na
-\fBcb_vers\fR
+.B cb_vers
 .ad
 .RS 11n
 .rt
-Version of callback vector. Must be set to \fBLDI_EV_CB_VERS\fR by the
+Version of callback vector. Must be set to
+.B LDI_EV_CB_VERS
+by the
 caller.
 .sp
 The arguments passed into the callbacks when they are invoked, include:
@@ -102,20 +104,23 @@ The arguments passed into the callbacks when they are invoked, include:
 .ne 2
 .mk
 .na
-\fBint ldi_result\fR
+.B int ldi_result
 .ad
 .sp .6
 .RS 4n
 The actual result of the state change operation/event passed to finalize
-callback: \fBLDI_EV_SUCCESS\fR: The state change succeeded
-\fBLDI_EV_FAILURE\fR: The state change failed.
+callback:
+.BR LDI_EV_SUCCESS :
+The state change succeeded
+.BR LDI_EV_FAILURE :
+The state change failed.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBvoid *ev_data\fR
+.B void *ev_data
 .ad
 .sp .6
 .RS 4n
@@ -130,7 +135,7 @@ Event specific data.
 .ne 2
 .mk
 .na
-\fBvoid *arg\fR
+.B void *arg
 .ad
 .sp .6
 .RS 4n
@@ -141,7 +146,7 @@ A pointer to opaque caller private data.
 .ne 2
 .mk
 .na
-\fBldi_ev_callback_id_t *id\fR
+.B ldi_ev_callback_id_t *id
 .ad
 .sp .6
 .RS 4n
@@ -152,31 +157,47 @@ upon successful registration.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBldi_ev_register_callbacks()\fR interface allows layered drivers to
+The
+.B ldi_ev_register_callbacks()
+interface allows layered drivers to
 register notify and finalize callbacks for certain events. These events are
 listed in the \fBldi_ev_get_cookie\fR(9F) man page. The notify callback is
 invoked only for events that can be blocked, just before the event occurs. The
-notify event is not called for events serviced by the \fBNDI\fR event  service
+notify event is not called for events serviced by the
+.B NDI
+event  service
 framework since such events are by definition asynchronous. Only  the finalize
 callback is invoked for such events. Layered drivers that have registered
 notify callbacks for that event have the opportunity of blocking such events.
 The finalize callback is invoked once the final disposition of the state of a
 device (specifically a device minor node) is known. The callback is invoked
-with this result, either \fBLDI_EV_SUCCESS\fR (state change succeeded) or
+with this result, either
+.B LDI_EV_SUCCESS
+(state change succeeded) or
 \fBLDI_EV_FAILURE\fR (state change failed). This allows layered driver
 consumers to finalize any changes they made in response to a previous "notify"
 callback.
 .sp
 .LP
 For example, a layered driver's notify callback may be invoked in response to
-a \fBLDI_EV_OFFLINE\fR event. The layered driver may reconfigure itself to
+a
+.B LDI_EV_OFFLINE
+event. The layered driver may reconfigure itself to
 stop using the device and permit the change to go forward. Once that happens,
-the \fBI/O\fR framework attempts to actually take the device offline. This
+the
+.B I/O
+framework attempts to actually take the device offline. This
 offline attempt can have two possible outcomes: success or failure. In the
 former case, the finalize callback is invoked with the \fIldi_result\fR
-argument set to \fBLDI_EV_SUCCESS\fR and the layered driver knows that the
+argument set to
+.B LDI_EV_SUCCESS
+and the layered driver knows that the
 device has been taken offline. In the latter case, finalize is invoked with
-the \fIldi_result\fR set to \fBLDI_EV_FAILURE\fR and the layered driver knows
+the
+.I ldi_result
+set to
+.B LDI_EV_FAILURE
+and the layered driver knows
 that the state change failed. In this case, it may choose to reconfigure
 itself to start using the device again.
 .sp
@@ -186,7 +207,9 @@ cannot be blocked.
 .sp
 .LP
 A layered driver can also propagate these events up the software stack by
-using interfaces offered by the \fBLDI\fR event framework. The layered driver
+using interfaces offered by the
+.B LDI
+event framework. The layered driver
 may use \fBldi_ev_notify()\fR to propagate notify events occurring on minors
 it imports onto minors it exports. Similarly, it may use
 \fBldi_ev_finalize()\fR to propagate finalize events. Both
@@ -195,7 +218,9 @@ contracts as well as LDI callbacks  registered against the exported minor
 nodes.
 .sp
 .LP
-The \fBLDI\fR event framework has the following guarantees and requirements
+The
+.B LDI
+event framework has the following guarantees and requirements
 with respect to these callbacks:
 .RS +4
 .TP
@@ -203,11 +228,14 @@ with respect to these callbacks:
 The \fBnotify()\fR callback is invoked before an event (represented by the
 event cookie) occurs on a device (represented by the layered driver handle)
 and is invoked only for events that can be blocked. If the callback returns
-\fBLDI_EV_FAILURE\fR, the event is blocked. If the callback returns
-\fBLDI_EV_SUCCESS\fR, the event is allowed to proceed. If any other value is
+.BR LDI_EV_FAILURE ,
+the event is blocked. If the callback returns
+.BR LDI_EV_SUCCESS ,
+the event is allowed to proceed. If any other value is
 returned, it is an error. An error message is logged and the event is blocked.
 An example of an event that can be blocked and for which notify callbacks may
-be invoked is the offline event \fBLDI_EV_OFFLINE\fR.
+be invoked is the offline event
+.BR LDI_EV_OFFLINE .
 .RE
 .RS +4
 .TP
@@ -226,9 +254,12 @@ event service framework.
 Layered drivers may register one or both of these callbacks (that is, only
 for a notify event or only for a finalize event or for both) against any
 \fBLDI\fR handle that they may possess. If a finalize or notify event is not
-being registered, the corresponding pointer in the \fIldi_ev_callback_t\fR
-structure must be set to \fBNULL\fR. It is an error to attempt a registration
-with both callbacks set to \fBNULL\fR.
+.RI "being registered, the corresponding pointer in the" " ldi_ev_callback_t"
+structure must be set to
+.BR NULL .
+It is an error to attempt a registration
+with both callbacks set to
+.BR NULL .
 .RE
 .RS +4
 .TP
@@ -242,21 +273,35 @@ in the device. See number 5 below for the exception to this rule.
 .RS +4
 .TP
 5.
-A layered driver that closes it's \fBLDI\fR handle in it's notify routine
+A layered driver that closes it's
+.B LDI
+handle in it's notify routine
 receives the corresponding finalize callback after the event has occurred.
-Because the \fBLDI\fR handle has been closed, the finalize callback is invoked
-with a \fBNULL\fR \fBLDI\fR handle. It is the responsibility of the layered
+Because the
+.B LDI
+handle has been closed, the finalize callback is invoked
+with a
+.B "NULL LDI"
+handle. It is the responsibility of the layered
 driver to maintain state in it's private "\fIarg\fR" parameter so that it can
 reopen the device (if desired) in it's finalize callback.
 .sp
-One example where this may happen is with the \fBLDI_EV_OFFLINE\fR event. A
+One example where this may happen is with the
+.B LDI_EV_OFFLINE
+event. A
 layered driver's notify callback may be invoked for an offline event. The
 layered driver may choose to allow this event to proceed. In that case, since
-it has a layered open of the device, it must close the \fBLDI\fR handle so
+it has a layered open of the device, it must close the
+.B LDI
+handle so
 that the offline event can succeed (an offline of a device does not succeed if
 there is any open of the device, layered or otherwise). Since the layered
-driver has closed the \fBLDI\fR handle in the notify routine, it's finalize
-callback (if any) is invoked with a \fBNULL\fR \fBLDI\fR handle. It is the
+driver has closed the
+.B LDI
+handle in the notify routine, it's finalize
+callback (if any) is invoked with a
+.B "NULL LDI"
+handle. It is the
 responsibility of the layered driver to maintain state (such as the device
 path or \fBdevid\fR) in it's private "\fIarg\fR" parameter, so that in the
 finalize routine, it can do a layered open of the device if the device offline
@@ -269,29 +314,47 @@ has been closed, no corresponding callbacks is invoked.
 .RS +4
 .TP
 6.
-In order for the offline event to succeed (\fBLDI_EV_OFFLINE\fR), it is
-imperative that there be no opens (including \fBLDI\fR handles) to the device.
+In order for the offline event to succeed
+.RB ( LDI_EV_OFFLINE ),
+it is
+imperative that there be no opens (including
+.B LDI
+handles) to the device.
 If a layered driver's notify callback is invoked for an offline event and the
 driver intends to allow the offline to proceed, the driver must close the
-corresponding \fBLDI\fR handle.
+corresponding
+.B LDI
+handle.
 .RE
 .RS +4
 .TP
 7.
 The notify and finalize callbacks are not automatically unregistered even if
-the corresponding \fBLDI\fR handle has been closed. It is the responsibility
+the corresponding
+.B LDI
+handle has been closed. It is the responsibility
 of the layered driver to unregister these callbacks when they are not
 required. It may do so using the \fBldi_ev_remove_callbacks\fR(9F) interface.
-The \fBLDI\fR framework may panic if the entity registering the callback (such
-as a \fBdip\fR, \fBdev_t\fR or \fBmodule\fR) no longer exists on the system
+The
+.B LDI
+framework may panic if the entity registering the callback (such
+as a
+.BR dip ,
+\fBdev_t\fR or
+.BR module )
+no longer exists on the system
 and the corresponding callbacks have not been unregistered.
 .RE
 .RS +4
 .TP
 8.
-The \fBLDI\fR event framework guarantees that if a layered driver receives a
+The
+.B LDI
+event framework guarantees that if a layered driver receives a
 notify event, it also receives a finalize event except if the layered consumer
-itself blocked the event (that is, it returned \fBLDI_EV_FAILURE\fR from it's
+itself blocked the event (that is, it returned
+.B LDI_EV_FAILURE
+from it's
 notify callback. In this case, the layered driver knows that the event has
 been blocked and therefore does not need the finalize callback.
 .RE
@@ -303,24 +366,40 @@ it exports, it must first propagate these events up the software stack via
 \fBldi_eve_notify()\fR in it's notify callback. It must do so before
 attempting to check if it blocks the event. This is required, because a
 layered driver cannot release the device if consumers up the stack are still
-using the device. If \fBldi_ev_notify()\fR returns \fBLDI_EV_FAILURE\fR, the
-callback must immediately return \fBLDI_EV_FAILURE\fR from it's notify
-callback. If \fBldi_ev_notify()\fR  returns \fBLDI_EV_SUCCESS\fR, then the
+using the device. If \fBldi_ev_notify()\fR returns
+.BR LDI_EV_FAILURE ,
+the
+callback must immediately return
+.B LDI_EV_FAILURE
+from it's notify
+callback. If \fBldi_ev_notify()\fR  returns
+.BR LDI_EV_SUCCESS ,
+then the
 state change is permissible as far as consumers higher up in the software
 stack are concerned. The layered driver must then determine if it can permit
 the state change. If the state change is to be allowed, the layered driver
-must return \fBLDI_EV_SUCCESS\fR. If the layered driver determines that the
+must return
+.BR LDI_EV_SUCCESS .
+If the layered driver determines that the
 state change should not be permitted, it must invoke \fBldi_ev_finalize()\fR
-on minors it exports with a result of \fBLDI_EV_FAILURE\fR (to inform
-consumers up the stack) and then return \fBLDI_EV_FAILURE\fR from it's notify
+on minors it exports with a result of
+.B LDI_EV_FAILURE
+(to inform
+consumers up the stack) and then return
+.B LDI_EV_FAILURE
+from it's notify
 callback.
 .RE
 .RS +4
 .TP
 10.
-The \fBLDI\fR event framework generates finalize events at the earliest point
+The
+.B LDI
+event framework generates finalize events at the earliest point
 where a failure is detected. If the failure is detected in the framework (such
-as in \fBldi_ev_notify()\fR) the framework generates the finalize events. In
+as in
+.BR ldi_ev_notify() )
+the framework generates the finalize events. In
 the event that a failure is first detected in a layered driver (that is, in
 the notify callback of a layered driver) the layered driver must use
 \fBldi_ev_finalize()\fR to send finalize events up the software stack . See
@@ -360,7 +439,7 @@ The return values for this function are:
 .ne 2
 .mk
 .na
-\fBLDI_EV_SUCCESS\fR
+.B LDI_EV_SUCCESS
 .ad
 .sp .6
 .RS 4n
@@ -371,7 +450,7 @@ Callback(s) added successfully.
 .ne 2
 .mk
 .na
-\fBLDI_EV_FAILURE\fR
+.B LDI_EV_FAILURE
 .ad
 .sp .6
 .RS 4n
@@ -384,10 +463,11 @@ Failed to add callback(s).
 This function can be called from user and kernel contexts only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRRegistration and Callbacks for the OFFLINE Event
+\fBExample 1\fR Registration and Callbacks for the OFFLINE Event
 .sp
 .LP
-The following example shows how the \fBldi_ev_register_callbacks()\fR
+The following example shows how the
+.BR ldi_ev_register_callbacks()
 function performs a registration and callback for the offline event:
 
 .sp
@@ -493,10 +573,11 @@ off_finalize(ldi_handle_t NULL_lh, ldi_ev_cookie_t off_cookie,
 .in -2
 
 .LP
-\fBExample 2 \fRRegistration and Callbacks for the DEGRADE Event
+\fBExample 2\fR Registration and Callbacks for the DEGRADE Event
 .sp
 .LP
-The following example shows how the \fBldi_ev_register_callbacks()\fR
+The following example shows how the
+.BR ldi_ev_register_callbacks()
 function performs a registration and callback for the degrade event:
 
 .sp

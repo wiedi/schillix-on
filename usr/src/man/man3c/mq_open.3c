@@ -61,7 +61,9 @@ mq_open \- open a message queue
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmq_open()\fR function establishes the connection between a process
+The
+.B mq_open()
+function establishes the connection between a process
 and a message queue with a message queue descriptor. It creates a open
 message queue description that refers to the message queue, and a message
 queue descriptor that refers to that open message queue description. The
@@ -69,13 +71,25 @@ message queue descriptor is used by other functions to refer to that message
 queue.
 .sp
 .LP
-The \fIname\fR argument points to a string naming a message queue. The
+The
+.I name
+argument points to a string naming a message queue. The
 \fIname\fR argument must conform to the construction rules for a  path-name.
-If \fIname\fR is not the name of an existing message queue and its creation
-is not requested, \fBmq_open()\fR fails and returns an error. The first
-character of  \fIname\fR must be a slash  (\fB/\fR) character and the
-remaining characters of  \fIname\fR cannot include any slash characters.
-For maximum portability,  \fIname\fR should include no more than 14
+If
+.I name
+is not the name of an existing message queue and its creation
+is not requested,
+.B mq_open()
+fails and returns an error. The first
+character of 
+.I name
+must be a slash  (\fB/\fR) character and the
+remaining characters of 
+.I name
+cannot include any slash characters.
+For maximum portability, 
+.I name
+should include no more than 14
 characters, but this limit is not enforced.
 .sp
 .LP
@@ -92,13 +106,15 @@ values (access modes) below in the value of \fIoflag\fR:
 .ne 2
 .mk
 .na
-\fBO_RDONLY\fR
+.B O_RDONLY
 .ad
 .RS 13n
 .rt
 Open the message queue for receiving messages. The process can use the
-returned message queue descriptor with \fBmq_receive\fR(3C), but not
-\fBmq_send\fR(3C). A message queue may be open multiple times in the same or
+returned message queue descriptor with
+.BR mq_receive "(3C), but not"
+.BR mq_send (3C).
+A message queue may be open multiple times in the same or
 different processes for receiving messages.
 .RE
 
@@ -106,13 +122,15 @@ different processes for receiving messages.
 .ne 2
 .mk
 .na
-\fBO_WRONLY\fR
+.B O_WRONLY
 .ad
 .RS 13n
 .rt
 Open the queue for sending messages. The process can use the returned
-message queue descriptor with \fBmq_send\fR(3C) but not
-\fBmq_receive\fR(3C). A message queue may be open multiple times in the same
+message queue descriptor with
+.BR mq_send "(3C) but not"
+.BR mq_receive (3C).
+A message queue may be open multiple times in the same
 or different processes for sending messages.
 .RE
 
@@ -120,12 +138,16 @@ or different processes for sending messages.
 .ne 2
 .mk
 .na
-\fBO_RDWR\fR
+.B O_RDWR
 .ad
 .RS 13n
 .rt
 Open the queue for both receiving and sending messages. The process can use
-any of the functions allowed for \fBO_RDONLY\fR and \fBO_WRONLY\fR. A
+any of the functions allowed for
+.B O_RDONLY
+and
+.BR O_WRONLY .
+A
 message queue may be open multiple times in the same or different processes
 for sending messages.
 .RE
@@ -138,14 +160,22 @@ value of \fIoflag\fR:
 .ne 2
 .mk
 .na
-\fBO_CREAT\fR
+.B O_CREAT
 .ad
 .RS 15n
 .rt
 This option is used to create a message queue, and it requires two
-additional arguments: \fImode\fR, which is of type \fBmode_t\fR, and
-\fIattr\fR, which is pointer to a \fBmq_attr\fR structure. If the pathname,
-\fIname\fR, has already been used to create a message queue that still
+additional arguments:
+.IR mode ,
+which is of type
+.BR mode_t ,
+and
+.IR attr ,
+which is pointer to a
+.B mq_attr
+structure. If the pathname,
+.IR name ,
+has already been used to create a message queue that still
 exists, then this flag has no effect, except as noted under \fBO_EXCL\fR
 (see below). Otherwise, a message queue is created without any messages in
 it.
@@ -153,15 +183,30 @@ it.
 The user ID of the message queue is set to the effective user ID of
 process, and the group ID of the message queue is set to the effective group
 ID of the process. The file permission bits are set to the value of
-\fImode\fR, and modified by clearing all bits set in the file mode creation
+.IR mode ,
+and modified by clearing all bits set in the file mode creation
 mask of the process (see \fBumask\fR(2)).
 .sp
-If \fIattr\fR is non-\fINULL\fR and the calling process has the appropriate
-privilege on \fIname\fR, the message queue \fImq_maxmsg\fR and
+If
+.I attr
+is non-\fINULL\fR and the calling process has the appropriate
+privilege on
+.IR name ,
+the message queue
+.I mq_maxmsg
+and
 \fImq_msgsize\fR attributes are set to the values of the corresponding
-members in the \fBmq_attr\fR structure referred to by \fIattr\fR. If
+members in the
+.B mq_attr
+structure referred to by
+.IR attr .
+If
 \fIattr\fR is non-\fINULL\fR, but the calling process does not have the
-appropriate privilege on \fIname\fR, the \fBmq_open()\fR function fails and
+appropriate privilege on
+.IR name ,
+the
+.B mq_open()
+function fails and
 returns an error without creating the message queue.
 .RE
 
@@ -169,15 +214,31 @@ returns an error without creating the message queue.
 .ne 2
 .mk
 .na
-\fBO_EXCL\fR
+.B O_EXCL
 .ad
 .RS 15n
 .rt
-If both \fBO_EXCL\fR and \fBO_CREAT\fR are set, \fBmq_open()\fR will fail
-if the message queue \fIname\fR exists. The check for the existence of the
+If both
+.B O_EXCL
+and
+.B O_CREAT
+are set,
+.B mq_open()
+will fail
+if the message queue
+.I name
+exists. The check for the existence of the
 message queue and the creation of the message queue if it does not exist are
-atomic with respect to other processes executing \fBmq_open()\fR naming the
-same \fIname\fR with both \fBO_EXCL\fR and \fBO_CREAT\fR set.  If
+atomic with respect to other processes executing
+.B mq_open()
+naming the
+same
+.I name
+with both
+.B O_EXCL
+and
+.B O_CREAT
+set.  If
 \fBO_EXCL\fR and \fBO_CREAT\fR are not set, the result is undefined.
 .RE
 
@@ -185,32 +246,43 @@ same \fIname\fR with both \fBO_EXCL\fR and \fBO_CREAT\fR set.  If
 .ne 2
 .mk
 .na
-\fBO_NONBLOCK\fR
+.B O_NONBLOCK
 .ad
 .RS 15n
 .rt
 The setting of this flag is associated with the open message queue
-description and determines whether a \fBmq_send\fR(3C) or
-\fBmq_receive\fR(3C) waits for resources or messages that are not currently
-available, or fails with \fBerrno\fR set to \fBEAGAIN\fR. See
-\fBmq_send\fR(3C) and \fBmq_receive\fR(3C) for details.
+description and determines whether a
+.BR mq_send "(3C) or"
+.BR mq_receive (3C)
+waits for resources or messages that are not currently
+available, or fails with
+.B errno
+set to
+.BR EAGAIN .
+See
+.BR mq_send (3C)
+and \fBmq_receive\fR(3C) for details.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBmq_open()\fR returns a message queue
+Upon successful completion,
+.B mq_open()
+returns a message queue
 descriptor; otherwise the function returns \fB(mqd_t)\(mi1\fR and sets
 \fBerrno\fR to indicate the error condition.
 .SH ERRORS
 .sp
 .LP
-The  \fBmq_open()\fR function will fail if:
+The 
+.B mq_open()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 17n
 .rt
@@ -223,7 +295,7 @@ message queue is denied.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 17n
 .rt
@@ -235,23 +307,31 @@ exists.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 17n
 .rt
-The \fBmq_open()\fR operation was interrupted by a signal.
+The
+.B mq_open()
+operation was interrupted by a signal.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 17n
 .rt
-The \fBmq_open()\fR operation is not supported for the given name, or
-\fBO_CREAT\fR was specified in \fIoflag\fR, the value of \fIattr\fR is not
+The
+.B mq_open()
+operation is not supported for the given name, or
+\fBO_CREAT\fR was specified in
+.IR oflag ,
+the value of
+.I attr
+is not
 \fINULL,\fR and either \fBmq_maxmsg\fR or \fBmq_msgsize\fR was less than or
 equal to zero.
 .RE
@@ -260,25 +340,34 @@ equal to zero.
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 17n
 .rt
 The number of open message queue descriptors in this process exceeds
 \fBMQ_OPEN_MAX,\fR of the number of open file descriptors in this process
-exceeds \fBOPEN_MAX.\fR
+exceeds
+.BR OPEN_MAX.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 17n
 .rt
-The length of the \fIname\fR string exceeds \fBPATH_MAX,\fR or a pathname
-component is longer than \fINAME_MAX\fR while \fB_POSIX_NO_TRUNC\fR is in
+The length of the
+.I name
+string exceeds
+.B PATH_MAX,
+or a pathname
+component is longer than
+.I NAME_MAX
+while
+.B _POSIX_NO_TRUNC
+is in
 effect.
 .RE
 
@@ -286,7 +375,7 @@ effect.
 .ne 2
 .mk
 .na
-\fBENFILE\fR
+.B ENFILE
 .ad
 .RS 17n
 .rt
@@ -297,7 +386,7 @@ Too many message queues are currently open in the system.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 17n
 .rt
@@ -308,7 +397,7 @@ Too many message queues are currently open in the system.
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 17n
 .rt
@@ -319,17 +408,21 @@ There is insufficient space for the creation of the new message queue.
 .ne 2
 .mk
 .na
-\fBENOSYS\fR
+.B ENOSYS
 .ad
 .RS 17n
 .rt
-The \fBmq_open()\fR function is not supported by the system.
+The
+.B mq_open()
+function is not supported by the system.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -350,10 +443,18 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBexit\fR(2), \fBumask\fR(2), \fBsysconf\fR(3C),
-\fBmqueue.h\fR(3HEAD), \fBmq_close\fR(3C), \fBmq_receive\fR(3C),
-\fBmq_send\fR(3C), \fBmq_setattr\fR(3C), \fBmq_unlink\fR(3C),
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR exec (2),
+.BR exit (2),
+.BR umask (2),
+\fBsysconf\fR(3C),
+.BR mqueue.h (3HEAD),
+.BR mq_close (3C),
+.BR mq_receive (3C),
+.BR mq_send (3C),
+.BR mq_setattr (3C),
+.BR mq_unlink (3C),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP

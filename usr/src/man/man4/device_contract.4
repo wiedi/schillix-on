@@ -34,9 +34,12 @@ Device contracts allow processes to monitor events involving a device of
 interest and to react and/or block state changes involving such devices.
 .sp
 .LP
-Device contracts are managed using the \fBcontract\fR(4) file system and
-the \fBlibcontract\fR(3LIB) library. The process contract type directory is
-\fB/system/contract/device\fR.
+Device contracts are managed using the
+.BR contract (4)
+file system and
+the
+.BR libcontract "(3LIB) library. The process contract type directory is"
+.BR /system/contract/device .
 .SS "Creation"
 .sp
 .LP
@@ -55,7 +58,9 @@ terms in the activated template.
 .el o
 A process may create a contract after it has opened a device by creating a
 template, setting appropriate terms (including the path to a minor node) on
-the template and then invoking \fBct_tmpl_create\fR() on the template.
+the template and then invoking
+.BR ct_tmpl_create ()
+on the template.
 .RE
 .SS "States, Breaks and Events"
 .sp
@@ -66,7 +71,7 @@ contract. Currently, three states are defined for device contracts:
 .ne 2
 .mk
 .na
-\fBCT_DEV_EV_ONLINE\fR
+.B CT_DEV_EV_ONLINE
 .ad
 .RS 22n
 .rt
@@ -77,7 +82,7 @@ The device is online and functioning normally.
 .ne 2
 .mk
 .na
-\fBCT_DEV_EV_DEGRADED\fR
+.B CT_DEV_EV_DEGRADED
 .ad
 .RS 22n
 .rt
@@ -88,7 +93,7 @@ The device is online, but functioning in a degraded capacity.
 .ne 2
 .mk
 .na
-\fBCT_DEV_EV_OFFLINE\fR
+.B CT_DEV_EV_OFFLINE
 .ad
 .RS 22n
 .rt
@@ -116,7 +121,9 @@ informative event sets.
 .sp
 .LP
 If the breaking of the contract is synchronous, a critical contract event
-is generated with the \fBCTE_NEG\fR flag set to indicate that this is a
+is generated with the
+.B CTE_NEG
+flag set to indicate that this is a
 negotiation event. The contract holder is expected to either acknowledge
 (\fBACK\fR) this change and allow the state change to occur or it may
 negatively acknowledge (\fBNACK\fR) the change to block it (if it has
@@ -126,7 +133,9 @@ sufficient privileges).
 The term "event" refers to the transition of a device from one state to
 another. The event is named by the state to which the device is
 transitioning. For instance, if a device is transitioning to the
-\fBOFFLINE\fR state, the name of the event is \fBCT_DEV_EV_OFFLINE\fR. An
+\fBOFFLINE\fR state, the name of the event is
+.BR CT_DEV_EV_OFFLINE .
+An
 event may have no consequence for a contract, or it may result in the
 asynchronous breaking of a contract or it may result in a synchronous (that
 is, negotiated) breaking of a contract. Events are delivered to a contract
@@ -153,7 +162,9 @@ contract and a critical event is delivered to the holder.
 .el o
 The device transitions to a state outside the contract's "A-set" and the
 transition is synchronous. This results in the synchronous breaking of the
-contract and a critical event with the \fBCTE_NEG\fR flag set is delivered
+contract and a critical event with the
+.B CTE_NEG
+flag set is delivered
 to the holder.
 .RE
 .sp
@@ -165,14 +176,22 @@ not subscribed to the event via the critical or informative event sets.
 .LP
 If the breaking of a contract is synchronous, the kernel begins
 negotiations with the contract holder by generating a critical event before
-the device changes state. The event has the \fBCTE_NEG\fR flag set
+the device changes state. The event has the
+.B CTE_NEG
+flag set
 indicating that this is a negotiation event. The contract owner is allowed a
-limited period of time in which to either \fBACK\fR the contract event
+limited period of time in which to either
+.B ACK
+the contract event
 (thus, allowing the state change) or if it has appropriate privileges,
 \fBNACK\fR the state change (thus, blocking the state change). \fBACK\fRs
 may be sent by the holder via \fBct_ctl_ack\fR(3CONTRACT) and \fBNACK\fRs
 may be sent via \fBct_ctl_nack\fR(3CONTRACT). If a contract holder does not
-send either a \fBNACK\fR or \fBACK\fR within a specified period of time, an
+send either a
+.B NACK
+or
+.B ACK
+within a specified period of time, an
 \fBACK\fR is assumed and the kernel proceeds with the state change.
 .sp
 .LP
@@ -185,11 +204,13 @@ success or failure.
 Once a contract is broken, a contract owner may choose to create a
 replacement contract. It may do this after the contract is broken or it may
 choose to do this synchronously with the breaking of the old contract via
-\fBct_ctl_newct\fR(3CONTRACT).
+.BR ct_ctl_newct (3CONTRACT).
 .SS "TERMS"
 .sp
 .LP
-The following common contract terms, defined in \fBcontract\fR(4), have
+The following common contract terms, defined in
+.BR contract (4),
+have
 device-contract specific attributes:
 .sp
 .ne 2
@@ -199,8 +220,12 @@ device-contract specific attributes:
 .ad
 .RS 19n
 .rt
-The default value for the informative set is \fBCT_DEV_EV_DEGRADE\fR that
-is, transitions to the \fBDEGRADED\fR state will by default result in
+The default value for the informative set is
+.B CT_DEV_EV_DEGRADE
+that
+is, transitions to the
+.B DEGRADED
+state will by default result in
 informative events. Use \fBct_tmpl_set_informative\fR(3CONTRACT) to set this
 term.
 .RE
@@ -209,13 +234,19 @@ term.
 .ne 2
 .mk
 .na
-\fBcritical set\fR
+.B critical set
 .ad
 .RS 19n
 .rt
-The default value for the informative set is \fBCT_DEV_EV_OFFLINE\fR. That
-is, transitions to the \fBOFFLINE\fR state will by default result in
-critical events. Use \fBct_tmpl_set_critical\fR(3CONTRACT) to set this
+The default value for the informative set is
+.BR CT_DEV_EV_OFFLINE .
+That
+is, transitions to the
+.B OFFLINE
+state will by default result in
+critical events. Use
+.BR ct_tmpl_set_critical (3CONTRACT)
+to set this
 term.
 .RE
 
@@ -223,12 +254,13 @@ term.
 .LP
 The following contract terms can be read from or written to a device
 contract template using the named \fBlibcontract\fR(3LIB) interfaces. These
-contract terms are in addition to those described in \fBcontract\fR(4).
+contract terms are in addition to those described in
+.BR contract (4).
 .sp
 .ne 2
 .mk
 .na
-\fBCTDP_ACCEPT\fR
+.B CTDP_ACCEPT
 .ad
 .RS 15n
 .rt
@@ -241,15 +273,19 @@ then the contract breaks and is no longer valid. A critical contract event
 is sent to the contract owner to signal this break.
 .sp
 Use \fBct_dev_tmpl_set_aset\fR() to set this term. The default "A-set" is
-\fBCT_DEV_EV_ONLINE\fR | \fBCT_DEV_EV_DEGRADE\fR. This term is mandatory.
-Use \fBct_dev_tmpl_get_aset\fR() to query a template for this term.
+\fBCT_DEV_EV_ONLINE\fR |
+.BR CT_DEV_EV_DEGRADE .
+This term is mandatory.
+Use
+.BR ct_dev_tmpl_get_aset ()
+to query a template for this term.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCTDP_MINOR\fR
+.B CTDP_MINOR
 .ad
 .RS 15n
 .rt
@@ -257,14 +293,22 @@ Specifies the \fBdevfs\fR path to a minor node that is the subject of the
 contract. Used to specify the minor node to be used for creating a contract
 when contract creation takes place other than at open time.
 .sp
-If the contract is created synchronously at \fBopen\fR(2) time, then this
+If the contract is created synchronously at
+.BR open (2)
+time, then this
 term is implied to be the minor node being opened. In this case, this term
 need not be explicitly be set.
 .sp
-Use \fBct_dev_tmpl_set_minor\fR() to set this term. The default setting for
-this term is \fBNULL\fR. That is, no minor node is specified.
+Use
+.BR ct_dev_tmpl_set_minor ()
+to set this term. The default setting for
+this term is
+.BR NULL .
+That is, no minor node is specified.
 .sp
-Use \fBct_dev_tmpl_get_noneg\fR() to query a template for the setting of
+Use
+.BR ct_dev_tmpl_get_noneg ()
+to query a template for the setting of
 this term.
 .RE
 
@@ -272,19 +316,26 @@ this term.
 .ne 2
 .mk
 .na
-\fBCTDP_NONEG\fR
+.B CTDP_NONEG
 .ad
 .RS 15n
 .rt
 If set, this term indicates that any negotiable departure from the contract
-terms should be \fBNACK\fRed. That is, the contract subsystem should assume
-a \fBNACK\fR for any negotiated breaking of the contract. This term is
+terms should be
+.BR NACK "ed. That is, the contract subsystem should assume"
+a
+.B NACK
+for any negotiated breaking of the contract. This term is
 ignored for asynchronous contract breaks.
 .sp
-Use \fBct_dev_tmpl_set_noneg\fR() to set this term. The default setting is
+Use
+.BR ct_dev_tmpl_set_noneg ()
+to set this term. The default setting is
 off.
 .sp
-Use \fBct_dev_tmpl_get_noneg\fR() to query a template for the setting of
+Use
+.BR ct_dev_tmpl_get_noneg ()
+to query a template for the setting of
 this term.
 .RE
 
@@ -292,13 +343,15 @@ this term.
 .sp
 .LP
 In addition to the standard items, the status object read from a status
-file descriptor contains the following items if \fBCTD_FIXED\fR is
+file descriptor contains the following items if
+.B CTD_FIXED
+is
 specified:
 .sp
 .ne 2
 .mk
 .na
-\fBCTDS_STATE\fR
+.B CTDS_STATE
 .ad
 .RS 14n
 .rt
@@ -308,21 +361,23 @@ returned:
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_ONLINE\fR
+.B CT_DEV_EV_ONLINE
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_DEGRADED\fR
+.B CT_DEV_EV_DEGRADED
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_OFFLINE\fR
+.B CT_DEV_EV_OFFLINE
 .sp
-Use \fBct_dev_status_get_dev_state\fR() to obtain this information.
+Use
+.BR ct_dev_status_get_dev_state ()
+to obtain this information.
 .RE
 .RE
 
@@ -330,7 +385,7 @@ Use \fBct_dev_status_get_dev_state\fR() to obtain this information.
 .ne 2
 .mk
 .na
-\fBCTDS_ASET\fR
+.B CTDS_ASET
 .ad
 .RS 14n
 .rt
@@ -341,21 +396,23 @@ following:
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_ONLINE\fR
+.B CT_DEV_EV_ONLINE
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_DEGRADED\fR
+.B CT_DEV_EV_DEGRADED
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBCT_DEV_EV_OFFLINE\fR
+.B CT_DEV_EV_OFFLINE
 .sp
-Use \fBct_dev_status_get_aset\fR() to obtain this information.
+Use
+.BR ct_dev_status_get_aset ()
+to obtain this information.
 .RE
 .RE
 
@@ -363,28 +420,35 @@ Use \fBct_dev_status_get_aset\fR() to obtain this information.
 .ne 2
 .mk
 .na
-\fBCTDS_NONEG\fR
+.B CTDS_NONEG
 .ad
 .RS 14n
 .rt
-Returns the current setting of the \fBnoneg\fR flag. Returns 1 if the
+Returns the current setting of the
+.B noneg
+flag. Returns 1 if the
 \fBnoneg\fR flag is set, or 0 if the flag is not set. Use
-\fBct_dev_status_get_noneg\fR() to obtain this information.
+.BR ct_dev_status_get_noneg ()
+to obtain this information.
 .RE
 
 .sp
 .LP
-If \fBCTD_ALL\fR is specified, the following items are also available:
+If
+.B CTD_ALL
+is specified, the following items are also available:
 .sp
 .ne 2
 .mk
 .na
-\fBCTDS_MINOR\fR
+.B CTDS_MINOR
 .ad
 .RS 14n
 .rt
 The \fBdevfs\fR path of the device which is the subject of the device
-contract. Use \fBct_dev_status_get_minor\fR() to obtain this information.
+contract. Use
+.BR ct_dev_status_get_minor ()
+to obtain this information.
 .RE
 
 .SS "EVENTS"
@@ -397,7 +461,7 @@ interfaces) are defined for device contract events.
 .ne 2
 .mk
 .na
-\fB/usr/include/sys/contract/device.h\fR
+.B /usr/include/sys/contract/device.h
 .ad
 .sp .6
 .RS 4n
@@ -407,12 +471,21 @@ Contains definitions of events, status fields and event fields
 .SH SEE ALSO
 .sp
 .LP
-\fBctrun\fR(1), \fBctstat\fR(1), \fBctwatch\fR(1), \fBopen\fR(2),
-\fBct_tmpl_set_critical\fR(3CONTRACT), \fBct_tmpl_set_informative\fR(3CONTRACT),
-\fBct_dev_tmpl_set_aset\fR(3CONTRACT),
-\fBct_dev_tmpl_get_aset\fR(3CONTRACT), \fBct_dev_tmpl_set_minor\fR(3CONTRACT),
-\fBct_dev_tmpl_get_minor\fR(3CONTRACT),
-\fBct_dev_tmpl_set_noneg\fR(3CONTRACT), \fBct_dev_tmpl_get_noneg\fR(3CONTRACT),
-\fBct_dev_status_get_dev_state\fR(3CONTRACT),
-\fBct_dev_status_get_aset\fR(3CONTRACT), \fBct_dev_status_get_minor\fR(3CONTRACT),
-\fBlibcontract\fR(3LIB), \fBcontract\fR(4), \fBprivileges\fR(5)
+.BR ctrun (1),
+.BR ctstat (1),
+.BR ctwatch (1),
+.BR open (2),
+.BR ct_tmpl_set_critical (3CONTRACT),
+\fBct_tmpl_set_informative\fR(3CONTRACT),
+.BR ct_dev_tmpl_set_aset (3CONTRACT),
+.BR ct_dev_tmpl_get_aset (3CONTRACT),
+.BR ct_dev_tmpl_set_minor (3CONTRACT),
+.BR ct_dev_tmpl_get_minor (3CONTRACT),
+.BR ct_dev_tmpl_set_noneg (3CONTRACT),
+.BR ct_dev_tmpl_get_noneg (3CONTRACT),
+.BR ct_dev_status_get_dev_state (3CONTRACT),
+.BR ct_dev_status_get_aset (3CONTRACT),
+.BR ct_dev_status_get_minor (3CONTRACT),
+.BR libcontract (3LIB),
+.BR contract (4),
+.BR privileges (5)

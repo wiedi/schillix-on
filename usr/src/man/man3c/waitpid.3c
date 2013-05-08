@@ -61,85 +61,140 @@ waitpid \- wait for child process to change state
 .SH DESCRIPTION
 .sp
 .LP
-The \fBwaitpid()\fR function will suspend execution of the calling thread
+The
+.B waitpid()
+function will suspend execution of the calling thread
 until status information for one of its terminated child processes is
 available, or until delivery of a signal whose action is either to execute a
 signal-catching function or to terminate the process. If more than one
-thread is suspended in \fBwaitpid()\fR, \fBwait\fR(3C), or \fBwaitid\fR(2)
+thread is suspended in
+.BR waitpid() ,
+.BR wait (3C),
+or
+.BR waitid (2)
 awaiting termination of the same process, exactly one thread will return the
 process status at the time of the target process termination. If status
-information is available prior to the call to \fBwaitpid()\fR, return will
+information is available prior to the call to
+.BR waitpid() ,
+return will
 be immediate.
 .sp
 .LP
-The \fIpid\fR argument specifies a set of child processes for which status
+The
+.I pid
+argument specifies a set of child processes for which status
 is requested, as follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIpid\fR is less than \fB(pid_t)\(mi1\fR, status is requested for any
-child process whose process group  \fBID\fR is equal to the absolute value
-of \fIpid\fR.
+If
+.I pid
+is less than \fB(pid_t)\(mi1\fR, status is requested for any
+child process whose process group 
+.B ID
+is equal to the absolute value
+of
+.IR pid .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIpid\fR is equal to \fB(pid_t)\(mi1\fR, status is requested for any
+If
+.I pid
+is equal to \fB(pid_t)\(mi1\fR, status is requested for any
 child process.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If  \fIpid\fR is equal to \fB(pid_t)0\fR status is requested for any child
-process whose process group  \fBID\fR is equal to that of the calling
+If 
+.I pid
+is equal to
+.B (pid_t)0
+status is requested for any child
+process whose process group 
+.B ID
+is equal to that of the calling
 process.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If  \fIpid\fR is greater than \fB(pid_t)0\fR, it specifies the process
+If 
+.I pid
+is greater than
+.BR (pid_t)0 ,
+it specifies the process
 \fBID\fR of the child process for which status is requested.
 .RE
 .sp
 .LP
-One instance of a \fBSIGCHLD\fR signal is queued for each child process
-whose status has changed. If \fBwaitpid()\fR returns because the status of a
-child process is available, and \fBWNOWAIT\fR was not specified in
-\fIoptions\fR, any pending \fBSIGCHLD\fR signal associated with the process
+One instance of a
+.B SIGCHLD
+signal is queued for each child process
+whose status has changed. If
+.B waitpid()
+returns because the status of a
+child process is available, and
+.B WNOWAIT
+was not specified in
+.IR options ,
+any pending
+.B SIGCHLD
+signal associated with the process
 ID of that child process is discarded. Any other pending \fBSIGCHLD\fR
 signals remain pending.
 .sp
 .LP
-If the calling process has \fBSA_NOCLDWAIT\fR set or has \fBSIGCHLD\fR set
-to \fBSIG_IGN\fR and the process has no unwaited children that were
+If the calling process has
+.B SA_NOCLDWAIT
+set or has
+.B SIGCHLD
+set
+to
+.B SIG_IGN
+and the process has no unwaited children that were
 transformed into zombie processes, it will block until all of its children
-terminate, and \fBwaitpid()\fR will fail and set \fBerrno\fR to
-\fBECHILD\fR.
+terminate, and
+.B waitpid()
+will fail and set
+.B errno
+to
+.BR ECHILD .
 .sp
 .LP
-If \fBwaitpid()\fR returns because the status of a child process is
+If
+.B waitpid()
+returns because the status of a child process is
 available, then that  status may be evaluated with the macros defined by
-\fBwait.h\fR(3HEAD) If the calling process had specified a non-zero value of
-\fIstat_loc\fR, the status of the child process will be stored in the
-location pointed to by \fIstat_loc\fR.
+.BR wait.h (3HEAD)
+If the calling process had specified a non-zero value of
+.IR stat_loc ,
+the status of the child process will be stored in the
+location pointed to by
+.IR stat_loc .
 .sp
 .LP
-The \fIoptions\fR argument is constructed from the bitwise-inclusive OR of
+The
+.I options
+argument is constructed from the bitwise-inclusive OR of
 zero or more of the following flags, defined in the header
 <\fBsys/wait.h\fR>:
 .sp
 .ne 2
 .mk
 .na
-\fBWCONTINUED\fR
+.B WCONTINUED
 .ad
 .RS 14n
 .rt
-The status of any continued child process specified by \fIpid\fR, whose
+The status of any continued child process specified by
+.IR pid ,
+whose
 status has not been reported since it continued, is also reported to the
 calling process.
 .RE
@@ -148,24 +203,29 @@ calling process.
 .ne 2
 .mk
 .na
-\fBWNOHANG\fR
+.B WNOHANG
 .ad
 .RS 14n
 .rt
-The \fBwaitpid()\fR function will not suspend execution of the calling
+The
+.B waitpid()
+function will not suspend execution of the calling
 process if status is not immediately available for one of the child
-processes specified by \fIpid\fR.
+processes specified by
+.IR pid .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBWNOWAIT\fR
+.B WNOWAIT
 .ad
 .RS 14n
 .rt
-Keep the process whose status is returned in \fIstat_loc\fR in a waitable
+Keep the process whose status is returned in
+.I stat_loc
+in a waitable
 state. The process may be waited for again with identical results.
 .RE
 
@@ -173,55 +233,86 @@ state. The process may be waited for again with identical results.
 .ne 2
 .mk
 .na
-\fBWUNTRACED\fR
+.B WUNTRACED
 .ad
 .RS 14n
 .rt
-The status of any child processes specified by \fIpid\fR that are stopped,
+The status of any child processes specified by
+.I pid
+that are stopped,
 and whose status has not yet been reported since they stopped, is also
-reported to the calling process. \fBWSTOPPED\fR is a synonym for
-\fBWUNTRACED\fR.
+reported to the calling process.
+.B WSTOPPED
+is a synonym for
+.BR WUNTRACED .
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-If \fBwaitpid()\fR returns because the status of a child process is
-available, it returns a value equal to the process \fBID\fR of the child
-process for which status is reported.  If \fBwaitpid()\fR returns due to the
+If
+.B waitpid()
+returns because the status of a child process is
+available, it returns a value equal to the process
+.B ID
+of the child
+process for which status is reported.  If
+.B waitpid()
+returns due to the
 delivery of a signal to the calling process, \fB\(mi1\fR is returned and
-\fBerrno\fR is set to \fBEINTR\fR.  If \fBwaitpid()\fR was invoked with
-\fBWNOHANG\fR set in \fIoptions\fR, it has at  least one child process
-specified by \fIpid\fR for which status is not available, and status is not
-available for any process specified by \fIpid\fR, then \fB0\fR is returned.
-Otherwise, \fB\(mi1\fR is returned and \fBerrno\fR is set to indicate the
+\fBerrno\fR is set to
+.BR EINTR .
+If
+.B waitpid()
+was invoked with
+\fBWNOHANG\fR set in
+.IR options ,
+it has at  least one child process
+specified by
+.I pid
+for which status is not available, and status is not
+available for any process specified by
+.IR pid ,
+then
+.B 0
+is returned.
+Otherwise, \fB\(mi1\fR is returned and
+.B errno
+is set to indicate the
 error.
 .SH ERRORS
 .sp
 .LP
-The \fBwaitpid()\fR function will fail if:
+The
+.B waitpid()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBECHILD\fR
+.B ECHILD
 .ad
 .RS 10n
 .rt
-The process or process group specified by \fIpid\fR does not exist or is
+The process or process group specified by
+.I pid
+does not exist or is
 not a child of the calling process or can never be in the states specified
-by \fIoptions\fR.
+by
+.IR options .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 10n
 .rt
-The \fBwaitpid()\fR function was interrupted due to the receipt of a signal
+The
+.B waitpid()
+function was interrupted due to the receipt of a signal
 sent by the calling process.
 .RE
 
@@ -229,24 +320,34 @@ sent by the calling process.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-An invalid value was specified for \fIoptions.\fR
+An invalid value was specified for
+.IR options.
 .RE
 
 .SH USAGE
 .sp
 .LP
-With \fIoptions\fR equal to \fB0\fR and  \fIpid\fR equal to
+With
+.I options
+equal to
+.B 0
+and 
+.I pid
+equal to
 \fB(pid_t)\(mi1\fR, \fBwaitpid()\fR is identical to \fBwait\fR(3C). The
 \fBwaitpid()\fR function is implemented as a call to the more general
-\fBwaitid\fR(2) function.
+.BR waitid (2)
+function.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -267,7 +368,14 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(2), \fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2),
-\fBpause\fR(2), \fBsigaction\fR(2), \fBptrace\fR(3C), \fBsignal\fR(3C),
+.BR Intro (2),
+.BR exec (2),
+.BR exit (2),
+\fBfork\fR(2),
+.BR pause (2),
+.BR sigaction (2),
+.BR ptrace (3C),
+.BR signal (3C),
 \fBsiginfo.h\fR(3HEAD), \fBwait\fR(3C), \fBwait.h\fR(3HEAD),
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR attributes (5),
+.BR standards (5)

@@ -86,22 +86,35 @@ typedef	enum {
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpctx_set_events()\fR function allows the caller (the controlling
+The
+.B pctx_set_events()
+function allows the caller (the controlling
 process) to express interest in various events in the controlled process.
 See \fBpctx_capture\fR(3CPC) for information about how the controlling
 process is able to create, capture and manipulate the controlled process.
 .sp
 .LP
-The \fBpctx_set_events()\fR function takes a \fBpctx_t\fR handle, followed
-by a variable length list of pairs of \fBpctx_event_t\fR tags and their
-corresponding handlers, terminated by a \fBPCTX_NULL_EVENT\fR tag.
+The
+.B pctx_set_events()
+function takes a
+.B pctx_t
+handle, followed
+by a variable length list of pairs of
+.B pctx_event_t
+tags and their
+corresponding handlers, terminated by a
+.B PCTX_NULL_EVENT
+tag.
 .sp
 .LP
 Most of the events correspond closely to various classes of system calls,
-though two additional pseudo-events (\fIinit_lwp\fR and \fIfini_lwp\fR) are
+though two additional pseudo-events (\fIinit_lwp\fR and
+.IR fini_lwp )
+are
 provided to allow callers to perform various housekeeping tasks.  The
 \fIinit_lwp\fR handler is called as soon as the library identifies a new
-\fBLWP\fR, while \fIfini_lwp\fR is called just before the \fBLWP\fR
+.BR LWP ,
+while \fIfini_lwp\fR is called just before the \fBLWP\fR
 disappears. Thus the classic "hello world" program would see an
 \fIinit_lwp\fR event, a  \fIfini_lwp\fR event and (process) \fIexit\fR
 event, in that order.   The table below displays the interactions between
@@ -141,28 +154,45 @@ _
 .LP
 Each of the handlers is passed the caller's opaque handle, a \fBpctx_t\fR
 handle, the pid, and lwpid of the process and lwp generating the event. The
-\fIlwp_exit\fR, and (process) \fBexit\fR events are delivered \fIbefore\fR
-the underlying system calls begin, while the \fBexec\fR, \fIfork\fR, and
+.IR lwp_exit ,
+and (process)
+.B exit
+events are delivered \fIbefore\fR
+the underlying system calls begin, while the
+.BR exec ,
+\fIfork\fR, and
 \fIlwp_create\fR events are only delivered after the relevant system calls
-complete successfully. The \fBexec\fR handler is passed a string that
+complete successfully. The
+.B exec
+handler is passed a string that
 describes the command being executed. Catching the \fIfork\fR event causes
-the calling process to \fBfork\fR(2), then capture the child of the
-controlled process using \fBpctx_capture\fR(\|) before handing control to
+the calling process to
+.BR fork (2),
+then capture the child of the
+controlled process using
+.BR pctx_capture (\|)
+before handing control to
 the \fIfork\fR handler.  The process is released on return from the
 handler.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBpctx_set_events\fR(\|) returns 0.
+Upon successful completion,
+.BR pctx_set_events (\|)
+returns 0.
 Otherwise, the function returns -1.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRHandleExec example.
+\fBExample 1\fR HandleExec example.
 .sp
 .LP
 This example captures an existing process whose process identifier is
-\fIpid\fR, and arranges to call the \fIHandleExec\fR routine when the
-process performs an \fBexec\fR(2).
+.IR pid ,
+and arranges to call the
+.I HandleExec
+routine when the
+process performs an
+.BR exec (2).
 
 .sp
 .in +2
@@ -190,7 +220,9 @@ main()
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -209,6 +241,8 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2), \fBvfork\fR(2),
+.BR exec (2),
+.BR exit (2),
+\fBfork\fR(2), \fBvfork\fR(2),
 \fBfork1\fR(2), \fBcpc\fR(3CPC), \fBlibpctx\fR(3LIB), \fBproc\fR(4),
-\fBattributes\fR(5)
+.BR attributes (5)

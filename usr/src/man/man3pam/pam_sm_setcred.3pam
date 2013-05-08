@@ -38,20 +38,26 @@ pam_sm_setcred \- service provider implementation for pam_setcred
 .sp
 .LP
 In response to a call to \fBpam_setcred\fR(3PAM), the  \fBPAM\fR framework
-calls \fBpam_sm_setcred()\fR from the modules listed in the
+calls
+.B pam_sm_setcred()
+from the modules listed in the
 \fBpam.conf\fR(4) file.  The authentication provider supplies the back-end
 functionality for this interface function.
 .sp
 .LP
-The \fBpam_sm_setcred()\fR function is called to set the credentials of the
-current user associated with the authentication handle, \fIpamh\fR. The
+The
+.B pam_sm_setcred()
+function is called to set the credentials of the
+current user associated with the authentication handle,
+.IR pamh .
+The
 following flags may be set in the \fIflags\fR field.  Note that the first
 four flags are mutually exclusive:
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_ESTABLISH_CRED\fR
+.B PAM_ESTABLISH_CRED
 .ad
 .RS 25n
 .rt
@@ -62,7 +68,7 @@ Set user credentials for the authentication service.
 .ne 2
 .mk
 .na
-\fBPAM_DELETE_CRED\fR
+.B PAM_DELETE_CRED
 .ad
 .RS 25n
 .rt
@@ -73,7 +79,7 @@ Delete user credentials associated with the authentication service.
 .ne 2
 .mk
 .na
-\fBPAM_REINITIALIZE_CRED\fR
+.B PAM_REINITIALIZE_CRED
 .ad
 .RS 25n
 .rt
@@ -84,7 +90,7 @@ Reinitialize user credentials.
 .ne 2
 .mk
 .na
-\fBPAM_REFRESH_CRED\fR
+.B PAM_REFRESH_CRED
 .ad
 .RS 25n
 .rt
@@ -95,7 +101,7 @@ Extend lifetime of user credentials.
 .ne 2
 .mk
 .na
-\fBPAM_SILENT\fR
+.B PAM_SILENT
 .ad
 .RS 25n
 .rt
@@ -104,36 +110,48 @@ Authentication service should not generate messages
 
 .sp
 .LP
-If no flag is set,  \fBPAM_ESTABLISH\fR \fB_CRED\fR is used as the
+If no flag is set, 
+.B "PAM_ESTABLISH _CRED"
+is used as the
 default.
 .sp
 .LP
-The \fIargc\fR argument represents the number of module options passed in
-from the configuration file \fBpam.conf\fR(4). \fIargv\fR specifies the
+The
+.I argc
+argument represents the number of module options passed in
+from the configuration file
+.BR pam.conf (4).
+\fIargv\fR specifies the
 module options, which are interpreted and processed by the authentication
 service. If an unknown option is passed to the  module, an error should be
 logged and the option ignored.
 .sp
 .LP
-If the  \fBPAM_SILENT\fR flag is not set, then \fBpam_sm_setcred()\fR
+If the 
+.B PAM_SILENT
+flag is not set, then \fBpam_sm_setcred()\fR
 should print any failure status from the corresponding
 \fBpam_sm_authenticate()\fR function using the conversation function.
 .sp
 .LP
 The authentication status (success or reason for failure) is saved as
 module-specific state in the authentication handle by the authentication
-module. The status should be retrieved using \fBpam_get_data()\fR, and used
+module. The status should be retrieved using
+.BR pam_get_data() ,
+and used
 to determine if user credentials should be set.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion,  \fBPAM_SUCCESS\fR should be returned. The
+Upon successful completion, 
+.B PAM_SUCCESS
+should be returned. The
 following values may also be returned upon error:
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_CRED_UNAVAIL\fR
+.B PAM_CRED_UNAVAIL
 .ad
 .RS 20n
 .rt
@@ -144,7 +162,7 @@ Underlying authentication service can not retrieve user credentials.
 .ne 2
 .mk
 .na
-\fBPAM_CRED_EXPIRED\fR
+.B PAM_CRED_EXPIRED
 .ad
 .RS 20n
 .rt
@@ -155,7 +173,7 @@ User credentials have expired.
 .ne 2
 .mk
 .na
-\fBPAM_USER_UNKNOWN\fR
+.B PAM_USER_UNKNOWN
 .ad
 .RS 20n
 .rt
@@ -166,7 +184,7 @@ User unknown to the authentication service.
 .ne 2
 .mk
 .na
-\fBPAM_CRED_ERR\fR
+.B PAM_CRED_ERR
 .ad
 .RS 20n
 .rt
@@ -177,7 +195,7 @@ Failure in setting user credentials.
 .ne 2
 .mk
 .na
-\fBPAM_IGNORE\fR
+.B PAM_IGNORE
 .ad
 .RS 20n
 .rt
@@ -188,7 +206,9 @@ flag is \fIrequired\fR,\fIoptional\fR, or  \fIsufficient\fR.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -207,21 +227,37 @@ MT-LevelMT-Safe with exceptions
 .SH SEE ALSO
 .sp
 .LP
-\fBpam\fR(3PAM), \fBpam_authenticate\fR(3PAM), \fBpam_get_data\fR(3PAM)
-\fBpam_setcred\fR(3PAM), \fBpam_sm_authenticate\fR(3PAM),
-\fBlibpam\fR(3LIB), \fBpam.conf\fR(4), \fBattributes\fR(5)
+.BR pam (3PAM),
+.BR pam_authenticate (3PAM),
+.BR pam_get_data (3PAM)
+.BR pam_setcred (3PAM),
+.BR pam_sm_authenticate (3PAM),
+.BR libpam (3LIB),
+\fBpam.conf\fR(4), \fBattributes\fR(5)
 .SH NOTES
 .sp
 .LP
-The \fBpam_sm_setcred()\fR function is passed the same module options that
-are used by \fBpam_sm_authenticate()\fR.
+The
+.B pam_sm_setcred()
+function is passed the same module options that
+are used by
+.BR pam_sm_authenticate() .
 .sp
 .LP
-The interfaces in  \fBlibpam\fR are MT-Safe only if each thread within the
-multithreaded application uses its own  \fBPAM\fR handle.
+The interfaces in 
+.B libpam
+are MT-Safe only if each thread within the
+multithreaded application uses its own 
+.B PAM
+handle.
 .sp
 .LP
-If the \fBPAM_REPOSITORY\fR \fIitem_type\fR is set and a service module
+If the
+.B PAM_REPOSITORY
+\fIitem_type\fR is set and a service module
 does not recognize the type, the service module does not process any
-information, and returns \fBPAM_IGNORE\fR. If the \fBPAM_REPOSITORY\fR
+information, and returns
+.BR PAM_IGNORE .
+If the
+.BR PAM_REPOSITORY
 \fIitem_type\fR is not set, a service module performs its default action.

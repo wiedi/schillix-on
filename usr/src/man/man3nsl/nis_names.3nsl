@@ -57,40 +57,64 @@ NIS+ namespace functions
 .sp
 .LP
 The NIS+ namespace functions are used to locate and manipulate all NIS+
-objects except the NIS+ entry objects.  See \fBnis_objects\fR(3NSL). To look
-up the NIS+ entry objects within a \fBNIS+\fR table, refer to
-\fBnis_subr\fR(3NSL).
+objects except the NIS+ entry objects.  See
+.BR nis_objects (3NSL).
+To look
+up the NIS+ entry objects within a
+.B NIS+
+table, refer to
+.BR nis_subr (3NSL).
 .sp
 .LP
 \fBnis_lookup()\fR resolves a NIS+ name and returns a copy of that object
-from a NIS+ server. \fBnis_add()\fR and \fBnis_remove()\fR add and remove
+from a NIS+ server.
+.B nis_add()
+and
+.B nis_remove()
+add and remove
 objects to the NIS+ namespace, respectively. \fBnis_modify()\fR can change
 specific attributes of an object that already exists in the namespace.
 .sp
 .LP
 These functions should be used only with names that refer to an NIS+
 Directory, NIS+ Table, NIS+ Group, or NIS+ Private object. If a name refers to
-an NIS+ entry object, the functions listed in \fBnis_subr\fR(3NSL) should be
+an NIS+ entry object, the functions listed in
+.BR nis_subr (3NSL)
+should be
 used.
 .sp
 .LP
 \fBnis_freeresult()\fR frees all memory associated with a \fBnis_result\fR
 structure. This function must be called to free the memory associated with a
-NIS+ result. \fBnis_lookup()\fR, \fBnis_add()\fR, \fBnis_remove()\fR, and
+NIS+ result.
+.BR nis_lookup() ,
+.BR nis_add() ,
+.BR nis_remove() ,
+and
 \fBnis_modify()\fR all return a pointer to a  \fBnis_result()\fR structure
 which must be freed by calling \fBnis_freeresult()\fR when you have finished
 using it. If one or more of the objects returned in the structure need to be
-retained, they can be copied with \fBnis_clone_object\fR(3NSL). See
-\fBnis_subr\fR(3NSL).
+retained, they can be copied with
+.BR nis_clone_object (3NSL).
+See
+.BR nis_subr (3NSL).
 .sp
 .LP
 \fBnis_lookup()\fR takes two parameters, the name of the object to be
-resolved in \fIname\fR, and a flags parameter,  \fIflags\fR, which is defined
+resolved in
+.IR name ,
+and a flags parameter, 
+.IR flags ,
+which is defined
 below. The object name is expected to correspond to the syntax of a
 non-indexed NIS+ name . See \fBnis_tables\fR(3NSL). The \fBnis_lookup()\fR
 function is the only function from this group that can use a non-fully
-qualified name. If the parameter  \fIname\fR is not a fully qualified name,
-then the flag \fBEXPAND_NAME\fR must be specified in the call.  If this flag
+qualified name. If the parameter 
+.I name
+is not a fully qualified name,
+then the flag
+.B EXPAND_NAME
+must be specified in the call.  If this flag
 is not specified, the function will fail with the error \fBNIS_BADNAME\fR.
 .sp
 .LP
@@ -100,14 +124,16 @@ flags from the following list.
 .ne 2
 .mk
 .na
-\fBFOLLOW_LINKS\fR
+.B FOLLOW_LINKS
 .ad
 .RS 16n
 .rt
 When specified, the client library will ``follow'' links by issuing another
 NIS+ lookup call for the object named by the link. If the linked object is
 itself a link, then this process will iterate until the either a object is
-found that is not a \fBLINK\fR type object, or the library has followed 16
+found that is not a
+.B LINK
+type object, or the library has followed 16
 links.
 .RE
 
@@ -115,7 +141,7 @@ links.
 .ne 2
 .mk
 .na
-\fBHARD_LOOKUP\fR
+.B HARD_LOOKUP
 .ad
 .RS 16n
 .rt
@@ -129,7 +155,7 @@ can be a relatively long time.
 .ne 2
 .mk
 .na
-\fBNO_CACHE\fR
+.B NO_CACHE
 .ad
 .RS 16n
 .rt
@@ -141,7 +167,7 @@ get the object from either the master  NIS+ server or one of its replicas.
 .ne 2
 .mk
 .na
-\fBMASTER_ONLY\fR
+.B MASTER_ONLY
 .ad
 .RS 16n
 .rt
@@ -156,22 +182,31 @@ unavailable or physically distant.
 .ne 2
 .mk
 .na
-\fBEXPAND_NAME\fR
+.B EXPAND_NAME
 .ad
 .RS 16n
 .rt
 When specified, the client library will attempt to expand a partially
-qualified name by calling the function \fBnis_getnames()\fR, which uses the
-environment variable \fBNIS_PATH\fR. See \fBnis_subr\fR(3NSL).
+qualified name by calling the function
+.BR nis_getnames() ,
+which uses the
+environment variable
+.BR NIS_PATH .
+See
+.BR nis_subr (3NSL).
 .RE
 
 .sp
 .LP
 The status value may be translated to ASCII text using the function
-\fBnis_sperrno()\fR. See \fBnis_error\fR(3NSL).
+.BR nis_sperrno() .
+See
+.BR nis_error (3NSL).
 .sp
 .LP
-On return, the \fIobjects\fR array in the result will contain one and
+On return, the
+.I objects
+array in the result will contain one and
 possibly several objects that were resolved by the request. If the
 \fBFOLLOW_LINKS\fR flag was present, on success the function could return
 several entry objects if the link in question pointed within a table. If an
@@ -179,41 +214,80 @@ error occurred when following a link, the objects array will contain a copy of
 the link object itself.
 .sp
 .LP
-The function \fBnis_add()\fR will take the object  \fIobj\fR and add it to
-the NIS+ namespace with the name \fIname\fR. This operation will fail if the
-client making the request does not have the \fIcreate\fR access right for the
-domain in which this object will be added. The parameter \fIname\fR must
-contain a fully qualified NIS+ name. The object members \fIzo_name\fR and
+The function
+.B nis_add()
+will take the object 
+.I obj
+and add it to
+the NIS+ namespace with the name
+.IR name .
+This operation will fail if the
+client making the request does not have the
+.I create
+access right for the
+domain in which this object will be added. The parameter
+.I name
+must
+contain a fully qualified NIS+ name. The object members
+.I zo_name
+and
 \fIzo_domain\fR will be constructed from this name. This operation will fail
 if the object already exists. This feature prevents the accidental addition of
 objects over another object that has been added by another process.
 .sp
 .LP
-The function \fBnis_remove()\fR will remove the object with name \fIname\fR
+The function
+.B nis_remove()
+will remove the object with name
+.IR name
 from the NIS+ namespace. The client making this request must have the
 \fIdestroy\fR access right for the domain in which this object resides.  If
-the named object is a link, the link is removed and \fInot\fR the object that
-it points to.  If the parameter \fIobj\fR is not \fINULL\fR, it is assumed to
+the named object is a link, the link is removed and
+.I not
+the object that
+it points to.  If the parameter
+.I obj
+is not
+.IR NULL ,
+it is assumed to
 point to a copy of the object being removed. In this case, if the object on
 the server does not have the same object identifier as the object being
-passed, the operation will fail with the \fBNIS_NOTSAMEOBJ\fR error. This
+passed, the operation will fail with the
+.B NIS_NOTSAMEOBJ
+error. This
 feature allows the client to insure that it is removing the desired object.
-The parameter \fIname\fR must contain a fully qualified NIS+ name.
+The parameter
+.I name
+must contain a fully qualified NIS+ name.
 .sp
 .LP
-The function \fBnis_modify()\fR will modify the object named by \fIname\fR to
-the field values  in the object pointed to by \fIobj\fR. This object should
+The function \fBnis_modify()\fR will modify the object named by
+.I name
+to
+the field values  in the object pointed to by
+.IR obj .
+This object should
 contain a copy of the object from the name space that is being modified.  This
-operation will fail with the error \fBNIS_NOTSAMEOBJ\fR if the object
+operation will fail with the error
+.B NIS_NOTSAMEOBJ
+if the object
 identifier of the passed object does not match that of the object being
 modified in the namespace.
 .sp
 .LP
-Normally the contents of the member \fIzo_name\fR in the \fInis_object\fR
-structure would be constructed from the name passed in the \fIname\fR
+Normally the contents of the member
+.I zo_name
+in the
+.IR nis_object
+structure would be constructed from the name passed in the
+.IR name
 parameter. However, if it is non-null the client library will use the name in
-the \fIzo_name\fR member to perform a rename operation on the object. This
-name \fImust not\fR contain any unquoted `.'(dot) characters. If these
+the
+.I zo_name
+member to perform a rename operation on the object. This
+name
+.I "must not"
+contain any unquoted `.'(dot) characters. If these
 conditions are not met the operation will fail and return the
 \fBNIS_BADNAME\fR error code.
 .sp
@@ -226,7 +300,8 @@ You cannot modify the schema of a table object.
 .SS "Results"
 .sp
 .LP
-These functions return a pointer to a structure of type \fBnis_result\fR:
+These functions return a pointer to a structure of type
+.BR nis_result :
 .sp
 .in +2
 .nf
@@ -247,18 +322,36 @@ struct nis_result {
 
 .sp
 .LP
-The \fIstatus\fR member contains the error status of the the operation. A
+The
+.I status
+member contains the error status of the the operation. A
 text message that describes the error can be obtained by calling the function
-\fBnis_sperrno()\fR. See \fBnis_error\fR(3NSL).
+.BR nis_sperrno() .
+See
+.BR nis_error (3NSL).
 .sp
 .LP
-The \fIobjects\fR structure contains two members. \fIobjects_val\fR is an
-array of \fInis_object\fR structures; \fIobjects_len\fR is the number of cells
+The
+.I objects
+structure contains two members.
+.I objects_val
+is an
+array of
+.I nis_object
+structures;
+.I objects_len
+is the number of cells
 in the array. These objects will be freed by the call to
 \fBnis_freeresult()\fR. If you need to keep a copy of one or more objects,
-they can be copied with the function \fBnis_clone_object()\fR and freed with
-the function \fBnis_destroy_object()\fR. See \fBnis_server\fR(3NSL). Refer to
-\fBnis_objects\fR(3NSL) for a description of the  \fBnis_object\fR
+they can be copied with the function
+.B nis_clone_object()
+and freed with
+the function
+.BR nis_destroy_object() .
+See \fBnis_server\fR(3NSL). Refer to
+.BR nis_objects (3NSL)
+for a description of the 
+.BR nis_object
 structure.
 .sp
 .LP
@@ -269,7 +362,7 @@ and to compare different database implementations.
 .ne 2
 .mk
 .na
-\fIzticks\fR
+.I zticks
 .ad
 .RS 10n
 .rt
@@ -281,7 +374,7 @@ receives the request and stops when it sends the reply.
 .ne 2
 .mk
 .na
-\fIdticks\fR
+.I dticks
 .ad
 .RS 10n
 .rt
@@ -295,7 +388,7 @@ calls.
 .ne 2
 .mk
 .na
-\fIaticks\fR
+.I aticks
 .ad
 .RS 10n
 .rt
@@ -307,7 +400,7 @@ required to locate the server needed to resolve the request.
 .ne 2
 .mk
 .na
-\fIcticks\fR
+.I cticks
 .ad
 .RS 10n
 .rt
@@ -319,9 +412,19 @@ generating a NIS+ request.
 
 .sp
 .LP
-Subtracting the value in \fIdticks\fR from the value in \fIzticks\fR will
+Subtracting the value in
+.I dticks
+from the value in
+.I zticks
+will
 yield the time spent in the service code itself. Subtracting the sum of the
-values in \fIzticks\fR and  \fIaticks\fR from the value in  \fIcticks\fR will
+values in
+.I zticks
+and 
+.I aticks
+from the value in 
+.I cticks
+will
 yield the time spent in the client library itself. Note: all of the tick times
 are measured in microseconds.
 .SH RETURN VALUES
@@ -333,7 +436,7 @@ more salient ones are documented below.
 .ne 2
 .mk
 .na
-\fBNIS_SUCCESS\fR
+.B NIS_SUCCESS
 .ad
 .RS 23n
 .rt
@@ -344,13 +447,15 @@ The request was successful.
 .ne 2
 .mk
 .na
-\fBNIS_S_SUCCESS\fR
+.B NIS_S_SUCCESS
 .ad
 .RS 23n
 .rt
 The request was successful, however the object returned came from an object
 cache and not directly from the server. If you do not wish to see objects from
-object caches you must specify the flag  \fBNO_CACHE\fR when you call the
+object caches you must specify the flag 
+.B NO_CACHE
+when you call the
 lookup function.
 .RE
 
@@ -358,7 +463,7 @@ lookup function.
 .ne 2
 .mk
 .na
-\fBNIS_NOTFOUND\fR
+.B NIS_NOTFOUND
 .ad
 .RS 23n
 .rt
@@ -369,13 +474,17 @@ The named object does not exist in the namespace.
 .ne 2
 .mk
 .na
-\fBNIS_CACHEEXPIRED\fR
+.B NIS_CACHEEXPIRED
 .ad
 .RS 23n
 .rt
-The object returned came from an object cache taht has \fIexpired\fR. The
+The object returned came from an object cache taht has
+.IR expired .
+The
 time to live value has gone to zero and the object may have changed. If the
-flag \fBNO_CACHE\fR was passed to the lookup function then the lookup function
+flag
+.B NO_CACHE
+was passed to the lookup function then the lookup function
 will retry the operation to get an unexpired copy of the object.
 .RE
 
@@ -383,7 +492,7 @@ will retry the operation to get an unexpired copy of the object.
 .ne 2
 .mk
 .na
-\fBNIS_NAMEUNREACHABLE\fR
+.B NIS_NAMEUNREACHABLE
 .ad
 .RS 23n
 .rt
@@ -396,7 +505,7 @@ occur when there is a network partition or all servers have crashed. See the
 .ne 2
 .mk
 .na
-\fBNIS_UNKNOWNOBJ\fR
+.B NIS_UNKNOWNOBJ
 .ad
 .RS 23n
 .rt
@@ -407,12 +516,14 @@ The object returned is of an unknown type.
 .ne 2
 .mk
 .na
-\fBNIS_TRYAGAIN\fR
+.B NIS_TRYAGAIN
 .ad
 .RS 23n
 .rt
 The server connected to was too busy to handle your request.  For the
-\fIadd\fR, \fIremove\fR, and \fImodify\fR operations this is returned when
+.IR add ,
+.IR remove ,
+and \fImodify\fR operations this is returned when
 either the master server for a  directory is unavailable, or it is in the
 process of checkpointing its database. It can also be returned when the server
 is updating its internal state. In the case of \fBnis_list()\fR,
@@ -424,7 +535,7 @@ server does not have enough resources to handle the callback.
 .ne 2
 .mk
 .na
-\fBNIS_SYSTEMERROR\fR
+.B NIS_SYSTEMERROR
 .ad
 .RS 23n
 .rt
@@ -437,7 +548,7 @@ record for error messages from the server.
 .ne 2
 .mk
 .na
-\fBNIS_NOT_ME\fR
+.B NIS_NOT_ME
 .ad
 .RS 23n
 .rt
@@ -450,7 +561,7 @@ location mechanism for servers you may see this if your mechanism is broken.
 .ne 2
 .mk
 .na
-\fBNIS_NOMEMORY\fR
+.B NIS_NOMEMORY
 .ad
 .RS 23n
 .rt
@@ -461,7 +572,7 @@ Generally a fatal result.  It means that the service ran out of heap space.
 .ne 2
 .mk
 .na
-\fBNIS_NAMEEXISTS\fR
+.B NIS_NAMEEXISTS
 .ad
 .RS 23n
 .rt
@@ -474,7 +585,7 @@ named object.
 .ne 2
 .mk
 .na
-\fBNIS_NOTMASTER\fR
+.B NIS_NOTMASTER
 .ad
 .RS 23n
 .rt
@@ -485,18 +596,20 @@ An attempt was made to update the database on a replica server.
 .ne 2
 .mk
 .na
-\fBNIS_INVALIDOBJ\fR
+.B NIS_INVALIDOBJ
 .ad
 .RS 23n
 .rt
-The object pointed to by \fIobj\fR is not a valid NIS+ object.
+The object pointed to by
+.I obj
+is not a valid NIS+ object.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNIS_BADNAME\fR
+.B NIS_BADNAME
 .ad
 .RS 23n
 .rt
@@ -507,11 +620,13 @@ The name passed to the function is not a legal NIS+ name.
 .ne 2
 .mk
 .na
-\fBNIS_LINKNAMEERROR\fR
+.B NIS_LINKNAMEERROR
 .ad
 .RS 23n
 .rt
-The name passed resolved to a  \fBLINK\fR type object and the contents of the
+The name passed resolved to a 
+.B LINK
+type object and the contents of the
 link pointed to an invalid name.
 .RE
 
@@ -519,7 +634,7 @@ link pointed to an invalid name.
 .ne 2
 .mk
 .na
-\fBNIS_NOTSAMEOBJ\fR
+.B NIS_NOTSAMEOBJ
 .ad
 .RS 23n
 .rt
@@ -532,7 +647,7 @@ the request.
 .ne 2
 .mk
 .na
-\fBNIS_NOSUCHNAME\fR
+.B NIS_NOSUCHNAME
 .ad
 .RS 23n
 .rt
@@ -546,7 +661,7 @@ resides.
 .ne 2
 .mk
 .na
-\fBNIS_NOSUCHTABLE\fR
+.B NIS_NOSUCHTABLE
 .ad
 .RS 23n
 .rt
@@ -557,7 +672,7 @@ The named table does not exist.
 .ne 2
 .mk
 .na
-\fBNIS_MODFAIL\fR
+.B NIS_MODFAIL
 .ad
 .RS 23n
 .rt
@@ -568,13 +683,15 @@ The attempted modification failed.
 .ne 2
 .mk
 .na
-\fBNIS_FOREIGNNS\fR
+.B NIS_FOREIGNNS
 .ad
 .RS 23n
 .rt
 The name could not be completely resolved. When the name passed to the
 function would resolve in a namespace that is outside the NIS+ name tree, this
-error is returned with a NIS+ object of type \fBDIRECTORY\fR, which contains
+error is returned with a NIS+ object of type
+.BR DIRECTORY ,
+which contains
 the type of namespace and contact information for a server within that
 namespace.
 .RE
@@ -583,12 +700,15 @@ namespace.
 .ne 2
 .mk
 .na
-\fBNIS_RPCERROR\fR
+.B NIS_RPCERROR
 .ad
 .RS 23n
 .rt
-This fatal error indicates the  \fBRPC\fR subsystem failed in some way.
-Generally there will be a \fBsyslog\fR(3C) message indicating why the
+This fatal error indicates the 
+.B RPC
+subsystem failed in some way.
+Generally there will be a
+.BR syslog "(3C) message indicating why the"
 \fBRPC\fR request failed.
 .RE
 
@@ -597,18 +717,23 @@ Generally there will be a \fBsyslog\fR(3C) message indicating why the
 .ne 2
 .mk
 .na
-\fBNIS_PATH\fR
+.B NIS_PATH
 .ad
 .RS 12n
 .rt
-If the flag \fBEXPAND_NAME\fR is set, this variable is the search path used
-by \fBnis_lookup()\fR.
+If the flag
+.B EXPAND_NAME
+is set, this variable is the search path used
+by
+.BR nis_lookup() .
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -625,8 +750,12 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBnis_error\fR(3NSL), \fBnis_objects\fR(3NSL), \fBnis_server\fR(3NSL),
-\fBnis_subr\fR(3NSL), \fBnis_tables\fR(3NSL), \fBattributes\fR(5)
+.BR nis_error (3NSL),
+.BR nis_objects (3NSL),
+.BR nis_server (3NSL),
+.BR nis_subr (3NSL),
+.BR nis_tables (3NSL),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP

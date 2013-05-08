@@ -36,7 +36,9 @@ process to carry out the service's firewall policy.
 .sp
 .LP
 This daemon is started by the \fBnetwork/ipfilter\fR service either through
-the \fBstart\fR or \fBrefresh\fR method. Thus, the daemon inherits the
+the
+.B start
+or \fBrefresh\fR method. Thus, the daemon inherits the
 environment variables and credentials from the method and runs as root with
 all zone privileges.
 .SS "Firewall Static Configuration"
@@ -45,7 +47,11 @@ all zone privileges.
 A static definition describes a service's network resource configuration
 that is used to generate service-specific IPF rules. The per-service
 \fBfirewall_context\fR property group contains a service's static
-definition, similar to the \fBinetd\fR property group in \fBinetd\fR managed
+definition, similar to the
+.B inetd
+property group in
+.B inetd
+managed
 services. This property group supports:
 .sp
 .ne 2
@@ -67,8 +73,12 @@ For non-\fBinetd\fR services. The IANA name or RPC name, equivalent to the
 .ad
 .sp .6
 .RS 4n
-For non-\fBinetd\fR services. A boolean property where a \fBtrue\fR value
-indicates an RPC service, equivalent to the \fBinetd/isrpc\fR property. For
+For non-\fBinetd\fR services. A boolean property where a
+.B true
+value
+indicates an RPC service, equivalent to the
+.B inetd/isrpc
+property. For
 RPC services, the value of \fBfirewall_context/name\fR is not an IANA name
 but is either an RPC program number or name. See \fBrpc\fR(4).
 .RE
@@ -76,7 +86,9 @@ but is either an RPC program number or name. See \fBrpc\fR(4).
 .sp
 .LP
 Additionally, some services may require a mechanism to generate and supply
-their own IPF rules. An optional property \fBipf_method\fR, provides a
+their own IPF rules. An optional property
+.BR ipf_method ,
+provides a
 mechanism to allow such custom rule generation:
 .sp
 .ne 2
@@ -98,11 +110,13 @@ A service's \fBipf_method\fR specifies a command that takes an additional
 argument, its own fault management resource identifier (FMRI), and generates
 the service's firewall rules and outputs those rules to stdout. To generate
 rules for a service with the \fBipf_method\fR property, the framework execs
-the command specified in \fBipf_method\fR, passing the service FMRI as the
+the command specified in
+.BR ipf_method ,
+passing the service FMRI as the
 additional argument, and stores the rules for that service by redirecting
 the command output, the rules, to the service's rule file. Because an
 \fBipf_method\fR is \fBexec\fR'ed from the context of either the
-\fBnetwork/ipfilter\fR \fBstart\fR or \fBrefresh\fR method process, it
+\fBnetwork/ipfilter start\fR or \fBrefresh\fR method process, it
 inherits the execution context and runs as root.
 .sp
 .LP
@@ -112,10 +126,14 @@ upon installation of an updated service definition.
 .SS "Firewall Policy Configuration"
 .sp
 .LP
-A per-service property group, \fBfirewall_config\fR, stores the services'
+A per-service property group,
+.BR firewall_config ,
+stores the services'
 firewall policy configuration. Because \fBnetwork/ipfilter:default\fR is
 responsible for two firewall policies, the Global Default and Global
-Override system-wide policies (as explained in \fBipfilter\fR(5)), it has
+Override system-wide policies (as explained in
+.BR ipfilter (5)),
+it has
 two property groups, \fBfirewall_config_default\fR and
 \fBfirewall_config_override\fR, to store the respective system-wide
 policies.
@@ -127,11 +145,13 @@ semantics:
 .ne 2
 .mk
 .na
-\fBpolicy\fR
+.B policy
 .ad
 .sp .6
 .RS 4n
-The \fBpolicy\fR has the following modes:
+The
+.B policy
+has the following modes:
 .sp
 .ne 2
 .mk
@@ -153,8 +173,12 @@ service.
 .ad
 .sp .6
 .RS 4n
-More restrictive than \fBnone\fR. This mode allows incoming traffic from
-all sources except those specified in the \fBapply_to\fR property.
+More restrictive than
+.BR none .
+This mode allows incoming traffic from
+all sources except those specified in the
+.B apply_to
+property.
 .RE
 
 .sp
@@ -166,7 +190,9 @@ all sources except those specified in the \fBapply_to\fR property.
 .sp .6
 .RS 4n
 Most restrictive mode. This mode blocks incoming traffic from all sources
-except those specified in the \fBapply_to\fR property.
+except those specified in the
+.B apply_to
+property.
 .RE
 
 .RE
@@ -175,13 +201,19 @@ except those specified in the \fBapply_to\fR property.
 .ne 2
 .mk
 .na
-\fBapply_to\fR
+.B apply_to
 .ad
 .sp .6
 .RS 4n
 A multi-value property listing network entities to enforce the chosen
-policy mode. Entities listed in \fBapply_to\fR property will be denied if
-policy is \fBdeny\fR and allowed if policy is \fBallow\fR. The syntax for
+policy mode. Entities listed in
+.B apply_to
+property will be denied if
+policy is
+.B deny
+and allowed if policy is
+.BR allow .
+The syntax for
 possible values are:
 .sp
 .in +2
@@ -200,15 +232,19 @@ interface:      if:\fIinterface_name\fR       "if:e1000g0"
 .ne 2
 .mk
 .na
-\fBexceptions\fR
+.B exceptions
 .ad
 .sp .6
 .RS 4n
 A multi-value property listing network entities to be excluded from the
 \fBapply_to\fR list. For example, when \fBdeny\fR policy is applied to a
 subnet, exceptions can be made to some hosts in that subnet by specifying
-them in the \fBexceptions\fR property. This property has the same value
-syntax as \fBapply_to\fR property.
+them in the
+.B exceptions
+property. This property has the same value
+syntax as
+.B apply_to
+property.
 .RE
 
 .sp
@@ -222,7 +258,9 @@ For individual network services only:
 .ad
 .sp .6
 .RS 4n
-A service's policy can also be set to \fBuse_global\fR. Services with
+A service's policy can also be set to
+.BR use_global .
+Services with
 \fBuse_global\fR policy mode inherits the Global Default firewall policy.
 .RE
 
@@ -238,13 +276,23 @@ For the Global Default only:
 .sp .6
 .RS 4n
 Global Default policy, \fBfirewall_config\fR property group in
-\fBsvc:/network/ipfilter:default\fR, can also be set to \fBcustom\fR. Users
-can set \fBpolicy\fR to \fBcustom\fR to use prepopulated IP Filter
+\fBsvc:/network/ipfilter:default\fR, can also be set to
+.BR custom .
+Users
+can set
+.B policy
+to
+.B custom
+to use prepopulated IP Filter
 configuration, for example, an existing IP Filter configuration or custom
 configurations that cannot be provided by the framework. This Global
 Default-only policy mode allows users to supply a text file containing the
-complete set of IPF rules. When \fBcustom\fR mode is selected, the specified
-set of IPF rules is \fBcomplete\fR and the framework will not generate IPF
+complete set of IPF rules. When
+.B custom
+mode is selected, the specified
+set of IPF rules is
+.B complete
+and the framework will not generate IPF
 rules from configured firewall policies.
 .RE
 
@@ -256,7 +304,8 @@ rules from configured firewall policies.
 .ad
 .sp .6
 .RS 4n
-A file path to be used when Global Default policy is set to \fBcustom\fR.
+A file path to be used when Global Default policy is set to
+.BR custom .
 The file contains a set of IPF rules that provide the desired IP Filter
 configuration. For example, users with existing IPF rules in
 \fB/etc/ipf/ipf.conf\fR can execute the following commands to use the
@@ -328,10 +377,16 @@ property contains protocol and port(s) tuple in the form:
 
 .sp
 .LP
-Initially, the system-wide policies are set to \fBnone\fR and network
-services' policies are set to \fBuse_global\fR. Enabling
+Initially, the system-wide policies are set to
+.B none
+and network
+services' policies are set to
+.BR use_global .
+Enabling
 \fBnetwork/ipfilter\fR activates the firewall with an empty set of IP Filter
-rules, since system-wide policy is \fBnone\fR and all services inherit that
+rules, since system-wide policy is
+.B none
+and all services inherit that
 policy. To configure a more restrictive policy, use \fBsvccfg\fR(1M) to
 modify network services and system-wide policies.
 .sp
@@ -395,7 +450,9 @@ Firewall policy configuration:
 .RS 4n
 Access to the system is protected by a new authorization definition and a
 user-defined property type. The new authorization should be assigned to the
-property group \fBvalue_authorization\fR property in a way such as:
+property group
+.B value_authorization
+property in a way such as:
 .sp
 .in +2
 .nf
@@ -420,7 +477,9 @@ See "Firewall Policy Configuration," above, for more information.
 .ad
 .sp .6
 .RS 4n
-This property's initial value should be \fBuse_global\fR since services, by
+This property's initial value should be
+.B use_global
+since services, by
 default, inherit the Global Default firewall policy.
 .RE
 
@@ -473,7 +532,8 @@ See "Firewall Static Configuration," above, for more information.
 .sp .6
 .RS 4n
 Service with well-known, IANA defined port, which can be obtained by
-\fBgetservbyname\fR(3SOCKET). The service's IANA name is stored in this
+.BR getservbyname (3SOCKET).
+The service's IANA name is stored in this
 property. For RPC services, the RPC program number is stored in this
 property.
 .RE
@@ -487,7 +547,7 @@ property.
 .sp .6
 .RS 4n
 For RPC services, this property should be created with its value set to
-\fBtrue\fR.
+.BR true .
 .RE
 
 .sp
@@ -521,7 +581,9 @@ svc:/network/ntp:default
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -540,6 +602,9 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcprop\fR(1), \fBsvcs\fR(1), \fBipf\fR(1M), \fBsvcadm\fR(1M),
+.BR svcprop (1),
+.BR svcs (1),
+\fBipf\fR(1M), \fBsvcadm\fR(1M),
 \fBsvccfg\fR(1M), \fBgetservbyname\fR(3SOCKET), \fBrpc\fR(4),
-\fBattributes\fR(5), \fBipfilter\fR(5), \fBsmf\fR(5)
+.BR attributes (5),
+\fBipfilter\fR(5), \fBsmf\fR(5)

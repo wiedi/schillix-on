@@ -53,7 +53,7 @@ Solaris architecture specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 16n
 .rt
@@ -65,22 +65,24 @@ the HBA device.
 .ne 2
 .mk
 .na
-\fIhba_lim\fR
+.I hba_lim
 .ad
 .RS 16n
 .rt
-Pointer to a \fBddi_dma_lim\fR(9S) structure.
+Pointer to a
+.BR ddi_dma_lim "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIhba_tran\fR
+.I hba_tran
 .ad
 .RS 16n
 .rt
-Pointer to a \fBscsi_hba_tran\fR(9S) structure.
+Pointer to a
+.BR scsi_hba_tran "(9S) structure."
 .RE
 
 .sp
@@ -92,95 +94,153 @@ Pointer to a \fBscsi_hba_tran\fR(9S) structure.
 .RS 16n
 .rt
 Flag modifiers. The defined flag values are \fBSCSI_HBA_TRAN_CLONE\fR,
-\fBSCSI_HBA_TRAN_SCB\fR, and \fBSCSI_HBA_TRAN_CDB\fR.
+.BR SCSI_HBA_TRAN_SCB ,
+and
+.BR SCSI_HBA_TRAN_CDB .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIhba_options\fR
+.I hba_options
 .ad
 .RS 16n
 .rt
 Optional features provided by the HBA driver for future extensions; must be
-\fINULL\fR.
+.IR NULL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIhba_dma_attr\fR
+.I hba_dma_attr
 .ad
 .RS 16n
 .rt
-Pointer to a \fBddi_dma_attr\fR(9S) structure.
+Pointer to a
+.BR ddi_dma_attr "(9S) structure."
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBscsi_hba_attach_setup()\fR function is the recommended interface
-over the \fBscsi_hba_attach()\fR function.
+The
+.B scsi_hba_attach_setup()
+function is the recommended interface
+over the
+.B scsi_hba_attach()
+function.
 .SS "scsi_hba_attach_setup(\|) scsi_hba_attach(\|)"
 .sp
 .LP
-The \fBscsi_hba_attach()\fR function registers the \fIhba_lim\fR DMA limits
-and the \fIhba_tran\fR transport vectors of each instance of the HBA device
-defined by \fIdip\fR. The \fBscsi_hba_attach_setup()\fR function registers
-the \fIhba_dma_attr\fR DMA attributes and the \fIhba_tran\fR transport
-vectors of each instance of the HBA device defined by \fIdip\fR. The HBA
+The
+.B scsi_hba_attach()
+function registers the
+.I hba_lim
+DMA limits
+and the
+.I hba_tran
+transport vectors of each instance of the HBA device
+defined by
+.IR dip .
+The
+.B scsi_hba_attach_setup()
+function registers
+the
+.I hba_dma_attr
+DMA attributes and the
+.I hba_tran
+transport
+vectors of each instance of the HBA device defined by
+.IR dip .
+The HBA
 driver can pass different DMA limits or DMA attributes and the transport
 vectors for each instance of the device to support any constraints imposed
 by the  HBA itself.
 .sp
 .LP
-The \fBscsi_hba_attach()\fR and \fBscsi_hba_attach_setup()\fR functions use
-the \fBdev_bus_ops\fR field in the \fBdev_ops\fR(9S) structure. The HBA
-driver should initialize this field to \fINULL\fR before calling
+The
+.B scsi_hba_attach()
+and
+.B scsi_hba_attach_setup()
+functions use
+the
+.B dev_bus_ops
+field in the
+.BR dev_ops "(9S) structure. The HBA"
+driver should initialize this field to
+.I NULL
+before calling
 \fBscsi_hba_attach()\fR or \fBscsi_hba_attach_setup()\fR.
 .sp
 .LP
-If \fBSCSI_HBA_TRAN_CLONE\fR is requested in \fIhba_flags\fR, the
+If
+.B SCSI_HBA_TRAN_CLONE
+is requested in
+.IR hba_flags ,
+the
 \fBhba_tran\fR structure is cloned once for each target that is attached to
-the HBA. The structure is cloned before the \fBtran_tgt_init\fR(9E) entry
+the HBA. The structure is cloned before the
+.BR tran_tgt_init (9E)
+entry
 point is called to initialize a target. At all subsequent HBA entry points,
-including \fBtran_tgt_init\fR(9E), the \fBscsi_hba_tran_t\fR structure
-passed as an argument or found in a \fBscsi_address\fR structure is the
-cloned \fBscsi_hba_tran_t\fR structure,which allows the HBA to use the
+including
+.BR tran_tgt_init "(9E), the"
+.B scsi_hba_tran_t
+structure
+passed as an argument or found in a
+.B scsi_address
+structure is the
+cloned
+.B scsi_hba_tran_t
+structure,which allows the HBA to use the
 \fBtran_tgt_private\fR field in the \fBscsi_hba_tran_t\fR structure to point
 to per-target data. The HBA should free only the same \fBscsi_hba_tran_t\fR
-structure allocated when the HBA detaches. All cloned \fBscsi_hba_tran_t\fR
+.RB "structure allocated when the HBA detaches. All cloned" " scsi_hba_tran_t"
 structures that are allocated by the system are freed by the system.
 .sp
 .LP
-The flags \fBSCSI_HBA_TRAN_CDB\fR and \fBSCSI_HBA_TRAN_SCB\fR are only
-valid when \fBtran_setup_pkt()\fR is used. See \fBtran_setup_pkt\fR(9E) for
+The flags
+.B SCSI_HBA_TRAN_CDB
+and
+.B SCSI_HBA_TRAN_SCB
+are only
+valid when
+.B tran_setup_pkt()
+is used. See \fBtran_setup_pkt\fR(9E) for
 information on using these flags.
 .sp
 .LP
-The \fBscsi_hba_attach()\fR and \fBscsi_hba_attach_setup()\fR functions
-attach a number of integer-valued properties to \fIdip\fR, unless properties
+The
+.B scsi_hba_attach()
+and
+.B scsi_hba_attach_setup()
+functions
+attach a number of integer-valued properties to
+.IR dip ,
+unless properties
 of the same name are already attached to the node. An HBA driver should
-retrieve these configuration parameters via \fBddi_prop_get_int\fR(9F), and
+retrieve these configuration parameters via
+.BR ddi_prop_get_int "(9F), and"
 respect any settings for features provided the HBA.
 .sp
 .ne 2
 .mk
 .na
-\fBscsi-options\fR
+.B scsi-options
 .ad
 .RS 26n
 .rt
-\fBOptional\fR \fBSCSI\fR \fBconfiguration bits\fR
+\fBOptional SCSI\fR \fBconfiguration bits\fR
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_DR\fR
+.B SCSI_OPTIONS_DR
 .ad
 .RS 26n
 .rt
@@ -192,7 +252,7 @@ devices.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_TAG\fR
+.B SCSI_OPTIONS_TAG
 .ad
 .RS 26n
 .rt
@@ -203,7 +263,7 @@ If not set, the HBA should not operate in Command Tagged Queueing mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_PARITY\fR
+.B SCSI_OPTIONS_PARITY
 .ad
 .RS 26n
 .rt
@@ -214,7 +274,7 @@ If not set, the HBA should not operate in parity mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_QAS\fR
+.B SCSI_OPTIONS_QAS
 .ad
 .RS 26n
 .rt
@@ -227,7 +287,7 @@ machine supports QAS.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST\fR
+.B SCSI_OPTIONS_FAST
 .ad
 .RS 26n
 .rt
@@ -238,7 +298,7 @@ If not set, the HBA should not operate the bus in FAST SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST20\fR
+.B SCSI_OPTIONS_FAST20
 .ad
 .RS 26n
 .rt
@@ -249,7 +309,7 @@ If not set, the HBA should not operate the bus in FAST20 SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST40\fR
+.B SCSI_OPTIONS_FAST40
 .ad
 .RS 26n
 .rt
@@ -260,7 +320,7 @@ If not set, the HBA should not operate the bus in FAST40 SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST80\fR
+.B SCSI_OPTIONS_FAST80
 .ad
 .RS 26n
 .rt
@@ -271,7 +331,7 @@ If not set, the HBA should not operate the bus in FAST80 SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST160\fR
+.B SCSI_OPTIONS_FAST160
 .ad
 .RS 26n
 .rt
@@ -282,7 +342,7 @@ If not set, the HBA should not operate the bus in FAST160 SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_FAST320\fR
+.B SCSI_OPTIONS_FAST320
 .ad
 .RS 26n
 .rt
@@ -293,7 +353,7 @@ If not set, the HBA should not operate the bus in FAST320 SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_WIDE\fR
+.B SCSI_OPTIONS_WIDE
 .ad
 .RS 26n
 .rt
@@ -304,7 +364,7 @@ If not set, the HBA should not operate the bus in WIDE SCSI mode.
 .ne 2
 .mk
 .na
-\fBSCSI_OPTIONS_SYNC\fR
+.B SCSI_OPTIONS_SYNC
 .ad
 .RS 26n
 .rt
@@ -316,7 +376,7 @@ mode.
 .ne 2
 .mk
 .na
-\fBscsi-reset-delay\fR
+.B scsi-reset-delay
 .ad
 .RS 26n
 .rt
@@ -327,7 +387,7 @@ SCSI bus or device reset recovery time, in milliseconds.
 .ne 2
 .mk
 .na
-\fBscsi-selection-timeout\fR
+.B scsi-selection-timeout
 .ad
 .RS 26n
 .rt
@@ -338,31 +398,49 @@ to individual HBA man pages for any HBA-specific information
 .SS "scsi_hba_detach(\|)"
 .sp
 .LP
-The \fBscsi_hba_detach()\fR function removes the reference to the DMA
+The
+.B scsi_hba_detach()
+function removes the reference to the DMA
 limits or attributes structure and the transport vector for the given
 instance of an HBA driver.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBscsi_hba_attach()\fR, \fBscsi_hba_attach_setup()\fR, and
+The
+.BR scsi_hba_attach() ,
+.BR scsi_hba_attach_setup() ,
+and
 \fBscsi_hba_detach()\fR functions return \fBDDI_SUCCESS\fR if the function
-call succeeds, and return \fBDDI_FAILURE\fR on failure.
+call succeeds, and return
+.B DDI_FAILURE
+on failure.
 .SH CONTEXT
 .sp
 .LP
-The \fBscsi_hba_attach()\fR and \fBscsi_hba_attach_setup()\fR functions
+The
+.B scsi_hba_attach()
+and
+.B scsi_hba_attach_setup()
+functions
 should be called from \fBattach\fR(9E). The \fBscsi_hba_detach()\fR function
-should be called from \fBdetach\fR(9E).
+should be called from
+.BR detach (9E).
 .SH SEE ALSO
 .sp
 .LP
-\fBattach\fR(9E), \fBdetach\fR(9E), \fBtran_setup_pkt\fR(9E),
-\fBtran_tgt_init\fR(9E), \fBddi_prop_get_int\fR(9F), \fBddi_dma_attr\fR(9S),
-\fBddi_dma_lim\fR(9S), \fBdev_ops\fR(9S), \fBscsi_address\fR(9S),
-\fBscsi_hba_tran\fR(9S)
+.BR attach (9E),
+.BR detach (9E),
+.BR tran_setup_pkt (9E),
+.BR tran_tgt_init (9E),
+.BR ddi_prop_get_int (9F),
+.BR ddi_dma_attr (9S),
+.BR ddi_dma_lim (9S),
+.BR dev_ops (9S),
+.BR scsi_address (9S),
+.BR scsi_hba_tran (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
@@ -371,6 +449,8 @@ requests will be taken on behalf of any SCSI target device driver after
 \fBscsi_hba_detach()\fR is called.
 .sp
 .LP
-The \fBscsi_hba_attach()\fR function is obsolete and will be discontinued
+The
+.B scsi_hba_attach()
+function is obsolete and will be discontinued
 in a future release. This function is replaced by
-\fBscsi_hba_attach_setup()\fR.
+.BR scsi_hba_attach_setup() .

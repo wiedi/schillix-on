@@ -82,7 +82,7 @@ a pointer to the iSCSI configuration structure
 .ne 2
 .mk
 .na
-\fItgt\fR
+.I tgt
 .ad
 .RS 13n
 .rt
@@ -93,12 +93,14 @@ a pointer to an iSCSI target structure
 .ne 2
 .mk
 .na
-\fItgt_name\fR
+.I tgt_name
 .ad
 .RS 13n
 .rt
 the target node name for the target to be created. The name must be in either
-IQN or EUI format. If this value is \fINULL\fR, a node name will be generated
+IQN or EUI format. If this value is
+.IR NULL ,
+a node name will be generated
 automatically in IQN format.
 .RE
 
@@ -106,22 +108,26 @@ automatically in IQN format.
 .ne 2
 .mk
 .na
-\fIproplist\fR
+.I proplist
 .ad
 .RS 13n
 .rt
-a pointer to an \fBnvlist_t\fR containing the target properties to be set
+a pointer to an
+.B nvlist_t
+containing the target properties to be set
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIerrlist\fR
+.I errlist
 .ad
 .RS 13n
 .rt
-an optional pointer to an \fBnvlist_t\fR that will be used to store specific
+an optional pointer to an
+.B nvlist_t
+that will be used to store specific
 errors (if any) when validating target properties
 .RE
 
@@ -142,7 +148,7 @@ the target is determined to be online
 .ne 2
 .mk
 .na
-\fItpgt\fR
+.I tpgt
 .ad
 .RS 13n
 .rt
@@ -153,7 +159,7 @@ a pointer to a target portal group tag structure
 .ne 2
 .mk
 .na
-\fItpgt_name\fR
+.I tpgt_name
 .ad
 .RS 13n
 .rt
@@ -165,52 +171,95 @@ group tag
 .ne 2
 .mk
 .na
-\fItpgt_tag\fR
+.I tpgt_tag
 .ad
 .RS 13n
 .rt
 a 16-bit numerical identifier for this target portal group tag. Valid values
-are 2 through 65535. If tpgt_tag is '0', \fBit_tpgt_create()\fR will assign an
-appropriate tag number. If \fItpgt_tag\fR is != 0, and the requested tag number
+are 2 through 65535. If tpgt_tag is '0',
+.B it_tpgt_create()
+will assign an
+appropriate tag number. If
+.I tpgt_tag
+is != 0, and the requested tag number
 is unavailable, another value will be chosen.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBit_tgt_create()\fR function allocates and creates an \fBit_tgt_t\fR
-structure representing a new iSCSI target node. If \fItgt_name\fR is \fINULL\fR,
+The
+.B it_tgt_create()
+function allocates and creates an
+.BR it_tgt_t
+structure representing a new iSCSI target node. If
+.I tgt_name
+is
+.IR NULL ,
 then a unique target node name will be generated automatically. Otherwise, the
-value of \fItgt_name\fR will be used as the target node name. The new
+value of
+.I tgt_name
+will be used as the target node name. The new
 \fBit_tgt_t\fR structure is added to the target list (\fIcfg_tgt_list\fR) in the
 configuration structure.
 .sp
 .LP
-The \fBit_tgt_setprop()\fR function validates the provided property list and
-sets the properties for the specified target.  If \fIerrlist\fR is not
-\fINULL\fR, this function returns detailed errors for each property that failed.
-The format for \fIerrlist\fR is \fIkey\fR = \fIproperty\fR, \fIvalue\fR =
+The
+.B it_tgt_setprop()
+function validates the provided property list and
+sets the properties for the specified target.  If
+.I errlist
+is not
+.IR NULL ,
+this function returns detailed errors for each property that failed.
+The format for
+.I errlist
+is
+.I key
+=
+.IR property ,
+\fIvalue\fR =
 \fIerror\fR string.
 .sp
 .LP
-The \fBit_tgt_delete()\fR function removes the target represented by \fItgt\fR
-from the configuration. The \fItgt\fR argument is an existing \fBit_tgt_t\fR
+The
+.B it_tgt_delete()
+function removes the target represented by
+.IR tgt
+from the configuration. The
+.I tgt
+argument is an existing
+.BR it_tgt_t
 structure within the configuration \fIcfg\fR.
 .sp
 .LP
-The \fBit_tpgt_create()\fR function allocates and creates an \fBit_tpgt_t\fR
+The
+.B it_tpgt_create()
+function allocates and creates an
+.BR it_tpgt_t
 structure representing a new iSCSI target portal group tag. The new
 \fBit_tpgt_t\fR structure is added to the target \fItpgt\fR list
 (\fItgt_tpgt_list\fR) in the \fBit_tgt_t\fR structure.
 .sp
 .LP
-The \fBit_tpgt_delete()\fR function removes the target portal group tag
-represented by \fItpgt\fR, from the configuration.  The \fItpgt\fR argument is
-an existing \fBis_tpgt_t\fR structure within the target \fItgt\fR.
+The
+.B it_tpgt_delete()
+function removes the target portal group tag
+represented by
+.IR tpgt ,
+from the configuration.  The
+.I tpgt
+argument is
+an existing
+.B is_tpgt_t
+structure within the target
+.IR tgt .
 .sp
 .LP
 The \fBit_tgt_free()\fR function frees an \fBit_tgt_t\fR structure.  If
-\fItgt\fR\(->\fInext\fR is not \fINULL\fR, this function frees all structures in
+\fItgt\fR\(->\fInext\fR is not
+.IR NULL ,
+this function frees all structures in
 the list.
 .sp
 .LP
@@ -246,19 +295,31 @@ T}
 .SH RETURN VALUES
 .sp
 .LP
-The \fBit_tgt_create()\fR, \fBit_tgt_setprop()\fR, \fBit_tgt_delete()\fR,
-\fBit_tpgt_create()\fR, and \fBit_tpgt_delete()\fR functions return 0 on success
+The
+.BR it_tgt_create() ,
+.BR it_tgt_setprop() ,
+.BR it_tgt_delete() ,
+.BR it_tpgt_create() ,
+and
+.B it_tpgt_delete()
+functions return 0 on success
 and an error value on failure.
 .SH ERRORS
 .sp
 .LP
-The \fBit_tgt_create()\fR, \fBit_tgt_setprop()\fR, \fBit_tgt_delete()\fR,
-\fBit_tpgt_create()\fR, and \fBit_tpgt_delete()\fR functions will fail if:
+The
+.BR it_tgt_create() ,
+.BR it_tgt_setprop() ,
+.BR it_tgt_delete() ,
+.BR it_tpgt_create() ,
+and
+.B it_tpgt_delete()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBE2BIG\fR
+.B E2BIG
 .ad
 .RS 10n
 .rt
@@ -269,7 +330,7 @@ All tag numbers are already in use.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
@@ -280,7 +341,7 @@ The target is online.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 10n
 .rt
@@ -291,7 +352,7 @@ The requested target node name is already configured.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -302,7 +363,7 @@ A parameter or property is invalid.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -312,7 +373,9 @@ Resources could not be allocated.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -332,6 +395,9 @@ MT-LevelMT-Safe
 .sp
 .LP
 \fBit_config_commit\fR(3ISCSIT), \fBit_ini_create\fR(3ISCSIT),
-\fBit_portal_create\fR(3ISCSIT), \fBit_tpg_create\fR(3ISCSIT),
-\fBlibiscsit\fR(3LIB), \fBlibnvpair\fR(3LIB), \fBlibstmf\fR(3LIB),
-\fBattributes\fR(5)
+.BR it_portal_create (3ISCSIT),
+.BR it_tpg_create (3ISCSIT),
+.BR libiscsit (3LIB),
+.BR libnvpair (3LIB),
+\fBlibstmf\fR(3LIB),
+.BR attributes (5)

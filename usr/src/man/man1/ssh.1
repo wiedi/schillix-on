@@ -29,7 +29,9 @@ ssh \- secure shell client (remote login program)
 .LP
 \fBssh\fR (Secure Shell) is a program for logging into a remote machine and
 for executing commands on a remote machine. It is intended to replace
-\fBrlogin\fR and \fBrsh\fR, and to provide secure encrypted communications
+\fBrlogin\fR and
+.BR rsh ,
+and to provide secure encrypted communications
 between two untrusted hosts over an insecure network. X11 connections and
 arbitrary TCP/IP ports can also be forwarded over the secure channel.
 .sp
@@ -50,22 +52,35 @@ permitted to log in. This form of authentication alone is normally not
 allowed by the server because it is not secure.
 .sp
 .LP
-The second (and primary) authentication method is the \fBrhosts\fR or
+The second (and primary) authentication method is the
+.B rhosts
+or
 \fBhosts.equiv\fR method combined with RSA-based host authentication. It
-means that if the login would be permitted by \fB$HOME/.rhosts\fR,
-\fB$HOME/.shosts\fR, \fB/etc/hosts.equiv\fR, or \fB/etc/shosts.equiv\fR, and
+means that if the login would be permitted by
+.BR $HOME/.rhosts ,
+.BR $HOME/.shosts ,
+.BR /etc/hosts.equiv ,
+or
+.BR /etc/shosts.equiv ,
+and
 if additionally the server can verify the client's host key (see
 \fB/etc/ssh_known_hosts\fR in the FILES section), only then is login
-permitted. This authentication method closes security holes due to \fBIP\fR
-spoofing, \fBDNS\fR spoofing, and routing spoofing.
+.RB "permitted. This authentication method closes security holes due to" " IP"
+spoofing,
+.B DNS
+spoofing, and routing spoofing.
 .sp
 .LP
 \fBNote to the administrator:\fR \fB/etc/hosts.equiv\fR,
-\fB$HOME/.rhosts\fR, and the rlogin/rsh protocol in general, are inherently
+.BR $HOME/.rhosts ,
+and the rlogin/rsh protocol in general, are inherently
 insecure and should be disabled if security is desired.
 .sp
 .LP
-As a third authentication method, \fBssh\fR supports \fBRSA\fR-based
+As a third authentication method,
+.B ssh
+supports
+.BR RSA -based
 authentication. The scheme is based on public-key cryptography. There are
 cryptosystems where encryption and decryption are done using separate keys,
 and it is not possible to derive the decryption key from the encryption key.
@@ -73,7 +88,9 @@ and it is not possible to derive the decryption key from the encryption key.
 public/private key pair for authentication purposes. The server knows the
 public key, and only the user knows the private key. The file
 \fB$HOME/.ssh/authorized_keys\fR lists the public keys that are permitted
-for logging in. When the user logs in, the \fBssh\fR program tells the
+for logging in. When the user logs in, the
+.B ssh
+program tells the
 server which key pair it would like to use for authentication. The server
 checks if this key is permitted, and if so, sends the user (actually the
 \fBssh\fR program running on behalf of the user) a challenge in the form of
@@ -84,23 +101,44 @@ private key but without disclosing it to the server.
 .sp
 .LP
 \fBssh\fR implements the \fBRSA\fR authentication protocol automatically.
-The user creates his or her \fBRSA\fR key pair by running
-\fBssh-keygen\fR(1). This stores the private key in
+The user creates his or her
+.B RSA
+key pair by running
+.BR ssh-keygen (1).
+This stores the private key in
 \fB$HOME/.ssh/identity\fR and the public key in
 \fB$HOME/.ssh/identity.pub\fR in the user's home directory. The user should
-then copy the \fBidentity.pub\fR to \fB$HOME/.ssh/authorized_keys\fR in his
-or her home directory on the remote machine (the \fBauthorized_keys\fR file
-corresponds to the conventional \fB$HOME/.rhosts\fR file, and has one key
+then copy the
+.B identity.pub
+to
+.B $HOME/.ssh/authorized_keys
+in his
+or her home directory on the remote machine (the
+.B authorized_keys
+file
+corresponds to the conventional
+.B $HOME/.rhosts
+file, and has one key
 per line, though the lines can be very long). After this, the user can log
-in without giving the password. \fBRSA\fR authentication is much more secure
-than \fBrhosts\fR authentication.
+in without giving the password.
+.B RSA
+authentication is much more secure
+than
+.B rhosts
+authentication.
 .sp
 .LP
-The most convenient way to use \fBRSA\fR authentication can be with an
-authentication agent. See \fBssh-agent\fR(1) for more information.
+The most convenient way to use
+.B RSA
+authentication can be with an
+authentication agent. See
+.BR ssh-agent (1)
+for more information.
 .sp
 .LP
-If other authentication methods fail, \fBssh\fR prompts the user for a
+If other authentication methods fail,
+.B ssh
+prompts the user for a
 password. The password is sent to the remote host for checking. However,
 since all communications are encrypted, the password cannot be seen by
 someone listening on the network.
@@ -124,12 +162,23 @@ is attempted. Finally, if this method fails, keyboard-interactive and
 password authentication are tried.
 .sp
 .LP
-The public key method is similar to \fBRSA\fR authentication described in
-the previous section and allows the \fBRSA\fR or \fBDSA\fR algorithm to be
-used: The client uses his or her private key, \fB$HOME/.ssh/id_dsa\fR or
-\fB$HOME/.ssh/id_rsa\fR, to sign the session identifier and sends the result
+The public key method is similar to
+.B RSA
+authentication described in
+the previous section and allows the
+.B RSA
+or
+.B DSA
+algorithm to be
+used: The client uses his or her private key,
+.B $HOME/.ssh/id_dsa
+or
+.BR $HOME/.ssh/id_rsa ,
+to sign the session identifier and sends the result
 to the server. The server checks whether the matching public key is listed
-in \fB$HOME/.ssh/authorized_keys\fR and grants access if both the key is
+in
+.B $HOME/.ssh/authorized_keys
+and grants access if both the key is
 found and the signature is correct. The session identifier is derived from a
 shared Diffie-Hellman value and is only known to the client and the
 server.
@@ -140,13 +189,17 @@ sent encrypted to the remote host for proving the user's identity, or an
 extended prompt/reply protocol can be engaged.
 .sp
 .LP
-Additionally, \fBssh\fR supports hostbased or challenge response
+Additionally,
+.B ssh
+supports hostbased or challenge response
 authentication.
 .sp
 .LP
 Protocol 2 provides additional mechanisms for confidentiality (the traffic
 is encrypted using 3DES, Blowfish, CAST128 or Arcfour) and integrity
-(\fBhmac-sha1\fR, \fBhmac-md5\fR). Protocol 1 lacks a strong mechanism for
+(\fBhmac-sha1\fR,
+.BR hmac-md5 ).
+Protocol 1 lacks a strong mechanism for
 ensuring the integrity of the connection.
 .SS "Login Session and Remote Execution"
 .sp
@@ -159,16 +212,29 @@ command or shell is automatically encrypted.
 .LP
 If a pseudo-terminal has been allocated (normal login session), the user
 can use the escape characters noted below. If a pseudo-terminal has been
-allocated (normal login session), the user can disconnect with \fB~.\fR, and
-suspend \fBssh\fR with \fB~^Z\fR. All forwarded connections can be listed
-with \fB~#\fR. If the session blocks waiting for forwarded X11 or TCP/IP
-connections to terminate, \fBssh\fR can be backgrounded with \fB~&\fR,
+allocated (normal login session), the user can disconnect with
+.BR ~. ,
+and
+suspend
+.B ssh
+with
+.BR ~^Z .
+All forwarded connections can be listed
+with
+.BR ~# .
+If the session blocks waiting for forwarded X11 or TCP/IP
+connections to terminate,
+.B ssh
+can be backgrounded with
+.BR ~& ,
 although this should not be used while the user shell is active, as it can
 cause the shell to hang. All available escapes can be listed with
-\fB~?\fR.
+.BR ~? .
 .sp
 .LP
-A single tilde character can be sent as \fB~~\fR, or by following the tilde
+A single tilde character can be sent as
+.BR ~~ ,
+or by following the tilde
 with a character other than those described above. The escape character must
 always follow a newline to be interpreted as special. The escape character
 can be changed in configuration files or on the command line.
@@ -182,27 +248,37 @@ is used.
 .LP
 The session terminates when the command or shell on the remote machine
 exits and all X11 and TCP/IP connections have been closed. The exit status
-of the remote program is returned as the exit status of \fBssh\fR.
+of the remote program is returned as the exit status of
+.BR ssh .
 .SS "Escape Characters"
 .sp
 .LP
-When a pseudo-terminal has been requested, \fBssh\fR supports a number of
+When a pseudo-terminal has been requested,
+.B ssh
+supports a number of
 functions through the use of an escape character.
 .sp
 .LP
-A single tilde character can be sent as \fB~~\fR or by following the tilde
+A single tilde character can be sent as
+.B ~~
+or by following the tilde
 with a character other than those described below. The escape character must
 always follow a newline to be interpreted as special. The escape character
-can be changed in configuration files using the \fBEscapeChar\fR
-configuration directive or on the command line by the \fB-e\fR option.
+can be changed in configuration files using the
+.BR EscapeChar
+configuration directive or on the command line by the
+.B -e
+option.
 .sp
 .LP
-The supported escapes, assuming the default \fB~\fR, are:
+The supported escapes, assuming the default
+.BR ~ ,
+are:
 .sp
 .ne 2
 .mk
 .na
-\fB~.\fR
+.B ~.
 .ad
 .RS 7n
 .rt
@@ -213,18 +289,19 @@ Disconnect.
 .ne 2
 .mk
 .na
-\fB~^Z\fR
+.B ~^Z
 .ad
 .RS 7n
 .rt
-Background \fBssh\fR.
+Background
+.BR ssh .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB~#\fR
+.B ~#
 .ad
 .RS 7n
 .rt
@@ -235,11 +312,13 @@ List forwarded connections.
 .ne 2
 .mk
 .na
-\fB~&\fR
+.B ~&
 .ad
 .RS 7n
 .rt
-Background \fBssh\fR at logout when waiting for forwarded connection / X11
+Background
+.B ssh
+at logout when waiting for forwarded connection / X11
 sessions to terminate.
 .RE
 
@@ -247,7 +326,7 @@ sessions to terminate.
 .ne 2
 .mk
 .na
-\fB~?\fR
+.B ~?
 .ad
 .RS 7n
 .rt
@@ -258,7 +337,7 @@ Display a list of escape characters.
 .ne 2
 .mk
 .na
-\fB~B\fR
+.B ~B
 .ad
 .RS 7n
 .rt
@@ -270,7 +349,7 @@ and if the peer supports it.
 .ne 2
 .mk
 .na
-\fB~C\fR
+.B ~C
 .ad
 .RS 7n
 .rt
@@ -282,7 +361,7 @@ Open command line. Only useful for adding port forwardings using the
 .ne 2
 .mk
 .na
-\fB~R\fR
+.B ~R
 .ad
 .RS 7n
 .rt
@@ -293,9 +372,17 @@ and if the peer supports it.
 .SS "X11 and TCP Forwarding"
 .sp
 .LP
-If the \fBForwardX11\fR variable is set to ``\fByes\fR'' (or, see the
-description of the \fB-X\fR and \fB-x\fR options described later) and the
-user is using X11 (the \fBDISPLAY\fR environment variable is set), the
+If the
+.B ForwardX11
+variable is set to ``\fByes\fR'' (or, see the
+description of the
+.B -X
+and
+.B -x
+options described later) and the
+user is using X11 (the
+.B DISPLAY
+environment variable is set), the
 connection to the X11 display is automatically forwarded to the remote side
 in such a way that any X11 programs started from the shell (or command) goes
 through the encrypted channel, and the connection to the real X server is
@@ -304,7 +391,11 @@ Forwarding of X11 connections can be configured on the command line or in
 configuration files.
 .sp
 .LP
-The \fBDISPLAY\fR value set by \fBssh\fR points to the server machine, but
+The
+.B DISPLAY
+value set by
+.B ssh
+points to the server machine, but
 with a display number greater than zero. This is normal behavior, because
 \fBssh\fR creates a "proxy" X11 server on the server machine for forwarding
 the connections over the encrypted channel.
@@ -312,14 +403,20 @@ the connections over the encrypted channel.
 .LP
 \fBssh\fR also automatically sets up \fBXauthority\fR data on the server
 machine. For this purpose, it generates a random authorization cookie, store
-it in \fBXauthority\fR on the server, and verify that any forwarded
+it in
+.B Xauthority
+on the server, and verify that any forwarded
 connections carry this cookie and replace it by the real cookie when the
 connection is opened. The real authentication cookie is never sent to the
 server machine (and no cookies are sent in the plain).
 .sp
 .LP
 If the \fBForwardAgent\fR variable is set to "\fByes\fR" (or, see the
-description of the \fB-A\fR and \fB-a\fR options described later) and the
+description of the
+.B -A
+and
+.B -a
+options described later) and the
 user is using an authentication agent, the connection to the agent is
 automatically forwarded to the remote side.
 .sp
@@ -333,22 +430,38 @@ electronic purse. Another possible application is firewall traversal.
 .LP
 \fBssh\fR automatically maintains and checks a database containing
 identifications for all hosts it has ever been used with. Host keys are
-stored in \fB$HOME/.ssh/known_hosts\fR in the user's home directory.
-Additionally, the file \fB/etc/ssh_known_hosts\fR is automatically checked
-for known hosts. The behavior of \fBssh\fR with respect to unknown host keys
-is controlled by the \fBStrictHostKeyChecking\fR parameter. If a host's
-identification ever changes, \fBssh\fR warns about this and disables
+stored in
+.B $HOME/.ssh/known_hosts
+in the user's home directory.
+Additionally, the file
+.B /etc/ssh_known_hosts
+is automatically checked
+for known hosts. The behavior of
+.B ssh
+with respect to unknown host keys
+is controlled by the
+.B StrictHostKeyChecking
+parameter. If a host's
+identification ever changes,
+.B ssh
+warns about this and disables
 password authentication to prevent a trojan horse from getting the user's
 password. Another purpose of this mechanism is to prevent attacks by
 intermediaries which could otherwise be used to circumvent the encryption.
-The \fBStrictHostKeyChecking\fR option can be used to prevent logins to
+The
+.B StrictHostKeyChecking
+option can be used to prevent logins to
 machines whose host key is not known or has changed.
 .sp
 .LP
 However, when using key exchange protected by GSS-API, the server can
 advertise a host key. The client automatically adds this host key to its
-known hosts file, \fB$HOME/.ssh/known_hosts\fR, regardless of the setting of
-the \fBStrictHostKeyChecking\fR option, unless the advertised host key
+known hosts file,
+.BR $HOME/.ssh/known_hosts ,
+regardless of the setting of
+the
+.B StrictHostKeyChecking
+option, unless the advertised host key
 collides with an existing known hosts entry.
 .sp
 .LP
@@ -359,12 +472,18 @@ exchanges.
 .sp
 .LP
 \fBssh\fR uses the user's GSS-API credentials to authenticate the client to
-the server wherever possible, if \fBGssKeyEx\fR and/or
+the server wherever possible, if
+.B GssKeyEx
+and/or
 \fBGssAuthentication\fR are set.
 .sp
 .LP
-With \fBGssKeyEx\fR, one can have an SSHv2 server that has no host public
-keys, so that only \fBGssKeyEx\fR can be used. With such servers, rekeying
+With
+.BR GssKeyEx ,
+one can have an SSHv2 server that has no host public
+keys, so that only
+.B GssKeyEx
+can be used. With such servers, rekeying
 fails if the client's credentials are expired.
 .sp
 .LP
@@ -383,7 +502,9 @@ credentials to impersonate the user.
 GSS-API user authorization is covered in \fBgss_auth_rules\fR(5).
 .sp
 .LP
-Rekeying can be used to redelegate credentials when \fBGssKeyEx\fR is
+Rekeying can be used to redelegate credentials when
+.B GssKeyEx
+is
 "\fByes\fR". (See \fB~R\fR under \fBEscape Characters\fR above.)
 .SH OPTIONS
 .sp
@@ -393,51 +514,59 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-1\fR
+.B -1
 .ad
 .sp .6
 .RS 4n
-Forces \fBssh\fR to try protocol version 1 only.
+Forces
+.B ssh
+to try protocol version 1 only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-2\fR
+.B -2
 .ad
 .sp .6
 .RS 4n
-Forces \fBssh\fR to try protocol version 2 only.
+Forces
+.B ssh
+to try protocol version 2 only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-4\fR
+.B -4
 .ad
 .sp .6
 .RS 4n
-Forces \fBssh\fR to use IPv4 addresses only.
+Forces
+.B ssh
+to use IPv4 addresses only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-6\fR
+.B -6
 .ad
 .sp .6
 .RS 4n
-Forces \fBssh\fR to use IPv6 addresses only.
+Forces
+.B ssh
+to use IPv6 addresses only.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .sp .6
 .RS 4n
@@ -448,7 +577,7 @@ Disables forwarding of the authentication agent connection.
 .ne 2
 .mk
 .na
-\fB-A\fR
+.B -A
 .ad
 .sp .6
 .RS 4n
@@ -485,11 +614,19 @@ interfaces or aliased addresses.
 .RS 4n
 Selects the cipher specification for encrypting the session.
 .sp
-For protocol version 1, \fIcipher_spec\fR is a single cipher. See the
-\fBCipher\fR option in \fBssh_config\fR(4) for more information.
+For protocol version 1,
+.I cipher_spec
+is a single cipher. See the
+\fBCipher\fR option in
+.BR ssh_config (4)
+for more information.
 .sp
-For protocol version 2, \fIcipher_spec\fR is a comma-separated list of
-ciphers listed in order of preference. See the \fICiphers\fR option in
+For protocol version 2,
+.I cipher_spec
+is a comma-separated list of
+ciphers listed in order of preference. See the
+.I Ciphers
+option in
 \fBssh_config\fR(4) for more information.
 .RE
 
@@ -497,18 +634,26 @@ ciphers listed in order of preference. See the \fICiphers\fR option in
 .ne 2
 .mk
 .na
-\fB-C\fR
+.B -C
 .ad
 .sp .6
 .RS 4n
 Requests compression of all data (including stdin, stdout, stderr, and data
 for forwarded X11 and TCP/IP connections). The compression algorithm is the
-same used by \fBgzip\fR(1). The \fBgzip\fR man page is available in the
+same used by
+.BR gzip (1).
+The
+.B gzip
+man page is available in the
 \fBSUNWsfman\fR package. The "level" can be controlled by the
-\fBCompressionLevel\fR option (see \fBssh_config\fR(4)). Compression is
+\fBCompressionLevel\fR option (see
+.BR ssh_config (4)).
+Compression is
 desirable on modem lines and other slow connections, but only slows down
 things on fast networks. The default value can be set on a host-by-host
-basis in the configuration files. See the \fBCompression\fR option in
+basis in the configuration files. See the
+.B Compression
+option in
 \fBssh_config\fR(4).
 .RE
 
@@ -520,13 +665,23 @@ basis in the configuration files. See the \fBCompression\fR option in
 .ad
 .sp .6
 .RS 4n
-Specifies a local \fBdynamic\fR application-level port forwarding. This
+Specifies a local
+.B dynamic
+application-level port forwarding. This
 works by allocating a socket to listen to port on the local side, optionally
-bound to the specified \fIbind_address\fR. Whenever a connection is made to
+bound to the specified
+.IR bind_address .
+Whenever a connection is made to
 this port, the connection is forwarded over the secure channel. The
 application protocol is then used to determine where to connect to from the
-remote machine. Currently, the \fBSOCKS4\fR and \fBSOCKS5\fR protocols are
-supported and \fBssh\fR acts as a SOCKS server. Only a user with enough
+remote machine. Currently, the
+.B SOCKS4
+and
+.B SOCKS5
+protocols are
+supported and
+.B ssh
+acts as a SOCKS server. Only a user with enough
 privileges can forward privileged ports. Dynamic port forwardings can also
 be specified in the configuration file.
 .sp
@@ -534,9 +689,13 @@ IPv6 addresses can be specified with an alternative syntax:
 \fB[\fIbind_address\fB/]\fIport\fR or by enclosing the address in
 square brackets. By default, the local port is bound in accordance with the
 \fBGatewayPorts\fR setting. However, an explicit \fIbind_address\fR can be
-used to bind the connection to a specific address. The \fIbind_address\fR of
+used to bind the connection to a specific address. The
+.I bind_address
+of
 \fBlocalhost\fR indicates that the listening port be bound for local use
-only, while an empty address or \fB*\fR indicates that the port should be
+only, while an empty address or
+.B *
+indicates that the port should be
 available from all interfaces.
 .RE
 
@@ -544,7 +703,9 @@ available from all interfaces.
 .ne 2
 .mk
 .na
-\fB-e\fR \fIch\fR | ^\fIch\fR | none\fR
+.B -e
+.I ch
+| ^\fIch\fR | none\fR
 .ad
 .sp .6
 .RS 4n
@@ -564,11 +725,17 @@ itself, the escape character sends itself once. Setting the character to
 .ad
 .sp .6
 .RS 4n
-Requests \fBssh\fR to go to background just before command execution. This
-is useful if \fBssh\fR is going to ask for passwords or passphrases, but the
-user wants it in the background. This implies the \fB-n\fR option. The
+Requests
+.B ssh
+to go to background just before command execution. This
+is useful if
+.B ssh
+is going to ask for passwords or passphrases, but the
+user wants it in the background. This implies the
+.B -n
+option. The
 recommended way to start X11 programs at a remote site is with something
-like \fBssh\fR \fB-f\fR \fIhost\fR \fIxterm\fR.
+like \fBssh -f\fR \fIhost xterm\fR.
 .RE
 
 .sp
@@ -589,7 +756,7 @@ configuration file is \fB$HOME/.ssh/config\fR.
 .ne 2
 .mk
 .na
-\fB-g\fR
+.B -g
 .ad
 .sp .6
 .RS 4n
@@ -604,12 +771,18 @@ Allows remote hosts to connect to local forwarded ports.
 .ad
 .sp .6
 .RS 4n
-Selects a file from which the identity (private key) for \fBRSA\fR or
+Selects a file from which the identity (private key) for
+.B RSA
+or
 \fBDSA\fR authentication is read. The default is \fB$HOME/.ssh/identity\fR
-for protocol version 1, and \fB$HOME/.ssh/id_rsa\fR and
+for protocol version 1, and
+.B $HOME/.ssh/id_rsa
+and
 \fB$HOME/.ssh/id_dsa\fR for protocol version 2. Identity files can also be
 specified on a per-host basis in the configuration file. It is possible to
-have multiple \fB-i\fR options (and multiple identities specified in
+have multiple
+.B -i
+options (and multiple identities specified in
 configuration files).
 .RE
 
@@ -636,9 +809,13 @@ specified on a per-host basis in the configuration file.
 Specifies that the specified port on the local (client) host is to be
 forwarded to the specified host and port on the remote side. This works by
 allocating a socket to listen to the port on the local side, optionally
-bound to the specified \fIbind_address\fR. Then, whenever a connection is
+bound to the specified
+.IR bind_address .
+Then, whenever a connection is
 made to this port, the connection is forwarded over the secure channel and a
-connection is made to host port \fIhostport\fR from the remote machine. Port
+connection is made to host port
+.I hostport
+from the remote machine. Port
 forwardings can also be specified in the configuration file. Only a user
 with enough privileges can forward privileged ports. IPv6 addresses can be
 specified with an alternative syntax:
@@ -647,9 +824,13 @@ or by enclosing the address in square brackets.
 .sp
 By default, the local port is bound in accordance with the
 \fBGatewayPorts\fR setting. However, an explicit \fIbind_address\fR can be
-used to bind the connection to a specific address. The \fIbind_address\fR of
+used to bind the connection to a specific address. The
+.I bind_address
+of
 \fBlocalhost\fR indicates that the listening port be bound for local use
-only, while an empty address or \fB*\fR indicates that the port should be
+only, while an empty address or
+.B *
+indicates that the port should be
 available from all interfaces.
 .RE
 
@@ -670,12 +851,19 @@ preference. See the MACs keyword for more information.
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .sp .6
 .RS 4n
-Redirects \fBstdin\fR from \fB/dev/null\fR (actually, prevents reading from
-\fBstdin\fR). This must be used when \fBssh\fR is run in the background. A
+Redirects
+.B stdin
+from
+.B /dev/null
+(actually, prevents reading from
+.BR stdin ).
+This must be used when
+.B ssh
+is run in the background. A
 common trick is to use this to run X11 programs on a remote machine. For
 example,
 .sp
@@ -686,9 +874,17 @@ ssh -n shadows.cs.hut.fi emacs &
 .in -2
 .sp
 
-starts an \fBemacs\fR on \fBshadows.cs.hut.fi\fR, and the X11 connection is
-automatically forwarded over an encrypted channel. The \fBssh\fR program is
-put in the background. This does not work if \fBssh\fR needs to ask for a
+starts an
+.B emacs
+on
+.BR shadows.cs.hut.fi ,
+and the X11 connection is
+automatically forwarded over an encrypted channel. The
+.B ssh
+program is
+put in the background. This does not work if
+.B ssh
+needs to ask for a
 password or passphrase. See also the \fB-f\fR option.
 .RE
 
@@ -696,7 +892,7 @@ password or passphrase. See also the \fB-f\fR option.
 .ne 2
 .mk
 .na
-\fB-N\fR
+.B -N
 .ad
 .sp .6
 .RS 4n
@@ -734,7 +930,7 @@ on a per-host basis in the configuration file.
 .ne 2
 .mk
 .na
-\fB-P\fR
+.B -P
 .ad
 .sp .6
 .RS 4n
@@ -746,7 +942,7 @@ supported.
 .ne 2
 .mk
 .na
-\fB-q\fR
+.B -q
 .ad
 .sp .6
 .RS 4n
@@ -766,7 +962,9 @@ Specifies that the specified port on the remote (server) host is to be
 forwarded to the specified host and port on the local side. This works by
 allocating a socket to listen to the port on the remote side. Then, whenever
 a connection is made to this port, the connection is forwarded over the
-secure channel and a connection is made to host port \fIhostport\fR from the
+secure channel and a connection is made to host port
+.I hostport
+from the
 local machine. Port forwardings can also be specified in the configuration
 file. Privileged ports can be forwarded only when logging in on the remote
 machine as a user with enough privileges.
@@ -777,7 +975,11 @@ or using an alternative syntax:
 .sp
 By default, the listening socket on the server is bound to the loopback
 interface only. This can be overridden by specifying a \fIbind_address\fR.
-An empty \fIbind_address\fR, or the address \fB*\fR, indicates that the
+An empty
+.IR bind_address ,
+or the address
+.BR * ,
+indicates that the
 remote socket should listen on all interfaces. Specifying a remote
 \fIbind_address\fR only succeeds if the server's \fBGatewayPorts\fR option
 is enabled. See \fBsshd_config\fR(4).
@@ -787,7 +989,7 @@ is enabled. See \fBsshd_config\fR(4).
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .sp .6
 .RS 4n
@@ -801,21 +1003,26 @@ The subsystem is specified as the remote command.
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .sp .6
 .RS 4n
 Forces pseudo-tty allocation. This can be used to execute arbitrary
 screen-based programs on a remote machine, which can be very useful, for
-example, when implementing menu services. Multiple \fB-t\fR options force
-allocation, even if \fBssh\fR has no local \fBtty\fR.
+example, when implementing menu services. Multiple
+.B -t
+options force
+allocation, even if
+.B ssh
+has no local
+.BR tty .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-T\fR
+.B -T
 .ad
 .sp .6
 .RS 4n
@@ -826,13 +1033,17 @@ Disables pseudo-tty allocation (protocol version 2 only).
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .sp .6
 .RS 4n
-Verbose mode. Causes \fBssh\fR to print debugging messages about its
+Verbose mode. Causes
+.B ssh
+to print debugging messages about its
 progress. This is helpful in debugging connection, authentication, and
-configuration problems. Multiple \fB-v\fR options increase the verbosity.
+configuration problems. Multiple
+.B -v
+options increase the verbosity.
 Maximum is 3.
 .RE
 
@@ -840,7 +1051,7 @@ Maximum is 3.
 .ne 2
 .mk
 .na
-\fB-x\fR
+.B -x
 .ad
 .sp .6
 .RS 4n
@@ -851,7 +1062,7 @@ Disables X11 forwarding.
 .ne 2
 .mk
 .na
-\fB-X\fR
+.B -X
 .ad
 .sp .6
 .RS 4n
@@ -865,7 +1076,9 @@ An attacker can then be able to perform activities such as keystroke
 monitoring.
 .sp
 For this reason, X11 forwarding might be subjected to X11 SECURITY
-extension restrictions. Refer to the \fBForwardX11Trusted\fR directive in
+extension restrictions. Refer to the
+.B ForwardX11Trusted
+directive in
 \fBssh_config\fR(4) for more information.
 .sp
 If X11 forwarding is enabled, remote X11 clients is trusted by default.
@@ -880,11 +1093,13 @@ This means that they have full access to the original X11 display.
 .ne 2
 .mk
 .na
-\fBDISPLAY\fR
+.B DISPLAY
 .ad
 .sp .6
 .RS 4n
-The \fBDISPLAY\fR variable must be set for X11 display forwarding to work.
+The
+.B DISPLAY
+variable must be set for X11 display forwarding to work.
 
 .RE
 
@@ -892,26 +1107,41 @@ The \fBDISPLAY\fR variable must be set for X11 display forwarding to work.
 .ne 2
 .mk
 .na
-\fBSSH_ASKPASS\fR
+.B SSH_ASKPASS
 .ad
 .sp .6
 .RS 4n
-If \fBssh\fR needs a passphrase, it reads the passphrase from the current
-terminal if it was run from a terminal. If \fBssh\fR does not have a
-terminal associated with it but \fBDISPLAY\fR and \fBSSH_ASKPASS\fR are set,
-it executes the program specified by \fBSSH_ASKPASS\fR and opens an X11
+If
+.B ssh
+needs a passphrase, it reads the passphrase from the current
+terminal if it was run from a terminal. If
+.B ssh
+does not have a
+terminal associated with it but
+.B DISPLAY
+and
+.B SSH_ASKPASS
+are set,
+it executes the program specified by
+.B SSH_ASKPASS
+and opens an X11
 window to read the passphrase. This is particularly useful when calling
 \fBssh\fR from a .Xsession or related script. On some machines it might be
-necessary to redirect the input from \fB/dev/null\fR to make this work. The
-system is shipped with \fB/usr/lib/ssh/ssh-askpass\fR which is the default
-value for \fBSSH_ASKPASS\fR
+necessary to redirect the input from
+.B /dev/null
+to make this work. The
+system is shipped with
+.B /usr/lib/ssh/ssh-askpass
+which is the default
+value for
+.BR SSH_ASKPASS
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSSH_AUTH_SOCK\fR
+.B SSH_AUTH_SOCK
 .ad
 .sp .6
 .RS 4n
@@ -923,7 +1153,7 @@ agent.
 .ne 2
 .mk
 .na
-\fBSSH_LANGS\fR
+.B SSH_LANGS
 .ad
 .sp .6
 .RS 4n
@@ -940,75 +1170,93 @@ locale on the server.
 .ad
 .br
 .na
-\fBLC_MESSAGES\fR, \fBLC_MONETARY\fR, \fBLC_NUMERIC\fR,
-\fBLC_TIME\fR
+.BR LC_MESSAGES ,
+.BR LC_MONETARY ,
+.BR LC_NUMERIC ,
+.B LC_TIME
 .ad
 .sp .6
 .RS 4n
 The values of these environment variables can be set in remote sessions
 according to the locale settings on the client side and availability of
 support for those locales on the server side. Environment Variable Passing
-(see \fIRFC 4254\fR) is used for passing them over to the server side.
+(see
+.IR "RFC 4254" )
+is used for passing them over to the server side.
 .RE
 
 .sp
 .LP
-See the \fBENVIRONMENT VARIABLES\fR section in the \fBsshd\fR(1M) man page
+See the
+.B "ENVIRONMENT VARIABLES"
+section in the
+.BR sshd "(1M) man page"
 for more information on how locale setting can be further changed depending
 on server side configuration.
 .SH EXIT STATUS
 .sp
 .LP
 The status of the remote program is returned as the exit status of
-\fBssh\fR. \fB255\fR is returned if an error occurred at anytime during the
+.BR ssh .
+\fB255\fR is returned if an error occurred at anytime during the
 \fBssh\fR connection, including the initial key exchange.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB$HOME/.ssh/known_hosts\fR
+.B $HOME/.ssh/known_hosts
 .ad
 .RS 26n
 .rt
 Records host keys for all hosts the user has logged into that are not in
-\fB/etc/ssh/ssh_known_hosts\fR. See \fBsshd\fR(1M).
+.BR /etc/ssh/ssh_known_hosts .
+See
+.BR sshd (1M).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB$HOME/.ssh/identity\fR
+.B $HOME/.ssh/identity
 .ad
 .br
 .na
-\fB$HOME/.ssh/id_dsa\fR
+.B $HOME/.ssh/id_dsa
 .ad
 .br
 .na
-\fB$HOME/.ssh/id_ssa\fR
+.B $HOME/.ssh/id_ssa
 .ad
 .RS 26n
 .rt
 Contains the authentication identity of the user. These files are for
-protocol 1 \fBRSA\fR, protocol 2 \fBDSA\fR, and protocol 2 \fBRSA\fR,
+protocol 1
+.BR RSA ,
+protocol 2
+.BR DSA ,
+and protocol 2
+.BR RSA ,
 respectively. These files contain sensitive data and should be readable by
-the user but not accessible by others (read/write/execute). \fBssh\fR
+.RB "the user but not accessible by others (read/write/execute)." " ssh"
 ignores a private key file if it is accessible by others. It is possible to
 specify a passphrase when generating the key. The passphrase is used to
-encrypt the sensitive part of this file using \fB3DES\fR.
+encrypt the sensitive part of this file using
+.BR 3DES .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/ssh/sshrc\fR
+.B /etc/ssh/sshrc
 .ad
 .RS 26n
 .rt
-Commands in this file are executed by \fBssh\fR when the user logs in just
+Commands in this file are executed by
+.B ssh
+when the user logs in just
 before the user's shell or command is started. See \fBsshd\fR(1M) for more
 information.
 .RE
@@ -1017,11 +1265,13 @@ information.
 .ne 2
 .mk
 .na
-\fB$HOME/.ssh/rc\fR
+.B $HOME/.ssh/rc
 .ad
 .RS 26n
 .rt
-Commands in this file are executed by \fBssh\fR when the user logs in just
+Commands in this file are executed by
+.B ssh
+when the user logs in just
 before the user's shell or command is started. See \fBsshd\fR(1M) for more
 information.
 .RE
@@ -1030,7 +1280,7 @@ information.
 .ne 2
 .mk
 .na
-\fB$HOME/.ssh/environment\fR
+.B $HOME/.ssh/environment
 .ad
 .RS 26n
 .rt
@@ -1041,7 +1291,9 @@ VARIABLES.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1060,18 +1312,31 @@ Interface StabilitySee below.
 .sp
 .LP
 The command line syntax is Committed. The remote locale selection through
-passing \fBLC_*\fR environment variables is Uncommitted.
+passing
+.B LC_*
+environment variables is Uncommitted.
 .SH SEE ALSO
 .sp
 .LP
-\fBrlogin\fR(1), \fBrsh\fR(1), \fBscp\fR(1), \fBssh-add\fR(1),
-\fBssh-agent\fR(1), \fBssh-keygen\fR(1), \fBssh-http-proxy-connect\fR(1),
-\fBssh-socks5-proxy-connect\fR(1), \fBtelnet\fR(1), \fBsshd\fR(1M),
-\fBssh_config\fR(4), \fBsshd_config\fR(4), \fBattributes\fR(5),
-\fBgss_auth_rules\fR(5), \fBkerberos\fR(5), \fBprivileges\fR(5)
+.BR rlogin (1),
+.BR rsh (1),
+.BR scp (1),
+.BR ssh-add (1),
+.BR ssh-agent (1),
+.BR ssh-keygen (1),
+.BR ssh-http-proxy-connect (1),
+.BR ssh-socks5-proxy-connect (1),
+.BR telnet (1),
+.BR sshd (1M),
+\fBssh_config\fR(4),
+.BR sshd_config (4),
+.BR attributes (5),
+.BR gss_auth_rules (5),
+.BR kerberos (5),
+.BR privileges (5)
 .sp
 .LP
-\fIRFC 1928\fR
+.I RFC 1928
 .sp
 .LP
-\fIRFC 4254\fR
+.I RFC 4254

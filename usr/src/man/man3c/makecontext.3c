@@ -66,74 +66,131 @@ makecontext, swapcontext \- manipulate user contexts
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmakecontext()\fR function modifies the context specified by
-\fIucp\fR, which has been initialized using \fBgetcontext\fR(2). When this
-context is resumed using \fBswapcontext()\fR or \fBsetcontext\fR(2),
-execution continues by calling the function \fIfunc\fR, passing it the
-arguments that follow \fIargc\fR in the \fBmakecontext()\fR call. The value
-of \fIargc\fR must match the number of pointer-sized integer arguments
-passed to \fIfunc\fR, otherwise the behavior is undefined.
+The
+.B makecontext()
+function modifies the context specified by
+.IR ucp ,
+which has been initialized using
+.BR getcontext (2).
+When this
+context is resumed using
+.B swapcontext()
+or
+.BR setcontext (2),
+execution continues by calling the function
+.IR func ,
+passing it the
+arguments that follow
+.I argc
+in the
+.B makecontext()
+call. The value
+of
+.I argc
+must match the number of pointer-sized integer arguments
+passed to
+.IR func ,
+otherwise the behavior is undefined.
 .sp
 .LP
-Before a call is made to \fBmakecontext()\fR, the context being modified
+Before a call is made to
+.BR makecontext() ,
+the context being modified
 should have a stack allocated for it. The stack is assigned to the context
-by initializing the \fBuc_stack\fR member.
+by initializing the
+.B uc_stack
+member.
 .sp
 .LP
-The \fBuc_link\fR member is used to determine the context that will be
-resumed when the context being modified by \fBmakecontext()\fR returns.  The
+The
+.B uc_link
+member is used to determine the context that will be
+resumed when the context being modified by
+.B makecontext()
+returns.  The
 \fBuc_link\fR member should be initialized prior to the call to
-\fBmakecontext()\fR. If the \fBuc_link\fR member is initialized to
-\fINULL\fR, the thread executing \fIfunc\fR will exit when \fIfunc\fR
+.BR makecontext() .
+If the
+.B uc_link
+member is initialized to
+.IR NULL ,
+the thread executing \fIfunc\fR will exit when \fIfunc\fR
 returns. See \fBpthread_exit\fR(3C).
 .sp
 .LP
-The \fBswapcontext()\fR function saves the current context in the context
-structure pointed to by \fIoucp\fR and sets the context to the context
-structure pointed to by \fIucp\fR.
+The
+.B swapcontext()
+function saves the current context in the context
+structure pointed to by
+.I oucp
+and sets the context to the context
+structure pointed to by
+.IR ucp .
 .sp
 .LP
-If the \fIucp\fR or \fIoucp\fR argument points to an invalid address, the
-behavior is undefined and \fBerrno\fR may be set to \fBEFAULT\fR.
+If the
+.I ucp
+or
+.I oucp
+argument points to an invalid address, the
+behavior is undefined and
+.B errno
+may be set to
+.BR EFAULT .
 .SH RETURN VALUES
 .sp
 .LP
-On successful completion, \fBswapcontext()\fR returns \fB0\fR. Otherwise,
+On successful completion,
+.B swapcontext()
+returns
+.BR 0 .
+Otherwise,
 \fB\(mi1\fR is returned and \fBerrno\fR is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBswapcontext()\fR function will fail if:
+The
+.B swapcontext()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
-The \fIucp\fR argument does not have enough stack left to complete the
+The
+.I ucp
+argument does not have enough stack left to complete the
 operation.
 .RE
 
 .sp
 .LP
-The \fBswapcontext()\fR function may fail if:
+The
+.B swapcontext()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-The \fIucp\fR or \fIoucp\fR argument points to an invalid address.
+The
+.I ucp
+or
+.I oucp
+argument points to an invalid address.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAlternate execution context on a stack whose memory was
-allocated using \fBmmap()\fR.
+\fBExample 1\fR Alternate execution context on a stack whose memory was
+allocated using
+.BR mmap() .
 .sp
 .in +2
 .nf
@@ -184,7 +241,9 @@ support for multithreading. See \fBthreads\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -203,27 +262,47 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBmmap\fR(2), \fBgetcontext\fR(2), \fBsigaction\fR(2),
-\fBsigprocmask\fR(2), \fBpthread_exit\fR(3C), \fBucontext.h\fR(3HEAD),
-\fBattributes\fR(5), \fBstandards\fR(5), \fBthreads\fR(5)
+.BR mmap (2),
+.BR getcontext (2),
+.BR sigaction (2),
+.BR sigprocmask (2),
+.BR pthread_exit (3C),
+.BR ucontext.h (3HEAD),
+.BR attributes (5),
+.BR standards (5),
+.BR threads (5)
 .SH NOTES
 .sp
 .LP
-The semantics of the \fBuc_stack\fR member of the \fBucontext_t\fR
-structure have changed as they apply to inputs to \fBmakecontext()\fR. Prior
-to Solaris 10, the \fBss_sp\fR member of the \fBuc_stack\fR structure
+The semantics of the
+.B uc_stack
+member of the
+.BR ucontext_t
+structure have changed as they apply to inputs to
+.BR makecontext() .
+Prior
+to Solaris 10, the
+.B ss_sp
+member of the
+.B uc_stack
+structure
 represented the high memory address of the area reserved for the stack. The
 \fBss_sp\fR member now represents the base (low memory address), in keeping
-with other uses of \fBss_sp\fR.
+with other uses of
+.BR ss_sp .
 .sp
 .LP
-This change in the meaning of \fBss_sp\fR is now the default behavior. The
+This change in the meaning of
+.B ss_sp
+is now the default behavior. The
 \fB-D__MAKECONTEXT_V2_SOURCE\fR compilation flag used in Solaris 9 update
 releases to access this behavior is obsolete.
 .sp
 .LP
 Binary compatibility has been preserved with releases prior to Solaris 10.
-Before recompiling, applications that use \fBmakecontext()\fR must be
+Before recompiling, applications that use
+.B makecontext()
+must be
 updated to reflect this behavior change. The example below demonstates a
 typical change that must be applied:
 .sp

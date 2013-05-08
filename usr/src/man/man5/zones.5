@@ -36,13 +36,17 @@ The privileges available within a zone are restricted to prevent operations
 with system-wide impact. See \fBprivileges\fR(5).
 .sp
 .LP
-You can configure and administer zones with the \fBzoneadm\fR(1M) and
+You can configure and administer zones with the
+.BR zoneadm "(1M) and"
 \fBzonecfg\fR(1M) utilities. You can specify the configuration details a
 zone, install file system contents including software packages into the
 zone, and manage the runtime state of the zone. You can use the
-\fBzlogin\fR(1) to run commands within an active zone. You can do this
+.BR zlogin (1)
+to run commands within an active zone. You can do this
 without logging in through a network-based login server such as
-\fBin.rlogind\fR(1M) or \fBsshd\fR(1M).
+.BR in.rlogind (1M)
+or
+.BR sshd (1M).
 .sp
 .LP
 The autobooting of zones is enabled and disabled by the zones service,
@@ -52,8 +56,13 @@ identified by the FMRI:
 svc:/system/zones:default
 .sp
 .LP
-See \fBzoneadm\fR(1M). Note that a zone has an \fBautoboot\fR property,
-which can be set to \fBtrue\fR (always autoboot). However, if the zones
+See
+.BR zoneadm "(1M). Note that a zone has an"
+.B autoboot
+property,
+which can be set to
+.B true
+(always autoboot). However, if the zones
 service is disabled, autoboot will not occur, regardless of the setting of
 the autoboot property for a given zone. See \fBzonecfg\fR(1M).
 .sp
@@ -61,7 +70,9 @@ the autoboot property for a given zone. See \fBzonecfg\fR(1M).
 An alphanumeric name and numeric ID identify each active zone. Alphanumeric
 names are configured using the \fBzonecfg\fR(1M) utility. Numeric IDs are
 automatically assigned when the zone is booted. The \fBzonename\fR(1)
-utility reports the current zone name, and the \fBzoneadm\fR(1M) utility can
+utility reports the current zone name, and the
+.BR zoneadm (1M)
+utility can
 be used to report the names and IDs of configured zones.
 .sp
 .LP
@@ -70,7 +81,7 @@ A zone can be in one of several states:
 .ne 2
 .mk
 .na
-\fBCONFIGURED\fR
+.B CONFIGURED
 .ad
 .RS 17n
 .rt
@@ -82,7 +93,7 @@ and committed to stable storage.
 .ne 2
 .mk
 .na
-\fBINCOMPLETE\fR
+.B INCOMPLETE
 .ad
 .RS 17n
 .rt
@@ -94,7 +105,7 @@ or was interrupted in the midst of such a transition.
 .ne 2
 .mk
 .na
-\fBINSTALLED\fR
+.B INSTALLED
 .ad
 .RS 17n
 .rt
@@ -106,7 +117,7 @@ system: packages have been installed under the zone's root path.
 .ne 2
 .mk
 .na
-\fBREADY\fR
+.B READY
 .ad
 .RS 17n
 .rt
@@ -119,7 +130,7 @@ but no processes associated with the zone have been started.
 .ne 2
 .mk
 .na
-\fBRUNNING\fR
+.B RUNNING
 .ad
 .RS 17n
 .rt
@@ -131,11 +142,11 @@ environment are running.
 .ne 2
 .mk
 .na
-\fBSHUTTING_DOWN\fR
+.B SHUTTING_DOWN
 .ad
 .br
 .na
-\fBDOWN\fR
+.B DOWN
 .ad
 .RS 17n
 .rt
@@ -150,9 +161,16 @@ platform cannot be destroyed. Such cases require operator intervention.
 .LP
 Processes running inside a zone (aside from the global zone) have
 restricted access to other processes. Only processes in the same zone are
-visible through \fB/proc\fR (see \fBproc\fR(4) or through system call
-interfaces that take process IDs such as \fBkill\fR(2) and
-\fBpriocntl\fR(2). Attempts to access processes that exist in other zones
+visible through
+.B /proc
+(see
+.BR proc (4)
+or through system call
+interfaces that take process IDs such as
+.BR kill (2)
+and
+.BR priocntl (2).
+Attempts to access processes that exist in other zones
 (including the global zone) fail with the same error code that would be
 issued if the specified process did not exist.
 .SS "Privilege Restrictions"
@@ -163,7 +181,9 @@ privileges, in order to prevent one zone from being able to perform
 operations that might affect other zones. The set of privileges limits the
 capabilities of privileged users (such as the super-user or root user)
 within the zone. The list of privileges available within a zone can be
-displayed using the \fBppriv\fR(1) utility. For more information about
+displayed using the
+.BR ppriv (1)
+utility. For more information about
 privileges, see \fBprivileges\fR(5).
 .SS "Device Restrictions"
 .sp
@@ -171,7 +191,9 @@ privileges, see \fBprivileges\fR(5).
 The set of devices available within a zone is restricted, to prevent a
 process in one zone from interfering with processes in other zones. For
 example, a process in a zone should not be able to modify kernel memory
-using \fB/dev/kmem\fR, or modify the contents of the root disk. Thus, by
+using
+.BR /dev/kmem ,
+or modify the contents of the root disk. Thus, by
 default, only a few pseudo devices considered safe for use within a zone are
 available. Additional devices can be made available within specific zones
 using the \fBzonecfg\fR(1M) utility.
@@ -179,7 +201,9 @@ using the \fBzonecfg\fR(1M) utility.
 .LP
 The device and privilege restrictions have a number of effects on the
 utilities that can run in a non-global zone. For example, the
-\fBeeprom\fR(1M), \fBprtdiag\fR(1M), and \fBprtconf\fR(1M) utilities do not
+.BR eeprom (1M),
+.BR prtdiag (1M),
+and \fBprtconf\fR(1M) utilities do not
 work in a zone since they rely on devices that are not normally available.
 .SS "Brands"
 .sp
@@ -199,7 +223,8 @@ directory known as the zone root. Processes inside the zone can access only
 files within that part of the hierarchy, that is, files that are located
 beneath the zone root. This prevents processes in one zone from corrupting
 or examining file system data associated with another zone. The
-\fBchroot\fR(1M) utility can be used within a zone, but can only restrict
+.BR chroot (1M)
+utility can be used within a zone, but can only restrict
 the process to a root path accessible within the zone.
 .sp
 .LP
@@ -216,13 +241,20 @@ mounts are removed when the zone is halted or rebooted.
 .SS "Networking"
 .sp
 .LP
-A zone has its own port number space for \fBTCP\fR, \fBUDP\fR, and
+A zone has its own port number space for
+.BR TCP ,
+.BR UDP ,
+and
 \fBSCTP\fR applications and typically one or more separate \fBIP\fR
 addresses (but some configurations of Trusted Extensions share IP
 address(es) between zones).
 .sp
 .LP
-For the \fBIP\fR layer (\fBIP\fR routing, \fBARP\fR, \fBIPsec\fR, \fBIP\fR
+For the
+.B IP
+layer (\fBIP\fR routing, \fBARP\fR,
+.BR IPsec ,
+.B IP
 Filter, and so on) a zone can either share the configuration and state with
 the global zone (a shared-\fBIP\fR zone), or have its distinct \fBIP\fR
 layer configuration and state (an exclusive-\fBIP\fR zone).
@@ -230,25 +262,39 @@ layer configuration and state (an exclusive-\fBIP\fR zone).
 .LP
 If a zone is to be connected to the same datalink, that is, be on the same
 \fBIP\fR subnet or subnets as the global zone, then it is appropriate for
-the zone to use the shared \fBIP\fR instance.
+the zone to use the shared
+.B IP
+instance.
 .sp
 .LP
-If a zone needs to be isolated at the \fBIP\fR layer on the network, for
+If a zone needs to be isolated at the
+.B IP
+layer on the network, for
 instance being connected to different \fBVLAN\fRs or different \fBLAN\fRs
 than the global zone and other non-global zones, then for isolation reasons
-the zone should have its exclusive \fBIP\fR.
+the zone should have its exclusive
+.BR IP .
 .sp
 .LP
 A shared-\fBIP\fR zone is prevented from doing certain things towards the
-network (such as changing its \fBIP\fR address or sending spoofed \fBIP\fR
+network (such as changing its
+.B IP
+address or sending spoofed
+.BR IP
 or Ethernet packets), but an exclusive-\fBIP\fR zone has more or less the
 same capabilities towards the network as a separate host that is connected
 to the same network interface. In particular, the superuser in such a zone
-can change its \fBIP\fR address and spoof \fBARP\fR packets.
+can change its
+.B IP
+address and spoof
+.B ARP
+packets.
 .sp
 .LP
 The shared-\fBIP\fR zones are assigned one or more network interface names
-and \fBIP\fR addresses in \fBzonecfg\fR(1M). The network interface name(s)
+and
+.B IP
+addresses in \fBzonecfg\fR(1M). The network interface name(s)
 must also be configured in the global zone.
 .sp
 .LP
@@ -258,7 +304,9 @@ assigned to that zone, that is, it (or they) can not be assigned to some
 other running zone, nor can they be used by the global zone.
 .sp
 .LP
-The full \fBIP\fR-level functionality in the form of \fBDHCP\fR client,
+The full \fBIP\fR-level functionality in the form of
+.B DHCP
+client,
 \fBIPsec\fR and \fBIP\fR Filter, is available in exclusive-\fBIP\fR zones
 and not in shared-\fBIP\fR zones.
 .SS "Host Identifiers"
@@ -267,14 +315,19 @@ and not in shared-\fBIP\fR zones.
 A zone is capable of emulating a 32-bit host identifier, which can be
 configured via \fBzonecfg\fR(1M), for the purpose of system consolidation.
 If a zone emulates a host identifier, then commands such as \fBhostid\fR(1)
-and \fBsysdef\fR(1M) as well as C interfaces such as \fBsysinfo\fR(2) and
-\fBgethostid\fR(3C) that are executed within the context of the zone will
+and \fBsysdef\fR(1M) as well as C interfaces such as
+.BR sysinfo (2)
+and
+.BR gethostid (3C)
+that are executed within the context of the zone will
 display or return the zone's emulated host identifier rather than the host
 machine's identifier.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -291,9 +344,19 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBhostid\fR(1), \fBzlogin\fR(1), \fBzonename\fR(1), \fBin.rlogind\fR(1M),
-\fBsshd\fR(1M), \fBsysdef\fR(1M), \fBzoneadm\fR(1M), \fBzonecfg\fR(1M),
-\fBkill\fR(2), \fBpriocntl\fR(2), \fBsysinfo\fR(2), \fBgethostid\fR(3C),
-\fBgetzoneid\fR(3C), \fBucred_get\fR(3C), \fBproc\fR(4),
-\fBattributes\fR(5), \fBbrands\fR(5), \fBprivileges\fR(5),
-\fBcrgetzoneid\fR(9F)
+.BR hostid (1),
+.BR zlogin (1),
+.BR zonename (1),
+.BR in.rlogind (1M),
+.BR sshd (1M),
+\fBsysdef\fR(1M), \fBzoneadm\fR(1M), \fBzonecfg\fR(1M),
+.BR kill (2),
+.BR priocntl (2),
+\fBsysinfo\fR(2), \fBgethostid\fR(3C),
+.BR getzoneid (3C),
+.BR ucred_get (3C),
+.BR proc (4),
+.BR attributes (5),
+.BR brands (5),
+.BR privileges (5),
+.BR crgetzoneid (9F)

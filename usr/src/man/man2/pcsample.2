@@ -32,12 +32,18 @@ pcsample \- program execution time profile
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpcsample()\fR function provides CPU-use statistics by profiling the
-amount of \fBCPU\fR time expended by a program.
+The
+.B pcsample()
+function provides CPU-use statistics by profiling the
+amount of
+.B CPU
+time expended by a program.
 .sp
 .LP
 For profiling dynamically-linked programs and 64-bit programs, it is
-superior to the \fBprofil\fR(2) function, which assumes that the entire
+superior to the
+.BR profil (2)
+function, which assumes that the entire
 program is contained in a small, contiguous segment of the address space,
 divides this segment into "bins", and on each clock tick increments the
 counter in the bin where the program is currently executing. With shared
@@ -47,47 +53,83 @@ address space, and with 64-bit address spaces so large that the size of
 limited value.
 .sp
 .LP
-The \fBpcsample()\fR function is passed an array \fIsamples\fR containing
+The
+.B pcsample()
+function is passed an array
+.I samples
+containing
 \fInsamples\fR pointer-sized elements. During program execution, the kernel
 samples the program counter of the process, storing unadulterated values in
 the array on each clock tick. The kernel stops writing to the array when it
-is full, which occurs after \fInsamples\fR / \fBHZ\fR seconds of process
-virtual time. The \fBHZ\fR value is obtained by invoking the call
+is full, which occurs after
+.I nsamples
+/
+.B HZ
+seconds of process
+virtual time. The
+.B HZ
+value is obtained by invoking the call
 \fBsysconf(_SC_CLK_TCK)\fR. See \fBsysconf\fR(3C).
 .sp
 .LP
-The sampling can be stopped by a subsequent call to \fBpcsample()\fR with
-the \fInsamples\fR argument set to 0.  Like \fBprofil()\fR, sampling
-continues across a call to \fBfork\fR(2), but is disabled by a call to one
-of the \fBexec\fR family of functions (see \fBexec\fR(2)). It is also
+The sampling can be stopped by a subsequent call to
+.B pcsample()
+with
+the
+.I nsamples
+argument set to 0.  Like
+.BR profil() ,
+sampling
+continues across a call to
+.BR fork (2),
+but is disabled by a call to one
+of the
+.B exec
+family of functions (see
+.BR exec (2)).
+It is also
 disabled if an update of the \fIsamples\fB[\|]\fR array causes a memory
 fault.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBpcsample()\fR function always returns \fB0\fR the first time it is
+The
+.B pcsample()
+function always returns
+.B 0
+the first time it is
 called. On subsequent calls, it returns the number of samples that were
-stored during the previous invocation. If \fInsamples\fR is invalid, it
-returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
+stored during the previous invocation. If
+.I nsamples
+is invalid, it
+returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBpcsample()\fR function will fail if:
+The
+.B pcsample()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value of \fInsamples\fR is not valid.
+The value of
+.I nsamples
+is not valid.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -106,5 +148,8 @@ Interface StabilityStable
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBfork\fR(2), \fBprofil\fR(2), \fBsysconf\fR(3C),
-\fBattributes\fR(5)
+.BR exec (2),
+\fBfork\fR(2),
+.BR profil (2),
+\fBsysconf\fR(3C),
+.BR attributes (5)

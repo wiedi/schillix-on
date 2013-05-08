@@ -51,7 +51,7 @@ device.
 .ne 2
 .mk
 .na
-\fIminor_t minor\fR
+.I minor_t minor
 .ad
 .sp .6
 .RS 4n
@@ -62,7 +62,7 @@ The minor number of the exported minor device.
 .ne 2
 .mk
 .na
-\fIint spec_type\fR
+.I int spec_type
 .ad
 .sp .6
 .RS 4n
@@ -73,19 +73,19 @@ The type of minor device (\fBS_IFCHR\fR or \fBS_IFBLK\fR).
 .ne 2
 .mk
 .na
-\fIldi_ev_cookie_t cookie\fR
+.I ldi_ev_cookie_t cookie
 .ad
 .sp .6
 .RS 4n
 An opaque event cookie for the event type returned by a previous call to
-\fBldi_ev_get_cookie\fR(9F).
+.BR ldi_ev_get_cookie (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIvoid *ev_data\fR
+.I void *ev_data
 .ad
 .sp .6
 .RS 4n
@@ -101,34 +101,46 @@ stack. It may result in two actions:
 .TP
 .ie t \(bu
 .el o
-Invocation of \fBLDI\fR callback handlers registered by layered drivers up
+Invocation of
+.B LDI
+callback handlers registered by layered drivers up
 the software stack.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Device contract events generated on minors exported to \fBuserland\fR.
+Device contract events generated on minors exported to
+.BR userland .
 .RE
 .sp
 .LP
 The event propagated up the software stack may be different than the event
-received by the layered driver invoking \fBldi_ev_notify()\fR. For example,
+received by the layered driver invoking
+.BR ldi_ev_notify() .
+For example,
 a volume manager may receive an "offline" event on one of it's \fBLDI\fR
 opened disks, but may choose to propagate a "degraded" event on minors it
-exports to \fBuserland\fR (since it may have more than one copy of the
+exports to
+.B userland
+(since it may have more than one copy of the
 data). The event cookie argument to \fBldi_ev_notify()\fR may be different
 from the event cookie currently possessed by the layered driver. If that is
 the case, the layered driver must generate another event cookie via a new
-\fBldi_ev_get_cookie\fR(9F) call.
+.BR ldi_ev_get_cookie (9F)
+call.
 .sp
 .LP
 The\fBldi_ev_*\fR interfaces are designed to ensure that a "finalize" call
 is generated for layered driver consumers at the earliest point where an
 \fBLDI_EV_FAILURE\fR is detected. If this happens inside the \fBLDI\fR event
 framework, then the framework will invoke finalize. In the event a layered
-driver detects/generates an \fBLDI_EV_FAILURE\fR, then the layered driver
-must invoke \fBldi_ev_finalize()\fR. The following is an example of a
+driver detects/generates an
+.BR LDI_EV_FAILURE ,
+then the layered driver
+must invoke
+.BR ldi_ev_finalize() .
+The following is an example of a
 layered driver invoking \fBldi_ev_finalize()\fR for the "foo" event:
 .sp
 .in +2
@@ -180,7 +192,7 @@ The return values for this function are:
 .ne 2
 .mk
 .na
-\fBLDI_EV_SUCCESS\fR
+.B LDI_EV_SUCCESS
 .ad
 .sp .6
 .RS 4n
@@ -191,7 +203,7 @@ Consumers up the software stack permit state change.
 .ne 2
 .mk
 .na
-\fBLDI_EV_FAILURE\fR
+.B LDI_EV_FAILURE
 .ad
 .sp .6
 .RS 4n
@@ -205,5 +217,6 @@ This function can be called from user and kernel context only.
 .SH SEE ALSO
 .sp
 .LP
-\fBldi_ev_get_cookie\fR(9F), \fBldi_ev_register_callbacks\fR(9F),
-\fBldi_ev_remove_callbacks\fR(9F)
+.BR ldi_ev_get_cookie (9F),
+.BR ldi_ev_register_callbacks (9F),
+.BR ldi_ev_remove_callbacks (9F)

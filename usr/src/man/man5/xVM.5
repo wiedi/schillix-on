@@ -25,10 +25,14 @@ xVM, xvm \- Solaris x86 virtual machine monitor
 .sp
 .LP
 The Solaris xVM software (hereafter xVM) is a virtualization system, or
-\fBvirtual machine monitor\fR, for the Solaris operating system on x86
+.BR "virtual machine monitor" ,
+for the Solaris operating system on x86
 systems. Solaris xVM enables you to run multiple virtual machines
 simultaneously on a single physical machine, often referred to as the
-\fBhost\fR. Each virtual machine, known as a \fBdomain\fR, runs its own
+.BR host .
+Each virtual machine, known as a
+.BR domain ,
+runs its own
 complete and distinct operating system instance, which includes its own I/O
 devices. This differs from zone-based virtualization, in which all zones
 shares the same kernel. (See \fBzones\fR(5).)
@@ -46,8 +50,11 @@ management of the domains. These tools run under a specialized control
 domain, often referred to as \fBdomain 0\fR.
 .sp
 .LP
-To run Solaris xVM, select the entry labelled \fBSolaris xVM\fR in the
-\fBgrub\fR(5) menu at boot time. This boots the hypervisor, which in turn
+To run Solaris xVM, select the entry labelled
+.B "Solaris xVM"
+in the
+.BR grub (5)
+menu at boot time. This boots the hypervisor, which in turn
 boots the control domain. The control domain is a version of Solaris
 modified to run under the xVM hypervisor. At the point at which the control
 domain is running, the control tools are enabled. In most other respects,
@@ -57,7 +64,9 @@ operating system.
 .LP
 The xVM hypervisor delegates control of the physical devices present on the
 machine to domain 0. Thus, by default, only domain 0 has access to such
-devices. The other \fBguest\fR domains running on the host are presented
+devices. The other
+.B guest
+domains running on the host are presented
 with virtualized devices with which they interact as they would physical
 devices.
 .sp
@@ -76,7 +85,8 @@ domains across the allowed set of physical CPUs according to workload.
 .LP
 xVM supports two modes of virtualization. In the first, the operating
 system is aware that it is running under xVM. This mode is called
-\fBparavirtualization\fR. In the second mode, called \fBfully
+.BR paravirtualization .
+In the second mode, called \fBfully
 virtualized\fR, the guest operating system is not aware that it is running
 under xVM. A fully virtualized guest domain is sometimes referred to as a
 \fBHardware-assisted Virtual Machine\fR (HVM). A variation on a
@@ -88,15 +98,21 @@ With paravirtualization, each device, such as a networking interface, is
 presented as a fully virtual interface, and specific drivers are required
 for it. Each virtual device is associated with a physical device and the
 driver is split into two. A \fBfrontend\fR driver runs in the guest domain
-and communicates over a virtual data interface to a \fBbackend\fR driver.
-The \fBbackend\fR driver currently runs in domain 0 and communicates with
+and communicates over a virtual data interface to a
+.B backend
+driver.
+The
+.B backend
+driver currently runs in domain 0 and communicates with
 both the frontend driver and the physical device underneath it. Thus, a
 guest domain can make use of a network card on the host, store data on a
 host disk drive, and so forth.
 .sp
 .LP
 Solaris xVM currently supports two main split drivers used for I/O.
-Networking is done by means of the \fBxnb\fR (xVM Networking Backend)
+Networking is done by means of the
+.B xnb
+(xVM Networking Backend)
 drivers. Guest domains, whether Solaris or another operating system, use
 \fBxnb\fR to transmit and receive networking traffic. Typically, a physical
 NIC is used for communicating with the guest domains, either shared or
@@ -104,7 +120,9 @@ dedicated. Solaris xVM provides networking access to guest domains by means
 of MAC-based virtual network switching.
 .sp
 .LP
-Block I/O is provided by the \fBxdb\fR (xVM Disk Backend) driver, which
+Block I/O is provided by the
+.B xdb
+(xVM Disk Backend) driver, which
 provides virtual disk access to guest domains. In the control domain, the
 disk storage can be in a file, a ZFS volume, or a physical device.
 .sp
@@ -122,7 +140,9 @@ requires only a configuration step, rather than a full install.
 When running as a guest domain, Solaris xVM uses the \fBxnf\fR and
 \fBxdf\fR drivers to talk to the relevant backend drivers. In addition to
 these drivers, the Solaris console is virtualized when running as a guest
-domain; this driver interacts with the \fBxenconsoled\fR(1M) daemon running
+domain; this driver interacts with the
+.BR xenconsoled (1M)
+daemon running
 in domain 0 to provide console access.
 .sp
 .LP
@@ -145,7 +165,9 @@ default.
 .sp
 .LP
 In paravirtualized mode, Solaris identifies the platform as \fBi86xpv\fR,
-as seen in the return of the following \fBuname\fR(1) command:
+as seen in the return of the following
+.BR uname (1)
+command:
 .sp
 .in +2
 .nf
@@ -159,13 +181,19 @@ i86xpv
 .LP
 Generally, applications do not need to be aware of the platform type. It is
 recommended that any ISA identification required by an application use the
-\fB-p\fR option (for ISA or processor type) to \fBuname\fR, rather than the
+\fB-p\fR option (for ISA or processor type) to
+.BR uname ,
+rather than the
 \fB-i\fR option, as shown above. On x86 platforms, regardless of whether
-Solaris is running under xVM, \fBuname\fR \fB-p\fR always returns
-\fBi386\fR.
+Solaris is running under xVM,
+.B "uname -p"
+always returns
+.BR i386 .
 .sp
 .LP
-You can examine the \fBdomcaps\fR driver to determine whether a Solaris
+You can examine the
+.B domcaps
+driver to determine whether a Solaris
 instance is running as domain 0:
 .sp
 .in +2
@@ -178,8 +206,12 @@ control_d
 
 .sp
 .LP
-Note that the \fBdomcaps\fR file might also contain additional information.
-However, the first token is always \fBcontrol_d\fR when running as domain
+Note that the
+.B domcaps
+file might also contain additional information.
+However, the first token is always
+.B control_d
+when running as domain
 0.
 .sp
 .LP
@@ -243,7 +275,8 @@ on_xend_start=start
 .sp
 .LP
 \&.\|.\|.then the domain is automatically booted when the xVM host boots.
-Disabling the SMF service by means of \fBsvcadm\fR(1M) disables this
+Disabling the SMF service by means of
+.BR svcadm "(1M) disables this"
 behavior for all domains.
 .sp
 .LP
@@ -258,20 +291,26 @@ each described in its own man page. The daemons are, in turn, managed by the
 SMF.
 .sp
 .LP
-You install new guest domains with the command line \fBvirt-install\fR(1M)
+You install new guest domains with the command line
+.BR virt-install (1M)
 or the graphical interface, \fBvirt-manager\fR.
 .sp
 .LP
 The main interface for command and control of both xVM and guest domains is
-\fBvirsh\fR(1M). Users should use \fBvirsh\fR(1M) wherever possible, as it
+.BR virsh (1M).
+Users should use
+.BR virsh "(1M) wherever possible, as it"
 provides a generic and stable interface for controlling virtualized
 operating systems. However, some xVM operations are not yet implemented by
-\fBvirsh\fR. In those cases, the legacy utility \fBxm\fR(1M) can be used for
+.BR virsh .
+In those cases, the legacy utility \fBxm\fR(1M) can be used for
 detailed control.
 .sp
 .LP
 The configuration of each domain is stored by \fBxend\fR(1M) after it has
-been created by means of \fBvirt-install\fR, and can be viewed using the
+been created by means of
+.BR virt-install ,
+and can be viewed using the
 \fBvirsh dumpxml\fR or \fBxm list\fR \fB-l\fR commands. Direct modification
 of this configuration data is not recommended; the command-line utility
 interfaces should be used instead.
@@ -286,7 +325,9 @@ version of Xen, and must accept migration connections from the current host
 .sp
 .LP
 For migration to work, both hosts must be able to access the storage used
-by the \fBdomU\fR (for example, over iSCSI or NFS), and have enough
+by the
+.B domU
+(for example, over iSCSI or NFS), and have enough
 resources available to run the migrated domain. Both hosts must currently
 reside on the same subnet for the guest domain networking to continue
 working properly. Also, both hosts should have similar hardware. For
@@ -301,7 +342,7 @@ connection.
 .ne 2
 .mk
 .na
-\fBbackend\fR
+.B backend
 .ad
 .sp .6
 .RS 4n
@@ -314,7 +355,7 @@ and an underlying physical device.
 .ne 2
 .mk
 .na
-\fBcontrol domain\fR
+.B control domain
 .ad
 .sp .6
 .RS 4n
@@ -326,11 +367,12 @@ hardware access by the hypervisor. Often referred to as \fBdomain 0\fR.
 .ne 2
 .mk
 .na
-\fBdomain 0\fR
+.B domain 0
 .ad
 .sp .6
 .RS 4n
-See \fBcontrol domain\fR.
+See
+.BR "control domain" .
 .RE
 
 .sp
@@ -342,7 +384,9 @@ See \fBcontrol domain\fR.
 .sp .6
 .RS 4n
 Describes a virtual device and its associated driver in a guest domain. A
-frontend driver communicates with a \fBbackend\fR driver hosted in a
+frontend driver communicates with a
+.B backend
+driver hosted in a
 different guest domain.
 .RE
 
@@ -361,12 +405,16 @@ Running an unmodified operating system with hardware assistance.
 .ne 2
 .mk
 .na
-\fBguest domain\fR
+.B guest domain
 .ad
 .sp .6
 .RS 4n
 A virtual machine instance running on a host. Unless the guest is domain 0,
-such a domain is also called a \fBdomain-U\fR, where \fBU\fR stands for
+such a domain is also called a
+.BR domain-U ,
+where
+.B U
+stands for
 "unprivileged".
 .RE
 
@@ -374,7 +422,7 @@ such a domain is also called a \fBdomain-U\fR, where \fBU\fR stands for
 .ne 2
 .mk
 .na
-\fBhost\fR
+.B host
 .ad
 .sp .6
 .RS 4n
@@ -385,7 +433,7 @@ The physical machine running xVM.
 .ne 2
 .mk
 .na
-\fBHardware-assisted Virtual Machine\fR (HVM)\fR
+.BR "Hardware-assisted Virtual Machine" " (HVM)"
 .ad
 .sp .6
 .RS 4n
@@ -396,7 +444,7 @@ A fully-virtualized guest domain.
 .ne 2
 .mk
 .na
-\fBnode\fR
+.B node
 .ad
 .sp .6
 .RS 4n
@@ -407,7 +455,7 @@ The name used by the \fBvirsh\fR(1M) utility for a host.
 .ne 2
 .mk
 .na
-\fBvirtual machine monitor\fR (VMM)\fR
+.BR "virtual machine monitor" " (VMM)"
 .ad
 .sp .6
 .RS 4n
@@ -417,13 +465,26 @@ Hypervisor software, such as xVM, that manages multiple domains.
 .SH SEE ALSO
 .sp
 .LP
-\fBuname\fR(1), \fBdladm\fR(1M), \fBsvcadm\fR(1M), \fBsys-unconfig\fR(1M),
-\fBvirsh\fR(1M), \fBvirt-install\fR(1M), \fBxend\fR(1M),
-\fBxenconsoled\fR(1M), \fBxenstored\fR(1M), \fBxm\fR(1M), \fBzfs\fR(1M),
-\fBattributes\fR(5), \fBgrub\fR(5), \fBlive_upgrade\fR(5), \fBsmf\fR(5),
-\fBzones\fR(5)
+.BR uname (1),
+.BR dladm (1M),
+.BR svcadm (1M),
+\fBsys-unconfig\fR(1M),
+.BR virsh (1M),
+.BR virt-install (1M),
+.BR xend (1M),
+.BR xenconsoled (1M),
+.BR xenstored (1M),
+.BR xm (1M),
+\fBzfs\fR(1M),
+.BR attributes (5),
+.BR grub (5),
+.BR live_upgrade (5),
+\fBsmf\fR(5),
+.BR zones (5)
 .SH NOTES
 .sp
 .LP
-Any physical Ethernet datalink (as shown by \fBdladm show-phys\fR) can be
+Any physical Ethernet datalink
+.RB "(as shown by " "dladm show-phys" )
+can be
 used to network guest domains.

@@ -36,13 +36,19 @@ cc[ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. -lldap[ \fIlibrary\fR.\|.\|. ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBcldap_search_s()\fR function performs an LDAP search using the
+The
+.B cldap_search_s()
+function performs an LDAP search using the
 Connectionless LDAP (CLDAP) protocol.
 .sp
 .LP
 \fBcldap_search_s()\fR has parameters and behavior identical to that of
-\fBldap_search_s\fR(3LDAP), except for the addition of the \fIlogdn\fR
-parameter. \fIlogdn\fR should contain a distinguished name to be used only
+.BR ldap_search_s (3LDAP),
+except for the addition of the
+.IR logdn
+parameter.
+.I logdn
+should contain a distinguished name to be used only
 for logging purposed by the LDAP server.  It should be in the text format
 described by \fIRFC 1779, A String Representation of Distinguished Names\fR.
 
@@ -50,33 +56,46 @@ described by \fIRFC 1779, A String Representation of Distinguished Names\fR.
 .sp
 .LP
 \fBcldap_search_s()\fR operates using the CLDAP protocol over
-\fBudp\fR(7P). Since UDP is a non-reliable protocol, a retry mechanism is
+.BR udp (7P).
+Since UDP is a non-reliable protocol, a retry mechanism is
 used to increase reliability. The \fBcldap_setretryinfo\fR(3LDAP) function
-can be used to set two retry parameters:  \fItries\fR, a count of the number
-of times to send a search request and \fItimeout\fR, an initial timeout that
+can be used to set two retry parameters:
+.IR tries ,
+a count of the number
+of times to send a search request and
+.IR timeout ,
+an initial timeout that
 determines how long to wait for a response before re-trying. \fItimeout\fR
 is specified seconds.  These values are stored in the \fBld_cldaptries\fR
-and \fBld_cldaptimeout\fR members of the \fBld\fR LDAP structure, and the
-default values set in \fBldap_open\fR(3LDAP) are 4 and 3 respectively. The
+and
+.B ld_cldaptimeout
+members of the
+.B ld
+LDAP structure, and the
+default values set in
+.BR ldap_open "(3LDAP) are 4 and 3 respectively. The"
 retransmission algorithm used is:
 .sp
 .ne 2
 .mk
 .na
-\fBStep 1\fR
+.B Step 1
 .ad
 .RS 10n
 .rt
-Set the current timeout to \fBld_cldaptimeout\fR seconds, and the current
+Set the current timeout to
+.B ld_cldaptimeout
+seconds, and the current
 LDAP server address to the first LDAP server found during the
-\fBldap_open\fR(3LDAP) call.
+.BR ldap_open (3LDAP)
+call.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBStep 2\fR
+.B Step 2
 .ad
 .RS 10n
 .rt
@@ -87,12 +106,13 @@ Send the search request to the current LDAP server address.
 .ne 2
 .mk
 .na
-\fBStep 3\fR
+.B Step 3
 .ad
 .RS 10n
 .rt
 Set the wait timeout to the current timeout divided by the number of server
-addresses found during \fBldap_open\fR(3LDAP) or to one second, whichever is
+addresses found during
+.BR ldap_open "(3LDAP) or to one second, whichever is"
 larger. Wait at most that long for a response; if a response is received,
 STOP. Note that the wait timeout is always rounded down to the next lowest
 second.
@@ -102,7 +122,7 @@ second.
 .ne 2
 .mk
 .na
-\fBStep 4\fR
+.B Step 4
 .ad
 .RS 10n
 .rt
@@ -113,20 +133,28 @@ Repeat steps 2 and 3 for each LDAP server address.
 .ne 2
 .mk
 .na
-\fBStep 5\fR
+.B Step 5
 .ad
 .RS 10n
 .rt
 Set the current timeout to twice its previous value and repeat Steps 2
-through 5 a maximum of \fItries\fR times.
+through 5 a maximum of
+.I tries
+times.
 .RE
 
 .SH EXAMPLES
 .sp
 .LP
-Assume that the default values for \fItries\fR and \fItimeout\fR of 4 tries
+Assume that the default values for
+.I tries
+and
+.I timeout
+of 4 tries
 and 3 seconds are used. Further, assume that a space-separated list of two
-hosts, each with one address, was passed to \fBcldap_open\fR(3LDAP). The
+hosts, each with one address, was passed to
+.BR cldap_open (3LDAP).
+The
 pattern of requests sent will be (stopping as soon as a response is
 received): 
 .sp
@@ -150,11 +178,14 @@ received):
 .LP
 \fBcldap_search_s()\fR returns  \fBLDAP_SUCCESS\fR if a search was
 successful and the appropriate LDAP error code otherwise.  See
-\fBldap_error\fR(3LDAP) for more information.
+.BR ldap_error (3LDAP)
+for more information.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attributes:
+See
+.BR attributes (5)
+for a description of the following attributes:
 .sp
 
 .sp
@@ -172,6 +203,11 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBldap\fR(3LDAP), \fBldap_error\fR(3LDAP), \fBldap_search_s\fR(3LDAP),
-\fBcldap_open\fR(3LDAP), \fBcldap_setretryinfo\fR(3LDAP),
-\fBcldap_close\fR(3LDAP), \fBattributes\fR(5), \fBudp\fR(7P)
+.BR ldap (3LDAP),
+.BR ldap_error (3LDAP),
+.BR ldap_search_s (3LDAP),
+.BR cldap_open (3LDAP),
+\fBcldap_setretryinfo\fR(3LDAP),
+.BR cldap_close (3LDAP),
+.BR attributes (5),
+.BR udp (7P)

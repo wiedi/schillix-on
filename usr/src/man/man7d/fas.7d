@@ -31,13 +31,19 @@ fas@\fIsbus-slot\fR,0x8800000
 .SH DESCRIPTION
 .sp
 .LP
-The \fBfas\fR Host Bus Adapter driver is a \fBSCSA\fR compliant nexus driver
-that supports the Qlogic FAS366 \fBSCSI\fR chip.
+The \fBfas\fR Host Bus Adapter driver is a
+.B SCSA
+compliant nexus driver
+that supports the Qlogic FAS366
+.B SCSI
+chip.
 .sp
 .LP
 The  \fBfas\fR driver supports the standard functions provided by the
 \fBSCSA\fR interface. The driver supports tagged and untagged queuing, wide
-and fast \fBSCSI,\fR almost unlimited transfer size (using a moving \fBDVMA\fR
+and fast
+.B SCSI,
+almost unlimited transfer size (using a moving \fBDVMA\fR
 window approach),  and auto request sense; but it does not support linked
 commands.
 .SS "Driver Configuration"
@@ -46,45 +52,61 @@ commands.
 The  \fBfas\fR driver can be configured by defining properties in
 \fBfas.conf\fR which override the global \fBSCSI\fR settings. Supported
 properties are: \fBscsi-options\fR, \fBtarget<\fIn\fR>-scsi-options\fR,
-\fBscsi-reset-delay\fR, \fBscsi-watchdog-tick\fR, \fBscsi-tag-age-limit\fR,
-\fBscsi-initiator-id\fR.
+.BR scsi-reset-delay ,
+.BR scsi-watchdog-tick ,
+.BR scsi-tag-age-limit ,
+.BR scsi-initiator-id .
 .sp
 .LP
 \fBtarget<\fIn\fR>-scsi-options\fR overrides the  \fBscsi-options\fR property
 value for \fBtarget<\fIn\fR>\fR. <\fIn\fR> can vary from decimal \fB0\fR to
-\fB15\fR. The supported \fBscsi-options\fR are: \fBSCSI_OPTIONS_DR\fR,
-\fBSCSI_OPTIONS_SYNC\fR, \fBSCSI_OPTIONS_TAG\fR, \fBSCSI_OPTIONS_FAST\fR, and
-\fBSCSI_OPTIONS_WIDE\fR.
+.BR 15 .
+The supported
+.B scsi-options
+are: \fBSCSI_OPTIONS_DR\fR,
+.BR SCSI_OPTIONS_SYNC ,
+.BR SCSI_OPTIONS_TAG ,
+.BR SCSI_OPTIONS_FAST ,
+and
+.BR SCSI_OPTIONS_WIDE .
 .sp
 .LP
-After periodic interval \fBscsi-watchdog-tick\fR, the \fBfas\fR driver
+After periodic interval
+.BR scsi-watchdog-tick ,
+the \fBfas\fR driver
 searches all current and disconnected commands for timeouts.
 .sp
 .LP
 \fBscsi-tag-age-limit\fR is the number of times  that the \fBfas\fR driver
 attempts to allocate a particular tag ID that is currently in use after going
 through all tag IDs in a circular fashion.  After finding the same tag ID in
-use \fBscsi-tag-age-limit\fR times, no more commands will be submitted to this
+use
+.B scsi-tag-age-limit
+times, no more commands will be submitted to this
 target until all outstanding commands complete or timeout.
 .sp
 .LP
 Refer to \fBscsi_hba_attach\fR(9F) for details.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRA sample of fas configuration file
+\fBExample 1\fR A sample of fas configuration file
 .sp
 .LP
 Create a file called \fB/kernel/drv/fas.conf\fR and add this line:
 
 .sp
 .LP
-\fBscsi-options=0x78;\fR
+.B scsi-options=0x78;
 
 .sp
 .LP
-This disables tagged queuing, Fast \fBSCSI,\fR and Wide mode for all
+This disables tagged queuing, Fast
+.B SCSI,
+and Wide mode for all
 \fBfas\fR instances. The following example disables an option for one specific
-\fBfas\fR (refer to \fBdriver.conf\fR(4) for more details):
+\fBfas\fR (refer to
+.BR driver.conf (4)
+for more details):
 
 .sp
 .in +2
@@ -104,8 +126,15 @@ OBP.
 
 .sp
 .LP
-The example above sets \fBscsi-options\fR for target 1 to \fB0x58\fR and all
-other targets on this \fBSCSI\fR bus to \fB0x178\fR.
+The example above sets
+.B scsi-options
+for target 1 to
+.B 0x58
+and all
+other targets on this
+.B SCSI
+bus to
+.BR 0x178 .
 
 .sp
 .LP
@@ -143,7 +172,9 @@ SUNW,fas, instance #0
 .LP
 \fBscsi-options\fR can also be specified per device type using the device
 inquiry string. All the devices with the same inquiry string will have the
-same \fBscsi-options\fR set. This can be used to disable some
+same
+.B scsi-options
+set. This can be used to disable some
 \fBscsi-options\fR on all the devices of the same type.
 
 .sp
@@ -158,14 +189,21 @@ cd-scsi-options = 0x0;
 .sp
 .LP
 The above entry in  \fB/kernel/drv/fas.conf\fR sets the  \fBscsi-options\fR
-for all devices with inquiry  string \fBTOSHIBA XM5701TASUN12XCD\fR to
-\fBcd-scsi-options\fR. To get the  inquiry string, run the \fBprobe-scsi\fR or
+for all devices with inquiry  string
+.B "TOSHIBA XM5701TASUN12XCD"
+to
+.BR cd-scsi-options .
+To get the  inquiry string, run the
+.B probe-scsi
+or
 \fBprobe-scsi-all\fR command at the \fBok\fR prompt before booting the
 system.
 
 .sp
 .LP
-To set  \fBscsi-options\fR more specifically per target:
+To set 
+.B scsi-options
+more specifically per target:
 
 .sp
 .in +2
@@ -180,19 +218,32 @@ scsi-options=0x3f8;
 
 .sp
 .LP
-The above sets \fBscsi-options\fR for target 1 to \fB0x78\fR and for all
-other targets on this \fBSCSI\fR bus to \fB0x3f8\fR except for one specific
-disk type which will have \fBscsi-options\fR set to \fB0x58\fR.
+The above sets
+.B scsi-options
+for target 1 to
+.B 0x78
+and for all
+other targets on this
+.B SCSI
+bus to \fB0x3f8\fR except for one specific
+disk type which will have
+.B scsi-options
+set to
+.BR 0x58 .
 
 .sp
 .LP
 \fBscsi-options\fR specified per target ID have the highest precedence,
-followed by \fBscsi-options\fR per device type. Global \fBfas scsi-options\fR
+followed by
+.B scsi-options
+per device type. Global \fBfas scsi-options\fR
 (effecting all instances) per bus have the lowest precedence.
 
 .sp
 .LP
-The system needs to be rebooted before the specified \fBscsi-options\fR take
+The system needs to be rebooted before the specified
+.B scsi-options
+take
 effect.
 
 .SS "Driver Capabilities"
@@ -200,29 +251,51 @@ effect.
 .LP
 The target driver needs to set capabilities in the \fBfas\fR driver in order
 to enable some driver features. The target driver can  query and modify these
-capabilities: \fBsynchronous\fR, \fBtagged-qing\fR, \fBwide-xfer\fR,
-\fBauto-rqsense\fR, \fBqfull-retries\fR, \fBqfull-retry-interval\fR. All other
+capabilities:
+.BR synchronous ,
+.BR tagged-qing ,
+\fBwide-xfer\fR,
+.BR auto-rqsense ,
+\fBqfull-retries\fR,
+.BR qfull-retry-interval .
+All other
 capabilities can only be queried.
 .sp
 .LP
-By default, \fBtagged-qing\fR, \fBauto-rqsense\fR, and \fBwide-xfer\fR
-capabilities are disabled, while \fBdisconnect\fR, \fBsynchronous\fR, and
+By default,
+.BR tagged-qing ,
+.BR auto-rqsense ,
+and \fBwide-xfer\fR
+capabilities are disabled, while
+.BR disconnect ,
+.BR synchronous ,
+and
 \fBuntagged-qing\fR are enabled. These capabilities can only have binary
-values (\fB0\fR or \fB1\fR). The default value for \fBqfull-retries\fR is
+values (\fB0\fR or
+.BR 1 ).
+The default value for \fBqfull-retries\fR is
 \fB10\fR and the default value for \fBqfull-retry-interval\fR is \fB100\fR.
 The \fBqfull-retries\fR capability is a \fBuchar_t\fR (\fB0\fR to \fB255\fR)
 while \fBqfull-retry-interval\fR is a \fBushort_t\fR (\fB0\fR to
-\fB65535\fR).
+.BR 65535 ).
 .sp
 .LP
-The target driver needs to enable  \fBtagged-qing\fR and \fBwide-xfer\fR
-explicitly. The \fBuntagged-qing\fR capability is always enabled and its value
+The target driver needs to enable 
+.B tagged-qing
+and \fBwide-xfer\fR
+explicitly. The
+.B untagged-qing
+capability is always enabled and its value
 cannot be modified, because \fBfas\fR can queue commands even when
 \fBtagged-qing\fR is disabled.
 .sp
 .LP
-Whenever there is a conflict between the value of \fBscsi-options\fR and a
-capability, the value set in \fBscsi-options\fR prevails.  Only \fBwhom !=
+Whenever there is a conflict between the value of
+.B scsi-options
+and a
+capability, the value set in
+.B scsi-options
+prevails.  Only \fBwhom !=
 0\fR is supported in the \fBscsi_ifsetcap\fR(9F) call.
 .sp
 .LP
@@ -253,7 +326,9 @@ Optional configuration file
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -272,14 +347,21 @@ T}
 .SH SEE ALSO
 .sp
 .LP
-\fBprtconf\fR(1M), \fBdriver.conf\fR(4), \fBattributes\fR(5),
-\fBscsi_abort\fR(9F), \fBscsi_hba_attach\fR(9F), \fBscsi_ifgetcap\fR(9F),
+\fBprtconf\fR(1M),
+.BR driver.conf (4),
+.BR attributes (5),
+.BR scsi_abort (9F),
+.BR scsi_hba_attach (9F),
+\fBscsi_ifgetcap\fR(9F),
 \fBscsi_ifsetcap\fR(9F), \fBscsi_reset\fR(9F), \fBscsi_sync_pkt\fR(9F),
-\fBscsi_transport\fR(9F), \fBscsi_device\fR(9S),
-\fBscsi_extended_sense\fR(9S), \fBscsi_inquiry\fR(9S), \fBscsi_pkt\fR(9S)
+.BR scsi_transport (9F),
+.BR scsi_device (9S),
+.BR scsi_extended_sense (9S),
+.BR scsi_inquiry (9S),
+.BR scsi_pkt (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
 \fIANSI Small Computer System Interface-2 (SCSI-2)\fR
@@ -301,7 +383,7 @@ instance number of the  \fBfas\fR controller.
 .ne 2
 .mk
 .na
-\fBDevice in slave-only slot\fR
+.B Device in slave-only slot
 .ad
 .sp .6
 .RS 4n
@@ -313,7 +395,7 @@ accessible; move to non-slave-only SBus slot.
 .ne 2
 .mk
 .na
-\fBDevice is using a hilevel intr\fR
+.B "Device is using a hilevel intr
 .ad
 .sp .6
 .RS 4n
@@ -325,7 +407,7 @@ this \fBfas\fR driver. Check the SBus device.
 .ne 2
 .mk
 .na
-\fBCannot alloc dma handle\fR
+.B Cannot alloc dma handle
 .ad
 .sp .6
 .RS 4n
@@ -336,7 +418,7 @@ Driver was unable to allocate memory for a DMA controller.
 .ne 2
 .mk
 .na
-\fBCannot alloc cmd area\fR
+.B Cannot alloc cmd area
 .ad
 .sp .6
 .RS 4n
@@ -347,7 +429,7 @@ Driver was unable to allocate memory for a command address.
 .ne 2
 .mk
 .na
-\fBCannot create kmem_cache\fR
+.B Cannot create kmem_cache
 .ad
 .sp .6
 .RS 4n
@@ -358,19 +440,21 @@ Driver was unable to allocate memory for internal data structures.
 .ne 2
 .mk
 .na
-\fBUnable to map FAS366 registers\fR
+.B Unable to map FAS366 registers
 .ad
 .sp .6
 .RS 4n
 Driver was unable to map device registers; check for bad hardware. Driver did
-not attach to device; \fBSCSI\fR devices will be inaccessible.
+not attach to device;
+.B SCSI
+devices will be inaccessible.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCannot add intr\fR
+.B Cannot add intr
 .ad
 .sp .6
 .RS 4n
@@ -381,11 +465,13 @@ Driver could not add its interrupt service routine to the kernel.
 .ne 2
 .mk
 .na
-\fBCannot map dma\fR
+.B Cannot map dma
 .ad
 .sp .6
 .RS 4n
-Driver was unable to locate a \fBDMA\fR controller. This is an
+Driver was unable to locate a
+.B DMA
+controller. This is an
 auto-configuration error.
 .RE
 
@@ -393,18 +479,20 @@ auto-configuration error.
 .ne 2
 .mk
 .na
-\fBCannot bind cmdarea\fR
+.B Cannot bind cmdarea
 .ad
 .sp .6
 .RS 4n
-Driver was unable to bind the \fBDMA\fR handle to an address.
+Driver was unable to bind the
+.B DMA
+handle to an address.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCannot create devctl minor node\fR
+.B Cannot create devctl minor node
 .ad
 .sp .6
 .RS 4n
@@ -415,7 +503,7 @@ Driver is unable to create a minor node for the controller.
 .ne 2
 .mk
 .na
-\fBCannot attach\fR
+.B Cannot attach
 .ad
 .sp .6
 .RS 4n
@@ -427,12 +515,12 @@ indicates why attach failed.
 .ne 2
 .mk
 .na
-\fBDisabled TQ since disconnects are disabled\fR
+.B "Disabled TQ since disconnects are disabled
 .ad
 .sp .6
 .RS 4n
 Tagged queuing was disabled because disconnects were disabled in
-\fBscsi-options\fR.
+.BR scsi-options .
 .RE
 
 .sp
@@ -454,14 +542,16 @@ Check for bad hardware.
 .ad
 .sp .6
 .RS 4n
-Syncing a \fBSCSI\fR packet failed. Refer to \fBscsi_sync_pkt\fR(9F).
+Syncing a
+.B SCSI
+packet failed. Refer to \fBscsi_sync_pkt\fR(9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBAll tags in use!\fR
+.B All tags in use!
 .ad
 .sp .6
 .RS 4n
@@ -473,11 +563,13 @@ properly support tagged queuing.
 .ne 2
 .mk
 .na
-\fBGross error in FAS366 status\fR
+.B Gross error in FAS366 status
 .ad
 .sp .6
 .RS 4n
-The driver experienced severe \fBSCSI\fR bus problems. Check cables and
+The driver experienced severe
+.B SCSI
+bus problems. Check cables and
 terminator.
 .RE
 
@@ -485,7 +577,7 @@ terminator.
 .ne 2
 .mk
 .na
-\fBSpurious interrupt\fR
+.B Spurious interrupt
 .ad
 .sp .6
 .RS 4n
@@ -496,22 +588,26 @@ The driver received an interrupt while the hardware was not interrupting.
 .ne 2
 .mk
 .na
-\fBLost state in phasemanage\fR
+.B Lost state in phasemanage
 .ad
 .sp .6
 .RS 4n
-The driver is confused about the state of the \fBSCSI\fR bus.
+The driver is confused about the state of the
+.B SCSI
+bus.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBUnrecoverable DMA \fBerror\fR \fBduring selection\fR
+\fBUnrecoverable DMA \fBerror during selection\fR
 .ad
 .sp .6
 .RS 4n
-The \fBDMA\fR controller experienced host SBus problems. Check for bad
+The
+.B DMA
+controller experienced host SBus problems. Check for bad
 hardware.
 .RE
 
@@ -519,7 +615,7 @@ hardware.
 .ne 2
 .mk
 .na
-\fBBad sequence step (<step number>) in selection\fR
+.B "Bad sequence step (<step number>) in selection
 .ad
 .sp .6
 .RS 4n
@@ -569,7 +665,9 @@ Check for bad hardware.
 .ad
 .sp .6
 .RS 4n
-Incorrect \fBSCSI\fR bus phase after reconnection. Check for bad hardware.
+Incorrect
+.B SCSI
+bus phase after reconnection. Check for bad hardware.
 .RE
 
 .sp
@@ -580,7 +678,9 @@ Incorrect \fBSCSI\fR bus phase after reconnection. Check for bad hardware.
 .ad
 .sp .6
 .RS 4n
-Incorrect \fBSCSI\fR bus phase after reconnection.  Check for bad hardware.
+Incorrect
+.B SCSI
+bus phase after reconnection.  Check for bad hardware.
 .RE
 
 .sp
@@ -638,7 +738,11 @@ A reconnect failed; parity error detected.  Check for bad hardware.
 .ad
 .sp .6
 .RS 4n
-A reconnect failed; target accepted \fBabort\fR or \fBreset\fR, but still
+A reconnect failed; target accepted
+.B abort
+or
+.BR reset ,
+but still
 tries to reconnect. Check for bad hardware.
 .RE
 
@@ -669,7 +773,7 @@ The target unexpectedly did not disconnect after sending
 .ne 2
 .mk
 .na
-\fBBad sequence step (0x?) in selection\fR
+.B "Bad sequence step (0x?) in selection
 .ad
 .sp .6
 .RS 4n
@@ -681,7 +785,7 @@ misbehaving.
 .ne 2
 .mk
 .na
-\fBIllegal dma boundary?\fR
+.B Illegal dma boundary?
 .ad
 .sp .6
 .RS 4n
@@ -703,11 +807,13 @@ The target went into an unexpected phase.
 .ne 2
 .mk
 .na
-\fBUnrecoverable DMA error on dma <send/receive>\fR
+.B "Unrecoverable DMA error on dma <send/receive>
 .ad
 .sp .6
 .RS 4n
-There is a \fBDMA\fR error while sending/receiving data. The host \fBDMA\fR
+There is a
+.B DMA
+.RB "error while sending/receiving data. The host" " DMA"
 controller is experiencing some problems.
 .RE
 
@@ -715,22 +821,26 @@ controller is experiencing some problems.
 .ne 2
 .mk
 .na
-\fBSCSI bus DATA IN phase parity error\fR
+.B "SCSI bus DATA IN phase parity error
 .ad
 .sp .6
 .RS 4n
-The driver detected parity errors on the \fBSCSI\fR bus.
+The driver detected parity errors on the
+.B SCSI
+bus.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSCSI bus MESSAGE IN phase parity error\fR
+.B "SCSI bus MESSAGE IN phase parity error
 .ad
 .sp .6
 .RS 4n
-The driver detected parity errors on the \fBSCSI\fR bus.
+The driver detected parity errors on the
+.B SCSI
+bus.
 .RE
 
 .sp
@@ -741,7 +851,9 @@ The driver detected parity errors on the \fBSCSI\fR bus.
 .ad
 .sp .6
 .RS 4n
-The driver detected parity errors on the \fBSCSI\fR bus.
+The driver detected parity errors on the
+.B SCSI
+bus.
 .RE
 
 .sp
@@ -752,7 +864,9 @@ The driver detected parity errors on the \fBSCSI\fR bus.
 .ad
 .sp .6
 .RS 4n
-An extended \fBSCSI\fR bus message did not complete. Suspect a target
+An extended
+.B SCSI
+bus message did not complete. Suspect a target
 firmware problem.
 .RE
 
@@ -771,7 +885,7 @@ A multibyte input message was truncated. Suspect a target firmware problem.
 .ne 2
 .mk
 .na
-\fBInput message botch\fR
+.B Input message botch
 .ad
 .sp .6
 .RS 4n
@@ -782,7 +896,7 @@ The driver is confused about messages coming from the target.
 .ne 2
 .mk
 .na
-\fBExtended message <n> is too long\fR
+.B "Extended message <n> is too long
 .ad
 .sp .6
 .RS 4n
@@ -805,7 +919,7 @@ Target \fB<\fIm\fB>\fR sent message \fB<\fIname\fB>\fR of value
 .ne 2
 .mk
 .na
-\fBTarget <n> rejects our message <name>\fR
+.B "Target <n> rejects our message <name>
 .ad
 .sp .6
 .RS 4n
@@ -849,7 +963,7 @@ The target did not accept a message resend.
 .ne 2
 .mk
 .na
-\fBMESSAGE OUT phase parity error\fR
+.B MESSAGE OUT phase parity error
 .ad
 .sp .6
 .RS 4n
@@ -860,7 +974,7 @@ The driver detected parity errors on the SCSI bus.
 .ne 2
 .mk
 .na
-\fBTwo byte message <name> <value> rejected\fR
+.B "Two byte message <name> <value> rejected
 .ad
 .sp .6
 .RS 4n
@@ -948,14 +1062,16 @@ detected.
 .ad
 .sp .6
 .RS 4n
-This is usually a \fBSCSI\fR bus problem. Check cables and termination.
+This is usually a
+.B SCSI
+bus problem. Check cables and termination.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTarget <id>.<lun> reverting to async. mode\fR
+.B "Target <id>.<lun> reverting to async. mode
 .ad
 .sp .6
 .RS 4n
@@ -979,7 +1095,7 @@ problem by reducing the data transfer rate.
 .ne 2
 .mk
 .na
-\fBReverting to slow SCSI cable mode\fR
+.B "Reverting to slow SCSI cable mode
 .ad
 .sp .6
 .RS 4n
@@ -1003,7 +1119,7 @@ problem by reducing the data transfer rate.
 .ne 2
 .mk
 .na
-\fBTarget <id> reverting to async. mode\fR
+.B "Target <id> reverting to async. mode
 .ad
 .sp .6
 .RS 4n
@@ -1015,11 +1131,13 @@ problem by reducing the data transfer rate.
 .ne 2
 .mk
 .na
-\fBTarget <id> disabled wide SCSI mode\fR
+.B "Target <id> disabled wide SCSI mode
 .ad
 .sp .6
 .RS 4n
-Due to problems on the \fBSCSI\fR bus, the driver goes into more conservative
+Due to problems on the
+.B SCSI
+bus, the driver goes into more conservative
 mode of operation to avoid further problems.
 .RE
 
@@ -1031,37 +1149,55 @@ mode of operation to avoid further problems.
 .ad
 .sp .6
 .RS 4n
-An attempt to reset the \fBSCSI\fR bus failed.
+An attempt to reset the
+.B SCSI
+bus failed.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBExternal SCSI bus reset\fR
+.B External SCSI bus reset
 .ad
 .sp .6
 .RS 4n
-Another initiator reset the \fBSCSI\fR bus.
+Another initiator reset the
+.B SCSI
+bus.
 .RE
 
 .SH WARNINGS
 .sp
 .LP
-The  \fBfas\fR hardware (FAS366) supports both Wide and Fast \fBSCSI\fR mode,
-but fast20 is not supported. The maximum \fBSCSI\fR bandwidth is 20 MB/sec.
+The  \fBfas\fR hardware (FAS366) supports both Wide and Fast
+.B SCSI
+mode,
+but fast20 is not supported. The maximum
+.B SCSI
+bandwidth is 20 MB/sec.
 Initiator mode block sequence (IBS) is not supported.
 .SH NOTES
 .sp
 .LP
 The \fBfas\fR driver exports properties indicating per target the negotiated
-transfer speed (\fBtarget<n>-sync-speed\fR), whether wide bus is supported
+transfer speed
+.RB ( target<n>-sync-speed ),
+whether wide bus is supported
 (\fBtarget<n>-wide\fR), \fBscsi-options\fR for that particular target
 (\fBtarget<n>-scsi-options\fR), and whether tagged queuing has been enabled
 (\fBtarget<n>-TQ\fR). The \fBsync-speed\fR property value is the data transfer
-rate in KB/sec. The  \fBtarget<n>-TQ\fR and the  \fBtarget<n>-wide\fR property
-have value \fB1\fR to indicate that the corresponding capability is enabled,
-or \fB0\fR to indicate that  the capability is disabled for that target. Refer
+rate in KB/sec. The 
+.B target<n>-TQ
+and the 
+.B target<n>-wide
+property
+have value
+.B 1
+to indicate that the corresponding capability is enabled,
+or
+.B 0
+to indicate that  the capability is disabled for that target. Refer
 to \fBprtconf\fR(1M) (verbose option) for viewing the \fBfas\fR properties.
 .sp
 .in +2

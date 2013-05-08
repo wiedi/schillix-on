@@ -42,7 +42,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIia_handle\fR
+.I ia_handle
 .ad
 .RS 18n
 .rt
@@ -53,7 +53,7 @@ A handle for an open instance of the IA.
 .ne 2
 .mk
 .na
-\fIlocal_segments\fR
+.I local_segments
 .ad
 .RS 18n
 .rt
@@ -64,38 +64,52 @@ An array of buffer segments.
 .ne 2
 .mk
 .na
-\fInum_segments\fR
+.I num_segments
 .ad
 .RS 18n
 .rt
-The number of segments in the \fIlocal_segments\fR argument.
+The number of segments in the
+.I local_segments
+argument.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_lmr_sync_rdma_write()\fR function makes effects of an incoming
+The
+.B dat_lmr_sync_rdma_write()
+function makes effects of an incoming
 RDMA Write operation visible to the Consumer. This operation guarantees
 consistency by locally invalidating the non-coherent cache whose buffer has
 been populated by remote peer RDMA write operations.
 .sp
 .LP
-The \fBdat_lmr_sync_rdma_write()\fR function is needed if and only if the
+The
+.B dat_lmr_sync_rdma_write()
+function is needed if and only if the
 Provider attribute specifies that this operation is needed after an incoming
-RDMA Write operation. The Consumer must call \fBdat_lmr_sync_rdma_write()\fR
+.RB "RDMA Write operation. The Consumer must call" " dat_lmr_sync_rdma_write()"
 before reading data from a memory range in this region that was the target
 of an incoming RDMA Write operation. The \fBdat_lmr_sync_rdma_write()\fR
 function must be called after the RDMA Write operation completes, and the
 memory range that was modified by the RDMA Write must be supplied by the
-caller in the \fIlocal_ segments\fR array. After this call returns, the
+caller in the
+.I "local_ segments"
+array. After this call returns, the
 Consumer may safely see the modified contents of the memory range. It is
 permissible to batch synchronizations of multiple RDMA Write operations in a
-single call by passing a \fIlocal_segments\fR array that includes all
-modified memory ranges. The \fIlocal_segments\fR entries need not contain
+single call by passing a
+.I local_segments
+array that includes all
+modified memory ranges. The
+.I local_segments
+entries need not contain
 the same LMR and need not be in the same Protection Zone.
 .sp
 .LP
-The Consumer must also use \fBdat_lmr_sync_rdma_write()\fR when performing
+The Consumer must also use
+.B dat_lmr_sync_rdma_write()
+when performing
 local writes to a memory range that was or will be the target of incoming
 RDMA writes. After performing the local write, the Consumer must call
 \fBdat_lmr_sync_rdma_write()\fR before the RDMA Write is initiated.
@@ -106,7 +120,9 @@ range.
 .LP
 If the Provider attribute specifies that this operation is needed and the
 Consumer attempts to read from a memory range in an LMR without properly
-synchronizing using \fBdat_lmr_sync_rdma_write()\fR, the returned contents
+synchronizing using
+.BR dat_lmr_sync_rdma_write() ,
+the returned contents
 are undefined. If the Consumer attempts to write to a memory range without
 properly synchronizing, the contents of the memory range become undefined.
 .SH RETURN VALUES
@@ -114,7 +130,7 @@ properly synchronizing, the contents of the memory range become undefined.
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 25n
 .rt
@@ -125,7 +141,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 25n
 .rt
@@ -136,7 +152,7 @@ The DAT handle is invalid.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 25n
 .rt
@@ -153,7 +169,7 @@ was modified is the Consumer's responsibility. One possibility is for the
 RDMA Write initiator to post a Send DTO message after each RDMA Write that
 identifies the range in the body of the Send. The Consumer at the target of
 the RDMA Write can receive the message and know when and how to call
-\fBdat_lmr_sync_rdma_write()\fR.
+.BR dat_lmr_sync_rdma_write() .
 .sp
 .LP
 This call ensures that the Provider receives a coherent view of the buffer
@@ -181,7 +197,9 @@ CPU noncoherent cache will be invalidated.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -200,5 +218,6 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_lmr_sync_rdma_read\fR(3DAT), \fBlibdat\fR(3LIB),
-\fBattributes\fR(5)
+.BR dat_lmr_sync_rdma_read (3DAT),
+.BR libdat (3LIB),
+.BR attributes (5)

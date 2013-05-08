@@ -53,7 +53,9 @@ terminfo database
 .SH DESCRIPTION
 .sp
 .LP
-Within X/Open Curses, the \fBsetupterm()\fR function is automatically called
+Within X/Open Curses, the
+.B setupterm()
+function is automatically called
 by the  initscr (3XC) and newterm (3XC) functions. This function can be also
 be used outside of X/Open Curses when a program has to  deal directly with
 the \fBterminfo\fR database to handle certain terminal  capabilities.  The
@@ -61,23 +63,43 @@ use of appropriate X/Open Curses functions is recommended in all other
 situations.
 .sp
 .LP
-The \fBsetupterm()\fR function loads terminal-dependent variables for the
+The
+.B setupterm()
+function loads terminal-dependent variables for the
 \fBterminfo\fR layer of X/Open Curses. The \fBsetupterm()\fR function
-initializes the \fBterminfo\fR variables \fBlines\fR and \fBcolumns\fR such
-that if \fBuse_env(FALSE)\fR has been called, the \fBterminfo\fR values
+initializes the \fBterminfo\fR variables
+.B lines
+and
+.B columns
+such
+that if
+.B use_env(FALSE)
+has been called, the \fBterminfo\fR values
 assigned in the database are used regardless of the environmental variables
 \fBLINES\fR and \fBCOLUMNS\fR or the program's window dimensions; when
 \fBuse_env(TRUE)\fR has been called, which is the default, the environment
-variables \fBLINES\fR and \fBCOLUMNS\fR are used, if they exist.  If the
+variables
+.B LINES
+and
+.B COLUMNS
+are used, if they exist.  If the
 environment variables do not exist and the program is running in a  window,
 the current window size is used.
 .sp
 .LP
-The \fIterm\fR parameter of \fBsetupterm()\fR specifies the terminal; if
-null, terminal type is taken from the \fBTERM\fR environment variable. All
+The
+.I term
+parameter of
+.B setupterm()
+specifies the terminal; if
+null, terminal type is taken from the
+.B TERM
+environment variable. All
 output is sent to \fIfildes\fR which is initialized for output. If
 \fIerrret\fR is not null, \fBOK\fR or \fBERR\fR is returned and a status
-value is stored in the integer pointed to by \fIerrret\fR.  The following
+value is stored in the integer pointed to by
+.IR errret .
+The following
 status values may be returned:
 .sp
 
@@ -95,38 +117,73 @@ lw(2.75i) lw(2.75i)
 
 .sp
 .LP
-If \fIerrret\fR is null, an error message is printed, and the
+If
+.I errret
+is null, an error message is printed, and the
 \fBsetupterm()\fR function calls the \fBexit()\fR function with a non-zero
 parameter.
 .sp
 .LP
-The \fBset_curterm()\fR function sets the \fBcur_term\fR variable to
-\fInterm\fR. The values from \fInterm\fR as well as other state information
+The
+.B set_curterm()
+function sets the
+.B cur_term
+variable to
+.IR nterm .
+The values from
+.I nterm
+as well as other state information
 for the terminal are used by X/Open Curses functions such as
-\fBbeep\fR(3XCURSES), \fBflash\fR(3XCURSES), \fBmvcur\fR(3XCURSES),
+.BR beep (3XCURSES),
+\fBflash\fR(3XCURSES), \fBmvcur\fR(3XCURSES),
 \fBtigetflag\fR(3XCURSES), \fBtigetstr\fR(3XCURSES), and
-\fBtigetnum\fR(3XCURSES).
+.BR tigetnum (3XCURSES).
 .sp
 .LP
-The \fBdel_curterm()\fR function frees the space pointed to by \fIoterm\fR.
-If \fIoterm\fR and the \fBcur_term\fR variable are the same, all Boolean,
+The
+.B del_curterm()
+function frees the space pointed to by
+.IR oterm .
+If
+.I oterm
+and the
+.B cur_term
+variable are the same, all Boolean,
 numeric, or string \fBterminfo\fR variables will refer to invalid memory
-locations until you call \fBsetupterm()\fR and specify a new terminal
+locations until you call
+.B setupterm()
+and specify a new terminal
 type.
 .sp
 .LP
-The \fBrestartterm()\fR function assumes that a call to \fBsetupterm()\fR
-has already been made (probably from \fBinitscr()\fR or \fBnewterm()\fR). It
-allows you to specify a new terminal type in \fIterm\fR and updates the data
-returned by \fBbaudrate\fR(3XCURSES) based on \fIfildes\fR. Other information
-created by the \fBinitscr()\fR, \fBnewterm()\fR, and  \fBsetupterm()\fR
+The
+.B restartterm()
+function assumes that a call to
+.BR setupterm()
+has already been made (probably from
+.B initscr()
+or
+.BR newterm() ).
+It
+allows you to specify a new terminal type in
+.I term
+and updates the data
+returned by
+.BR baudrate "(3XCURSES) based on"
+.IR fildes .
+Other information
+created by the
+.BR initscr() ,
+.BR newterm() ,
+and 
+.BR setupterm()
 functions is preserved.
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIoterm\fR
+.I oterm
 .ad
 .RS 10n
 .rt
@@ -137,7 +194,7 @@ Is the terminal type for which to free space.
 .ne 2
 .mk
 .na
-\fIterm\fR
+.I term
 .ad
 .RS 10n
 .rt
@@ -159,7 +216,7 @@ Is a file descriptor initialized for output.
 .ne 2
 .mk
 .na
-\fIerrret\fR
+.I errret
 .ad
 .RS 10n
 .rt
@@ -170,7 +227,7 @@ Is a pointer to an integer in which the status value is stored.
 .ne 2
 .mk
 .na
-\fInterm\fR
+.I nterm
 .ad
 .RS 10n
 .rt
@@ -180,12 +237,17 @@ Is the new terminal to become the current terminal.
 .SH RETURN VALUES
 .sp
 .LP
-On success, the \fBset_curterm()\fR function returns the previous value of
-\fBcur_term\fR. Otherwise, it returns a null pointer.
+On success, the
+.B set_curterm()
+function returns the previous value of
+.BR cur_term .
+Otherwise, it returns a null pointer.
 .sp
 .LP
-On success, the other functions return \fBOK\fR. Otherwise, they return
-\fBERR\fR.
+On success, the other functions return
+.BR OK .
+Otherwise, they return
+.BR ERR .
 .SH ERRORS
 .sp
 .LP
@@ -193,7 +255,9 @@ None.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -212,6 +276,12 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBbaudrate\fR(3XCURSES), \fBbeep\fR(3XCURSES), \fBinitscr\fR(3XCURSES),
-\fBlibcurses\fR(3XCURSES), \fBmvcur\fR(3XCURSES), \fBtigetflag\fR(3XCURSES),
-\fBuse_env\fR(3XCURSES), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR baudrate (3XCURSES),
+.BR beep (3XCURSES),
+.BR initscr (3XCURSES),
+.BR libcurses (3XCURSES),
+.BR mvcur (3XCURSES),
+\fBtigetflag\fR(3XCURSES),
+.BR use_env (3XCURSES),
+.BR attributes (5),
+.BR standards (5)

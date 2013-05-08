@@ -30,21 +30,38 @@ eri \- eri Fast-Ethernet device driver
 .SH DESCRIPTION
 .sp
 .LP
-The \fBeri\fR Fast Ethernet driver is a multi-threaded, loadable, clonable,
+The
+.B eri
+Fast Ethernet driver is a multi-threaded, loadable, clonable,
 \fBSTREAMS\fR\(embased hardware driver supporting the connectionless Data
-Link Provider Interface \fBdlpi\fR(7P) over an \fBeri\fR Fast-Ethernet
-controller. Multiple \fBeri\fR devices installed within the system are
+Link Provider Interface
+.BR dlpi "(7P) over an"
+.B eri
+Fast-Ethernet
+controller. Multiple
+.B eri
+devices installed within the system are
 supported by the driver.
 .sp
 .LP
-The \fBeri\fR driver provides basic support for the \fBeri\fR hardware and
-handles the \fBeri\fR device. Functions include chip initialization, frame
+The
+.B eri
+driver provides basic support for the
+.B eri
+hardware and
+handles the
+.B eri
+device. Functions include chip initialization, frame
 transit and receive, multicast and promiscuous support, and error recovery
 and reporting.
 .sp
 .LP
-The \fBeri\fR device provides 100Base-TX networking interfaces using the
-SUN \fBRIO\fR \fBASIC\fR and an internal transceiver. The \fBRIO\fR
+The
+.B eri
+device provides 100Base-TX networking interfaces using the
+SUN
+.B "RIO ASIC"
+.RB "and an internal transceiver. The" " RIO"
 \fBASIC\fR provides the \fBPCI\fR interface and \fBMAC\fR functions. The
 physical layer functions are provided by the internal transceiver which
 connects to a RJ-45 connector.
@@ -60,7 +77,9 @@ driver selects the mode of operation.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
 .LP
-The cloning character-special device  \fB/dev/eri\fR is used to access all
+The cloning character-special device 
+.B /dev/eri
+is used to access all
 \fBeri\fR controllers installed within the system.
 .SS "eri and DLPI"
 .sp
@@ -71,8 +90,12 @@ The  \fBeri\fR driver is a "style 2" Data Link Service provider. All
 \fB<sys/dlpi.h>.\fR Refer to \fBdlpi\fR(7P) for more information.
 .sp
 .LP
-An explicit \fBDL_ATTACH_REQ\fR message by the user is required to
-associate the opened stream with a particular device (\fBppa\fR). The
+An explicit
+.B DL_ATTACH_REQ
+message by the user is required to
+associate the opened stream with a particular device
+.RB ( ppa ).
+The
 \fBppa\fR ID is interpreted as an \fBunsigned integer\fR data type and
 indicates the corresponding device instance (unit) number. An error
 (\fBDL_ERROR_ACK\fR) is returned by the driver if the \fBppa\fR field value
@@ -81,46 +104,72 @@ device is initialized on first attach and de-initialized (stopped) at last
 detach.
 .sp
 .LP
-The values returned by the driver in the \fBDL_INFO_ACK\fR primitive in
-response to the \fBDL_INFO_REQ\fR from the user are as follows:
+The values returned by the driver in the
+.B DL_INFO_ACK
+primitive in
+response to the
+.B DL_INFO_REQ
+from the user are as follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The maximum \fBSDU\fR is \fB1500\fR (\fBETHERMTU\fR - defined in
+The maximum
+.B SDU
+is
+.B 1500
+(\fBETHERMTU\fR - defined in
 \fB<sys/ethernet.h>\fR ).
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The minimum \fBSDU\fR is \fB0\fR.
+The minimum
+.B SDU
+is
+.BR 0 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The \fBdlsap\fR address length is \fB8\fR.
+The
+.B dlsap
+address length is
+.BR 8 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The \fBMAC\fR type is \fBDL_ETHER\fR.
+The
+.B MAC
+type is
+.BR DL_ETHER .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The \fBsap\fR length values is \fB-2\fR, meaning the physical address
-component is followed immediately  by a 2 byte \fBsap\fR component within
-the \fBDLSAP\fR address.
+The
+.B sap
+length values is
+.BR -2 ,
+meaning the physical address
+component is followed immediately  by a 2 byte
+.B sap
+component within
+the
+.B DLSAP
+address.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The service mode is \fBDL_CLDLS\fR.
+The service mode is
+.BR DL_CLDLS .
 .RE
 .RS +4
 .TP
@@ -133,13 +182,15 @@ Optional quality of service (\fBQOS\fR) is not currently supported so
 .TP
 .ie t \(bu
 .el o
-The provider style is \fBDL_STYLE\fR.
+The provider style is
+.BR DL_STYLE .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The version is \fBDL_VERSION_2\fR.
+The version is
+.BR DL_VERSION_2 .
 .RE
 .RS +4
 .TP
@@ -150,24 +201,42 @@ The broadcast address value is Ethernet/IEEE broadcast address
 .RE
 .sp
 .LP
-Once in the \fBDL_ATTACHED\fR state, the user must send a \fBDL_BIND_REQ\fR
-to associate a particular \fBSAP\fR (Service Access Pointer) with the
-stream. The \fBeri\fR driver interprets the \fBsap\fR field within the
+Once in the
+.B DL_ATTACHED
+.RB "state, the user must send a" " DL_BIND_REQ"
+to associate a particular
+.B SAP
+(Service Access Pointer) with the
+stream. The
+.B eri
+driver interprets the
+.B sap
+field within the
 \fBDL_BIND_REQ\fR as an Ethernet "type," therefore valid values for the
 \fBsap\fR field are in the [\fB0\fR-\fB0xFFFF\fR] range.  Only one Ethernet
 type can be bound to the stream at any time.
 .sp
 .LP
-If the user selects a \fBsap\fR with a value of \fB0\fR, the receiver will
+If the user selects a
+.B sap
+with a value of
+.BR 0 ,
+the receiver will
 be in IEEE 802.3 mode. All frames received from the media having a Ethernet
 type field in the range [\fB0\fR-\fB1500\fR] are assumed to be 802.3 frames
-and are routed up all open Streams which are bound to \fBsap\fR value
-\fB0\fR. If more than one Stream is in 802.3 mode, the frame will be
-duplicated and routed up multiple Streams as \fBDL_UNITDATA_IND\fR
+and are routed up all open Streams which are bound to
+.B sap
+value
+.BR 0 .
+If more than one Stream is in 802.3 mode, the frame will be
+duplicated and routed up multiple Streams as
+.BR DL_UNITDATA_IND
 messages.
 .sp
 .LP
-In transmission, the driver checks the \fBsap\fR field of the
+In transmission, the driver checks the
+.B sap
+field of the
 \fBDL_BIND_REQ\fR to determine if the value is \fB0\fR or if the Ethernet
 type field is in the range [\fB0\fR-\fB1500\fR]. If either is true, the
 driver computes the length of the message, not including initial
@@ -176,66 +245,122 @@ messages, and transmits 802.3 frames that have this value in the \fBMAC\fR
 frame header length field.
 .sp
 .LP
-The \fBeri\fR driver's \fBDLSAP\fR address format consists of the 6 byte
+The
+.B eri
+driver's
+.B DLSAP
+address format consists of the 6 byte
 physical (Ethernet) address component followed immediately by the 2 byte
 \fBsap\fR (type) component, producing an 8 byte \fBDLSAP\fR address.
-Applications should \fInot\fR hardcode to this particular
-implementation-specific \fBDLSAP\fR address format but use information
-returned in the \fBDL_INFO_ACK\fR primitive to compose and decompose
+Applications should
+.I not
+hardcode to this particular
+implementation-specific
+.B DLSAP
+address format but use information
+returned in the
+.B DL_INFO_ACK
+primitive to compose and decompose
 \fBDLSAP\fR addresses. The \fBsap\fR length, full \fBDLSAP\fR length, and
 \fBsap\fR/physical ordering are included within the \fBDL_INFO_ACK.\fR The
-physical address length can be computed by subtracting the \fBsap\fR length
-from the full \fBDLSAP\fR address length or by issuing the
+physical address length can be computed by subtracting the
+.B sap
+length
+from the full
+.B DLSAP
+address length or by issuing the
 \fBDL_PHYS_ADDR_REQ\fR to obtain the current physical address associated
 with the stream.
 .sp
 .LP
-Once in the \fBDL_BOUND\fR state, the user may transmit frames on the
-Ethernet by sending \fBDL_UNITDATA_REQ\fR messages to the \fBeri\fR driver.
-The \fBeri\fR driver will route received Ethernet frames up all open and
-bound streams having a \fBsap\fR which matches the Ethernet type as
+Once in the
+.B DL_BOUND
+state, the user may transmit frames on the
+Ethernet by sending
+.B DL_UNITDATA_REQ
+messages to the
+.B eri
+driver.
+The
+.B eri
+driver will route received Ethernet frames up all open and
+bound streams having a
+.B sap
+which matches the Ethernet type as
 \fBDL_UNITDATA_IND\fR messages.  Received Ethernet frames are duplicated and
-routed up multiple open streams if necessary. The \fBDLSAP\fR address
-contained within the \fBDL_UNITDATA_REQ\fR and \fBDL_UNITDATA_IND\fR
-messages consists of both the \fBsap\fR (type) and physical (Ethernet)
+routed up multiple open streams if necessary. The
+.B DLSAP
+address
+contained within the
+.B DL_UNITDATA_REQ
+and
+.BR DL_UNITDATA_IND
+messages consists of both the
+.B sap
+(type) and physical (Ethernet)
 components.
 .SS "eri Primitives"
 .sp
 .LP
-In addition to the mandatory connectionless \fBDLPI\fR message set, the
+In addition to the mandatory connectionless
+.B DLPI
+message set, the
 driver also supports the following primitives:
 .sp
 .LP
-The \fBDL_ENABMULTI_REQ\fR and \fBDL_DISABMULTI_REQ\fR primitives
+The
+.B DL_ENABMULTI_REQ
+and
+.B DL_DISABMULTI_REQ
+primitives
 enable/disable reception of individual multicast group addresses. A set of
 multicast addresses may be iteratively created and modified on a per-stream
 basis using these primitives. These primitives are accepted by the driver in
-any state following \fBDL_ATTACHED\fR.
+any state following
+.BR DL_ATTACHED .
 .sp
 .LP
-The \fBDL_PROMISCON_REQ\fR and \fBDL_PROMISCOFF_REQ\fR primitives with the
+The
+.B DL_PROMISCON_REQ
+and
+.B DL_PROMISCOFF_REQ
+primitives with the
 \fBDL_PROMISC_PHYS\fR flag set in the \fBdl_level\fR field enables/disables
 reception of all promiscuous mode frames on the media, including frames
-generated by the local host. When used with the \fBDL_PROMISC_SAP\fR flag
-set, this enables/disables reception of all \fBsap\fR (Ethernet type)
-values. When used with the \fBDL_PROMISC_MULTI\fR flag set, this
+generated by the local host. When used with the
+.B DL_PROMISC_SAP
+flag
+set, this enables/disables reception of all
+.B sap
+(Ethernet type)
+values. When used with the
+.B DL_PROMISC_MULTI
+flag set, this
 enables/disables reception of all multicast group addresses. The effect of
 each is always on a per-stream basis and independent of the other \fBsap\fR
 and physical level configurations on this stream or other streams.
 .sp
 .LP
-The \fBDL_PHYS_ADDR_REQ\fR primitive returns the 6 octet Ethernet address
-currently associated (attached) to the stream in the \fBDL_PHYS_ADDR_ACK\fR
+The
+.B DL_PHYS_ADDR_REQ
+primitive returns the 6 octet Ethernet address
+.RB "currently associated (attached) to the stream in the" " DL_PHYS_ADDR_ACK"
 primitive. This primitive is valid only in states following a successful
-\fBDL_ATTACH_REQ\fR. 
+.BR DL_ATTACH_REQ .
 .sp
 .LP
-The \fBDL_SET_PHYS_ADDR_REQ\fR primitive changes the 6 octet Ethernet
+The
+.B DL_SET_PHYS_ADDR_REQ
+primitive changes the 6 octet Ethernet
 address currently associated (attached) to this stream. The credentials of
 the process which originally opened this stream must be superuser, or
-\fBEPERM\fR is returned in the \fBDL_ERROR_ACK\fR. This primitive is
+\fBEPERM\fR is returned in the
+.BR DL_ERROR_ACK .
+This primitive is
 destructive because it affects all current and future streams attached to
-this device. An \fB M_ERROR\fR is sent up all other streams attached to this
+this device. An
+.B " M_ERROR"
+is sent up all other streams attached to this
 device when this primitive is successful on this stream. Once changed, all
 streams subsequently opened and attached to this device will obtain this new
 physical address.  Once changed, the physical address will remain until this
@@ -317,23 +442,37 @@ partner.
 .sp
 .LP
 For users who want to select the speed and mode of  the link, the \fBeri\fR
-device supports programmable \fBIPG\fR (Inter-Packet Gap) parameters
-\fBipg1\fR and  \fBipg2\fR. Sometimes, the user may want to alter these
+device supports programmable
+.B IPG
+(Inter-Packet Gap) parameters
+\fBipg1\fR and
+.BR ipg2 .
+Sometimes, the user may want to alter these
 values depending on whether the driver supports 10 Mbps or 100 Mpbs and
-accordingly, \fBIPG\fR will be set to 9.6 or 0.96 microseconds.
+accordingly,
+.B IPG
+will be set to 9.6 or 0.96 microseconds.
 .SS "eri Parameter List"
 .sp
 .LP
-The \fBeri\fR driver provides for setting and getting various parameters
-for the  \fBeri\fR device. The parameter list includes current transceiver
+The
+.B eri
+driver provides for setting and getting various parameters
+for the 
+.B eri
+device. The parameter list includes current transceiver
 status, current link status, inter-packet gap, local transceiver
 capabilities and link partner capabilities.
 .sp
 .LP
 The local transceiver has two set of capabilities: one set reflects
-hardware capabilities, which are  read-only \fB(RO)\fR parameters. The
+hardware capabilities, which are  read-only
+.B (RO)
+parameters. The
 second set reflects the values chosen by the user and is used in speed
-selection and possess read/write \fB(RW)\fR capability. At boot time, these
+selection and possess read/write
+.B (RW)
+capability. At boot time, these
 two sets of capabilities will be the same. Because the current default value
 of these parameters can only be read and not modified, the link partner
 capabilities are also read only.
@@ -342,7 +481,7 @@ capabilities are also read only.
 .ne 2
 .mk
 .na
-\fB/dev/eri\fR
+.B /dev/eri
 .ad
 .RS 28n
 .rt
@@ -364,7 +503,7 @@ capabilities are also read only.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/sparcv9/eri\fR
+.B /kernel/drv/sparcv9/eri
 .ad
 .RS 28n
 .rt
@@ -374,5 +513,7 @@ capabilities are also read only.
 .SH SEE ALSO
 .sp
 .LP
-\fBndd\fR(1M), \fBnetstat\fR(1M), \fBdriver.conf\fR(4), \fBhme\fR(7D),
+.BR ndd (1M),
+.BR netstat (1M),
+\fBdriver.conf\fR(4), \fBhme\fR(7D),
 \fBqfe\fR(7d), \fBdlpi\fR(7P)

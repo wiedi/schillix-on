@@ -38,48 +38,75 @@ connld \- line discipline for unique stream connections
 .LP
 \fBconnld\fR is a STREAMS-based module that provides unique connections
 between server and client processes. It can only be pushed (see
-\fBstreamio\fR(7I)) onto one end of a STREAMS-based pipe that may
+.BR streamio (7I))
+onto one end of a STREAMS-based pipe that may
 subsequently be attached to a name in the file system name space with
 \fBfattach\fR(3C). After the pipe end is attached, a new pipe is created
-internally when an  originating process attempts to  \fBopen\fR(2) or
-\fBcreat\fR(2) the file system name. A file descriptor for one end of the
+internally when an  originating process attempts to 
+.BR open (2)
+or
+.BR creat (2)
+the file system name. A file descriptor for one end of the
 new pipe is packaged into a message identical to that for the ioctl
 \fBI_SENDFD\fR (see  \fBstreamio\fR(7I)) and is transmitted along the stream
 to the server process on the  other end. The originating process is blocked
 until the server responds.
 .sp
 .LP
-The server responds to the  \fBI_SENDFD\fR request by accepting the file
-descriptor through the  \fBI_RECVFD\fR ioctl message. When this happens, the
+The server responds to the 
+.B I_SENDFD
+request by accepting the file
+descriptor through the 
+.B I_RECVFD
+ioctl message. When this happens, the
 file descriptor associated with the other end of the new pipe is transmitted
 to the originating process as the file descriptor returned  from
-\fBopen\fR(2) or \fBcreat\fR(2).
+.BR open (2)
+or
+.BR creat (2).
 .sp
 .LP
-If the server does not respond to the  \fBI_SENDFD\fR request, the stream
-that the \fBconnld\fR module is pushed on becomes uni-directional because
+If the server does not respond to the 
+.B I_SENDFD
+request, the stream
+that the
+.B connld
+module is pushed on becomes uni-directional because
 the server  will not be able to retrieve any data off the stream until the
 \fBI_RECVFD\fR request is issued. If the server process exits before issuing
-the \fBI_RECVFD\fR request, the \fBopen\fR(2) or the \fBcreat\fR(2)
+the
+.B I_RECVFD
+request, the
+.BR open (2)
+or the
+.BR creat (2)
 invocation will fail and return -1 to the originating process.
 .sp
 .LP
-When the \fBconnld\fR module is pushed onto a pipe, it ignores messages
+When the
+.B connld
+module is pushed onto a pipe, it ignores messages
 going back and forth  through the pipe.
 .SH ERRORS
 .sp
 .LP
-On success, an open of \fBconnld\fR returns 0. On failure, \fBerrno\fR is
+On success, an open of
+.B connld
+returns 0. On failure,
+.B errno
+is
 set to the following values:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-A stream onto which \fBconnld\fR is being pushed is not a pipe or the pipe
+A stream onto which
+.B connld
+is being pushed is not a pipe or the pipe
 does not have a write queue pointer pointing to a stream head read queue.
 .RE
 
@@ -87,11 +114,13 @@ does not have a write queue pointer pointing to a stream head read queue.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-The other end of the pipe onto which \fBconnld\fR is being pushed is linked
+The other end of the pipe onto which
+.B connld
+is being pushed is linked
 under a multiplexor.
 .RE
 
@@ -99,7 +128,7 @@ under a multiplexor.
 .ne 2
 .mk
 .na
-\fBEPIPE\fR
+.B EPIPE
 .ad
 .RS 11n
 .rt
@@ -111,7 +140,7 @@ there.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -122,11 +151,13 @@ An internal pipe could not be created.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 11n
 .rt
-An  \fBM_HANGUP\fR message is at the stream head of the pipe onto which
+An 
+.B M_HANGUP
+message is at the stream head of the pipe onto which
 \fBconnld\fR is being pushed.
 .RE
 
@@ -134,7 +165,7 @@ An  \fBM_HANGUP\fR message is at the stream head of the pipe onto which
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
@@ -145,7 +176,7 @@ Internal data structures could not be allocated.
 .ne 2
 .mk
 .na
-\fBENFILE\fR
+.B ENFILE
 .ad
 .RS 11n
 .rt
@@ -155,7 +186,9 @@ A file table entry could not be allocated.
 .SH SEE ALSO
 .sp
 .LP
-\fBcreat\fR(2), \fBopen\fR(2), \fBfattach\fR(3C), \fBstreamio\fR(7I)
+.BR creat (2),
+.BR open (2),
+\fBfattach\fR(3C), \fBstreamio\fR(7I)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

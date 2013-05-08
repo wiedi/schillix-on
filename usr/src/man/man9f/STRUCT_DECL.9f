@@ -107,7 +107,7 @@ The macros take the following parameters:
 .ne 2
 .mk
 .na
-\fIstructname\fR
+.I structname
 .ad
 .RS 14n
 .rt
@@ -119,18 +119,26 @@ the native form.
 .ne 2
 .mk
 .na
-\fIumodel\fR
+.I umodel
 .ad
 .RS 14n
 .rt
- A bit field that contains either the \fBILP32\fR model bit (\fBDATAMODEL_ILP32\fR), or the \fBLP64\fR model bit (\fBDATAMODEL_LP64\fR). In an \fBioctl\fR(9E), these bits are present in the flag parameter. In a \fBdevmap\fR(9E), the bits are present in the model parameter \fBmmap\fR(9E). The \fBddi_mmap_get_model\fR(9F) can be called to get the data model of the current thread.
+ A bit field that contains either the
+.B ILP32
+model bit
+.RB ( DATAMODEL_ILP32 ),
+or the
+.B LP64
+model bit
+.RB ( DATAMODEL_LP64 ).
+In an \fBioctl\fR(9E), these bits are present in the flag parameter. In a \fBdevmap\fR(9E), the bits are present in the model parameter \fBmmap\fR(9E). The \fBddi_mmap_get_model\fR(9F) can be called to get the data model of the current thread.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIhandle\fR
+.I handle
 .ad
 .RS 14n
 .rt
@@ -165,33 +173,52 @@ following sections.
 .SS "Declaration and Initialization Macros"
 .sp
 .LP
-The macros \fBSTRUCT_DECL()\fR and \fBSTRUCT_HANDLE()\fR declare structure
-handles on the stack, whereas the macros \fBSTRUCT_INIT()\fR and
+The macros
+.B STRUCT_DECL()
+and
+.B STRUCT_HANDLE()
+declare structure
+handles on the stack, whereas the macros
+.B STRUCT_INIT()
+and
 \fBSTRUCT_SET_HANDLE()\fR initialize the structure handles to point to an
 instance of the native form structure.
 .sp
 .LP
-The macros \fBSTRUCT_HANDLE()\fR and \fBSTRUCT_SET_HANDLE()\fR are used to
+The macros
+.B STRUCT_HANDLE()
+and
+.B STRUCT_SET_HANDLE()
+are used to
 declare and initialize a structure handle to an existing data structure, for
 example, ioctls within a STREAMS module.
 .sp
 .LP
-The macros \fBSTRUCT_DECL()\fR and \fBSTRUCT_INIT()\fR, on the other hand,
+The macros
+.B STRUCT_DECL()
+and
+.BR STRUCT_INIT() ,
+on the other hand,
 are used in modules which declare and initialize a structure handle to a
-data structure allocated by \fBSTRUCT_DECL()\fR, that is, any standard
-character or block device driver \fBioctl\fR(9E) routine that needs to copy
+data structure allocated by
+.BR STRUCT_DECL() ,
+that is, any standard
+character or block device driver
+.BR ioctl "(9E) routine that needs to copy"
 in data from a user-mode program.
 .sp
 .ne 2
 .mk
 .na
-\fBSTRUCT_DECL(structname, handle)\fR
+.B STRUCT_DECL(structname, handle)
 .ad
 .sp .6
 .RS 4n
 Declares a structure handle for a struct and allocates an instance of its
 native form on the stack. It is assumed that the native form is larger than
-or equal to the ILP32 form. \fIhandle\fR is a variable name and is declared
+or equal to the ILP32 form.
+.I handle
+is a variable name and is declared
 as a variable by this macro.
 .RE
 
@@ -199,29 +226,41 @@ as a variable by this macro.
 .ne 2
 .mk
 .na
-\fBvoid STRUCT_INIT(handle, model_t umodel)\fR
+.B void STRUCT_INIT(handle, model_t umodel)
 .ad
 .sp .6
 .RS 4n
-Initializes \fIhandle\fR to point to the instance allocated by
-\fBSTRUCT_DECL()\fR. It also sets data model for \fIhandle\fR to
+Initializes
+.I handle
+to point to the instance allocated by
+.BR STRUCT_DECL() .
+It also sets data model for
+.I handle
+to
 \fIumodel\fR and it must be called before any access is made through the
 macros that operate on these structures. When used in an \fBioctl\fR(9E)
-routine, \fIumodel\fR is the flag parameter. In a \fBdevmap\fR(9E) routine,
+routine,
+.I umodel
+is the flag parameter. In a
+.BR devmap (9E)
+routine,
 \fIumodel\fR is the model parameter. In a \fBmmap\fR(9E) routine,
 \fIumodel\fR is the return value of \fBddi_mmap_get_model\fR(9F). This macro
-is intended only for handles created with \fBSTRUCT_DECL()\fR.
+is intended only for handles created with
+.BR STRUCT_DECL() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSTRUCT_HANDLE(structname, handle)\fR
+.B STRUCT_HANDLE(structname, handle)
 .ad
 .sp .6
 .RS 4n
-Declares a structure handle \fIhandle\fR but, unlike \fBSTRUCT_DECL()\fR,
+Declares a structure handle
+.I handle
+but, unlike \fBSTRUCT_DECL()\fR,
 it does not allocate an instance of "struct".
 .RE
 
@@ -229,19 +268,35 @@ it does not allocate an instance of "struct".
 .ne 2
 .mk
 .na
-\fBvoid STRUCT_SET_HANDLE(handle, model_t umodel, void *addr)\fR
+.B "void STRUCT_SET_HANDLE(handle, model_t umodel, void *addr)
 .ad
 .sp .6
 .RS 4n
-Initializes handle to point to the native form instance at \fIaddr\fR. It
-also sets the data model for \fIhandle\fR to \fIumodel\fR. This is intended
-for handles created with \fBSTRUCT_HANDLE()\fR. Fields cannot be referenced
-via the \fIhandle\fR until this macro has been invoked. Typically,
+Initializes handle to point to the native form instance at
+.IR addr .
+It
+also sets the data model for
+.I handle
+to
+.IR umodel .
+This is intended
+for handles created with
+.BR STRUCT_HANDLE() .
+Fields cannot be referenced
+via the
+.I handle
+until this macro has been invoked. Typically,
 \fIaddr\fR is the address of the native form structure containing the
-user-mode programs data. When used in an \fBioctl\fR(9E), \fIumodel\fR is
-the flag parameter. In a \fBdevmap\fR(9E) routine, \fIumodel\fR is the model
+user-mode programs data. When used in an \fBioctl\fR(9E),
+.I umodel
+is
+the flag parameter. In a
+.BR devmap (9E)
+routine,
+.I umodel
+is the model
 parameter. In an \fBmmap\fR(9E) routine, \fIumodel\fR is the return value of
-\fBddi_mmap_get_model\fR(9F).
+.BR ddi_mmap_get_model (9F).
 .RE
 
 .SS "Operation Macros"
@@ -249,14 +304,20 @@ parameter. In an \fBmmap\fR(9E) routine, \fIumodel\fR is the return value of
 .ne 2
 .mk
 .na
-\fBsize_t STRUCT_SIZE(handle)\fR
+.B size_t STRUCT_SIZE(handle)
 .ad
 .sp .6
 .RS 4n
-Returns size of the structure referred to by \fIhandle\fR, depending on the
-data model associated with \fIhandle\fR. If the data model stored by
+Returns size of the structure referred to by
+.IR handle ,
+depending on the
+data model associated with
+.IR handle .
+If the data model stored by
 \fBSTRUCT_INIT()\fR or \fBSTRUCT_SET_HANDLE()\fR is \fBDATAMODEL_ILP32\fR,
-the size of the \fBILP32\fR form is returned. Otherwise, the size of the
+the size of the
+.B ILP32
+form is returned. Otherwise, the size of the
 native form is returned.
 .RE
 
@@ -280,7 +341,9 @@ Returns the contents of \fIfield\fR in the structure described by
 .ad
 .sp .6
 .RS 4n
-This is the same as \fBSTRUCT_FGET()\fR except that the \fIfield\fR in
+This is the same as
+.B STRUCT_FGET()
+except that the \fIfield\fR in
 question is a pointer of some kind. This macro casts caddr32_t to a (void *)
 when it is accessed. Failure to use this macro for a pointer leads to
 compiler warnings or failures.
@@ -294,8 +357,11 @@ compiler warnings or failures.
 .ad
 .sp .6
 .RS 4n
-Assigns \fIval\fR to the (non-pointer) in the structure described by
-\fIhandle\fR. It should not be used within another expression, but only as a
+Assigns
+.I val
+to the (non-pointer) in the structure described by
+.IR handle .
+It should not be used within another expression, but only as a
 statement.
 .RE
 
@@ -316,12 +382,12 @@ expression, but only as a statement.
 .ne 2
 .mk
 .na
-\fBstruct structname *STRUCT_BUF(handle)\fR
+.B struct structname *STRUCT_BUF(handle)
 .ad
 .sp .6
 .RS 4n
 Returns a pointer to the native mode instance of the structure described by
-\fIhandle\fR.
+.IR handle .
 .RE
 
 .SS "Macros Not Using Handles"
@@ -329,30 +395,35 @@ Returns a pointer to the native mode instance of the structure described by
 .ne 2
 .mk
 .na
-\fBsize_t SIZEOF_STRUCT(structname, umodel)\fR
+.B size_t SIZEOF_STRUCT(structname, umodel)
 .ad
 .sp .6
 .RS 4n
-Returns size of \fIstructname\fR based on \fIumodel\fR.
+Returns size of
+.I structname
+based on
+.IR umodel .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsize_t SIZEOF_PTR(umodel)\fR
+.B size_t SIZEOF_PTR(umodel)
 .ad
 .sp .6
 .RS 4n
-Returns the size of a pointer based on \fIumodel\fR.
+Returns the size of a pointer based on
+.IR umodel .
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCopying a Structure
+\fBExample 1\fR Copying a Structure
 .sp
 .LP
-The following example uses an \fBioctl\fR(9E) on a regular character device
+The following example uses an
+.BR ioctl "(9E) on a regular character device"
 that copies a data structure that looks like this into the kernel:
 
 .sp
@@ -366,10 +437,11 @@ struct opdata {
 .in -2
 
 .LP
-\fBExample 2 \fRDefining a Structure
+\fBExample 2\fR Defining a Structure
 .sp
 .LP
-This data structure definition describes what the \fBioctl\fR(9E) would
+This data structure definition describes what the
+.BR ioctl "(9E) would"
 look like in a 32-bit application using fixed width types.
 
 .sp
@@ -385,10 +457,13 @@ struct opdata32 {
 .in -2
 
 .LP
-\fBExample 3 \fRUsing \fBSTRUCT_DECL()\fR and \fBSTRUCT_INIT()\fR
+\fBExample 3\fR Using \fBSTRUCT_DECL()\fR and \fBSTRUCT_INIT()\fR
 .sp
 .LP
-Note: This example uses the \fBSTRUCT_DECL()\fR and \fBSTRUCT_INIT()\fR
+Note: This example uses the
+.B STRUCT_DECL()
+and
+.BR STRUCT_INIT()
 macros to declare and initialize the structure handle.
 
 .sp
@@ -421,22 +496,29 @@ xxioctl(dev_t dev, int cmd, intptr_t arg, int mode,
 .sp
 .LP
 This piece of code is an excerpt from a STREAMS module that handles
-\fBioctl\fR(9E) data (M_IOCDATA) messages and uses the data structure
+.BR ioctl (9E)
+data (M_IOCDATA) messages and uses the data structure
 defined above. This code has been written to run in the ILP32 environment
 only.
 
 .LP
-\fBExample 4 \fRUsing \fBSTRUCT_HANDLE()\fR and \fBSTRUCT_SET_HANDLE()\fR
+\fBExample 4\fR Using \fBSTRUCT_HANDLE()\fR and \fBSTRUCT_SET_HANDLE()\fR
 .sp
 .LP
-The next example illustrates the use of the \fBSTRUCT_HANDLE()\fR and
+The next example illustrates the use of the
+.B STRUCT_HANDLE()
+and
 \fBSTRUCT_SET_HANDLE()\fR macros which declare and initialize the structure
 handle to point to an already existing instance of the structure.
 
 .sp
 .LP
 The above code example can be converted to run in the LP64 environment
-using the \fBSTRUCT_HANDLE()\fR and \fBSTRUCT_SET_HANDLE()\fR as follows:
+using the
+.B STRUCT_HANDLE()
+and
+.B STRUCT_SET_HANDLE()
+as follows:
 
 .sp
 .in +2
@@ -479,7 +561,9 @@ wput_iocdata(queue_t *q, mblk_t *msgp)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -496,11 +580,12 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap\fR(9E), \fBioctl\fR(9E),
+.BR devmap (9E),
+.BR ioctl (9E),
 \fBmmap\fR(9E),\fBddi_mmap_get_model\fR(9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

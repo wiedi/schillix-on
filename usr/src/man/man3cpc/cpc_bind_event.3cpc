@@ -45,11 +45,20 @@ cc [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. \(milcpc [ \fIlibrary\fR.\|.\|. ]
 .sp
 .LP
 Once the events to be sampled have been selected using, for example,
-\fBcpc_strtoevent\fR(3CPC), the event selections can be bound to the calling
-\fBLWP\fR using \fBcpc_bind_event()\fR. If \fBcpc_bind_event()\fR returns
+.BR cpc_strtoevent (3CPC),
+the event selections can be bound to the calling
+\fBLWP\fR using
+.BR cpc_bind_event() .
+If
+.B cpc_bind_event()
+returns
 successfully, the system has associated performance counter context with the
-calling \fBLWP\fR. The context allows the system to virtualize the hardware
-counters to that specific \fBLWP\fR, and the counters are enabled.
+calling
+.BR LWP .
+The context allows the system to virtualize the hardware
+counters to that specific
+.BR LWP ,
+and the counters are enabled.
 .sp
 .LP
 Two flags are defined that can be passed into the routine to allow the
@@ -57,14 +66,19 @@ behavior of the interface to be modified, as described below.
 .sp
 .LP
 Counter values can be sampled at any time by calling
-\fBcpc_take_sample()\fR, and dereferencing the fields of the
+.BR cpc_take_sample() ,
+and dereferencing the fields of the
 \fBce_pic\fB[]\fR array returned. The \fBce_hrt\fR field contains the
 timestamp at which the kernel last sampled the counters.
 .sp
 .LP
-To immediately remove the performance counter context on an \fBLWP\fR, the
+To immediately remove the performance counter context on an
+.BR LWP ,
+the
 \fBcpc_rele()\fR interface should be used. Otherwise, the context will be
-destroyed after the \fBLWP\fR or process exits.
+destroyed after the
+.B LWP
+or process exits.
 .sp
 .LP
 The caller should take steps to ensure that the counters are sampled often
@@ -78,23 +92,33 @@ problem.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBcpc_bind_event()\fR and
-\fBcpc_take_sample()\fR return \fB0\fR. Otherwise, these functions return
+Upon successful completion,
+.B cpc_bind_event()
+and
+\fBcpc_take_sample()\fR return
+.BR 0 .
+Otherwise, these functions return
 \fB\(mi1\fR, and set \fBerrno\fR to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBcpc_bind_event()\fR and \fBcpc_take_sample()\fR functions will fail
+The
+.B cpc_bind_event()
+and
+.B cpc_take_sample()
+functions will fail
 if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 11n
 .rt
-For \fBcpc_bind_event()\fR, access to the requested hypervisor event was
+For
+.BR cpc_bind_event() ,
+access to the requested hypervisor event was
 denied.
 .RE
 
@@ -102,16 +126,22 @@ denied.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
 Another process may be sampling system-wide CPU statistics. For
-\fBcpc_bind_event()\fR, this implies that no new contexts can be created.
-For \fBcpc_take_sample()\fR, this implies that the performance counter
-context has been invalidated and must be released with \fBcpc_rele()\fR.
+.BR cpc_bind_event() ,
+this implies that no new contexts can be created.
+For
+.BR cpc_take_sample() ,
+this implies that the performance counter
+context has been invalidated and must be released with
+.BR cpc_rele() .
 Robust programs should be coded to expect this behavior and recover from it
-by releasing the now invalid context by calling \fBcpc_rele()\fR sleeping
+by releasing the now invalid context by calling
+.B cpc_rele()
+sleeping
 for a while, then attempting to bind and sample the event once more.
 .RE
 
@@ -119,11 +149,13 @@ for a while, then attempting to bind and sample the event once more.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-The \fBcpc_take_sample()\fR function has been invoked before the context is
+The
+.B cpc_take_sample()
+function has been invoked before the context is
 bound.
 .RE
 
@@ -131,7 +163,7 @@ bound.
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 11n
 .rt
@@ -144,27 +176,40 @@ overflow.
 .SH USAGE
 .sp
 .LP
-Prior to calling \fBcpc_bind_event()\fR, applications should call
-\fBcpc_access\fR(3CPC) to determine if the counters are accessible on the
+Prior to calling
+.BR cpc_bind_event() ,
+applications should call
+.BR cpc_access (3CPC)
+to determine if the counters are accessible on the
 system.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUse hardware performance counters to measure events in a
+\fBExample 1\fR Use hardware performance counters to measure events in a
 process.
 .sp
 .LP
 The example below shows how a standalone program can be instrumented with
-the \fBlibcpc\fR routines to use hardware performance counters to measure
+the
+.B libcpc
+routines to use hardware performance counters to measure
 events in a process.  The program performs 20 iterations of a computation,
 measuring the counter values for each iteration.  By default, the example
 makes the counters measure external cache references and external cache
 hits; these options are only appropriate for UltraSPARC processors. By
-setting the \fBPERFEVENTS\fR environment variable to other strings (a list
-of which can be gleaned from the \fB-h\fR flag of the \fBcpustat\fR or
+setting the
+.B PERFEVENTS
+environment variable to other strings (a list
+of which can be gleaned from the
+.B -h
+flag of the
+.B cpustat
+or
 \fBcputrack\fR utilities), other events can be counted.  The \fBerror()\fR
 routine below is assumed to be a user-provided routine analogous to the
 familiar \fBprintf\fR(3C) routine from the C library but which also performs
-an \fBexit\fR(2) after printing the message.
+an
+.BR exit (2)
+after printing the message.
 
 .sp
 .in +2
@@ -225,7 +270,7 @@ return (0);
 .in -2
 
 .LP
-\fBExample 2 \fRWrite a signal handler to catch overflow signals.
+\fBExample 2\fR Write a signal handler to catch overflow signals.
 .sp
 .LP
 This example builds on Example 1, but demonstrates how to write the signal
@@ -307,14 +352,21 @@ cpc_bind_event(NULL, 0);    /* done */\fR
 .sp
 .LP
 Note that a more general version of the signal handler would use
-\fBwrite\fR(2) directly instead of depending on the signal-unsafe semantics
-of \fBstderr\fR and \fBstdout\fR. Most real signal handlers will probably do
+.BR write (2)
+directly instead of depending on the signal-unsafe semantics
+of
+.B stderr
+and
+.BR stdout .
+Most real signal handlers will probably do
 more with the samples than just print them out.
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -333,19 +385,33 @@ Interface StabilityObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBcpustat\fR(1M), \fBcputrack\fR(1), \fBwrite\fR(2). \fBcpc\fR(3CPC),
-\fBcpc_access\fR(3CPC), \fBcpc_bind_curlwp\fR(3CPC),
-\fBcpc_set_sample\fR(3CPC), \fBcpc_strtoevent\fR(3CPC),
-\fBcpc_unbind\fR(3CPC), \fBlibcpc\fR(3LIB), \fBattributes\fR(5)
+.BR cpustat (1M),
+.BR cputrack (1),
+.BR write (2).
+.BR cpc (3CPC),
+.BR cpc_access (3CPC),
+.BR cpc_bind_curlwp (3CPC),
+.BR cpc_set_sample (3CPC),
+.BR cpc_strtoevent (3CPC),
+.BR cpc_unbind (3CPC),
+.BR libcpc (3LIB),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-The \fBcpc_bind_event()\fR, \fBcpc_take_sample()\fR, and \fBcpc_rele()\fR
+The
+.BR cpc_bind_event() ,
+.BR cpc_take_sample() ,
+and
+.BR cpc_rele()
 functions exist for binary compatibility only. Source containing these
 functions will not compile. These functions are obsolete and might be
 removed in a future release. Applications should use
-\fBcpc_bind_curlwp\fR(3CPC), \fBcpc_set_sample\fR(3CPC), and
-\fBcpc_unbind\fR(3CPC) instead.
+.BR cpc_bind_curlwp (3CPC),
+.BR cpc_set_sample (3CPC),
+and
+.BR cpc_unbind (3CPC)
+instead.
 .sp
 .LP
 Sometimes, even the overhead of performing a system call will be too
@@ -353,7 +419,8 @@ disruptive to the events being measured. Once a call to
 \fBcpc_bind_event()\fR has been issued, it is possible to directly access
 the performance hardware registers from within the application. If the
 performance counter context is active, then the counters will count on
-behalf of the current \fBLWP\fR.
+behalf of the current
+.BR LWP .
 .SS "SPARC"
 .sp
 .in +2
@@ -379,16 +446,26 @@ become unavailable.
 .sp
 .LP
 Note that the two 32-bit UltraSPARC performance counters are kept in the
-single 64-bit \fB%pic\fR register so a couple of additional instructions are
-required to separate the values. Also note that when the \fB%pcr\fR register
-bit has been set that configures the \fB%pic\fR register as readable by an
+single 64-bit
+.B %pic
+register so a couple of additional instructions are
+required to separate the values. Also note that when the
+.B %pcr
+register
+bit has been set that configures the
+.B %pic
+register as readable by an
 application, it is also writable. Any values written will be preserved by
 the context switching mechanism.
 .sp
 .LP
-Pentium II processors support the non-privileged \fBrdpmc\fR instruction
+Pentium II processors support the non-privileged
+.B rdpmc
+instruction
 which requires [5] that the counter of interest be specified in \fB%ecx\fR,
-and returns a 40-bit value in the \fB%edx:%eax\fR register pair.  There is
+and returns a 40-bit value in the
+.B %edx:%eax
+register pair.  There is
 no non-privileged access mechanism for Pentium I processors.
 .SS "Handling counter overflow"
 .sp
@@ -417,17 +494,33 @@ overflow may be earlier in the instruction stream than is indicated by the
 program counter value in the ucontext.
 .sp
 .LP
-When \fBcpc_bind_event()\fR is called with  the \fBCPC_BIND_EMT_OVF\fR flag
+When
+.B cpc_bind_event()
+is called with  the
+.B CPC_BIND_EMT_OVF
+flag
 set, then as before, the control registers and counters are preset from the
-64-bit values contained in \fBevent\fR. However, when the flag is set, the
-kernel arranges to send the calling process a \fBSIGEMT\fR signal when the
-overflow occurs, with the \fBsi_code\fR field of the corresponding
-\fBsiginfo\fR structure set to \fBEMT_CPCOVF\fR, and the \fBsi_addr\fR field
+64-bit values contained in
+.BR event .
+However, when the flag is set, the
+kernel arranges to send the calling process a
+.B SIGEMT
+signal when the
+overflow occurs, with the
+.B si_code
+field of the corresponding
+\fBsiginfo\fR structure set to
+.BR EMT_CPCOVF ,
+and the
+.B si_addr
+field
 is the program counter value at the time the overflow interrupt was
 delivered. Counting is disabled until the next call to
-\fBcpc_bind_event()\fR. Even in a multithreaded process, during execution of
+.BR cpc_bind_event() .
+Even in a multithreaded process, during execution of
 the signal handler, the thread behaves as if it is temporarily bound to the
-running \fBLWP\fR.
+running
+.BR LWP .
 .sp
 .LP
 Different processors have different counter ranges available, though all
@@ -445,22 +538,45 @@ perturbation of the system.
 .LP
 If the processor cannot detect counter overflow, this call will fail
 (\fBENOTSUP\fR). Specifying a null event unbinds the context from the
-underlying \fBLWP\fR and disables signal delivery.  Currently, only user
+underlying
+.B LWP
+and disables signal delivery.  Currently, only user
 events can be measured using this technique. See Example 2, above.
 .SS "Inheriting events onto multiple \fBLWP\fRs"
 .sp
 .LP
 By default, the library binds the performance counter context to the
-current \fBLWP\fR only.  If the \fBCPC_BIND_LWP_INHERIT\fR flag is set, then
-any subsequent \fBLWP\fRs created by that \fBLWP\fR will automatically
+current
+.B LWP
+only.  If the
+.B CPC_BIND_LWP_INHERIT
+flag is set, then
+any subsequent
+.BR LWP "s created by that"
+.B LWP
+will automatically
 inherit the same performance counter context.  The counters will be
-initialized to 0 as if a \fBcpc_bind_event()\fR had just been issued. This
+initialized to 0 as if a
+.B cpc_bind_event()
+had just been issued. This
 automatic inheritance behavior can be useful when dealing with multithreaded
 programs to determine aggregate statistics for the program as a whole.
 .sp
 .LP
-If the \fBCPC_BIND_EMT_OVF\fR flag is also set, the process will
-immediately dispatch a \fBSIGEMT\fR signal to the freshly created \fBLWP\fR
-so that it can preset its counters appropriately on the new \fBLWP\fR. This
-initialization condition can be detected using \fBcpc_take_sample()\fR to
-check that both \fBce_pic\fR[] values are set to \fBUINT64_MAX\fR.
+If the
+.B CPC_BIND_EMT_OVF
+flag is also set, the process will
+immediately dispatch a
+.B SIGEMT
+signal to the freshly created
+.BR LWP
+so that it can preset its counters appropriately on the new
+.BR LWP .
+This
+initialization condition can be detected using
+.B cpc_take_sample()
+to
+check that both
+.BR ce_pic []
+values are set to
+.BR UINT64_MAX .

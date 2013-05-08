@@ -48,15 +48,27 @@ cc[ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. -lldap[ \fIlibrary\fR.\|.\|. ]
 .sp
 .LP
 These functions are used to sort lists of entries and values retrieved from
-an LDAP server. \fBldap_sort_entries()\fR is used to sort a chain of entries
+an LDAP server.
+.B ldap_sort_entries()
+is used to sort a chain of entries
 retrieved from an LDAP search call either by DN or by some arbitrary
-attribute in the entries.  It takes  \fIld\fR, the LDAP structure, which is
-only used for error reporting,  \fIchain\fR, the list of entries as returned
-by \fBldap_search_s\fR(3LDAP) or \fBldap_result\fR(3LDAP). \fIattr\fR is the
-attribute to use as a key in the sort or NULL to sort by DN, and  \fIcmp\fR
+attribute in the entries.  It takes
+.IR ld ,
+the LDAP structure, which is
+only used for error reporting,
+.IR chain ,
+the list of entries as returned
+by \fBldap_search_s\fR(3LDAP) or \fBldap_result\fR(3LDAP).
+.I attr
+is the
+.RI "attribute to use as a key in the sort or NULL to sort by DN, and " " cmp"
 is the comparison function to use when comparing values (or individual DN
-components if sorting by DN). In this case,  \fIcmp\fR should be a function
-taking two single values of the  \fIattr\fR to sort by, and returning a
+components if sorting by DN). In this case, 
+.I cmp
+should be a function
+taking two single values of the 
+.I attr
+to sort by, and returning a
 value less than zero, equal to zero, or greater than zero, depending on
 whether the first argument is less than, equal to, or greater than the
 second argument. The convention is the same as used by \fBqsort\fR(3C),
@@ -64,13 +76,28 @@ which is called to do the actual sorting.
 .sp
 .LP
 \fBldap_sort_values()\fR is used to sort an array of values from an entry,
-as returned by \fBldap_get_values\fR(3LDAP). It takes the LDAP connection
-structure \fIld\fR, the array of values to sort  \fIvals\fR, and  \fIcmp\fR,
-the comparison function to use during the sort. Note that  \fIcmp\fR will be
-passed a pointer to each element in the \fIvals\fR array, so if you pass the
-normal char ** for this parameter, \fIcmp\fR should take two char **'s as
-arguments (that is, you cannot pass  \fIstrcasecmp\fR or its friends for
-\fIcmp\fR). You can, however, pass the function \fBldap_sort_strcasecmp()\fR
+as returned by
+.BR ldap_get_values "(3LDAP). It takes the LDAP connection"
+structure
+.IR ld ,
+the array of values to sort
+.IR vals ,
+and 
+.IR cmp ,
+the comparison function to use during the sort. Note that 
+.I cmp
+will be
+passed a pointer to each element in the
+.I vals
+array, so if you pass the
+normal char ** for this parameter,
+.I cmp
+should take two char **'s as
+arguments (that is, you cannot pass 
+.I strcasecmp
+or its friends for
+.IR cmp ).
+You can, however, pass the function \fBldap_sort_strcasecmp()\fR
 for this purpose.
 .sp
 .LP
@@ -91,7 +118,9 @@ For example:
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attributes:
+See
+.BR attributes (5)
+for a description of the following attributes:
 .sp
 
 .sp
@@ -109,14 +138,20 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBldap\fR(3LDAP), \fBldap_search\fR(3LDAP), \fBldap_result\fR(3LDAP),
-\fBqsort\fR(3C), \fBattributes\fR(5)
+.BR ldap (3LDAP),
+.BR ldap_search (3LDAP),
+.BR ldap_result (3LDAP),
+.BR qsort (3C),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-The \fBldap_sort_entries()\fR function applies the comparison function to
+The
+.B ldap_sort_entries()
+function applies the comparison function to
 each value of the attribute in the array as returned by a call to
-\fBldap_get_values\fR(3LDAP), until a mismatch is found. This works fine for
+.BR ldap_get_values (3LDAP),
+until a mismatch is found. This works fine for
 single-valued attributes, but may produce unexpected results for
 multi-valued attributes. When sorting by DN, the comparison function is
 applied to an exploded version of the DN, without types. The return values

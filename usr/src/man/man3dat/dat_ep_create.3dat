@@ -45,7 +45,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIia_handle\fR
+.I ia_handle
 .ad
 .RS 22n
 .rt
@@ -57,7 +57,7 @@ belongs.
 .ne 2
 .mk
 .na
-\fIpz_handle\fR
+.I pz_handle
 .ad
 .RS 22n
 .rt
@@ -68,12 +68,14 @@ Handle for an instance of the Protection Zone.
 .ne 2
 .mk
 .na
-\fIrecv_evd_handle\fR
+.I recv_evd_handle
 .ad
 .RS 22n
 .rt
 Handle for the Event Dispatcher where events for completions of incoming
-(receive) DTOs are reported. \fBDAT_HANDLE_NULL\fR specifies that the
+(receive) DTOs are reported.
+.B DAT_HANDLE_NULL
+specifies that the
 Consumer is not interested in events for completions of receives.
 .RE
 
@@ -81,7 +83,7 @@ Consumer is not interested in events for completions of receives.
 .ne 2
 .mk
 .na
-\fIrequest_evd_handle\fR
+.I request_evd_handle
 .ad
 .RS 22n
 .rt
@@ -95,7 +97,7 @@ events for completions of requests.
 .ne 2
 .mk
 .na
-\fIconnect_evd_handle\fR
+.I connect_evd_handle
 .ad
 .RS 22n
 .rt
@@ -108,7 +110,7 @@ connection events for now.
 .ne 2
 .mk
 .na
-\fIep_attributes\fR
+.I ep_attributes
 .ad
 .RS 22n
 .rt
@@ -120,7 +122,7 @@ attributes. Can be \fINULL\fR.
 .ne 2
 .mk
 .na
-\fIep_handle\fR
+.I ep_handle
 .ad
 .RS 22n
 .rt
@@ -130,36 +132,58 @@ Handle for the created instance of an Endpoint.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_ep_create()\fR function creates an instance of an Endpoint that
-is provided to the Consumer as \fIep_handle\fR. The value of \fIep_handle\fR
-is not defined if the \fBDAT_RETURN\fR is not \fBDAT_SUCCESS\fR.
+The
+.B dat_ep_create()
+function creates an instance of an Endpoint that
+is provided to the Consumer as
+.IR ep_handle .
+The value of
+.IR ep_handle
+is not defined if the
+.B DAT_RETURN
+is not
+.BR DAT_SUCCESS .
 .sp
 .LP
 The Endpoint is created in the Unconnected state.
 .sp
 .LP
-Protection Zone \fIpz_handle\fR allows Consumers to control what local
+Protection Zone
+.I pz_handle
+allows Consumers to control what local
 memory the Endpoint can access for DTOs and what memory remote RDMA
 operations can access over the connection of a created Endpoint. Only memory
 referred to by LMRs and RMRs that match the Endpoint Protection Zone can be
 accessed by the Endpoint.
 .sp
 .LP
-The \fIrecv_evd_handle\fR and \fIrequest_evd_handle\fR parameters are Event
+The
+.I recv_evd_handle
+and
+.I request_evd_handle
+parameters are Event
 Dispatcher instances where the Consumer collects completion notifications of
 DTOs. Completions of Receive DTOs are reported in \fIrecv_evd_handle\fR
 Event Dispatcher, and completions of Send, RDMA Read, and RDMA Write DTOs
-are reported in \fIrequest_evd_handle\fR Event Dispatcher.  All completion
+are reported in
+.I request_evd_handle
+Event Dispatcher.  All completion
 notifications of RMR bindings are reported to a Consumer in
 \fIrequest_evd_handle\fR Event Dispatcher.
 .sp
 .LP
 All Connection events for the connected Endpoint are reported to the
-Consumer through \fIconnect_evd_handle\fR Event Dispatcher.
+Consumer through
+.I connect_evd_handle
+Event Dispatcher.
 .sp
 .LP
-The \fIep_attributes\fR parameter specifies the initial attributes of the
-created Endpoint. If the Consumer specifies \fINULL\fR, the Provider fills
+The
+.I ep_attributes
+parameter specifies the initial attributes of the
+created Endpoint. If the Consumer specifies
+.IR NULL ,
+the Provider fills
 it with its default Endpoint attributes. The Consumer might not be able to
 do any posts to the Endpoint or use the Endpoint in connection establishment
 until certain Endpoint attributes are set. Maximum Message Size and Maximum
@@ -169,7 +193,7 @@ Recv DTOs are examples of such attributes.
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -180,7 +204,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -191,7 +215,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
@@ -202,7 +226,7 @@ Invalid DAT handle.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -214,7 +238,7 @@ invalid or a combination of attributes or parameters is invalid.
 .ne 2
 .mk
 .na
-\fBDAT_MODEL_NOT_SUPPORTED\fR
+.B DAT_MODEL_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
@@ -230,8 +254,10 @@ Consumers can do the following:
 .RS +4
 .TP
 1.
-Request a connection on the Endpoint through \fBdat_ep_connect\fR(3DAT) or
-\fBdat_ep_dup_connect\fR(3DAT) for the active side of the connection
+Request a connection on the Endpoint through
+.BR dat_ep_connect "(3DAT) or"
+.BR dat_ep_dup_connect (3DAT)
+for the active side of the connection
 model.
 .RE
 .RS +4
@@ -251,7 +277,8 @@ the Endpoint associated with it
 .RE
 .sp
 .LP
-The Consumer cannot specify a \fIrequest_evd_handle\fR
+The Consumer cannot specify a
+.IR request_evd_handle
 (\fIrecv_evd_handle\fR) with Request Completion Flags (Recv Completion
 Flags) that do not match the other Endpoint Completion Flags for the DTO/RMR
 completion streams that use the same EVD. If \fIrequest_evd_handle\fR
@@ -261,28 +288,39 @@ other than DTO or RMR completion event streams, only
 for the Endpoint completion streams that use that EVD. If
 \fIrequest_evd_handle\fR (\fIrecv_evd_handle\fR) is used for request (recv)
 completions of an Endpoint whose associated Request (Recv) Completion Flag
-attribute is \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR, the Request Completion
+attribute is
+.BR DAT_COMPLETION_UNSIGNALLED_FLAG ,
+the Request Completion
 Flags and Recv Completion Flags for all Endpoint completion streams that use
-the EVD must specify the same. Analogously, if \fIrecv_evd_handle\fR is used
+the EVD must specify the same. Analogously, if
+.I recv_evd_handle
+is used
 for recv completions of an Endpoint whose associated Recv Completion Flags
-attribute is \fBDAT_COMPLETION_SOLICITED_WAIT\fR, the Recv Completion Flags
+attribute is
+.BR DAT_COMPLETION_SOLICITED_WAIT ,
+the Recv Completion Flags
 for all Endpoint Recv completion streams that use the same EVD must specify
 the same Recv Completion Flags attribute value and the EVD cannot be used
 for any other event stream types.
 .sp
 .LP
-If EP is created with \fINULL\fR attributes, Provider can fill them with
+If EP is created with
+.I NULL
+attributes, Provider can fill them with
 its own default values. The Consumer should not rely on the Provider-filled
 attribute defaults, especially for portable applications. The Consumer
 cannot do any operations on the created Endpoint except for
-\fBdat_ep_query\fR(3DAT), \fBdat_ep_get_status\fR(3DAT),
+.BR dat_ep_query (3DAT),
+.BR dat_ep_get_status (3DAT),
 \fBdat_ep_modify\fR(3DAT), and \fBdat_ep_free\fR(3DAT), depending on the
 values that the Provider picks.
 .sp
 .LP
 The Provider is encouraged to pick up reasonable defaults because
-unreasonable values might restrict Consumers to the \fBdat_ep_query()\fR,
-\fBdat_ep_get_status()\fR, \fBdat_ep_modify()\fR, and \fBdat_ep_free()\fR
+unreasonable values might restrict Consumers to the
+.BR dat_ep_query() ,
+.BR dat_ep_get_status() ,
+\fBdat_ep_modify()\fR, and \fBdat_ep_free()\fR
 operations. The Consumer should check what values the Provider picked up for
 the attributes. It is especially important to make sure that the number of
 posted operations is not too large to avoid EVD overflow. Depending on the
@@ -300,7 +338,9 @@ the Consumer sets up Endpoint attributes based on the connection request of
 the remote side.
 .sp
 .LP
-Consumers might want to create Endpoints with \fINULL\fR attributes if
+Consumers might want to create Endpoints with
+.I NULL
+attributes if
 Endpoint properties are negotiated as part the Consumer connection
 establishment protocol.
 .sp
@@ -313,7 +353,9 @@ maximum RDMA sizes.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -332,7 +374,8 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_ep_connect\fR(3DAT), \fBdat_ep_dup_connect\fR(3DAT),
+.BR dat_ep_connect (3DAT),
+.BR dat_ep_dup_connect (3DAT),
 \fBdat_ep_free\fR(3DAT), \fBdat_ep_get_status\fR(3DAT),
 \fBdat_ep_modify\fR(3DAT), \fBdat_ep_query\fR(3DAT), \fBlibdat\fR(3LIB),
-\fBattributes\fR(5)
+.BR attributes (5)

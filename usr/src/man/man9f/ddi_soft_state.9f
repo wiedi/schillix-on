@@ -64,7 +64,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIstate_p\fR
+.I state_p
 .ad
 .RS 11n
 .rt
@@ -76,7 +76,7 @@ Address of the opaque state pointer which will be initialized by
 .ne 2
 .mk
 .na
-\fIsize\fR
+.I size
 .ad
 .RS 11n
 .rt
@@ -88,7 +88,7 @@ Size of the item which will be allocated by subsequent calls to
 .ne 2
 .mk
 .na
-\fIn_items\fR
+.I n_items
 .ad
 .RS 11n
 .rt
@@ -100,7 +100,7 @@ allowed.
 .ne 2
 .mk
 .na
-\fIstate\fR
+.I state
 .ad
 .RS 11n
 .rt
@@ -112,7 +112,7 @@ state.
 .ne 2
 .mk
 .na
-\fIitem\fR
+.I item
 .ad
 .RS 11n
 .rt
@@ -138,22 +138,28 @@ instance is attached and detached.
 .sp
 .LP
 To use the routines, the driver writer needs to declare a state pointer,
-\fIstate_p\fR, which the implementation uses as a place to hang a set of
+.IR state_p ,
+which the implementation uses as a place to hang a set of
 per-driver structures; everything else is managed by these routines.
 .sp
 .LP
 The routine \fBddi_soft_state_init()\fR is usually called in the driver's
-\fB_init\fR(9E) routine to initialize the state pointer, set the size of the
+.BR _init (9E)
+routine to initialize the state pointer, set the size of the
 soft state structure, and to allow the driver to pre-allocate a given number
 of such structures if required.
 .sp
 .LP
 The routine \fBddi_soft_state_zalloc()\fR is usually called in the driver's
-\fBattach\fR(9E) routine.  The routine is passed an item number which is
+.BR attach (9E)
+routine.  The routine is passed an item number which is
 used to refer to the structure in subsequent calls to
-\fBddi_get_soft_state()\fR and \fBddi_soft_state_free()\fR. The item number
+\fBddi_get_soft_state()\fR and
+.BR ddi_soft_state_free() .
+The item number
 is usually just the instance number of the \fBdevinfo\fR node, obtained with
-\fBddi_get_instance\fR(9F). The routine attempts to allocate space for the
+.BR ddi_get_instance (9F).
+The routine attempts to allocate space for the
 new structure, and if the space allocation was successful, \fBDDI_SUCCESS\fR
 is returned to the caller. Returned memory is zeroed.
 .sp
@@ -164,8 +170,12 @@ number.
 .sp
 .LP
 The space used by a given soft state structure can be returned to the
-system using \fBddi_soft_state_free()\fR. This routine is usually called
-from the driver's \fBdetach\fR(9E) entry point.
+system using
+.BR ddi_soft_state_free() .
+This routine is usually called
+from the driver's
+.BR detach (9E)
+entry point.
 .sp
 .LP
 The space used by all the soft state structures allocated on a given state
@@ -175,7 +185,9 @@ implementation can be returned to the system using
 \fB_fini\fR(9E) routine.
 .sp
 .LP
-The \fBddi_soft_state_zalloc()\fR, \fBddi_soft_state_free()\fR and
+The
+.BR ddi_soft_state_zalloc() ,
+\fBddi_soft_state_free()\fR and
 \fBddi_get_soft_state()\fR routines coordinate access to the underlying data
 structures in an MT-safe fashion, thus no additional locks should be
 necessary.
@@ -187,7 +199,7 @@ necessary.
 .ne 2
 .mk
 .na
-\fINULL\fR
+.I NULL
 .ad
 .RS 11n
 .rt
@@ -198,7 +210,7 @@ The requested state structure was not allocated at the time of the call.
 .ne 2
 .mk
 .na
-\fIpointer\fR
+.I pointer
 .ad
 .RS 11n
 .rt
@@ -212,7 +224,7 @@ The pointer to the state structure.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 10n
 .rt
@@ -223,11 +235,15 @@ The allocation was successful.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-Either the \fBsize\fR parameter was zero, or the \fIstate_p\fR parameter
+Either the
+.B size
+parameter was zero, or the
+.I state_p
+parameter
 was invalid.
 .RE
 
@@ -238,7 +254,7 @@ was invalid.
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 15n
 .rt
@@ -249,7 +265,7 @@ The allocation was successful.
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 15n
 .rt
@@ -266,11 +282,13 @@ can be called from user or kernel context only, since they may internally
 call \fBkmem_zalloc\fR(9F) with the \fBKM_SLEEP\fR flag.
 .sp
 .LP
-The \fBddi_soft_state_fini()\fR, \fBddi_soft_state_free()\fR and
+The
+.BR ddi_soft_state_fini() ,
+\fBddi_soft_state_free()\fR and
 \fBddi_get_soft_state()\fR routines can be called from any driver context.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCreating and Removing Data Structures
+\fBExample 1\fR Creating and Removing Data Structures
 .sp
 .LP
 The following example shows how the routines described above can be used in
@@ -372,14 +390,18 @@ xxopen(dev_t *devp, int flag, int otyp, cred_t *cred_p)
 .sp
 .LP
 \fB_fini\fR(9E), \fB_init\fR(9E), \fBattach\fR(9E), \fBdetach\fR(9E),
-\fBddi_get_instance\fR(9F), \fBgetminor\fR(9F), \fBkmem_zalloc\fR(9F)
+.BR ddi_get_instance (9F),
+.BR getminor (9F),
+.BR kmem_zalloc (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-There is no attempt to validate the \fBitem\fR parameter given to
+There is no attempt to validate the
+.B item
+parameter given to
 \fBddi_soft_state_zalloc()\fR other than it must be a positive signed
 integer. Therefore very large item numbers may cause the driver to hang
 forever waiting for virtual memory resources that can never be satisfied.

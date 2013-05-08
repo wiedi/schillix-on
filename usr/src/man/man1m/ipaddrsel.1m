@@ -40,10 +40,14 @@ ipaddrsel \- configure IPv6 default address selection
 .SH DESCRIPTION
 .sp
 .LP
-Use the \fBipaddrsel\fR utility to configure the IPv6 default address
+Use the
+.B ipaddrsel
+utility to configure the IPv6 default address
 selection policy table. The policy table is a longest-matching-prefix lookup
 table that is used for IPv6 source address selection and for destination
-address ordering when resolving names to \fBAF_INET6\fR addresses. For a
+address ordering when resolving names to
+.B AF_INET6
+addresses. For a
 description of how the policy table is used for source address selection,
 see \fBinet6\fR(7P). For a description of how the policy table is used for
 destination address ordering, see \fBgetaddrinfo\fR(3SOCKET).
@@ -57,7 +61,9 @@ circumstances. You should carefully consider your addressing strategy before
 you change the table from the provided default.
 .sp
 .LP
-When the \fBipaddrsel\fR command is issued without any arguments, the
+When the
+.B ipaddrsel
+command is issued without any arguments, the
 address selection policy currently in use is printed. The format of the
 output is compatible with the format of the configuration file that the
 \fB-f\fR option accepts.
@@ -65,12 +71,15 @@ output is compatible with the format of the configuration file that the
 Note -
 .sp
 .RS 2
-If the \fBusesrc\fR subcommand to \fBifconfig\fR(1M) is applied to a
+If the
+.B usesrc
+subcommand to \fBifconfig\fR(1M) is applied to a
 particular physical interface, the selection policy specified by
 \fBusesrc\fR overrides the source address selection policies specified by
-\fBipaddrsel\fR. This is true for packets that are locally generated and for
+.BR ipaddrsel .
+This is true for packets that are locally generated and for
 applications that do not choose a non-zero source address using
-\fBbind\fR(3SOCKET).
+.BR bind (3SOCKET).
 .RE
 .SS "The Configuration File"
 .sp
@@ -89,7 +98,8 @@ utility. Policy entry lines have the following format:
 .sp
 .LP
 The \fIprefix\fR must be an IPv6 prefix in a format consistent with
-\fBinet\fR(3SOCKET). The \fIprefix_length\fR is an integer ranging from 0 to
+.BR inet (3SOCKET).
+The \fIprefix_length\fR is an integer ranging from 0 to
 128. The IPv6 source address selection and destination address ordering
 algorithms determine the precedence or label of an address by doing a
 longest-prefix-match lookup using the prefixes in this table, much like
@@ -116,12 +126,16 @@ The label may be followed by an optional comment.
 .sp
 .LP
 The file must contain a default policy entry, which is an entry with
-\fB::0/0\fR as its \fIprefix\fR and \fIprefix_length\fR. This is to ensure
+\fB::0/0\fR as its \fIprefix\fR and
+.IR prefix_length .
+This is to ensure
 that all possible addresses match a policy.
 .SH OPTIONS
 .sp
 .LP
-The \fBippadrsel\fR utility supports the following options:
+The
+.B ippadrsel
+utility supports the following options:
 .sp
 .ne 2
 .mk
@@ -138,15 +152,19 @@ Replace the address selection policy table with the policy specified in the
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 11n
 .rt
 Revert the kernel's address selection policy table back to the default
-table. Invoking \fBipaddrsel\fR in this way only changes the currently
+table. Invoking
+.B ipaddrsel
+in this way only changes the currently
 running kernel's policy table, and does not alter the configuration file
 \fB/etc/inet/ipaddrsel.conf\fR. To revert the configuration file back to its
-default settings, use \fBipaddrsel\fR \fB-d\fR, then dump the contents of
+default settings, use
+.BR "ipaddrsel -d" ,
+then dump the contents of
 the table to the configuration file by redirecting the output of
 \fBipaddrsel\fR to \fB/etc/inet/ipaddrsel.conf\fR.
 .sp
@@ -162,7 +180,7 @@ example# \fBipaddrsel > /etc/inet/ipaddrsel.conf\fR
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe Default Policy in \fB/etc/inet/ipaddrsel.conf\fR
+\fBExample 1\fR The Default Policy in \fB/etc/inet/ipaddrsel.conf\fR
 .sp
 .LP
 The following example is the default policy that is located in
@@ -182,7 +200,7 @@ The following example is the default policy that is located in
 .sp
 
 .LP
-\fBExample 2 \fRAssigning a Lower Precedence to Link-local and Site-local
+\fBExample 2\fR Assigning a Lower Precedence to Link-local and Site-local
 Addresses
 .sp
 .LP
@@ -209,7 +227,7 @@ fe80::/10                            23 Link-Local
 .sp
 
 .LP
-\fBExample 3 \fRAssigning Higher Precedence to IPv4 Destinations
+\fBExample 3\fR Assigning Higher Precedence to IPv4 Destinations
 .sp
 .LP
 By default, IPv6 addresses are ordered in front of IPv4 addresses in name
@@ -231,7 +249,7 @@ precedence and are ordered in front of IPv6 destinations:
 .sp
 
 .LP
-\fBExample 4 \fREnsuring that a Particular Source Address is Used
+\fBExample 4\fR Ensuring that a Particular Source Address is Used
 .sp
 .LP
 This example ensures that a particular source address is used only when
@@ -240,12 +258,19 @@ communicating with destinations in a particular network.
 .sp
 .LP
 The following policy table assigns a label of 5 to a particular source
-address on the local system, \fB2001:1111:1111::1\fR. The table assigns the
-same label to a network, \fB2001:2222:2222::/48\fR. The result of this
-policy is that the \fB2001:1111:1111::1\fR source address will only be used
+address on the local system,
+.BR 2001:1111:1111::1 .
+The table assigns the
+same label to a network,
+.BR 2001:2222:2222::/48 .
+The result of this
+policy is that the
+.B 2001:1111:1111::1
+source address will only be used
 when communicating with destinations contained in the
 \fB2001:2222:2222::/48\fR network. For this example, this network is the
-\fBClientNet\fR, which could represent a particular client's network.
+.BR ClientNet ,
+which could represent a particular client's network.
 
 .sp
 .in +2
@@ -275,7 +300,7 @@ that all global prefixes are assigned to that physical interface.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 6n
 .rt
@@ -311,7 +336,9 @@ started.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -330,16 +357,31 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBnscd\fR(1M), \fBinet\fR(3SOCKET), \fBgetaddrinfo\fR(3SOCKET),
-\fBipaddrsel.conf\fR(4), \fBattributes\fR(5), \fBinet6\fR(7P)
+.BR nscd (1M),
+.BR inet (3SOCKET),
+\fBgetaddrinfo\fR(3SOCKET),
+\fBipaddrsel.conf\fR(4),
+.BR attributes (5),
+.BR inet6 (7P)
 .SH NOTES
 .sp
 .LP
-The ipnodes cache kept by \fBnscd\fR(1M) contains addresses that are
+The ipnodes cache kept by
+.BR nscd "(1M) contains addresses that are"
 ordered using the destination address ordering algorithm, which is one of
-the reasons why \fBipaddrsel\fR is called before \fBnscd\fR in the boot
-sequence. If \fBipaddrsel\fR is used to change the address selection policy
-after \fBnscd\fR has started, you should invalidate the \fBnscd\fR ipnodes
+the reasons why
+.B ipaddrsel
+is called before
+.B nscd
+in the boot
+sequence. If
+.B ipaddrsel
+is used to change the address selection policy
+after
+.B nscd
+has started, you should invalidate the
+.B nscd
+ipnodes
 cache invalidated by invoking the following command:
 .sp
 .in +2

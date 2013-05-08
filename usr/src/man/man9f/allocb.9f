@@ -40,39 +40,54 @@ Architecture independent level 1 (DDI/DKI).
 .SH DESCRIPTION
 .sp
 .LP
-The \fBallocb()\fR function tries to allocate a \fBSTREAMS\fR message
+The
+.B allocb()
+function tries to allocate a
+.B STREAMS
+message
 block. Buffer allocation fails only when the system is out of memory. If no
 buffer is available, the \fBbufcall\fR(9F) function can help a module
 recover from an allocation failure.
 .sp
 .LP
-A \fBSTREAMS\fR message block is composed of three structures. The first
-structure is a message block (\fBmblk_t\fR). See \fBmsgb\fR(9S). The
-\fBmblk_t\fR structure points to a data block structure (\fBdblk_t\fR). See
-\fBdatab\fR(9S). Together these two structures describe the message type (if
+A
+.B STREAMS
+message block is composed of three structures. The first
+structure is a message block
+.RB ( mblk_t ).
+See
+.BR msgb "(9S). The"
+\fBmblk_t\fR structure points to a data block structure
+.RB ( dblk_t ).
+See
+.BR datab (9S).
+Together these two structures describe the message type (if
 applicable) and the size and location of the third structure, the data
 buffer. The data buffer contains the data for this message block. The
 allocated data buffer is at least double-word aligned, so it can hold any C
 data structure.
 .sp
 .LP
-The fields in the \fBmblk_t\fR structure are initialized as follows:
+The fields in the
+.B mblk_t
+structure are initialized as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBb_cont\fR
+.B b_cont
 .ad
 .RS 11n
 .rt
-set to  \fINULL\fR
+set to 
+.IR NULL
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBb_rptr\fR
+.B b_rptr
 .ad
 .RS 11n
 .rt
@@ -83,7 +98,7 @@ points to the beginning of the data buffer
 .ne 2
 .mk
 .na
-\fBb_wptr\fR
+.B b_wptr
 .ad
 .RS 11n
 .rt
@@ -94,21 +109,25 @@ points to the beginning of the data buffer
 .ne 2
 .mk
 .na
-\fBb_datap\fR
+.B b_datap
 .ad
 .RS 11n
 .rt
-points to the \fBdblk_t\fR structure
+points to the
+.B dblk_t
+structure
 .RE
 
 .sp
 .LP
-The fields in the \fBdblk_t\fR structure are initialized as follows:
+The fields in the
+.B dblk_t
+structure are initialized as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBdb_base\fR
+.B db_base
 .ad
 .RS 11n
 .rt
@@ -119,7 +138,7 @@ points to the first byte of the data buffer
 .ne 2
 .mk
 .na
-\fBdb_lim\fR
+.B db_lim
 .ad
 .RS 11n
 .rt
@@ -130,11 +149,12 @@ points to the last byte + 1 of the buffer
 .ne 2
 .mk
 .na
-\fBdb_type\fR
+.B db_type
 .ad
 .RS 11n
 .rt
-set to \fBM_DATA\fR
+set to
+.BR M_DATA
 .RE
 
 .sp
@@ -149,7 +169,7 @@ structure members that are affected when a message block is allocated
 .ne 2
 .mk
 .na
-\fIsize\fR
+.I size
 .ad
 .RS 8n
 .rt
@@ -160,7 +180,7 @@ The number of bytes in the message block.
 .ne 2
 .mk
 .na
-\fIpri\fR
+.I pri
 .ad
 .RS 8n
 .rt
@@ -170,26 +190,39 @@ Priority of the request (no longer used).
 .SH RETURN VALUES
 .sp
 .LP
-Upon success, \fBallocb()\fR returns a pointer to the allocated message
-block of type \fBM_DATA\fR. On failure, \fBallocb()\fR returns a \fINULL\fR
+Upon success,
+.B allocb()
+returns a pointer to the allocated message
+block of type
+.BR M_DATA .
+On failure,
+.B allocb()
+returns a
+.IR NULL
 pointer.
 .SH CONTEXT
 .sp
 .LP
-The \fBallocb()\fR function can be called from user, interrupt, or kernel
+The
+.B allocb()
+function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .LP
 \fBExample 1 \fBallocb()\fR Code Sample
 .sp
 .LP
-Given a pointer to a queue (\fIq\fR) and an error number (\fIerr\fR), the
+Given a pointer to a queue (\fIq\fR) and an error number
+.RI ( err ),
+the
 \fBsend_error()\fR routine sends an  \fBM_ERROR\fR type message to the
 stream head.
 
 .sp
 .LP
-If a message cannot be allocated, \fINULL\fR is returned, indicating an
+If a message cannot be allocated,
+.I NULL
+is returned, indicating an
 allocation failure (line 8). Otherwise, the message type is set to
 \fBM_ERROR\fR (line 10). Line 11 increments the write pointer
 (\fBbp->b_wptr\fR) by the size (one byte) of the data in the message.
@@ -197,12 +230,20 @@ allocation failure (line 8). Otherwise, the message type is set to
 .sp
 .LP
 A message must be sent up the read side of the stream to arrive at the
-stream head. To determine whether  \fIq\fR points to a read queue or to a
-write queue, the \fBq->q_flag\fR member is tested to see if \fBQREADR\fR is
-set (line 13). If it is not set, \fIq\fR points to a write queue, and in
+stream head. To determine whether 
+.I q
+points to a read queue or to a
+write queue, the \fBq->q_flag\fR member is tested to see if
+.B QREADR
+is
+set (line 13). If it is not set,
+.I q
+points to a write queue, and in
 line 14 the \fBRD\fR(9F) function is used to find the corresponding read
 queue. In line 15, the \fBputnext\fR(9F) function is used to send the
-message upstream, returning \fB1\fR if successful.
+message upstream, returning
+.B 1
+if successful.
 
 .sp
 .in +2
@@ -230,16 +271,22 @@ message upstream, returning \fB1\fR if successful.
 .SH SEE ALSO
 .sp
 .LP
-\fBRD\fR(9F), \fBbufcall\fR(9F), \fBesballoc\fR(9F), \fBesbbcall\fR(9F),
-\fBputnext\fR(9F), \fBtestb\fR(9F), \fBdatab\fR(9S), \fBmsgb\fR(9S)
+.BR RD (9F),
+\fBbufcall\fR(9F), \fBesballoc\fR(9F), \fBesbbcall\fR(9F),
+.BR putnext (9F),
+.BR testb (9F),
+.BR datab (9S),
+.BR msgb (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH NOTES
 .sp
 .LP
-The \fIpri\fR argument is no longer used, but is retained for compatibility
+The
+.I pri
+argument is no longer used, but is retained for compatibility
 with existing drivers.

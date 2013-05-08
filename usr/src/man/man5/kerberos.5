@@ -28,13 +28,17 @@ The Solaris Kerberos implementation, hereafter sometimes shortened to
 "Kerberos," authenticates clients in a network environment, allowing for
 secure transactions. (A client may be a user or a network service.) Kerberos
 validates the identity of a client and the authenticity of transferred data.
-Kerberos is a \fIsingle-sign-on\fR system, meaning that a user needs to
+Kerberos is a
+.I single-sign-on
+system, meaning that a user needs to
 provide a password only at the beginning of a session. The Solaris Kerberos
 implementation is based on the Kerberos(TM) system developed at \fBMIT\fR,
 and is compatible with Kerberos V5 systems over heterogeneous networks.
 .sp
 .LP
-Kerberos works by granting clients \fItickets\fR, which uniquely identify a
+Kerberos works by granting clients
+.IR tickets ,
+which uniquely identify a
 client, and which have a finite lifetime. A client possessing a ticket is
 automatically validated for network services for which it is entitled; for
 example, a user with a valid Kerberos ticket may rlogin into another machine
@@ -43,17 +47,31 @@ unique ticket, its identity is guaranteed.
 .sp
 .LP
 To obtain tickets, a client must first initialize the Kerberos session,
-either by using the \fBkinit\fR(1) command or a \fBPAM\fR module. (See
-\fBpam_krb5\fR(5)). \fBkinit\fR prompts for a password, and then communicates
-with a \fIKey Distribution Center\fR (\fBKDC\fR). The \fBKDC\fR returns a
+either by using the
+.BR kinit (1)
+command or a
+.B PAM
+module. (See
+.BR pam_krb5 (5)).
+\fBkinit\fR prompts for a password, and then communicates
+with a
+.IR "Key Distribution Center"
+.RB ( KDC ).
+The
+.B KDC
+returns a
 \fITicket-Granting Ticket\fR (\fBTGT\fR) and prompts for a confirmation
 password. If the client confirms the password, it can use the Ticket-Granting
 Ticket to obtain tickets for specific network services. Because tickets are
 granted transparently, the user need not worry about their management.
-Current tickets may be viewed by using the \fBklist\fR(1) command.
+Current tickets may be viewed by using the
+.BR klist (1)
+command.
 .sp
 .LP
-Tickets are valid according to the system \fIpolicy\fR set up at
+Tickets are valid according to the system
+.I policy
+set up at
 installation time. For example, tickets have a default lifetime for which
 they are valid. A policy may further dictate that privileged tickets, such as
 those belonging to root, have very short lifetimes. Policies may allow some
@@ -61,13 +79,21 @@ defaults to be overruled; for example, a client may request a ticket with a
 lifetime greater or less than the default.
 .sp
 .LP
-Tickets can be renewed using \fBkinit\fR. Tickets are also
+Tickets can be renewed using
+.BR kinit .
+Tickets are also
 \fIforwardable\fR, allowing you to use a ticket granted on one machine on a
-different host. Tickets can be destroyed by using \fBkdestroy\fR(1). It is a
-good idea to include a call to \fBkdestroy\fR in your \fB\&.logout\fR file.
+different host. Tickets can be destroyed by using
+.BR kdestroy (1).
+It is a
+good idea to include a call to
+.B kdestroy
+in your \fB\&.logout\fR file.
 .sp
 .LP
-Under Kerberos, a client is referred to as a \fIprincipal\fR. A principal
+Under Kerberos, a client is referred to as a
+.IR principal .
+A principal
 takes the following form:
 .sp
 .in +2
@@ -81,7 +107,7 @@ primary/instance@REALM
 .ne 2
 .mk
 .na
-\fBprimary\fR
+.B primary
 .ad
 .RS 12n
 .rt
@@ -92,14 +118,18 @@ A user, a host, or a service.
 .ne 2
 .mk
 .na
-\fBinstance\fR
+.B instance
 .ad
 .RS 12n
 .rt
 A qualification of the primary. If the primary is a host \(em indicated by
 the keyword \fBhost\fR\(em then the instance is the fully-qualified domain
 name of that host. If the primary is a user or service, then the instance is
-optional. Some instances, such as \fBadmin\fR or \fBroot\fR, are
+optional. Some instances, such as
+.B admin
+or
+.BR root ,
+are
 privileged.
 .RE
 
@@ -107,26 +137,37 @@ privileged.
 .ne 2
 .mk
 .na
-\fBrealm\fR
+.B realm
 .ad
 .RS 12n
 .rt
 The Kerberos equivalent of a domain; in fact, in most cases the realm is
-directly mapped to a \fBDNS\fR domain name. Kerberos realms are given in
+directly mapped to a
+.B DNS
+domain name. Kerberos realms are given in
 upper-case only. For examples of principal names, see the EXAMPLES.
 .RE
 
 .sp
 .LP
-By taking advantage of the General Security Services \fBAPI\fR
+By taking advantage of the General Security Services
+.BR API
 (\fBGSS-API\fR), Kerberos offers, besides user authentication, two other
-types of security service: \fIintegrity\fR, which authenticates the validity
-of transmitted data, and \fIprivacy\fR, which encrypts transmitted data.
-Developers can take advantage of the \fBGSS-API\fR through the use of the
-RPCSEC_GSS \fBAPI\fR interface (see \fBrpcsec_gss\fR(3NSL)).
+types of security service:
+.IR integrity ,
+which authenticates the validity
+of transmitted data, and
+.IR privacy ,
+which encrypts transmitted data.
+Developers can take advantage of the
+.B GSS-API
+through the use of the
+RPCSEC_GSS
+.B API
+interface (see \fBrpcsec_gss\fR(3NSL)).
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExamples of valid principal names
+\fBExample 1\fR Examples of valid principal names
 .sp
 .LP
 The following are examples of valid principal names:
@@ -146,24 +187,45 @@ The following are examples of valid principal names:
 
 .sp
 .LP
-The first four cases are \fIuser principals\fR. In the first two cases, it
-is assumed that the user \fBjoe\fR is in the same realm as the client, so no
+The first four cases are
+.IR "user principals" .
+In the first two cases, it
+is assumed that the user
+.B joe
+is in the same realm as the client, so no
 realm is specified. Note that \fBjoe\fRand \fBjoe/admin\fR are different
-principals, even if the same user uses them; \fBjoe/admin\fR has different
-privileges from \fBjoe\fR. The fifth case is a \fIservice principal\fR, while
-the final case is a \fIhost principal\fR. The word \fBhost\fR is required for
+principals, even if the same user uses them;
+.B joe/admin
+has different
+privileges from
+.BR joe .
+The fifth case is a
+.IR "service principal" ,
+while
+the final case is a
+.IR "host principal" .
+The word
+.B host
+is required for
 host principals. With host principals, the instance is the fully qualified
-hostname. Note that the words \fBadmin\fR and \fBhost\fR are reserved
+hostname. Note that the words
+.B admin
+and
+.B host
+are reserved
 keywords.
 
 .SH SEE ALSO
 .sp
 .LP
-\fBkdestroy\fR(1), \fBkinit\fR(1), \fBklist\fR(1), \fBkpasswd\fR(1),
+.BR kdestroy (1),
+.BR kinit (1),
+.BR klist (1),
+.BR kpasswd (1),
 \fBkrb5.conf\fR(4), \fBkrb5envvar\fR(5)
 .sp
 .LP
-\fISystem Administration Guide: Security Services\fR
+.I System Administration Guide: Security Services
 .SH NOTES
 .sp
 .LP
@@ -172,7 +234,9 @@ implementation was referred to as the "Sun Enterprise Authentication
 Mechanism" (SEAM).
 .sp
 .LP
-If you enter your username and \fBkinit\fR responds with this message:
+If you enter your username and
+.B kinit
+responds with this message:
 .sp
 .in +2
 .nf
@@ -184,4 +248,5 @@ Principal unknown (kerberos)
 .sp
 .LP
 you have not been registered as a Kerberos user. See your system
-administrator or the \fISystem Administration Guide: Security Services\fR.
+administrator or the
+.IR "System Administration Guide: Security Services" .

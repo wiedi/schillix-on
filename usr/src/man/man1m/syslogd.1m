@@ -34,10 +34,20 @@ syslogd \- log system messages
 \fBsyslogd\fR reads and forwards system messages to the appropriate log
 files or users, depending upon the priority of a message and the system
 facility from which it originates. The configuration file
-\fB/etc/syslog.conf\fR (see \fBsyslog.conf\fR(4)) controls where messages
-are forwarded. \fBsyslogd\fR logs a mark (timestamp) message every
-\fImarkinterval\fR minutes (default \fB20\fR) at priority \fBLOG_INFO\fR to
-the facility whose name is given as \fBmark\fR in the \fBsyslog.conf\fR
+\fB/etc/syslog.conf\fR (see
+.BR syslog.conf (4))
+controls where messages
+are forwarded.
+.B syslogd
+logs a mark (timestamp) message every
+\fImarkinterval\fR minutes (default
+.BR 20 )
+at priority
+.B LOG_INFO
+to
+the facility whose name is given as
+.B mark
+in the \fBsyslog.conf\fR
 file.
 .sp
 .LP
@@ -46,23 +56,39 @@ with a priority code number enclosed in angle-brackets (\fB<\|>\fR);
 priorities are defined in \fB<sys/syslog.h>\fR\&.
 .sp
 .LP
-\fBsyslogd\fR reads from the \fBSTREAMS\fR log driver, \fB/dev/log\fR, and
+\fBsyslogd\fR reads from the \fBSTREAMS\fR log driver,
+.BR /dev/log ,
+and
 from any transport provider specified in \fB/etc/netconfig\fR,
-\fB/etc/net/transport/hosts\fR, and \fB/etc/net/transport/services\fR.
+.BR /etc/net/transport/hosts ,
+and
+.BR /etc/net/transport/services .
 .sp
 .LP
 \fBsyslogd\fR reads the configuration file when it starts up, and again
-whenever it receives a \fBHUP\fR signal (see \fBsignal.h\fR(3HEAD), at which
+whenever it receives a
+.B HUP
+signal (see
+.BR signal.h (3HEAD),
+at which
 time it also closes all files it has open, re-reads its configuration file,
 and then opens only the log files that are listed in that file.
 \fBsyslogd\fR exits when it receives a \fBTERM\fR signal.
 .sp
 .LP
-As it starts up, \fBsyslogd\fR creates the file \fB/var/run/syslog.pid\fR,
-if possible, containing its process identifier (\fBPID\fR).
+As it starts up,
+.B syslogd
+creates the file
+.BR /var/run/syslog.pid ,
+if possible, containing its process identifier
+.RB ( PID ).
 .sp
 .LP
-If message \fBID\fR generation is enabled (see \fBlog\fR(7D)), each message
+If message
+.B ID
+generation is enabled (see
+.BR log (7D)),
+each message
 will be preceded by an identifier in the following format: \fB[ID\fR
 \fImsgid facility\fB\&.\fIpriority\fB]\fR. \fImsgid\fR is the
 message's numeric identifier described in \fBmsgid\fR(1M). \fIfacility\fR
@@ -72,9 +98,18 @@ generation is enabled.
 .sp
 .LP
 If the message originated in a loadable kernel module or driver, the kernel
-module's name (for example, \fBufs\fR) will be displayed instead of
-\fBunix\fR. See \fBEXAMPLES\fR for sample output from \fBsyslogd\fR with and
-without message \fBID\fR generation enabled.
+module's name (for example,
+.BR ufs )
+will be displayed instead of
+.BR unix .
+See
+.B EXAMPLES
+for sample output from
+.B syslogd
+with and
+without message
+.B ID
+generation enabled.
 .sp
 .LP
 In an effort to reduce visual clutter, message \fBID\fRs are not displayed
@@ -83,7 +118,10 @@ file. See .
 .sp
 .LP
 The \fB/etc/default/syslogd\fR file contains the following default
-parameter settings, which are in effect if neither the \fB-t\fR nor \fB-T\fR
+parameter settings, which are in effect if neither the
+.B -t
+nor
+.BR -T
 option is selected. See \fBFILES\fR.
 .sp
 .LP
@@ -100,18 +138,26 @@ svc:/system/system-log/config/log_from_remote
 .LP
 This property specifies whether remote messages are logged.
 \fBlog_from_remote=true\fR is equivalent to the \fB-t\fR command-line option
-and \fBfalse\fR is equivalent to the \fB-T\fR command-line option. The
-default value for \fB-log_from_remote\fR is \fBfalse\fR. See NOTES, below.
+and \fBfalse\fR is equivalent to the
+.B -T
+command-line option. The
+default value for \fB-log_from_remote\fR is
+.BR false .
+See NOTES, below.
 .sp
 .ne 2
 .mk
 .na
-\fBLOG_FROM_REMOTE\fR
+.B LOG_FROM_REMOTE
 .ad
 .sp .6
 .RS 4n
-Specifies whether remote messages are logged. \fBLOG_FROM_REMOTE=NO\fR is
-equivalent to the \fB-t\fR command-line option. The default value for
+Specifies whether remote messages are logged.
+.B LOG_FROM_REMOTE=NO
+is
+equivalent to the
+.B -t
+command-line option. The default value for
 \fBLOG_FROM_REMOTE\fR is \fBYES\fR.
 .RE
 
@@ -123,14 +169,18 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .sp .6
 .RS 4n
 Turn on debugging. This option should only be used interactively in a root
-shell once the system is in multi-user mode. It should \fBnot\fR be used in
+shell once the system is in multi-user mode. It should
+.B not
+be used in
 the system start-up scripts, as this will cause the system to hang at the
-point where \fBsyslogd\fR is started.
+point where
+.B syslogd
+is started.
 .RE
 
 .sp
@@ -170,11 +220,13 @@ Specify an alternative log device name. The default is \fB/dev/log\fR.
 .ne 2
 .mk
 .na
-\fB-T\fR
+.B -T
 .ad
 .sp .6
 .RS 4n
-Enable the \fBsyslogd\fR \fBUDP\fR port to turn on logging of remote
+Enable the
+.B "syslogd UDP"
+port to turn on logging of remote
 messages. This is the default behavior. See .
 .RE
 
@@ -182,11 +234,13 @@ messages. This is the default behavior. See .
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .sp .6
 .RS 4n
-Disable the \fBsyslogd\fR \fBUDP\fR port to turn off logging of remote
+Disable the
+.B "syslogd UDP"
+port to turn off logging of remote
 messages. See .
 .RE
 
@@ -196,7 +250,9 @@ messages. See .
 Enabled
 .sp
 .LP
-The following example shows the output from \fBsyslogd\fR when message
+The following example shows the output from
+.B syslogd
+when message
 \fBID\fR generation \fBis not\fR enabled:
 
 .sp
@@ -211,7 +267,9 @@ Sep 29 21:41:18 cathy unix: alloc /: file system full
 \fBExample 2 \fBsyslogd\fR Output with ID generation Enabled
 .sp
 .LP
-The following example shows the output from \fBsyslogd\fR when message
+The following example shows the output from
+.B syslogd
+when message
 \fBID\fR generation \fBis\fR enabled. The message \fBID\fR is displayed when
 writing to log file\fB/var/adm/messages\fR.
 
@@ -228,9 +286,13 @@ Sep 29 21:41:18 cathy ufs: [ID 845546 kern.notice]
 \fBExample 3 \fBsyslogd\fR Output with ID Generation Enabled
 .sp
 .LP
-The following example shows the output from \fBsyslogd\fR when message
+The following example shows the output from
+.B syslogd
+when message
 \fBID\fR generation \fBis\fR enabled when writing to the console. Even
-though message ID is enabled, the message \fBID\fR is not displayed at the
+though message ID is enabled, the message
+.B ID
+is not displayed at the
 console.
 
 .sp
@@ -242,10 +304,12 @@ Sep 29 21:41:18 cathy ufs: alloc /: file system full
 .sp
 
 .LP
-\fBExample 4 \fREnabling Acceptance of UDP Messages from Remote Systems
+\fBExample 4\fR Enabling Acceptance of UDP Messages from Remote Systems
 .sp
 .LP
-The following commands enable \fBsyslogd\fR to accept entries from remote
+The following commands enable
+.B syslogd
+to accept entries from remote
 systems.
 
 .sp
@@ -273,11 +337,12 @@ Configuration file
 .ne 2
 .mk
 .na
-\fB/var/run/syslog.pid\fR
+.B /var/run/syslog.pid
 .ad
 .sp .6
 .RS 4n
-Process \fBID\fR
+Process
+.BR ID
 .RE
 
 .sp
@@ -296,7 +361,7 @@ command-line options.
 .ne 2
 .mk
 .na
-\fB/dev/log\fR
+.B /dev/log
 .ad
 .sp .6
 .RS 4n
@@ -318,7 +383,7 @@ Transport providers available on the system
 .ne 2
 .mk
 .na
-\fB/etc/net/transport/hosts\fR
+.B /etc/net/transport/hosts
 .ad
 .sp .6
 .RS 4n
@@ -329,7 +394,7 @@ Network hosts for each transport
 .ne 2
 .mk
 .na
-\fB/etc/net/transport/services\fR
+.B /etc/net/transport/services
 .ad
 .sp .6
 .RS 4n
@@ -339,7 +404,9 @@ Network services for each transport
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -356,37 +423,62 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBlogger\fR(1), \fBsvcs\fR(1), \fBmsgid\fR(1M), \fBsvcadm\fR(1M),
+.BR logger (1),
+.BR svcs (1),
+.BR msgid (1M),
+.BR svcadm (1M),
 \fBsvccfg\fR(1M), \fBsyslog\fR(3C), \fBsyslog.conf\fR(4),
-\fBattributes\fR(5), \fBsignal.h\fR(3HEAD), \fBsmf\fR(5), \fBlog\fR(7D)
+.BR attributes (5),
+.BR signal.h (3HEAD),
+\fBsmf\fR(5), \fBlog\fR(7D)
 .SH NOTES
 .sp
 .LP
-The \fBmark\fR message is a system time stamp, and so it is only defined
-for the system on which \fBsyslogd\fR is running. It can not be forwarded to
+The
+.B mark
+message is a system time stamp, and so it is only defined
+for the system on which
+.B syslogd
+is running. It can not be forwarded to
 other systems.
 .sp
 .LP
-When \fBsyslogd\fR receives a \fBHUP\fR signal, it attempts to complete
+When
+.B syslogd
+receives a
+.B HUP
+signal, it attempts to complete
 outputting pending messages, and close all log files to which it is
 currently logging messages. If, for some reason, one (or more) of these
-files does not close within a generous grace period, \fBsyslogd\fR discards
+files does not close within a generous grace period,
+.B syslogd
+discards
 the pending messages, forcibly closes these files, and starts
 reconfiguration. If this shutdown procedure is disturbed by an unexpected
-error and \fBsyslogd\fR cannot complete reconfiguration, \fBsyslogd\fR sends
+error and
+.B syslogd
+cannot complete reconfiguration,
+.B syslogd
+sends
 a mail message to the superuser on the current system stating that it has
 shut down, and exits.
 .sp
 .LP
 Care should be taken to ensure that each window displaying messages
-forwarded by \fBsyslogd\fR (especially console windows) is run in the system
+forwarded by
+.B syslogd
+(especially console windows) is run in the system
 default locale (which is \fBsyslogd\fR's locale). If this advice is not
-followed, it is possible for a \fBsyslog\fR message to alter the terminal
+followed, it is possible for a
+.B syslog
+message to alter the terminal
 settings for that window, possibly even allowing remote execution of
 arbitrary commands from that window.
 .sp
 .LP
-The \fBsyslogd\fR service is managed by the service management facility,
+The
+.B syslogd
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -399,14 +491,24 @@ The \fBsyslogd\fR service is managed by the service management facility,
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.
 .sp
 .LP
-When \fBsyslogd\fR is started by means of \fBsvcadm\fR(1M), if a value is
-specified for \fBLOG_FROM_REMOTE\fR in the \fB/etc/defaults/syslogd\fR file,
+When
+.B syslogd
+is started by means of \fBsvcadm\fR(1M), if a value is
+specified for
+.B LOG_FROM_REMOTE
+in the \fB/etc/defaults/syslogd\fR file,
 the SMF property \fBsvc:/system/system-log/config/log_from_remote\fR is set
-to correspond to the \fBLOG_FROM_REMOTE\fR value and the
+to correspond to the
+.B LOG_FROM_REMOTE
+value and the
 \fB/etc/default/syslogd\fR file is modified to replace the
 \fBLOG_FROM_REMOTE\fR specification with the following comment:
 .sp
@@ -418,7 +520,9 @@ to correspond to the \fBLOG_FROM_REMOTE\fR value and the
 
 .sp
 .LP
-If neither \fBLOG_FROM_REMOTE\fR nor
+If neither
+.B LOG_FROM_REMOTE
+nor
 \fBsvc:/system/system-log/config/log_from_remote\fR are defined, the default
 is to log remote messages.
 .sp
