@@ -35,60 +35,77 @@ a target
 .SH INTERFACE LEVEL
 .sp
 .LP
-The \fBscsi_slave()\fR function is obsolete. This function has been
-replaced by \fBscsi_probe\fR(9F).
+The
+.B scsi_slave()
+function is obsolete. This function has been
+replaced by
+.BR scsi_probe (9F).
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIdevp\fR
+.I devp
 .ad
 .RS 13n
 .rt
-Pointer to a \fBscsi_device\fR(9S) structure.
+Pointer to a
+.BR scsi_device "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIcallback\fR
+.I callback
 .ad
 .RS 13n
 .rt
-Pointer to a callback function, \fBNULL_FUNC\fR or \fBSLEEP_FUNC\fR.
+Pointer to a callback function,
+.B NULL_FUNC
+or
+.BR SLEEP_FUNC .
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
 \fBscsi_slave()\fR checks for the presence of a \fBSCSI\fR device. Target
-drivers may use this function in their \fBprobe\fR(9E) routines.
+drivers may use this function in their
+.BR probe "(9E) routines."
 \fBscsi_slave()\fR determines if the device is present by using a Test Unit
-Ready command followed by an Inquiry command. If \fBscsi_slave()\fR is
-successful, it will fill in the \fBscsi_inquiry\fR structure, which is the
+Ready command followed by an Inquiry command. If
+.B scsi_slave()
+is
+successful, it will fill in the
+.B scsi_inquiry
+structure, which is the
 \fBsd_inq\fR member of the \fBscsi_device\fR(9S) structure, and return
-\fBSCSI_PROBE_EXISTS\fR. This information can be used to determine if the
-target driver has probed the correct SCSI device type. \fIcallback\fR
-indicates what the allocator routines should do when \fBDMA \fRresources are
+.BR SCSI_PROBE_EXISTS .
+This information can be used to determine if the
+.RI "target driver has probed the correct SCSI device type." " callback"
+indicates what the allocator routines should do when
+.B DMA
+resources are
 not available:
 .sp
 .ne 2
 .mk
 .na
-\fBNULL_FUNC\fR
+.B NULL_FUNC
 .ad
 .RS 16n
 .rt
-Do not wait for resources. Return a \fINULL\fR pointer.
+Do not wait for resources. Return a
+.I NULL
+pointer.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLEEP_FUNC\fR
+.B SLEEP_FUNC
 .ad
 .RS 16n
 .rt
@@ -99,12 +116,14 @@ Wait indefinitely for resources.
 .ne 2
 .mk
 .na
-\fBOther Values\fR
+.B Other Values
 .ad
 .RS 16n
 .rt
 \fIcallback\fR points to a function which is called when resources may have
-become available. \fIcallback\fR \fBmust\fR return either \fB0\fR
+become available.
+.I callback
+\fBmust\fR return either \fB0\fR
 (indicating that it attempted to allocate resources but again failed to do
 so), in which case it is put back on a list to be called again later, or
 \fB1\fR indicating either success in allocating resources or indicating that
@@ -119,7 +138,7 @@ it no longer cares for a retry.
 .ne 2
 .mk
 .na
-\fBSCSIPROBE_NOMEM\fR
+.B SCSIPROBE_NOMEM
 .ad
 .RS 22n
 .rt
@@ -130,7 +149,7 @@ No space available for structures.
 .ne 2
 .mk
 .na
-\fBSCSIPROBE_EXISTS\fR
+.B SCSIPROBE_EXISTS
 .ad
 .RS 22n
 .rt
@@ -141,7 +160,7 @@ Device exists and inquiry data is valid.
 .ne 2
 .mk
 .na
-\fBSCSIPROBE_NONCCS\fR
+.B SCSIPROBE_NONCCS
 .ad
 .RS 22n
 .rt
@@ -152,7 +171,7 @@ Device exists but inquiry data is not valid.
 .ne 2
 .mk
 .na
-\fBSCSIPROBE_FAILURE\fR
+.B SCSIPROBE_FAILURE
 .ad
 .RS 22n
 .rt
@@ -163,24 +182,29 @@ Polled command failure.
 .ne 2
 .mk
 .na
-\fBSCSIPROBE_NORESP\fR
+.B SCSIPROBE_NORESP
 .ad
 .RS 22n
 .rt
-No response to \fBTEST UNIT READY\fR.
+No response to
+.BR "TEST UNIT READY" .
 .RE
 
 .SH CONTEXT
 .sp
 .LP
 \fBscsi_slave()\fR is normally called from the target driver's
-\fBprobe\fR(9E) or \fBattach\fR(9E) routine. In any case, this routine
+.BR probe (9E)
+or
+.BR attach "(9E) routine. In any case, this routine"
 should not be called from interrupt context, because it can sleep waiting
 for memory to be allocated.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attributes:
+See
+.BR attributes (5)
+for a description of the following attributes:
 .sp
 
 .sp
@@ -197,18 +221,25 @@ Stability LevelObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBattach\fR(9E), \fBprobe\fR(9E),
-\fBddi_iopb_alloc\fR(9F), \fBmakecom\fR(9F), \fBscsi_dmaget\fR(9F),
+.BR attributes (5),
+.BR attach (9E),
+.BR probe (9E),
+.BR ddi_iopb_alloc (9F),
+.BR makecom (9F),
+.BR scsi_dmaget (9F),
 \fBscsi_ifgetcap\fR(9F), \fBscsi_pktalloc\fR(9F), \fBscsi_poll\fR(9F),
-\fBscsi_probe\fR(9F), \fBscsi_device\fR(9S)
+.BR scsi_probe (9F),
+.BR scsi_device (9S)
 .sp
 .LP
  \fIANSI Small Computer System Interface-2 (SCSI-2)\fR
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
-The \fBscsi_slave()\fR function is obsolete and will be discontinued in a
+The
+.B scsi_slave()
+function is obsolete and will be discontinued in a
 future release. This function has been replaced by \fBscsi_probe\fR(9F).

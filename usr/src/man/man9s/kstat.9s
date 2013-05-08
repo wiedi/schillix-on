@@ -38,18 +38,23 @@ Solaris DDI specific (Solaris DDI)
 .sp
 .LP
 Each kernel statistic (\fBkstat\fR) exported by device drivers consists of
-a header section and a data section. The \fBkstat\fR structure is the header
+a header section and a data section. The
+.B kstat
+structure is the header
 portion of the statistic.
 .sp
 .LP
-A driver receives a pointer to a \fBkstat\fR structure from a successful
+A driver receives a pointer to a
+.B kstat
+structure from a successful
 call to \fBkstat_create\fR(9F). Drivers should never allocate a \fBkstat\fR
 structure in any other manner.
 .sp
 .LP
 After allocation, the driver should perform any further initialization
-needed before calling \fBkstat_install\fR(9F) to actually export the
-\fBkstat\fR.
+needed before calling
+.BR kstat_install "(9F) to actually export the"
+.BR kstat .
 .SH STRUCTURE MEMBERS
 .sp
 .in +2
@@ -68,67 +73,85 @@ void      *ks_lock;             /* protects kstat's data */
 
 .sp
 .LP
-The members of the \fBkstat\fR structure available to examine or set by a
+The members of the
+.B kstat
+structure available to examine or set by a
 driver are as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBks_data\fR
+.B ks_data
 .ad
 .RS 17n
 .rt
-Points to the data portion of the \fBkstat\fR. Either allocated by
-\fBkstat_create\fR(9F) for the drivers use, or by the driver if it is using
-virtual \fBkstat\fRs.
+Points to the data portion of the
+.BR kstat .
+Either allocated by
+.BR kstat_create (9F)
+for the drivers use, or by the driver if it is using
+virtual
+.BR kstat s.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBks_ndata\fR
+.B ks_ndata
 .ad
 .RS 17n
 .rt
-The number of data records in this \fBkstat\fR. Set by the
-\fBks_update\fR(9E) routine.
+The number of data records in this
+.BR kstat .
+Set by the
+.BR ks_update (9E)
+routine.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBks_data_size\fR
+.B ks_data_size
 .ad
 .RS 17n
 .rt
-The amount of data pointed to by \fBks_data\fR. Set by the
-\fBks_update\fR(9E) routine.
+The amount of data pointed to by
+.BR ks_data .
+Set by the
+.BR ks_update (9E)
+routine.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBks_update\fR
+.B ks_update
 .ad
 .RS 17n
 .rt
-Pointer to a routine that dynamically updates \fBkstat\fR. This is useful
+Pointer to a routine that dynamically updates
+.BR kstat .
+This is useful
 for drivers where the underlying device keeps cheap hardware statistics, but
 where extraction is expensive. Instead of constantly keeping the \fBkstat\fR
 data section up to date, the driver can supply a \fBks_update\fR(9E)
-function that updates the \fBkstat\fR data section on demand. To take
-advantage of this feature, set the \fBks_update\fR field before calling
-\fBkstat_install\fR(9F). 
+function that updates the
+.B kstat
+data section on demand. To take
+advantage of this feature, set the
+.B ks_update
+field before calling
+.BR kstat_install (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBks_private\fR
+.B ks_private
 .ad
 .RS 17n
 .rt
@@ -140,20 +163,36 @@ Is a private field for the driver's use. Often used in \fBks_update\fR(9E).
 .ne 2
 .mk
 .na
-\fBks_lock\fR
+.B ks_lock
 .ad
 .RS 17n
 .rt
-Is a pointer to a mutex that protects this \fBkstat\fR. \fBkstat\fR data
-sections are optionally protected by the per-\fBkstat\fR \fBks_lock\fR. If
+Is a pointer to a mutex that protects this
+.BR kstat .
+\fBkstat\fR data
+sections are optionally protected by the per-\fBkstat ks_lock\fR. If
 \fBks_lock\fR is non-\fINULL\fR, \fBkstat\fR clients (such as
-\fB/dev/kstat\fR) will acquire this lock for all of their operations on that
-\fBkstat\fR. It is up to the \fBkstat\fR provider to decide whether
-guaranteeing consistent data to \fBkstat\fR clients is sufficiently
+.BR /dev/kstat )
+will acquire this lock for all of their operations on that
+.BR kstat .
+It is up to the
+.B kstat
+provider to decide whether
+guaranteeing consistent data to
+.B kstat
+clients is sufficiently
 important to justify the locking cost. Note, however, that most statistic
 updates already occur under one of the provider's mutexes. If the provider
-sets \fBks_lock\fR to point to that mutex, then \fBkstat\fR data locking is
-free. \fBks_lock\fR is really of type \fB(kmutex_t*)\fR and is declared as
+sets
+.B ks_lock
+to point to that mutex, then
+.B kstat
+data locking is
+free.
+.B ks_lock
+is really of type
+.B (kmutex_t*)
+and is declared as
 \fB(void*)\fR in the \fBkstat\fR header. That way, users do not have to be
 exposed to all of the kernel's lock-related data structures.
 .RE
@@ -161,7 +200,7 @@ exposed to all of the kernel's lock-related data structures.
 .SH SEE ALSO
 .sp
 .LP
-\fBkstat_create\fR(9F)
+.BR kstat_create (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

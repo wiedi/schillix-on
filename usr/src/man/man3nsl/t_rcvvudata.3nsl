@@ -65,13 +65,19 @@ t_rcvvudata \- receive a data unit into one or more noncontiguous buffers
 .LP
 This function is used in connectionless mode to receive a data unit from
 another transport user.  The argument  \fIfd\fR identifies the local
-transport endpoint through which data will be received,  \fIunitdata\fR
+.RI "transport endpoint through which data will be received, " " unitdata"
 holds information associated with the received data unit,  \fIiovcount\fR
 contains the number of non-contiguous udata buffers which is limited to
 \fBT_IOV_MAX,\fR which is an implementation-defined value of at least 16,
 and \fIflags\fR is set on return to indicate that the complete data unit was
-not received.  If the limit on  \fIiovcount\fR is exceeded, the function
-fails with \fBTBADDATA\fR.  The argument  \fIunitdata\fR points to a
+not received.  If the limit on 
+.I iovcount
+is exceeded, the function
+fails with
+.BR TBADDATA .
+The argument 
+.I unitdata
+points to a
 \fBt_unitdata\fR structure containing the following members:
 .sp
 .in +2
@@ -84,9 +90,19 @@ struct netbuf udata;
 
 .sp
 .LP
-The  \fImaxlen\fR field of  \fIaddr\fR and  \fIopt\fR must be set before
+The 
+.I maxlen
+field of 
+.I addr
+and 
+.I opt
+must be set before
 calling this function to indicate the maximum size of the buffer for each.
-The \fIudata\fR field of  \fBt_unitdata\fR is not used. The  \fIiov_len\fR
+The
+.I udata
+field of 
+.B t_unitdata
+.RI "is not used. The " " iov_len"
 and \fIiov_base\fR fields of "\fIiov\fB0\fR" through  \fIiov
 [iovcount-1]\fR must be set before calling  \fBt_rcvvudata()\fR to define
 the buffer where the userdata will be placed.  If the maxlen field of
@@ -94,11 +110,17 @@ the buffer where the userdata will be placed.  If the maxlen field of
 the \fIbuf\fR field for this parameter.
 .sp
 .LP
-On return from this call,  \fIaddr\fR specifies the protocol address of the
-sending user,  \fIopt\fR identifies options that were associated with this
+On return from this call, 
+.I addr
+specifies the protocol address of the
+sending user, 
+.I opt
+identifies options that were associated with this
 data unit, and  \fIiov\fB[0]\fI\&.iov_base\fR through \fIiov
 [iovcount-1].iov_base\fR contains the user data that was received. The
-return value of  \fBt_rcvvudata()\fR is the number of bytes of user data
+return value of 
+.B t_rcvvudata()
+is the number of bytes of user data
 given to the user.
 .sp
 .LP
@@ -114,43 +136,56 @@ passed:
 .sp
 .LP
 may be constrained by implementation limits. If no other constraint
-applies, it will be limited by \fBINT_MAX\fR. In practice, the availability
+applies, it will be limited by
+.BR INT_MAX .
+In practice, the availability
 of memory to an application is likely to impose a lower limit on the amount
 of data that can be sent or received using scatter/gather functions.
 .sp
 .LP
-By default,  \fBt_rcvvudata()\fR operates in synchronous mode and waits for
+By default, 
+.B t_rcvvudata()
+operates in synchronous mode and waits for
 a data unit to arrive if none is currently available.  However, if
 \fBO_NONBLOCK\fR is set by means of \fBt_open\fR(3NSL) or \fBfcntl\fR(2),
 \fBt_rcvvudata()\fR executes in asynchronous mode and fails if no data units
 are available.
 .sp
 .LP
-If the buffers defined in the  \fIiov[]\fR array are not large enough to
+If the buffers defined in the 
+.I iov[]
+array are not large enough to
 hold the current data unit, the buffers will be filled and  \fBT_MORE\fR
-will be set in flags on return to indicate that another  \fBt_rcvvudata()\fR
+will be set in flags on return to indicate that another 
+.BR t_rcvvudata()
 should be called to retrieve the rest of the data unit.  Subsequent calls to
 \fBt_rcvvudata()\fR will return zero for the length of the address and
 options, until the full data unit has been received.
 .SH RETURN VALUES
 .sp
 .LP
-On successful completion,  \fBt_rcvvudata()\fR returns the number of bytes
-received. Otherwise, it returns  -1 on failure and \fBt_errno\fR is set to
+On successful completion, 
+.B t_rcvvudata()
+returns the number of bytes
+received. Otherwise, it returns  -1 on failure and
+.B t_errno
+is set to
 indicate the error.
 .SH VALID STATES
 .sp
 .LP
-\fBT_IDLE\fR.
+.BR T_IDLE .
 .SH ERRORS
 .sp
 .LP
-On failure, \fBt_errno\fR is set to one of the following:
+On failure,
+.B t_errno
+is set to one of the following:
 .sp
 .ne 2
 .mk
 .na
-\fBTBADDATA\fR
+.B TBADDATA
 .ad
 .RS 15n
 .rt
@@ -161,7 +196,7 @@ On failure, \fBt_errno\fR is set to one of the following:
 .ne 2
 .mk
 .na
-\fBTBADF\fR
+.B TBADF
 .ad
 .RS 15n
 .rt
@@ -172,13 +207,15 @@ The specified file descriptor does not refer to a transport endpoint.
 .ne 2
 .mk
 .na
-\fBTBUFOVFLW\fR
+.B TBUFOVFLW
 .ad
 .RS 15n
 .rt
 The number of bytes allocated for the incoming protocol address or options
 (\fImaxlen\fR) is greater than  \fB0\fR but not sufficient to store the
-information. The unit data information to be returned in \fIunitdata\fR will
+information. The unit data information to be returned in
+.I unitdata
+will
 be discarded.
 .RE
 
@@ -186,7 +223,7 @@ be discarded.
 .ne 2
 .mk
 .na
-\fBTLOOK\fR
+.B TLOOK
 .ad
 .RS 15n
 .rt
@@ -198,7 +235,7 @@ immediate attention.
 .ne 2
 .mk
 .na
-\fBTNODATA\fR
+.B TNODATA
 .ad
 .RS 15n
 .rt
@@ -210,7 +247,7 @@ the transport provider.
 .ne 2
 .mk
 .na
-\fBTNOTSUPPORT\fR
+.B TNOTSUPPORT
 .ad
 .RS 15n
 .rt
@@ -221,7 +258,7 @@ This function is not supported by the underlying transport provider.
 .ne 2
 .mk
 .na
-\fBTOUTSTATE\fR
+.B TOUTSTATE
 .ad
 .RS 15n
 .rt
@@ -233,20 +270,21 @@ states in which a call to this function is valid.
 .ne 2
 .mk
 .na
-\fBTPROTO\fR
+.B TPROTO
 .ad
 .RS 15n
 .rt
 This error indicates that a communication problem has been detected between
 XTI and the transport provider for which there is no other suitable XTI
-error \fB(t_errno)\fR.
+error
+.BR (t_errno) .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTSYSERR\fR
+.B TSYSERR
 .ad
 .RS 15n
 .rt
@@ -256,12 +294,16 @@ A system error has occurred during execution of this function.
 .SH TLI COMPATIBILITY
 .sp
 .LP
-In the \fBTLI\fR interface definition, no counterpart of this routine was
+In the
+.B TLI
+interface definition, no counterpart of this routine was
 defined.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -279,5 +321,8 @@ MT LevelSafe
 .sp
 .LP
 \fBfcntl\fR(2), \fBt_alloc\fR(3NSL), \fBt_open\fR(3NSL),
-\fBt_rcvudata\fR(3NSL), \fBt_rcvuderr\fR(3NSL), \fBt_sndudata\fR(3NSL),
-\fBt_sndvudata\fR(3NSL), \fBattributes\fR(5)
+.BR t_rcvudata (3NSL),
+.BR t_rcvuderr (3NSL),
+.BR t_sndudata (3NSL),
+.BR t_sndvudata (3NSL),
+.BR attributes (5)

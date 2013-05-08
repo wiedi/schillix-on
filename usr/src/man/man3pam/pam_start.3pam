@@ -39,19 +39,38 @@ pam_start, pam_end \- PAM authentication transaction functions
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpam_start()\fR function is called to initiate an authentication
+The
+.B pam_start()
+function is called to initiate an authentication
 transaction. It takes as arguments the name of the current service,
-\fIservice\fR, the name of the user to be authenticated, \fIuser\fR, the
-address of the conversation structure, \fIpam_conv\fR, and the address of a
-variable to be assigned the authentication handle \fIpamh\fR. Upon
-successful completion,  \fIpamh\fR refers to a \fBPAM\fR handle for use with
+.IR service ,
+the name of the user to be authenticated,
+.IR user ,
+the
+address of the conversation structure,
+.IR pam_conv ,
+and the address of a
+variable to be assigned the authentication handle
+.IR pamh .
+Upon
+successful completion, 
+.I pamh
+refers to a
+.B PAM
+handle for use with
 subsequent calls to the authentication library.
 .sp
 .LP
-The  \fIpam_conv\fR structure contains the address of the conversation
-function provided by the application.  The underlying \fBPAM\fR service
+The 
+.I pam_conv
+structure contains the address of the conversation
+function provided by the application.  The underlying
+.B PAM
+service
 module invokes this function to output information to and retrieve input
-from the user. The \fBpam_conv\fR structure has the following entries:
+from the user. The
+.B pam_conv
+structure has the following entries:
 .sp
 .in +2
 .nf
@@ -72,21 +91,38 @@ int conv(int num_msg, const struct pam_message **msg,
 
 .sp
 .LP
-The \fBconv()\fR function is called by a service module to hold a \fBPAM\fR
+The
+.B conv()
+function is called by a service module to hold a
+.BR PAM
 conversation with the application or user. For window applications, the
 application can create a new pop-up window to be used by the interaction.
 .sp
 .LP
-The \fInum_msg\fR  parameter is the number of messages associated with the
-call. The parameter \fImsg\fR is a pointer to an array of length
+The
+.I num_msg
+parameter is the number of messages associated with the
+call. The parameter
+.I msg
+is a pointer to an array of length
 \fInum_msg\fR of the \fIpam_message\fR structure.
 .sp
 .LP
-The \fBpam_message\fR structure is used to pass prompt, error message, or
+The
+.B pam_message
+structure is used to pass prompt, error message, or
 any text information from the authentication service to the application or
-user. It is the responsibility of the \fBPAM\fR service modules to localize
-the messages. The memory used by \fBpam_message\fR has to be allocated and
-freed by the  \fBPAM\fR modules.  The \fBpam_message\fR structure has the
+user. It is the responsibility of the
+.B PAM
+service modules to localize
+the messages. The memory used by
+.B pam_message
+has to be allocated and
+freed by the 
+.B PAM
+modules.  The
+.B pam_message
+structure has the
 following entries:
 .sp
 .in +2
@@ -100,13 +136,15 @@ struct pam_message{
 
 .sp
 .LP
-The message style, \fBmsg_style\fR, can be set to one of the following
+The message style,
+.BR msg_style ,
+can be set to one of the following
 values:
 .sp
 .ne 2
 .mk
 .na
-\fBPAM_PROMPT_ECHO_OFF\fR
+.B PAM_PROMPT_ECHO_OFF
 .ad
 .RS 23n
 .rt
@@ -117,7 +155,7 @@ Prompt user, disabling echoing of response.
 .ne 2
 .mk
 .na
-\fBPAM_PROMPT_ECHO_ON\fR
+.B PAM_PROMPT_ECHO_ON
 .ad
 .RS 23n
 .rt
@@ -128,7 +166,7 @@ Prompt user, enabling echoing of response.
 .ne 2
 .mk
 .na
-\fBPAM_ERROR_MSG\fR
+.B PAM_ERROR_MSG
 .ad
 .RS 23n
 .rt
@@ -139,7 +177,7 @@ Print error message.
 .ne 2
 .mk
 .na
-\fBPAM_TEXT_INFO\fR
+.B PAM_TEXT_INFO
 .ad
 .RS 23n
 .rt
@@ -152,10 +190,18 @@ The maximum size of the message and the response string is
 \fBPAM_MAX_MSG_SIZE\fR as defined in <\fBsecurity/pam.appl.h\fR>.
 .sp
 .LP
-The structure \fIpam_response\fR is used by the authentication service to
+The structure
+.I pam_response
+is used by the authentication service to
 get the user's response back from the application or user. The storage used
-by \fIpam_response\fR has to be allocated by the application and freed by
-the \fBPAM\fR modules. The \fIpam_response\fR structure has the following
+by
+.I pam_response
+has to be allocated by the application and freed by
+the
+.B PAM
+modules. The
+.I pam_response
+structure has the following
 entries: 
 .sp
 .in +2
@@ -173,23 +219,39 @@ struct pam_response{
 It is the responsibility of the conversation function to strip off
 \fBNEWLINE\fR characters for \fBPAM_PROMPT_ECHO_OFF\fR and
 \fBPAM_PROMPT_ECHO_ON\fR message styles, and to add \fBNEWLINE\fR characters
-(if appropriate) for \fBPAM_ERROR_MSG\fR and \fBPAM_TEXT_INFO\fR message
+(if appropriate) for
+.B PAM_ERROR_MSG
+and
+.B PAM_TEXT_INFO
+message
 styles.
 .sp
 .LP
-The \fIappdata_ptr\fR argument is an application data pointer which is
-passed by the application to the  \fBPAM\fR service modules. Since the
+The
+.I appdata_ptr
+argument is an application data pointer which is
+passed by the application to the 
+.B PAM
+service modules. Since the
 \fBPAM\fR modules pass it back through the conversation function, the
 applications can use this pointer to point to any application-specific
 data.
 .sp
 .LP
-The \fBpam_end()\fR function is called to terminate the authentication
-transaction identified by  \fIpamh\fR and to free any storage area allocated
-by the authentication module. The argument, \fIstatus\fR, is passed to the
+The
+.B pam_end()
+function is called to terminate the authentication
+transaction identified by 
+.I pamh
+and to free any storage area allocated
+by the authentication module. The argument,
+.IR status ,
+is passed to the
 \fBcleanup(|)\fR function stored within the  \fBpam\fR handle, and is used
 to determine what module-specific state must be purged.  A cleanup function
-is attached to the handle by the underlying \fBPAM\fR modules through a call
+is attached to the handle by the underlying
+.B PAM
+modules through a call
 to \fBpam_set_data\fR(3PAM) to free module-specific data.
 .sp
 .LP
@@ -199,11 +261,14 @@ password management through PAM modules.
 .SH RETURN VALUES
 .sp
 .LP
-Refer to the RETURN VALUES section on \fBpam\fR(3PAM).
+Refer to the RETURN VALUES section on
+.BR pam (3PAM).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -222,15 +287,25 @@ MT-LevelMT-Safe with exceptions
 .SH SEE ALSO
 .sp
 .LP
-\fBlibpam\fR(3LIB), \fBpam\fR(3PAM), \fBpam_acct_mgmt\fR(3PAM),
-\fBpam_authenticate\fR(3PAM), \fBpam_chauthtok\fR(3PAM),
-\fBpam_open_session\fR(3PAM), \fBpam_setcred\fR(3PAM),
-\fBpam_set_data\fR(3PAM), \fBpam_strerror\fR(3PAM), \fBattributes\fR(5)
+.BR libpam (3LIB),
+.BR pam (3PAM),
+.BR pam_acct_mgmt (3PAM),
+.BR pam_authenticate (3PAM),
+.BR pam_chauthtok (3PAM),
+.BR pam_open_session (3PAM),
+.BR pam_setcred (3PAM),
+.BR pam_set_data (3PAM),
+.BR pam_strerror (3PAM),
+.BR attributes (5)
 .sp
 .LP
 \fISolaris Security for Developers Guide\fR
 .SH NOTES
 .sp
 .LP
-The interfaces in \fBlibpam\fR are MT-Safe only if each thread within the
-multithreaded application uses its own \fBPAM\fR handle.
+The interfaces in
+.B libpam
+are MT-Safe only if each thread within the
+multithreaded application uses its own
+.B PAM
+handle.

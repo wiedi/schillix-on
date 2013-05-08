@@ -40,63 +40,88 @@ csx_RequestIRQ, csx_ReleaseIRQ \- request or release IRQ resource
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris \fBDDI\fR Specific (Solaris \fBDDI\fR)
+Solaris
+.B DDI
+Specific (Solaris \fBDDI\fR)
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIch\fR
+.I ch
 .ad
 .RS 7n
 .rt
-Client handle returned from \fBcsx_RegisterClient\fR(9F).
+Client handle returned from
+.BR csx_RegisterClient (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIir\fR
+.I ir
 .ad
 .RS 7n
 .rt
-Pointer to an \fBirq_req_t\fR structure.
+Pointer to an
+.B irq_req_t
+structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The function \fBcsx_RequestIRQ()\fR requests an \fBIRQ\fR resource and
-registers the client's \fBIRQ\fR handler with Card Services.
+The function
+.B csx_RequestIRQ()
+requests an
+.B IRQ
+resource and
+registers the client's
+.B IRQ
+handler with Card Services.
 .sp
 .LP
 If a client requires an \fBIRQ\fR,\fBcsx_RequestIRQ()\fR must be called to
-request an \fBIRQ\fR resource as well as to register the client's \fBIRQ\fR
+request an
+.B IRQ
+.RB "resource as well as to register the client's" " IRQ"
 handler with Card Services. The client will not receive callbacks at the
 \fBIRQ\fR callback handler until \fBcsx_RequestConfiguration\fR(9F) or
 \fBcsx_ModifyConfiguration\fR(9F) has successfully returned when either of
-these functions are called with the \fBCONF_ENABLE_IRQ_STEERING\fR bit
+these functions are called with the
+.B CONF_ENABLE_IRQ_STEERING
+bit
 set.
 .sp
 .LP
-The function \fBcsx_ReleaseIRQ()\fR releases a previously requested
+The function
+.B csx_ReleaseIRQ()
+releases a previously requested
 \fBIRQ\fR resource.
 .sp
 .LP
-The Card Services \fBIRQ\fR resource list is adjusted by
-\fBcsx_ReleaseIRQ()\fR. Depending on the adapter hardware, the host bus
+The Card Services
+.B IRQ
+resource list is adjusted by
+.BR csx_ReleaseIRQ() .
+Depending on the adapter hardware, the host bus
 \fBIRQ\fR connection might also be disabled. Client \fBIRQ\fR handlers
 always run above lock level and so should take care to perform only Solaris
-operations that are appropriate for an above-lock-level \fBIRQ\fR handler.
+operations that are appropriate for an above-lock-level
+.B IRQ
+handler.
 .sp
 .LP
 \fBcsx_RequestIRQ()\fR fails if it has already been called without a
-corresponding \fBcsx_ReleaseIRQ()\fR.
+corresponding
+.BR csx_ReleaseIRQ() .
 .SH STRUCTURE MEMBERS
 .sp
 .LP
-The structure members of \fBirq_req_t\fR are:
+The structure members of
+.B irq_req_t
+are:
 .sp
 .in +2
 .nf
@@ -118,7 +143,7 @@ The fields are defined as follows:
 .ne 2
 .mk
 .na
-\fBSocket\fR
+.B Socket
 .ad
 .RS 20n
 .rt
@@ -130,7 +155,7 @@ implementations, it should be set to the logical socket number.
 .ne 2
 .mk
 .na
-\fBAttributes\fR
+.B Attributes
 .ad
 .RS 20n
 .rt
@@ -140,7 +165,7 @@ desired by the client. The following bits are defined:
 .ne 2
 .mk
 .na
-\fBIRQ_TYPE_EXCLUSIVE\fR
+.B IRQ_TYPE_EXCLUSIVE
 .ad
 .RS 22n
 .rt
@@ -154,11 +179,13 @@ that the system IRQ is dedicated to this PC Card.
 .ne 2
 .mk
 .na
-\fBirq_handler\fR
+.B irq_handler
 .ad
 .RS 20n
 .rt
-The client \fBIRQ\fR callback handler entry point is passed in the
+The client
+.B IRQ
+callback handler entry point is passed in the
 \fBirq_handler\fR field.
 .RE
 
@@ -166,35 +193,47 @@ The client \fBIRQ\fR callback handler entry point is passed in the
 .ne 2
 .mk
 .na
-\fBirq_handler_arg\fR
+.B irq_handler_arg
 .ad
 .RS 20n
 .rt
-The client can use the \fBirq_handler_arg\fR field to pass client-specific
-data to the client \fBIRQ\fR callback handler.
+The client can use the
+.B irq_handler_arg
+field to pass client-specific
+data to the client
+.B IRQ
+callback handler.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBiblk_cookie\fR
+.B iblk_cookie
 .ad
 .br
 .na
-\fBidev_cookie\fR
+.B idev_cookie
 .ad
 .RS 20n
 .rt
 These fields must be used by the client to set up mutexes that are used in
-the client's \fBIRQ\fR callback handler.
+the client's
+.B IRQ
+callback handler.
 .RE
 
 .sp
 .LP
-For a specific \fBcsx_ReleaseIRQ()\fR call, the values in the
+For a specific
+.B csx_ReleaseIRQ()
+call, the values in the
 \fBirq_req_t\fR structure must be the same as those returned from the
-previous \fBcsx_RequestIRQ()\fR call; otherwise, \fBCS_BAD_ARGS\fR is
+previous
+.B csx_RequestIRQ()
+call; otherwise,
+.B CS_BAD_ARGS
+is
 returned and no changes are made to Card Services resources or the socket
 and adapter hardware.
 .SH RETURN VALUES
@@ -202,7 +241,7 @@ and adapter hardware.
 .ne 2
 .mk
 .na
-\fBCS_SUCCESS\fR
+.B CS_SUCCESS
 .ad
 .RS 28n
 .rt
@@ -213,7 +252,7 @@ Successful operation.
 .ne 2
 .mk
 .na
-\fBCS_BAD_ARGS\fR
+.B CS_BAD_ARGS
 .ad
 .RS 28n
 .rt
@@ -224,7 +263,7 @@ Successful operation.
 .ne 2
 .mk
 .na
-\fBCS_BAD_ATTRIBUTE\fR
+.B CS_BAD_ATTRIBUTE
 .ad
 .RS 28n
 .rt
@@ -236,7 +275,7 @@ set.
 .ne 2
 .mk
 .na
-\fBCS_BAD_HANDLE\fR
+.B CS_BAD_HANDLE
 .ad
 .RS 28n
 .rt
@@ -247,30 +286,33 @@ Client handle is invalid or \fBcsx_RequestConfiguration\fR(9F) not done.
 .ne 2
 .mk
 .na
-\fBCS_BAD_IRQ\fR
+.B CS_BAD_IRQ
 .ad
 .RS 28n
 .rt
-Unable to allocate \fBIRQ\fR resources.
+Unable to allocate
+.B IRQ
+resources.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_IN_USE\fR
+.B CS_IN_USE
 .ad
 .RS 28n
 .rt
 \fBcsx_RequestIRQ()\fR already done or a previous \fBcsx_RequestIRQ()\fR
-has not been done for a corresponding \fBcsx_ReleaseIRQ()\fR.
+has not been done for a corresponding
+.BR csx_ReleaseIRQ() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_CONFIGURATION_LOCKED\fR
+.B CS_CONFIGURATION_LOCKED
 .ad
 .RS 28n
 .rt
@@ -282,22 +324,26 @@ has not been done for a corresponding \fBcsx_ReleaseIRQ()\fR.
 .ne 2
 .mk
 .na
-\fBCS_NO_CARD\fR
+.B CS_NO_CARD
 .ad
 .RS 28n
 .rt
-No \fBPC\fR Card in socket.
+No
+.B PC
+Card in socket.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_UNSUPPORTED_FUNCTION\fR
+.B CS_UNSUPPORTED_FUNCTION
 .ad
 .RS 28n
 .rt
-No \fBPCMCIA\fR hardware installed.
+No
+.B PCMCIA
+hardware installed.
 .RE
 
 .SH CONTEXT
@@ -310,4 +356,5 @@ These functions may be called from user or kernel context.
 \fBcsx_ReleaseConfiguration\fR(9F), \fBcsx_RequestConfiguration\fR(9F)
 .sp
 .LP
-\fIPC Card Card 95 Standard\fR, PCMCIA/JEIDA
+.IR "PC Card Card 95 Standard" ,
+PCMCIA/JEIDA

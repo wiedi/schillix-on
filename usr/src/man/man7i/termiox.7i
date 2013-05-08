@@ -25,7 +25,8 @@ termiox \- extended general terminal interface
 .SH DESCRIPTION
 .sp
 .LP
-The extended general terminal interface supplements the \fBtermio\fR(7I)
+The extended general terminal interface supplements the
+.BR termio (7I)
 general terminal interface by adding support for asynchronous hardware flow
 control, isochronous flow control and clock modes, and local implementations
 of additional asynchronous features. Some systems may not support all of
@@ -37,7 +38,10 @@ your system to find out which capabilities are supported.
 .sp
 .LP
 Hardware flow control supplements the \fBtermio\fR(7I) \fBIXON\fR,
-\fBIXOFF\fR, and \fBIXANY\fR character flow control. Character flow control
+.BR IXOFF ,
+and
+.B IXANY
+character flow control. Character flow control
 occurs when one device controls the data transfer of another device by the
 insertion of control characters in the data stream between devices.
 Hardware flow control occurs when one device controls the data transfer of
@@ -58,7 +62,9 @@ standard interface to these existing methods.
 The EIA-232-D standard specified only unidirectional hardware flow control
 - the Data Circuit-terminating Equipment or Data Communications Equipment
 (DCE) indicates to the Data Terminal Equipment (DTE) to stop transmitting
-data. The \fBtermiox\fR interface allows both unidirectional and
+data. The
+.B termiox
+interface allows both unidirectional and
 bidirectional hardware flow control; when bidirectional flow control is
 enabled, either the DCE or DTE can indicate to each other to stop
 transmitting data across the interface.  Note: It is assumed that the
@@ -89,7 +95,9 @@ transmit and receive clock source and not outputting any clock signals.
 .LP
 The parameters that control the behavior of devices providing the
 \fBtermiox\fR interface are specified by the \fBtermiox\fR structure defined
-in the <\fBsys/termiox.h\fR> header.  Several \fBioctl\fR(2) system calls
+in the <\fBsys/termiox.h\fR> header.  Several
+.BR ioctl (2)
+system calls
 that fetch or change these parameters use this structure:
 .sp
 .in +2
@@ -142,16 +150,26 @@ for connectivity. If CD is used for hardware flow control, then CTS must be
 used for connectivity. Thus, RTS and DTR (or CTS and CD) cannot both be used
 for hardware flow control at the same time. Other mutual exclusions may
 apply, such as the simultaneous setting of the \fBtermio\fR(7I) \fBHUPCL\fR
-and the  \fBtermiox\fR \fBDTRXOFF\fR bits, which use the DTE ready line for
+and the 
+.B "termiox DTRXOFF"
+bits, which use the DTE ready line for
 different functions.
 .sp
 .LP
 Variations of different hardware flow control methods may be selected by
 setting the the appropriate bits. For example, bidirectional RTS/CTS flow
-control is selected by setting both the \fBRTSXOFF\fR and \fBCTSXON\fR bits
+control is selected by setting both the
+.B RTSXOFF
+and
+.B CTSXON
+bits
 and bidirectional DTR/CTS flow control is selected by setting both the
-\fBDTRXOFF\fR and \fBCTSXON\fR. Modem control or unidirectional CTS hardware
-flow control is selected by setting only the \fBCTSXON\fR bit.
+\fBDTRXOFF\fR and
+.BR CTSXON .
+Modem control or unidirectional CTS hardware
+flow control is selected by setting only the
+.B CTSXON
+bit.
 .sp
 .LP
 As previously mentioned, it is assumed that the local asynchronous port
@@ -160,42 +178,56 @@ As previously mentioned, it is assumed that the local asynchronous port
 connected to the computer's asynchronous port using a null modem that swaps
 control circuits (typically RTS and CTS).  The connected DTE drives RTS and
 the null modem swaps RTS  and CTS so that the remote RTS is received as CTS
-by the local DTE.  In the case that \fBCTSXON\fR is set for hardware flow
+by the local DTE.  In the case that
+.B CTSXON
+is set for hardware flow
 control, printer's lowering of its RTS would cause CTS seen by the computer
 to be lowered.  Output to the printer is suspended until the printer's
 raising of its RTS, which would cause CTS seen by the computer to be
 raised.
 .sp
 .LP
-If \fBRTSXOFF\fR is set, the Request To Send (RTS) circuit (line) will be
+If
+.B RTSXOFF
+is set, the Request To Send (RTS) circuit (line) will be
 raised, and if the asynchronous port needs to have its input stopped, it
 will lower the Request To Send (RTS) line. If the RTS line is lowered, it is
 assumed that the connected device will stop its output until RTS is
 raised.
 .sp
 .LP
-If \fBCTSXON\fR is set, output will occur only if the Clear To Send (CTS)
+If
+.B CTSXON
+is set, output will occur only if the Clear To Send (CTS)
 circuit (line) is raised by the connected device. If the CTS line is lowered
 by the connected device, output is suspended until CTS is raised.
 .sp
 .LP
-If \fBDTRXOFF\fR is set, the DTE Ready (DTR) circuit (line) will be raised,
+If
+.B DTRXOFF
+is set, the DTE Ready (DTR) circuit (line) will be raised,
 and if the asynchronous port needs to have its input stopped, it will lower
 the DTE Ready (DTR) line. If the DTR line is lowered, it is assumed that the
 connected device will stop its output until DTR is raised.
 .sp
 .LP
-If \fBCDXON\fR is set, output will occur only if the Received Line Signal
+If
+.B CDXON
+is set, output will occur only if the Received Line Signal
 Detector (CD) circuit (line) is raised by the connected device. If the CD
 line is lowered by the connected device, output is suspended until CD is
 raised.
 .sp
 .LP
-If \fBISXOFF\fR is set, and if the isochronous port needs to have its input
+If
+.B ISXOFF
+is set, and if the isochronous port needs to have its input
 stopped, it will stop the outgoing clock signal. It is assumed that the
 connected device is using this clock signal to create its output. Transit
 and receive clock sources are programmed using the \fBx_cflag\fR fields. If
-the port is not programmed for external clock generation, \fBISXOFF\fR is
+the port is not programmed for external clock generation,
+.B ISXOFF
+is
 ignored. Output isochronous flow control is supported by appropriate clock
 source programming using the \fBx_cflag\fR field and enabled at the remote
 connected device.
@@ -266,28 +298,54 @@ T}
 
 .sp
 .LP
-If the \fBXMTCLK\fR field has a value of \fBXCIBRG\fR the transmit clock is
+If the
+.B XMTCLK
+field has a value of
+.B XCIBRG
+the transmit clock is
 taken from the hardware internal baud rate generator, as in normal
-asynchronous transmission. If \fBXMTCLK\fR = \fBXCTSET\fR the transmit clock
+asynchronous transmission. If
+.B XMTCLK
+=
+.B XCTSET
+the transmit clock
 is taken from the Transmitter Signal Element Timing (DCE source) circuit. If
 \fBXMTCLK\fR = \fBXCRSET\fR the transmit clock is taken from the Receiver
 Signal Element Timing (DCE source) circuit.
 .sp
 .LP
-If the \fBRCVCLK\fR field has a value of \fBRCIBRG\fR the receive clock is
+If the
+.B RCVCLK
+field has a value of
+.B RCIBRG
+the receive clock is
 taken from the hardware Internal Baud Rate Generator, as in normal
-asynchronous transmission. If \fBRCVCLK\fR = \fBRCTSET\fR the receive clock
+asynchronous transmission. If
+.B RCVCLK
+=
+.B RCTSET
+the receive clock
 is taken from the Transmitter Signal Element Timing (DCE source) circuit. If
 \fBRCVCLK\fR = \fBRCRSET\fR the receive clock is taken from the Receiver
 Signal Element Timing (DCE source) circuit.
 .sp
 .LP
-If the \fBTSETCLK\fR field has a value of \fBTSETCOFF\fR the Transmitter
-Signal Element Timing (DTE source) circuit is not driven. If \fBTSETCLK\fR =
+If the
+.B TSETCLK
+field has a value of
+.B TSETCOFF
+the Transmitter
+Signal Element Timing (DTE source) circuit is not driven. If
+.B TSETCLK
+=
 \fBTSETCRBRG\fR the Transmitter Signal Element Timing (DTE source) circuit
-is driven by the Receive Baud Rate Generator. If \fBTSETCLK\fR =
+is driven by the Receive Baud Rate Generator. If
+.B TSETCLK
+=
 \fBTSETCTBRG\fR the Transmitter Signal Element Timing (DTE source) circuit
-is driven by the Transmit Baud Rate Generator. If \fBTSETCLK\fR =
+is driven by the Transmit Baud Rate Generator. If
+.B TSETCLK
+=
 \fBTSETCTSET\fR the Transmitter Signal Element Timing (DTE source) circuit
 is driven by the Transmitter Signal Element Timing (DCE source). If
 \fBTSETCLK\fR = \fBTSETCRBRG\fR the Transmitter Signal Element Timing (DTE
@@ -295,12 +353,22 @@ source) circuit is driven by the Receiver Signal Element Timing (DCE
 source).
 .sp
 .LP
-If the \fBRSETCLK\fR field has a value of \fBRSETCOFF\fR the Receiver
-Signal Element Timing (DTE source) circuit is not driven. If \fBRSETCLK\fR =
+If the
+.B RSETCLK
+field has a value of
+.B RSETCOFF
+the Receiver
+Signal Element Timing (DTE source) circuit is not driven. If
+.B RSETCLK
+=
 \fBRSETCRBRG\fR the Receiver Signal Element Timing (DTE source) circuit is
-driven by the Receive Baud Rate Generator.  If \fBRSETCLK\fR =
+driven by the Receive Baud Rate Generator.  If
+.B RSETCLK
+=
 \fBRSETCTBRG\fR the Receiver Signal Element Timing (DTE source) circuit is
-driven by the Transmit Baud Rate Generator. If \fBRSETCLK\fR =
+driven by the Transmit Baud Rate Generator. If
+.B RSETCLK
+=
 \fBRSETCTSET\fR the Receiver Signal Element Timing (DTE source) circuit is
 driven by the Transmitter Signal Element Timing (DCE source). If
 \fBRSETCLK\fR = \fBRSETCRBRG\fR the Receiver Signal Element Timing (DTE
@@ -315,7 +383,9 @@ implementations wishing to customize their terminal interface using the
 .SH IOCTLS
 .sp
 .LP
-The  \fBioctl\fR(2) system calls have the form:
+The 
+.BR ioctl (2)
+system calls have the form:
 .sp
 .in +2
 .nf
@@ -330,11 +400,13 @@ The commands using this form are:
 .ne 2
 .mk
 .na
-\fBTCGETX\fR
+.B TCGETX
 .ad
 .RS 11n
 .rt
-The argument is a pointer to a \fBtermiox\fR structure. The current
+The argument is a pointer to a
+.B termiox
+structure. The current
 terminal parameters are fetched and stored into that structure.
 .RE
 
@@ -342,11 +414,13 @@ terminal parameters are fetched and stored into that structure.
 .ne 2
 .mk
 .na
-\fBTCSETX\fR
+.B TCSETX
 .ad
 .RS 11n
 .rt
-The argument is a pointer to a \fBtermiox\fR structure.  The current
+The argument is a pointer to a
+.B termiox
+structure.  The current
 terminal parameters are set from the values stored in that structure.  The
 change is immediate.
 .RE
@@ -355,11 +429,13 @@ change is immediate.
 .ne 2
 .mk
 .na
-\fBTCSETXW\fR
+.B TCSETXW
 .ad
 .RS 11n
 .rt
-The argument is a pointer to a \fBtermiox\fR structure.  The current
+The argument is a pointer to a
+.B termiox
+structure.  The current
 terminal parameters are set from the values stored in that structure.  The
 change occurs after all characters queued for output have been transmitted.
 This form should be used when changing parameters that will affect output.
@@ -369,11 +445,13 @@ This form should be used when changing parameters that will affect output.
 .ne 2
 .mk
 .na
-\fBTCSETXF\fR
+.B TCSETXF
 .ad
 .RS 11n
 .rt
-The argument is a pointer to a \fBtermiox\fR structure.  The current
+The argument is a pointer to a
+.B termiox
+structure.  The current
 terminal parameters are set from the values stored in that structure.  The
 change occurs after all characters queued for output have been transmitted;
 all characters queued for input are discarded and then the change occurs.
@@ -382,14 +460,18 @@ all characters queued for input are discarded and then the change occurs.
 .SH FILES
 .sp
 .LP
-\fB/dev/*\fR
+.B /dev/*
 .SH SEE ALSO
 .sp
 .LP
-\fBstty\fR(1), \fBioctl\fR(2), \fBtermio\fR(7I)
+.BR stty (1),
+.BR ioctl (2),
+.BR termio (7I)
 .SH NOTES
 .sp
 .LP
 The  termiox(7I) system call is provided for compatibility with previous
-releases and  its use is discouraged.  Instead, the  \fBtermio\fR(7I) system
+releases and  its use is discouraged.  Instead, the 
+.BR termio (7I)
+system
 call is recommended.  See \fBtermio\fR(7I) for usage information.

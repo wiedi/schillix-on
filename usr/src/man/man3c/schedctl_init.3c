@@ -55,54 +55,84 @@ schedctl_stop \- preemption control
 .sp
 .LP
 These functions provide limited control over the scheduling of a thread
-(see \fBthreads\fR(5)). They allow a running thread to give a hint to the
+(see
+.BR threads (5)).
+They allow a running thread to give a hint to the
 kernel that preemptions of that thread should be avoided. The most likely
 use for these functions is to block preemption while holding a spinlock.
 Improper use of this facility, including attempts to block preemption for
 sustained periods of time, may result in reduced performance.
 .sp
 .LP
-The \fBschedctl_init()\fR function initializes preemption control for the
+The
+.B schedctl_init()
+function initializes preemption control for the
 calling thread and returns a pointer used to refer to the data. If
 \fBschedctl_init()\fR is called more than once by the same thread, the most
 recently returned pointer is the only valid one.
 .sp
 .LP
-The \fBschedctl_lookup()\fR function returns the currently allocated
+The
+.B schedctl_lookup()
+function returns the currently allocated
 preemption control data associated with the calling thread that was
-previously returned by \fBschedctl_init()\fR. This can be useful in programs
+previously returned by
+.BR schedctl_init() .
+This can be useful in programs
 where it is difficult to maintain local state for each thread.
 .sp
 .LP
-The \fBschedctl_exit()\fR function removes the preemption control data
+The
+.B schedctl_exit()
+function removes the preemption control data
 associated with the calling thread.
 .sp
 .LP
-The \fBschedctl_start()\fR macro gives a hint to the kernel scheduler that
+The
+.B schedctl_start()
+macro gives a hint to the kernel scheduler that
 preemption should be avoided on the current thread. The pointer passed to
 the macro must be the same as the pointer returned by the call to
 \fBschedctl_init()\fR by the current thread. The behavior of the program
 when other values are passed is undefined.
 .sp
 .LP
-The \fBschedctl_stop()\fR macro removes the hint that was set by
-\fBschedctl_start()\fR. As with \fBschedctl_start()\fR, the pointer passed
+The
+.B schedctl_stop()
+macro removes the hint that was set by
+.BR schedctl_start() .
+As with
+.BR schedctl_start() ,
+the pointer passed
 to the macro must be the same as the pointer returned by the call to
 \fBschedctl_init()\fR by the current thread.
 .sp
 .LP
-The \fBschedctl_start()\fR and \fBschedctl_stop()\fR macros are intended to
+The
+.B schedctl_start()
+and
+.B schedctl_stop()
+macros are intended to
 be used to bracket short critical sections, such as the time spent holding a
 spinlock. Other uses, including the failure to call \fBschedctl_stop()\fR
-soon after calling \fBschedctl_start()\fR, might result in poor
+soon after calling
+.BR schedctl_start() ,
+might result in poor
 performance.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBschedctl_init()\fR function returns a pointer to a \fBschedctl_t\fR
-structure if the initialization was successful, or \fINULL\fR otherwise. The
+The
+.B schedctl_init()
+function returns a pointer to a
+.BR schedctl_t
+structure if the initialization was successful, or
+.I NULL
+otherwise. The
 \fBschedctl_lookup()\fR function returns a pointer to a \fBschedctl_t\fR
-structure if the data for that thread was found, or \fINULL\fR otherwise.
+structure if the data for that thread was found, or
+.I NULL
+otherwise.
 .SH ERRORS
 .sp
 .LP
@@ -110,7 +140,9 @@ No errors are returned.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -129,8 +161,11 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBpriocntl\fR(1), \fBexec\fR(2), \fBfork\fR(2), \fBpriocntl\fR(2),
-\fBattributes\fR(5), \fBthreads\fR(5)
+.BR priocntl (1),
+.BR exec (2),
+\fBfork\fR(2), \fBpriocntl\fR(2),
+.BR attributes (5),
+.BR threads (5)
 .SH NOTES
 .sp
 .LP
@@ -144,6 +179,11 @@ such as real-time (RT), no errors will be returned but
 The data used for preemption control are not copied in the child of a
 \fBfork\fR(2). Thus, if a process containing threads using preemption
 control calls \fBfork\fR and the child does not immediately call
-\fBexec\fR(2), each thread in the child must call \fBschedctl_init()\fR
-again prior to any future uses of \fBschedctl_start()\fR and
-\fBschedctl_stop()\fR. Failure to do so will result in undefined behavior.
+.BR exec (2),
+each thread in the child must call
+.BR schedctl_init()
+again prior to any future uses of
+.B schedctl_start()
+and
+.BR schedctl_stop() .
+Failure to do so will result in undefined behavior.

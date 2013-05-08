@@ -86,81 +86,106 @@ typedef struct td_thrinfo_t {
 
 .sp
 .LP
-The \fBti_ta_p\fR member is the internal process handle identifying the
+The
+.B ti_ta_p
+member is the internal process handle identifying the
 process of which the thread is a member.
 .sp
 .LP
 The \fBti_user_flags\fR member is the value of the flags parameter passed
-to \fBthr_create\fR(3C) when the thread was created.
+to
+.BR thr_create "(3C) when the thread was created."
 .sp
 .LP
-The \fBti_tid\fR member is the thread identifier for the thread returned by
-\fBthr_create\fR(3C).
+The
+.B ti_tid
+member is the thread identifier for the thread returned by
+.BR thr_create (3C).
 .sp
 .LP
-The \fBti_tls\fR member is the thread's pointer to thread-local storage.
+The
+.B ti_tls
+member is the thread's pointer to thread-local storage.
 .sp
 .LP
 The \fBti_startfunc\fR member is the address of the function at which
 thread execution began, as specified when the thread was created with
-\fBthr_create\fR(3C).
+.BR thr_create (3C).
 .sp
 .LP
-The \fBti_stkbase\fR member is the base of the thread's stack area.
+The
+.B ti_stkbase
+member is the base of the thread's stack area.
 .sp
 .LP
-The \fBti_stksize\fR member is the size in bytes of the thread's allocated
+The
+.B ti_stksize
+member is the size in bytes of the thread's allocated
 stack region.
 .sp
 .LP
-The \fBti_ro_area\fR member is the address of the \fBulwp_t\fR structure
-for this thread.  Since accessing the \fBulwp_t\fR structure directly
-violates the encapsulation provided by \fBlibc_db\fR, this member should
+The
+.B ti_ro_area
+member is the address of the
+.B ulwp_t
+structure
+for this thread.  Since accessing the
+.B ulwp_t
+structure directly
+violates the encapsulation provided by
+.BR libc_db ,
+this member should
 generally not be used.  However, it might be useful as a prototype for
 extensions.
 .sp
 .LP
-The \fBti_state\fR member is the state of the thread.  The
+The
+.B ti_state
+member is the state of the thread.  The
 \fBtd_thr_state_e\fR enumeration type can contain the following values:
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_ANY_STATE\fR
+.B TD_THR_ANY_STATE
 .ad
 .RS 26n
 .rt
 This value is never returned by \fBtd_thr_get_info()\fR but is used as a
-wildcard to select threads in \fBtd_ta_thr_iter()\fR.
+wildcard to select threads in
+.BR td_ta_thr_iter() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_UNKNOWN\fR
+.B TD_THR_UNKNOWN
 .ad
 .RS 26n
 .rt
-The \fBlibc_db\fR library cannot determine the state of the thread.
+The
+.B libc_db
+library cannot determine the state of the thread.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_STOPPED\fR
+.B TD_THR_STOPPED
 .ad
 .RS 26n
 .rt
-The thread has been stopped by a call to  \fBthr_suspend\fR(3C).
+The thread has been stopped by a call to 
+.BR thr_suspend (3C).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_RUN\fR
+.B TD_THR_RUN
 .ad
 .RS 26n
 .rt
@@ -171,30 +196,31 @@ The thread is runnable, but it is not currently assigned to an \fBLWP\fR.
 .ne 2
 .mk
 .na
-\fBTD_THR_ACTIVE\fR
+.B TD_THR_ACTIVE
 .ad
 .RS 26n
 .rt
-The thread is currently executing on an  \fBLWP\fR.
+The thread is currently executing on an 
+.BR LWP .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_ZOMBIE\fR
+.B TD_THR_ZOMBIE
 .ad
 .RS 26n
 .rt
 The thread has exited, but it has not yet been deallocated by a call to
-\fBthr_join\fR(3C). 
+.BR thr_join (3C).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTD_THR_SLEEP\fR
+.B TD_THR_SLEEP
 .ad
 .RS 26n
 .rt
@@ -205,56 +231,91 @@ The thread is not currently runnable.
 .ne 2
 .mk
 .na
-\fBTD_THR_STOPPED_ASLEEP\fR
+.B TD_THR_STOPPED_ASLEEP
 .ad
 .RS 26n
 .rt
-The thread is both blocked by  \fBTD_THR_SLEEP\fR and stopped by a call to
-\fBtd_thr_dbsuspend\fR(3C_DB).
+The thread is both blocked by 
+.B TD_THR_SLEEP
+and stopped by a call to
+.BR td_thr_dbsuspend (3C_DB).
 .RE
 
 .sp
 .LP
-The \fBti_db_suspended\fR member is non-zero if and only if this thread is
+The
+.B ti_db_suspended
+member is non-zero if and only if this thread is
 currently suspended because the controlling process has called
 \fBtd_thr_dbsuspend\fR on it.
 .sp
 .LP
-The \fBti_type\fR member is a type of thread.  It is either
+The
+.B ti_type
+member is a type of thread.  It is either
 \fBTD_THR_USER\fR for a user thread (one created by the application), or
 \fBTD_THR_SYSTEM\fR for one created by \fBlibc\fR.
 .sp
 .LP
-The \fBti_pc\fR member is the value of the thread's program counter,
-provided that the thread's \fBti_state\fR value is \fBTD_THR_SLEEP\fR,
-\fBTD_THR_STOPPED\fR, or \fBTD_THR_STOPPED_ASLEEP\fR. Otherwise, the value
+The
+.B ti_pc
+member is the value of the thread's program counter,
+provided that the thread's
+.B ti_state
+value is
+.BR TD_THR_SLEEP ,
+.BR TD_THR_STOPPED ,
+or
+.BR TD_THR_STOPPED_ASLEEP .
+Otherwise, the value
 of this member is undefined.
 .sp
 .LP
-The \fBti_sp\fR member is the value of the thread's stack pointer, provided
-that the thread's \fBti_state\fR value is \fBTD_THR_SLEEP\fR,
-\fBTD_THR_STOPPED\fR, or \fBTD_THR_STOPPED_ASLEEP\fR. Otherwise, the value
+The
+.B ti_sp
+member is the value of the thread's stack pointer, provided
+that the thread's
+.B ti_state
+value is
+.BR TD_THR_SLEEP ,
+.BR TD_THR_STOPPED ,
+or
+.BR TD_THR_STOPPED_ASLEEP .
+Otherwise, the value
 of this member is undefined.
 .sp
 .LP
 The \fBti_flags\fR member is a set of special flags used by \fBlibc\fR,
-currently of use only to those debugging \fBlibc\fR.
+currently of use only to those debugging
+.BR libc .
 .sp
 .LP
-The \fBti_pri\fR member is the thread's priority as it would be returned by
-\fBthr_getprio\fR(3C).
+The
+.B ti_pri
+member is the thread's priority as it would be returned by
+.BR thr_getprio (3C).
 .sp
 .LP
-The \fBti_lid\fR member is the ID of the \fBLWP\fR executing this thread,
-or the ID of the  \fBLWP\fR that last executed this thread, if this thread
+The
+.B ti_lid
+member is the ID of the
+.B LWP
+executing this thread,
+or the ID of the 
+.B LWP
+that last executed this thread, if this thread
 is not currently assigned to an\fBLWP\fR.
 .sp
 .LP
-The \fBti_sigmask\fR member is this thread's signal mask. See
-\fBthr_sigsetmask\fR(3C).
+The
+.B ti_sigmask
+member is this thread's signal mask. See
+.BR thr_sigsetmask (3C).
 .sp
 .LP
-The \fBti_traceme\fR member is non-zero if and only if event tracing for
+The
+.B ti_traceme
+member is non-zero if and only if event tracing for
 this thread is on.
 .sp
 .LP
@@ -267,14 +328,16 @@ inheritance the thread is currently running at a priority other than its
 regular priority.
 .sp
 .LP
-The \fBti_events\fR member is the bitmap of events enabled for this
+The
+.B ti_events
+member is the bitmap of events enabled for this
 thread.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBTD_OK\fR
+.B TD_OK
 .ad
 .RS 12n
 .rt
@@ -285,7 +348,7 @@ The call completed successfully.
 .ne 2
 .mk
 .na
-\fBTD_BADTH\fR
+.B TD_BADTH
 .ad
 .RS 12n
 .rt
@@ -296,7 +359,7 @@ An invalid thread handle was passed in.
 .ne 2
 .mk
 .na
-\fBTD_DBERR\fR
+.B TD_DBERR
 .ad
 .RS 12n
 .rt
@@ -307,7 +370,7 @@ A call to one of the imported interface routines failed.
 .ne 2
 .mk
 .na
-\fBTD_ERR\fR
+.B TD_ERR
 .ad
 .RS 12n
 .rt
@@ -317,7 +380,9 @@ The call did not complete successfully.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -334,7 +399,11 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibc_db\fR(3LIB), \fBtd_ta_thr_iter\fR(3C_DB),
+.BR libc_db (3LIB),
+.BR td_ta_thr_iter (3C_DB),
 \fBtd_thr_dbsuspend\fR(3C_DB), \fBthr_create\fR(3C), \fBthr_getprio\fR(3C),
-\fBthr_join\fR(3C), \fBthr_sigsetmask\fR(3C), \fBthr_suspend\fR(3C),
-\fBattributes\fR(5), \fBthreads\fR(5)
+.BR thr_join (3C),
+.BR thr_sigsetmask (3C),
+.BR thr_suspend (3C),
+.BR attributes (5),
+.BR threads (5)

@@ -63,53 +63,104 @@ group values.
 .sp
 .LP
 A multicast filter is described by a filter mode, which is
-\fBMODE_INCLUDE\fR or \fBMODE_EXCLUDE\fR, and a list of source addresses
+\fBMODE_INCLUDE\fR or
+.BR MODE_EXCLUDE ,
+and a list of source addresses
 which are filtered. If a group is simply joined with no source address
-restrictions, the filter mode is \fBMODE_EXCLUDE\fR and the source list is
+restrictions, the filter mode is
+.B MODE_EXCLUDE
+and the source list is
 empty.
 .sp
 .LP
 The \fBgetsourcefilter()\fR and \fBsetsourcefilter()\fR functions are
-protocol-independent. They can be used on either \fBPF_INET\fR or
+protocol-independent. They can be used on either
+.B PF_INET
+or
 \fBPF_INET6\fR sockets. The \fBgetipv4sourcefilter()\fR and
 \fBsetipv4sourcefilter()\fR functions are IPv4-specific. They must be used
-only on \fBPF_INET\fR sockets.
+only on
+.B PF_INET
+sockets.
 .sp
 .LP
 For the protocol-independent functions, the first four arguments identify
-the socket, interface, multicast group tuple values. The argument \fIs\fR is
-an open socket of type \fBSOCK_DGRAM\fR or \fBSOCK_RAW\fR. The
+the socket, interface, multicast group tuple values. The argument
+.I s
+is
+an open socket of type
+.B SOCK_DGRAM
+or
+.BR SOCK_RAW .
+The
 \fIinterface\fR argument is the interface index. The interface name can be
 mapped to the index using \fBif_nametoindex\fR(3SOCKET). The \fIgroup\fR
-points to either a \fBsockaddr_in\fR containing an IPv4 multicast address if
-the socket is \fBPF_INET\fR or a \fBsockaddr_in6\fR containing an IPv6
-multicast address if the socket is \fBPF_INET6\fR. The \fIgrouplen\fR is the
-size of the structure pointed to by \fIgroup\fR.
+points to either a
+.B sockaddr_in
+containing an IPv4 multicast address if
+the socket is
+.B PF_INET
+or a
+.B sockaddr_in6
+containing an IPv6
+multicast address if the socket is
+.BR PF_INET6 .
+The
+.I grouplen
+is the
+size of the structure pointed to by
+.IR group .
 .sp
 .LP
 For the IPv4-specific functions, the first three arguments identify the
 same socket, interface, multicast group tuple values. The argument \fIs\fR
-is an open socket of type \fBSOCK_DGRAM\fR or \fBSOCK_RAW\fR and protocol
-family \fBPF_INET\fR. The \fIinterface\fR argument is the IPv4 address
-assigned to the local interface. The \fIgroup\fR argument is the IPv4
+is an open socket of type
+.B SOCK_DGRAM
+or
+.B SOCK_RAW
+and protocol
+family
+.BR PF_INET .
+The \fIinterface\fR argument is the IPv4 address
+assigned to the local interface. The
+.I group
+argument is the IPv4
 multicast address.
 .sp
 .LP
 The \fBgetsourcefilter()\fR and \fBgetipv4sourcefilter()\fR functions
 retrieve the current filter for the given tuple consisting of socket,
 interface, and multicast group values. On successful return, \fIfmode\fR
-contains either \fBMODE_INCLUDE\fR or \fBMODE_EXCLUDE\fR, indicating the
-filter mode. On input, the \fInumsrc\fR argument holds the number of
-addresses that can fit in the \fIslist\fR array.  On return, \fIslist\fR
-contains as many addresses as fit, while \fInumsrc\fR contains the total
+contains either
+.B MODE_INCLUDE
+or
+.BR MODE_EXCLUDE ,
+indicating the
+filter mode. On input, the
+.I numsrc
+argument holds the number of
+addresses that can fit in the
+.I slist
+.RI "array.  On return," " slist"
+contains as many addresses as fit, while
+.I numsrc
+contains the total
 number of source addresses in the filter. It is possible that \fInumsrc\fR
-can contain a number larger than the number of addresses in the \fIslist\fR
+can contain a number larger than the number of addresses in the
+.IR slist
 array. An application might determine the required buffer size by calling
 \fBgetsourcefilter()\fR with \fInumsrc\fR containing \fB0\fR and \fIslist\fR
-a \fBNULL\fR pointer. On return, \fInumsrc\fR contains the number of
-elements that the \fIslist\fR buffer must be able to hold. Alternatively,
+a
+.B NULL
+pointer. On return,
+.I numsrc
+contains the number of
+elements that the
+.I slist
+buffer must be able to hold. Alternatively,
 the maximum number of source addresses allowed by this implementation is
-defined in \fB<netinet/in.h>\fR:
+defined in
+.BR <netinet/in.h> :
 .sp
 .in +2
 .nf
@@ -121,15 +172,28 @@ defined in \fB<netinet/in.h>\fR:
 .LP
 The \fBsetsourcefilter()\fR and \fBsetipv4sourcefilter\fR functions replace
 the current filter with the filter specified in the arguments \fIfmode\fR,
-\fInumsrc\fR, and \fIslist\fR. The \fIfmode\fR argument must be set to
-either \fBMODE_INCLUDE\fR or \fBMODE_EXCLUDE\fR. The \fInumsrc\fR argument
-is the number of addresses in the \fIslist\fR array. The \fIslist\fR
+.IR numsrc ,
+and
+.IR slist .
+The \fIfmode\fR argument must be set to
+either
+.B MODE_INCLUDE
+or
+.BR MODE_EXCLUDE .
+The
+.I numsrc
+argument
+is the number of addresses in the
+.I slist
+.RI "array. The" " slist"
 argument points to the array of source addresses to be included or excluded,
 depending on the \fIfmode\fR value.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, all four functions return \fB0\fR. Otherwise, they return
+If successful, all four functions return
+.BR 0 .
+Otherwise, they return
 \fB\(mi1\fR and set \fBerrno\fR to indicate the error.
 .SH ERRORS
 .sp
@@ -139,41 +203,52 @@ These functions will fail if:
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
-The \fIs\fR argument is not a valid descriptor.
+The
+.I s
+argument is not a valid descriptor.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEAFNOSUPPORT\fR
+.B EAFNOSUPPORT
 .ad
 .RS 16n
 .rt
-The address family of the passed-in \fIsockaddr\fR is not \fBAF_INET\fR or
-\fBAF_INET6\fR.
+The address family of the passed-in
+.I sockaddr
+is not
+.B AF_INET
+or
+.BR AF_INET6 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOPROTOOPT\fR
+.B ENOPROTOOPT
 .ad
 .RS 16n
 .rt
-The socket \fIs\fR is not of type \fBSOCK_DGRAM\fR or \fBSOCK_RAW\fR.
+The socket
+.I s
+is not of type
+.B SOCK_DGRAM
+or
+.BR SOCK_RAW .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOPROTOOPT\fR
+.B ENOPROTOOPT
 .ad
 .RS 16n
 .rt
@@ -185,11 +260,13 @@ family of the socket.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
-Insufficient \fBSTREAMS\fR resources available for the operation to
+Insufficient
+.B STREAMS
+resources available for the operation to
 complete.
 .RE
 
@@ -197,7 +274,7 @@ complete.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 16n
 .rt
@@ -213,13 +290,15 @@ fail if:
 .ne 2
 .mk
 .na
-\fBEADDRNOTAVAIL\fR
+.B EADDRNOTAVAIL
 .ad
 .RS 17n
 .rt
 The tuple consisting of socket, interface, and multicast group values does
-not exist; \fIgroup\fR is not being listened to on \fIinterface\fR by
-\fIsocket\fR.
+not exist;
+.I group
+is not being listened to on \fIinterface\fR by
+.IR socket .
 .RE
 
 .sp
@@ -230,7 +309,7 @@ fail in the following additional case:
 .ne 2
 .mk
 .na
-\fBENOBUFS\fR
+.B ENOBUFS
 .ad
 .RS 11n
 .rt
@@ -240,7 +319,9 @@ The source filter list is larger than that allowed by the implementation.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp

@@ -54,23 +54,37 @@ fgetattr, fsetattr, getattrat, setattrat \- get and set system attributes
 .LP
 The \fBfgetattr()\fR function obtains an nvlist of system attribute
 information about an open file object specified by the file descriptor
-\fIfildes\fR, obtained from a successful \fBopen\fR(2), \fBcreat\fR(2),
-\fBdup\fR(2), \fBfcntl\fR(2), or \fBpipe\fR(2) function.
+\fIfildes\fR, obtained from a successful
+.BR open (2),
+.BR creat (2),
+.BR dup (2),
+\fBfcntl\fR(2), or
+.BR pipe (2)
+function.
 .sp
 .LP
-The \fBgetattrat()\fR function first opens the extended attribute file
+The
+.B getattrat()
+function first opens the extended attribute file
 specified by \fIfilename\fR in the already opened file directory object
-specified by \fIfildes\fR. It then retrieves an nvlist of system attributes
+specified by
+.IR fildes .
+It then retrieves an nvlist of system attributes
 and their values from \fIfilename\fR.
 .sp
 .LP
-The \fIresponse\fR argument is allocated by either \fBfgetattr()\fR or
-\fBgetattrat()\fR. The application must call \fBnvlist_free\fR(3NVPAIR) to
+The
+.I response
+argument is allocated by either \fBfgetattr()\fR or
+.BR getattrat() .
+The application must call \fBnvlist_free\fR(3NVPAIR) to
 deallocate the memory.
 .sp
 .LP
 Upon successful completion, the nvlist will contain one nvpair for each of
-the system attributes associated with \fIview\fR.  The list of views and the
+the system attributes associated with
+.IR view .
+The list of views and the
 attributes associated with each view are listed below.  Not all underlying
 file systems support all views and all attributes. The nvlist will not
 contain an nvpair for any attribute not supported by the underlying
@@ -79,12 +93,22 @@ filesystem.
 .LP
 The \fBfsetattr()\fR function uses the nvlist pointed to by \fIrequest\fR
 to update one or more of the system attribute's information about an open
-file object specified by the file descriptor \fIfildes\fR, obtained from a
-successful \fBopen()\fR, \fBcreat()\fR, \fBdup()\fR, \fBfcntl()\fR, or
+file object specified by the file descriptor
+.IR fildes ,
+obtained from a
+successful
+.BR open() ,
+.BR creat() ,
+.BR dup() ,
+\fBfcntl()\fR, or
 \fBpipe()\fR function. The \fBsetattrat()\fR function first opens the
 extended attribute file specified by \fIfilename\fR in the already opened
-file directory object specified by \fIfildes\fR. It then uses the nvlist
-pointed to by \fIrequest\fR to update one or more of the system attributes
+file directory object specified by
+.IR fildes .
+It then uses the nvlist
+pointed to by
+.I request
+to update one or more of the system attributes
 of filename.
 .sp
 .LP
@@ -134,13 +158,17 @@ Upon successful completion, 0 is returned. Otherwise, -1  is returned and
 .SH ERRORS
 .sp
 .LP
-The \fBfgetattr()\fR, \fBgetattrat()\fR, \fBfsetattr()\fR, and
-\fBsetattrat()\fR, functions will fail if:
+The
+.BR fgetattr() ,
+.BR getattrat() ,
+\fBfsetattr()\fR, and
+.BR setattrat() ,
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -151,7 +179,7 @@ The \fIfildes\fR argument is not a valid open file descriptor.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -162,7 +190,7 @@ The underlying file system does not support extended file attributes.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 10n
 .rt
@@ -171,12 +199,16 @@ An error occurred while reading from the file system.
 
 .sp
 .LP
-The \fBgetattrat()\fR and \fBsetattrat()\fR functions will fail if:
+The
+.B getattrat()
+and
+.B setattrat()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
@@ -187,7 +219,7 @@ Search permission or write permission for \fIfilename\fR is denied.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 10n
 .rt
@@ -199,7 +231,7 @@ attribute directory represented by \fIfildes\fR.
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
@@ -208,7 +240,7 @@ There are insufficient privileges to manipulate attributes.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRObtain an nvlist of readonly system attributes for an open
+\fBExample 1\fR Obtain an nvlist of readonly system attributes for an open
 file object.
 .sp
 .LP
@@ -239,11 +271,13 @@ nvlist_free(response);
 .in -2
 
 .LP
-\fBExample 2 \fRSet the \fBA_READONLY\fR system attribute on an open file
+\fBExample 2\fR Set the \fBA_READONLY\fR system attribute on an open file
 object.
 .sp
 .LP
-Use \fBfsetattr()\fR to set the \fBA_OPAQUE\fR system attribute on the open
+Use \fBfsetattr()\fR to set the
+.B A_OPAQUE
+system attribute on the open
 file object represented by file descriptor \fIfildes\fR.
 
 .sp
@@ -265,11 +299,13 @@ if (fsetattr(fildes, XATTR_VIEW_READWRITE, request)) {
 .in -2
 
 .LP
-\fBExample 3 \fRObtain an nvlist of the read/write system attributes for a
+\fBExample 3\fR Obtain an nvlist of the read/write system attributes for a
 file.
 .sp
 .LP
-Use \fBgetattrat()\fR to obtain an nvlist of the read/write system
+Use
+.B getattrat()
+to obtain an nvlist of the read/write system
 attributes for the file named \fBxattrfile\fR in the extended attribute
 directory of the open file represented by file descriptor \fIfildes\fR.
 
@@ -292,10 +328,14 @@ nvlist_free(response);
 .in -2
 
 .LP
-\fBExample 4 \fRSet the \fBA_APPENDONLY\fR system attribute on a file.
+\fBExample 4\fR Set the \fBA_APPENDONLY\fR system attribute on a file.
 .sp
 .LP
-Use \fBsetattrat()\fR to set the \fBA_APPENDONLY\fR system attribute on the
+Use
+.B setattrat()
+to set the
+.B A_APPENDONLY
+system attribute on the
 file named \fBfile\fR in the extended attribute directory of the open file
 represented by file descriptor \fIfildes\fR.
 
@@ -320,7 +360,9 @@ if (setattrat(fildes, XATTR_VIEW_READWRITE, "file", request)) {
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -339,6 +381,11 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBcreat\fR(2), \fBdup\fR(2), \fBfcntl\fR(2), \fBfstat\fR(2),
-\fBfstatat\fR(2), \fBopen\fR(2), \fBpipe\fR(2), \fBlibnvpair\fR(3LIB),
-\fBattributes\fR(5), \fBfsattr\fR(5)
+.BR creat (2),
+.BR dup (2),
+\fBfcntl\fR(2), \fBfstat\fR(2),
+\fBfstatat\fR(2), \fBopen\fR(2),
+.BR pipe (2),
+.BR libnvpair (3LIB),
+.BR attributes (5),
+\fBfsattr\fR(5)

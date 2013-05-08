@@ -43,38 +43,67 @@ stream to a remote command
 .SH DESCRIPTION
 .sp
 .LP
-The \fBrcmd()\fR function is used by the superuser to execute a command on
+The
+.B rcmd()
+function is used by the superuser to execute a command on
 a remote machine with an authentication scheme based on reserved port
-numbers. An \fBAF_INET\fR socket is returned with \fBrcmd()\fR. The
-\fBrcmd_af()\fR function supports \fBAF_INET\fR, \fBAF_INET6\fR or
+numbers. An
+.B AF_INET
+socket is returned with
+.BR rcmd() .
+The
+\fBrcmd_af()\fR function supports
+.BR AF_INET ,
+\fBAF_INET6\fR or
 \fBAF_UNSPEC\fR for the address family. An application can choose which type
-of socket is returned by passing \fBAF_INET\fR or \fBAF_INET6\fR as the
-address family. The use of \fBAF_UNSPEC\fR means that the caller will accept
-any address family. Choosing \fBAF_UNSPEC\fR provides a socket that best
+of socket is returned by passing
+.B AF_INET
+or
+.B AF_INET6
+as the
+address family. The use of
+.B AF_UNSPEC
+means that the caller will accept
+any address family. Choosing
+.B AF_UNSPEC
+provides a socket that best
 suits the connectivity to the remote host.
 .sp
 .LP
-The \fBrresvport()\fR function returns a descriptor to a socket with an
+The
+.B rresvport()
+function returns a descriptor to a socket with an
 address in the privileged port space. The \fBrresvport_af()\fR function is
-the equivalent to \fBrresvport()\fR, except that you can choose
+the equivalent to
+.BR rresvport() ,
+except that you can choose
 \fBAF_INET\fR or \fBAF_INET6\fR as the socket address family to be returned
-by \fBrresvport_af()\fR. \fBAF_UNSPEC\fR does not apply to the
+by
+.BR rresvport_af() .
+\fBAF_UNSPEC\fR does not apply to the
 \fBrresvport()\fR function.
 .sp
 .LP
-The \fBruserok()\fR function is a routine used by servers to authenticate
-clients that request as service with \fBrcmd\fR.
+The
+.B ruserok()
+function is a routine used by servers to authenticate
+clients that request as service with
+.BR rcmd .
 .sp
 .LP
 All of these functions are present in the same file and are used by the
-\fBin.rshd\fR(1M) server among others.
+.BR in.rshd (1M)
+server among others.
 .sp
 .LP
-The \fBrcmd()\fR and \fBrcmd_af()\fR functions look up the host
+The
+.B rcmd()
+and \fBrcmd_af()\fR functions look up the host
 \fI*ahost\fR using \fBgetaddrinfo\fR(3SOCKET) and return \fB\(mi1\fR if the
 host does not exist. Otherwise, *\fIahost\fR is set to the standard name of
 the host and a connection is established to a server residing at the
-Internet port \fIinport\fR.
+Internet port
+.IR inport .
 .sp
 .LP
 If the connection succeeds, a socket in the Internet domain of type
@@ -91,30 +120,47 @@ for sending arbitrary signals to the remote process, other than possibly
 sending out-of-band data.
 .sp
 .LP
-The protocol is described in detail in \fBin.rshd\fR(1M).
+The protocol is described in detail in
+.BR in.rshd (1M).
 .sp
 .LP
-The \fBrresvport()\fR and \fBrresvport_af()\fR functions are used to obtain
+The
+.B rresvport()
+and \fBrresvport_af()\fR functions are used to obtain
 a socket bound to a privileged port number. The socket is suitable for use
-by \fBrcmd()\fR and \fBrresvport_af()\fR and several other routines.
+by
+.B rcmd()
+and \fBrresvport_af()\fR and several other routines.
 Privileged Internet ports are those in the range 1 to 1023. Only the
 superuser is allowed to bind a socket to a privileged port number. The
-application must pass in \fIport\fR, which must be in the range 512 to 1023.
+application must pass in
+.IR port ,
+which must be in the range 512 to 1023.
 The system first tries to bind to that port number.  If it fails, the system
 then tries to bind to another unused privileged port, if one is available.
 
 .sp
 .LP
-The \fBruserok()\fR function takes a remote host name returned by the
+The
+.B ruserok()
+function takes a remote host name returned by the
 \fBgethostbyaddr()\fR function with two user names and a flag to indicate
 whether the local user's name is that of the superuser. See
-\fBgethostbyname\fR(3NSL). The \fBruserok()\fR function then checks the
-files \fB/etc/hosts.equiv\fR and possibly \fB\&.rhosts\fR in the local
+.BR gethostbyname (3NSL).
+The
+.B ruserok()
+function then checks the
+files
+.B /etc/hosts.equiv
+and possibly \fB\&.rhosts\fR in the local
 user's home directory to see if the request for service is allowed. A
 \fB0\fR value is returned if the machine name is listed in the
 \fB/etc/hosts.equiv\fR file, or if the host and remote user name are found
 in the \fB\&.rhosts\fR file. Otherwise, the \fBruserok()\fR function returns
-\fB\(mi1\fR\&. If the superuser flag is \fB1\fR, the \fB/etc/hosts.equiv\fR
+\fB\(mi1\fR\&. If the superuser flag is
+.BR 1 ,
+the
+.BR /etc/hosts.equiv
 is not checked.
 .sp
 .LP
@@ -123,21 +169,27 @@ use."
 .SH RETURN VALUES
 .sp
 .LP
-The \fBrcmd()\fR and \fBrcmd_af()\fR functions return a valid socket
+The
+.B rcmd()
+and \fBrcmd_af()\fR functions return a valid socket
 descriptor upon success. The functions returns \fB\(mi1\fR upon error and
 print a diagnostic message to standard error.
 .sp
 .LP
-The \fBrresvport()\fR and \fBrresvport_af()\fR functions return a valid,
+The
+.B rresvport()
+and \fBrresvport_af()\fR functions return a valid,
 bound socket descriptor upon success. The functions return \fB\(mi1\fR upon
-error with the global value \fIerrno\fR set according to the reason for
+error with the global value
+.I errno
+set according to the reason for
 failure.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/hosts.equiv\fR
+.B /etc/hosts.equiv
 .ad
 .RS 20n
 .rt
@@ -148,7 +200,7 @@ system trusted hosts and users
 .ne 2
 .mk
 .na
-\fB~/.rhosts\fR
+.B ~/.rhosts
 .ad
 .RS 20n
 .rt
@@ -158,7 +210,9 @@ user's trusted hosts and users
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -179,6 +233,11 @@ should be called only from the main thread.
 .SH SEE ALSO
 .sp
 .LP
-\fBrlogin\fR(1), \fBrsh\fR(1), \fBin.rexecd\fR(1M), \fBin.rshd\fR(1M),
-\fBIntro\fR(2), \fBgetaddrinfo\fR(3SOCKET), \fBgethostbyname\fR(3NSL),
-\fBrexec\fR(3SOCKET), \fBattributes\fR(5)
+.BR rlogin (1),
+.BR rsh (1),
+.BR in.rexecd (1M),
+.BR in.rshd (1M),
+.BR Intro (2),
+\fBgetaddrinfo\fR(3SOCKET), \fBgethostbyname\fR(3NSL),
+.BR rexec (3SOCKET),
+.BR attributes (5)

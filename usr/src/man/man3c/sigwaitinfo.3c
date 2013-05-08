@@ -69,43 +69,79 @@ sigwaitinfo, sigtimedwait \- wait for queued signals
 .sp
 .LP
 The  \fBsigwaitinfo()\fR function selects the pending signal from the set
-specified by \fBset\fR. Should any of multiple pending signals in the range
+specified by
+.BR set .
+Should any of multiple pending signals in the range
 \fBSIGRTMIN\fR to \fBSIGRTMAX\fR be selected, it will be the lowest numbered
 one. The selection order between realtime and non-realtime signals, or
 between multiple pending non-realtime signals, is unspecified. If no signal
-in \fBset\fR is pending at the time of the call, the calling thread is
-suspended until one or more signals in \fBset\fR become pending or until it
+in
+.B set
+is pending at the time of the call, the calling thread is
+suspended until one or more signals in
+.B set
+become pending or until it
 is interrupted by an unblocked, caught signal.
 .sp
 .LP
 The  \fBsigwaitinfo()\fR function behaves the same as the \fBsigwait\fR(2)
-function if the \fIinfo\fR argument is \fINULL\fR. If the \fIinfo\fR
+function if the \fIinfo\fR argument is
+.IR NULL .
+If the \fIinfo\fR
 argument is non-\fINULL\fR, the \fBsigwaitinfo()\fR function behaves the
-same as \fBsigwait\fR(2), except that the selected signal number is stored
-in the \fIsi_signo\fR member, and the cause of the signal is stored in the
+same as
+.BR sigwait (2),
+except that the selected signal number is stored
+in the
+.I si_signo
+member, and the cause of the signal is stored in the
 \fIsi_code\fR member. If any value is queued to the selected signal, the
 first such queued value is dequeued and, if the \fIinfo\fR argument is
 non-\fINULL\fR, the value is stored in the \fIsi_value\fR member of
 \fIinfo\fR. The system resource used to queue the signal will be released
 and made available to queue other signals. If no value is queued, the
-content of the \fIsi_value\fR member is undefined. If no further signals are
+content of the
+.I si_value
+member is undefined. If no further signals are
 queued for the selected signal, the pending indication for that signal will
-be reset. If the value of the \fBsi_code\fR member is \fBSI_NOINFO\fR, only
-the \fBsi_signo\fR member of \fBsiginfo_t\fR is meaningful, and the value of
+be reset. If the value of the
+.B si_code
+member is
+.BR SI_NOINFO ,
+only
+the
+.B si_signo
+member of \fBsiginfo_t\fR is meaningful, and the value of
 all other members is unspecified.
 .sp
 .LP
-The  \fBsigtimedwait()\fR function behaves the same as \fBsigwaitinfo()\fR
-except that if none of the signals specified by \fBset\fR are pending,
+The 
+.B sigtimedwait()
+function behaves the same as \fBsigwaitinfo()\fR
+except that if none of the signals specified by
+.B set
+are pending,
 \fBsigtimedwait()\fR waits for the time interval specified in the
-\fBtimespec\fR structure referenced by \fItimeout\fR. If the \fBtimespec\fR
-structure pointed to by \fItimeout\fR is zero-valued and if none of the
-signals specified by \fBset\fR are pending, then \fBsigtimedwait()\fR
-returns immediately with an error. If \fItimeout\fR is the \fINULL\fR
+\fBtimespec\fR structure referenced by
+.IR timeout .
+If the
+.BR timespec
+structure pointed to by
+.I timeout
+is zero-valued and if none of the
+signals specified by
+.B set
+.RB "are pending, then" " sigtimedwait()"
+returns immediately with an error. If
+.I timeout
+is the
+.IR NULL
 pointer, the behavior is unspecified.
 .sp
 .LP
-If, while \fBsigwaitinfo()\fR or \fBsigtimedwait()\fR is waiting, a signal
+If, while \fBsigwaitinfo()\fR or
+.B sigtimedwait()
+is waiting, a signal
 occurs which is eligible for delivery (that is, not blocked by the process
 signal mask), that signal is handled asynchronously and the wait is
 interrupted.
@@ -115,7 +151,9 @@ interrupted.
 Upon successful completion (that is, one of the signals specified by
 \fIset\fR is pending or is generated) \fBsigwaitinfo()\fR and
 \fBsigtimedwait()\fR will return the selected signal number. Otherwise, the
-function returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
+function returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -124,7 +162,7 @@ The \fBsigwaitinfo()\fR and \fBsigtimedwait()\fR functions will fail if:
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 10n
 .rt
@@ -135,7 +173,7 @@ The wait was interrupted by an unblocked, caught signal.
 .ne 2
 .mk
 .na
-\fBENOSYS\fR
+.B ENOSYS
 .ad
 .RS 10n
 .rt
@@ -145,16 +183,20 @@ supported.
 
 .sp
 .LP
-The \fBsigtimedwait()\fR function will fail if:
+The
+.B sigtimedwait()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
-No signal specified by \fBset\fR was generated within the specified timeout
+No signal specified by
+.B set
+was generated within the specified timeout
 period.
 .RE
 
@@ -165,34 +207,46 @@ The \fBsigwaitinfo()\fR and \fBsigtimedwait()\fR functions may fail if:
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-The \fIset\fR, \fIinfo\fR, or \fItimeout\fR argument points to an invalid
+The
+.IR set ,
+\fIinfo\fR, or \fItimeout\fR argument points to an invalid
 address.
 .RE
 
 .sp
 .LP
-The \fBsigtimedwait()\fR function may fail if:
+The
+.B sigtimedwait()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fItimeout\fR argument specified a \fBtv_nsec\fR value less than zero
+The
+.I timeout
+argument specified a
+.B tv_nsec
+value less than zero
 or greater than or equal to 1000 million. The system only checks for this
-error if no signal is pending in \fIset\fR and it is necessary to wait.
+error if no signal is pending in
+.I set
+and it is necessary to wait.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -213,6 +267,10 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBtime\fR(2), \fBsigqueue\fR(3C), \fBsiginfo.h\fR(3HEAD),
-\fBsignal.h\fR(3HEAD), \fBtime.h\fR(3HEAD), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR time (2),
+.BR sigqueue (3C),
+\fBsiginfo.h\fR(3HEAD),
+.BR signal.h (3HEAD),
+.BR time.h (3HEAD),
+.BR attributes (5),
+.BR standards (5)

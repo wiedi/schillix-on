@@ -64,22 +64,48 @@ cc -mt [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. -lpthread [ \fIlibrary\fR.\|.\|. 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpthread_create()\fR function is used to create a new thread, with
-attributes specified by \fIattr\fR, within a process. If \fIattr\fR is
+The
+.B pthread_create()
+function is used to create a new thread, with
+attributes specified by
+.IR attr ,
+within a process. If
+.I attr
+is
 \fINULL,\fR the default attributes are used. (See
-\fBpthread_attr_init\fR(3C)). If the attributes specified by \fIattr\fR are
+.BR pthread_attr_init (3C)).
+If the attributes specified by
+.I attr
+are
 modified later, the thread's attributes are not affected. Upon successful
-completion, \fBpthread_create()\fR stores the  \fBID\fR of the created
-thread in the location referenced by \fIthread\fR.
+completion,
+.B pthread_create()
+stores the 
+.B ID
+of the created
+thread in the location referenced by
+.IR thread .
 .sp
 .LP
-The thread is created executing \fIstart_routine\fR with \fIarg\fR as its
-sole argument. If the \fIstart_routine\fR returns, the effect is as if there
-was an implicit call to \fBpthread_exit()\fR using the return value of
+The thread is created executing
+.I start_routine
+with
+.I arg
+as its
+sole argument. If the
+.I start_routine
+returns, the effect is as if there
+was an implicit call to
+.B pthread_exit()
+using the return value of
 \fIstart_routine\fR as the exit status. Note that the thread in which
 \fBmain()\fR was originally invoked differs from this. When it returns from
-\fBmain()\fR, the effect is as if there was an implicit call to \fBexit()\fR
-using the return value of \fBmain()\fR as the exit status.
+.BR main() ,
+the effect is as if there was an implicit call to
+.BR exit()
+using the return value of
+.B main()
+as the exit status.
 .sp
 .LP
 The signal state of the new thread is initialised as follows:
@@ -140,36 +166,53 @@ pthread_create(&tid, &attr, start_func, arg);
 .sp
 .LP
 To customize the attributes for POSIX threads, see
-\fBpthread_attr_init\fR(3C). 
+.BR pthread_attr_init (3C).
 .sp
 .LP
-A new thread created with \fBpthread_create()\fR uses the stack specified
-by the \fIstackaddr\fR attribute, and the stack continues for the number of
-bytes specified by the \fIstacksize\fR attribute. By default, the stack size
+A new thread created with
+.B pthread_create()
+uses the stack specified
+by the
+.I stackaddr
+attribute, and the stack continues for the number of
+bytes specified by the
+.I stacksize
+attribute. By default, the stack size
 is 1 megabyte for 32-bit processes and 2 megabyte for 64-bit processes (see
-\fBpthread_attr_setstacksize\fR(3C)). If the default is used for both the
+.BR pthread_attr_setstacksize (3C)).
+If the default is used for both the
 \fIstackaddr\fR and \fIstacksize\fR attributes, \fBpthread_create()\fR
 creates a stack for the new thread with at least 1 megabyte for 32-bit
 processes and 2 megabyte for 64-bit processes. (For customizing stack sizes,
-see \fBNOTES\fR).
+see
+.BR NOTES ).
 .sp
 .LP
-If \fBpthread_create()\fR fails, no new thread is created and the contents
-of the location referenced by \fIthread\fR are undefined.
+If
+.B pthread_create()
+fails, no new thread is created and the contents
+of the location referenced by
+.I thread
+are undefined.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, the \fBpthread_create()\fR function returns  \fB0\fR.
+If successful, the
+.B pthread_create()
+function returns 
+.BR 0 .
 Otherwise, an error number is returned to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The  \fBpthread_create()\fR function will fail if:
+The 
+.B pthread_create()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -182,18 +225,20 @@ system-imposed limit on the total number of threads in a process
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value specified by \fIattr\fR is invalid.
+The value specified by
+.I attr
+is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
@@ -203,12 +248,14 @@ scheduling parameters or scheduling policy.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExample of concurrency with multithreading
+\fBExample 1\fR Example of concurrency with multithreading
 .sp
 .LP
 The following is an example of concurrency with multithreading. Since POSIX
 threads and Solaris threads are fully compatible even within the same
-process, this example uses \fBpthread_create()\fR if you execute \fBa.out
+process, this example uses
+.B pthread_create()
+if you execute \fBa.out
 0\fR, or \fBthr_create()\fR if you execute \fBa.out 1\fR.
 
 .sp
@@ -228,7 +275,7 @@ The command-line to time this process is:
 .ne 2
 .mk
 .na
-\fBPOSIX threading\fR
+.B POSIX threading
 .ad
 .RS 21n
 .rt
@@ -239,7 +286,7 @@ The command-line to time this process is:
 .ne 2
 .mk
 .na
-\fBSolaris threading\fR
+.B Solaris threading
 .ad
 .RS 21n
 .rt
@@ -307,7 +354,9 @@ sleeping(void *arg)
 
 .sp
 .LP
-If \fBmain()\fR had not waited for the completion of the other threads
+If
+.B main()
+had not waited for the completion of the other threads
 (using \fBpthread_join\fR(3C) or \fBthr_join\fR(3C)), it would have
 continued to process concurrently until it reached the end of its routine
 and the entire process would have exited prematurely. See \fBexit\fR(2).
@@ -315,7 +364,9 @@ and the entire process would have exited prematurely. See \fBexit\fR(2).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -335,29 +386,41 @@ MT-LevelMT-Safe
 .sp
 .LP
 \fBfork\fR(2), \fBpthread_attr_init\fR(3C), \fBpthread_cancel\fR(3C),
-\fBpthread_exit\fR(3C), \fBpthread_join\fR(3C), \fBsysconf\fR(3C),
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR pthread_exit (3C),
+.BR pthread_join (3C),
+\fBsysconf\fR(3C),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
 Multithreaded application threads execute independently of each other, so
 their relative behavior is unpredictable. Therefore, it is possible for the
-thread executing \fBmain()\fR to finish before all other user application
+thread executing
+.B main()
+to finish before all other user application
 threads. The \fBpthread_join\fR(3C)function, on the other hand, must specify
 the terminating thread (IDs) for which it will wait.
 .sp
 .LP
 A user-specified stack size must be greater than the value
-\fBPTHREAD_STACK_MIN\fR. A minimum stack size may not accommodate the stack
-frame for the user thread function \fIstart_func\fR. If a stack size is
+.BR PTHREAD_STACK_MIN .
+A minimum stack size may not accommodate the stack
+frame for the user thread function
+.IR start_func .
+If a stack size is
 specified, it must accommodate \fIstart_func\fR requirements and the
 functions that it may call in turn, in addition to the minimum
 requirement.
 .sp
 .LP
 It is usually very difficult to determine the runtime stack requirements
-for a thread. \fBPTHREAD_STACK_MIN\fR specifies how much stack storage is
-required to execute a \fINULL\fR \fIstart_func\fR. The total runtime
+for a thread.
+.B PTHREAD_STACK_MIN
+specifies how much stack storage is
+required to execute a
+.IR "NULL start_func" .
+The total runtime
 requirements for stack storage are dependent on the storage required to do
 runtime linking, the amount of storage required by library runtimes (as
 \fBprintf()\fR) that your thread calls. Since these storage parameters are

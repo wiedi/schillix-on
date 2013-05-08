@@ -94,167 +94,351 @@ extern int *_nl_domain_bindings;
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgettext()\fR, \fBdgettext()\fR, and \fBdcgettext()\fR functions
-attempt to retrieve a target string based on the specified \fImsgid\fR
+The
+.BR gettext() ,
+.BR dgettext() ,
+and
+.B dcgettext()
+functions
+attempt to retrieve a target string based on the specified
+.IR msgid
 argument within the context of a specific domain and the current locale. The
-length of strings returned by \fBgettext()\fR,  \fBdgettext()\fR, and
+length of strings returned by
+.BR gettext() ,
+.BR dgettext() ,
+and
 \fBdcgettext()\fR is undetermined until the function is called. The
 \fImsgid\fR argument is a null-terminated string.
 .sp
 .LP
-The \fBngettext()\fR, \fBdngettext()\fR, and \fBdcngettext()\fR functions are
-equivalent to \fBgettext()\fR, \fBdgettext()\fR, and \fBdcgettext()\fR,
+The
+.BR ngettext() ,
+.BR dngettext() ,
+and
+.B dcngettext()
+functions are
+equivalent to
+.BR gettext() ,
+.BR dgettext() ,
+and
+.BR dcgettext() ,
 respectively, except for the handling of plural forms.  These functions work
 only with GNU-compatible message catalogues.  The \fBngettext()\fR,
-\fBdngettext()\fR, and \fBdcngettext()\fR functions search for the message
-string using the \fImsgid1\fR argument as the key and the \fIn\fR argument to
+.BR dngettext() ,
+and
+.B dcngettext()
+functions search for the message
+string using the
+.I msgid1
+argument as the key and the
+.I n
+argument to
 determine the plural form.  If no message catalogues are found, \fImsgid1\fR
-is returned if \fIn\fR == 1, otherwise \fImsgid2\fR is returned.
+is returned if
+.I n
+== 1, otherwise
+.I msgid2
+is returned.
 .sp
 .LP
-The \fBNLSPATH\fR environment variable (see \fBenviron\fR(5)) is searched
-first for the location of the  \fBLC_MESSAGES\fR catalogue. The setting of the
+The
+.B NLSPATH
+environment variable (see
+.BR environ (5))
+is searched
+first for the location of the 
+.B LC_MESSAGES
+catalogue. The setting of the
 \fBLC_MESSAGES\fR category of the current locale determines the locale used by
 \fBgettext()\fR and \fBdgettext()\fR for string retrieval. The \fIcategory\fR
 argument determines the locale used by \fBdcgettext(\|).\fR If \fBNLSPATH\fR
 is not defined and the current locale is "C", \fBgettext()\fR,
-\fBdgettext()\fR, and \fBdcgettext()\fR simply return the message string that
+.BR dgettext() ,
+and
+.B dcgettext()
+simply return the message string that
 was passed.  In a locale  other than "C", if \fBNLSPATH\fR is not defined or
 if a message catalogue is not found in any of the components specified by
-\fBNLSPATH\fR, the routines search for the message catalogue using the scheme
+.BR NLSPATH ,
+the routines search for the message catalogue using the scheme
 described in the following paragraph.
 .sp
 .LP
-The \fBLANGUAGE\fR environment variable is examined to determine the
-GNU-compatible message catalogues to be used. The value of \fBLANGUAGE\fR is a
+The
+.B LANGUAGE
+environment variable is examined to determine the
+GNU-compatible message catalogues to be used. The value of
+.B LANGUAGE
+is a
 list of locale names separated by a colon (':') character.  If \fBLANGUAGE\fR
 is defined, each locale name is tried in the specified order and if a
 GNU-compatible message catalogue is found, the message is returned.  If a
 GNU-compatible message catalogue is found but failed to find a corresponding
-\fImsgid\fR, the \fImsgid\fR string is return. If \fBLANGUAGE\fR is not
+.IR msgid ,
+the
+.I msgid
+string is return. If
+.B LANGUAGE
+is not
 defined or if a Solaris message catalogue is found or no GNU-compatible
-message catalogue is found in processing \fBLANGUAGE\fR, the pathname used to
+message catalogue is found in processing
+.BR LANGUAGE ,
+the pathname used to
 locate the message catalogue is
 \fIdirname\fR/\fIlocale\fR/\fIcategory\fR/\fIdomainname\fR.mo,
-where \fIdirname\fR is the directory specified by \fBbindtextdomain()\fR,
+where
+.I dirname
+is the directory specified by
+.BR bindtextdomain() ,
 \fIlocale\fR is a locale name, and \fIcategory\fR is either \fBLC_MESSAGES\fR
-if \fBgettext()\fR, \fBdgettext()\fR, \fBngettext()\fR, or \fBdngettext()\fR
-is called, or \fBLC_XXX\fR where the name is the same as the locale category
-name specified by the \fIcategory\fR argument to \fBdcgettext()\fR or
-\fBdcngettext()\fR.
+if
+.BR gettext() ,
+.BR dgettext() ,
+.BR ngettext() ,
+or
+.BR dngettext()
+is called, or
+.B LC_XXX
+where the name is the same as the locale category
+name specified by the
+.I category
+argument to
+.B dcgettext()
+or
+.BR dcngettext() .
 .sp
 .LP
-For \fBgettext()\fR and \fBngettext()\fR, the domain used is set by the last
-valid call to \fBtextdomain()\fR. If a valid call to \fBtextdomain()\fR has
-not been made, the default domain  (called \fBmessages\fR) is used.
+For
+.B gettext()
+and
+.BR ngettext() ,
+the domain used is set by the last
+valid call to
+.BR textdomain() .
+If a valid call to
+.B textdomain()
+has
+not been made, the default domain  (called
+.BR messages )
+is used.
 .sp
 .LP
-For \fBdgettext()\fR, \fBdcgettext()\fR, \fBdngettext()\fR, and
-\fBdcngettext()\fR, the domain used is specified by the \fIdomainname\fR
-argument. The \fIdomainname\fR argument is equivalent in syntax and meaning to
-the \fIdomainname\fR argument to \fBtextdomain()\fR, except that the selection
-of the domain is valid only for the duration of the \fBdgettext()\fR,
-\fBdcgettext()\fR, \fBdngettext()\fR, or \fBdcngettext()\fR function call.
+For
+.BR dgettext() ,
+.BR dcgettext() ,
+.BR dngettext() ,
+and
+.BR dcngettext() ,
+the domain used is specified by the
+.IR domainname
+argument. The
+.I domainname
+argument is equivalent in syntax and meaning to
+the
+.I domainname
+argument to
+.BR textdomain() ,
+except that the selection
+of the domain is valid only for the duration of the
+.BR dgettext() ,
+.BR dcgettext() ,
+.BR dngettext() ,
+or
+.B dcngettext()
+function call.
 .sp
 .LP
-The \fBtextdomain()\fR function sets or queries the name of the current
-domain of the active  \fBLC_MESSAGES\fR locale category. The \fIdomainname\fR
+The
+.B textdomain()
+function sets or queries the name of the current
+domain of the active 
+.B LC_MESSAGES
+.RI "locale category. The" " domainname"
 argument is a null-terminated string that can contain only the characters
 allowed in legal filenames.
 .sp
 .LP
-The \fIdomainname\fR argument is the unique name of a domain on the system.
+The
+.I domainname
+argument is the unique name of a domain on the system.
 If there are multiple versions of the same domain on one system, namespace
-collisions can be avoided by using  \fBbindtextdomain()\fR. If
+collisions can be avoided by using
+.BR bindtextdomain() .
+If
 \fBtextdomain()\fR is not called, a default domain is selected. The setting of
-domain made by the last valid call to \fBtextdomain()\fR remains valid across
+domain made by the last valid call to
+.B textdomain()
+remains valid across
 subsequent calls to  \fBsetlocale\fR(3C), and \fBgettext()\fR.
 .sp
 .LP
-The  \fIdomainname\fR argument is applied to the currently active
+The 
+.I domainname
+argument is applied to the currently active
 \fBLC_MESSAGES\fR locale.
 .sp
 .LP
 The current setting of the domain can be queried without affecting the
-current state of the domain by calling \fBtextdomain()\fR with
+current state of the domain by calling
+.B textdomain()
+with
 \fIdomainname\fR set to the null pointer. Calling \fBtextdomain()\fR with a
 \fIdomainname\fR argument of a null string sets the domain to the default
-domain (\fBmessages\fR).
+domain
+.RB ( messages ).
 .sp
 .LP
-The \fBbindtextdomain()\fR function binds the path predicate for a message
-domain \fIdomainname\fR to the value contained in \fIdirname\fR. If
+The
+.B bindtextdomain()
+function binds the path predicate for a message
+domain
+.I domainname
+to the value contained in
+.IR dirname .
+If
 \fIdomainname\fR is a non-empty string and has not been bound previously,
 \fBbindtextdomain()\fR binds  \fIdomainname\fR with  \fIdirname\fR.
 .sp
 .LP
-If  \fIdomainname\fR is a non-empty string and has been bound previously,
-\fBbindtextdomain()\fR replaces the old binding with  \fIdirname\fR. The
+If 
+.I domainname
+is a non-empty string and has been bound previously,
+\fBbindtextdomain()\fR replaces the old binding with 
+.IR dirname .
+The
 \fIdirname\fR argument can be an absolute or relative pathname being resolved
-when \fBgettext()\fR, \fBdgettext()\fR, or \fBdcgettext()\fR are called. If
+when
+.BR gettext() ,
+.BR dgettext() ,
+or
+.B dcgettext()
+are called. If
 \fIdomainname\fR is a null pointer or an empty string,  \fBbindtextdomain()\fR
-returns \fINULL.\fR User defined domain names cannot begin with the string
-\fBSYS_\fR. Domain names beginning with this string are reserved for system
+returns
+.I NULL.
+User defined domain names cannot begin with the string
+.BR SYS_ .
+Domain names beginning with this string are reserved for system
 use.
 .sp
 .LP
-The \fBbind_textdomain_codeset()\fR function can be used to specify the
-output codeset for message catalogues for domain \fIdomainname\fR.  The
+The
+.B bind_textdomain_codeset()
+function can be used to specify the
+output codeset for message catalogues for domain
+.IR domainname .
+The
 \fIcodeset\fR argument must be a valid codeset name that can be used for the
-\fBiconv_open\fR(3C) function, or a null pointer. If the \fIcodeset\fR
-argument is the null pointer, \fBbind_textdomain_codeset()\fR returns the
-currently selected codeset for the domain with the name \fIdomainname\fR.  It
+.BR iconv_open (3C)
+function, or a null pointer. If the \fIcodeset\fR
+argument is the null pointer,
+.B bind_textdomain_codeset()
+returns the
+currently selected codeset for the domain with the name
+.IR domainname .
+It
 returns a null pointer if a codeset has not yet been selected. The
 \fBbind_textdomain_codeset()\fR function can be used multiple times.  If used
-multiple times with the same \fIdomainname\fR argument, the later call
+multiple times with the same
+.I domainname
+argument, the later call
 overrides the settings made by the earlier one. The
 \fBbind_textdomain_codeset()\fR function returns a pointer to a string
 containing the name of the selected codeset. The string is allocated
 internally in the function and must not be changed by the user.
 .sp
 .LP
-The external variables \fB_nl_msg_cat_cntr\fR and \fB_nl_domain_bindings\fR
-are provided for the compatibility with the GNU \fBgettext()\fR
+The external variables
+.B _nl_msg_cat_cntr
+and
+.BR _nl_domain_bindings
+are provided for the compatibility with the GNU
+.BR gettext()
 implementation.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBgettext()\fR, \fBdgettext()\fR, and \fBdcgettext()\fR functions return
+The
+.BR gettext() ,
+.BR dgettext() ,
+and
+.B dcgettext()
+functions return
 the message string if the search succeeds. Otherwise they return the
 \fImsgid\fR string.
 .sp
 .LP
-The \fBngettext()\fR, \fBdngettext()\fR, and \fBdcngettext()\fR functions
+The
+.BR ngettext() ,
+.BR dngettext() ,
+and
+.B dcngettext()
+functions
 return the message string if the search succeeds.  If the search fails,
 \fImsgid1\fR is returned if \fIn\fR == 1. Otherwise \fImsgid2\fR is
 returned.
 .sp
 .LP
-The individual bytes of the string returned by \fBgettext()\fR,
-\fBdgettext()\fR, \fBdcgettext()\fR, \fBngettext()\fR, \fBdngettext()\fR, or
-\fBdcngettext()\fR can contain any value other than \fINULL\fR. If \fImsgid\fR
+The individual bytes of the string returned by
+.BR gettext() ,
+.BR dgettext() ,
+.BR dcgettext() ,
+.BR ngettext() ,
+.BR dngettext() ,
+or
+\fBdcngettext()\fR can contain any value other than
+.IR NULL .
+If
+.IR msgid
 is a null pointer, the return value is undefined. The string returned must not
 be modified by the program and can be invalidated by a subsequent call to
 \fBbind_textdomain_codeset()\fR or \fBsetlocale\fR(3C). If the
 \fIdomainname\fR argument to  \fBdgettext()\fR,\fBdcgettext()\fR,
-\fBdngettext()\fR, or \fBdcngettext()\fR is a null pointer, the the domain
-currently bound by \fBtextdomain()\fR is used.
+.BR dngettext() ,
+or
+.B dcngettext()
+is a null pointer, the the domain
+currently bound by
+.B textdomain()
+is used.
 .sp
 .LP
-The normal return value from \fBtextdomain()\fR is a pointer to a string
-containing the current setting of the domain. If \fIdomainname\fR is a null
-pointer, \fBtextdomain()\fR returns a pointer to the string containing the
-current domain. If \fBtextdomain()\fR was not previously called and
+The normal return value from
+.B textdomain()
+is a pointer to a string
+containing the current setting of the domain. If
+.I domainname
+is a null
+pointer,
+.B textdomain()
+returns a pointer to the string containing the
+current domain. If
+.B textdomain()
+was not previously called and
 \fIdomainname\fR is a null string, the name of the default domain is returned.
-The name of the default domain is \fBmessages\fR. If \fBtextdomain()\fR fails,
+The name of the default domain is
+.BR messages .
+If
+.B textdomain()
+fails,
 a null pointer is returned.
 .sp
 .LP
-The return value from \fBbindtextdomain()\fR is a null-terminated string
-containing \fIdirname\fR or the directory binding associated with
+The return value from
+.B bindtextdomain()
+is a null-terminated string
+containing
+.I dirname
+or the directory binding associated with
 \fIdomainname\fR if \fIdirname\fR is \fINULL.\fR If no binding is found, the
-default return value is  \fB/usr/lib/locale\fR. If  \fIdomainname\fR is a null
-pointer or an empty string, \fBbindtextdomain()\fR takes no action and returns
+default return value is
+.BR /usr/lib/locale .
+If 
+.I domainname
+is a null
+pointer or an empty string,
+.B bindtextdomain()
+takes no action and returns
 a null pointer. The string returned must not be modified by the caller. If
 \fBbindtextdomain()\fR fails, a null pointer is returned.
 .SH USAGE
@@ -264,17 +448,35 @@ These functions impose no limit on message length. However, a text
 \fIdomainname\fR is limited to \fBTEXTDOMAINMAX\fR (256) bytes.
 .sp
 .LP
-The \fBgettext()\fR, \fBdgettext()\fR, \fBdcgettext()\fR, \fBngettext()\fR,
-\fBdngettext()\fR, \fBdcngettext()\fR, \fBtextdomain()\fR, and
+The
+.BR gettext() ,
+.BR dgettext() ,
+.BR dcgettext() ,
+.BR ngettext() ,
+.BR dngettext() ,
+.BR dcngettext() ,
+.BR textdomain() ,
+and
 \fBbindtextdomain()\fR functions can be used safely in multithreaded
-applications, as long as \fBsetlocale\fR(3C) is not being called to change the
+applications, as long as
+.BR setlocale (3C)
+is not being called to change the
 locale.
 .sp
 .LP
-The \fBgettext()\fR, \fBdgettext()\fR, \fBdcgettext()\fR, \fBtextdomain()\fR,
-and \fBbindtextdomain()\fR functions work with both Solaris message catalogues
+The
+.BR gettext() ,
+.BR dgettext() ,
+.BR dcgettext() ,
+.BR textdomain() ,
+and
+.B bindtextdomain()
+functions work with both Solaris message catalogues
 and GNU-compatible message catalogues.  The \fBngettext()\fR,
-\fBdngettext()\fR, \fBdcngettext()\fR, and \fBbind_textdomain_codeset()\fR
+.BR dngettext() ,
+.BR dcngettext() ,
+and
+.BR bind_textdomain_codeset()
 functions work only with GNU-compatible message catalogues.  See
 \fBmsgfmt\fR(1) for information about Solaris message catalogues and
 GNU-compatible message catalogues.
@@ -283,7 +485,7 @@ GNU-compatible message catalogues.
 .ne 2
 .mk
 .na
-\fB/usr/lib/locale\fR
+.B /usr/lib/locale
 .ad
 .sp .6
 .RS 4n
@@ -312,8 +514,14 @@ system default location for file containing messages for  language
 .RS 4n
 system default location for file containing messages for  language
 \fIlocale\fR and \fIdomainname\fR for \fBdcgettext()\fR calls where
-\fBLC_XXX\fR is  \fBLC_CTYPE\fR, \fBLC_NUMERIC\fR, \fBLC_TIME\fR,
-\fBLC_COLLATE\fR, \fBLC_MONETARY\fR, or \fBLC_MESSAGES\fR
+\fBLC_XXX\fR is
+.BR LC_CTYPE ,
+.BR LC_NUMERIC ,
+.BR LC_TIME ,
+.BR LC_COLLATE ,
+.BR LC_MONETARY ,
+or
+.BR LC_MESSAGES
 .RE
 
 .sp
@@ -324,8 +532,13 @@ system default location for file containing messages for  language
 .ad
 .sp .6
 .RS 4n
-location for file containing messages for domain \fIdomainname\fR and path
-predicate \fIdirname\fR after a successful call to \fBbindtextdomain()\fR
+location for file containing messages for domain
+.I domainname
+and path
+predicate
+.I dirname
+after a successful call to
+.BR bindtextdomain()
 .RE
 
 .sp
@@ -336,17 +549,27 @@ predicate \fIdirname\fR after a successful call to \fBbindtextdomain()\fR
 .ad
 .sp .6
 .RS 4n
-location for files containing messages for domain \fIdomainname,\fR language
+location for files containing messages for domain
+.I domainname,
+language
 \fIlocale,\fR and path predicate \fIdirname\fR after a successful call to
 \fBbindtextdomain()\fR for \fBdcgettext()\fR calls where \fBLC_XXX\fR is one
-of \fBLC_CTYPE\fR, \fBLC_NUMERIC\fR, \fBLC_TIME\fR, \fBLC_COLLATE\fR,
-\fBLC_MONETARY\fR, or \fBLC_MESSAGES\fR
+of
+.BR LC_CTYPE ,
+.BR LC_NUMERIC ,
+.BR LC_TIME ,
+.BR LC_COLLATE ,
+.BR LC_MONETARY ,
+or
+.BR LC_MESSAGES
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -364,11 +587,18 @@ MT-LevelSafe with exceptions
 
 .sp
 .LP
-The external variables \fB_nl_msg_cat_cntr\fR and \fB_nl_domain_bindings\fR
+The external variables
+.B _nl_msg_cat_cntr
+and
+.BR _nl_domain_bindings
 are Uncommitted.
 .SH SEE ALSO
 .sp
 .LP
-\fBmsgfmt\fR(1), \fBxgettext\fR(1), \fBiconv_open\fR(3C),
-\fBlibintl.h\fR(3HEAD), \fBsetlocale\fR(3C), \fBattributes\fR(5),
-\fBenviron\fR(5)
+\fBmsgfmt\fR(1),
+.BR xgettext (1),
+.BR iconv_open (3C),
+.BR libintl.h (3HEAD),
+.BR setlocale (3C),
+.BR attributes (5),
+.BR environ (5)

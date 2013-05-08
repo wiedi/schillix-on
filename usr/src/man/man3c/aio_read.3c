@@ -60,47 +60,67 @@ aio_read \- asynchronous read from a file
 .SH DESCRIPTION
 .sp
 .LP
-The \fBaio_read()\fR function allows the calling process to read
+The
+.B aio_read()
+function allows the calling process to read
 \fIaiocbp\fR->\fBaio_nbytes\fR from the file associated with
 \fIaiocbp\fR->\fBaio_fildes\fR into the buffer pointed to by
 \fIaiocbp\fR->\fBaio_buf\fR. The function call returns when the read request
 has been initiated or queued to the file or device (even when the data
-cannot be delivered immediately). If \fB_POSIX_PRIORITIZED_IO\fR is defined
+cannot be delivered immediately). If
+.B _POSIX_PRIORITIZED_IO
+is defined
 and prioritized I/O is supported for this file, then the asynchronous
 operation is submitted at a priority equal to the scheduling priority of the
 process minus \fIaiocbp\fR->\fBaio_reqprio\fR. The \fIaiocbp\fR value may be
-used as an argument to \fBaio_error\fR(3C) and \fBaio_return\fR(3C) in order
+used as an argument to
+.BR aio_error "(3C) and"
+.BR aio_return (3C)
+in order
 to determine the error status and return status, respectively, of the
 asynchronous operation while it is proceeding. If an error condition is
 encountered during queuing, the function call returns without having
 initiated or queued the request. The requested operation takes place at the
-absolute position in the file as given by \fIaio_offset\fR, as if
-\fBlseek\fR(2) were called immediately prior to the operation with an
+absolute position in the file as given by
+.IR aio_offset ,
+as if
+.BR lseek (2)
+were called immediately prior to the operation with an
 \fIoffset\fR equal to \fIaio_offset\fR and a \fBwhence\fR equal to
-\fBSEEK_SET\fR. After a successful call to enqueue an asynchronous I/O
+.BR SEEK_SET .
+After a successful call to enqueue an asynchronous I/O
 operation, the value of the file offset for the file is unspecified.
 .sp
 .LP
 The \fIaiocbp\fR->\fBaio_sigevent\fR structure defines what asynchronous
 notification is to occur when the asynchronous operation completes, as
-specified in \fBsignal.h\fR(3HEAD).
+specified in
+.BR signal.h (3HEAD).
 .sp
 .LP
 The \fIaiocbp\fR->\fBaio_lio_opcode\fR field is ignored by
-\fBaio_read()\fR. 
+.BR aio_read() .
 .sp
 .LP
-The \fIaiocbp\fR argument points to an \fBaiocb\fR structure. If the buffer
+The
+.I aiocbp
+argument points to an
+.B aiocb
+structure. If the buffer
 pointed to by \fIaiocbp\fR->\fBaio_buf\fR or the control block pointed to by
 \fIaiocbp\fR becomes an illegal address prior to asynchronous I/O
 completion, then the behavior is undefined.
 .sp
 .LP
-Simultaneous asynchronous operations using the same \fIaiocbp\fR produce
+Simultaneous asynchronous operations using the same
+.I aiocbp
+produce
 undefined results.
 .sp
 .LP
-If \fB_POSIX_SYNCHRONIZED_IO\fR is defined and synchronized I/O is enabled
+If
+.B _POSIX_SYNCHRONIZED_IO
+is defined and synchronized I/O is enabled
 on the file associated with \fIaiocbp\fR->\fBaio_fildes,\fR the behavior of
 this function is according to the definitions of synchronized I/O data
 integrity completion and synchronized I/O file integrity completion.
@@ -117,18 +137,24 @@ established in the open file description associated with
 .SH RETURN VALUES
 .sp
 .LP
-The \fBaio_read()\fR function returns \fB0\fR to the calling process if the
+The
+.B aio_read()
+function returns
+.B 0
+to the calling process if the
 I/O operation is successfully queued; otherwise, the function returns
 \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBaio_read()\fR function will fail if:
+The
+.B aio_read()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -139,8 +165,12 @@ resource limitations.
 .sp
 .LP
 Each of the following conditions may be detected synchronously at the time
-of the call to \fBaio_read()\fR, or asynchronously. If any of the conditions
-below are detected synchronously, the \fBaio_read()\fR function returns
+of the call to
+.BR aio_read() ,
+or asynchronously. If any of the conditions
+below are detected synchronously, the
+.B aio_read()
+function returns
 \fB-1\fR and sets \fBerrno\fR to the corresponding value. If any of the
 conditions below are detected asynchronously, the return status of the
 asynchronous operation is set to \(mi1, and the error status of the
@@ -149,7 +179,7 @@ asynchronous operation will be set to the corresponding value.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -161,7 +191,7 @@ open for reading.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -172,18 +202,24 @@ invalid, \fIaiocbp->\fBaio_reqprio\fR is not a valid value, or
 
 .sp
 .LP
-In the case that the \fBaio_read()\fR successfully queues the I/O operation
+In the case that the
+.B aio_read()
+successfully queues the I/O operation
 but the operation is subsequently canceled or encounters an error, the
 return status of the asynchronous operation is one of the values normally
-returned by the \fBread\fR(2) function call. In addition, the error status
+returned by the
+.BR read (2)
+function call. In addition, the error status
 of the asynchronous operation will be set to one of the error statuses
-normally set by the \fBread()\fR function call, or one of the following
+normally set by the
+.B read()
+function call, or one of the following
 values:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 13n
 .rt
@@ -195,19 +231,20 @@ open for reading.
 .ne 2
 .mk
 .na
-\fBECANCELED\fR
+.B ECANCELED
 .ad
 .RS 13n
 .rt
 The requested I/O was canceled before the I/O completed due to an explicit
-\fBaio_cancel\fR(3C) request.
+.BR aio_cancel (3C)
+request.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 13n
 .rt
@@ -222,7 +259,7 @@ The following condition may be detected synchronously or asynchronously:
 .ne 2
 .mk
 .na
-\fBEOVERFLOW\fR
+.B EOVERFLOW
 .ad
 .RS 13n
 .rt
@@ -236,15 +273,20 @@ description associated with \fIaiocbp\fR->\fBaio_fildes\fR.
 .sp
 .LP
 For portability, the application should set \fIaiocb->\fBaio_reqprio\fR
-to \fB0\fR.
+to
+.BR 0 .
 .sp
 .LP
-The \fBaio_read()\fR function has a transitional interface for 64-bit file
+The
+.B aio_read()
+function has a transitional interface for 64-bit file
 offsets. See \fBlf64\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -265,8 +307,16 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(2), \fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2),
-\fBlseek\fR(2), \fBread\fR(2), \fBwrite\fR(2), \fBaio_cancel\fR(3C),
-\fBaio_return\fR(3C), \fBaio.h\fR(3HEAD), \fBlio_listio\fR(3C),
+.BR close (2),
+.BR exec (2),
+.BR exit (2),
+\fBfork\fR(2),
+.BR lseek (2),
+.BR read (2),
+.BR write (2),
+.BR aio_cancel (3C),
+.BR aio_return (3C),
+.BR aio.h (3HEAD),
+.BR lio_listio (3C),
 \fBsiginfo.h\fR(3HEAD), \fBsignal.h\fR(3HEAD), \fBattributes\fR(5),
 \fBlf64\fR(5), \fBstandards\fR(5)

@@ -41,30 +41,32 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIq\fR
+.I q
 .ad
 .RS 7n
 .rt
-Pointer to the queue containing message \fIemp\fR.
+Pointer to the queue containing message
+.IR emp .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIemp\fR
+.I emp
 .ad
 .RS 7n
 .rt
 Enqueued message before which the new message is to be inserted. \fBmblk_t\fR
-is an instance of the \fBmsgb\fR(9S) structure.
+is an instance of the
+.BR msgb "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fInmp\fR
+.I nmp
 .ad
 .RS 7n
 .rt
@@ -74,32 +76,64 @@ Message to be inserted.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBinsq()\fR function inserts a message into a queue. The message to be
-inserted, \fInmp\fR, is placed in \fIq\fR immediately before the message
-\fIemp\fR. If \fIemp\fR is \fINULL\fR, the new message is placed at the end of
+The
+.B insq()
+function inserts a message into a queue. The message to be
+inserted,
+.IR nmp ,
+is placed in
+.I q
+immediately before the message
+.IR emp .
+If
+.I emp
+is
+.IR NULL ,
+the new message is placed at the end of
 the queue. The queue class of the new message is ignored. All flow control
-parameters are updated. The service procedure is enabled unless \fBQNOENB\fR is
+parameters are updated. The service procedure is enabled unless
+.B QNOENB
+is
 set.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBinsq()\fR function returns \fB1\fR on success, and \fB0\fR on failure.
+The
+.B insq()
+function returns
+.B 1
+on success, and
+.B 0
+on failure.
 .SH CONTEXT
 .sp
 .LP
-The \fBinsq()\fR function can be called from user, interrupt, or kernel
+The
+.B insq()
+function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .sp
 .LP
 This routine illustrates the steps a transport provider may take to place
-expedited data ahead of normal data on a queue (assume all \fBM_DATA\fR messages
-are converted into \fBM_PROTO T_DATA_REQ\fR messages). Normal \fBT_DATA_REQ\fR
+expedited data ahead of normal data on a queue (assume all
+.B M_DATA
+messages
+are converted into
+.B "M_PROTO T_DATA_REQ"
+.RB "messages). Normal" " T_DATA_REQ"
 messages are just placed on the end of the queue (line 16). However, expedited
 \fBT_EXDATA_REQ\fR messages are inserted before any normal messages already on
-the queue (line 25). If there are no normal messages on the queue, \fBbp\fR will
-be \fINULL\fR and we fall out of the \fBfor\fR loop (line 21). \fBinsq\fR acts
-like \fBputq\fR(9F) in this case.
+the queue (line 25). If there are no normal messages on the queue,
+.B bp
+will
+be
+.I NULL
+and we fall out of the \fBfor\fR loop (line 21).
+.B insq
+acts
+like
+.BR putq "(9F) in this case."
 .sp
 .in +2
 .nf
@@ -142,21 +176,29 @@ like \fBputq\fR(9F) in this case.
 
 .sp
 .LP
-When using \fBinsq()\fR, you must ensure that the queue and the message block
+When using
+.BR insq() ,
+you must ensure that the queue and the message block
 is not modified by another thread at the same time. You can achieve this either
 by using STREAMS functions or by implementing your own locking.
 .SH SEE ALSO
 .sp
 .LP
-\fBputq\fR(9F), \fBrmvq\fR(9F), \fBmsgb\fR(9S)
+.BR putq (9F),
+.BR rmvq (9F),
+.BR msgb (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH WARNINGS
 .sp
 .LP
-If \fIemp\fR is non-\fINULL\fR, it must point to a message on \fIq\fR or a
+If
+.I emp
+is non-\fINULL\fR, it must point to a message on
+.I q
+or a
 system panic could result.

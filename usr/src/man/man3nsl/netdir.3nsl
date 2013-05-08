@@ -74,18 +74,28 @@ generic transport name-to-address translation
 .SH DESCRIPTION
 .sp
 .LP
-The \fBnetdir\fR functions provide a generic interface for name-to-address
+The
+.B netdir
+functions provide a generic interface for name-to-address
 mapping that will work with all transport protocols. This interface provides
 a generic way for programs to convert transport specific addresses into
 common structures and back again. The \fBnetconfig\fR structure, described
-on the \fBnetconfig\fR(4) manual page, identifies the transport.
+on the
+.BR netconfig (4)
+manual page, identifies the transport.
 .sp
 .LP
-The \fBnetdir_getbyname()\fR function maps the machine name and service
-name in the \fBnd_hostserv\fR structure to a collection of addresses of the
+The
+.B netdir_getbyname()
+function maps the machine name and service
+name in the
+.B nd_hostserv
+structure to a collection of addresses of the
 type understood by the transport identified in the \fBnetconfig\fR
 structure. This function returns all addresses that are valid for that
-transport in the \fBnd_addrlist\fR structure. The \fBnd_hostserv\fR
+transport in the
+.B nd_addrlist
+.RB "structure. The" " nd_hostserv"
 structure contains the following members:
 .sp
 .in +2
@@ -97,7 +107,9 @@ char *h_serv;      /* service name */
 
 .sp
 .LP
-The \fBnd_addrlist\fR structure contains the following members:
+The
+.B nd_addrlist
+structure contains the following members:
 .sp
 .in +2
 .nf
@@ -108,20 +120,24 @@ struct netbuf *n_addrs;
 
 .sp
 .LP
-The \fBnetdir_getbyname()\fR function accepts some special-case host names.
+The
+.B netdir_getbyname()
+function accepts some special-case host names.
 The host names are defined in <\fBnetdir.h\fR>. The currently defined host
 names are:
 .sp
 .ne 2
 .mk
 .na
-\fBHOST_SELF\fR
+.B HOST_SELF
 .ad
 .RS 21n
 .rt
 Represents the address to which local programs will bind their endpoints.
 \fBHOST_SELF\fR differs from the host name provided by
-\fBgethostname\fR(3C), which represents the address to which \fIremote\fR
+.BR gethostname (3C),
+which represents the address to which
+.IR remote
 programs will bind their endpoints.
 .RE
 
@@ -129,11 +145,11 @@ programs will bind their endpoints.
 .ne 2
 .mk
 .na
-\fBHOST_ANY\fR
+.B HOST_ANY
 .ad
 .RS 21n
 .rt
-Represents any host accessible by this transport provider. \fBHOST_ANY\fR
+.RB "Represents any host accessible by this transport provider." " HOST_ANY"
 allows applications to specify a required service without specifying a
 particular host name.
 .RE
@@ -142,7 +158,7 @@ particular host name.
 .ne 2
 .mk
 .na
-\fBHOST_SELF_CONNECT\fR
+.B HOST_SELF_CONNECT
 .ad
 .RS 21n
 .rt
@@ -154,7 +170,7 @@ host.
 .ne 2
 .mk
 .na
-\fBHOST_BROADCAST\fR
+.B HOST_BROADCAST
 .ad
 .RS 21n
 .rt
@@ -164,16 +180,24 @@ Network requests to this address are received by all machines.
 
 .sp
 .LP
-All fields of the \fBnd_hostserv\fR structure must be initialized.
+All fields of the
+.B nd_hostserv
+structure must be initialized.
 .sp
 .LP
 To find the address of a given host and service on all available
-transports, call the \fBnetdir_getbyname()\fR function with each \fBstruct
+transports, call the
+.B netdir_getbyname()
+function with each \fBstruct
 netconfig\fR structure returned by \fBgetnetconfig\fR(3NSL).
 .sp
 .LP
-The \fBnetdir_getbyaddr()\fR function maps addresses to service names. The
-function returns \fIservice\fR, a list of host and service pairs that yield
+The
+.B netdir_getbyaddr()
+function maps addresses to service names. The
+function returns
+.IR service ,
+a list of host and service pairs that yield
 these addresses. If more than one tuple of host and service name is
 returned, the first tuple contains the preferred host and service names:
 .sp
@@ -189,7 +213,9 @@ struct nd_hostservlist {
 .sp
 .LP
 The \fBnetdir_free()\fR structure is used to free the structures allocated
-by the name to address translation functions. The \fIptr\fR parameter points
+by the name to address translation functions. The
+.I ptr
+parameter points
 to the structure that has to be freed. The parameter \fBstruct_type\fR
 identifies the structure:
 .sp
@@ -205,48 +231,71 @@ struct nd_hostservlist   ND_HOSTSERVLIST
 .sp
 .LP
 The \fBfree()\fR function is used to free the universal address returned by
-the \fBtaddr2uaddr()\fR function.
+the
+.B taddr2uaddr()
+function.
 .sp
 .LP
-The \fBnetdir_options()\fR function is used to do all transport-specific
+The
+.B netdir_options()
+function is used to do all transport-specific
 setups and option management. \fIfildes\fR is the associated file
-descriptor. \fIoption\fR, \fIfildes\fR, and \fIpointer_to_args\fR are passed
-to the \fBnetdir_options()\fR function for the transport specified in
+descriptor.
+.IR option ,
+\fIfildes\fR, and \fIpointer_to_args\fR are passed
+to the
+.B netdir_options()
+function for the transport specified in
 \fIconfig\fR. Currently four values are defined for \fIoption\fR:
 .br
 .in +2
-\fBND_SET_BROADCAST\fR
+.B ND_SET_BROADCAST
 .in -2
 .br
 .in +2
-\fBND_SET_RESERVEDPORT\fR
+.B ND_SET_RESERVEDPORT
 .in -2
 .br
 .in +2
-\fBND_CHECK_RESERVEDPORT\fR
+.B ND_CHECK_RESERVEDPORT
 .in -2
 .br
 .in +2
-\fBND_MERGEADDR\fR
+.B ND_MERGEADDR
 .in -2
 .sp
 .LP
-The \fBtaddr2uaddr()\fR and \fBuaddr2taddr()\fR functions support
-translation between universal addresses and \fBTLI\fR type \fBnetbufs\fR.
-The \fBtaddr2uaddr()\fR function takes a \fBstruct\fR \fBnetbuf\fR data
+The
+.B taddr2uaddr()
+and
+.B uaddr2taddr()
+functions support
+translation between universal addresses and
+.B TLI
+type \fBnetbufs\fR.
+The
+.B taddr2uaddr()
+function takes a \fBstruct netbuf\fR data
 structure and returns a pointer to a string that contains the universal
-address. It returns \fINULL\fR if the conversion is not possible. This is
+address. It returns
+.I NULL
+if the conversion is not possible. This is
 not a fatal condition as some transports do not support a universal address
 form.
 .sp
 .LP
-The \fBuaddr2taddr()\fR function is the reverse of the \fBtaddr2uaddr()\fR
+The
+.B uaddr2taddr()
+function is the reverse of the
+.BR taddr2uaddr()
 function. It returns the \fBstruct netbuf\fR data structure for the given
 universal address.
 .sp
 .LP
 If a transport provider does not support an option, \fBnetdir_options\fR
-returns \fB-1\fR and the error message can be printed through
+returns
+.B -1
+and the error message can be printed through
 \fBnetdir_perror()\fR or \fBnetdir_sperror()\fR.
 .sp
 .LP
@@ -255,13 +304,17 @@ The specific actions of each option follow.
 .ne 2
 .mk
 .na
-\fBND_SET_BROADCAST\fR
+.B ND_SET_BROADCAST
 .ad
 .RS 25n
 .rt
 Sets the transport provider up to allow broadcast if the transport supports
 broadcast. \fIfildes\fR is a file descriptor into the transport, that is,
-the result of a \fBt_open\fR of \fB/dev/udp\fR. \fIpointer_to_args\fR is not
+the result of a
+.B t_open
+of
+.BR /dev/udp .
+\fIpointer_to_args\fR is not
 used. If this completes, broadcast operations can be performed on file
 descriptor \fIfildes\fR.
 .RE
@@ -270,14 +323,18 @@ descriptor \fIfildes\fR.
 .ne 2
 .mk
 .na
-\fBND_SET_RESERVEDPORT\fR
+.B ND_SET_RESERVEDPORT
 .ad
 .RS 25n
 .rt
 Allows the application to bind to a reserved port if that concept exists
 for the transport provider. \fIfildes\fR is an unbound file descriptor into
-the transport. If \fIpointer_to_args\fR is \fINULL,\fR \fIfildes\fR is bound
-to a reserved port. If \fIpointer_to_args\fR is a pointer to a \fBnetbuf\fR
+the transport. If
+.I pointer_to_args
+is \fINULL, fildes\fR is bound
+to a reserved port. If
+.I pointer_to_args
+is a pointer to a \fBnetbuf\fR
 structure, an attempt is made to bind to any reserved port on the specified
 address.
 .RE
@@ -286,14 +343,16 @@ address.
 .ne 2
 .mk
 .na
-\fBND_CHECK_RESERVEDPORT\fR
+.B ND_CHECK_RESERVEDPORT
 .ad
 .RS 25n
 .rt
 Used to verify that the address corresponds to a reserved port if that
 concept exists for the transport provider. \fIfildes\fR is not used.
 \fIpointer_to_args\fR is a pointer to a \fBnetbuf\fR structure that contains
-the address. This option returns \fB0\fR only if the address specified in
+the address. This option returns
+.B 0
+only if the address specified in
 \fIpointer_to_args\fR is reserved.
 .RE
 
@@ -301,13 +360,17 @@ the address. This option returns \fB0\fR only if the address specified in
 .ne 2
 .mk
 .na
-\fBND_MERGEADDR\fR
+.B ND_MERGEADDR
 .ad
 .RS 25n
 .rt
-Used to take a ``local address'' such as a \fB0.0.0.0\fR TCP address and
+Used to take a ``local address'' such as a
+.B 0.0.0.0
+TCP address and
 return a ``real address'' to which client machines can connect. \fIfildes\fR
-is not used. \fIpointer_to_args\fR is a pointer to a \fBstruct
+is not used.
+.I pointer_to_args
+is a pointer to a \fBstruct
 nd_mergearg\fR which has the following members:
 .sp
 .in +2
@@ -318,36 +381,57 @@ nd_mergearg\fR which has the following members:
 .fi
 .in -2
 
-If \fBs_uaddr\fR is an address such as \fB0.0.0.0.1.12\fR, and the call is
-successful \fBm_uaddr\fR is set to an address such as
-\fB192.11.109.89.1.12\fR. For most transports, \fBm_uaddr\fR is identical to
-\fBs_uaddr\fR.
+If
+.B s_uaddr
+is an address such as
+.BR 0.0.0.0.1.12 ,
+and the call is
+successful
+.B m_uaddr
+is set to an address such as
+.BR 192.11.109.89.1.12 .
+For most transports,
+.B m_uaddr
+is identical to
+.BR s_uaddr .
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-The \fBnetdir_perror()\fR function prints an error message in standard
+The
+.B netdir_perror()
+function prints an error message in standard
 output that states the cause of a name-to-address mapping failure. The error
 message is preceded by the string given as an argument.
 .sp
 .LP
-The \fBnetdir_sperror()\fR function returns a string with an error message
+The
+.B netdir_sperror()
+function returns a string with an error message
 that states the cause of a name-to-address mapping failure.
 .sp
 .LP
-The \fBnetdir_sperror()\fR function returns a pointer to a buffer which
+The
+.B netdir_sperror()
+function returns a pointer to a buffer which
 contains the error message string. The buffer is overwritten on each call.
 In multithreaded applications, thise buffer is implemented as
 thread-specific data.
 .sp
 .LP
-The \fBnetdir_getbyaddr()\fR function returns \fB0\fR on success and a
+The
+.B netdir_getbyaddr()
+function returns
+.B 0
+on success and a
 non-zero value on failure.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -364,5 +448,6 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBgethostname\fR(3C), \fBgetnetconfig\fR(3NSL), \fBgetnetpath\fR(3NSL),
+.BR gethostname (3C),
+\fBgetnetconfig\fR(3NSL), \fBgetnetpath\fR(3NSL),
 \fBnetconfig\fR(4), \fBattributes\fR(5)

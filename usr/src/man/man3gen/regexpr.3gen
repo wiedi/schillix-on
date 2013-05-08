@@ -67,15 +67,20 @@ routines
 .LP
 These routines are used to compile regular expressions and match the
 compiled expressions against lines.  The regular expressions compiled are in
-the form used by \fBed\fR(1).
+the form used by
+.BR ed (1).
 .sp
 .LP
-The parameter \fIinstring\fR is a null-terminated string representing the
+The parameter
+.I instring
+is a null-terminated string representing the
 regular expression.
 .sp
 .LP
 The parameter \fIexpbuf\fR points to the place where the compiled regular
-expression is to be placed.  If \fIexpbuf\fR is \fINULL\fR, \fBcompile()\fR
+expression is to be placed.  If \fIexpbuf\fR is
+.IR NULL ,
+.B compile()
 uses \fBmalloc\fR(3C) to allocate the space for the compiled regular
 expression. If an error occurs, this space is freed.  It is the user's
 responsibility to free unneeded space after the compiled regular expression
@@ -84,68 +89,138 @@ is no longer needed.
 .LP
 The parameter \fIendbuf\fR is one more than the highest address where the
 compiled regular expression may be placed.  This argument is ignored if
-\fIexpbuf\fR is \fINULL\fR. If the compiled expression cannot fit in
+\fIexpbuf\fR is
+.IR NULL .
+If the compiled expression cannot fit in
 (\fIendbuf\fR\(mi\fIexpbuf\fR) bytes, \fBcompile()\fR returns \fINULL\fR and
 \fBregerrno\fR (see below) is set to 50.
 .sp
 .LP
-The parameter  \fIstring\fR is a pointer to a string of characters to be
+The parameter 
+.I string
+is a pointer to a string of characters to be
 checked for a match. This string should be null-terminated.
 .sp
 .LP
 The parameter \fIexpbuf\fR is the compiled regular expression obtained by a
-call of the function \fBcompile()\fR.
+call of the function
+.BR compile() .
 .sp
 .LP
-The function \fBstep()\fR returns non-zero if the given string matches the
+The function
+.B step()
+returns non-zero if the given string matches the
 regular expression, and zero if the expressions do not match.  If there is a
 match, two external character pointers are set as a side effect to the call
-to \fBstep()\fR. The variables set in \fBstep()\fR are  \fIloc1\fR and
-\fIloc2\fR. \fIloc1\fR is a pointer to the first character that matched the
-regular expression. The variable \fIloc2\fR points to the character after
+to
+.BR step() .
+The variables set in
+.B step()
+are 
+.I loc1
+and
+.IR loc2 .
+\fIloc1\fR is a pointer to the first character that matched the
+regular expression. The variable
+.I loc2
+points to the character after
 the last character that matches the regular expression.  Thus if the regular
-expression matches the entire line, \fIloc1\fR points to the first character
-of \fIstring\fR and \fIloc2\fR points to the null at the end of
-\fIstring\fR.
+expression matches the entire line,
+.I loc1
+points to the first character
+of
+.I string
+and
+.I loc2
+points to the null at the end of
+.IR string .
 .sp
 .LP
-The purpose of \fBstep()\fR is to step through the \fIstring\fR argument
-until a match is found or until the end of \fIstring\fR is reached. If the
-regular expression begins with \fB^\fR, \fBstep()\fR tries to match the
+The purpose of
+.B step()
+is to step through the
+.I string
+argument
+until a match is found or until the end of
+.I string
+is reached. If the
+regular expression begins with
+.BR ^ ,
+\fBstep()\fR tries to match the
 regular expression at the beginning of the string only.
 .sp
 .LP
-The  \fBadvance()\fR function is similar to \fBstep()\fR; but, it only sets
-the variable \fIloc2\fR and always restricts  matches to the beginning of
+The 
+.B advance()
+function is similar to
+.BR step() ;
+but, it only sets
+the variable
+.I loc2
+and always restricts  matches to the beginning of
 the string.
 .sp
 .LP
 If one is looking for successive matches in the same string of characters,
-\fBlocs\fR should be set equal to \fIloc2\fR, and \fBstep()\fR should be
-called with \fIstring\fR equal to \fIloc2\fR.  \fIlocs\fR is used by
-commands like \fBed\fR and \fBsed\fR so that global substitutions like
+\fBlocs\fR should be set equal to
+.IR loc2 ,
+and
+.B step()
+should be
+called with
+.I string
+equal to
+.IR loc2 .
+\fIlocs\fR is used by
+commands like
+.B ed
+and
+.B sed
+so that global substitutions like
 \fBs/y*//g\fR do not loop forever, and is \fINULL\fR by default.
 .sp
 .LP
-The external variable \fBnbra\fR is used to determine the number of
-subexpressions in the compiled regular expression.  \fBbraslist\fR and
+The external variable
+.B nbra
+is used to determine the number of
+subexpressions in the compiled regular expression. 
+.B braslist
+and
 \fBbraelist\fR are arrays of character pointers that point to the start and
-end of the \fBnbra\fR subexpressions in the matched string.   For example,
-after calling \fBstep()\fR or \fBadvance()\fR with string \fBsabcdefg\fR and
+end of the
+.B nbra
+subexpressions in the matched string.   For example,
+after calling
+.B step()
+or
+.B advance()
+with string \fBsabcdefg\fR and
 regular expression \fB\e(abcdef\e)\fR, \fBbraslist[0]\fR  will point at
-\fBa\fR and \fBbraelist[0]\fR will point at \fBg\fR. These arrays are used
-by commands like \fBed\fR  and \fBsed\fR for substitute replacement patterns
+\fBa\fR and \fBbraelist[0]\fR will point at
+.BR g .
+These arrays are used
+by commands like
+.B ed
+and
+.B sed
+for substitute replacement patterns
 that contain the \fB\e\fIn\fR notation for subexpressions.
 .sp
 .LP
-Note that it is not necessary to use the external variables \fBregerrno\fR,
-\fBnbra\fR, \fBloc1\fR, \fBloc2\fR \fBlocs\fR, \fBbraelist\fR, and
+Note that it is not necessary to use the external variables
+.BR regerrno ,
+.BR nbra ,
+.BR loc1 ,
+.BR "loc2 locs" ,
+.BR braelist ,
+and
 \fBbraslist\fR if one is only checking whether or not a string matches a
 regular expression.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe following is similar to the regular expression code
-from \fBgrep\fR:
+\fBExample 1\fR The following is similar to the regular expression code
+from
+.BR grep :
 .sp
 .in +2
 .nf
@@ -162,22 +237,39 @@ if (step(linebuf, expbuf))
 .SH RETURN VALUES
 .sp
 .LP
-If \fBcompile()\fR succeeds, it returns a non-\fINULL\fR pointer whose
-value depends on \fIexpbuf\fR.  If \fIexpbuf\fR is non-\fINULL\fR,
+If
+.B compile()
+succeeds, it returns a non-\fINULL\fR pointer whose
+value depends on
+.IR expbuf .
+If \fIexpbuf\fR is non-\fINULL\fR,
 \fBcompile()\fR returns a pointer to  the byte after the last byte in the
 compiled regular expression.   The length of the compiled regular expression
-is stored in \fBreglength\fR. Otherwise, \fBcompile()\fR returns a pointer
-to the space allocated by \fBmalloc\fR(3C).
+is stored in
+.BR reglength .
+Otherwise,
+.B compile()
+returns a pointer
+to the space allocated by
+.BR malloc (3C).
 .sp
 .LP
-The functions \fBstep()\fR and \fBadvance()\fR return non-zero if the given
+The functions
+.B step()
+and
+.B advance()
+return non-zero if the given
 string matches the regular expression, and zero if the expressions do not
 match.
 .SH ERRORS
 .sp
 .LP
 If an error is detected when compiling the regular expression, a \fINULL\fR
-pointer is returned from \fBcompile()\fR and \fBregerrno\fR is set to one of
+pointer is returned from
+.B compile()
+and
+.B regerrno
+is set to one of
 the non-zero error numbers indicated below:
 .sp
 
@@ -205,7 +297,9 @@ ERRORMEANING
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -222,11 +316,17 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBed\fR(1), \fBgrep\fR(1), \fBsed\fR(1), \fBmalloc\fR(3C),
-\fBattributes\fR(5), \fBregexp\fR(5)
+.BR ed (1),
+.BR grep (1),
+.BR sed (1),
+.BR malloc (3C),
+.BR attributes (5),
+.BR regexp (5)
 .SH NOTES
 .sp
 .LP
-When compiling multi-threaded applications, the \fB_REENTRANT\fR flag must
+When compiling multi-threaded applications, the
+.B _REENTRANT
+flag must
 be defined on the compile line.  This flag should only be used in
 multi-threaded applications.

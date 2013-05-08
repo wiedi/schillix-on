@@ -35,59 +35,120 @@ Solaris DDI Specific (Solaris DDI)
 .SH DESCRIPTION
 .sp
 .LP
-The \fBtuple_t\fR structure is the basic data structure provided by card
-services to manage \fBPC\fR card information. A \fBPC\fR card provides
+The
+.B tuple_t
+structure is the basic data structure provided by card
+services to manage
+.B PC
+card information. A
+.B PC
+card provides
 identification and configuration information through its card information
-structure (\fBCIS\fR). A \fBPC \fRcard driver accesses a \fBPC \fRcard's
-\fBCIS \fRthrough various card services functions.
+structure
+.RB ( CIS ).
+A
+.B PC
+card driver accesses a
+.B PC
+card's
+\fBCIS\fR through various card services functions.
 .sp
 .LP
-The \fBCIS\fR information allows \fBPC\fR cards to be self-identifying: the
+The
+.B CIS
+information allows
+.B PC
+cards to be self-identifying: the
 \fBCIS\fR provides information to the system so that it can identify the
-proper \fBPC\fR card driver for the \fBPC\fR card, and provides
+proper
+.B PC
+card driver for the
+.B PC
+card, and provides
 configuration information so that the driver can allocate appropriate
-resources to configure the \fBPC\fR card for proper operation in the
+resources to configure the
+.B PC
+card for proper operation in the
 system.
 .sp
 .LP
-The \fBCIS \fRinformation is contained on the \fBPC\fR card in a linked
-list of tuple data structures called a \fBCIS \fRchain. Each tuple has a
+The
+.B CIS
+information is contained on the
+.B PC
+card in a linked
+list of tuple data structures called a
+.B CIS
+chain. Each tuple has a
 one-byte type and a one-byte link, an offset to the next tuple in the list.
-A \fBPC\fR card can have one or more \fBCIS \fRchains.
+A
+.B PC
+card can have one or more
+.B CIS
+chains.
 .sp
 .LP
-A multi-function \fBPC\fR card that complies with the \fBPC\fR Card 95
+A multi-function
+.B PC
+card that complies with the
+.B PC
+Card 95
 MultiFunction Metaformat specification will have one or more global
 \fBCIS\fR chains that collectively are referred to as the global \fBCIS\fR.
-These \fBPC\fR Cards will also have one or more per-function \fBCIS\fR
-chains. Each per-function collection of \fBCIS\fR chains is referred to as a
+These
+.B PC
+Cards will also have one or more per-function \fBCIS\fR
+chains. Each per-function collection of
+.B CIS
+chains is referred to as a
 function-specific \fBCIS\fR.
 .sp
 .LP
-To examine a \fBPC\fR card's \fBCIS\fR, first a \fBPC\fR card driver must
-locate the desired tuple by calling \fBcsx_GetFirstTuple\fR(9F). Once the
+To examine a
+.B PC
+card's
+.BR CIS ,
+first a
+.B PC
+card driver must
+locate the desired tuple by calling
+.BR csx_GetFirstTuple "(9F). Once the"
 first tuple is located, subsequent tuples may be located by calling
-\fBcsx_GetNextTuple\fR(9F). See \fBcsx_GetFirstTuple\fR(9F). The linked list
+.BR csx_GetNextTuple (9F).
+See
+.BR csx_GetFirstTuple "(9F). The linked list"
 of tuples may be inspected one by one, or the driver may narrow the search
 by requesting only tuples of a particular type.
 .sp
 .LP
-Once a tuple has been located, the \fBPC\fR card driver may inspect the
+Once a tuple has been located, the
+.B PC
+card driver may inspect the
 tuple data. The most convenient way to do this for standard tuples is by
 calling one of the number of tuple-parsing utility functions; for custom
 tuples, the driver may get access to the raw tuple data by calling
-\fBcsx_GetTupleData\fR(9F). 
+.BR csx_GetTupleData (9F).
 .sp
 .LP
-Solaris \fBPC\fR card drivers do not need to be concerned with which \fBCIS
+Solaris
+.B PC
+card drivers do not need to be concerned with which \fBCIS
 \fRchain a tuple appears in. On a multi-function \fBPC\fR card, the client
-will get the tuples from the global \fBCIS \fRfollowed by the tuples in the
-function-specific \fBCIS\fR. The caller will not get any tuples from a
-function-specific \fBCIS \fRthat does not belong to the caller's function.
+will get the tuples from the global
+.B CIS
+followed by the tuples in the
+function-specific
+.BR CIS .
+The caller will not get any tuples from a
+function-specific
+.B CIS
+that does not belong to the caller's function.
 .SH STRUCTURE MEMBERS
 .sp
 .LP
-The structure members of \fBtuple_t\fR are:
+The structure members of
+.B tuple_t
+are:
 .sp
 .in +2
 .nf
@@ -111,7 +172,7 @@ The fields are defined as follows:
 .ne 2
 .mk
 .na
-\fBSocket\fR
+.B Socket
 .ad
 .RS 17n
 .rt
@@ -123,7 +184,7 @@ implementations, it should be set to the logical socket number.
 .ne 2
 .mk
 .na
-\fBAttributes\fR
+.B Attributes
 .ad
 .RS 17n
 .rt
@@ -132,7 +193,7 @@ This field is bit-mapped. The following bits are defined:
 .ne 2
 .mk
 .na
-\fBTUPLE_RETURN_LINK\fR
+.B TUPLE_RETURN_LINK
 .ad
 .sp .6
 .RS 4n
@@ -143,20 +204,26 @@ Return link tuples if set.
 .ne 2
 .mk
 .na
-\fBTUPLE_RETURN_IGNORED_TUPLES\fR
+.B TUPLE_RETURN_IGNORED_TUPLES
 .ad
 .sp .6
 .RS 4n
 Return ignored tuples if set. Ignored tuples are those tuples in a
-multi-function \fBPC\fR card's global \fBCIS\fR chain that are duplicates of
-the same tuples in a function-specific \fBCIS \fRchain.
+multi-function
+.B PC
+card's global
+.B CIS
+chain that are duplicates of
+the same tuples in a function-specific
+.B CIS
+chain.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTUPLE_RETURN_NAME\fR
+.B TUPLE_RETURN_NAME
 .ad
 .sp .6
 .RS 4n
@@ -170,14 +237,18 @@ set.
 .ne 2
 .mk
 .na
-\fBDesiredTuple\fR
+.B DesiredTuple
 .ad
 .RS 17n
 .rt
 This field is the requested tuple type code to be returned when calling
-\fBcsx_GetFirstTuple\fR(9F) or \fBcsx_GetNextTuple\fR(9F).
+.BR csx_GetFirstTuple (9F)
+or
+.BR csx_GetNextTuple (9F).
 \fBRETURN_FIRST_TUPLE\fR is used to return the first tuple regardless of
-tuple type. \fBRETURN_NEXT_TUPLE\fR is used to return the next tuple
+tuple type.
+.B RETURN_NEXT_TUPLE
+is used to return the next tuple
 regardless of tuple type.
 .RE
 
@@ -191,19 +262,21 @@ regardless of tuple type.
 .rt
 This field allows partial tuple information to be retrieved, starting at
 the specified offset within the tuple. This field must only be set before
-calling \fBcsx_GetTupleData\fR(9F).
+calling
+.BR csx_GetTupleData (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTupleDataMax\fR
+.B TupleDataMax
 .ad
 .RS 17n
 .rt
 This field is the size of the tuple data buffer that card services uses to
-return raw tuple data from \fBcsx_GetTupleData\fR(9F). It can be larger than
+return raw tuple data from
+.BR csx_GetTupleData "(9F). It can be larger than"
 the number of bytes in the tuple data body. Card services ignores any value
 placed here by the client.
 .RE
@@ -212,63 +285,83 @@ placed here by the client.
 .ne 2
 .mk
 .na
-\fBTupleDataLen\fR
+.B TupleDataLen
 .ad
 .RS 17n
 .rt
 This field is the actual size of the tuple data body. It represents the
-number of tuple data body bytes returned by \fBcsx_GetTupleData\fR(9F).
+number of tuple data body bytes returned by
+.BR csx_GetTupleData (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTupleData\fR
+.B TupleData
 .ad
 .RS 17n
 .rt
 This field is an array of bytes containing the raw tuple data body contents
-returned by \fBcsx_GetTupleData\fR(9F).
+returned by
+.BR csx_GetTupleData (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTupleCode\fR
+.B TupleCode
 .ad
 .RS 17n
 .rt
 This field is the tuple type code and is returned by
-\fBcsx_GetFirstTuple\fR(9F) or \fBcsx_GetNextTuple\fR(9F) when a tuple
-matching the \fBDesiredTuple\fR field is returned.
+.BR csx_GetFirstTuple (9F)
+or
+.BR csx_GetNextTuple "(9F) when a tuple"
+matching the
+.B DesiredTuple
+field is returned.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTupleLink\fR
+.B TupleLink
 .ad
 .RS 17n
 .rt
 This field is the tuple link, the offset to the next tuple, and is returned
-by \fBcsx_GetFirstTuple\fR(9F) or \fBcsx_GetNextTuple\fR(9F) when a tuple
-matching the \fBDesiredTuple\fR field is returned.
+by
+.BR csx_GetFirstTuple "(9F) or"
+.BR csx_GetNextTuple (9F)
+when a tuple
+matching the
+.B DesiredTuple
+field is returned.
 .RE
 
 .SH SEE ALSO
 .sp
 .LP
-\fBcsx_GetFirstTuple\fR(9F), \fBcsx_GetTupleData\fR(9F),
-\fBcsx_ParseTuple\fR(9F), \fBcsx_Parse_CISTPL_BATTERY\fR(9F),
-\fBcsx_Parse_CISTPL_BYTEORDER\fR(9F), \fBcsx_Parse_CISTPL_CFTABLE_ENTRY\fR(9F),
-\fBcsx_Parse_CISTPL_CONFIG\fR(9F), \fBcsx_Parse_CISTPL_DATE\fR(9F),
-\fBcsx_Parse_CISTPL_DEVICE\fR(9F), \fBcsx_Parse_CISTPL_FUNCE\fR(9F),
-\fBcsx_Parse_CISTPL_FUNCID\fR(9F), \fBcsx_Parse_CISTPL_JEDEC_C\fR(9F),
-\fBcsx_Parse_CISTPL_MANFID\fR(9F), \fBcsx_Parse_CISTPL_SPCL\fR(9F),
-\fBcsx_Parse_CISTPL_VERS_1\fR(9F), \fBcsx_Parse_CISTPL_VERS_2\fR(9F)
+.BR csx_GetFirstTuple (9F),
+.BR csx_GetTupleData (9F),
+.BR csx_ParseTuple (9F),
+.BR csx_Parse_CISTPL_BATTERY (9F),
+.BR csx_Parse_CISTPL_BYTEORDER (9F),
+.BR csx_Parse_CISTPL_CFTABLE_ENTRY (9F),
+.BR csx_Parse_CISTPL_CONFIG (9F),
+.BR csx_Parse_CISTPL_DATE (9F),
+.BR csx_Parse_CISTPL_DEVICE (9F),
+.BR csx_Parse_CISTPL_FUNCE (9F),
+.BR csx_Parse_CISTPL_FUNCID (9F),
+.BR csx_Parse_CISTPL_JEDEC_C (9F),
+.BR csx_Parse_CISTPL_MANFID (9F),
+.BR csx_Parse_CISTPL_SPCL (9F),
+.BR csx_Parse_CISTPL_VERS_1 (9F),
+.BR csx_Parse_CISTPL_VERS_2 (9F)
 .sp
 .LP
-\fIPC Card 95 Standard\fR,  PCMCIA/JEIDA
+.IR "PC Card 95 Standard" ,
+PCMCIA/JEIDA

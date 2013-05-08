@@ -107,10 +107,18 @@ monitors the accessibility of all alternate addresses by sending periodic
 "heartbeats" chunks. An SCTP association supports multi-homing by exchanging
 the available list of addresses during association setup (as part of its
 four-way handshake mechanism). An SCTP endpoint is associated with a local
-address using the \fBbind\fR(3SOCKET) call. Subsequently, the endpoint can be
-associated with additional addresses using \fBsctp_bindx\fR(3SOCKET). By
-using a special value of \fBINADDR_ANY\fR with IP or the unspecified address
-(all zeros) with IPv6 in the \fBbind()\fR or \fBsctp_bindx()\fR calls, an
+address using the
+.BR bind "(3SOCKET) call. Subsequently, the endpoint can be"
+associated with additional addresses using
+.BR sctp_bindx "(3SOCKET). By"
+using a special value of
+.B INADDR_ANY
+with IP or the unspecified address
+(all zeros) with IPv6 in the
+.B bind()
+or
+.B sctp_bindx()
+calls, an
 endpoint can be bound to all available IP or IPv6 addresses on the system.
 .sp
 .LP
@@ -128,47 +136,88 @@ style) socket type.
 One-to-one style socket interface supports similar semantics as sockets for
 connection oriented protocols, such as TCP. Thus, a passive socket is created
 by calling the \fBlisten\fR(3SOCKET) function after binding the socket using
-\fBbind()\fR. Associations to this passive socket can be received using
-\fBaccept\fR(3SOCKET) function. Active sockets use the \fBconnect\fR(3SOCKET)
+.BR bind() .
+Associations to this passive socket can be received using
+.BR accept (3SOCKET)
+function. Active sockets use the \fBconnect\fR(3SOCKET)
 function after binding  to initiate an association. If an active socket is
 not explicitly bound, an implicit binding is performed. If an application
 wants to exchange data during the association setup phase, it should not call
 \fBconnect()\fR, but use \fBsendto\fR(3SOCKET)/\fBsendmsg\fR(3SOCKET) to
 implicitly initiate an association. Once an association has been established,
-\fBread\fR(2) and \fBwrite\fR(2) can used to exchange data. Additionally,
-\fBsend\fR(3SOCKET), \fBrecv\fR(3SOCKET), \fBsendto()\fR,
-\fBrecvfrom\fR(3SOCKET), \fBsendmsg()\fR, and \fBrecvmsg\fR(3SOCKET) can be
+.BR read (2)
+and
+.BR write (2)
+can used to exchange data. Additionally,
+.BR send (3SOCKET),
+.BR recv (3SOCKET),
+.BR sendto() ,
+\fBrecvfrom\fR(3SOCKET),
+.BR sendmsg() ,
+and
+.BR recvmsg "(3SOCKET) can be"
 used.
 .sp
 .LP
 One-to-many socket interface supports similar semantics as sockets for
 connection less protocols, such as UDP (however, unlike UDP, it does not
 support broadcast or multicast communications).  A passive socket is created
-using the \fBlisten()\fR function after binding the socket using
-\fBbind()\fR. An \fBaccept()\fR call is not needed to receive associations to
-this passive socket (in fact, an \fBaccept()\fR on a one-to-many socket will
+using the
+.B listen()
+function after binding the socket using
+.BR bind() .
+An
+.B accept()
+call is not needed to receive associations to
+this passive socket (in fact, an
+.B accept()
+on a one-to-many socket will
 fail). Associations are accepted automatically and notifications of new
-associations are delivered in \fBrecvmsg()\fR provided notifications are
+associations are delivered in
+.B recvmsg()
+provided notifications are
 enabled. Active sockets after binding (implicitly or explicitly) need not
-call \fBconnect()\fR to establish an association, implicit associations can
+call
+.B connect()
+to establish an association, implicit associations can
 be created using \fBsendmsg()\fR/\fBrecvmsg()\fR or
 \fBsendto()\fR/\fBrecvfrom()\fR calls. Such implicit associations cannot be
-created using \fBsend()\fR and \fBrecv()\fR calls. On an SCTP socket
+created using
+.B send()
+and
+.B recv()
+calls. On an SCTP socket
 (one-to-one or one-to-many), an association may be established using
-\fBsendmsg()\fR. However, if an association already exists for the
-destination address specified in the \fImsg_name\fR member of the \fImsg\fR
-parameter, \fBsendmsg()\fR must include the association id in \fImsg_iov\fR
-member of the \fImsg\fR parameter (using \fBsctp_sndrcvinfo\fR structure) for
+.BR sendmsg() .
+However, if an association already exists for the
+destination address specified in the
+.I msg_name
+member of the
+.IR msg
+parameter,
+.B sendmsg()
+must include the association id in
+.IR msg_iov
+member of the
+.I msg
+parameter (using \fBsctp_sndrcvinfo\fR structure) for
 a one-to-many SCTP socket. If the association id is not provided,
-\fBsendmsg()\fR fails with \fBEADDRINUSE\fR. On a one-to-one socket the
-destination information in the \fImsg\fR parameter is ignored for an
+\fBsendmsg()\fR fails with
+.BR EADDRINUSE .
+On a one-to-one socket the
+destination information in the
+.I msg
+parameter is ignored for an
 established association.
 .sp
 .LP
 A one-to-one style association can be created from a one-to-many association
 by branching it off using the \fBsctp_peeloff\fR(3SOCKET) call; \fBsend()\fR
-and \fBrecv()\fR can be used on such peeled off associations. Calling
-\fBclose\fR(2) on a one-to-many socket will gracefully shutdown all the
+and
+.B recv()
+can be used on such peeled off associations. Calling
+.BR close (2)
+on a one-to-many socket will gracefully shutdown all the
 associations represented by that one-to-many socket.
 .sp
 .LP
@@ -177,14 +226,16 @@ can be used to access advanced features provided by SCTP.
 .sp
 .LP
 SCTP provides the following socket options which are set using
-\fBsetsockopt\fR(3SOCKET) and read using \fBgetsockopt\fR(3SOCKET). The
+.BR setsockopt (3SOCKET)
+and read using
+.BR getsockopt "(3SOCKET). The"
 option level is the protocol number for SCTP, available from
-\fBgetprotobyname\fR(3SOCKET).
+.BR getprotobyname (3SOCKET).
 .sp
 .ne 2
 .mk
 .na
-\fBSCTP_NODELAY\fR
+.B SCTP_NODELAY
 .ad
 .sp .6
 .RS 4n
@@ -195,7 +246,7 @@ Turn on/off any Nagle-like algorithm (similar to \fBTCP_NODELAY\fR).
 .ne 2
 .mk
 .na
-\fBSO_RCVBUF\fR
+.B SO_RCVBUF
 .ad
 .sp .6
 .RS 4n
@@ -206,7 +257,7 @@ Set the receive buffer.
 .ne 2
 .mk
 .na
-\fBSO_SNDBUF\fR
+.B SO_SNDBUF
 .ad
 .sp .6
 .RS 4n
@@ -217,7 +268,7 @@ Set the send buffer.
 .ne 2
 .mk
 .na
-\fBSCTP_AUTOCLOSE\fR
+.B SCTP_AUTOCLOSE
 .ad
 .sp .6
 .RS 4n
@@ -230,7 +281,7 @@ indicates that no associations should be closed automatically.
 .ne 2
 .mk
 .na
-\fBSCTP_EVENTS\fR
+.B SCTP_EVENTS
 .ad
 .sp .6
 .RS 4n
@@ -242,7 +293,7 @@ receive.
 .ne 2
 .mk
 .na
-\fBSCTP_STATUS\fR
+.B SCTP_STATUS
 .ad
 .sp .6
 .RS 4n
@@ -253,7 +304,7 @@ Retrieve current status information about an SCTP association.
 .ne 2
 .mk
 .na
-\fBSCTP_GET_ASSOC_STATS\fR
+.B SCTP_GET_ASSOC_STATS
 .ad
 .sp .6
 .RS 4n
@@ -326,9 +377,15 @@ issues with some network utilities. This requires a system administrator to
 be careful in setting up the system.
 .sp
 .LP
-For example, the \fBtcpd\fR allows an administrator to use a simple form of
-address/hostname access control. While \fBtcpd\fR can work with SCTP, the
-access control part can have some problems. The \fBtcpd\fR access control is
+For example, the
+.B tcpd
+allows an administrator to use a simple form of
+address/hostname access control. While
+.B tcpd
+can work with SCTP, the
+access control part can have some problems. The
+.B tcpd
+access control is
 only based on one of the addresses at association setup time. Once as
 association is allowed, no more checking is performed. This means that during
 the life time of the association, SCTP packets from different addresses of
@@ -338,7 +395,9 @@ blocked.
 .sp
 .LP
 Another example is the use of IP Filter, which provides several functions
-such as IP packet filtering (\fBipf\fR(1M)) and NAT \fBipnat\fR(1M)). For
+such as IP packet filtering (\fBipf\fR(1M)) and NAT
+.BR ipnat (1M)).
+For
 packet filtering, one issue is that a filter policy can block packets from
 some of the addresses of an association while allowing packets from other
 addresses to go through. This can degrade SCTP's performance when failure
@@ -352,17 +411,34 @@ for the association.
 .sp
 .LP
 \fBipf\fR(1M), \fBipnat\fR(1M), \fBndd\fR(1M),  \fBioctl\fR(2),
-\fBclose\fR(2), \fBread\fR(2), \fBwrite\fR(2), \fBaccept\fR(3SOCKET),
-\fBbind\fR(3SOCKET), \fBconnect\fR(3SOCKET), \fBgetprotobyname\fR(3SOCKET),
-\fBgetsockopt\fR(3SOCKET), \fBlibsctp\fR(3LIB), \fBlisten\fR(3SOCKET),
-\fBrecv\fR(3SOCKET), \fBrecvfrom\fR(3SOCKET), \fBrecvmsg\fR(3SOCKET),
-\fBsctp_bindx\fR(3SOCKET), \fBsctp_getladdrs\fR(3SOCKET),
-\fBsctp_getpaddrs\fR(3SOCKET), \fBsctp_freepaddrs\fR(3SOCKET),
+.BR close (2),
+.BR read (2),
+.BR write (2),
+.BR accept (3SOCKET),
+.BR bind (3SOCKET),
+.BR connect (3SOCKET),
+.BR getprotobyname (3SOCKET),
+.BR getsockopt (3SOCKET),
+.BR libsctp (3LIB),
+.BR listen (3SOCKET),
+.BR recv (3SOCKET),
+\fBrecvfrom\fR(3SOCKET), \fBrecvmsg\fR(3SOCKET),
+.BR sctp_bindx (3SOCKET),
+.BR sctp_getladdrs (3SOCKET),
+.BR sctp_getpaddrs (3SOCKET),
+\fBsctp_freepaddrs\fR(3SOCKET),
 \fBsctp_opt_info\fR(3SOCKET), \fBsctp_peeloff\fR(3SOCKET),
-\fBsctp_recvmsg\fR(3SOCKET), \fBsctp_sendmsg\fR(3SOCKET),
-\fBsend\fR(3SOCKET), \fBsendmsg\fR(3SOCKET), \fBsendto\fR(3SOCKET),
-\fBsocket\fR(3SOCKET), \fBipfilter\fR(5), \fBtcp\fR(7P), \fBudp\fR(7P),
-\fBinet\fR(7P), \fBinet6\fR(7P), \fBip\fR(7P), \fBip6\fR(7P)
+.BR sctp_recvmsg (3SOCKET),
+.BR sctp_sendmsg (3SOCKET),
+.BR send (3SOCKET),
+.BR sendmsg (3SOCKET),
+.BR sendto (3SOCKET),
+.BR socket (3SOCKET),
+\fBipfilter\fR(5), \fBtcp\fR(7P), \fBudp\fR(7P),
+.BR inet (7P),
+.BR inet6 (7P),
+.BR ip (7P),
+.BR ip6 (7P)
 .sp
 .LP
 R. Stewart, Q. Xie, K. Morneault, C. Sharp, H. Schwarzbauer, T. Taylor,  I.
@@ -384,18 +460,21 @@ A socket operation may fail if:
 .ne 2
 .mk
 .na
-\fBEPROTONOSUPPORT\fR
+.B EPROTONOSUPPORT
 .ad
 .RS 19n
 .rt
-The socket type is other than \fBSOCK_STREAM\fR and \fBSOCK_SEQPACKET\fR.
+The socket type is other than
+.B SOCK_STREAM
+and
+.BR SOCK_SEQPACKET .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBETIMEDOUT\fR
+.B ETIMEDOUT
 .ad
 .RS 19n
 .rt
@@ -406,7 +485,7 @@ An association was dropped due to excessive retransmissions.
 .ne 2
 .mk
 .na
-\fBECONNREFUSED\fR
+.B ECONNREFUSED
 .ad
 .RS 19n
 .rt
@@ -417,11 +496,13 @@ The remote peer refused establishing an association.
 .ne 2
 .mk
 .na
-\fBEADDRINUSE\fR
+.B EADDRINUSE
 .ad
 .RS 19n
 .rt
-A \fBbind()\fR operation was attempted on a socket with a network
+A
+.B bind()
+operation was attempted on a socket with a network
 address/port pair that has already been bound to another socket.
 .RE
 
@@ -429,11 +510,13 @@ address/port pair that has already been bound to another socket.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 19n
 .rt
-A \fBbind()\fR operation was attempted on a socket with an invalid network
+A
+.B bind()
+operation was attempted on a socket with an invalid network
 address.
 .RE
 
@@ -441,7 +524,7 @@ address.
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 19n
 .rt

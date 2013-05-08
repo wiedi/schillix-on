@@ -42,20 +42,34 @@ process where caller provides /proc functionality
 .LP
 The interfaces  \fBtnfctl_indirect_open()\fR and \fBtnfctl_check_libs()\fR
 are used to control probes in another process where the
-\fBlibtnfctl\fR(3TNF) client has already opened  \fBproc\fR(4) on the target
+\fBlibtnfctl\fR(3TNF) client has already opened 
+.BR proc (4)
+on the target
 process. An example of this is when the client is a debugger. Since these
-clients already use \fB/proc\fR on the target, \fBlibtnfctl\fR(3TNF) cannot
-use \fB/proc\fR directly.  Therefore, these clients must provide callback
+clients already use
+.B /proc
+on the target, \fBlibtnfctl\fR(3TNF) cannot
+use
+.B /proc
+directly.  Therefore, these clients must provide callback
 functions that can be used to inspect and to update the target process.
 The target process must load \fBlibtnfprobe.so.1\fR (defined in
 \fB<tnf/tnfctl.h>\fR as macro \fBTNFCTL_LIBTNFPROBE).\fR
 .sp
 .LP
-The first argument \fIprochandle\fR is a pointer to an opaque structure
+The first argument
+.I prochandle
+is a pointer to an opaque structure
 that is used in the callback functions that inspect and update the target
 process. This structure should encapsulate the state that the caller needs
-to use \fB/proc\fR on the target process (the  \fB/proc\fR file descriptor).
-The second argument, \fIconfig\fR, is a pointer to
+to use
+.B /proc
+on the target process (the 
+.B /proc
+file descriptor).
+The second argument,
+.IR config ,
+is a pointer to
 .sp
 .in +2
 .nf
@@ -74,25 +88,47 @@ struct tnfctl_ind_config {
 
 .sp
 .LP
-The first field  \fIp_read\fR is the address of a function that can read
+The first field 
+.I p_read
+is the address of a function that can read
 \fBsize\fR bytes at address \fIaddr\fR in the target image into the buffer
 \fIbuf\fR. The function should return  \fB0\fR upon success.. The second
-field \fIp_write\fR is the address of a function that can write  \fBsize\fR
-bytes at address \fIaddr\fR in the target image from the buffer \fIbuf\fR.
-The function should return \fB0\fR upon success. The third field
+field
+.I p_write
+is the address of a function that can write 
+.BR size
+bytes at address
+.I addr
+in the target image from the buffer \fIbuf\fR.
+The function should return
+.B 0
+upon success. The third field
 \fIp_getpid\fR is the address of a function that should return the process
-id of the target process  (\fIprochandle\fR). The fourth field
+id of the target process 
+.RI ( prochandle ).
+The fourth field
 \fIp_obj_iter\fR is the address of a function that iterates over all load
 objects and the executable by calling the callback function  \fIfunc\fR with
-\fIclient_data\fR. If \fIfunc\fR returns \fB0\fR, \fIp_obj_iter\fR should
+.IR client_data .
+If \fIfunc\fR returns
+.BR 0 ,
+\fIp_obj_iter\fR should
 continue processing link objects.  If \fIfunc\fR returns any other value,
 \fIp_obj_iter\fR should stop calling the callback function and return that
-value. \fIp_obj_iter\fR should return  \fB0\fR if it iterates over all load
+value.
+.I p_obj_iter
+should return 
+.B 0
+if it iterates over all load
 objects.
 .sp
 .LP
-If a failure is returned by any of the functions in \fIconfig\fR, the error
-is propagated back as \fBPREX_ERR_INTERNAL\fR by the \fBlibtnfctl\fR
+If a failure is returned by any of the functions in
+.IR config ,
+the error
+is propagated back as
+.B PREX_ERR_INTERNAL
+by the \fBlibtnfctl\fR
 interface that called it.
 .sp
 .LP
@@ -116,7 +152,9 @@ typedef struct tnfctl_ind_obj_info {
 .sp
 .LP
 \fIobjfd\fR should be the file descriptor of the load object or executable.
-If it is \fB\(mi1\fR, then \fIobjname\fR should be an absolute pathname to
+If it is \fB\(mi1\fR, then
+.I objname
+should be an absolute pathname to
 the load object or executable. If \fIobjfd\fR is not closed by
 \fBlibtnfctl\fR, it should be closed by the load object iterator function.
 \fItext_base\fR and \fIdata_base\fR are the addresses where the text and
@@ -142,7 +180,7 @@ The following error codes apply to  \fBtnfctl_indirect_open()\fR:
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_ALLOCFAIL\fR
+.B TNFCTL_ERR_ALLOCFAIL
 .ad
 .RS 28n
 .rt
@@ -153,7 +191,7 @@ A memory allocation failure occurred.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_BUSY\fR
+.B TNFCTL_ERR_BUSY
 .ad
 .RS 28n
 .rt
@@ -164,7 +202,7 @@ Internal tracing is being used.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_NOLIBTNFPROBE\fR
+.B TNFCTL_ERR_NOLIBTNFPROBE
 .ad
 .RS 28n
 .rt
@@ -175,7 +213,7 @@ Internal tracing is being used.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_INTERNAL\fR
+.B TNFCTL_ERR_INTERNAL
 .ad
 .RS 28n
 .rt
@@ -189,7 +227,7 @@ The following error codes apply to  \fBtnfctl_check_libs()\fR:
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_ALLOCFAIL\fR
+.B TNFCTL_ERR_ALLOCFAIL
 .ad
 .RS 24n
 .rt
@@ -200,7 +238,7 @@ A memory allocation failure occurred.
 .ne 2
 .mk
 .na
-\fBTNFCTL_ERR_INTERNAL\fR
+.B TNFCTL_ERR_INTERNAL
 .ad
 .RS 24n
 .rt
@@ -210,7 +248,9 @@ An internal error occurred.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -229,13 +269,16 @@ MT LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBprex\fR(1), \fBTNF_PROBE\fR(3TNF), \fBdlclose\fR(3C), \fBdlopen\fR(3C),
+.BR prex (1),
+.BR TNF_PROBE (3TNF),
+.BR dlclose (3C),
+.BR dlopen (3C),
 \fBlibtnfctl\fR(3TNF), \fBtnfctl_probe_enable\fR(3TNF),
 \fBtnfctl_probe_trace\fR(3TNF), \fBtracing\fR(3TNF), \fBproc\fR(4),
-\fBattributes\fR(5)
+.BR attributes (5)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide
 .SH NOTES
 .sp
 .LP

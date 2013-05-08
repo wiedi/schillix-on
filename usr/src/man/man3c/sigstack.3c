@@ -59,43 +59,64 @@ sigstack \- set and/or get alternate signal stack context
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsigstack()\fR function allows the calling process to indicate to the
+The
+.B sigstack()
+function allows the calling process to indicate to the
 system an area of its address space to be used for processing signals
 received by the process.
 .sp
 .LP
-If the \fIss\fR argument is not a null pointer, it must point to a
+If the
+.I ss
+argument is not a null pointer, it must point to a
 \fBsigstack\fR structure. The length of the application-supplied stack must
-be at least \fBSIGSTKSZ\fR bytes. If the alternate signal stack overflows,
-the resulting behavior is undefined.  (See \fBUSAGE\fR below.)
+be at least
+.B SIGSTKSZ
+bytes. If the alternate signal stack overflows,
+the resulting behavior is undefined.  (See
+.B USAGE
+below.)
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The value of the \fBss_onstack\fR member indicates whether the process
+The value of the
+.B ss_onstack
+member indicates whether the process
 wants the system to use an alternate signal stack when delivering signals.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The value of the \fBss_sp\fR member indicates the desired location of the
+The value of the
+.B ss_sp
+member indicates the desired location of the
 alternate signal stack area in the process' address space.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If the \fIss\fR argument is a null pointer, the current alternate signal
+If the
+.I ss
+argument is a null pointer, the current alternate signal
 stack context is not changed.
 .RE
 .sp
 .LP
-If the \fIoss\fR argument is not a null pointer, it points to a
+If the
+.I oss
+argument is not a null pointer, it points to a
 \fBsigstack\fR structure in which the current alternate signal stack context
-is placed.  The value stored in the \fBss_onstack\fR member of \fIoss\fR
+is placed.  The value stored in the
+.B ss_onstack
+member of
+.IR oss
 will be non-zero if the process is currently executing on the alternate
-signal stack.  If the \fIoss\fR argument is a null pointer, the current
+signal stack.  If the
+.I oss
+argument is a null pointer, the current
 alternate signal stack context is not returned.
 .sp
 .LP
@@ -107,22 +128,32 @@ stack, the system arranges a switch to the alternate signal stack for the
 duration of the signal handler's execution.
 .sp
 .LP
-After a successful call to one of the \fIexec\fR functions, there are no
+After a successful call to one of the
+.I exec
+functions, there are no
 alternate signal stacks in the new process image.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBsigstack()\fR returns \fB0\fR.  Otherwise,
-it returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
+Upon successful completion,
+.B sigstack()
+returns
+.BR 0 .
+Otherwise,
+it returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBsigstack()\fR function will fail if:
+The
+.B sigstack()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 9n
 .rt
@@ -133,31 +164,51 @@ An attempt was made to modify an active stack.
 .sp
 .LP
 A portable application, when being written or rewritten, should use
-\fBsigaltstack\fR(2) instead of \fBsigstack()\fR.
+.BR sigaltstack (2)
+instead of
+.BR sigstack() .
 .sp
 .LP
 The direction of stack growth is not indicated in the historical definition
-of \fBstruct sigstack\fR. The only way to portably establish a stack pointer
+of
+.BR "struct sigstack" .
+The only way to portably establish a stack pointer
 is for the application to determine stack growth direction, or to allocate a
 block of storage and set the stack pointer to the middle. \fBsigstack()\fR
-may assume that the size of the signal stack is \fBSIGSTKSZ\fR as found in
+may assume that the size of the signal stack is
+.B SIGSTKSZ
+as found in
 <\fBsignal.h\fR>. An application that would like to specify a signal stack
-size other than \fBSIGSTKSZ\fR should use \fBsigaltstack\fR(2).
+size other than
+.B SIGSTKSZ
+should use
+.BR sigaltstack (2).
 .sp
 .LP
-Applications should not use \fBlongjmp\fR(3C) to leave a signal handler
-that is running on a stack established with \fBsigstack()\fR. Doing so may
+Applications should not use
+.BR longjmp "(3C) to leave a signal handler"
+that is running on a stack established with
+.BR sigstack() .
+Doing so may
 disable future use of the signal stack.  For abnormal exit from a signal
-handler, \fBsiglongjmp\fR(3C), \fBsetcontext\fR(2), or \fBswapcontext\fR(3C)
+handler, \fBsiglongjmp\fR(3C),
+.BR setcontext (2),
+or
+.BR swapcontext (3C)
 may be used. These functions fully support switching from one stack to
 another.
 .sp
 .LP
-The \fBsigstack()\fR function requires the application to have knowledge of
+The
+.B sigstack()
+function requires the application to have knowledge of
 the underlying system's stack architecture.  For this reason,
-\fBsigaltstack\fR(2) is recommended over this function.
+.BR sigaltstack (2)
+is recommended over this function.
 .SH SEE ALSO
 .sp
 .LP
 \fBfork\fR(2), \fB_longjmp\fR(3C), \fBlongjmp\fR(3C), \fBsetjmp\fR(3C),
-\fBsigaltstack\fR(2), \fBsiglongjmp\fR(3C), \fBsigsetjmp\fR(3C)
+.BR sigaltstack (2),
+.BR siglongjmp (3C),
+.BR sigsetjmp (3C)

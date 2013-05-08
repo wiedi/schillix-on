@@ -62,19 +62,36 @@ These commands encode and decode files as follows:
 .SS "uuencode"
 .sp
 .LP
-The \fBuuencode\fR utility converts a binary file into an encoded
-representation that can be sent using \fBmail\fR(1). It encodes the contents
-of \fIsource-file\fR, or the standard input if no \fIsource-file\fR argument
-is given. The \fIdecode_pathname\fR argument is required. The
+The
+.B uuencode
+utility converts a binary file into an encoded
+representation that can be sent using
+.BR mail (1).
+It encodes the contents
+of
+.IR source-file ,
+or the standard input if no \fIsource-file\fR argument
+is given. The
+.I decode_pathname
+argument is required. The
 \fIdecode_pathname\fR is included in the encoded file's header as the name
-of the file into which \fBuudecode\fR is to place the binary (decoded) data.
+of the file into which
+.B uudecode
+is to place the binary (decoded) data.
 \fBuuencode\fR also includes the permission modes of \fIsource-file\fR
-(except \fBsetuid\fR, \fBsetgid\fR, and sticky-bits), so that
+(except
+.BR setuid ,
+.BR setgid ,
+and sticky-bits), so that
 \fIdecode_pathname\fR is recreated with those same permission modes.
 .SS "uudecode"
 .sp
 .LP
-The \fBuudecode\fR utility reads an \fIencoded-file\fR, strips off any
+The
+.B uudecode
+utility reads an
+.IR encoded-file ,
+strips off any
 leading and trailing lines added by mailer programs, and recreates the
 original binary data with the filename and the mode specified in the
 header.
@@ -93,7 +110,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-m\fR
+.B -m
 .ad
 .RS 6n
 .rt
@@ -120,7 +137,7 @@ used in a pipeline.
 .ne 2
 .mk
 .na
-\fB-p\fR
+.B -p
 .ad
 .RS 14n
 .rt
@@ -131,19 +148,25 @@ Decodes \fIencoded-file\fR and sends it to standard output. This allows
 .SH OPERANDS
 .sp
 .LP
-The following operands are supported by \fBuuencode\fR and
-\fBuudecode\fR:
+The following operands are supported by
+.B uuencode
+and
+.BR uudecode :
 .SS "uuencode"
 .sp
 .ne 2
 .mk
 .na
-\fIdecode_pathname\fR
+.I decode_pathname
 .ad
 .RS 19n
 .rt
-The pathname of the file into which the \fBuudecode\fR utility will place
-the decoded file. If there are characters in \fIdecode_pathname\fR that are
+The pathname of the file into which the
+.B uudecode
+utility will place
+the decoded file. If there are characters in
+.I decode_pathname
+that are
 not in the portable filename character set, the results are unspecified.
 .RE
 
@@ -167,22 +190,34 @@ A pathname of the file to be encoded.
 .ad
 .RS 16n
 .rt
-The pathname of a file containing the output of \fBuuencode\fR.
+The pathname of a file containing the output of
+.BR uuencode .
 .RE
 
 .SH USAGE
 .sp
 .LP
-See \fBlargefile\fR(5) for the description of the behavior of
+See
+.BR largefile (5)
+for the description of the behavior of
 \fBuuencode\fR and \fBuudecode\fR when encountering files greater than or
 equal to 2 Gbyte ( 2^31 bytes).
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
-See \fBenviron\fR(5) for descriptions of the following environment
-variables that affect the execution of \fBuuencode\fR and \fBuudecode\fR:
-\fBLANG\fR, \fBLC_ALL\fR, \fBLC_CTYPE\fR, \fBLC_MESSAGES\fR, and
-\fBNLSPATH\fR.
+See
+.BR environ (5)
+for descriptions of the following environment
+variables that affect the execution of
+.B uuencode
+and
+.BR uudecode :
+.BR LANG ,
+.BR LC_ALL ,
+.BR LC_CTYPE ,
+.BR LC_MESSAGES ,
+and
+.BR NLSPATH .
 .SH OUTPUT
 .sp
 .LP
@@ -324,21 +359,32 @@ end\en
 In both cases, the lines have no preceding or trailing blank characters.
 .sp
 .LP
-The algorithm that is used for lines between \fBbegin\fR and \fBend\fR
+The algorithm that is used for lines between
+.B begin
+and
+.BR end
 takes three octets as input and writes four characters of output by
 splitting the input at six-bit intervals into four octets, containing data
 in the lower six bits only. These octets are converted to characters by
-adding a value of \fB0x20\fR to each octet, so that each octet is in the
+adding a value of
+.B 0x20
+to each octet, so that each octet is in the
 range \fB0x20\(mi0x5f\fR, and each octet is assumed to represent a printable
 character. Each octect is then translated into the corresponding character
 codes for the codeset in use in the current locale. For example, the octet
-\fB0x41\fR, representing '\fBA\fR', would be translated to '\fBA\fR' in the
-current codeset, such as \fB0xc1\fR if the codeset were \fBEBCDIC\fR.
+.BR 0x41 ,
+representing '\fBA\fR', would be translated to '\fBA\fR' in the
+current codeset, such as
+.B 0xc1
+if the codeset were
+.BR EBCDIC .
 .sp
 .LP
 Where the bits of two octets are combined, the least significant bits of
 the first octet are shifted left and combined with the most significant bits
-of the second octet shifted right. Thus, the three octets \fBA\fR, \fBB\fR,
+of the second octet shifted right. Thus, the three octets
+.BR A ,
+.BR B ,
 \fBC\fR are converted into the four octets:
 .sp
 .in +2
@@ -357,7 +403,9 @@ These octets are then translated into the local character set.
 .sp
 .LP
 Each encoded line contains a length character, equal to the number of
-characters to be decoded plus \fB0x20\fR translated to the local character
+characters to be decoded plus
+.B 0x20
+translated to the local character
 set as described above, followed by the encoded characters. The maximum
 number of octets to be encoded on each line is 45.
 .SH EXIT STATUS
@@ -368,7 +416,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 6n
 .rt
@@ -379,7 +427,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fB>0\fR
+.B >0
 .ad
 .RS 6n
 .rt
@@ -389,7 +437,9 @@ An error occurred.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -408,9 +458,14 @@ Interface StabilityStandard
 .SH SEE ALSO
 .sp
 .LP
-\fBmail\fR(1), \fBmailx\fR(1), \fBuucp\fR(1C), \fBuux\fR(1C),
-\fBattributes\fR(5), \fBenviron\fR(5), \fBlargefile\fR(5),
-\fBstandards\fR(5)
+.BR mail (1),
+.BR mailx (1),
+.BR uucp (1C),
+.BR uux (1C),
+.BR attributes (5),
+.BR environ (5),
+\fBlargefile\fR(5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
@@ -419,10 +474,17 @@ control information), causing it to take longer to transmit than the
 equivalent binary.
 .sp
 .LP
-The user on the remote system who is invoking \fBuudecode\fR (typically
-\fBuucp\fR) must have write permission on the file specified in the
-\fIdecode_pathname\fR.
+The user on the remote system who is invoking
+.B uudecode
+(typically
+.BR uucp )
+must have write permission on the file specified in the
+.IR decode_pathname .
 .sp
 .LP
-If you invoke \fBuuencode\fR and then execute \fBuudecode\fR on a file in
+If you invoke
+.B uuencode
+and then execute
+.B uudecode
+on a file in
 the same directory, you will overwrite the original file.

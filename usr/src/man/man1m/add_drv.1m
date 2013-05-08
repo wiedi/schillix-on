@@ -32,42 +32,62 @@ add_drv \- add a new device driver to the system
 .SH DESCRIPTION
 .sp
 .LP
-The \fBadd_drv\fR command is used to inform the system about newly
+The
+.B add_drv
+command is used to inform the system about newly
 installed device drivers.
 .sp
 .LP
 Each device on the system has a name associated with it. This name is
-represented by the \fBname\fR property for the device. Similarly, the device
+represented by the
+.B name
+property for the device. Similarly, the device
 may also have a list of driver names associated with it. This list is
-represented by the \fBcompatible\fR property for the device.
+represented by the
+.B compatible
+property for the device.
 .sp
 .LP
 The system determines which devices will be managed by the driver being
-added by examining the contents of the \fBname\fR property and the
+added by examining the contents of the
+.B name
+property and the
 \fBcompatible\fR property (if it exists) on each device. If the value in the
 \fBname\fR property does not match the driver being added, each entry in the
 \fBcompatible\fR property is tried, in order, until either a match occurs or
-there are no more entries in the \fBcompatible\fR property.
+there are no more entries in the
+.B compatible
+property.
 .sp
 .LP
 In some cases, adding a new driver may require a reconfiguration boot. See
-the \fBNOTES\fR section.
+the
+.B NOTES
+section.
 .sp
 .LP
 Aliases might require quoting (with double-quotes) if they contain numbers.
-See \fBEXAMPLES\fR.
+See
+.BR EXAMPLES .
 .SS "The \fB/etc/minor_perm\fR File"
 .sp
 .LP
 \fBadd_drv\fR and \fBupdate_drv\fR(1M) read the \fB/etc/minor_perm\fR file
 to obtain permission information. The permission specified is applied to
 matching minor nodes created when a device bound to the driver is attached.
-A minor node's permission may be manually changed by \fBchmod\fR(1). For
+A minor node's permission may be manually changed by
+.BR chmod (1).
+For
 such nodes, the specified permissions apply, overriding the default
-permissions specified via \fBadd_drv\fR or \fBupdate_drv\fR(1M).
+permissions specified via
+.B add_drv
+or
+.BR update_drv (1M).
 .sp
 .LP
-The format of the \fB/etc/minor_perm\fR file is as follows:
+The format of the
+.B /etc/minor_perm
+file is as follows:
 .sp
 .in +2
 .nf
@@ -95,23 +115,52 @@ mm:kmem 0640 root bin
 
 .sp
 .LP
-The first line sets all devices exported by the \fBsd\fR node to \fB0640\fR
-permissions, owned by \fBroot\fR, with group \fBsys\fR. In the second line,
-devices such as \fBa,cu\fR \fBand\fR \fBz,cu\fR exported by the \fBzs\fR
-driver are set to \fB0600\fR permission, owned by \fBuucp\fR, with group
-\fBuucp\fR. In the third line the \fBkmem\fR device exported by the \fBmm\fR
-driver is set to \fB0640\fR permission, owned by \fBroot\fR, with group
-\fBbin\fR.
+The first line sets all devices exported by the
+.B sd
+node to
+.BR 0640
+permissions, owned by
+.BR root ,
+with group
+.BR sys .
+In the second line,
+devices such as
+.B "a,cu and"
+\fBz,cu\fR exported by the \fBzs\fR
+driver are set to
+.B 0600
+permission, owned by
+.BR uucp ,
+with group
+.BR uucp .
+In the third line the
+.B kmem
+device exported by the
+.BR mm
+driver is set to
+.B 0640
+permission, owned by
+.BR root ,
+with group
+.BR bin .
 .SS "Running \fBadd_drv\fR from a \fBpostinstall\fR Script"
 .sp
 .LP
-When running \fBadd_drv\fR from within the context of a package's
+When running
+.B add_drv
+from within the context of a package's
 postinstall script, you must consider whether the package is being added to
 a system image or to a running system. When a package is being installed on
 a system image, such as occurs with the Live Upgrade or flash features (see
-\fBlive_upgrade\fR(5) and \fBflarcreate\fR(1M)), the \fBBASEDIR\fR variable
+.BR live_upgrade (5)
+and \fBflarcreate\fR(1M)), the
+.B BASEDIR
+variable
 refers to the image's base directory. In this situation, \fBadd_drv\fR
-should be invoked with \fB-b\fR \fB$BASEDIR\fR. This causes \fBadd_drv\fR
+should be invoked with
+.BR "-b $BASEDIR" .
+This causes
+.BR add_drv
 only to update the image's system files; a reboot of the system or client
 would be required to make the driver operational.
 .sp
@@ -119,8 +168,12 @@ would be required to make the driver operational.
 When a package is being installed on the running system itself, the system
 files need to be updated, as in the case above. However, the running kernel
 can be informed of the existence of the new driver without requiring a
-reboot. To accomplish this, the postinstall script must invoke \fBadd_drv\fR
-without the \fB-b\fR option. Accordingly, \fBpostinstall\fR scripts invoking
+.RB "reboot. To accomplish this, the postinstall script must invoke" " add_drv"
+without the
+.B -b
+option. Accordingly,
+.B postinstall
+scripts invoking
 \fBadd_drv\fR should be written thusly:
 .sp
 .in +2
@@ -153,7 +206,9 @@ fi
 
 .sp
 .LP
-The \fB-b\fR option is described below.
+The
+.B -b
+option is described below.
 .SH OPTIONS
 .sp
 .ne 2
@@ -163,18 +218,27 @@ The \fB-b\fR option is described below.
 .ad
 .RS 26n
 .rt
-Installs the driver on the system with a root directory of \fIbasedir\fR
-rather than installing on the system executing \fBadd_drv\fR. This option is
+Installs the driver on the system with a root directory of
+.IR basedir
+rather than installing on the system executing
+.BR add_drv .
+This option is
 typically used in package post-installation scripts when the package is not
-being installed on the system executing the \fBpkgadd\fR command. The system
-using \fIbasedir\fR as its root directory must reboot to complete the driver
+being installed on the system executing the
+.B pkgadd
+command. The system
+using
+.I basedir
+as its root directory must reboot to complete the driver
 installation.
 .LP
 Note -
 .sp
 .RS 2
 The root file system of any non-global zones must not be referenced with
-the \fB-b\fR option. Doing so might damage the global zone's file system,
+the
+.B -b
+option. Doing so might damage the global zone's file system,
 might compromise the security of the global zone, and might damage the
 non-global zone's file system. See \fBzones\fR(5).
 .RE
@@ -188,7 +252,8 @@ non-global zone's file system. See \fBzones\fR(5).
 .ad
 .RS 26n
 .rt
-The driver being added to the system exports the class \fIclass_name\fR.
+The driver being added to the system exports the class
+.IR class_name .
 .RE
 
 .sp
@@ -200,9 +265,15 @@ The driver being added to the system exports the class \fIclass_name\fR.
 .RS 26n
 .rt
 Normally if a reconfiguration boot is required to complete the
-configuration of the driver into the system, \fBadd_drv\fR will not add the
-driver. The force flag forces \fBadd_drv\fR to add the driver even if a
-reconfiguration boot is required. See the \fB-v\fR flag.
+configuration of the driver into the system,
+.B add_drv
+will not add the
+driver. The force flag forces
+.B add_drv
+to add the driver even if a
+reconfiguration boot is required. See the
+.B -v
+flag.
 .RE
 
 .sp
@@ -214,7 +285,7 @@ reconfiguration boot is required. See the \fB-v\fR flag.
 .RS 26n
 .rt
 A white-space separated list of aliases for the driver
-\fIdevice_driver\fR.
+.IR device_driver .
 .RE
 
 .sp
@@ -226,19 +297,23 @@ A white-space separated list of aliases for the driver
 .RS 26n
 .rt
 Specify the file system permissions for device nodes created by the system
-on behalf of \fIdevice_driver\fR.
+on behalf of
+.IR device_driver .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .RS 26n
 .rt
-Do not try to load and attach \fIdevice_driver\fR, just modify the system
-configuration files for the \fIdevice_driver\fR.
+Do not try to load and attach
+.IR device_driver ,
+just modify the system
+configuration files for the
+.IR device_driver .
 .RE
 
 .sp
@@ -278,14 +353,20 @@ entries without a wildcard
 .el o
 entries with wildcards, longest wildcard first
 .RE
-The following tokens are defined: \fBread_priv_set\fR and
-\fBwrite_priv_set\fR. \fBread_priv_set\fR defines the privileges that need
+The following tokens are defined:
+.B read_priv_set
+and
+.BR write_priv_set .
+\fBread_priv_set\fR defines the privileges that need
 to be asserted in the effective set of the calling process when opening a
-device for reading. \fBwrite_priv_set\fR defines the privileges that need to
+device for reading.
+.B write_priv_set
+defines the privileges that need to
 be asserted in the effective set of the calling process when opening a
 device for writing. See \fBprivileges\fR(5).
 .sp
-A missing minor spec is interpreted as a \fB*\fR.
+A missing minor spec is interpreted as a
+.BR * .
 .RE
 
 .sp
@@ -304,23 +385,32 @@ also use specific privileges in the device's policy.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 26n
 .rt
-The verbose flag causes \fBadd_drv\fR to provide additional information
+The verbose flag causes
+.B add_drv
+to provide additional information
 regarding the success or failure of a driver's configuration into the
-system. See the \fBEXAMPLES\fR section.
+system. See the
+.B EXAMPLES
+section.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAdding SUNW Example Driver to the System
+\fBExample 1\fR Adding SUNW Example Driver to the System
 .sp
 .LP
-The following example adds the \fBSUNW,example\fR driver to a 32-bit
-system, with an alias name of \fBSUNW,alias\fR. It assumes the driver has
-already been copied to \fB/usr/kernel/drv\fR.
+The following example adds the
+.B SUNW,example
+driver to a 32-bit
+system, with an alias name of
+.BR SUNW,alias .
+It assumes the driver has
+already been copied to
+.BR /usr/kernel/drv .
 
 .sp
 .in +2
@@ -334,23 +424,44 @@ example# add_drv \fB-m\fR '* 0666 bin bin','a 0644 root sys' \e
 
 .sp
 .LP
-Every minor node created by the system for the \fBSUNW,example\fR driver
-will have the permission \fB0666\fR, and be owned by user \fBbin\fR in the
-group \fBbin\fR, except for the minor device \fBa\fR, which will be owned by
-\fBroot\fR, group \fBsys\fR, and have a permission of \fB0644\fR. The
+Every minor node created by the system for the
+.B SUNW,example
+driver
+will have the permission
+.BR 0666 ,
+and be owned by user
+.B bin
+in the
+group
+.BR bin ,
+except for the minor device
+.BR a ,
+which will be owned by
+.BR root ,
+group
+.BR sys ,
+and have a permission of
+.BR 0644 .
+The
 specified device policy requires no additional privileges to open all minor
-nodes, except minor device \fBa\fR, which requires the \fBsys_config\fR
+nodes, except minor device
+.BR a ,
+which requires the \fBsys_config\fR
 privilege when opening the device for writing.
 
 .LP
-\fBExample 2 \fRAdding Driver to the Client \fB/export/root/sun1\fR
+\fBExample 2\fR Adding Driver to the Client \fB/export/root/sun1\fR
 .sp
 .LP
 The following example adds the driver to the client
-\fB/export/root/sun1\fR. The driver is installed and loaded when the client
-machine, \fBsun1\fR, is rebooted. This second example produces the same
+.BR /export/root/sun1 .
+The driver is installed and loaded when the client
+machine,
+.BR sun1 ,
+is rebooted. This second example produces the same
 result as the first, except the changes are on the diskless client,
-\fBsun1\fR, and the client must be rebooted for the driver to be
+.BR sun1 ,
+and the client must be rebooted for the driver to be
 installed.
 
 .sp
@@ -365,18 +476,22 @@ example# add_drv \fB-m\fR '* 0666 bin bin','a 0644 root sys' \e
 
 .sp
 .LP
-See the note in the description of the \fB-b\fR option, above, specifying
+See the note in the description of the
+.B -b
+option, above, specifying
 the caveat regarding the use of this option with the Solaris zones
 feature.
 
 .LP
-\fBExample 3 \fRAdding Driver for a Device Already Managed by an Existing
+\fBExample 3\fR Adding Driver for a Device Already Managed by an Existing
 Driver
 .sp
 .LP
 The following example illustrates the case where a new driver is added for
 a device that is already managed by an existing driver. Consider a device
-that is currently managed by the driver \fBdumb_framebuffer\fR. The
+that is currently managed by the driver
+.BR dumb_framebuffer .
+The
 \fBname\fR and \fBcompatible\fR properties for this device are as follows:
 
 .sp
@@ -390,7 +505,9 @@ compatible="whizzy_framebuffer", "dumb_framebuffer"
 
 .sp
 .LP
-If \fBadd_drv\fR is used to add the \fBwhizzy_framebuffer\fR driver, the
+If
+.B add_drv
+is used to add the \fBwhizzy_framebuffer\fR driver, the
 following will result.
 
 .sp
@@ -405,7 +522,9 @@ Device managed by another driver.
 
 .sp
 .LP
-If the \fB-v\fR flag is specified, the following will result.
+If the
+.B -v
+flag is specified, the following will result.
 
 .sp
 .in +2
@@ -428,7 +547,9 @@ The following entries in /dev would be affected:
 
 .sp
 .LP
-If the \fB-v\fR and \fB-f\fR flags are specified, the driver will be added
+If the
+.B -v
+and \fB-f\fR flags are specified, the driver will be added
 resulting in the following.
 
 .sp
@@ -456,7 +577,7 @@ The above example is currently only relevant to devices exporting a generic
 device name.
 
 .LP
-\fBExample 4 \fRUse of Double Quotes in Specifying Driver Alias
+\fBExample 4\fR Use of Double Quotes in Specifying Driver Alias
 .sp
 .LP
 The following example shows the use of double quotes in specifying a driver
@@ -479,7 +600,7 @@ example# add_drv -i '"pci10c5,25"' smc
 .ne 2
 .mk
 .na
-\fB/kernel/drv\fR
+.B /kernel/drv
 .ad
 .sp .6
 .RS 4n
@@ -490,7 +611,7 @@ example# add_drv -i '"pci10c5,25"' smc
 .ne 2
 .mk
 .na
-\fB/kernel/drv/sparcv9\fR
+.B /kernel/drv/sparcv9
 .ad
 .sp .6
 .RS 4n
@@ -501,7 +622,7 @@ example# add_drv -i '"pci10c5,25"' smc
 .ne 2
 .mk
 .na
-\fB/kernel/drv/amd64\fR
+.B /kernel/drv/amd64
 .ad
 .sp .6
 .RS 4n
@@ -512,7 +633,7 @@ example# add_drv -i '"pci10c5,25"' smc
 .ne 2
 .mk
 .na
-\fB/usr/kernel/drv\fR
+.B /usr/kernel/drv
 .ad
 .sp .6
 .RS 4n
@@ -523,7 +644,7 @@ other 32-bit drivers that could potentially be shared between platforms
 .ne 2
 .mk
 .na
-\fB/usr/kernel/drv/sparcv9\fR
+.B /usr/kernel/drv/sparcv9
 .ad
 .sp .6
 .RS 4n
@@ -535,7 +656,7 @@ platforms
 .ne 2
 .mk
 .na
-\fB/usr/kernel/drv/amd64\fR
+.B /usr/kernel/drv/amd64
 .ad
 .sp .6
 .RS 4n
@@ -547,7 +668,7 @@ platforms
 .ne 2
 .mk
 .na
-\fB/platform/`uname\fR \fB-i`/kernel/drv\fR
+\fB/platform/`uname -i`/kernel/drv\fR
 .ad
 .sp .6
 .RS 4n
@@ -558,7 +679,7 @@ platforms
 .ne 2
 .mk
 .na
-\fB/platform/`uname\fR \fB-i`/kernel/drv/sparcv9\fR
+\fB/platform/`uname -i`/kernel/drv/sparcv9\fR
 .ad
 .sp .6
 .RS 4n
@@ -569,7 +690,7 @@ platforms
 .ne 2
 .mk
 .na
-\fB/platform/`uname\fR \fB-i`/kernel/drv/amd64\fR
+\fB/platform/`uname -i`/kernel/drv/amd64\fR
 .ad
 .sp .6
 .RS 4n
@@ -580,7 +701,7 @@ platforms
 .ne 2
 .mk
 .na
-\fB/etc/driver_aliases\fR
+.B /etc/driver_aliases
 .ad
 .sp .6
 .RS 4n
@@ -591,7 +712,7 @@ driver aliases file
 .ne 2
 .mk
 .na
-\fB/etc/driver_classes\fR
+.B /etc/driver_classes
 .ad
 .sp .6
 .RS 4n
@@ -602,7 +723,7 @@ driver classes file
 .ne 2
 .mk
 .na
-\fB/etc/minor_perm\fR
+.B /etc/minor_perm
 .ad
 .sp .6
 .RS 4n
@@ -613,7 +734,7 @@ minor node permissions
 .ne 2
 .mk
 .na
-\fB/etc/name_to_major\fR
+.B /etc/name_to_major
 .ad
 .sp .6
 .RS 4n
@@ -624,7 +745,7 @@ major number binding
 .ne 2
 .mk
 .na
-\fB/etc/security/device_policy\fR
+.B /etc/security/device_policy
 .ad
 .sp .6
 .RS 4n
@@ -635,7 +756,7 @@ device policy
 .ne 2
 .mk
 .na
-\fB/etc/security/extra_privs\fR
+.B /etc/security/extra_privs
 .ad
 .sp .6
 .RS 4n
@@ -645,7 +766,9 @@ device privileges
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -662,10 +785,16 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBboot\fR(1M), \fBchmod\fR(1), \fBdevfsadm\fR(1M), \fBflarcreate\fR(1M),
-\fBkernel\fR(1M), \fBmodinfo\fR(1M), \fBrem_drv\fR(1M),
-\fBupdate_drv\fR(1M), \fBdriver.conf\fR(4), \fBsystem\fR(4),
-\fBattributes\fR(5), \fBlive_upgrade\fR(5), \fBprivileges\fR(5),
+.BR boot (1M),
+.BR chmod (1),
+\fBdevfsadm\fR(1M), \fBflarcreate\fR(1M),
+.BR kernel (1M),
+\fBmodinfo\fR(1M), \fBrem_drv\fR(1M),
+.BR update_drv (1M),
+\fBdriver.conf\fR(4), \fBsystem\fR(4),
+.BR attributes (5),
+.BR live_upgrade (5),
+.BR privileges (5),
 \fBdevfs\fR(7FS), \fBddi_create_minor_node\fR(9F)
 .sp
 .LP
@@ -677,11 +806,15 @@ It is possible to add a driver for a device already being managed by a
 different driver, where the driver being added appears in the device's
 \fBcompatible\fR list before the current driver. In such cases, a
 reconfiguration boot is required (see \fBboot\fR(1M) and \fBkernel\fR(1M)).
-After the reconfiguration boot, device links in \fB/dev\fR and references to
-these files may no longer be valid (see the \fB-v\fR flag). If a
+After the reconfiguration boot, device links in
+.B /dev
+and references to
+these files may no longer be valid (see the
+.B -v
+flag). If a
 reconfiguration boot would be required to complete the driver installation,
 \fBadd_drv\fR will fail unless the \fB-f\fR option is specified. See
-\fBExample\fR \fB3\fR in the \fBEXAMPLES\fR section.
+\fBExample 3\fR in the \fBEXAMPLES\fR section.
 .sp
 .LP
 With the introduction of the device policy several drivers have had their
@@ -700,23 +833,36 @@ add_drv -p 'read_priv_set=net_rawaccess\e
 .sp
 .LP
 This document does not constitute an API. \fB/etc/minor_perm\fR,
-\fB/etc/name_to_major\fR, \fB/etc/driver_classes\fR, and \fB/devices\fR may
+.BR /etc/name_to_major ,
+.BR /etc/driver_classes ,
+and
+.B /devices
+may
 not exist or may have different contents or interpretations in a future
 release. The existence of this notice does not imply that any other
 documentation that lacks this notice constitutes an API.
 .sp
 .LP
 \fB/etc/minor_perm\fR can only be updated by \fBadd_drv\fR(1M),
-\fBrem_drv\fR(1M) or \fBupdate_drv\fR(1M).
+.BR rem_drv (1M)
+or
+.BR update_drv (1M).
 .sp
 .LP
-In the current version of \fBadd_drv\fR, the use of double quotes to
+In the current version of
+.BR add_drv ,
+the use of double quotes to
 specify an alias is optional when used from the command line. However, when
-using \fBadd_drv\fR from packaging scripts, you should continue to use
+using
+.B add_drv
+from packaging scripts, you should continue to use
 double quotes to specify an alias.
 .SH BUGS
 .sp
 .LP
-Previous versions of \fBadd_drv\fR accepted a pathname for
-\fIdevice_driver\fR. This feature is no longer supported and results in
+Previous versions of
+.B add_drv
+accepted a pathname for
+.IR device_driver .
+This feature is no longer supported and results in
 failure.

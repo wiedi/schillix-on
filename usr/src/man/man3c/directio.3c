@@ -33,26 +33,34 @@ directio \- provide advice to file system
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdirectio()\fR function provides advice to the system about the
+The
+.B directio()
+function provides advice to the system about the
 expected behavior of the application when accessing the data in the file
-associated with the open file descriptor \fIfildes\fR. The system uses this
+associated with the open file descriptor
+.IR fildes .
+The system uses this
 information to help optimize accesses to the file's data. The
 \fBdirectio()\fR function has no effect on the semantics of the other
 operations on the data, though it may affect the performance of other
 operations.
 .sp
 .LP
-The \fIadvice\fR argument is kept per file; the last caller of
+The
+.I advice
+argument is kept per file; the last caller of
 \fBdirectio()\fR sets the \fIadvice\fR for all applications using the file
 associated with \fIfildes\fR.
 .sp
 .LP
-Values for \fIadvice\fR are defined in \fB<sys/fcntl.h>\fR\&.
+Values for
+.I advice
+are defined in \fB<sys/fcntl.h>\fR\&.
 .sp
 .ne 2
 .mk
 .na
-\fBDIRECTIO_OFF\fR
+.B DIRECTIO_OFF
 .ad
 .RS 16n
 .rt
@@ -60,28 +68,37 @@ Applications get the default system behavior when accessing file data.
 .sp
 When an application reads data from a file, the data is first cached in
 system memory and then copied into the application's buffer (see
-\fBread\fR(2)). If the system detects that the application is reading
+.BR read (2)).
+If the system detects that the application is reading
 sequentially from a file, the system will asynchronously "read ahead" from
 the file into system memory so the data is immediately available for the
-next \fBread\fR(2) operation.
+next
+.BR read (2)
+operation.
 .sp
 When an application writes data into a file, the data is first cached in
 system memory and is written to the device at a later time (see
-\fBwrite\fR(2)). When possible, the system increases the performance of
-\fBwrite\fR(2) operations by cacheing the data in memory pages. The data is
-copied into system memory and the \fBwrite\fR(2) operation returns
+.BR write (2)).
+When possible, the system increases the performance of
+.BR write (2)
+operations by cacheing the data in memory pages. The data is
+copied into system memory and the
+.BR write (2)
+operation returns
 immediately to the application. The data is later written asynchronously to
 the device. When possible, the cached data is "clustered" into large chunks
 and written to the device in a single write operation.
 .sp
-The system behavior for  \fBDIRECTIO_OFF\fR can change without notice.
+The system behavior for 
+.B DIRECTIO_OFF
+can change without notice.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDIRECTIO_ON\fR
+.B DIRECTIO_ON
 .ad
 .RS 16n
 .rt
@@ -90,8 +107,11 @@ data in the near future. In other words, the file data is not cached in the
 system's memory pages.
 .sp
 When possible, data is read or written directly between the application's
-memory and the device when the data is accessed with \fBread\fR(2) and
-\fBwrite\fR(2) operations. When such transfers are not possible, the system
+memory and the device when the data is accessed with
+.BR read (2)
+and
+.BR write (2)
+operations. When such transfers are not possible, the system
 switches back to the default behavior, but just for that operation. In
 general, the transfer is possible when the application's buffer is aligned
 on a two-byte (short) boundary, the offset into the file is on a device
@@ -101,23 +121,33 @@ sectors.
 This advisory is ignored while the file associated with \fIfildes\fR is
 mapped (see \fBmmap\fR(2)).
 .sp
-The system behavior for  \fBDIRECTIO_ON\fR can change without notice.
+The system behavior for 
+.B DIRECTIO_ON
+can change without notice.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBdirectio()\fR returns \fB0\fR. Otherwise, it
-returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
+Upon successful completion,
+.B directio()
+returns
+.BR 0 .
+Otherwise, it
+returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBdirectio()\fR function will fail if:
+The
+.B directio()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -128,7 +158,7 @@ The \fIfildes\fR argument is not a valid open file descriptor.
 .ne 2
 .mk
 .na
-\fBENOTTY\fR
+.B ENOTTY
 .ad
 .RS 10n
 .rt
@@ -140,11 +170,13 @@ advisory functions.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value in \fIadvice\fR is invalid.
+The value in
+.I advice
+is invalid.
 .RE
 
 .SH USAGE
@@ -158,12 +190,16 @@ except when a file is sparse or is being extended and is opened with
 \fBO_SYNC\fR or \fBO_DSYNC\fR (see  \fBopen\fR(2)).
 .sp
 .LP
-The \fBdirectio()\fR function is supported for the NFS and UFS file system
+The
+.B directio()
+function is supported for the NFS and UFS file system
 types (see \fBfstyp\fR(1M)).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -180,11 +216,20 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBfstyp\fR(1M), \fBmmap\fR(2), \fBopen\fR(2), \fBread\fR(2),
-\fBwrite\fR(2), \fBfcntl.h\fR(3HEAD), \fBattributes\fR(5)
+\fBfstyp\fR(1M), \fBmmap\fR(2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
+\fBfcntl.h\fR(3HEAD), \fBattributes\fR(5)
 .SH WARNINGS
 .sp
 .LP
-Switching between  \fBDIRECTIO_OFF\fR and  \fBDIRECTIO_ON\fR can slow the
-system because each switch to \fBDIRECTIO_ON\fR might entail flushing the
+Switching between 
+.B DIRECTIO_OFF
+and 
+.B DIRECTIO_ON
+can slow the
+system because each switch to
+.B DIRECTIO_ON
+might entail flushing the
 file's data from the system's memory.

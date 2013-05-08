@@ -25,7 +25,9 @@ ts_dptbl \- time-sharing dispatcher parameter table
 .sp
 .LP
 The process scheduler (or dispatcher) is the portion of the kernel that
-controls allocation of the \fBCPU\fR to processes. The scheduler supports
+controls allocation of the
+.B CPU
+to processes. The scheduler supports
 the notion of scheduling classes where each class defines a scheduling
 policy, used to schedule processes within that class. Associated with each
 scheduling class is a set of priority queues on which ready to run processes
@@ -43,28 +45,43 @@ configuration).
 .LP
 Processes in the time-sharing class which are running in user mode (or in
 kernel mode before going to sleep) are scheduled according to the parameters
-in a time-sharing dispatcher parameter table (\fBts_dptbl\fR). Processes in
+in a time-sharing dispatcher parameter table
+.RB ( ts_dptbl ).
+Processes in
 the inter-active scheduling class are also scheduled according to the
 parameters in the time-sharing dispatcher parameter table. (Time-sharing
 processes and inter-active processes running in kernel mode after sleeping
 are run within a special range of priorities reserved for such processes and
-are not affected by the parameters in the \fBts_dptbl\fR until they return
-to user mode.) The \fBts_dptbl\fR consists of an array
+are not affected by the parameters in the
+.B ts_dptbl
+until they return
+to user mode.) The
+.B ts_dptbl
+consists of an array
 (\fBconfig_ts_dptbl[]\fR) of parameter structures (\fBstruct tsdpent_t\fR),
-one for each of the \fIn\fR priority levels used by time-sharing processes
+one for each of the
+.I n
+priority levels used by time-sharing processes
 and inter-active processes in user mode. The structures are accessed via a
-pointer, (\fBts_dptbl\fR), to the array. The properties of a given priority
-level \fIi\fR are specified by the \fIi\fRth parameter structure in this
+pointer,
+.RB ( ts_dptbl ),
+to the array. The properties of a given priority
+level
+.I i
+are specified by the
+.IR i "th parameter structure in this"
 array (\fBts_dptbl[\fR \fIi\fB]\fR ).
 .sp
 .LP
 A parameter structure consists of the following members. These are also
-described in the \fB/usr/include/sys/ts.h\fR header.
+described in the
+.B /usr/include/sys/ts.h
+header.
 .sp
 .ne 2
 .mk
 .na
-\fBts_globpri\fR
+.B ts_globpri
 .ad
 .RS 14n
 .rt
@@ -72,22 +89,30 @@ The global scheduling priority associated with this priority level. The
 mapping between time-sharing priority levels and global scheduling
 priorities is determined at boot time by the system configuration.
 \fBts_globpri\fR is the only member of the \fBts_dptbl\fR which cannot be
-changed with \fBdispadmin\fR(1M).
+changed with
+.BR dispadmin (1M).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBts_quantum\fR
+.B ts_quantum
 .ad
 .RS 14n
 .rt
 The length of the time quantum allocated to processes at this level in
-ticks (\fBhz\fR).
+ticks
+.RB ( hz ).
 .sp
-In the high resolution clock mode (\fBhires_tick\fR set to \fB1\fR), the
-value of \fBhz\fR is set to \fB1000\fR. Increase quantums to maintain the
+In the high resolution clock mode (\fBhires_tick\fR set to
+.BR 1 ),
+the
+value of
+.B hz
+is set to
+.BR 1000 .
+Increase quantums to maintain the
 same absolute time quantums.
 .RE
 
@@ -95,7 +120,7 @@ same absolute time quantums.
 .ne 2
 .mk
 .na
-\fBts_tqexp\fR
+.B ts_tqexp
 .ad
 .RS 14n
 .rt
@@ -108,7 +133,7 @@ lower priority time-sharing level that has a larger quantum.
 .ne 2
 .mk
 .na
-\fBts_slpret\fR
+.B ts_slpret
 .ad
 .RS 14n
 .rt
@@ -122,18 +147,24 @@ smaller quantum.
 .ne 2
 .mk
 .na
-\fBts_maxwait\fR
+.B ts_maxwait
 .ad
 .RS 14n
 .rt
-A per process counter, \fBts_dispwait\fR is initialized to zero each time a
+A per process counter,
+.B ts_dispwait
+is initialized to zero each time a
 time-sharing or inter-active process is placed back on the dispatcher queue
 after its time quantum has expired or when it is awakened (\fBts_dispwait\fR
 is not reset to zero when a process is preempted by a higher priority
 process). This counter is incremented once per second for each process on a
-dispatcher or sleep queue. If a process' \fBts_dispwait\fR value exceeds the
+dispatcher or sleep queue. If a process'
+.B ts_dispwait
+value exceeds the
 \fBts_maxwait\fR value for its level, the process' priority is changed to
-that indicated by \fBts_lwait\fR. The purpose of this field is to prevent
+that indicated by
+.BR ts_lwait .
+The purpose of this field is to prevent
 starvation.
 .RE
 
@@ -141,50 +172,71 @@ starvation.
 .ne 2
 .mk
 .na
-\fBts_lwait\fR
+.B ts_lwait
 .ad
 .RS 14n
 .rt
-Move a process to this new priority level if \fBts_dispwait\fR is greater
-than \fBts_maxwait\fR.
+Move a process to this new priority level if
+.B ts_dispwait
+is greater
+than
+.BR ts_maxwait .
 .RE
 
 .sp
 .LP
 An administrator can affect the behavior of the time-sharing portion of the
-scheduler by reconfiguring the \fBts_dptbl\fR. Since processes in the
+scheduler by reconfiguring the
+.BR ts_dptbl .
+Since processes in the
 time-sharing and inter-active scheduling classes share the same dispatch
-parameter table (\fBts_dptbl\fR), changes to this table will affect both
+parameter table
+.RB ( ts_dptbl ),
+changes to this table will affect both
 scheduling classes. There are two methods available for doing this:
 reconfigure with a loadable module at boot-time or by using
-\fBdispadmin\fR(1M) at run-time.
+.BR dispadmin (1M)
+at run-time.
 .SS "ts_dptbl Loadable Module"
 .sp
 .LP
-The \fBts_dptbl\fR can be reconfigured with a loadable module which
+The
+.B ts_dptbl
+can be reconfigured with a loadable module which
 contains a new time sharing dispatch table. The module containing the
 dispatch table is separate from the TS loadable module which contains the
 rest of the time-sharing and inter-active software. This is the only method
 that can be used to change the number of time-sharing priority levels or the
 set of global scheduling priorities used by the time-sharing and
 inter-active classes. The relevant procedure and source code is described in
-the \fBREPLACING THE TS_DPTBL LOADABLE MODULE\fR section.
+the
+.B "REPLACING THE TS_DPTBL LOADABLE MODULE"
+section.
 .SS "dispadmin Configuration File"
 .sp
 .LP
-With the exception of \fBts_globpri\fR all of the members of the
+With the exception of
+.B ts_globpri
+all of the members of the
 \fBts_dptbl\fR can be examined and modified on a running system using the
-\fBdispadmin\fR(1M) command. Invoking \fBdispadmin\fR for the time-sharing
+.BR dispadmin (1M)
+command. Invoking
+.B dispadmin
+for the time-sharing
 or inter-active class allows the administrator to retrieve the current
 \fBts_dptbl\fR configuration from the kernel's in-core table, or overwrite
 the in-core table with values from a configuration file. The configuration
-file used for input to \fBdispadmin\fR must conform to the specific format
+file used for input to
+.B dispadmin
+must conform to the specific format
 described below.
 .sp
 .LP
-Blank lines are ignored and any part of a line to the right of a \fI#\fR
+Blank lines are ignored and any part of a line to the right of a
+.IR #
 symbol is treated as a comment. The first non-blank, non-comment line must
-indicate the resolution to be used for interpreting the \fBts_quantum\fR
+indicate the resolution to be used for interpreting the
+.BR ts_quantum
 time quantum values. The resolution is specified as
 .sp
 .in +2
@@ -195,9 +247,15 @@ time quantum values. The resolution is specified as
 
 .sp
 .LP
-where \fIres\fR is a positive integer between 1 and 1,000,000,000 inclusive
-and the resolution used is the reciprocal of \fIres\fR in seconds (for
-example, \fBRES=1000\fR specifies millisecond resolution). Although very
+where
+.I res
+is a positive integer between 1 and 1,000,000,000 inclusive
+and the resolution used is the reciprocal of
+.I res
+in seconds (for
+example,
+.B RES=1000
+specifies millisecond resolution). Although very
 fine (nanosecond) resolution may be specified, the time quantum lengths are
 rounded up to the next integral multiple of the system clock's resolution.
 .sp
@@ -209,10 +267,12 @@ parameters for time-sharing level 1, etc. There must be exactly one line for
 each configured time-sharing priority level.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRA Sample From a Configuration File
+\fBExample 1\fR A Sample From a Configuration File
 .sp
 .LP
-The following excerpt from a \fBdispadmin\fR configuration file illustrates
+The following excerpt from a
+.B dispadmin
+configuration file illustrates
 the format. Note that for each line specifying a set of parameters there is
 a comment indicating the corresponding priority level. These level numbers
 indicate priority within the time-sharing and interactive classes, and the
@@ -220,11 +280,15 @@ mapping between these time-sharing priorities and the corresponding global
 scheduling priorities is determined by the configuration specified in the
 \fBts\fR master file. The level numbers are strictly for the convenience of
 the administrator reading the file and, as with any comment, they are
-ignored by \fBdispadmin\fR. \fBdispadmin\fR assumes that the lines in the
+ignored by
+.BR dispadmin .
+\fBdispadmin\fR assumes that the lines in the
 file are ordered by consecutive, increasing priority level (from 0 to the
 maximum configured time-sharing priority). The level numbers in the comments
 should normally agree with this ordering; if for some reason they don't,
-however, \fBdispadmin\fR is unaffected.
+however,
+.B dispadmin
+is unaffected.
 
 .sp
 .in +2
@@ -251,7 +315,7 @@ however, \fBdispadmin\fR is unaffected.
 .in -2
 
 .LP
-\fBExample 2 \fRReplacing The ts_dptbl Loadable Module
+\fBExample 2\fR Replacing The ts_dptbl Loadable Module
 .sp
 .LP
 In order to change the size of the time sharing dispatch table, the
@@ -262,7 +326,8 @@ the following procedure.
 .RS +4
 .TP
 1.
-Place the dispatch table code shown below in a file called \fBts_dptbl.c\fR
+Place the dispatch table code shown below in a file called
+.BR ts_dptbl.c
 An example of this file follows.
 .RE
 .RS +4
@@ -283,20 +348,33 @@ ld -r -o TS_DPTBL ts_dptbl.o
 .RS +4
 .TP
 3.
-Copy the current dispatch table in \fB/kernel/sched\fR to
-\fBTS_DPTBL.bak\fR.
+Copy the current dispatch table in
+.B /kernel/sched
+to
+.BR TS_DPTBL.bak .
 .RE
 .RS +4
 .TP
 4.
-Replace the current \fBTS_DPTBL\fR in \fB/kernel/sched\fR.
+Replace the current
+.B TS_DPTBL
+in
+.BR /kernel/sched .
 .RE
 .RS +4
 .TP
 5.
-You will have to make changes in the \fB/etc/system\fR file to reflect the
-changes to the sizes of the tables. See \fBsystem\fR(4). The two variables
-affected are \fBts_maxupri\fR and \fBts_maxkmdpri\fR. The syntax for setting
+You will have to make changes in the
+.B /etc/system
+file to reflect the
+changes to the sizes of the tables. See
+.BR system (4).
+The two variables
+affected are
+.B ts_maxupri
+and
+.BR ts_maxkmdpri .
+The syntax for setting
 these is as follows:
 .sp
 .in +2
@@ -321,8 +399,11 @@ system unusable.
 
 .sp
 .LP
-The following is an example of a \fBts_dptbl.c\fR file used for building
-the new \fBts_dptbl\fR.
+The following is an example of a
+.B ts_dptbl.c
+file used for building
+the new
+.BR ts_dptbl .
 
 .sp
 .in +2
@@ -469,11 +550,13 @@ ts_getmaxumdpri()
 .SH SEE ALSO
 .sp
 .LP
-\fBpriocntl\fR(1), \fBdispadmin\fR(1M), \fBpriocntl\fR(2),
-\fBsystem\fR(4)
+.BR priocntl (1),
+.BR dispadmin (1M),
+.BR priocntl (2),
+.BR system (4)
 .sp
 .LP
-\fISystem Administration Guide: Basic Administration\fR
+.I System Administration Guide: Basic Administration
 .sp
 .LP
 \fIProgramming Interfaces Guide\fR
@@ -482,13 +565,19 @@ ts_getmaxumdpri()
 .LP
 \fBdispadmin\fR does some limited sanity checking on the values supplied in
 the configuration file. The sanity checking is intended to ensure that the
-new \fBts_dptbl\fR values do not cause the system to panic. The sanity
+new
+.B ts_dptbl
+values do not cause the system to panic. The sanity
 checking does not attempt to analyze the effect that the new values will
-have on the performance of the system. Unusual \fBts_dptbl\fR configurations
+have on the performance of the system. Unusual
+.B ts_dptbl
+configurations
 may have a dramatic negative impact on the performance of the system.
 .sp
 .LP
-No sanity checking is done on the \fBts_dptbl\fR values specified in the
+No sanity checking is done on the
+.B ts_dptbl
+values specified in the
 \fBTS_DPTBL\fR loadable module. Specifying an inconsistent or nonsensical
 \fBts_dptbl\fR configuration through the \fBTS_DPTBL\fR loadable module
 could cause serious performance problems and/or cause the system to panic.

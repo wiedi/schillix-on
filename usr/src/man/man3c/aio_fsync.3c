@@ -62,16 +62,28 @@ aio_fsync \- asynchronous file synchronization
 .LP
 The \fBaio_fsync()\fR function asynchronously forces all I/O operations
 associated with the file indicated by the file descriptor \fBaio_fildes\fR
-member of the \fBaiocb\fR structure referenced by the \fIaiocbp\fR argument
+member of the
+.B aiocb
+structure referenced by the
+.I aiocbp
+argument
 and queued at the time of the call to \fBaio_fsync()\fR to the synchronized
 I/O completion state. The function call returns when the synchronization
 request has been initiated or queued to the file or device (even when the
 data cannot be synchronized immediately).
 .sp
 .LP
-If \fIop\fR is \fBO_DSYNC\fR, all currently queued I/O operations are
+If
+.I op
+is
+.BR O_DSYNC ,
+all currently queued I/O operations are
 completed as if by a call to \fBfdatasync\fR(3C); that is, as defined for
-synchronized I/O data integrity completion. If \fIop\fR is \fBO_SYNC\fR, all
+synchronized I/O data integrity completion. If
+.I op
+is
+.BR O_SYNC ,
+all
 currently queued I/O operations are completed as if by a call to
 \fBfsync\fR(3C); that is, as defined for synchronized I/O file integrity
 completion. If the \fBaio_fsync()\fR function fails, or if the operation
@@ -86,28 +98,46 @@ the relevant completion state. The completion of subsequent I/O on the file
 descriptor is not guaranteed to be completed in a synchronized fashion.
 .sp
 .LP
-The \fIaiocbp\fR argument refers to an asynchronous I/O control block. The
+The
+.I aiocbp
+argument refers to an asynchronous I/O control block. The
 \fIaiocbp\fR value may be used as an argument to \fBaio_error\fR(3C) and
-\fBaio_return\fR(3C) in order to determine the error status and return
+.BR aio_return (3C)
+in order to determine the error status and return
 status, respectively, of the asynchronous operation while it is proceeding.
 When the request is queued, the error status for the operation is
 \fBEINPROGRESS.\fR When all data has been successfully transferred, the error
 status will be reset to reflect the success or failure of the operation. If
 the operation does not complete successfully, the error status for the
-operation will be set to indicate the error. The \fIaio_sigevent\fR member
+operation will be set to indicate the error. The
+.I aio_sigevent
+member
 determines the asynchronous notification to occur when all operations have
-achieved synchronized I/O completion (see \fBsignal.h\fR(3HEAD)). All other
-members of the structure referenced by \fIaiocbp\fR are ignored. If the
-control block referenced by \fIaiocbp\fR becomes an illegal address prior to
+achieved synchronized I/O completion (see
+.BR signal.h (3HEAD)).
+All other
+members of the structure referenced by
+.I aiocbp
+are ignored. If the
+control block referenced by
+.I aiocbp
+becomes an illegal address prior to
 asynchronous I/O completion, then the behavior is undefined.
 .sp
 .LP
-If the \fBaio_fsync()\fR function fails or the \fIaiocbp\fR indicates an
+If the \fBaio_fsync()\fR function fails or the
+.I aiocbp
+indicates an
 error condition, data is not guaranteed to have been successfully
 transferred.
 .sp
 .LP
-If \fIaiocbp\fR is \fINULL\fR, then no status is returned in \fIaiocbp\fR,
+If
+.I aiocbp
+is
+.IR NULL ,
+then no status is returned in
+.IR aiocbp ,
 and no signal is generated upon completion of the operation.
 .SH RETURN VALUES
 .sp
@@ -123,7 +153,7 @@ The \fBaio_fsync()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -135,7 +165,7 @@ resource limitations.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -147,7 +177,7 @@ The \fBaio_fildes\fR member of the \fBaiocb\fR structure referenced by the
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -158,18 +188,28 @@ The system does not support synchronized I/O for this file.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-A value of \fIop\fR other than \fBO_DSYNC\fR or \fBO_SYNC\fR was
+A value of
+.I op
+other than
+.B O_DSYNC
+or
+.B O_SYNC
+was
 specified.
 .RE
 
 .sp
 .LP
 In the event that any of the queued I/O operations fail, \fBaio_fsync()\fR
-returns the error condition defined for \fBread\fR(2) and \fBwrite\fR(2). The
+returns the error condition defined for
+.BR read (2)
+and
+.BR write (2).
+The
 error will be returned in the error status for the asynchronous
 \fBfsync\fR(3C) operation, which can be retrieved using \fBaio_error\fR(3C).
 
@@ -181,7 +221,9 @@ offsets. See \fBlf64\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -202,8 +244,14 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBfcntl\fR(2), \fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2),
-\fBaio_error\fR(3C), \fBaio_return\fR(3C), \fBaio.h\fR(3HEAD),
+\fBfcntl\fR(2), \fBopen\fR(2),
+.BR read (2),
+.BR write (2),
+.BR aio_error (3C),
+.BR aio_return (3C),
+.BR aio.h (3HEAD),
 \fBfcntl.h\fR(3HEAD), \fBfdatasync\fR(3C), \fBfsync\fR(3C),
-\fBsignal.h\fR(3HEAD), \fBattributes\fR(5), \fBlf64\fR(5),
-\fBstandards\fR(5)
+.BR signal.h (3HEAD),
+.BR attributes (5),
+\fBlf64\fR(5),
+.BR standards (5)

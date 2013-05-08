@@ -37,40 +37,64 @@ ugen \- USB generic driver
 .LP
 \fBugen\fR is a generic USBA (Solaris USB Architecture) compliant client
 character driver that presents USB devices to applications through a
-standard \fBopen\fR(2), \fBclose\fR(2), \fBread\fR(2), \fBwrite\fR(2),
-\fBaioread\fR(3C), \fBaiowrite\fR(3C) Unix interface. Uninterpreted raw data
+standard
+.BR open (2),
+.BR close (2),
+.BR read (2),
+.BR write (2),
+.BR aioread (3C),
+.BR aiowrite (3C)
+Unix interface. Uninterpreted raw data
 are transfered to and from the device via file descriptors created for each
 USB endpoint. Status is obtained by reading file descriptors created for
 endpoint and full device status.
 .sp
 .LP
 \fBugen\fR supports control, bulk, isochronous and interrupt (in and  out)
-transfers. \fBlibusb\fR(3LIB) uses \fBugen\fR to access devices that do not
+transfers.
+.BR libusb (3LIB)
+uses
+.B ugen
+to access devices that do not
 contain drivers (such as digital cameras and PDAs). Refer to
 \fB/usr/sfw/share/doc/libusb/libusb.txt\fR for details.
 .SH BINDING
 .sp
 .LP
-In general, no explicit binding of the \fBugen\fR driver is necessary
+In general, no explicit binding of the
+.B ugen
+driver is necessary
 because \fBusb_mid\fR(7D) is the default driver for devices without a class
-or vendor unique driver. \fBusb_mid\fR(7D) creates the same logical device
-names as \fBugen\fR, but only if no child interfaces are explicitly bound to
-\fBugen\fR. If it is necessary to bind \fBugen\fR explicitly to a device or
+or vendor unique driver.
+.BR usb_mid (7D)
+creates the same logical device
+names as
+.BR ugen ,
+but only if no child interfaces are explicitly bound to
+.BR ugen .
+If it is necessary to bind
+.B ugen
+explicitly to a device or
 interface, the following section explains the necessary steps.
 .sp
 .LP
 \fBugen\fR can bind to a device with one or more interfaces in its
 entirety, or to a single interface of that device. The binding type depends
-on information that is passed to \fBadd_drv\fR(1M) or
-\fBupdate_drv\fR(1M).
+on information that is passed to
+.BR add_drv "(1M) or"
+.BR update_drv (1M).
 .sp
 .LP
 An \fBadd_drv\fR(1M) command binds \fBugen\fR to a list of device types it
-is to control. \fBupdate_drv\fR(1M) adds an additional device type to the
+is to control.
+.BR update_drv (1M)
+adds an additional device type to the
 list of device types being managed by the driver.
 .sp
 .LP
-Names used to bind drivers can be found in \fB/var/adm/messages\fR. When a
+Names used to bind drivers can be found in
+.BR /var/adm/messages .
+When a
 device is on-lined after hot insertion, and no driver is found, there will
 be an entry containing:
 .sp
@@ -84,11 +108,12 @@ USB 2.0 device (usb<vid>,<pid>).\|.\|.
 .LP
 where vid is the USB vendor identifier in hex and pid is the  product
 identifier in hex supplied by the device  descriptor
-\fBusb_dev_descr\fR(9S).
+.BR usb_dev_descr (9S).
 .sp
 .LP
 When using ugen for the first time, you must add the  driver utilizing
-\fBadd_drv\fR(1M), using a command of the following form:
+.BR add_drv (1M),
+using a command of the following form:
 .sp
 .in +2
 .nf
@@ -122,7 +147,9 @@ update_drv -a -m '* <device perms> <owner> <group>'
 
 .sp
 .LP
-This binds \fBugen\fR to the entire device.
+This binds
+.B ugen
+to the entire device.
 .sp
 .LP
 If ugen only binds to one interface of the device, use the following
@@ -142,11 +169,14 @@ descriptor (\fBusb_cfg_descr\fR(9S)). For example
 .sp
 .LP
 Note that you can use update_drv to  also  remove  bindings. Please see
-\fBupdate_drv\fR(1M) for more information.
+.BR update_drv (1M)
+for more information.
 .sp
 .LP
 After a successful add_drv or update_drv, remove the device and reinsert.
-Check with the \fBprtconf\fR(1M) -D option to determine if \fBugen\fR is
+Check with the \fBprtconf\fR(1M) -D option to determine if
+.B ugen
+is
 successfully bound to the device and the nodes created in
 /dev/usb/<vid>.<pid> (see below).
 .sp
@@ -163,7 +193,9 @@ update_drv -a -m '* 0666 root sys'
 
 .sp
 .LP
-Note that you can completely uninstall the \fBugen\fR driver and delete it
+Note that you can completely uninstall the
+.B ugen
+driver and delete it
 from the system by doing:
 .sp
 .in +2
@@ -174,7 +206,11 @@ pkgrm SUNWugen
 
 .sp
 .LP
-Any \fBpkgadd\fR of SUNWugen after the \fBpkgrm\fR reactivates any
+Any
+.B pkgadd
+of SUNWugen after the
+.B pkgrm
+reactivates any
 pre-existing ugen driver device-bindings.
 .sp
 .LP
@@ -183,27 +219,41 @@ system upgrades.
 .SH LOGICAL DEVICE NAME FORMAT
 .sp
 .LP
-For each device or child device it manages, \fBugen\fR creates one logical
+For each device or child device it manages,
+.B ugen
+creates one logical
 device name for device-wide status and one logical device name for endpoint
-0. \fBugen\fR also creates logical device names for all other endpoints
+0.
+.B ugen
+also creates logical device names for all other endpoints
 within the device node's binding scope (interface or device), plus logical
 device names for their status.
 .sp
 .LP
-If separate \fBugen\fR instances control different interfaces of the same
+If separate
+.B ugen
+instances control different interfaces of the same
 device, the device-wide status and endpoint logical device names created for
 each instance will share access to the same source or endpoint pipes. For
 example, a device with two interfaces, each operated by their own \fBugen\fR
-instance, will show \fBendpoint0\fR as \fBif0cntrl0\fR to the first
+instance, will show
+.B endpoint0
+as \fBif0cntrl0\fR to the first
 interface, and will show it as \fBif1cntrl0\fR to the second interface. Both
-of these logical device names share \fBendpoint0\fR. Likewise for the same
-device, \fBugen\fR makes the device-wide status available as
+of these logical device names share
+.BR endpoint0 .
+Likewise for the same
+device,
+.B ugen
+makes the device-wide status available as
 \fBif0devstat\fR to the first interface and as \fBif1devstat\fR to the
 second interface. \fBif0devstat\fR and \fBif1devstat\fR both return the same
 data.
 .sp
 .LP
-Any \fBugen\fR logical device name can be held open by only one user at a
+Any
+.B ugen
+logical device name can be held open by only one user at a
 time, regardless of whether the\fB O_EXCL\fR flag passed to \fBopen\fR(2).
 When a single pipe or data source is shared by multiple logical device
 names, such as if[0,1]cntrl0 or if[0,1]devstat above, more than one logical
@@ -212,8 +262,12 @@ only one user may access the shared pipe or data source at a time,
 regardless of the logical device name used for access.
 .sp
 .LP
-When \fBugen\fR is bound to an entire device, the following logical device
-names are created (each on a single line). \fIN\fR represents the instance
+When
+.B ugen
+is bound to an entire device, the following logical device
+names are created (each on a single line).
+.I N
+represents the instance
 number of the device type.
 .sp
 .in +2
@@ -290,7 +344,9 @@ Configuration index> 1, Endpoints > 0, alternate > 0:
 
 .sp
 .LP
-When \fBugen\fR is bound to a single device interface, the following
+When
+.B ugen
+is bound to a single device interface, the following
 logical device nodes are created:
 .sp
 .in +2
@@ -316,7 +372,9 @@ Device status:
 .sp
 .LP
 The format for all other logical device names is identical to the format
-used when \fBugen\fR is bound to the entire device.
+used when
+.B ugen
+is bound to the entire device.
 .sp
 .LP
 Opening the endpoint of a different configuration or different alternate
@@ -358,7 +416,9 @@ from the device status logical name. When opened without O_NONBLOCK and
 O_NDELAY, all reads from that file descriptor (with the exception of the the
 intial read that follows the open) block until a device status change
 occurs. Calls to read will always return immediately if opened with
-\fBO_NONBLOCK\fR or \fBO_NDELAY\fR. Nonblocking calls to read which have no
+\fBO_NONBLOCK\fR or
+.BR O_NDELAY .
+Nonblocking calls to read which have no
 data to return, return no error and zero bytes read.
 .sp
 .LP
@@ -367,7 +427,7 @@ Device statuses are:
 .ne 2
 .mk
 .na
-\fBUSB_DEV_STAT_ONLINE\fR
+.B USB_DEV_STAT_ONLINE
 .ad
 .RS 29n
 .rt
@@ -378,7 +438,7 @@ Device is available.
 .ne 2
 .mk
 .na
-\fBUSB_DEV_STAT_DISCONNECTED\fR
+.B USB_DEV_STAT_DISCONNECTED
 .ad
 .RS 29n
 .rt
@@ -389,7 +449,7 @@ Device has been disconnected.
 .ne 2
 .mk
 .na
-\fBUSB_DEV_STAT_RESUMED\fR
+.B USB_DEV_STAT_RESUMED
 .ad
 .RS 29n
 .rt
@@ -401,7 +461,7 @@ not yet been closed and reopened.
 .ne 2
 .mk
 .na
-\fBUSB_DEV_STAT_UNAVAILABLE\fR
+.B USB_DEV_STAT_UNAVAILABLE
 .ad
 .RS 29n
 .rt
@@ -449,9 +509,13 @@ default:
 
 .sp
 .LP
-Use \fBpoll\fR(2) to block on several logical names simultaneously,
+Use
+.BR poll (2)
+to block on several logical names simultaneously,
 including device status logical names.  Poll indicates when reading a
-logical name would return data. See \fBpoll\fR(2) for details. Calls to read
+logical name would return data. See
+.BR poll (2)
+for details. Calls to read
 may be done whether or not they follow calls to poll.
 .SH ENDPOINT STATUS MANAGEMENT
 .sp
@@ -461,7 +525,8 @@ logical name to retrieve the state of the data endpoint, including detail on
 how its most recent transfer failed. Reads of the status file descriptors
 always return immediately. See the ERRORS section for more information on
 endpoint status values. All logical device name files created for returning
-status must be opened with \fBO_RDONLY\fR.
+status must be opened with
+.BR O_RDONLY .
 .sp
 .LP
 The following code illustrates reading the status file descriptor of an
@@ -519,13 +584,23 @@ device status or configuration.
 .LP
 Applications requiring I/O on a control endpoint should open the
 corresponding logical device name and use regular UNIX I/O system calls. For
-example: \fBread\fR(2), \fBwrite\fR(2), \fBaioread\fR(3C) and
-\fBaiowrite\fR(3C). \fBpoll\fR(2) is not supported on control endpoints.
+example:
+.BR read (2),
+.BR write (2),
+.BR aioread (3C)
+and
+.BR aiowrite (3C).
+.BR poll (2)
+is not supported on control endpoints.
 .sp
 .LP
-A control endpoint must be opened with \fBO_RDWR\fR since it is
-bidirectional. It cannot be opened with \fBO_NONBLOCK\fR or
-\fBO_NDELAY\fR.
+A control endpoint must be opened with
+.B O_RDWR
+since it is
+bidirectional. It cannot be opened with
+.B O_NONBLOCK
+or
+.BR O_NDELAY .
 .sp
 .LP
 For example:
@@ -546,14 +621,24 @@ fdstat = open("/dev/usb/472.b0b0/0/cntrl0stat", O_RDONLY);
 
 .sp
 .LP
-Control endpoints can be read and written. A \fBread\fR operation receives
+Control endpoints can be read and written. A
+.B read
+operation receives
 data \fBfrom\fR the device and a \fBwrite\fR operation sends data \fBto\fR
 the device.
 .sp
 .LP
-To perform a control-IN transfer, perform a \fBwrite\fR(2) of USB setup
-data (see section 9.3 of the \fIUSB 1.1\fR or \fI2.0\fR specifications)
-followed by a \fBread\fR(2) on the same control endpoint to fetch the
+To perform a control-IN transfer, perform a
+.BR write (2)
+of USB setup
+data (see section 9.3 of the
+.I "USB 1.1"
+or
+.I 2.0
+specifications)
+followed by a
+.BR read (2)
+on the same control endpoint to fetch the
 desired data. For example:
 .sp
 .in +2
@@ -597,7 +682,9 @@ void init_cntrl_req(
 .sp
 .LP
 The application can issue any number of reads to read data received on a
-control endpoint. \fBugen\fR successfully completes all reads, returning the
+control endpoint.
+.B ugen
+successfully completes all reads, returning the
 number of bytes transferred. Zero is returned when there is no data to
 transfer.
 .sp
@@ -648,10 +735,18 @@ data followed by any accompanying data bytes.
 
 .sp
 .LP
-A \fBwrite\fR(2) returns the number of bytes (both setup and data) actually
-transferred, (whether or not the \fBwrite\fR is completely successful),
+A
+.BR write (2)
+returns the number of bytes (both setup and data) actually
+transferred, (whether or not the
+.B write
+is completely successful),
 provided that some data is actually transferred. When no data is
-transferred, \fBwrite\fR(2) returns \fB-1\fR. Applications can read the
+transferred,
+.BR write (2)
+returns
+.BR -1 .
+Applications can read the
 corresponding endpoint status to retrieve detailed error information. Note
 that it is an error to specify a size different than:
 .sp
@@ -793,12 +888,22 @@ configuration. For sake of brevity, uninteresting parts are omitted.
 .sp
 .LP
 Applications requiring data from an interrupt-IN endpoint should open the
-corresponding logical device name and use \fBread\fR(2), \fBaioread\fR(3C)
-and \fBpoll\fR(2) system calls.
+corresponding logical device name and use
+.BR read (2),
+.BR aioread (3C)
+and
+.BR poll (2)
+system calls.
 .sp
 .LP
-An interrupt-IN endpoint must be opened with \fBO_RDONLY\fR. It can also be
-opened using \fBO_NONBLOCK\fR or \fBO_NDELAY\fR if desired.
+An interrupt-IN endpoint must be opened with
+.BR O_RDONLY .
+It can also be
+opened using
+.B O_NONBLOCK
+or
+.B O_NDELAY
+if desired.
 .sp
 .in +2
 .nf
@@ -819,23 +924,38 @@ fdstat = open("/dev/usb/472.b0b0/0/if0in1stat", O_RDONLY);
 \fBugen\fR starts polling interrupt\(emIN endpoints immediately upon
 opening them and stops polling them upon closure. (Polling refers to
 interrogation of the device by the driver and should not be confused with
-\fBpoll\fR(2), which is an interrogation of the driver by the
+.BR poll (2),
+which is an interrogation of the driver by the
 application.)
 .sp
 .LP
-A \fBread\fR(2) of an endpoint opened with the \fBO_NONBLOCK\fR or
+A
+.BR read (2)
+of an endpoint opened with the
+.B O_NONBLOCK
+or
 \fBO_NDELAY\fR flags set will not block when there is insufficient data
-available to satisfy the request. The \fBread\fR simply returns what it can
+available to satisfy the request. The
+.B read
+simply returns what it can
 without signifying any error.
 .sp
 .LP
 Applications should continuously check for and consume interrupt data.
 \fBugen\fR enables buffering of up to one second of incoming data. In case
-of buffer overflow, \fBugen\fR stops polling the interrupt-IN endpoint until
-the application consumes all the data. In this case, a \fBread\fR(2) of an
-empty buffer returns \fB-1\fR, sets the endpoint status to
+of buffer overflow,
+.B ugen
+stops polling the interrupt-IN endpoint until
+the application consumes all the data. In this case, a
+.BR read (2)
+of an
+empty buffer returns
+.BR -1 ,
+sets the endpoint status to
 \fBUSB_LC_STAT_INTR_BUF_FULL\fR (to indicate that the buffer had been full
-and polling had been stopped) and causes \fBugen\fR to start polling the
+and polling had been stopped) and causes
+.B ugen
+to start polling the
 endpoint again. To retrieve the status, the application can open and read
 the corresponding endpoint's status device logical name.
 .sp
@@ -888,11 +1008,13 @@ is closed.
 .sp
 .LP
 Attempts to change the "one transfer" mode while the endpoint is open will
-result in \fBEINVAL\fR.
+result in
+.BR EINVAL .
 .sp
 .LP
 An application can open multiple interrupt-IN endpoints and can call
-\fBpoll\fR(2) to monitor the availability of new data. (Note: poll works
+.BR poll (2)
+to monitor the availability of new data. (Note: poll works
 with interrupt-IN data endpoints, not their status endpoints.)
 .sp
 .in +2
@@ -922,20 +1044,25 @@ with interrupt-IN data endpoints, not their status endpoints.)
 
 .sp
 .LP
-You can monitor the device status endpoint via \fBpoll\fR(2) concurrently
+You can monitor the device status endpoint via
+.BR poll (2)
+concurrently
 with the multiple interrupt-IN endpoints.  Simply add another pollfd element
 to the pfd array in the previous code example, and initialize the new
 element's \fBfd\fR field with the file  descriptor  of the device status
 endpoint (opened without O_NONBLOCK  or  O_NDELAY).  Set the new element's
 event field to POLLIN like the other elements. Note that only interrupt-IN
 endpoints and the device status endpoint can be monitored using
-\fBpoll\fR(2).
+.BR poll (2).
 .SH INTERRUPT-OUT TRANSFERS
 .sp
 .LP
 Applications requiring output on an interrupt-OUT endpoint can open the
 corresponding logical  device name and perform regular UNIX I/O  system
-calls such as \fBwrite\fR(2) and \fBaiowrite\fR(3C).
+calls such as
+.BR write (2)
+and
+.BR aiowrite (3C).
 .sp
 .LP
 An interrupt-OUT endpoint must be opened with O_WRONLY.
@@ -968,12 +1095,24 @@ Data can be written to an interrupt-OUT endpoint as follows:
 .LP
 Applications requiring I/O on a bulk endpoint can open the corresponding
 logical device name and perform regular UNIX I/O system calls. For example:
-\fBread\fR(2), \fBwrite\fR(2), \fBaioread\fR(3C) and \fBaiowrite\fR(3C).
-\fBpoll\fR(2) is not supported on bulk endpoints.
+.BR read (2),
+.BR write (2),
+.BR aioread (3C)
+and
+.BR aiowrite (3C).
+.BR poll (2)
+is not supported on bulk endpoints.
 .sp
 .LP
-A bulk endpoint must be opened with \fBO_RDONLY\fR or \fBO_WRONLY\fR and
-cannot be opened with \fBO_NONBLOCK\fR or \fBO_NDELAY:\fR
+A bulk endpoint must be opened with
+.B O_RDONLY
+or
+.B O_WRONLY
+and
+cannot be opened with
+.B O_NONBLOCK
+or
+.BR O_NDELAY:
 .sp
 .in +2
 .nf
@@ -1013,9 +1152,15 @@ Data can be read from a bulk-IN endpoint as follows:
 .LP
 Applications requiring I/O on an isochronous endpoint can open the
 corresponding logical device name and perform regular UNIX I/O system calls
-such as \fBread\fR(2), \fBwrite\fR(2), \fBpoll\fR(2), \fBaioread\fR(3C) and
-\fBaiowrite\fR(3C). An isochronous endpoint must be opened with
-\fBO_RDWR\fR.
+such as
+.BR read (2),
+.BR write (2),
+.BR poll (2),
+.BR aioread (3C)
+and
+.BR aiowrite (3C).
+An isochronous endpoint must be opened with
+.BR O_RDWR .
 .sp
 .in +2
 .nf
@@ -1035,7 +1180,9 @@ failed.
 Applications have the flexibility to specify the number of isochronous
 packets and the size of individual packets they want to transfer.
 Applications should use the following data structures to exchange
-isochronous packet information with the \fBugen\fR driver:
+isochronous packet information with the
+.B ugen
+driver:
 .sp
 .in +2
 .nf
@@ -1074,35 +1221,59 @@ typedef struct ugen_isoc_pkt_descr {
 .sp
 .LP
 \fBreq_isoc_pkts_count\fR is limited by the capability of the USB host
-controller driver. The current upper bound for the \fBuhci\fR and \fBohci\fR
-drivers is 512. The upper bound for the \fBehci\fR driver is 1024.
+controller driver. The current upper bound for the
+.B uhci
+and
+.BR ohci
+drivers is 512. The upper bound for the
+.B ehci
+driver is 1024.
 .sp
 .LP
 For an isochronous-IN endpoint, applications must first use the
 \fBugen_isoc_req_head_t\fR structure followed by \fBugen_isoc_pkt_descr_t\fR
-to write packet request information to the \fBugen\fR node. The \fBugen\fR
+to write packet request information to the
+.B ugen
+.RB "node. The" " ugen"
 driver then checks the validity of the request. If it is valid, the driver
 immediately begins isochronous polling on the IN endpoint and applications
-can proceed with \fBread\fR(2) of the data on the isochronous-IN endpoint.
-Upon successful return of \fBread\fR(2), isochronous packet descriptors
-(whose \fBdsc_isoc_pkt_actual_len\fR and \fBdsc_isoc_pkt_status\fR fields
+can proceed with
+.BR read (2)
+of the data on the isochronous-IN endpoint.
+Upon successful return of
+.BR read (2),
+isochronous packet descriptors
+(whose
+.B dsc_isoc_pkt_actual_len
+and
+.B dsc_isoc_pkt_status
+fields
 were filled by the driver) are returned, followed by the request's device
 payload data.
 .sp
 .LP
 Applications should continuously check for and consume isochronous data.
-The \fBugen\fR driver enables buffering of up to eight seconds of incoming
+The
+.B ugen
+driver enables buffering of up to eight seconds of incoming
 data for full-speed isochronous endpoint, one second of data for high-speed
 isochronous endpoints who request one transaction per microframe and 1/3 of
 a second of incoming data for high-speed high-bandwidth isochronous
 endpoints who request three transactions per microframe. In case of buffer
-overflow, \fBugen\fR discards the oldest data.
+overflow,
+.B ugen
+discards the oldest data.
 .sp
 .LP
 The isochronous-IN polling can only be stopped by a \fBclose\fR(2)
 associated file descriptor. If applications want to change packet
-information, they must first \fBclose\fR(2) the endpoint to stop the
-isochronous-IN polling, then \fBopen\fR(2) the endpoint and \fBwrite\fR(2)
+information, they must first
+.BR close (2)
+the endpoint to stop the
+isochronous-IN polling, then
+.BR open (2)
+the endpoint and
+.BR write (2)
 new packets request.
 .sp
 .LP
@@ -1121,7 +1292,7 @@ The following example shows how to read an isochronous-IN endpoint:
 		char rdbuf[5000];
 
 		pktcnt = 4; /* 4 packets in this request */
- 	
+
 		len = sizeof(int) +
 			sizeof(ugen_isoc_pkt_descr_t) * pktcount;
 
@@ -1197,8 +1368,13 @@ The following example shows how to read an isochronous-IN endpoint:
 For an isochronous-OUT endpoint, applications use the same packet
 descriptor and request structures to write request   information to the
 \fBugen\fR node. Following the packet request head information is the packet
-payload data. Upon successful return of \fBwrite\fR(2), applications can
-\fBread\fR(2) the same \fBugen\fR file immediately to retrieve the
+payload data. Upon successful return of
+.BR write (2),
+applications can
+.BR read (2)
+the same
+.B ugen
+file immediately to retrieve the
 individual packet transfer status of the last request. If the application
 isn't concerned about the status, it can omit it.
 .sp
@@ -1226,7 +1402,7 @@ isochronous-OUT endpoint:
 
 		len = sizeof(int) +
 			sizeof(ugen_isoc_pkt_descr_t) * pktcount;
- 	
+
 		len += pktlen * pktcnt;
 
 		buf = malloc(len);
@@ -1245,7 +1421,7 @@ isochronous-OUT endpoint:
 			pktdesc[i].dsc_isoc_pkt_actual_len = 0;
 			pktdesc[i].dsc_isoc_pkt_status = 0;
  	    }
- 	
+
 		/* moving to beginning of payload data */
 		p = buf + sizeof(int) + sizeof(*pktdesc) * pktcnt;
 		for (i = 0; i < pktcnt; i++) {
@@ -1287,7 +1463,7 @@ names:
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_NOERROR\fR
+.B USB_LC_STAT_NOERROR
 .ad
 .sp .6
 .RS 4n
@@ -1298,7 +1474,7 @@ No error.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_CRC\fR
+.B USB_LC_STAT_CRC
 .ad
 .sp .6
 .RS 4n
@@ -1309,7 +1485,7 @@ CRC error detected.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_BITSTUFFING\fR
+.B USB_LC_STAT_BITSTUFFING
 .ad
 .sp .6
 .RS 4n
@@ -1320,7 +1496,7 @@ Bit stuffing error.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_DATA_TOGGLE_MM\fR
+.B USB_LC_STAT_DATA_TOGGLE_MM
 .ad
 .sp .6
 .RS 4n
@@ -1331,7 +1507,7 @@ Data toggle did not match.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_STALL\fR
+.B USB_LC_STAT_STALL
 .ad
 .sp .6
 .RS 4n
@@ -1342,7 +1518,7 @@ Endpoint returned stall.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_DEV_NOT_RESP\fR
+.B USB_LC_STAT_DEV_NOT_RESP
 .ad
 .sp .6
 .RS 4n
@@ -1353,7 +1529,7 @@ Device not responding.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_UNEXP_PID\fR
+.B USB_LC_STAT_UNEXP_PID
 .ad
 .sp .6
 .RS 4n
@@ -1364,7 +1540,7 @@ Unexpected Packet Identifier (PID).
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_PID_CHECKFAILURE\fR
+.B USB_LC_STAT_PID_CHECKFAILURE
 .ad
 .sp .6
 .RS 4n
@@ -1375,7 +1551,7 @@ Check bits on PID failed.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_DATA_OVERRUN\fR
+.B USB_LC_STAT_DATA_OVERRUN
 .ad
 .sp .6
 .RS 4n
@@ -1386,7 +1562,7 @@ Data overrun.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_DATA_UNDERRUN\fR
+.B USB_LC_STAT_DATA_UNDERRUN
 .ad
 .sp .6
 .RS 4n
@@ -1397,7 +1573,7 @@ Data underrun.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_BUFFER_OVERRUN\fR
+.B USB_LC_STAT_BUFFER_OVERRUN
 .ad
 .sp .6
 .RS 4n
@@ -1408,7 +1584,7 @@ Buffer overrun.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_BUFFER_UNDERRUN\fR
+.B USB_LC_STAT_BUFFER_UNDERRUN
 .ad
 .sp .6
 .RS 4n
@@ -1419,7 +1595,7 @@ Buffer underrun.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_TIMEOUT\fR
+.B USB_LC_STAT_TIMEOUT
 .ad
 .sp .6
 .RS 4n
@@ -1430,7 +1606,7 @@ Command timed out.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_NOT_ACCESSED\fR
+.B USB_LC_STAT_NOT_ACCESSED
 .ad
 .sp .6
 .RS 4n
@@ -1441,7 +1617,7 @@ Not accessed by the hardware.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_UNSPECIFIED_ERR\fR
+.B USB_LC_STAT_UNSPECIFIED_ERR
 .ad
 .sp .6
 .RS 4n
@@ -1452,7 +1628,7 @@ Unspecified USBA or HCD error.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_NO_BANDWIDTH\fR
+.B USB_LC_STAT_NO_BANDWIDTH
 .ad
 .sp .6
 .RS 4n
@@ -1463,7 +1639,7 @@ No bandwidth available.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_HW_ERR\fR
+.B USB_LC_STAT_HW_ERR
 .ad
 .sp .6
 .RS 4n
@@ -1474,7 +1650,7 @@ Host Controller h/w error.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_SUSPENDED\fR
+.B USB_LC_STAT_SUSPENDED
 .ad
 .sp .6
 .RS 4n
@@ -1485,7 +1661,7 @@ Device was suspended.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_DISCONNECTED\fR
+.B USB_LC_STAT_DISCONNECTED
 .ad
 .sp .6
 .RS 4n
@@ -1496,7 +1672,7 @@ Device was disconnected.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_INTR_BUF_FULL\fR
+.B USB_LC_STAT_INTR_BUF_FULL
 .ad
 .sp .6
 .RS 4n
@@ -1508,7 +1684,7 @@ now empty and polling has been resumed.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_INTERRUPTED\fR
+.B USB_LC_STAT_INTERRUPTED
 .ad
 .sp .6
 .RS 4n
@@ -1519,7 +1695,7 @@ Request was interrupted.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_NO_RESOURCES\fR
+.B USB_LC_STAT_NO_RESOURCES
 .ad
 .sp .6
 .RS 4n
@@ -1530,7 +1706,7 @@ No resources available for request.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_INTR_POLLING_FAILED\fR
+.B USB_LC_STAT_INTR_POLLING_FAILED
 .ad
 .sp .6
 .RS 4n
@@ -1541,7 +1717,7 @@ Failed to restart polling.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_ISOC_POLLING_FAILED\fR
+.B USB_LC_STAT_ISOC_POLLING_FAILED
 .ad
 .sp .6
 .RS 4n
@@ -1552,7 +1728,7 @@ Failed to start isochronous polling.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_ISOC_UNINITIALIZED\fR
+.B USB_LC_STAT_ISOC_UNINITIALIZED
 .ad
 .sp .6
 .RS 4n
@@ -1563,23 +1739,25 @@ Isochronous packet information not initialized.
 .ne 2
 .mk
 .na
-\fBUSB_LC_STAT_ISOC_PKT_ERROR\fR
+.B USB_LC_STAT_ISOC_PKT_ERROR
 .ad
 .sp .6
 .RS 4n
 All packets in this isochronous request have errors. The polling on this
 isochronous-IN endpoint is suspended and can be resumed on next
-\fBread\fR(2).
+.BR read (2).
 .RE
 
 .sp
 .LP
-The following system call \fBerrno\fR values are returned:
+The following system call
+.B errno
+values are returned:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
@@ -1591,7 +1769,7 @@ associated endpoint was open.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 11n
 .rt
@@ -1602,7 +1780,7 @@ The endpoint has been opened and another open is attempted.
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 11n
 .rt
@@ -1613,7 +1791,7 @@ An endpoint open was attempted with incorrect flags.
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 11n
 .rt
@@ -1624,7 +1802,7 @@ Operation not supported.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 11n
 .rt
@@ -1635,7 +1813,7 @@ Device associated with the file descriptor does not exist.
 .ne 2
 .mk
 .na
-\fBENODEV\fR
+.B ENODEV
 .ad
 .RS 11n
 .rt
@@ -1647,7 +1825,7 @@ command.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 11n
 .rt
@@ -1659,7 +1837,7 @@ the exact error information.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 11n
 .rt
@@ -1670,7 +1848,7 @@ Interrupted system call.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -1717,13 +1895,17 @@ No memory for the allocation of internal structures.
 
 .sp
 .LP
-where \fIN\fR is an integer representing the instance number of this type
+where
+.I N
+is an integer representing the instance number of this type
 of device. (All logical device names for a single device share the same
-\fIN\fR.)
+.IR N .)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1742,9 +1924,15 @@ Availability SUNWugen, SUNWugenu
 .SH SEE ALSO
 .sp
 .LP
-\fBlibusb\fR(3LIB), \fBclose\fR(2), \fBpoll\fR(2), \fBread\fR(2),
-\fBwrite\fR(2), \fBaioread\fR(3C), \fBaiowrite\fR(3C), \fBusba\fR(7D),
-\fBusb_dev_descr\fR(9S).
+.BR libusb (3LIB),
+.BR close (2),
+.BR poll (2),
+.BR read (2),
+.BR write (2),
+.BR aioread (3C),
+.BR aiowrite (3C),
+.BR usba (7D),
+.BR usb_dev_descr (9S).
 .SH DIAGNOSTICS
 .sp
 .LP
@@ -1762,7 +1950,7 @@ Warning: <device path> (ugen<instance num>): Error Message.\|.\|.
 .ne 2
 .mk
 .na
-\fBToo many minor nodes. \fR
+\fBToo many minor nodes.\fR 
 .ad
 .sp .6
 .RS 4n
@@ -1784,7 +1972,7 @@ Too many devices are using this driver.
 .ne 2
 .mk
 .na
-\fBCannot access <device>.  Please reconnect.\fR
+.B Cannot access <device>.  Please reconnect.
 .ad
 .sp .6
 .RS 4n

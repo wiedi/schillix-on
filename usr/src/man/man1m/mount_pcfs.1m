@@ -38,28 +38,51 @@ mount_pcfs \- mount pcfs file systems
 .sp
 .LP
 \fBmount\fR attaches an \fBMS-DOS\fR file system (\fBpcfs\fR) to the file
-system hierarchy at the \fImount_point\fR, which is the pathname of a directory.
-If \fImount_point\fR has any contents prior to the \fBmount\fR operation, these
+system hierarchy at the
+.IR mount_point ,
+which is the pathname of a directory.
+If
+.I mount_point
+has any contents prior to the
+.B mount
+operation, these
 are hidden until the file system is unmounted.
 .sp
 .LP
 The \fBpcfs\fR file system supports direct mounting of files containing the
-file system as well as block devices. See \fBmount\fR(1M) and
+file system as well as block devices. See
+.BR mount (1M)
+and
 \fBlofiadm\fR(1M).
 .sp
 .LP
-If \fBmount\fR is invoked with \fIspecial\fR or \fImount_point\fR as the only
-arguments, \fBmount\fR will search \fB/etc/vfstab\fR to fill in the missing
-arguments, including the \fIFSType-specific_options\fR; see \fBmount\fR(1M) for
+If
+.B mount
+is invoked with
+.I special
+or
+.I mount_point
+as the only
+arguments,
+.B mount
+will search \fB/etc/vfstab\fR to fill in the missing
+arguments, including the
+.IR FSType-specific_options ;
+see \fBmount\fR(1M) for
 more details.
 .sp
 .LP
-The \fIspecial\fR argument can be one of two special device file types:
+The
+.I special
+argument can be one of two special device file types:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-A floppy disk, such as \fB/dev/diskette0\fR or \fB/dev/diskette1\fR.
+A floppy disk, such as
+.B /dev/diskette0
+or
+.BR /dev/diskette1 .
 .RE
 .RS +4
 .TP
@@ -67,20 +90,26 @@ A floppy disk, such as \fB/dev/diskette0\fR or \fB/dev/diskette1\fR.
 .el o
 A DOS logical drive on a hard disk expressed as
 \fIdevice-name\fB:\fIlogical-drive\fR , where \fIdevice-name\fR specifies
-the special block device-file for the whole disk and \fIlogical-drive\fR is
+the special block device-file for the whole disk and
+.I logical-drive
+is
 either a drive letter (c through z) or a drive number (1 through 24). Examples
 are \fB/dev/dsk/c0t0d0p0:\fIc\fR and \fB/dev/dsk/c0t0d0p0:\fI1\fR.
 .RE
 .sp
 .LP
-The \fIspecial\fR device file type must have a formatted \fBMS-DOS\fR file
+The
+.I special
+device file type must have a formatted
+.B MS-DOS
+file
 system with either a 12-bit, 16-bit, or 32-bit File Allocation Table.
 .SH OPTIONS
 .sp
 .ne 2
 .mk
 .na
-\fIgeneric_options\fR
+.I generic_options
 .ad
 .sp .6
 .RS 4n
@@ -91,7 +120,7 @@ See \fBmount\fR(1M) for the list of supported options.
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .sp .6
 .RS 4n
@@ -106,18 +135,32 @@ supported:
 .sp .6
 .RS 4n
 File timestamps in \fBpcfs\fR cover a range between January 1st 1980 and
-December 31st 2127. This is not equal to the range of \fBtime_t\fR on Unix for
+December 31st 2127. This is not equal to the range of
+.B time_t
+on Unix for
 either 32-bit or 64-bit applications. In particular, 32-bit applications fail
-with \fBEOVERFLOW\fR errors on the \fBstat\fR(2) system call when timestamps
-beyond the range of 32-bit \fBtime_t\fR are encountered. In order to prevent
+with
+.B EOVERFLOW
+errors on the
+.BR stat (2)
+system call when timestamps
+beyond the range of 32-bit
+.B time_t
+are encountered. In order to prevent
 such spurious failures, \fBpcfs\fR by default clamps timestamps to the common
 subset of possible \fBpcfs\fR timestamps and the range available to 32-bit
-applications in Unix. The \fBclamptime\fR mount option therefore is active by
+applications in Unix. The
+.B clamptime
+mount option therefore is active by
 default. If you want access to the full range of possible timestamps on
 \fBpcfs\fR, mount the file system with the \fBnoclamptime\fR mount option. Note
-that if \fBnoclamptime\fR is used, only 64-bit applications will have access to
+that if
+.B noclamptime
+is used, only 64-bit applications will have access to
 timestamps beyond January 19th 2038, 03:14:06 UTC; 32-bit applications will
-encounter \fBEOVERFLOW\fR errors.
+encounter
+.B EOVERFLOW
+errors.
 .RE
 
 .sp
@@ -144,7 +187,9 @@ The default is \fBnofoldcase\fR.
 Allow or disallow listing of files with hidden or system bits set. Option
 \fBhidden\fR is the default. When \fBnohidden\fR is effect, hidden and system
 files are neither visible nor accessible. Note that PCFS in previous releases of
-the Solaris operating system used the \fBnohidden\fR option as the default.
+the Solaris operating system used the
+.B nohidden
+option as the default.
 .RE
 
 .sp
@@ -156,7 +201,11 @@ the Solaris operating system used the \fBnohidden\fR option as the default.
 .sp .6
 .RS 4n
 Enable or disable write access timestamps on DOS-formatted media. Default for
-fixed disks is \fBatime\fR, while for removable media \fBnoatime\fR is used. The
+fixed disks is
+.BR atime ,
+while for removable media
+.B noatime
+is used. The
 latter default is so that writes to flash-based media ("memory sticks") can be
 minimized, to prolong lifetime.
 .RE
@@ -175,8 +224,16 @@ which the recording and receiving system use different time zones. Use this
 option to force media timestamps to be interpreted for a specific time zone. The
 \fBmount_pcfs\fR command converts the given time zone name into a numerical
 offset that is passed to the \fBpcfs\fR kernel module, using the same rules as
-described in \fBenviron\fR(5) for the \fBTZ\fR environment variable. By default,
-the \fBtimezone\fR value is taken from the \fBTZ\fR environment variable.
+described in
+.BR environ (5)
+for the
+.B TZ
+environment variable. By default,
+the
+.B timezone
+value is taken from the
+.B TZ
+environment variable.
 .RE
 
 .RE
@@ -186,7 +243,7 @@ the \fBtimezone\fR value is taken from the \fBTZ\fR environment variable.
 .ne 2
 .mk
 .na
-\fB/etc/mnttab\fR
+.B /etc/mnttab
 .ad
 .sp .6
 .RS 4n
@@ -207,7 +264,9 @@ list of default parameters for each file system
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -225,8 +284,13 @@ AvailabilitySUNWesu
 .sp
 .LP
 \fBlofiadm\fR(1M), \fBmount\fR(1M), \fBmountall\fR(1M), \fBmount\fR(2),
-\fBstat\fR(2), \fBtime\fR(2), \fBmnttab\fR(4), \fBvfstab\fR(4), \fBattributes
-\fR(5), \fBenviron\fR(5), \fBpcfs\fR(7FS)
+.BR stat (2),
+.BR time (2),
+.BR mnttab (4),
+\fBvfstab\fR(4), \fBattributes
+\fR(5),
+.BR environ (5),
+\fBpcfs\fR(7FS)
 .SH NOTES
 .sp
 .LP

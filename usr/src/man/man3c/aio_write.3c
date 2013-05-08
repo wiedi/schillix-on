@@ -59,31 +59,56 @@ aio_write \- asynchronous write to a file
 .SH DESCRIPTION
 .sp
 .LP
-The \fBaio_write()\fR function allows the calling process to write
+The
+.B aio_write()
+function allows the calling process to write
 \fIaiocbp\fR\(->\fBaio_nbytes\fR to the file associated with
 \fIaiocbp\fR\(->\fBaio_fildes\fR from the buffer pointed to by
 \fIaiocbp\fR\(->\fBaio_buf\fR. The function call returns when the write
 request has been initiated or, at a minimum, queued to the file or device.
-If \fB_POSIX_PRIORITIZED_IO\fR is defined and prioritized I/O is supported
+If
+.B _POSIX_PRIORITIZED_IO
+is defined and prioritized I/O is supported
 for this file, then the asynchronous operation is submitted at a priority
 equal to the scheduling priority of the process minus
 \fIaiocbp\fR\(->\fBaio_reqprio\fR. The \fIaiocbp\fR may be used as an
-argument to \fBaio_error\fR(3C) and \fBaio_return\fR(3C) in order to
+argument to
+.BR aio_error "(3C) and"
+.BR aio_return (3C)
+in order to
 determine the error status and return status, respectively, of the
 asynchronous operation while it is proceeding.
 .sp
 .LP
-The \fIaiocbp\fR argument points to an \fBaiocb\fR structure. If the buffer
+The
+.I aiocbp
+argument points to an
+.B aiocb
+structure. If the buffer
 pointed to by \fIaiocbp\fR\(->\fBaio_buf\fR or the control block pointed to
-by \fIaiocbp\fR becomes an illegal address prior to asynchronous I/O
+by
+.I aiocbp
+becomes an illegal address prior to asynchronous I/O
 completion, then the behavior is undefined.
 .sp
 .LP
-If \fBO_APPEND\fR is not set for the file descriptor \fIaio_fildes\fR, then
+If
+.B O_APPEND
+is not set for the file descriptor
+.IR aio_fildes ,
+then
 the requested operation takes place at the absolute position in the file as
-given by \fIaio_offset\fR, as if \fBlseek\fR(2) were called immediately
+given by
+.IR aio_offset ,
+as if
+.BR lseek (2)
+were called immediately
 prior to the operation with an \fIoffset\fR equal to \fIaio_offset\fR and a
-\fIwhence\fR equal to \fBSEEK_SET\fR. If \fBO_APPEND\fR is set for the file
+\fIwhence\fR equal to
+.BR SEEK_SET .
+If
+.B O_APPEND
+is set for the file
 descriptor, write operations append to the file in the same order as the
 calls were made. After a successful call to enqueue an asynchronous I/O
 operation, the value of the file offset for the file is unspecified.
@@ -91,18 +116,23 @@ operation, the value of the file offset for the file is unspecified.
 .LP
 The \fIaiocbp\fR\(->\fBaio_sigevent\fR structure defines what asynchronous
 notification is to occur when the asynchronous operation completes, as
-specified in \fBsignal.h\fR(3HEAD).
+specified in
+.BR signal.h (3HEAD).
 .sp
 .LP
 The \fIaiocbp\fR\(->\fBaio_lio_opcode\fR field is ignored by
-\fBaio_write()\fR. 
+.BR aio_write() .
 .sp
 .LP
-Simultaneous asynchronous operations using the same \fIaiocbp\fR produce
+Simultaneous asynchronous operations using the same
+.I aiocbp
+produce
 undefined results.
 .sp
 .LP
-If \fB_POSIX_SYNCHRONIZED_IO\fR is defined and synchronized I/O is enabled
+If
+.B _POSIX_SYNCHRONIZED_IO
+is defined and synchronized I/O is enabled
 on the file associated with \fIaiocbp\fR\(->\fBaio_fildes\fR, the behavior
 of this function shall be according to the definitions of synchronized I/O
 data integrity completion and synchronized I/O file integrity completion.
@@ -115,22 +145,28 @@ result of that action is undefined.
 .LP
 For regular files, no data transfer will occur past the offset maximum
 established in the open file description associated with
-\fIaiocbp\fR\(->\fBaio_fildes\fR.
+.IR aiocbp \(->\fBaio_fildes\fR.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBaio_write()\fR function returns \fB0\fR to the calling process if
+The
+.B aio_write()
+function returns
+.B 0
+to the calling process if
 the I/O operation is successfully queued; otherwise, the function returns
 \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The  \fBaio_write()\fR function will fail if:
+The 
+.B aio_write()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -141,8 +177,12 @@ resource limitations.
 .sp
 .LP
 Each of the following conditions may be detected synchronously at the time
-of the call to \fBaio_write()\fR, or asynchronously. If any of the
-conditions below are detected synchronously, the \fBaio_write()\fR function
+of the call to
+.BR aio_write() ,
+or asynchronously. If any of the
+conditions below are detected synchronously, the
+.B aio_write()
+function
 returns \fB\(mi1\fR and sets \fBerrno\fR to the corresponding value. If any
 of the conditions below are detected asynchronously, the return status of
 the asynchronous operation is set to \fB\(mi1\fR, and the error status of
@@ -151,7 +191,7 @@ the asynchronous operation will be set to the corresponding value.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -163,7 +203,7 @@ descriptor open for writing.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -174,18 +214,24 @@ invalid, \fIaiocbp->\fBaio_reqprio\fR is not a valid value, or
 
 .sp
 .LP
-In the case that the \fBaio_write()\fR successfully queues the I/O
+In the case that the
+.B aio_write()
+successfully queues the I/O
 operation, the return status of the asynchronous operation will be one of
-the values normally returned by the \fBwrite\fR(2) function call. If the
+the values normally returned by the
+.BR write (2)
+function call. If the
 operation is successfully queued but is subsequently canceled or encounters
 an error, the error status for the asynchronous operation contains one of
-the values normally set by the \fBwrite()\fR function call, or one of the
+the values normally set by the
+.B write()
+function call, or one of the
 following:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 13n
 .rt
@@ -197,7 +243,7 @@ descriptor open for writing.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 13n
 .rt
@@ -209,12 +255,13 @@ invalid.
 .ne 2
 .mk
 .na
-\fBECANCELED\fR
+.B ECANCELED
 .ad
 .RS 13n
 .rt
 The requested I/O was canceled before the I/O completed due to an explicit
-\fBaio_cancel\fR(3C) request.
+.BR aio_cancel (3C)
+request.
 .RE
 
 .sp
@@ -224,25 +271,29 @@ The following condition may be detected synchronously or asynchronously:
 .ne 2
 .mk
 .na
-\fBEFBIG\fR
+.B EFBIG
 .ad
 .RS 9n
 .rt
 The file is a regular file, \fIaiobcp\fR\(->\fBaio_nbytes\fR is greater
 than 0 and the starting offset in \fIaiobcp\fR\(->\fBaio_offset\fR is at or
 beyond the offset maximum in the open file description associated with
-\fIaiocbp\fR\(->\fBaio_fildes\fR.
+.IR aiocbp \(->\fBaio_fildes\fR.
 .RE
 
 .SH USAGE
 .sp
 .LP
-The \fBaio_write()\fR function has a transitional interface for 64-bit file
+The
+.B aio_write()
+function has a transitional interface for 64-bit file
 offsets. See \fBlf64\fR(5).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -263,8 +314,17 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBaio_cancel\fR(3C), \fBaio_error\fR(3C), \fBaio_read\fR(3C),
-\fBaio_return\fR(3C), \fBlio_listio\fR(3C), \fBclose\fR(2), \fB_Exit\fR(2),
-\fBfork\fR(2), \fBlseek\fR(2), \fBwrite\fR(2), \fBaio.h\fR(3HEAD),
-\fBsignal.h\fR(3HEAD), \fBattributes\fR(5), \fBlf64\fR(5),
-\fBstandards\fR(5)
+.BR aio_cancel (3C),
+.BR aio_error (3C),
+.BR aio_read (3C),
+.BR aio_return (3C),
+.BR lio_listio (3C),
+.BR close (2),
+.BR _Exit (2),
+\fBfork\fR(2), \fBlseek\fR(2),
+.BR write (2),
+.BR aio.h (3HEAD),
+.BR signal.h (3HEAD),
+.BR attributes (5),
+\fBlf64\fR(5),
+.BR standards (5)

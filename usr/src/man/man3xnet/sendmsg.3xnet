@@ -65,7 +65,7 @@ The function takes the following arguments:
 .ne 2
 .mk
 .na
-\fIsocket\fR
+.I socket
 .ad
 .RS 11n
 .rt
@@ -76,11 +76,13 @@ Specifies the socket file descriptor.
 .ne 2
 .mk
 .na
-\fImessage\fR
+.I message
 .ad
 .RS 11n
 .rt
-Points to a \fBmsghdr\fR structure, containing both the destination address
+Points to a
+.B msghdr
+structure, containing both the destination address
 and the buffers for the outgoing message. The length and format of the
 address depend on the address family of the socket.  The \fBmsg_flags\fR
 member is ignored.
@@ -100,7 +102,7 @@ or the following flag:
 .ne 2
 .mk
 .na
-\fBMSG_EOR\fR
+.B MSG_EOR
 .ad
 .RS 11n
 .rt
@@ -111,7 +113,7 @@ Terminates a record (if supported by the protocol)
 .ne 2
 .mk
 .na
-\fBMSG_OOB\fR
+.B MSG_OOB
 .ad
 .RS 11n
 .rt
@@ -124,66 +126,108 @@ significance and semantics of out-of-band data are protocol-specific.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsendmsg()\fR function sends a message through a connection-mode or
+The
+.B sendmsg()
+function sends a message through a connection-mode or
 connectionless-mode socket.  If the socket is connectionless-mode, the
-message will be sent to the address specified by \fImsghdr\fR.  If the
-socket is connection-mode, the destination address in \fImsghdr\fR is
+message will be sent to the address specified by
+.IR msghdr .
+If the
+socket is connection-mode, the destination address in
+.I msghdr
+is
 ignored.
 .sp
 .LP
-The  \fImsg_iov\fR and  \fImsg_iovlen\fR fields of message specify zero or
-more buffers containing the data to be sent. \fImsg_iov\fR points to an
-array of  \fBiovec\fR structures;  \fImsg_iovlen\fR must be set to the
-dimension of this array. In each  \fBiovec\fR structure, the  \fIiov_base\fR
-field specifies  a storage area and the  \fIiov_len\fR field gives its size
+The 
+.I msg_iov
+and 
+.I msg_iovlen
+fields of message specify zero or
+more buffers containing the data to be sent.
+.I msg_iov
+points to an
+array of 
+.B iovec
+structures; 
+.I msg_iovlen
+must be set to the
+dimension of this array. In each 
+.B iovec
+.RI "structure, the " " iov_base"
+field specifies  a storage area and the 
+.I iov_len
+field gives its size
 in bytes. Some of these sizes can be zero. The data from each storage area
-indicated by  \fImsg_iov\fR is sent in turn.
+indicated by 
+.I msg_iov
+is sent in turn.
 .sp
 .LP
-Successful completion of a call to \fBsendmsg()\fR does not guarantee
+Successful completion of a call to
+.B sendmsg()
+does not guarantee
 delivery of the message. A return value of \(mi1 indicates only
 locally-detected errors.
 .sp
 .LP
 If space is not available at the sending socket to hold the message to be
-transmitted and the socket file descriptor does not have \fBO_NONBLOCK\fR
-set, \fBsendmsg()\fR function blocks until space is available.  If space is
+transmitted and the socket file descriptor does not have
+.BR O_NONBLOCK
+set,
+.B sendmsg()
+function blocks until space is available.  If space is
 not available at the sending socket to hold the message to be transmitted
-and the socket file descriptor does have \fBO_NONBLOCK\fR set,
+and the socket file descriptor does have
+.B O_NONBLOCK
+set,
 \fBsendmsg()\fR function will fail.
 .sp
 .LP
 If the socket protocol supports broadcast and the specified address is a
-broadcast address for the socket protocol, \fBsendmsg()\fR will fail if the
+broadcast address for the socket protocol,
+.B sendmsg()
+will fail if the
 \fBSO_BROADCAST\fR option is not set for the socket.
 .sp
 .LP
 The socket in use may require the process to have appropriate privileges to
-use the \fBsendmsg()\fR function.
+use the
+.B sendmsg()
+function.
 .SH USAGE
 .sp
 .LP
-The \fBselect\fR(3C) and \fBpoll\fR(2) functions can be used to determine
+The
+.BR select "(3C) and"
+.BR poll (2)
+functions can be used to determine
 when it is possible to send more data.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBsendmsg()\fR function returns the number of
-bytes sent.  Otherwise, \(mi1 is returned and \fBerrno\fR is set to indicate
+Upon successful completion,
+.B sendmsg()
+function returns the number of
+bytes sent.  Otherwise, \(mi1 is returned and
+.B errno
+is set to indicate
 the error.
 .SH ERRORS
 .sp
 .LP
-The \fBsendmsg()\fR function will fail if:
+The
+.B sendmsg()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .br
 .na
-\fBEWOULDBLOCK\fR
+.B EWOULDBLOCK
 .ad
 .RS 16n
 .rt
@@ -195,7 +239,7 @@ operation would block.
 .ne 2
 .mk
 .na
-\fBEAFNOSUPPORT\fR
+.B EAFNOSUPPORT
 .ad
 .RS 16n
 .rt
@@ -207,18 +251,20 @@ socket.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
-The \fIsocket\fR argument is not a valid file descriptor.
+The
+.I socket
+argument is not a valid file descriptor.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBECONNRESET\fR
+.B ECONNRESET
 .ad
 .RS 16n
 .rt
@@ -229,13 +275,17 @@ A connection was forcibly closed by a peer.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-The  \fImessage\fR parameter, or storage pointed to by the  \fImsg_name\fR,
+The 
+.I message
+parameter, or storage pointed to by the  \fImsg_name\fR,
 \fImsg_control\fR or  \fImsg_iov\fR fields of the  \fImessage\fR parameter,
-or storage pointed to by the \fBiovec\fR structures pointed to by the
+or storage pointed to by the
+.B iovec
+structures pointed to by the
 \fImsg_iov\fR field can not be accessed.
 .RE
 
@@ -243,34 +293,43 @@ or storage pointed to by the \fBiovec\fR structures pointed to by the
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 16n
 .rt
-A signal interrupted \fBsendmsg()\fR before any data was transmitted.
+A signal interrupted
+.B sendmsg()
+before any data was transmitted.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
-The sum of the \fBiov_len\fR values overflows an \fBssize_t\fR.
+The sum of the
+.B iov_len
+values overflows an
+.BR ssize_t .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEMSGSIZE\fR
+.B EMSGSIZE
 .ad
 .RS 16n
 .rt
 The message is to large to be sent all at once (as the socket requires), or
-the \fBmsg_iovlen\fR member of the \fBmsghdr\fR structure pointed to by
+the
+.B msg_iovlen
+member of the
+.B msghdr
+structure pointed to by
 \fImessage\fR is less than or equal to 0 or is greater than \fBIOV_MAX\fR.
 .RE
 
@@ -278,7 +337,7 @@ the \fBmsg_iovlen\fR member of the \fBmsghdr\fR structure pointed to by
 .ne 2
 .mk
 .na
-\fBENOTCONN\fR
+.B ENOTCONN
 .ad
 .RS 16n
 .rt
@@ -289,22 +348,26 @@ The socket is connection-mode but is not connected.
 .ne 2
 .mk
 .na
-\fBENOTSOCK\fR
+.B ENOTSOCK
 .ad
 .RS 16n
 .rt
-The \fIsocket\fR argument does not refer a socket.
+The
+.I socket
+argument does not refer a socket.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEOPNOTSUPP\fR
+.B EOPNOTSUPP
 .ad
 .RS 16n
 .rt
-The \fIsocket\fR argument is associated with a socket that does not support
+The
+.I socket
+argument is associated with a socket that does not support
 one or more of the values set in \fIflags\fR.
 .RE
 
@@ -312,24 +375,29 @@ one or more of the values set in \fIflags\fR.
 .ne 2
 .mk
 .na
-\fBEPIPE\fR
+.B EPIPE
 .ad
 .RS 16n
 .rt
 The socket is shut down for writing, or the socket is connection-mode and
 is no longer connected. In the latter case, and if the socket is of type
-SOCK_STREAM, the \fBSIGPIPE\fR signal is generated to the calling thread.
+SOCK_STREAM, the
+.B SIGPIPE
+signal is generated to the calling thread.
 .RE
 
 .sp
 .LP
-If the address family of the socket is \fBAF_UNIX\fR, then \fBsendmsg()\fR
+If the address family of the socket is
+.BR AF_UNIX ,
+then
+.BR sendmsg()
 will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
@@ -340,7 +408,7 @@ An I/O error occurred while reading from or writing to the file system.
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
@@ -352,19 +420,23 @@ socket address.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-A component of a pathname exceeded \fINAME_MAX\fR characters, or an entire
-pathname exceeded \fIPATH_MAX\fR characters.
+A component of a pathname exceeded
+.I NAME_MAX
+characters, or an entire
+pathname exceeded
+.I PATH_MAX
+characters.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
@@ -376,7 +448,7 @@ is an empty string.
 .ne 2
 .mk
 .na
-\fBENOTDIR\fR
+.B ENOTDIR
 .ad
 .RS 16n
 .rt
@@ -386,12 +458,14 @@ a directory.
 
 .sp
 .LP
-The \fBsendmsg()\fR function may fail if:
+The
+.B sendmsg()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
@@ -403,7 +477,7 @@ access to the named socket is denied.
 .ne 2
 .mk
 .na
-\fBEDESTADDRREQ\fR
+.B EDESTADDRREQ
 .ad
 .RS 16n
 .rt
@@ -415,7 +489,7 @@ and no destination address was specified.
 .ne 2
 .mk
 .na
-\fBEHOSTUNREACH\fR
+.B EHOSTUNREACH
 .ad
 .RS 16n
 .rt
@@ -427,7 +501,7 @@ or a remote router cannot reach it).
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
@@ -438,7 +512,7 @@ An I/O error occurred while reading from or writing to the file system.
 .ne 2
 .mk
 .na
-\fBEISCONN\fR
+.B EISCONN
 .ad
 .RS 16n
 .rt
@@ -449,7 +523,7 @@ A destination address was specified and the socket is already connected.
 .ne 2
 .mk
 .na
-\fBENETDOWN\fR
+.B ENETDOWN
 .ad
 .RS 16n
 .rt
@@ -460,7 +534,7 @@ The local interface used to reach the destination is down.
 .ne 2
 .mk
 .na
-\fBENETUNREACH\fR
+.B ENETUNREACH
 .ad
 .RS 16n
 .rt
@@ -471,7 +545,7 @@ No route to the network is present.
 .ne 2
 .mk
 .na
-\fBENOBUFS\fR
+.B ENOBUFS
 .ad
 .RS 16n
 .rt
@@ -483,7 +557,7 @@ operation.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 16n
 .rt
@@ -494,7 +568,7 @@ Insufficient memory was available to fulfill the request.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
@@ -504,24 +578,30 @@ complete.
 
 .sp
 .LP
-If the address family of the socket is \fBAF_UNIX\fR, then \fBsendmsg()\fR
+If the address family of the socket is
+.BR AF_UNIX ,
+then
+.BR sendmsg()
 may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
 Pathname resolution of a symbolic link produced an intermediate result
-whose length exceeds \fIPATH_MAX\fR.
+whose length exceeds
+.IR PATH_MAX .
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -540,8 +620,14 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBpoll\fR(2) \fBgetsockopt\fR(3XNET), \fBrecv\fR(3XNET),
+.BR poll (2)
+.BR getsockopt (3XNET),
+.BR recv (3XNET),
 \fBrecvfrom\fR(3XNET), \fBrecvmsg\fR(3XNET), \fBselect\fR(3C),
-\fBsend\fR(3XNET), \fBsendto\fR(3XNET), \fBsetsockopt\fR(3XNET),
-\fBshutdown\fR(3XNET), \fBsocket\fR(3XNET), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR send (3XNET),
+.BR sendto (3XNET),
+.BR setsockopt (3XNET),
+.BR shutdown (3XNET),
+.BR socket (3XNET),
+.BR attributes (5),
+.BR standards (5)

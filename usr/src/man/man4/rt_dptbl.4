@@ -25,7 +25,9 @@ rt_dptbl \- real-time dispatcher parameter table
 .sp
 .LP
 The process scheduler (or dispatcher) is the portion of the kernel that
-controls allocation of the \fBCPU\fR to processes. The scheduler supports
+controls allocation of the
+.B CPU
+to processes. The scheduler supports
 the notion of scheduling classes where each class defines a scheduling
 policy, used to schedule processes within that class. Associated with each
 scheduling class is a set of priority queues on which ready to run processes
@@ -43,22 +45,34 @@ configuration.
 .LP
 The real-time class maintains an in-core table, with an entry for each
 priority level, giving the properties of that level. This table is called
-the real-time dispatcher parameter table (\fBrt_dptbl\fR). The
+the real-time dispatcher parameter table
+.RB ( rt_dptbl ).
+The
 \fBrt_dptbl\fR consists of an array (\fBconfig_rt_dptbl[]\fR) of parameter
-structures (\fBstruct rtdpent_t\fR), one for each of the \fIn\fR priority
-levels. The structure are accessed via a pointer, (\fBrt_dptbl\fR), to the
-array. The properties of a given priority level \fIi\fR are specified by the
+structures
+.RB ( "struct rtdpent_t" ),
+one for each of the
+.I n
+priority
+levels. The structure are accessed via a pointer,
+.RB ( rt_dptbl ),
+to the
+array. The properties of a given priority level
+.I i
+are specified by the
 \fIi\fRth parameter structure in this array ( \fBrt_dptbl[\fIi\fB]\fR
 ).
 .sp
 .LP
 A parameter structure consists of the following members. These are also
-described in the \fB/usr/include/sys/rt.h\fR header file.
+described in the
+.B /usr/include/sys/rt.h
+header file.
 .sp
 .ne 2
 .mk
 .na
-\fBrt_globpri\fR
+.B rt_globpri
 .ad
 .RS 14n
 .rt
@@ -70,31 +84,46 @@ The global scheduling priority associated with this priority level. The
 .ne 2
 .mk
 .na
-\fBrt_quantum\fR
+.B rt_quantum
 .ad
 .RS 14n
 .rt
 The length of the time quantum allocated to processes at this level in
-ticks (\fBhz\fR). The time quantum value is only a default or starting value
+ticks
+.RB ( hz ).
+The time quantum value is only a default or starting value
 for processes at a particular level as the time quantum of a real-time
-process can be changed by the user with the \fBpriocntl\fR command or the
+process can be changed by the user with the
+.B priocntl
+command or the
 \fBpriocntl\fR system call.
 .sp
-In the high resolution clock mode (\fBhires_tick\fR set to \fB1\fR), the
-value of \fBhz\fR is set to \fB1000\fR. Increase quantums to maintain the
+In the high resolution clock mode (\fBhires_tick\fR set to
+.BR 1 ),
+the
+value of
+.B hz
+is set to
+.BR 1000 .
+Increase quantums to maintain the
 same absolute time quantums.
 .RE
 
 .sp
 .LP
 An administrator can affect the behavior of the real-time portion of the
-scheduler by reconfiguring the \fBrt_dptbl\fR. There are two methods
+scheduler by reconfiguring the
+.BR rt_dptbl .
+There are two methods
 available for doing this: reconfigure with a loadable module at boot-time or
-by using \fBdispadmin\fR(1M) at run-time.
+by using
+.BR dispadmin "(1M) at run-time."
 .SS "rt_dptbl Loadable Module"
 .sp
 .LP
-The \fBrt_dptbl\fR can be reconfigured with a loadable module which
+The
+.B rt_dptbl
+can be reconfigured with a loadable module which
 contains a new real time dispatch table. The module containing the dispatch
 table is separate from the RT loadable module which contains the rest of the
 real time software. This is the only method that can be used to change the
@@ -104,16 +133,26 @@ code is described in the Examples section.
 .SS "dispadmin Configuration File"
 .sp
 .LP
-The \fBrt_quantum\fR values in the \fBrt_dptbl\fR can be examined and
-modified on a running system using the \fBdispadmin\fR(1M) command. Invoking
+The
+.B rt_quantum
+values in the
+.B rt_dptbl
+can be examined and
+modified on a running system using the
+.BR dispadmin "(1M) command. Invoking"
 \fBdispadmin\fR for the real-time class allows the administrator to retrieve
-the current \fBrt_dptbl\fR configuration from the kernel's in-core table, or
+the current
+.B rt_dptbl
+configuration from the kernel's in-core table, or
 overwrite the in-core table with values from a configuration file. The
-configuration file used for input to \fBdispadmin\fR must conform to the
+configuration file used for input to
+.B dispadmin
+must conform to the
 specific format described below.
 .sp
 .LP
-Blank lines are ignored and any part of a line to the right of a \fI#\fR
+Blank lines are ignored and any part of a line to the right of a
+.IR #
 symbol is treated as a comment. The first non-blank, non-comment line must
 indicate the resolution to be used for interpreting the time quantum values.
 The resolution is specified as
@@ -126,32 +165,47 @@ RES=\fIres\fR
 
 .sp
 .LP
-where \fIres\fR is a positive integer between 1 and 1,000,000,000 inclusive
-and the resolution used is the reciprocal of \fIres\fR in seconds. (For
-example, \fBRES=1000\fR specifies millisecond resolution.) Although very
+where
+.I res
+is a positive integer between 1 and 1,000,000,000 inclusive
+and the resolution used is the reciprocal of
+.I res
+in seconds. (For
+example,
+.B RES=1000
+specifies millisecond resolution.) Although very
 fine (nanosecond) resolution may be specified, the time quantum lengths are
 rounded up to the next integral multiple of the system clock's resolution.
 .sp
 .LP
-The remaining lines in the file are used to specify the \fBrt_quantum\fR
+The remaining lines in the file are used to specify the
+.BR rt_quantum
 values for each of the real-time priority levels. The first line specifies
 the quantum for real-time level 0, the second line specifies the quantum for
 real-time level 1. There must be exactly one line for each configured
-real-time priority level. Each \fBrt_quantum\fR entry must be either a
+real-time priority level. Each
+.B rt_quantum
+entry must be either a
 positive integer specifying the desired time quantum (in the resolution
-given by \fIres\fR), or the value -2 indicating an infinite time quantum for
+given by
+.IR res ),
+or the value -2 indicating an infinite time quantum for
 that level.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRA Sample \fBdispadmin\fR Configuration File
+\fBExample 1\fR A Sample \fBdispadmin\fR Configuration File
 .sp
 .LP
-The following excerpt from a \fBdispadmin\fR configuration file illustrates
+The following excerpt from a
+.B dispadmin
+configuration file illustrates
 the format. Note that for each line specifying a time quantum there is a
 comment indicating the corresponding priority level. These level numbers
 indicate priority within the real-time class, and the mapping between these
 real-time priorities and the corresponding global scheduling priorities is
-determined by the configuration specified in the \fBRT_DPTBL\fR loadable
+determined by the configuration specified in the
+.B RT_DPTBL
+loadable
 module. The level numbers are strictly for the convenience of the
 administrator reading the file and, as with any comment, they are ignored by
 \fBdispadmin\fR on input. \fBdispadmin\fR assumes that the lines in the file
@@ -185,7 +239,7 @@ RES=1000
 .in -2
 
 .LP
-\fBExample 2 \fRReplacing The rt_dptbl Loadable Module
+\fBExample 2\fR Replacing The rt_dptbl Loadable Module
 .sp
 .LP
 In order to change the size of the real time dispatch table, the loadable
@@ -196,8 +250,11 @@ following procedure.
 .RS +4
 .TP
 1.
-Place the dispatch table code shown below in a file called \fBrt_dptbl.c\fR
-An example of an \fBrt_dptbl.c\fR file follows.
+Place the dispatch table code shown below in a file called
+.BR rt_dptbl.c
+An example of an
+.B rt_dptbl.c
+file follows.
 .RE
 .RS +4
 .TP
@@ -216,19 +273,29 @@ ld -r -o RT_DPTBL rt_dptbl.o
 .RS +4
 .TP
 3.
-Copy the current dispatch table in \fB/usr/kernel/sched\fR to
-\fBRT_DPTBL.bak\fR.
+Copy the current dispatch table in
+.B /usr/kernel/sched
+to
+.BR RT_DPTBL.bak .
 .RE
 .RS +4
 .TP
 4.
-Replace the current \fBRT_DPTBL\fR in \fB/usr/kernel/sched\fR.
+Replace the current
+.B RT_DPTBL
+in
+.BR /usr/kernel/sched .
 .RE
 .RS +4
 .TP
 5.
-You will have to make changes in the \fB/etc/system\fR file to reflect the
-changes to the sizes of the tables. See \fBsystem\fR(4). The \fBrt_maxpri\fR
+You will have to make changes in the
+.B /etc/system
+file to reflect the
+changes to the sizes of the tables. See
+.BR system (4).
+The
+.BR rt_maxpri
 variable may need changing. The syntax for setting this is:
 .sp
 .in +2
@@ -251,8 +318,11 @@ method. If you don't get it right, the system may not behave properly.
 
 .sp
 .LP
-The following is an example of a \fBrt_dptbl.c\fR file used for building
-the new \fBrt_dptbl\fR.
+The following is an example of a
+.B rt_dptbl.c
+file used for building
+the new
+.BR rt_dptbl .
 
 .sp
 .in +2
@@ -365,11 +435,13 @@ rtdpent_t       config_rt_dptbl[] = {
 .SH SEE ALSO
 .sp
 .LP
-\fBpriocntl\fR(1), \fBdispadmin\fR(1M), \fBpriocntl\fR(2),
-\fBsystem\fR(4)
+.BR priocntl (1),
+.BR dispadmin (1M),
+.BR priocntl (2),
+.BR system (4)
 .sp
 .LP
-\fISystem Administration Guide: Basic Administration\fR
+.I System Administration Guide: Basic Administration
 .sp
 .LP
  \fIProgramming Interfaces Guide\fR

@@ -64,7 +64,9 @@ cc -mt [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|.[ \fIlibrary\fR.\|.\|. ]
 .sp
 .LP
 Thread creation adds a new thread of control to the current process. The
-procedure \fBmain()\fR is a single thread of control. Each thread executes
+procedure
+.B main()
+is a single thread of control. Each thread executes
 concurrently with all other threads within the calling process and with
 other threads from other active processes. 	
 .sp
@@ -77,12 +79,15 @@ not inherited and will be empty.
 .sp
 .LP
 The call to create a thread takes the address of a user-defined  function,
-specified by \fIstart_func\fR, as one of its arguments. This function is the
+specified by
+.IR start_func ,
+as one of its arguments. This function is the
 complete execution routine for the new thread.
 .sp
 .LP
 The lifetime of a thread begins with the successful return from
-\fBthr_create()\fR, which calls \fIstart_func\fR(\|) and ends with one of
+.BR thr_create() ,
+which calls \fIstart_func\fR(\|) and ends with one of
 the following:
 .RS +4
 .TP
@@ -94,7 +99,8 @@ the normal completion of \fIstart_func\fR(\|),
 .TP
 .ie t \(bu
 .el o
-an explicit call to \fBthr_exit\fR(3C), or
+an explicit call to
+.BR thr_exit "(3C), or"
 .RE
 .RS +4
 .TP
@@ -105,18 +111,29 @@ the conclusion of the calling process (see \fBexit\fR(2)).
 .sp
 .LP
 The new thread performs by calling the function defined by \fIstart_func\fR
-with only one argument, \fIarg\fR. If more than one argument needs to be
-passed to \fIstart_func\fR, the arguments can be packed into a structure,
-the address of which can be passed to \fIarg\fR.
+with only one argument,
+.IR arg .
+If more than one argument needs to be
+passed to
+.IR start_func ,
+the arguments can be packed into a structure,
+the address of which can be passed to
+.IR arg .
 .sp
 .LP
 If \fIstart_func\fR returns, the thread terminates with the exit status set
 to the \fIstart_func\fR return value (see \fBthr_exit\fR(3C)).
 .sp
 .LP
-When the thread from which \fBmain()\fR originated returns, the effect is
-the same as if an implicit call to \fBexit()\fR were made using the return
-value of \fBmain()\fR as the exit status. This behavior differs from a
+When the thread from which
+.B main()
+originated returns, the effect is
+the same as if an implicit call to
+.B exit()
+were made using the return
+value of
+.B main()
+as the exit status. This behavior differs from a
 \fIstart_func\fR return. If \fBmain()\fR  calls \fBthr_exit\fR(3C), only the
 \fBmain\fR thread exits, not the entire process.
 .sp
@@ -132,7 +149,7 @@ inclusive-OR of the following:
 .ne 2
 .mk
 .na
-\fBTHR_BOUND\fR
+.B THR_BOUND
 .ad
 .RS 18n
 .rt
@@ -143,7 +160,7 @@ This flag is obsolete and is maintained for compatibility.
 .ne 2
 .mk
 .na
-\fBTHR_DETACHED\fR
+.B THR_DETACHED
 .ad
 .RS 18n
 .rt
@@ -158,7 +175,7 @@ thread.
 .ne 2
 .mk
 .na
-\fBTHR_NEW_LWP\fR
+.B THR_NEW_LWP
 .ad
 .RS 18n
 .rt
@@ -169,31 +186,38 @@ This flag is obsolete and is maintained for compatibility.
 .ne 2
 .mk
 .na
-\fBTHR_SUSPENDED\fR
+.B THR_SUSPENDED
 .ad
 .RS 18n
 .rt
 This flag affects the suspended attribute of the thread. The new thread is
 created suspended and will not execute \fIstart_func\fR until it is started
-by \fBthr_continue()\fR.
+by
+.BR thr_continue() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTHR_DAEMON\fR
+.B THR_DAEMON
 .ad
 .RS 18n
 .rt
 This flag affects the daemon attribute of the thread. In addition to being
-created detached (\fBTHR_DAEMON\fR implies \fBTHR_DETACHED\fR), the thread
+created detached (\fBTHR_DAEMON\fR implies
+.BR THR_DETACHED ),
+the thread
 is marked as a daemon. Daemon threads do not interfere with the exit
 conditions for a process. A process will terminate when the last non-daemon
-thread exits or the process calls \fBexit\fR(2). Also, a thread that is
+thread exits or the process calls
+.BR exit (2).
+Also, a thread that is
 waiting in \fBthr_join\fR(3C) for any thread to terminate will return
 \fBEDEADLK\fR when all remaining threads in the process are either daemon
-threads or other threads waiting in \fBthr_join()\fR. Daemon threads are
+threads or other threads waiting in
+.BR thr_join() .
+Daemon threads are
 most useful in libraries that want to use threads.
 .RE
 
@@ -221,30 +245,57 @@ thr_create(NULL, 0, start_func, arg, THR_DETACHED, NULL);
 
 .sp
 .LP
-If \fIstack_base\fR is not \fINULL\fR, the new thread uses the stack
-beginning at the address specified by \fIstack_base\fR and continuing for
+If
+.I stack_base
+is not
+.IR NULL ,
+the new thread uses the stack
+beginning at the address specified by
+.I stack_base
+and continuing for
 \fIstack_size\fR bytes, where \fIstack_size\fR must be greater than or equal
-to \fBTHR_MIN_STACK\fR. If \fIstack_base\fR is \fINULL\fR,
+to
+.BR THR_MIN_STACK .
+If
+.I stack_base
+is
+.IR NULL ,
 \fBthr_create()\fR allocates a stack for the new thread with at least
 \fIstack_size\fR bytes. If \fIstack_size\fR is 0, a default size is used. If
 \fIstack_size\fR is not 0, it must be greater than or equal to
-\fBTHR_MIN_STACK\fR. See  \fBNOTES\fR.
+.BR THR_MIN_STACK .
+See 
+.BR NOTES .
 .sp
 .LP
-When  \fInew_thread_ID\fR is not \fINULL\fR, it points to a location where
-the \fBID\fR of the new thread is stored if \fBthr_create()\fR is
-successful. The \fBID\fR is only valid within the calling process.
+When 
+.I new_thread_ID
+is not
+.IR NULL ,
+it points to a location where
+the
+.B ID
+of the new thread is stored if
+.B thr_create()
+is
+successful. The
+.B ID
+is only valid within the calling process.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, the \fBthr_create()\fR function returns \fB0\fR. Otherwise,
+If successful, the
+.B thr_create()
+function returns
+.BR 0 .
+Otherwise,
 an error value is returned to indicate the error.
 .SH ERRORS
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
@@ -257,21 +308,31 @@ exceeded.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-The \fIstack_base\fR argument is not \fINULL\fR and \fIstack_size\fR is
-less than \fBTHR_MIN_STACK\fR, or the \fIstack_base\fR argument is
+The
+.I stack_base
+argument is not
+.I NULL
+and
+.I stack_size
+is
+less than
+.BR THR_MIN_STACK ,
+or the
+.I stack_base
+argument is
 \fINULL\fR and \fIstack_size\fR is not \fB0\fR and is less than
-\fBTHR_MIN_STACK\fR.
+.BR THR_MIN_STACK .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 11n
 .rt
@@ -280,17 +341,35 @@ The system cannot allocate stack for the thread.
 
 .sp
 .LP
-The \fBthr_create()\fR function may use \fBmmap()\fR to  allocate thread
-stacks from \fBMAP_PRIVATE\fR, \fBMAP_NORESERVE\fR, and \fBMAP_ANON\fR
-memory mappings if \fIstack_base\fR is \fINULL\fR, and consequently may
-return upon failure the relevant error values returned by \fBmmap()\fR. See
-the \fBmmap\fR(2) manual page for these error values.
+The
+.B thr_create()
+function may use
+.B mmap()
+to  allocate thread
+stacks from
+.BR MAP_PRIVATE ,
+.BR MAP_NORESERVE ,
+and
+.BR MAP_ANON
+memory mappings if
+.I stack_base
+is
+.IR NULL ,
+and consequently may
+return upon failure the relevant error values returned by
+.BR mmap() .
+See
+the
+.BR mmap (2)
+manual page for these error values.
 .SH EXAMPLES
 .sp
 .LP
 The following is an example of concurrency with multithreading. Since POSIX
 threads and Solaris threads are fully compatible  even within the same
-process, this example uses \fBpthread_create()\fR if you execute \fBa.out
+process, this example uses
+.B pthread_create()
+if you execute \fBa.out
 0\fR, or \fBthr_create()\fR if you execute \fBa.out 1\fR.
 .sp
 .LP
@@ -305,17 +384,17 @@ execution time will be about 50-seconds.
 The command-line to time this process is:
 .sp
 .LP
-\fB/usr/bin/time\fR \fBa.out\fR \fB0\fR \fB(for\fR \fBPOSIX\fR
+\fB/usr/bin/time a.out\fR \fB0 (for\fR \fBPOSIX\fR
 \fBthreading)\fR 
 .sp
 .LP
 or
 .sp
 .LP
-\fB/usr/bin/time\fR \fBa.out\fR \fB1\fR \fB(for\fR \fBSolaris\fR
+\fB/usr/bin/time a.out\fR \fB1 (for\fR \fBSolaris\fR
 \fBthreading)\fR 
 .LP
-\fBExample 1 \fRAn example of concurrency with multithreading.
+\fBExample 1\fR An example of concurrency with multithreading.
 .sp
 .in +2
 .nf
@@ -375,18 +454,26 @@ sleeping(void *arg)
 
 .sp
 .LP
-Had \fBmain()\fR not waited for the completion of the other threads (using
-\fBpthread_join\fR(3C) or \fBthr_join\fR(3C)), it would have continued to
+Had
+.B main()
+not waited for the completion of the other threads (using
+.BR pthread_join (3C)
+or
+.BR thr_join "(3C)), it would have continued to"
 process concurrently until it reached the end of its routine and the entire
 process would have exited prematurely (see \fBexit\fR(2)).
 
 .LP
-\fBExample 2 \fRCreating a default thread with a new signal mask.
+\fBExample 2\fR Creating a default thread with a new signal mask.
 .sp
 .LP
 The following example demonstrates how to create a default thread with a
-new signal mask. The \fInew_mask\fR argument is assumed to have a value
-different from the creator's signal mask (\fIorig_mask\fR).   The
+new signal mask. The
+.I new_mask
+argument is assumed to have a value
+different from the creator's signal mask
+.RI ( orig_mask ).
+The
 \fInew_mask\fR argument is set to block all signals except for \fBSIGINT\fR.
 The creator's signal mask is changed so that the new thread inherits a
 different mask, and is restored to its original value after
@@ -394,7 +481,9 @@ different mask, and is restored to its original value after
 
 .sp
 .LP
-This example assumes that \fBSIGINT\fR is also unmasked in the creator.
+This example assumes that
+.B SIGINT
+is also unmasked in the creator.
 If it is masked by the creator, then unmasking the signal opens the creator
 to this signal.   The other alternative is to have the new thread set its
 own signal mask in its start routine.
@@ -417,7 +506,9 @@ error = thr_create(NULL, 0, do_func, NULL, 0, &tid);
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -434,17 +525,27 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBexit\fR(2), \fBgetrlimit\fR(2), \fBmmap\fR(2), \fBexit\fR(3C),
-\fBsleep\fR(3C), \fBthr_exit\fR(3C), \fBthr_join\fR(3C),
-\fBthr_min_stack\fR(3C), \fBthr_setconcurrency\fR(3C),
-\fBthr_suspend\fR(3C), \fBattributes\fR(5), \fBstandards\fR(5),
-\fBthreads\fR(5)
+.BR exit (2),
+.BR getrlimit (2),
+.BR mmap (2),
+.BR exit (3C),
+.BR sleep (3C),
+.BR thr_exit (3C),
+.BR thr_join (3C),
+.BR thr_min_stack (3C),
+.BR thr_setconcurrency (3C),
+.BR thr_suspend (3C),
+.BR attributes (5),
+.BR standards (5),
+.BR threads (5)
 .SH NOTES
 .sp
 .LP
 Since multithreaded-application threads execute independently of each
 other, their relative behavior is unpredictable. It is therefore possible
-for the thread executing \fBmain()\fR to finish before all other
+for the thread executing
+.B main()
+to finish before all other
 user-application threads.
 .sp
 .LP
@@ -459,26 +560,44 @@ while (thr_join(0, NULL, NULL) == 0)
 
 .sp
 .LP
-will cause the invoking thread (which may be \fBmain()\fR) to wait for the
+will cause the invoking thread (which may be
+.BR main() )
+to wait for the
 termination of all non-daemon threads, excluding threads that are themselves
-waiting in \fBthr_join()\fR; however, the second and third arguments to
+waiting in
+.BR thr_join() ;
+however, the second and third arguments to
 \fBthr_join()\fR need not necessarily be \fINULL\fR.
 .sp
 .LP
-A thread has not terminated until \fBthr_exit()\fR has finished.  The only
-way to determine this is by \fBthr_join()\fR. When \fBthr_join()\fR returns
+A thread has not terminated until
+.B thr_exit()
+has finished.  The only
+way to determine this is by
+.BR thr_join() .
+When
+.B thr_join()
+returns
 a departed thread, it means that this thread has terminated and its
 resources are reclaimable. For instance, if a user specified a stack to
-\fBthr_create()\fR, this stack can only be reclaimed after  \fBthr_join()\fR
+.BR thr_create() ,
+this stack can only be reclaimed after 
+.BR thr_join()
 has reported this thread as a departed thread.   It is not possible to
-determine when a  \fIdetached\fR thread has terminated.   A detached thread
+determine when a 
+.I detached
+thread has terminated.   A detached thread
 disappears without leaving a trace.
 .sp
 .LP
-Typically, thread stacks allocated by \fBthr_create()\fR begin on page
+Typically, thread stacks allocated by
+.B thr_create()
+begin on page
 boundaries and any specified (a red-zone) size is rounded up to the next
 page boundary. A page with no access permission is appended to the top of
-the stack so that most stack overflows will result in a \fBSIGSEGV\fR signal
+the stack so that most stack overflows will result in a
+.B SIGSEGV
+signal
 being sent to the offending thread. Thread stacks allocated by the caller
 are used as is.
 .sp
@@ -490,16 +609,23 @@ performance. The default stack size for a user-thread  is 1 megabyte in a
 .sp
 .LP
 A user-specified stack size must be greater than or equal to
-\fBTHR_MIN_STACK\fR. A minimum stack size may not accommodate the stack
-frame for  the user thread function \fIstart_func\fR. If a stack size is
+.BR THR_MIN_STACK .
+A minimum stack size may not accommodate the stack
+frame for  the user thread function
+.IR start_func .
+If a stack size is
 specified, it must accommodate \fIstart_func\fR requirements and the
 functions that it may call in turn,  in addition to the minimum
 requirement.
 .sp
 .LP
 It is usually very difficult to determine the runtime stack  requirements
-for a thread. \fBTHR_MIN_STACK\fR specifies how much stack storage is
-required to execute a trivial \fIstart_func\fR. The total runtime
+for a thread.
+.B THR_MIN_STACK
+specifies how much stack storage is
+required to execute a trivial
+.IR start_func .
+The total runtime
 requirements for stack storage are dependent on the storage required to do
 runtime linking, the amount of storage required by library runtimes (like
 \fBprintf()\fR) that your thread calls. Since these storage parameters are

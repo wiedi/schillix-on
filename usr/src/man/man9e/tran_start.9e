@@ -41,11 +41,12 @@ Solaris architecture specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIpkt\fR
+.I pkt
 .ad
 .RS 8n
 .rt
-Pointer to the  \fBscsi_pkt\fR(9S) structure that is about to be
+Pointer to the 
+.BR scsi_pkt "(9S) structure that is about to be"
 transferred.
 .RE
 
@@ -53,122 +54,216 @@ transferred.
 .ne 2
 .mk
 .na
-\fIap\fR
+.I ap
 .ad
 .RS 8n
 .rt
-Pointer to a \fBscsi_address\fR(9S) structure.
+Pointer to a
+.BR scsi_address "(9S) structure."
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The  \fBtran_start()\fR vector in the  \fBscsi_hba_tran\fR(9S) structure must
-be initialized during the \fBHBA \fRdriver's \fBattach\fR(9E) to point to an
-\fBHBA \fRentry point to be called when a target driver calls
-\fBscsi_transport\fR(9F). 
+The 
+.B tran_start()
+vector in the 
+.BR scsi_hba_tran "(9S) structure must"
+be initialized during the
+.B HBA
+driver's
+.BR attach (9E)
+to point to an
+\fBHBA\fR entry point to be called when a target driver calls
+.BR scsi_transport (9F).
 .sp
 .LP
 \fBtran_start()\fR must perform the necessary operations on the \fBHBA
-\fRhardware to transport the \fBSCSI \fRcommand in the  \fIpkt\fR structure to
-the target/logical unit device specified in the  \fIap\fR structure.
+\fRhardware to transport the \fBSCSI\fR command in the  \fIpkt\fR structure to
+the target/logical unit device specified in the 
+.I ap
+structure.
 .sp
 .LP
-If the flag  \fBFLAG_NOINTR\fR is set in  \fBpkt_flags\fR in  \fIpkt\fR,
+If the flag 
+.B FLAG_NOINTR
+is set in  \fBpkt_flags\fR in  \fIpkt\fR,
 \fBtran_start()\fR should not return until the command has been completed. The
-command completion callback \fBpkt_comp\fR in  \fIpkt\fR must not be called
-for commands with  \fBFLAG_NOINTR\fR set, since the return is made directly to
-the function invoking \fBscsi_transport\fR(9F).
+command completion callback
+.B pkt_comp
+in 
+.I pkt
+must not be called
+for commands with 
+.B FLAG_NOINTR
+set, since the return is made directly to
+the function invoking
+.BR scsi_transport (9F).
 .sp
 .LP
-When the flag  \fBFLAG_NOINTR\fR is not set,  \fBtran_start()\fR must queue
+When the flag 
+.B FLAG_NOINTR
+is not set, 
+.B tran_start()
+must queue
 the command for execution on the hardware and return immediately.  The member
 \fBpkt_comp\fR in  \fIpkt\fR indicates a callback routine to be called upon
 command completion.
 .sp
 .LP
 Refer to  \fBscsi_pkt\fR(9S) for other bits in  \fBpkt_flags\fR for which the
-\fBHBA \fRdriver may need to adjust how the command is managed.
+\fBHBA\fR driver may need to adjust how the command is managed.
 .sp
 .LP
-If the  \fBauto_rqsense\fR capability has been set, and the status length
-allocated in  \fBtran_init_pkt\fR(9E) is greater than or equal to
+If the 
+.B auto_rqsense
+capability has been set, and the status length
+allocated in 
+.BR tran_init_pkt "(9E) is greater than or equal to"
 \fBsizeof(struct scsi_arq_status)\fR, automatic request sense is enabled for
-this \fIpkt\fR. If the command terminates with a Check Condition, the \fBHBA
+this
+.IR pkt .
+If the command terminates with a Check Condition, the \fBHBA
 \fRdriver must arrange for a Request Sense command to be transported to that
-target/logical unit, and the members of the  \fBscsi_arq_status\fR structure
-pointed to by  \fBpkt_scbp\fR updated with the results of this Request Sense
-command before the \fBHBA \fRdriver completes the command pointed by
-\fIpkt\fR. 
+target/logical unit, and the members of the 
+.B scsi_arq_status
+structure
+pointed to by 
+.B pkt_scbp
+updated with the results of this Request Sense
+command before the
+.B HBA
+driver completes the command pointed by
+.IR pkt .
 .sp
 .LP
-The member  \fBpkt_time\fR in  \fIpkt\fR is the maximum number of seconds in
+The member 
+.B pkt_time
+in 
+.I pkt
+is the maximum number of seconds in
 which the command should complete. Timeout starts when the command is
-transmitted on the \fBSCSI\fR bus. A  \fBpkt_time\fR of \fB0\fR means no
+transmitted on the
+.B SCSI
+bus. A 
+.B pkt_time
+of
+.B 0
+means no
 timeout should be performed.
 .sp
 .LP
-For a command which has timed out, the \fBHBA \fRdriver must perform some
+For a command which has timed out, the
+.B HBA
+driver must perform some
 recovery operation to clear the command in the target, typically an Abort
-message, or a Device or Bus Reset.  The \fBpkt_reason\fR member of the timed
-out \fIpkt\fR should be set to  \fBCMD_TIMEOUT,\fR and \fBpkt_statistics\fR
-\fBOR\fR'ed with  \fBSTAT_TIMEOUT\fR. If the \fBHBA \fRdriver can successfully
-recover from the timeout, \fBpkt_statistics\fR must also be  \fBOR\fR'ed with
-one of  \fBSTAT_ABORTED\fR, \fBSTAT_BUS_RESET\fR, or  \fBSTAT_DEV_RESET\fR, as
+message, or a Device or Bus Reset.  The
+.B pkt_reason
+member of the timed
+out
+.I pkt
+should be set to 
+.B CMD_TIMEOUT,
+and
+.BR pkt_statistics
+\fBOR\fR'ed with
+.BR STAT_TIMEOUT .
+If the
+.B HBA
+driver can successfully
+recover from the timeout,
+.B pkt_statistics
+must also be 
+.BR OR "'ed with"
+one of
+.BR STAT_ABORTED ,
+.BR STAT_BUS_RESET ,
+or
+.BR STAT_DEV_RESET ,
+as
 appropriate. This informs the target driver that timeout recovery has already
 been successfully accomplished for the timed out command. The  \fBpkt_comp\fR
-completion callback, if not  \fINULL\fR, must also be called at the conclusion
+completion callback, if not
+.IR NULL ,
+must also be called at the conclusion
 of the timeout recovery.
 .sp
 .LP
 If the timeout recovery was accomplished with an Abort Tag message, only the
 timed out packet is affected, and the  packet must be returned with
-\fBpkt_statistics\fR \fBOR\fR'ed with  \fBSTAT_ABORTED\fR and
-\fBSTAT_TIMEOUT\fR.
+\fBpkt_statistics OR\fR'ed with  \fBSTAT_ABORTED\fR and
+.BR STAT_TIMEOUT .
 .sp
 .LP
 If the timeout recovery was accomplished with an Abort message, all commands
 active in that target are affected. All corresponding packets must be returned
-with \fBpkt_reason\fR, \fBCMD_TIMEOUT\fR, and  \fBpkt_statistics\fR
+with
+.BR pkt_reason ,
+.BR CMD_TIMEOUT ,
+and 
+.BR pkt_statistics
 \fBOR\fR'ed with  \fBSTAT_TIMEOUT\fR and  \fBSTAT_ABORTED\fR.
 .sp
 .LP
 If the timeout recovery was accomplished with a Device Reset, all packets
 corresponding to commands active in the target must be returned in the
 transport layer for this target. Packets corresponding to commands active in
-the target must be returned returned with \fBpkt_reason\fR set to
-\fBCMD_TIMEOUT\fR, and \fBpkt_statistics\fR \fBOR\fR'ed with
-\fBSTAT_DEV_RESET\fR and  \fBSTAT_TIMEOUT\fR. Currently inactive packets
-queued for the device should be returned with \fBpkt_reason\fR set to
-\fBCMD_RESET\fR and \fBpkt_statistics\fR \fBOR\fR'ed with \fBSTAT_ABORTED\fR.
+the target must be returned returned with
+.B pkt_reason
+set to
+.BR CMD_TIMEOUT ,
+and
+.BR "pkt_statistics OR" "'ed with"
+\fBSTAT_DEV_RESET\fR and
+.BR STAT_TIMEOUT .
+Currently inactive packets
+queued for the device should be returned with
+.B pkt_reason
+set to
+\fBCMD_RESET\fR and \fBpkt_statistics OR\fR'ed with \fBSTAT_ABORTED\fR.
 
 .sp
 .LP
 If the timeout recovery was accomplished with a Bus Reset, all  packets
 corresponding to commands active in the target must be returned in the
 transport layer. Packets corresponding to commands active in the target must
-be returned with \fBpkt_reason\fR set to \fBCMD_TIMEOUT\fR and
-\fBpkt_statistics\fR \fBOR\fR'ed with \fBSTAT_TIMEOUT\fR and
-\fBSTAT_BUS_RESET\fR. All queued packets for other targets on this bus must be
-returned with \fBpkt_reason\fR set to \fBCMD_RESET\fR and \fBpkt_statistics\fR
+be returned with
+.B pkt_reason
+set to
+.B CMD_TIMEOUT
+and
+\fBpkt_statistics OR\fR'ed with \fBSTAT_TIMEOUT\fR and
+.BR STAT_BUS_RESET .
+All queued packets for other targets on this bus must be
+returned with
+.B pkt_reason
+set to
+.B CMD_RESET
+and
+.BR pkt_statistics
 \fBOR'ed\fR with \fBSTAT_ABORTED\fR.
 .sp
 .LP
-Note that after either a Device Reset or a Bus Reset,  the \fBHBA \fRdriver
+Note that after either a Device Reset or a Bus Reset,  the
+.B HBA
+driver
 must enforce a reset delay time of \fB\&'scsi-reset-delay'\fR milliseconds,
 during which time no commands should be sent to that device, or any device on
 the bus, respectively.
 .sp
 .LP
 \fBtran_start()\fR should initialize the following members in  \fIpkt\fR to
-\fB0\fR. Upon command completion, the \fBHBA \fRdriver should ensure that the
+.BR 0 .
+Upon command completion, the
+.B HBA
+driver should ensure that the
 values in these members are updated to accurately reflect the states through
 which the command transitioned while in the transport layer.
 .sp
 .ne 2
 .mk
 .na
-\fBpkt_resid\fR
+.B pkt_resid
 .ad
 .RS 19n
 .rt
@@ -180,22 +275,28 @@ residual of the data transferred.
 .ne 2
 .mk
 .na
-\fBpkt_reason\fR
+.B pkt_reason
 .ad
 .RS 19n
 .rt
 The reason for the command completion. This field should be set to
-\fBCMD_CMPLT\fR at the beginning of \fBtran_start()\fR, then updated if the
+\fBCMD_CMPLT\fR at the beginning of
+.BR tran_start() ,
+then updated if the
 command ever transitions to an abnormal termination state. To avoid losing
-information, do not set \fBpkt_reason\fR to any other error state unless it
-still has its original \fBCMD_CMPLT\fR value.
+information, do not set
+.B pkt_reason
+to any other error state unless it
+still has its original
+.B CMD_CMPLT
+value.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpkt_statistics\fR
+.B pkt_statistics
 .ad
 .RS 19n
 .rt
@@ -206,12 +307,16 @@ Bit field of transport-related statistics.
 .ne 2
 .mk
 .na
-\fBpkt_state\fR
+.B pkt_state
 .ad
 .RS 19n
 .rt
-Bit field with the major states through which a \fBSCSI\fR command can
-transition. Note: The members listed above, and \fBpkt_hba_private\fR member,
+Bit field with the major states through which a
+.B SCSI
+command can
+transition. Note: The members listed above, and
+.B pkt_hba_private
+member,
 are the only fields in the \fBscsi_pkt\fR(9S) structure which may be modified
 by the transport layer.
 .RE
@@ -224,7 +329,7 @@ by the transport layer.
 .ne 2
 .mk
 .na
-\fBTRAN_ACCEPT\fR
+.B TRAN_ACCEPT
 .ad
 .RS 21n
 .rt
@@ -235,12 +340,14 @@ The packet was accepted by the transport layer.
 .ne 2
 .mk
 .na
-\fBTRAN_BUSY\fR
+.B TRAN_BUSY
 .ad
 .RS 21n
 .rt
 The packet could not be accepted because there was already a packet in
-progress for this target/logical unit, the \fBHBA \fRqueue was full, or the
+progress for this target/logical unit, the
+.B HBA
+queue was full, or the
 target device queue was full.
 .RE
 
@@ -248,36 +355,49 @@ target device queue was full.
 .ne 2
 .mk
 .na
-\fBTRAN_BADPKT\fR
+.B TRAN_BADPKT
 .ad
 .RS 21n
 .rt
-The \fBDMA \fRcount in the packet exceeded the \fBDMA \fRengine's maximum
-\fBDMA \fRsize, or the packet could not be accepted for other reasons.
+The
+.B DMA
+count in the packet exceeded the
+.B DMA
+engine's maximum
+\fBDMA\fR size, or the packet could not be accepted for other reasons.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTRAN_FATAL_ERROR\fR
+.B TRAN_FATAL_ERROR
 .ad
 .RS 21n
 .rt
-A fatal error has occurred in the \fBHBA. \fR
+A fatal error has occurred in the
+.B HBA.
 .RE
 
 .SH CONTEXT
 .sp
 .LP
-The \fBtran_start()\fR function can be called from user or interupt context.
-This requirement comes from \fBscsi_transport()\fR.
+The
+.B tran_start()
+function can be called from user or interupt context.
+This requirement comes from
+.BR scsi_transport() .
 .SH SEE ALSO
 .sp
 .LP
-\fBattach\fR(9E), \fBtran_init_pkt\fR(9E), \fBscsi_hba_attach\fR(9F),
-\fBscsi_transport\fR(9F), \fBscsi_address\fR(9S), \fBscsi_arq_status\fR(9S),
-\fBscsi_hba_tran\fR(9S), \fBscsi_pkt\fR(9S)
+.BR attach (9E),
+.BR tran_init_pkt (9E),
+.BR scsi_hba_attach (9F),
+.BR scsi_transport (9F),
+.BR scsi_address (9S),
+.BR scsi_arq_status (9S),
+.BR scsi_hba_tran (9S),
+.BR scsi_pkt (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

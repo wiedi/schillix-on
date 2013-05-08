@@ -45,7 +45,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIep_handle\fR
+.I ep_handle
 .ad
 .RS 21n
 .rt
@@ -56,7 +56,7 @@ Handle for an instance of an Endpoint.
 .ne 2
 .mk
 .na
-\fIdup_ep_handle\fR
+.I dup_ep_handle
 .ad
 .RS 21n
 .rt
@@ -68,12 +68,14 @@ end.
 .ne 2
 .mk
 .na
-\fItimeout:\fR
+.I timeout:
 .ad
 .RS 21n
 .rt
 Duration of time, in microseconds, that Consumers wait for Connection
-establishment. The value of \fBDAT_TIMEOUT_INFINITE\fR represents no
+establishment. The value of
+.B DAT_TIMEOUT_INFINITE
+represents no
 timeout, indefinite wait. Values must be positive.
 .RE
 
@@ -81,23 +83,27 @@ timeout, indefinite wait. Values must be positive.
 .ne 2
 .mk
 .na
-\fIprivate_data_size\fR
+.I private_data_size
 .ad
 .RS 21n
 .rt
-Size of \fIprivate_data\fR. Must be nonnegative.
+Size of
+.IR private_data .
+Must be nonnegative.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIprivate_data\fR
+.I private_data
 .ad
 .RS 21n
 .rt
 Pointer to the private data that should be provided to the remote Consumer
-as part of the Connection Request. If \fIprivate_data_size\fR is zero, then
+as part of the Connection Request. If
+.I private_data_size
+is zero, then
 \fIprivate_data\fR can be \fINULL\fR.
 .RE
 
@@ -105,7 +111,7 @@ as part of the Connection Request. If \fIprivate_data_size\fR is zero, then
 .ne 2
 .mk
 .na
-\fIqos\fR
+.I qos
 .ad
 .RS 21n
 .rt
@@ -115,12 +121,17 @@ Requested Quality of Service of the connection.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_ep_dup_connect()\fR function requests that a connection be
+The
+.B dat_ep_dup_connect()
+function requests that a connection be
 established between the local Endpoint and a remote Endpoint. This operation
 is used by the active/client side Consumer of the connection model. The
-remote Endpoint is identified by the \fIdup_ep_handle\fR. The remote end of
+remote Endpoint is identified by the
+.IR dup_ep_handle .
+The remote end of
 the requested connection shall be the same as the remote end of the
-\fIdup_ep_handle\fR. This is equivalent to requesting a connection to the
+.IR dup_ep_handle .
+This is equivalent to requesting a connection to the
 same remote IA, Connection Qualifier, and \fIconnect_flags\fR as used for
 establishing the connection on duplicated Endpoints and following the same
 redirections.
@@ -130,10 +141,13 @@ Upon establishing the requested connection as part of the successful
 completion of this operation, the local Endpoint is bound to a Port
 Qualifier of the local IA. The Port Qualifier is passed to the remote side
 of the requested connection and is available to the remote Consumer in the
-Connection Request of the \fBDAT_CONNECTION_REQUEST_EVENT\fR.
+Connection Request of the
+.BR DAT_CONNECTION_REQUEST_EVENT .
 .sp
 .LP
-The Consumer-provided \fIprivate_data\fR is passed to the remote side and
+The Consumer-provided
+.I private_data
+is passed to the remote side and
 is provided to the remote Consumer in the Connection Request. Consumers can
 encapsulate any local Endpoint attributes that remote Consumers need to know
 as part of an upper-level protocol. Providers can also provide a Provider on
@@ -142,25 +156,38 @@ information needed for Connection establishment by the Transport.
 .sp
 .LP
 Upon successful completion of this operation, the local Endpoint is
-transferred into \fBDAT_EP_STATE_ACTIVE_CONNECTION_PENDING\fR.
+transferred into
+.BR DAT_EP_STATE_ACTIVE_CONNECTION_PENDING .
 .sp
 .LP
-Consumers can request a specific value of \fIqos\fR. The Provider specifies
+Consumers can request a specific value of
+.IR qos .
+The Provider specifies
 which Quality of Service it supports in documentation and in the Provider
 attributes. If the local Provider or Transport does not support the
-requested \fIqos\fR, the operation fails and \fBDAT_MODEL_NOT_SUPPORTED\fR
+requested
+.IR qos ,
+the operation fails and
+.BR DAT_MODEL_NOT_SUPPORTED
 is returned synchronously. If the remote Provider does not support the
-requested \fIqos\fR, the local Endpoint is automatically transitioned into a
+requested
+.IR qos ,
+the local Endpoint is automatically transitioned into a
 \fBDAT_EP_STATE_UNDISCONNECTED\fR state, the connection is not established,
-and the event returned on the \fIconnect_evd_handle\fR is
-\fBDAT_CONNECTION_EVENT_NON_PEER_REJECTED\fR. The same
+and the event returned on the
+.I connect_evd_handle
+is
+.BR DAT_CONNECTION_EVENT_NON_PEER_REJECTED .
+The same
 \fBDAT_CONNECTION_EVENT_NON_PEER_REJECTED\fR event is returned if connection
 cannot be established for all reasons for not establishing the connection,
 except timeout, remote host not reachable, and remote peer reject. For
 example, remote host is not reachable, remote Consumer is not listening on
 the requested Connection Qualifier, Backlog of the requested Service Point
 is full, and Transport errors. In this case, the local Endpoint is
-automatically transitioned into a \fBDAT_EP_STATE_UNDISCONNECTED\fR state.
+automatically transitioned into a
+.B DAT_EP_STATE_UNDISCONNECTED
+state.
 .sp
 .LP
 The acceptance of the requested connection by the remote Consumer is
@@ -170,13 +197,21 @@ of the local Endpoint.
 .sp
 .LP
 The rejection of the connection by the remote Consumer is reported to the
-local Consumer through a \fBDAT_CONNECTION_EVENT_PEER_REJECTED\fR event on
-the \fIconnect_evd_handle\fR of the local Endpoint and the local Endpoint is
-automatically transitioned into a \fBDAT_EP_STATE_UNDISCONNECTED\fR state.
+local Consumer through a
+.B DAT_CONNECTION_EVENT_PEER_REJECTED
+event on
+the
+.I connect_evd_handle
+of the local Endpoint and the local Endpoint is
+automatically transitioned into a
+.B DAT_EP_STATE_UNDISCONNECTED
+state.
 .sp
 .LP
 When the Provider cannot reach the remote host or the remote host does not
-respond within the Consumer-requested \fItimeout\fR, a
+respond within the Consumer-requested
+.IR timeout ,
+a
 \fBDAT_CONNECTION_EVENT_UNREACHABLE\fR is generated on the
 \fIconnect_evd_handle\fR of the Endpoint. The Endpoint transitions into a
 \fBDAT_EP_STATE_DISCONNECTED\fR state.
@@ -186,11 +221,15 @@ The local Endpoint is automatically transitioned into a
 \fBDAT_EP_STATE_CONNECTED\fR state when a Connection Request is accepted by
 the remote Consumer and the Provider completes the Transport-specific
 Connection establishment. The local Consumer is notified of the established
-connection through a \fBDAT_CONNECTION_EVENT_ESTABLISHED\fR event on the
+connection through a
+.B DAT_CONNECTION_EVENT_ESTABLISHED
+event on the
 \fIconnect_evd_handle\fR of the local Endpoint.
 .sp
 .LP
-When the \fItimeout\fR expired prior to completion of the Connection
+When the
+.I timeout
+expired prior to completion of the Connection
 establishment, the local Endpoint is automatically transitioned into a
 \fBDAT_EP_STATE_UNDISCONNECTED\fR state and the local Consumer through a
 \fBDAT_CONNECTION_EVENT_TIMED_OUT\fR event on the \fIconnect_evd_handle\fR
@@ -200,7 +239,7 @@ of the local Endpoint.
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -211,7 +250,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -222,7 +261,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -233,18 +272,22 @@ Invalid parameter.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
-The \fIep_handle\fR or \fIdup_ep_handle\fR parameter is invalid.
+The
+.I ep_handle
+or
+.I dup_ep_handle
+parameter is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_STATE\fR
+.B DAT_INVALID_STATE
 .ad
 .RS 30n
 .rt
@@ -255,12 +298,14 @@ A parameter is in an invalid state.
 .ne 2
 .mk
 .na
-\fBDAT_MODEL_NOT_SUPPORTED\fR
+.B DAT_MODEL_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
 The requested Model is not supported by the Provider. For example,
-requested \fIqos\fR was not supported by the local Provider.
+requested
+.I qos
+was not supported by the local Provider.
 .RE
 
 .SH USAGE
@@ -290,7 +335,9 @@ setup.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -309,4 +356,5 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibdat\fR(3LIB), \fBattributes\fR(5)
+.BR libdat (3LIB),
+.BR attributes (5)

@@ -91,53 +91,117 @@ functionality. Theses routines typically are used inside library routines.
 .sp
 .LP
 The \fBdef_prog_mode()\fR and \fBdef_shell_mode()\fR routines save the
-current terminal modes as the ``program'' (in \fBcurses\fR) or ``shell''
-(not in \fBcurses\fR \fB)\fR state for use by the \fBreset_prog_mode()\fR
-and \fBreset_shell_mode()\fR routines. This is done automatically by
-\fBinitscr()\fR.
+current terminal modes as the ``program''
+.RB "(in " curses )
+or ``shell''
+(not in
+.B "curses )"
+state for use by the
+.BR reset_prog_mode()
+and
+.B reset_shell_mode()
+routines. This is done automatically by
+.BR initscr() .
 .sp
 .LP
-The \fBreset_prog_mode()\fR and \fBreset_shell_mode()\fR routines restore
-the terminal to ``program'' (in \fBcurses\fR) or ``shell'' (out of
-\fBcurses\fR) state. These are done automatically by \fBendwin()\fR and,
-after an \fBendwin()\fR, by \fBdoupdate()\fR, so they normally are not
+The
+.B reset_prog_mode()
+and
+.B reset_shell_mode()
+routines restore
+the terminal to ``program''
+.RB "(in " curses )
+or ``shell'' (out of
+.BR curses )
+state. These are done automatically by
+.B endwin()
+and,
+after an
+.BR endwin() ,
+by
+.BR doupdate() ,
+so they normally are not
 called.
 .sp
 .LP
-The \fBresetty()\fR and \fBsavetty()\fR routines save and restore the state
-of the terminal modes. \fBsavetty()\fR saves the current state in a buffer
-and \fBresetty()\fR restores the state to what it was at the last call to
-\fBsavetty()\fR.
+The
+.B resetty()
+and
+.B savetty()
+routines save and restore the state
+of the terminal modes.
+.B savetty()
+saves the current state in a buffer
+and
+.B resetty()
+restores the state to what it was at the last call to
+.BR savetty() .
 .sp
 .LP
-With the \fBgetsyx()\fR routine, the current coordinates of the virtual
-screen cursor are returned in \fIy\fR and \fIx.\fR If \fBleaveok()\fR is
-currently \fBTRUE\fR, then \fB\(mi1\fR,\fB\(mi1\fR is returned. If lines
+With the
+.B getsyx()
+routine, the current coordinates of the virtual
+screen cursor are returned in
+.I y
+and
+.I x.
+If
+.B leaveok()
+is
+currently
+.BR TRUE ,
+then \fB\(mi1\fR,\fB\(mi1\fR is returned. If lines
 have been removed from the top of the screen, using \fBripoffline()\fR,
 \fIy\fR and \fIx\fR include these lines; therefore, \fIy\fR and \fIx\fR
-should be used only as arguments for  \fBsetsyx()\fR.
+should be used only as arguments for 
+.BR setsyx() .
 .sp
 .LP
-With the \fBsetsyx()\fR routine, the virtual screen cursor is set to
-\fIy\fR, \fIx\fR. If \fIy\fR and \fIx\fR are both \fB\(mi1\fR, then
+With the
+.B setsyx()
+routine, the virtual screen cursor is set to
+.IR y ,
+.IR x .
+If
+.I y
+and
+.I x
+are both \fB\(mi1\fR, then
 \fBleaveok()\fR is set. The two routines \fBgetsyx()\fR and \fBsetsyx()\fR
-are designed to be used by a library routine, which manipulates \fBcurses\fR
+.RB "are designed to be used by a library routine, which manipulates" " curses"
 windows but does not want to change the current position of the program's
-cursor. The library routine would call \fBgetsyx()\fR at the beginning, do
+cursor. The library routine would call
+.B getsyx()
+at the beginning, do
 its manipulation of its own windows, do a \fBwnoutrefresh()\fR on its
-windows, call \fBsetsyx()\fR, and then call \fBdoupdate()\fR.
+windows, call
+.BR setsyx() ,
+and then call
+.BR doupdate() .
 .sp
 .LP
 The \fBripoffline()\fR routine provides access to the same facility that
 \fBslk_init()\fR (see \fBcurs_slk\fR(3CURSES)) uses to reduce the size of
-the screen. \fBripoffline()\fR must be called before \fBinitscr()\fR or
+the screen. \fBripoffline()\fR must be called before
+.B initscr()
+or
 \fBnewterm()\fR is called. If \fBline\fR is positive, a line is removed from
-the top of \fBstdscr()\fR; if \fBline\fR is negative, a line is removed from
-the bottom. When this is done inside \fBinitscr()\fR, the routine
+the top of
+.BR stdscr() ;
+if
+.B line
+is negative, a line is removed from
+the bottom. When this is done inside
+.BR initscr() ,
+the routine
 \fBinit()\fR (supplied by the user) is called with two arguments: a window
 pointer to the one-line window that has been allocated and an integer with
 the number of columns in the window. Inside this initialization routine, the
-integer variables \fBLINES\fR and \fBCOLS\fR (defined in \fB<curses.h>\fR)
+integer variables
+.B LINES
+and
+.B COLS
+(defined in \fB<curses.h>\fR)
 are not guaranteed to be accurate and \fBwrefresh()\fR or \fBdoupdate()\fR
 must not be called. It is allowable to call \fBwnoutrefresh()\fR during the
 initialization routine.
@@ -147,24 +211,44 @@ initialization routine.
 \fBinitscr()\fR or \fBnewterm()\fR.
 .sp
 .LP
-With the \fBcurs_set()\fR routine, the cursor state is set to invisible,
-normal, or very visible for \fIvisibility\fR equal to \fB0\fR, \fB1\fR, or
+With the
+.B curs_set()
+routine, the cursor state is set to invisible,
+normal, or very visible for
+.I visibility
+equal to
+.BR 0 ,
+.BR 1 ,
+or
 \fB2\fR respectively. If the terminal supports the  \fIvisibility\fR
-requested, the previous  \fIcursor\fR state is returned; otherwise,
+requested, the previous 
+.I cursor
+state is returned; otherwise,
 \fBERR\fR is returned.
 .sp
 .LP
-The \fBnapms()\fR routine is used to sleep for \fIms\fR milliseconds.
+The
+.B napms()
+routine is used to sleep for
+.I ms
+milliseconds.
 .SH RETURN VALUES
 .sp
 .LP
-Except for \fBcurs_set()\fR, these routines always return \fBOK\fR.
+Except for
+.BR curs_set() ,
+these routines always return
+.BR OK .
 \fBcurs_set()\fR returns the previous cursor state, or \fBERR\fR if the
-requested \fIvisibility\fR is not supported.
+requested
+.I visibility
+is not supported.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -181,9 +265,12 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBcurs_initscr\fR(3CURSES), \fBcurs_outopts\fR(3CURSES),
+.BR curs_initscr (3CURSES),
+.BR curs_outopts (3CURSES),
 \fBcurs_refresh\fR(3CURSES), \fBcurs_scr_dump\fR(3CURSES),
-\fBcurs_slk\fR(3CURSES), \fBcurses\fR(3CURSES), \fBattributes\fR(5)
+.BR curs_slk (3CURSES),
+.BR curses (3CURSES),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
@@ -191,5 +278,10 @@ The header <\fBcurses.h\fR> automatically includes the headers
 <\fBstdio.h\fR> and <\fBunctrl.h\fR>.
 .sp
 .LP
-Note that \fBgetsyx()\fR is a macro, so an ampersand (\fB&\fR) is not
-necessary before the variables \fIy\fR and \fIx\fR.
+Note that
+.B getsyx()
+is a macro, so an ampersand (\fB&\fR) is not
+necessary before the variables
+.I y
+and
+.IR x .

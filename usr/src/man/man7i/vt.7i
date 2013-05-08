@@ -42,8 +42,10 @@ device.
 .sp
 .LP
 VT's are accessed in the same way as other devices. The \fBopen\fR(2)
-system call is used to open the virtual console and \fBread\fR(2),
-\fBwrite\fR(2) and 	\fBioctl\fR(2) are used 	in the normal way and support
+system call is used to open the virtual console and
+.BR read (2),
+.BR write (2)
+and 	\fBioctl\fR(2) are used 	in the normal way and support
 the functionality of the underlying device.  In addition, some virtual
 console-specific ioctls are provided and described	 below.
 .sp
@@ -60,11 +62,17 @@ consistency with Xserver, the virtual console device driver supports the
 Ctrl, Alt, F# and arrow keys.
 .sp
 .LP
-The sequence \fBAltL + F#\fR (where AltL represents the Alt key and F#
+The sequence
+.B "AltL + F#"
+(where AltL represents the Alt key and F#
 represents function keys 1 through 12) is used to select virtual console
-1-12. The sequence \fBAltGraph + F#\fR (where AltGraph represents the right
+1-12. The sequence
+.B "AltGraph + F#"
+(where AltGraph represents the right
 Alt key and F# represent function keys 1 through 12) is for virtual console
-13-24. \fBAlt + F1\fR chooses the system console (also known as virtual
+13-24.
+.B "Alt + F1"
+chooses the system console (also known as virtual
 console 1). The sequence \fBAlt + ->\fR (where ">" represents the right
 directional arrow) selects the next  VT in a circular ring fashion and
 \fBAlt + <-\fR ( where "<" represents the left directional arrow) changes to
@@ -74,7 +82,8 @@ console.
 .sp
 .LP
 Virtual console switching can be done automatically (\fBVT_AUTO\fR) on
-receipt of a ``hot-key'' or by the process owning the VT (\fBVT_PROCESS\fR).
+receipt of a ``hot-key'' or by the process owning the VT
+.RB ( VT_PROCESS ).
 When performed automatically, the process associated with the virtual
 console is unaware of the switch. Saving and restoring the device are
 handled by the underlying device driver and the virtual console manager.
@@ -83,13 +92,19 @@ Note that automatic switching is the default mode.
 .LP
 When a ``hot-key'' is sent when in process-controlled switch mode, the
 process owning the VT is sent a signal (relsig) it has specified to the
-virtual console manager (see \fBsignal\fR(3C)) requesting the process to
+virtual console manager (see
+.BR signal (3C))
+requesting the process to
 release the physical device. At this point, the virtual console manager
-awaits the \fBVT_RELDISP\fR ioctl from the process. If the process refuses
+awaits the
+.B VT_RELDISP
+ioctl from the process. If the process refuses
 to release the device (meaning the switch does not occur), it performs a
 \fBVT_RELDISP\fR ioctl with an argument of 0 (zero).  If the process desires
 to release the device, it saves the device state (keyboard, display, and I/O
-registers) and then performs a \fBVT_RELDISP\fR with an argument of 1 to
+registers) and then performs a
+.B VT_RELDISP
+with an argument of 1 to
 complete the switch.
 .sp
 .LP
@@ -98,12 +113,18 @@ consoles. When an auto mode process becomes active, the underlying device
 driver and the virtual console manager handle the restoring of the device.
 Process control mode processes are sent a specified signal (acqsig) when
 they become the active console.  The process then restores the device state
-(keyboard, display, and I/O registers) and performs \fBVT_RELDISP\fR ioctl
-with an argument of \fBVT_ACKACQ\fR to complete the switching protocol.
+(keyboard, display, and I/O registers) and performs
+.B VT_RELDISP
+ioctl
+with an argument of
+.B VT_ACKACQ
+to complete the switching protocol.
 .sp
 .LP
 The modify-operations ioctls (\fBVT_SETMODE\fR, \fBVT_RELDISP\fR,
-\fBVT_WAITACTIVE\fR, \fBKDSETMODE\fR) check if the VT is the controlling tty
+.BR VT_WAITACTIVE ,
+.BR KDSETMODE )
+check if the VT is the controlling tty
 of the calling process. If not, the sys_devices privilege is enforced.
 \fBVT_ACTIVATE\fR requires the sys_devices privilege. Note that there is no
 controlling tty and privilege check for query/view operations.
@@ -115,7 +136,7 @@ The following ioctls apply to devices that support virtual consoles:
 .ne 2
 .mk
 .na
-\fBVT_ENABLED\fR
+.B VT_ENABLED
 .ad
 .sp .6
 .RS 4n
@@ -128,7 +149,7 @@ integer is 1, otherwise it is 0.
 .ne 2
 .mk
 .na
-\fBVT_OPENQRY\fR
+.B VT_OPENQRY
 .ad
 .sp .6
 .RS 4n
@@ -142,11 +163,14 @@ available VT's, -1 is filled in.
 .ne 2
 .mk
 .na
-\fBVT_GETMODE\fR
+.B VT_GETMODE
 .ad
 .sp .6
 .RS 4n
-Determines the VT's current mode, either \fBVT_AUTO\fR or \fBVT_PROCESS\fR.
+Determines the VT's current mode, either
+.B VT_AUTO
+or
+.BR VT_PROCESS .
 The argument is the address of the following structure, as defined in
 <\fBsys/vt.h\fR>
 .sp
@@ -176,7 +200,7 @@ struct vt_mode {
 .ne 2
 .mk
 .na
-\fBVT_SETMODE\fR
+.B VT_SETMODE
 .ad
 .sp .6
 .RS 4n
@@ -184,20 +208,24 @@ Sets the VT mode. The argument is a pointer to a vt_mode structure as
 defined above. The structure should be filled in with the desired mode.  If
 process-control mode is specified, the signals used to communicate with the
 process should be specified.  If any signals are not specified (value is
-zero), the signal default is \fBSIGUSR1\fR (for relsig and acqsig).
+zero), the signal default is
+.B SIGUSR1
+(for relsig and acqsig).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBVT_RELDISP\fR
+.B VT_RELDISP
 .ad
 .sp .6
 .RS 4n
 Tells the VT manager if	the process releases (or refuses to release) the
 display. An argument of 1 indicates the VT is released. An argument of 0
-indicates refusal to release. The \fBVT_ACKACQ\fR argument indicates if
+indicates refusal to release. The
+.B VT_ACKACQ
+argument indicates if
 acquisition of the VT has been completed.
 .RE
 
@@ -205,7 +233,7 @@ acquisition of the VT has been completed.
 .ne 2
 .mk
 .na
-\fBVT_ACTIVATE\fR
+.B VT_ACTIVATE
 .ad
 .sp .6
 .RS 4n
@@ -218,7 +246,7 @@ not exist, the call fails and errno is set to \fBENXIO\fR.
 .ne 2
 .mk
 .na
-\fBVT_WAITACTIVE\fR
+.B VT_WAITACTIVE
 .ad
 .sp .6
 .RS 4n
@@ -231,7 +259,7 @@ it returns.
 .ne 2
 .mk
 .na
-\fBVT_GETSTATE\fR
+.B VT_GETSTATE
 .ad
 .sp .6
 .RS 4n
@@ -249,17 +277,21 @@ struct vt_stat {
 .fi
 .in -2
 
-With \fBVT_GETSTATE\fR, the VT manager first gets the number of the active
+With
+.BR VT_GETSTATE ,
+the VT manager first gets the number of the active
 VT, then determines the number of open VTs in the system and sets a 1 for
 each open VT in v_state. Next, the VT manager transfers the information in
-structure \fBvt_stat\fR passed by the user process.
+structure
+.B vt_stat
+passed by the user process.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBKDGETMODE\fR
+.B KDGETMODE
 .ad
 .sp .6
 .RS 4n
@@ -278,14 +310,18 @@ Obtains the text/graphics mode associated with the VT.
 .ne 2
 .mk
 .na
-\fBKDSETMODE\fR
+.B KDSETMODE
 .ad
 .sp .6
 .RS 4n
 Sets the text/graphics mode to the VT.
 .sp
 \fBKD_TEXT\fR indicates that console text is displayed on the screen.
-Normally \fBKD_TEXT\fR is combined with \fBVT_AUTO\fR mode for text console
+Normally
+.B KD_TEXT
+is combined with
+.B VT_AUTO
+mode for text console
 terminals, so that the console text display automatically is saved and
 restored on the hot key screen switches.
 .sp
@@ -296,16 +332,28 @@ indicating direct control of the display in graphics mode. In this mode, all
 writes to the VT using the write system call are ignored, and you must save
 and restore the display on the hot key screen switches.
 .sp
-When the mode of the active VT is changed from \fBKD_TEXT\fR to
+When the mode of the active VT is changed from
+.B KD_TEXT
+to
 \fBKD_GRAPHICS\fR or a VT of \fBKD_GRAPHICS\fR mode is made active from a
-previous active VT of \fBKD_TEXT\fR mode, the virtual console manager
-initiates a \fBKDSETMODE\fR ioctl with \fBKD_GRAPHICS\fR as the argument to
+previous active VT of
+.B KD_TEXT
+mode, the virtual console manager
+initiates a
+.B KDSETMODE
+ioctl with
+.B KD_GRAPHICS
+as the argument to
 the underlying console frame buffer device indicating that current display
 is running into graphics mode.
 .sp
-When the mode of the active VT is changed from \fBKD_GRAPHICS\fR to
+When the mode of the active VT is changed from
+.B KD_GRAPHICS
+to
 \fBKD_TEXT\fR or a VT of \fBKD_TEXT\fR mode is actived from a previous
-active VT of \fBKD_GRAPHICS\fR mode, the virtual console manager initiates a
+active VT of
+.B KD_GRAPHICS
+mode, the virtual console manager initiates a
 \fBKDSETMODE\fR ioctl with \fBKD_TEXT\fR as the argument to the underlying
 console frame buffer device indicating that current display is running into
 console text mode.
@@ -316,7 +364,7 @@ console text mode.
 .ne 2
 .mk
 .na
-\fB/dev/vt/#\fR
+.B /dev/vt/#
 .ad
 .RS 14n
 .rt
@@ -326,13 +374,17 @@ VT devices.
 .SH SEE ALSO
 .sp
 .LP
-\fBioctl\fR(2), \fBsignal\fR(3C), \fBwscons\fR(7D)
+.BR ioctl (2),
+.BR signal (3C),
+.BR wscons (7D)
 .SH NOTES
 .sp
 .LP
 By default, there are only five virtual console instance login prompts
 running on \fB/dev/vt/#\fR (where "#" represents 2 to 6) in addition to the
-system console running on \fB/dev/console\fR. Normally Xorg uses the seventh
+system console running on
+.BR /dev/console .
+Normally Xorg uses the seventh
 virtual console (\fB/dev/vt/7\fR.) To switch from consoles to Xserver (which
 normally picks up the first available virtual console), use [ Ctrl + ] Alt +
 F7 .

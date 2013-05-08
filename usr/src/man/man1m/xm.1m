@@ -14,13 +14,22 @@ xm \- xVM management user interface
 .sp
 .LP
 The main interface for command and control of both xVM and guest domains is
-\fBvirsh\fR(1M). Users should use \fBvirsh\fR wherever possible, as it
+.BR virsh (1M).
+Users should use
+.B virsh
+wherever possible, as it
 provides a generic and stable interface to controlling virtualized operating
-systems. Some xVM operations are not yet implemented by \fBvirsh\fR. In
-those cases, the legacy utility \fBxm\fR can be used for detailed control.
+systems. Some xVM operations are not yet implemented by
+.BR virsh .
+In
+those cases, the legacy utility
+.B xm
+can be used for detailed control.
 .sp
 .LP
-With minor variations, the basic structure of an \fBxm\fR command is:
+With minor variations, the basic structure of an
+.B xm
+command is:
 .sp
 .in +2
 .nf
@@ -33,39 +42,56 @@ xm \fIsubcommand\fR [\fIoptions\fR] \fIdomain\fR
 .LP
 \&.\|.\|.where \fIsubcommand\fR is one of the subcommands listed below,
 \fIdomain\fR is the domain name (which is internally translated to a numeric
-domain id), and \fIoptions\fR are subcommand-specific options. The
+domain id), and
+.I options
+are subcommand-specific options. The
 exceptions to this structure occur where a subcommand acts on all domains,
 on the entire machine, or directly on the xVM hypervisor. These exceptions
 are obvious in the descriptions of the subcommands.
 .sp
 .LP
-All \fBxm\fR operations rely upon the xVM control daemon, \fBxend\fR(1M).
+All
+.B xm
+operations rely upon the xVM control daemon, \fBxend\fR(1M).
 \fBxend\fR must be running before any \fBxm\fR commands can run. As
-described in the man page, \fBxend\fR runs under the service management
+described in the man page,
+.B xend
+runs under the service management
 facility (\fBsmf\fR(5)), which enables the daemon to start when a system is
 booted.
 .sp
 .LP
-Most \fBxm\fR subcommands require either root privileges or that you assume
+Most
+.B xm
+subcommands require either root privileges or that you assume
 the Primary Administrator role.
 .sp
 .LP
-Most \fBxm\fR commands act asynchronously, so the fact that an \fBxm\fR
+Most
+.B xm
+commands act asynchronously, so the fact that an \fBxm\fR
 command returns immediately does not mean that the requested action is
-complete. Many operations on domains, such as \fBcreate\fR and
-\fBshutdown\fR, can take considerable time (30 seconds or more) to
+complete. Many operations on domains, such as
+.B create
+and
+.BR shutdown ,
+can take considerable time (30 seconds or more) to
 complete.
 .SH SUBCOMMANDS
 .sp
 .LP
-The \fBxm\fR program supports the subcommands listed below. The parameters
+The
+.B xm
+program supports the subcommands listed below. The parameters
 and options for a given subcommand are described in the description for that
 subcommand.
 .sp
 .ne 2
 .mk
 .na
-\fBblock-attach\fR \fIdomain\fR \fIbe-dev\fR \fIfe-dev\fR \fImode\fR
+.B block-attach
+.I "domain be-dev"
+\fIfe-dev mode\fR
 [\fIbedomain\fR]\fR
 .ad
 .sp .6
@@ -73,13 +99,15 @@ subcommand.
 Create a new virtual block device. This will notify the guest domain of the
 new virtual block device..
 .sp
-The \fBblock-attach\fR subcommand has the following arguments and
+The
+.B block-attach
+subcommand has the following arguments and
 options:
 .sp
 .ne 2
 .mk
 .na
-\fIdomain\fR
+.I domain
 .ad
 .sp .6
 .RS 4n
@@ -90,13 +118,14 @@ The guest domain name to which the device will be attached.
 .ne 2
 .mk
 .na
-\fIbe-dev\fR
+.I be-dev
 .ad
 .sp .6
 .RS 4n
 The device in the backend domain (domain 0) to be exported. This can be
 specified as a physical partition (for example,
-\fBphy:/dev/md/dsk/mydisk\fR, a ZFS volume or a normal file
+.BR phy:/dev/md/dsk/mydisk ,
+a ZFS volume or a normal file
 ('\fBfile:/export/disk-image\fR').
 .RE
 
@@ -110,7 +139,9 @@ specified as a physical partition (for example,
 .RS 4n
 The form, either a symbolic name or a numeric id, by which a device should
 be identified to the guest domain. In Linux, an example of a symbolic name
-is \fB/dev/hdc\fR. For Solaris guest domains, a single number should be
+is
+.BR /dev/hdc .
+For Solaris guest domains, a single number should be
 used. The specified number will correspond to a Solaris disk ID. For
 example, disk ID 3 will have a slice 0 name of \fB/dev/dsk/c0d3s0\fR.
 .RE
@@ -119,7 +150,7 @@ example, disk ID 3 will have a slice 0 name of \fB/dev/dsk/c0d3s0\fR.
 .ne 2
 .mk
 .na
-\fImode\fR
+.I mode
 .ad
 .sp .6
 .RS 4n
@@ -131,7 +162,7 @@ The access mode for the device from the guest domain. Supported modes are
 .ne 2
 .mk
 .na
-\fIbedomain\fR
+.I bedomain
 .ad
 .sp .6
 .RS 4n
@@ -139,21 +170,25 @@ The backend domain hosting the device. This defaults to domain 0.
 Currently, no other ID is supported.
 .RE
 
-See \fBEXAMPLES\fR for an example of the use of this subcommand.
+See
+.B EXAMPLES
+for an example of the use of this subcommand.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBblock-configure\fR \fIdomain\fR \fIback_dev\fR \fIfront_dev\fR
+\fBblock-configure\fR \fIdomain back_dev\fR \fIfront_dev\fR
 \fImode\fR [\fIback_domain\fR]\fR
 .ad
 .sp .6
 .RS 4n
 Change block device configuration. Used for changing CDs in an HVM
 (hardware-based virtual machine) domain; in particular, changing the backend
-device to refer to a different ISO file. See \fBblock-attach\fR for
+device to refer to a different ISO file. See
+.B block-attach
+for
 parameter descriptions.
 .RE
 
@@ -161,12 +196,16 @@ parameter descriptions.
 .ne 2
 .mk
 .na
-\fBblock-detach\fR \fIdomain\fR \fIdev-id\fR
+\fBblock-detach\fR \fIdomain dev-id\fR
 .ad
 .sp .6
 .RS 4n
-Destroy a domain's virtual block device. \fIdevid\fR must be the device id
-given to the device by domain 0. You must run \fBxm block-list\fR to
+Destroy a domain's virtual block device.
+.I devid
+must be the device id
+given to the device by domain 0. You must run
+.B "xm block-list"
+to
 determine that number.
 .RE
 
@@ -178,13 +217,16 @@ determine that number.
 .ad
 .sp .6
 .RS 4n
-List virtual block devices for a domain. The \fBblock-list\fR subcommand
+List virtual block devices for a domain. The
+.B block-list
+subcommand
 has a single option:
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR, \fB--long\fR
+.BR -l ,
+.B --long
 .ad
 .sp .6
 .RS 4n
@@ -204,7 +246,9 @@ Display output in long format.
 Attach to domain \fIdomain\fR's console. If you have set up your domains to
 have a text-based login console, you receive a normal login screen.
 .sp
-The \fBconsole\fR supports only paravirtualized domains. The attached
+The
+.B console
+supports only paravirtualized domains. The attached
 console performs similarly to a serial console.
 .sp
 \fBcontrol-]\fR exits the virtual console.
@@ -219,32 +263,42 @@ console performs similarly to a serial console.
 .ad
 .sp .6
 .RS 4n
-The \fBcreate\fR subcommand creates a domain, according to the
+The
+.B create
+subcommand creates a domain, according to the
 specifications in the mandatory \fIconfig-file\fR argument. \fBcreate\fR
 optionally accepts a set of name-value pairs that can override or add to the
 variables defined in \fIconfig-file\fR.
 .sp
 \fIconfig-file\fR can be an absolute pathname.
 .sp
-The \fBcreate\fR subcommand returns immediately upon domain startup.
+The
+.B create
+subcommand returns immediately upon domain startup.
 However, the starting of a domain is independent of the booting of the guest
 operating system in that domain and independent of that OS's availability
 for input.
 .sp
-The \fBcreate\fR and \fBnew\fR subcommands are legacy features. These
+The
+.B create
+and
+.B new
+subcommands are legacy features. These
 subcommands are used for existing domains that use the old configuration
 file format. New domains should be created with \fBvirt-install\fR(1M).
 .sp
-The \fBcreate\fR subcommand has the following options:
+The
+.B create
+subcommand has the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .br
 .na
-\fB--console_autoconnect\fR
+.B --console_autoconnect
 .ad
 .sp .6
 .RS 4n
@@ -285,11 +339,14 @@ this option is useful only for debugging purposes.
 .ne 2
 .mk
 .na
-\fB-h\fR, \fB--help\fR
+.BR -h ,
+.B --help
 .ad
 .sp .6
 .RS 4n
-Display list of options for \fBcreate\fR subcommand.
+Display list of options for
+.B create
+subcommand.
 .RE
 
 .sp
@@ -308,7 +365,8 @@ configuration script.
 .ne 2
 .mk
 .na
-\fB-n\fR, \fB--dryrun\fR
+.BR -n ,
+.B --dryrun
 .ad
 .sp .6
 .RS 4n
@@ -320,7 +378,8 @@ the domain.
 .ne 2
 .mk
 .na
-\fB-p\fR, \fB--paused\fR
+.BR -p ,
+.B --paused
 .ad
 .sp .6
 .RS 4n
@@ -331,7 +390,8 @@ Leave the domain paused after it is created.
 .ne 2
 .mk
 .na
-\fB-q\fR, \fB--quiet\fR
+.BR -q ,
+.B --quiet
 .ad
 .sp .6
 .RS 4n
@@ -348,7 +408,9 @@ Display no messages over the course of domain creation.
 .ad
 .sp .6
 .RS 4n
-Send commands to the hypervisor debugger. The \fIkeys\fR are as follows:
+Send commands to the hypervisor debugger. The
+.I keys
+are as follows:
 .sp
 .ne 2
 .mk
@@ -357,7 +419,8 @@ Send commands to the hypervisor debugger. The \fIkeys\fR are as follows:
 .ad
 .sp .6
 .RS 4n
-Trap to \fBxendbg\fR.
+Trap to
+.BR xendbg .
 .RE
 
 .sp
@@ -555,7 +618,9 @@ Dump Intel's VMCS.
 .ad
 .sp .6
 .RS 4n
-Print \fBioapic\fR info.
+Print
+.B ioapic
+info.
 .RE
 
 .RE
@@ -568,8 +633,13 @@ Print \fBioapic\fR info.
 .ad
 .sp .6
 .RS 4n
-Removes the domain \fIdomain\fR from xVM domain management. This is the
-same as the \fBvirsh\fR(1M) \fBundefine\fR, which should be used in place of
+Removes the domain
+.I domain
+from xVM domain management. This is the
+same as the
+.BR virsh (1M)
+.BR undefine ,
+which should be used in place of
 this subcommand.
 .RE
 
@@ -581,9 +651,13 @@ this subcommand.
 .ad
 .sp .6
 .RS 4n
-Immediately terminate the domain \fIdomain\fR. For the domain OS, this is
+Immediately terminate the domain
+.IR domain .
+For the domain OS, this is
 the equivalent of abruptly removing the power from a physical machine. In
-most cases, you will want to use the \fBshutdown\fR command instead.
+most cases, you will want to use the
+.B shutdown
+command instead.
 .RE
 
 .sp
@@ -595,15 +669,19 @@ most cases, you will want to use the \fBshutdown\fR command instead.
 .sp .6
 .RS 4n
 Displays recent messages in the xVM message buffer; analogous to
-\fBdmesg\fR(1M). The message buffer contains informational, warning, and
+.BR dmesg (1M).
+The message buffer contains informational, warning, and
 error messages created during xVM's operation.
 .sp
-The \fBdmesg\fR subcommand supports the following option:
+The
+.B dmesg
+subcommand supports the following option:
 .sp
 .ne 2
 .mk
 .na
-\fB-c\fR, \fB--clear\fR
+.BR -c ,
+.B --clear
 .ad
 .sp .6
 .RS 4n
@@ -623,7 +701,8 @@ Clears xVM's message buffer.
 Converts a domain name to a domain ID.
 .sp
 Domain IDs change on each boot, whereas names are permanent. See
-\fBxVM\fR(5) for an explanation of the differences among a domain ID, UUID,
+.BR xVM (5)
+for an explanation of the differences among a domain ID, UUID,
 and name.
 .RE
 
@@ -646,17 +725,24 @@ Converts a domain ID to a domain name.
 .ad
 .sp .6
 .RS 4n
-Dumps core for the domain \fIdomain\fR. By default, the domain continues to
+Dumps core for the domain
+.IR domain .
+By default, the domain continues to
 run after a dump is collected. If \fIoutput-file\fR is not specified, the
-domain core dump is generated in \fB/var/xen/dump/\fR. Core dump files can
+domain core dump is generated in
+.BR /var/xen/dump/ .
+Core dump files can
 be large. Solaris guest domain cores can be debugged using \fBmdb\fR(1).
 .sp
-The \fBdump-core\fR domain has the following options:
+The
+.B dump-core
+domain has the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-C\fR, \fB--crash\fR
+.BR -C ,
+.B --crash
 .ad
 .sp .6
 .RS 4n
@@ -667,7 +753,8 @@ Crash domain after dumping core.
 .ne 2
 .mk
 .na
-\fB-L\fR, \fB--live\fR
+.BR -L ,
+.B --live
 .ad
 .sp .6
 .RS 4n
@@ -684,17 +771,24 @@ Dump core without pausing the domain.
 .ad
 .sp .6
 .RS 4n
-Displays a list of common \fBxm\fR subcommands. \fBxm help\fR supports the
+Displays a list of common
+.B xm
+subcommands.
+.B "xm help"
+supports the
 following option:
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR, \fB--long\fR
+.BR -l ,
+.B --long
 .ad
 .RS 14n
 .rt
-Display a complete list of \fBxm\fR subcommands, grouped by function.
+Display a complete list of
+.B xm
+subcommands, grouped by function.
 .RE
 
 .RE
@@ -707,7 +801,11 @@ Display a complete list of \fBxm\fR subcommands, grouped by function.
 .ad
 .sp .6
 .RS 4n
-Display information about the xVM host in \fIname\fR : \fIvalue\fR format.
+Display information about the xVM host in
+.I name
+:
+.I value
+format.
 The information reported by \fBinfo\fR is useful for inclusion in a bug
 report.
 .RE
@@ -723,7 +821,9 @@ report.
 Displays information about one or more domains. If no domains are
 specified, displays information about all domains.
 .sp
-An example of \fBlist\fR output:
+An example of
+.B list
+output:
 .sp
 .in +2
 .nf
@@ -739,7 +839,7 @@ The fields in this output are as follows:
 .ne 2
 .mk
 .na
-\fBName\fR
+.B Name
 .ad
 .sp .6
 .RS 4n
@@ -750,7 +850,7 @@ Domain name
 .ne 2
 .mk
 .na
-\fBID\fR
+.B ID
 .ad
 .sp .6
 .RS 4n
@@ -761,7 +861,7 @@ Numeric domain ID.
 .ne 2
 .mk
 .na
-\fBMem\fR
+.B Mem
 .ad
 .sp .6
 .RS 4n
@@ -772,7 +872,7 @@ Amount of memory, in MB, currently allocated to a domain.
 .ne 2
 .mk
 .na
-\fBVCPUS\fR
+.B VCPUS
 .ad
 .sp .6
 .RS 4n
@@ -783,7 +883,7 @@ Number of virtual CPUs assigned to a domain.
 .ne 2
 .mk
 .na
-\fBState\fR
+.B State
 .ad
 .sp .6
 .RS 4n
@@ -794,20 +894,24 @@ Run state (described below).
 .ne 2
 .mk
 .na
-\fBTime\fR
+.B Time
 .ad
 .sp .6
 .RS 4n
 Total run time of the domain as accounted for by xVM.
 .RE
 
-The \fBState\fR field in \fBxm list\fR output can, for a given domain,
+The
+.B State
+field in
+.B "xm list"
+output can, for a given domain,
 display one of the following letters.
 .sp
 .ne 2
 .mk
 .na
-\fBr\fR
+.B r
 .ad
 .sp .6
 .RS 4n
@@ -818,7 +922,7 @@ Running. The domain is currently running on a CPU.
 .ne 2
 .mk
 .na
-\fBb\fR
+.B b
 .ad
 .sp .6
 .RS 4n
@@ -830,14 +934,16 @@ on I/O.
 .ne 2
 .mk
 .na
-\fBp\fR
+.B p
 .ad
 .sp .6
 .RS 4n
 Paused. The domain has been paused, occurring usually as a result of an
-administrator running \fBxm pause\fR. When in a paused state the domain
+administrator running
+.BR "xm pause" .
+When in a paused state the domain
 still consumes allocated resources, such as memory, but will not be eligible
-for scheduling by the xVM hypervisor. See also the \fBvirsh\fR \fBsuspend\fR
+for scheduling by the xVM hypervisor. See also the \fBvirsh suspend\fR
 subcommand.
 .RE
 
@@ -845,7 +951,7 @@ subcommand.
 .ne 2
 .mk
 .na
-\fBs\fR
+.B s
 .ad
 .sp .6
 .RS 4n
@@ -857,7 +963,7 @@ will, most likely, never be visible.
 .ne 2
 .mk
 .na
-\fBc\fR
+.B c
 .ad
 .sp .6
 .RS 4n
@@ -870,24 +976,29 @@ has been configured not to restart on crash.
 .ne 2
 .mk
 .na
-\fBd\fR
+.B d
 .ad
 .sp .6
 .RS 4n
 Dying. The domain is in process of moving to a shutdown or crashed state.
 .RE
 
-The \fBlist\fR subcommand supports the following option:
+The
+.B list
+subcommand supports the following option:
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR, \fB--long\fR
+.BR -l ,
+.B --long
 .ad
 .sp .6
 .RS 4n
 Displays more detailed information about each domain than is shown in the
-standard \fBlist\fR output table.
+standard
+.B list
+output table.
 .RE
 
 .RE
@@ -896,26 +1007,30 @@ standard \fBlist\fR output table.
 .ne 2
 .mk
 .na
-\fBlog\fR
+.B log
 .ad
 .sp .6
 .RS 4n
 Display the \fBxend\fR(1M) log. The log file is
-\fB/var/log/xen/xend.log\fR.
+.BR /var/log/xen/xend.log .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmem-max\fR \fIdomain\fR \fImem\fR
+\fBmem-max\fR \fIdomain mem\fR
 .ad
 .sp .6
 .RS 4n
-Specify the maximum amount of memory a domain is able to use. \fImem\fR is
+Specify the maximum amount of memory a domain is able to use.
+.I mem
+is
 specified in megabytes.
 .sp
-The \fBmem-max\fR value might not correspond to the actual memory used in a
+The
+.B mem-max
+value might not correspond to the actual memory used in a
 domain, because a domain might scale down its memory usage to return memory
 to the OS.
 .RE
@@ -924,15 +1039,18 @@ to the OS.
 .ne 2
 .mk
 .na
-\fBmem-set\fR \fIdomain\fR \fImem\fR
+\fBmem-set\fR \fIdomain mem\fR
 .ad
 .sp .6
 .RS 4n
-Set the amount of memory used by the running domain \fIdomain\fR. Because
+Set the amount of memory used by the running domain
+.IR domain .
+Because
 this operation requires cooperation from the domain operating system, there
 is no guarantee that it will succeed.
 .sp
-\fBWarning\fR: There is no good way to know in advance how small of a
+.BR Warning :
+There is no good way to know in advance how small of a
 \fBmem-set\fR value will make a domain unstable and cause it to crash. Be
 very careful when using this command on running domains. Solaris guest
 domains attempt to refuse potentially dangerous settings.
@@ -942,7 +1060,7 @@ domains attempt to refuse potentially dangerous settings.
 .ne 2
 .mk
 .na
-\fBmigrate\fR  [\fIoptions\fR] \fIdomain\fR \fIhost\fR
+\fBmigrate\fR  [\fIoptions\fR] \fIdomain host\fR
 .ad
 .sp .6
 .RS 4n
@@ -975,12 +1093,15 @@ The domain's accessible disks must reside on some form of shared storage,
 such as NFS files or iSCSI volumes, and this storage must be accessible to
 both hosts
 .sp
-The \fBmigrate\fR subcommand supports the following option:
+The
+.B migrate
+subcommand supports the following option:
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR, \fB--live\fR
+.BR -l ,
+.B --live
 .ad
 .sp .6
 .RS 4n
@@ -1000,13 +1121,15 @@ shutting down the domain.
 .ad
 .sp .6
 .RS 4n
-Creates a new network device in the domain specified by \fIdomain\fR. The
+Creates a new network device in the domain specified by
+.IR domain .
+The
 subcommand has the following arguments:
 .sp
 .ne 2
 .mk
 .na
-\fIdomain\fR
+.I domain
 .ad
 .sp .6
 .RS 4n
@@ -1091,7 +1214,9 @@ expressed in a regular expression defined as follows:
 .in -2
 .sp
 
-Note that bandwidth will be rounded up to \fB1.2M\fR if the figure you
+Note that bandwidth will be rounded up to
+.B 1.2M
+if the figure you
 input is below that value.
 .RE
 
@@ -1112,7 +1237,7 @@ Sets the VLAN ID for this interface.
 .ne 2
 .mk
 .na
-\fBnetwork-detach\fR \fIdomain\fR \fIdev-id\fR
+\fBnetwork-detach\fR \fIdomain dev-id\fR
 .ad
 .sp .6
 .RS 4n
@@ -1133,7 +1258,8 @@ List virtual network interfaces for a domain.
 .ne 2
 .mk
 .na
-\fB-l\fR, \fB--long\fR
+.BR -l ,
+.B --long
 .ad
 .sp .6
 .RS 4n
@@ -1150,10 +1276,16 @@ Display output in long format.
 .ad
 .sp .6
 .RS 4n
-The \fBnew\fR subcommand creates (but does not start) the domain defined by
+The
+.B new
+subcommand creates (but does not start) the domain defined by
 the given configuration file.
 .sp
-The \fBnew\fR and \fBcreate\fR subcommands are legacy features. These
+The
+.B new
+and
+.B create
+subcommands are legacy features. These
 subcommands are used for existing domains that use the old configuration
 file format. New domains should use \fBvirt-install\fR(1M).
 .sp
@@ -1202,7 +1334,8 @@ configuration script.
 .ne 2
 .mk
 .na
-\fB-n\fR, \fB--dryrun\fR
+.BR -n ,
+.B --dryrun
 .ad
 .sp .6
 .RS 4n
@@ -1218,12 +1351,16 @@ the domain.
 .na
 \fBnpiv-add\fR \fIdomid\fR [\fB-p\fR \fIvirtual_port_WWN\fR] [\fB-n\fR
 \fIvirtual_node_WWN\fR] \fIphysical_port_WWN\fR[,
-\fIphysical_port_WWN\fR.\|.\|.]\fR
+.IR physical_port_WWN .\|.\|.]\fR
 .ad
 .sp .6
 .RS 4n
-Add a configuration entry for the \fIvirtual_port_WWN\fR and associated
-\fIvirtual_node_WWN\fR to the domain specified by \fIdomid\fR, along with
+Add a configuration entry for the
+.I virtual_port_WWN
+and associated
+\fIvirtual_node_WWN\fR to the domain specified by
+.IR domid ,
+along with
 candidate physical ports on which the virtual port could be created. If
 virtual port/node WWNs are not specified, they will be generated.
 .RE
@@ -1232,12 +1369,17 @@ virtual port/node WWNs are not specified, they will be generated.
 .ne 2
 .mk
 .na
-\fBnpiv-disable\fR \fIdomid\fR \fB-p\fR \fIvirtual_port_WWN\fR
+.B npiv-disable
+.I domid
+\fB-p\fR \fIvirtual_port_WWN\fR
 .ad
 .sp .6
 .RS 4n
 Delete the specified virtual port and associated storage devices from the
-domain. The \fIvirtual_port_WWN\fR will be marked as \fBdisabled\fR,
+domain. The
+.I virtual_port_WWN
+will be marked as
+.BR disabled ,
 regardless of whether the deletion succeeds.
 .RE
 
@@ -1245,12 +1387,16 @@ regardless of whether the deletion succeeds.
 .ne 2
 .mk
 .na
-\fBnpiv-enable\fR \fIdomid\fR \fB-p\fR \fIvirtual_port_WWN\fR
+.B npiv-enable
+.I domid
+\fB-p\fR \fIvirtual_port_WWN\fR
 .ad
 .sp .6
 .RS 4n
 Create the specified virtual port on the first available physical port. The
-\fIvirtual_port_WWN\fR will be marked as \fBenabled\fR, regardless of
+\fIvirtual_port_WWN\fR will be marked as
+.BR enabled ,
+regardless of
 whether the creation succeeds.
 .RE
 
@@ -1287,13 +1433,19 @@ storage over the virtual port, if any
 .ne 2
 .mk
 .na
-\fBnpiv-mod\fR \fIdomid\fR \fB-p\fR \fIvirtual_port_WWN\fR \fB-n\fR
-\fIvirtual_node_WWN\fR \fIphysical_port_WWN\fR[,
-\fIphysical_port_WWN\fR.\|.\|.]\fR
+.B npiv-mod
+.I domid
+.B -p
+.I virtual_port_WWN
+.B -n
+.IR "virtual_node_WWN physical_port_WWN" [,
+.IR physical_port_WWN .\|.\|.]\fR
 .ad
 .sp .6
 .RS 4n
-Modify the configuration entry of the \fIvirtual_node_WWN\fR and the
+Modify the configuration entry of the
+.I virtual_node_WWN
+and the
 \fIphysical_port_WWN\fR list with the specified \fIvirtual_port_WWN\fR.
 .RE
 
@@ -1301,12 +1453,17 @@ Modify the configuration entry of the \fIvirtual_node_WWN\fR and the
 .ne 2
 .mk
 .na
-\fBnpiv-rm\fR \fIdomid\fR \fB-p\fR \fIvirtual_port_WWN\fR
+.B npiv-rm
+.I domid
+\fB-p\fR \fIvirtual_port_WWN\fR
 .ad
 .sp .6
 .RS 4n
-Remove the configuration entry of the \fIvirtual_port_WWN\fR from the
-domain specified by \fIdomid\fR.
+Remove the configuration entry of the
+.I virtual_port_WWN
+from the
+domain specified by
+.IR domid .
 .RE
 
 .sp
@@ -1331,17 +1488,26 @@ xVM hypervisor.
 .sp .6
 .RS 4n
 Reboot a domain. The effect of this subcommand is the same as if  the
-domain had the \fBinit\fR \fB6\fR command (see \fBinit\fR(1M)) run from the
-console. Unless \fB-w\fR is specified, \fBreboot\fR returns as soon as it
+domain had the
+.B "init 6"
+command (see \fBinit\fR(1M)) run from the
+console. Unless
+.B -w
+is specified,
+.B reboot
+returns as soon as it
 has initiated the reboot process, which can be significantly before the
 domain actually reboots.
 .sp
-The \fBreboot\fR subcommand supports the following options:
+The
+.B reboot
+subcommand supports the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-a\fR, \fB--all\fR
+.BR -a ,
+.B --all
 .ad
 .sp .6
 .RS 4n
@@ -1352,7 +1518,8 @@ Reboot all domains.
 .ne 2
 .mk
 .na
-\fB-w\fR, \fB--wait\fR
+.BR -w ,
+.B --wait
 .ad
 .sp .6
 .RS 4n
@@ -1366,11 +1533,14 @@ period, as all services in the domain will have to be shutdown cleanly.
 .ne 2
 .mk
 .na
-\fBrename\fR  \fIoldname\fR \fInewname\fR
+\fBrename\fR  \fIoldname newname\fR
 .ad
 .sp .6
 .RS 4n
-Renames the domain \fIoldname\fR to \fInewname\fR.
+Renames the domain
+.I oldname
+to
+.IR newname .
 .RE
 
 .sp
@@ -1381,7 +1551,9 @@ Renames the domain \fIoldname\fR to \fInewname\fR.
 .ad
 .sp .6
 .RS 4n
-Build a domain from an \fBxm save\fR state file. See the \fBsave\fR
+Build a domain from an
+.B "xm save"
+state file. See the \fBsave\fR
 subcommand.
 .RE
 
@@ -1393,24 +1565,34 @@ subcommand.
 .ad
 .sp .6
 .RS 4n
-Resume the activities of the domain \fIdomain\fR, which is in a suspended
-state as a result of the \fBsuspend\fR subcommand.
+Resume the activities of the domain
+.IR domain ,
+which is in a suspended
+state as a result of the
+.B suspend
+subcommand.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsave\fR \fIdomain\fR \fIstate-file\fR
+\fBsave\fR \fIdomain state-file\fR
 .ad
 .sp .6
 .RS 4n
-Saves a running domain to a file \fIstate-file\fR, so that it can later be
-restored, using the \fBrestore\fR subcommand. Once saved, the domain will no
+Saves a running domain to a file
+.IR state-file ,
+so that it can later be
+restored, using the
+.B restore
+subcommand. Once saved, the domain will no
 longer be running on the system, thus the memory allocated for the domain
 will be free for the use of other domains.
 .sp
-Note that network connections present before the \fBsave\fR operation might
+Note that network connections present before the
+.B save
+operation might
 be severed, as TCP timeouts might have expired.
 .RE
 
@@ -1418,17 +1600,22 @@ be severed, as TCP timeouts might have expired.
 .ne 2
 .mk
 .na
-\fBsched-credit\fR \fB-d\fR \fIdomain\fR [\fB-w\fR
+\fBsched-credit -d\fR \fIdomain\fR [\fB-w\fR
 \fIweight\fR|\fB-c\fIcap\fR]\fR
 .ad
 .sp .6
 .RS 4n
 Get and set credit scheduler parameters for the specified domain.  See
-\fBxVM\fR(5) for a description of the credit scheduler. Without the \fB-w\fR
-or \fB-c\fR options, the current settings for the given domain are shown.
+.BR xVM (5)
+for a description of the credit scheduler. Without the \fB-w\fR
+or
+.B -c
+options, the current settings for the given domain are shown.
 Otherwise, the relevant parameter is set.
 .sp
-The parameters to the \fBsched-credit\fR subcommand are as follows:
+The parameters to the
+.B sched-credit
+subcommand are as follows:
 .sp
 .ne 2
 .mk
@@ -1473,8 +1660,8 @@ Valid weights are in the range 1-65536 and the default is 256.
 .ne 2
 .mk
 .na
-\fBsched-sedf\fR \fIdomain\fR \fIperiod\fR \fIslice\fR
-\fIlatency-hint\fR \fIextratime\fR \fIweight\fR
+\fBsched-sedf\fR \fIdomain period\fR \fIslice\fR
+.I "latency-hint extratime" weight
 .ad
 .sp .6
 .RS 4n
@@ -1488,7 +1675,7 @@ The parameters to the \fBsched-sedf\fR subcommand are as follows:
 .ne 2
 .mk
 .na
-\fIdomain\fR
+.I domain
 .ad
 .sp .6
 .RS 4n
@@ -1499,7 +1686,7 @@ The domain for which scheduling parameters applies.
 .ne 2
 .mk
 .na
-\fIperiod\fR
+.I period
 .ad
 .sp .6
 .RS 4n
@@ -1510,7 +1697,7 @@ The normal EDF scheduling usage, in nanoseconds.
 .ne 2
 .mk
 .na
-\fIslice\fR
+.I slice
 .ad
 .sp .6
 .RS 4n
@@ -1521,7 +1708,7 @@ The normal EDF scheduling usage, in nanoseconds.
 .ne 2
 .mk
 .na
-\fIlatency-hint\fR
+.I latency-hint
 .ad
 .sp .6
 .RS 4n
@@ -1532,7 +1719,7 @@ Scaled period if domain is performing heavy I/O.
 .ne 2
 .mk
 .na
-\fIextratime\fR
+.I extratime
 .ad
 .sp .6
 .RS 4n
@@ -1543,7 +1730,7 @@ Flag for allowing domain to run in extra time.
 .ne 2
 .mk
 .na
-\fIweight\fR
+.I weight
 .ad
 .sp .6
 .RS 4n
@@ -1556,7 +1743,7 @@ Another way of setting CPU slice.
 .ne 2
 .mk
 .na
-\fBshell\fR
+.B shell
 .ad
 .sp .6
 .RS 4n
@@ -1572,19 +1759,25 @@ Launches an interactive shell.
 .sp .6
 .RS 4n
 Gracefully shuts down a domain. The effect of this subcommand is the same
-as if  the domain had the \fBinit\fR \fB5\fR command (see \fBinit\fR(1M))
+as if  the domain had the
+.B "init 5"
+command (see \fBinit\fR(1M))
 run from the console. This subcommand coordinates with the domain OS to
 perform graceful shutdown. The duration of the entire shutdown will vary,
 depending on what services must be shutdown in the domain. The
 \fBshutdown\fR subcommand returns immediately after signalling the domain,
-unless the \fB-w\fR option is used.
+unless the
+.B -w
+option is used.
 .sp
-The \fBshutdown\fR subcommand supports the following options:
+The
+.B shutdown
+subcommand supports the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .sp .6
 .RS 4n
@@ -1595,7 +1788,7 @@ Shutdown all domains.
 .ne 2
 .mk
 .na
-\fB-w\fR
+.B -w
 .ad
 .sp .6
 .RS 4n
@@ -1612,7 +1805,8 @@ Wait for the domain to complete shutdown before returning.
 .ad
 .sp .6
 .RS 4n
-Start the domain specified by \fIdomain\fR.
+Start the domain specified by
+.IR domain .
 .RE
 
 .sp
@@ -1624,20 +1818,24 @@ Start the domain specified by \fIdomain\fR.
 .sp .6
 .RS 4n
 Suspend the activities of all services in the domain specified by
-\fIdomain\fR.
+.IR domain .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsysrq\fR \fIdomain\fR \fIletter\fR
+\fBsysrq\fR \fIdomain letter\fR
 .ad
 .sp .6
 .RS 4n
 For the accepted signals in a Linux domain, refer to the Linux
-documentation. For Solaris signalling the letter \fBb\fR causes the domain
-to enter \fBkmdb\fR(1), the Solaris kernel debugger, if that debugger is
+documentation. For Solaris signalling the letter
+.B b
+causes the domain
+to enter
+.BR kmdb (1),
+the Solaris kernel debugger, if that debugger is
 loaded. Any other letter has no effect.
 .RE
 
@@ -1649,7 +1847,8 @@ loaded. Any other letter has no effect.
 .ad
 .sp .6
 .RS 4n
-Invokes the \fBxentop\fR(1M) command. Monitor a host and one or more
+Invokes the
+.BR xentop "(1M) command. Monitor a host and one or more"
 domains in real time.
 .RE
 
@@ -1661,9 +1860,13 @@ domains in real time.
 .ad
 .sp .6
 .RS 4n
-Moves the domain \fIdomain\fR out of the paused state. This will allow a
+Moves the domain
+.I domain
+out of the paused state. This will allow a
 previously paused domain to now be eligible for scheduling by the xVM
-hypervisor. See the \fBpause\fR subcommand.
+hypervisor. See the
+.B pause
+subcommand.
 .RE
 
 .sp
@@ -1674,8 +1877,12 @@ hypervisor. See the \fBpause\fR subcommand.
 .ad
 .sp .6
 .RS 4n
-Provides information on resource usage for domain \fIdomain\fR. Analogous
-to the \fBuptime\fR(1) command.
+Provides information on resource usage for domain
+.IR domain .
+Analogous
+to the
+.BR uptime (1)
+command.
 .RE
 
 .sp
@@ -1686,7 +1893,9 @@ to the \fBuptime\fR(1) command.
 .ad
 .sp .6
 .RS 4n
-Lists VCPU information for the domain \fIdomain\fR. If no domain is
+Lists VCPU information for the domain
+.IR domain .
+If no domain is
 specified, the subcommand provides VCPU information for all domains.
 .RE
 
@@ -1694,12 +1903,18 @@ specified, the subcommand provides VCPU information for all domains.
 .ne 2
 .mk
 .na
-\fBvcpu-pin\fR \fIdomain\fR \fIvcpu\fR \fIcpus\fR
+.B vcpu-pin
+.I "domain vcpu"
+.I cpus
 .ad
 .sp .6
 .RS 4n
-Pins the VCPU to only run on the specified CPUs. The keyword \fBall\fR can
-be used to apply the \fIcpus\fR list to all VCPUs in the domain.
+Pins the VCPU to only run on the specified CPUs. The keyword
+.B all
+can
+be used to apply the
+.I cpus
+list to all VCPUs in the domain.
 .sp
 Normally VCPUs can float between available CPUs whenever xVM deems a
 different run state is appropriate. Pinning can be used to restrict this, by
@@ -1710,15 +1925,21 @@ ensuring certain VCPUs can run only on certain physical CPUs.
 .ne 2
 .mk
 .na
-\fBvcpu-set\fR \fIdomain\fR \fIvcpu-count\fR
+\fBvcpu-set\fR \fIdomain vcpu-count\fR
 .ad
 .sp .6
 .RS 4n
-Enables the number \fIvcpu-count\fR of virtual CPUs for the domain in
-question. Like the \fBmem-set\fRsubcommand, \fBvcpu-set\fR can allocate only
+Enables the number
+.I vcpu-count
+of virtual CPUs for the domain in
+question. Like the \fBmem-set\fRsubcommand,
+.B vcpu-set
+can allocate only
 up to the maximum virtual CPU count configured at boot time for a domain.
 .sp
-If \fIvcpu-count\fR is smaller than the current number of active VCPUs, the
+If
+.I vcpu-count
+is smaller than the current number of active VCPUs, the
 highest numbered VCPUs will be hotplug removed. This might have consequences
 for pinned VCPUs.
 .sp
@@ -1729,7 +1950,7 @@ be silently ignored.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAttach a File as a Read-only Block Device
+\fBExample 1\fR Attach a File as a Read-only Block Device
 .sp
 .LP
 The following example attaches a file as a read-only block device to a
@@ -1744,7 +1965,7 @@ Solaris guest domain, as \fB/dev/dsk/c0d3\fR.
 .sp
 
 .LP
-\fBExample 2 \fRLive Migration of a \fBdomU\fR to a Different Host
+\fBExample 2\fR Live Migration of a \fBdomU\fR to a Different Host
 .sp
 .in +2
 .nf
@@ -1754,7 +1975,7 @@ Solaris guest domain, as \fB/dev/dsk/c0d3\fR.
 .sp
 
 .LP
-\fBExample 3 \fRPin a Domain's \fBvcpus\fR to Corresponding CPUs
+\fBExample 3\fR Pin a Domain's \fBvcpus\fR to Corresponding CPUs
 .sp
 .in +2
 .nf
@@ -1765,7 +1986,7 @@ xm vcpu-pin solaris1 1 6\fR
 .sp
 
 .LP
-\fBExample 4 \fRBalloon Down a Domain to Use Less Memory
+\fBExample 4\fR Balloon Down a Domain to Use Less Memory
 .sp
 .in +2
 .nf
@@ -1779,7 +2000,7 @@ xm vcpu-pin solaris1 1 6\fR
 .TP
 .ie t \(bu
 .el o
-Sean Dague, \fBsean at dague dot net\fR
+.RB "Sean Dague," " sean at dague dot net"
 .RE
 .RS +4
 .TP
@@ -1791,12 +2012,14 @@ Daniel Stekloff, \fBdsteklof at us dot ibm dot com\fR
 .TP
 .ie t \(bu
 .el o
-Reiner Sailer, \fBsailer at us dot ibm dot com\fR
+.RB "Reiner Sailer," " sailer at us dot ibm dot com"
 .RE
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1815,6 +2038,14 @@ Interface StabilityVolatile
 .SH SEE ALSO
 .sp
 .LP
-\fBkmdb\fR(1), \fBuptime\fR(1), \fBdmesg\fR(1M), \fBinit\fR(1M),
-\fBvirsh\fR(1M), \fBvirt-install\fR(1M), \fBxend\fR(1M), \fBxentop\fR(1M),
-\fBxenstored\fR(1M), \fBattributes\fR(5), \fBsmf\fR(5), \fBxVM\fR(5)
+.BR kmdb (1),
+.BR uptime (1),
+.BR dmesg (1M),
+.BR init (1M),
+.BR virsh (1M),
+.BR virt-install (1M),
+.BR xend (1M),
+.BR xentop (1M),
+.BR xenstored (1M),
+.BR attributes (5),
+\fBsmf\fR(5), \fBxVM\fR(5)

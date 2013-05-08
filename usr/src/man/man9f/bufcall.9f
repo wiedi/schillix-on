@@ -43,7 +43,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIsize\fR
+.I size
 .ad
 .RS 8n
 .rt
@@ -54,11 +54,12 @@ Number of bytes required for the buffer.
 .ne 2
 .mk
 .na
-\fIpri\fR
+.I pri
 .ad
 .RS 8n
 .rt
-Priority of the \fBallocb\fR(9F) allocation request (not used).
+Priority of the
+.BR allocb "(9F) allocation request (not used)."
 .RE
 
 .sp
@@ -76,7 +77,7 @@ Function or driver routine to be called when a buffer becomes available.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 8n
 .rt
@@ -88,13 +89,19 @@ Argument to the function to be called when a buffer becomes available.
 .LP
 The \fBbufcall()\fR function serves as a \fBtimeout\fR(9F) call of
 indeterminate length. When a buffer allocation request fails,
-\fBbufcall()\fR can be used to schedule the routine \fIfunc\fR, to be called
-with the argument \fIarg\fR when a buffer becomes available. \fIfunc\fR may
-call \fBallocb()\fR or it may do something else.
+\fBbufcall()\fR can be used to schedule the routine
+.IR func ,
+to be called
+with the argument
+.I arg
+when a buffer becomes available. \fIfunc\fR may
+call
+.B allocb()
+or it may do something else.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, \fBbufcall()\fR returns a \fBbufcall\fR \fBID\fR that can be
+If successful, \fBbufcall()\fR returns a \fBbufcall ID\fR that can be
 used in a call to \fBunbufcall()\fR to cancel the request. If the
 \fBbufcall()\fR scheduling fails, \fIfunc\fR is never called and \fB0\fR is
 returned.
@@ -105,10 +112,11 @@ The \fBbufcall()\fR function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCalling a function when a buffer becomes available:
+\fBExample 1\fR Calling a function when a buffer becomes available:
 .sp
 .LP
-The purpose of this \fBsrv\fR(9E) service routine is to add a header to all
+The purpose of this
+.BR srv "(9E) service routine is to add a header to all"
 \fBM_DATA\fR messages. Service routines must process all messages on their
 queues before returning, or arrange to be rescheduled
 
@@ -119,17 +127,22 @@ high priority message or a normal priority message that can be sent on (line
 14). Normal priority message that cannot be sent are put back on the message
 queue (line 34). If the message was a high priority one, or if it was normal
 priority and \fBcanputnext\fR(9F) succeeded, then send all but \fBM_DATA\fR
-messages to the next module with \fBputnext\fR(9F) (line 16).
+messages to the next module with
+.BR putnext "(9F) (line 16)."
 
 .sp
 .LP
-For \fBM_DATA\fR messages, try to allocate a buffer large enough to hold
+For
+.B M_DATA
+messages, try to allocate a buffer large enough to hold
 the header (line 18). If no such buffer is available, the service routine
 must be rescheduled for a time when a buffer is available. The original
 message is put back on the queue (line 20) and \fBbufcall\fR (line 21) is
 used to attempt the rescheduling. It will succeed if the rescheduling
 succeeds, indicating that qenable will be called subsequently with the
-argument \fIq\fR once a buffer of the specified size (\fBsizeof (struct
+argument
+.I q
+once a buffer of the specified size (\fBsizeof (struct
 hdr)\fR) becomes available. If it does, \fBqenable\fR(9F) will put \fIq\fR
 on the list of queues to have their service routines called. If
 \fBbufcall()\fR fails, \fBtimeout\fR(9F) (line 22) is used to try again in
@@ -138,7 +151,9 @@ about a half second.
 .sp
 .LP
 If the buffer allocation was successful, initialize the header (lines
-25-28), make the message type \fBM_PROTO\fR (line 29), link the \fBM_DATA\fR
+25-28), make the message type
+.B M_PROTO
+.RB "(line 29), link the" " M_DATA"
 message to it (line 30), and pass it on (line 31).
 
 .sp
@@ -197,18 +212,27 @@ outstanding at close time.
 .SH SEE ALSO
 .sp
 .LP
-\fBsrv\fR(9E), \fBallocb\fR(9F), \fBcanputnext\fR(9F), \fBesballoc\fR(9F),
-\fBesbbcall\fR(9F), \fBputnext\fR(9F), \fBqenable\fR(9F), \fBtestb\fR(9F),
-\fBtimeout\fR(9F), \fBunbufcall\fR(9F)
+.BR srv (9E),
+.BR allocb (9F),
+\fBcanputnext\fR(9F), \fBesballoc\fR(9F),
+.BR esbbcall (9F),
+.BR putnext (9F),
+\fBqenable\fR(9F), \fBtestb\fR(9F),
+.BR timeout (9F),
+\fBunbufcall\fR(9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH WARNINGS
 .sp
 .LP
-Even when \fIfunc\fR is called by \fBbufcall()\fR, \fBallocb\fR(9F) can
+Even when \fIfunc\fR is called by
+.BR bufcall() ,
+.BR allocb (9F)
+can
 fail if another module or driver had allocated the memory before \fIfunc\fR
-was able to call \fBallocb\fR(9F).
+was able to call
+.BR allocb (9F).

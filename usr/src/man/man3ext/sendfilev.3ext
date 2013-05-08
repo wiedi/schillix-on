@@ -43,20 +43,27 @@ The \fBsendfilev()\fR function supports the following parameters:
 .ad
 .RS 11n
 .rt
-A file descriptor to a regular file or to a \fBAF_NCA\fR, \fBAF_INET\fR, or
+A file descriptor to a regular file or to a
+.BR AF_NCA ,
+.BR AF_INET ,
+or
 \fBAF_INET6\fR family type \fBSOCK_STREAM\fR socket that is open for
-writing. For \fBAF_NCA\fR, the protocol type should be zero.
+writing. For
+.BR AF_NCA ,
+the protocol type should be zero.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIvec\fR
+.I vec
 .ad
 .RS 11n
 .rt
-An array of \fBSENDFILEVEC_T\fR, as defined in the \fBsendfilevec\fR
+An array of
+.BR SENDFILEVEC_T ,
+as defined in the \fBsendfilevec\fR
 structure above.
 .RE
 
@@ -68,7 +75,8 @@ structure above.
 .ad
 .RS 11n
 .rt
-The number of members in \fIvec\fR.
+The number of members in
+.IR vec .
 .RE
 
 .sp
@@ -88,12 +96,23 @@ The total number of bytes written to \fBout_fd\fR.
 The \fBsendfilev()\fR function attempts to write data from the \fIsfvcnt\fR
 buffers specified by the members of \fIvec\fR array: \fBvec[0], vec[1], .\|.\|.
 , vec[sfvcnt-1]\fR. The \fIfildes\fR argument is a file descriptor to a
-regular file or to an \fBAF_NCA\fR, \fBAF_INET\fR, or \fBAF_INET6\fR family
-type \fBSOCK_STREAM\fR socket that is open for writing.
+regular file or to an
+.BR AF_NCA ,
+.BR AF_INET ,
+or
+.B AF_INET6
+family
+type
+.B SOCK_STREAM
+socket that is open for writing.
 .sp
 .LP
-This function is analogous to \fBwritev\fR(2), but can read from both
-buffers and file descriptors. Unlike \fBwritev()\fR, in the case of multiple
+This function is analogous to
+.BR writev (2),
+but can read from both
+buffers and file descriptors. Unlike
+.BR writev() ,
+in the case of multiple
 writers to a file the effect of \fBsendfilev()\fR is not necessarily atomic;
 the writes may be interleaved. Application-specific synchronization methods
 must be employed if this causes problems.
@@ -117,7 +136,9 @@ typedef struct sendfilevec {
 .sp
 .LP
 To send a file, open the file for reading and point \fBsfv_fd\fR to the
-file descriptor returned as a result. See \fBopen\fR(2). \fBsfv_off\fR
+file descriptor returned as a result. See
+.BR open (2).
+\fBsfv_off\fR
 should contain the offset within the file. \fBsfv_len\fR should have the
 length of the file to be transferred.
 .sp
@@ -130,13 +151,19 @@ The \fBsfv_flag\fR field is reserved and should be set to zero.
 .sp
 .LP
 To send data directly from the address space of the process, set
-\fBsfv_fd\fR to \fBSFV_FD_SELF\fR. \fBsfv_off\fR should point to the data,
+\fBsfv_fd\fR to
+.BR SFV_FD_SELF .
+\fBsfv_off\fR should point to the data,
 with \fBsfv_len\fR containing the length of the buffer.
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, the \fBsendfilev()\fR function returns total
-number of bytes written to \fBout_fd\fR. Otherwise, it returns \fB-1\fR, and
+number of bytes written to
+.BR out_fd .
+Otherwise, it returns
+.BR -1 ,
+and
 \fBerrno\fR is set to indicate the error. The \fIxferred\fR argument
 contains the amount of data successfuly transferred, which can be used to
 discover the error vector.
@@ -145,7 +172,7 @@ discover the error vector.
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
@@ -157,7 +184,7 @@ pointed by \fBsfv_fd\fR does not  have appropriate permissions.
 .ne 2
 .mk
 .na
-\fBEAFNOSUPPORT\fR
+.B EAFNOSUPPORT
 .ad
 .RS 16n
 .rt
@@ -169,12 +196,14 @@ socket.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 16n
 .rt
 Mandatory file or record locking is set on either the file descriptor or
-output file descriptor if it points at regular files. \fBO_NDELAY\fR or
+output file descriptor if it points at regular files.
+.B O_NDELAY
+or
 \fBO_NONBLOCK\fR is set, and there is a blocking record lock. An attempt has
 been made to write to a stream that cannot accept data with the
 \fBO_NDELAY\fR or the \fBO_NONBLOCK\fR flag set.
@@ -184,7 +213,7 @@ been made to write to a stream that cannot accept data with the
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
@@ -196,11 +225,13 @@ The \fIfildes\fR argument is not a valid descriptor open for writing or an
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-The \fIvec\fR argument points to an illegal address.
+The
+.I vec
+argument points to an illegal address.
 .sp
 The \fIxferred\fR argument points to an illegal address.
 .RE
@@ -209,7 +240,7 @@ The \fIxferred\fR argument points to an illegal address.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 16n
 .rt
@@ -221,11 +252,13 @@ transferred.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
-The \fIsfvcnt\fR argument was less than or equal to \fB0\fR. One of the
+The \fIsfvcnt\fR argument was less than or equal to
+.BR 0 .
+One of the
 \fBsfv_len\fR values in \fIvec\fR array was less than or equal to \fB0\fR,
 or greater than the file size. An \fBsfv_fd\fR is not seekable.
 .sp
@@ -236,7 +269,7 @@ Fewer bytes were transferred than were requested.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
@@ -247,7 +280,7 @@ An I/O error occurred while accessing the file system.
 .ne 2
 .mk
 .na
-\fBEPIPE\fR
+.B EPIPE
 .ad
 .RS 16n
 .rt
@@ -259,7 +292,7 @@ writing.
 .ne 2
 .mk
 .na
-\fBEPROTOTYPE\fR
+.B EPROTOTYPE
 .ad
 .RS 16n
 .rt
@@ -275,8 +308,14 @@ offsets. See \fBlf64\fR(5).
 .sp
 .LP
 The following example sends 2 vectors, one of HEADER data and a file of
-length 100 over \fBsockfd\fR. \fBsockfd\fR is in a connected state, that is,
-\fBsocket()\fR, \fBaccept()\fR, and \fBbind()\fR operation are complete.
+length 100 over
+.BR sockfd .
+\fBsockfd\fR is in a connected state, that is,
+.BR socket() ,
+.BR accept() ,
+and
+.B bind()
+operation are complete.
 .sp
 .in +2
 .nf
@@ -313,7 +352,9 @@ main (int argc, char *argv[]){
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -332,5 +373,7 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBopen\fR(2), \fBwritev\fR(2), \fBlibsendfile\fR(3LIB),
+.BR open (2),
+.BR writev (2),
+\fBlibsendfile\fR(3LIB),
 \fBsendfile\fR(3EXT), \fBsocket\fR(3SOCKET), \fBattributes\fR(5)

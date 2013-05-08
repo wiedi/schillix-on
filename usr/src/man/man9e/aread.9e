@@ -38,15 +38,21 @@ int\fIprefix\fR
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris \fBDDI \fRspecific (Solaris DDI). This entry point is
-\fIoptional\fR. Drivers that do not support an \fBaread()\fR entry point
-should use \fBnodev\fR(9F)
+Solaris
+.B DDI
+specific (Solaris DDI). This entry point is
+.IR optional .
+Drivers that do not support an
+.B aread()
+entry point
+should use
+.BR nodev (9F)
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 13n
 .rt
@@ -57,11 +63,12 @@ Device number.
 .ne 2
 .mk
 .na
-\fIaio_reqp\fR
+.I aio_reqp
 .ad
 .RS 13n
 .rt
-Pointer to the \fBaio_req\fR(9S) structure that describes where the data is
+Pointer to the
+.BR aio_req "(9S) structure that describes where the data is"
 to be stored.
 .RE
 
@@ -69,7 +76,7 @@ to be stored.
 .ne 2
 .mk
 .na
-\fIcred_p\fR
+.I cred_p
 .ad
 .RS 13n
 .rt
@@ -79,24 +86,48 @@ Pointer to the credential structure.
 .SH DESCRIPTION
 .sp
 .LP
-The driver's \fBaread()\fR routine is called to perform an asynchronous
+The driver's
+.B aread()
+routine is called to perform an asynchronous
 read. \fBgetminor\fR(9F) can be used to access the minor number component of
-the \fIdev\fR argument. \fBaread()\fR may use the credential structure
-pointed to by \fIcred_p\fR to check for superuser access by calling
-\fBdrv_priv\fR(9F). The \fBaread()\fR routine may also examine the
-\fBuio\fR(9S) structure through the \fBaio_req\fR structure pointer,
-\fIaio_reqp\fR. \fBaread()\fR must call \fBaphysio\fR(9F) with the
+the
+.I dev
+argument.
+.B aread()
+may use the credential structure
+pointed to by
+.I cred_p
+to check for superuser access by calling
+.BR drv_priv (9F).
+The
+.B aread()
+routine may also examine the
+.BR uio (9S)
+structure through the
+.B aio_req
+structure pointer,
+.IR aio_reqp .
+\fBaread()\fR must call \fBaphysio\fR(9F) with the
 \fBaio_req\fR pointer and a pointer to the driver's \fBstrategy\fR(9E)
 routine.
 .sp
 .LP
-No fields of the \fBuio\fR(9S) structure pointed to by \fBaio_req\fR, other
-than \fBuio_offset\fR or \fBuio_loffset\fR, may be modified for non-seekable
+No fields of the
+.BR uio "(9S) structure pointed to by"
+.BR aio_req ,
+other
+than \fBuio_offset\fR or
+.BR uio_loffset ,
+may be modified for non-seekable
 devices.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBaread()\fR routine should return \fB0\fR for success, or the
+The
+.B aread()
+routine should return
+.B 0
+for success, or the
 appropriate error number.
 .SH CONTEXT
 .sp
@@ -104,7 +135,7 @@ appropriate error number.
 This function is called from user context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe following is an example of an \fBaread()\fR routine:
+\fBExample 1\fR The following is an example of an \fBaread()\fR routine:
 .sp
 .in +2
 .nf
@@ -127,16 +158,26 @@ xxaread(dev_t dev, struct aio_req *aio, cred_t *cred_p)
 .SH SEE ALSO
 .sp
 .LP
-\fBread\fR(2), \fBaioread\fR(3C), \fBawrite\fR(9E), \fBread\fR(9E),
-\fBstrategy\fR(9E), \fBwrite\fR(9E), \fBanocancel\fR(9F), \fBaphysio\fR(9F),
+.BR read (2),
+.BR aioread (3C),
+.BR awrite (9E),
+.BR read (9E),
+.BR strategy (9E),
+.BR write (9E),
+.BR anocancel (9F),
+.BR aphysio (9F),
 \fBddi_get_soft_state\fR(9F), \fBdrv_priv\fR(9F), \fBgetminor\fR(9F),
-\fBminphys\fR(9F), \fBnodev\fR(9F), \fBaio_req\fR(9S), \fBcb_ops\fR(9S),
-\fBuio\fR(9S) 
+.BR minphys (9F),
+.BR nodev (9F),
+.BR aio_req (9S),
+.BR cb_ops (9S),
+.BR uio (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH BUGS
 .sp
 .LP
-There is no way other than calling \fBaphysio\fR(9F) to accomplish an
+There is no way other than calling
+.BR aphysio "(9F) to accomplish an"
 asynchronous read.

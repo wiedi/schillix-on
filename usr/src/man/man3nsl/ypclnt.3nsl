@@ -93,56 +93,119 @@ Version 2 client interface
 .SH DESCRIPTION
 .sp
 .LP
-This package of functions provides an interface to \fBNIS\fR, Network
-Information Service Version 2, formerly referred to as \fBYP\fR. In this
-version of SunOS, \fBNIS\fR version 2 is supported only for compatibility
+This package of functions provides an interface to
+.BR NIS ,
+Network
+Information Service Version 2, formerly referred to as
+.BR YP .
+In this
+version of SunOS,
+.B NIS
+version 2 is supported only for compatibility
 with previous versions. The recommended enterprise level information service
-is \fBNIS+\fR or \fBNIS\fR version 3. See \fBNIS+\fR(1). The current SunOS
-supports only the client interface to \fBNIS\fR version 2. This client
-interface will in turn be served either by an existing \fBypserv\fR process
+is
+.B NIS+
+or
+.B NIS
+version 3. See
+.BR NIS+ (1).
+The current SunOS
+supports only the client interface to
+.B NIS
+version 2. This client
+interface will in turn be served either by an existing
+.B ypserv
+process
 running on another machine on the network that has an earlier version of
 SunOS, or by a \fBNIS+\fR server running in "YP-compatibility mode". See
-\fBrpc.nisd\fR(1M). The \fBNOTES\fR section in \fBypfiles\fR(4) discusses
-the implications of being an \fBNIS\fR client of an \fBNIS+\fR server in
-\fBYP-compatibility mode\fR. For commands used to access \fBNIS\fR from a
-client machine, see \fBypbind\fR(1M), \fBypwhich\fR(1), \fBypmatch\fR(1),
-and \fBypcat\fR(1). The package can be loaded from the standard library,
-\fB/usr/lib/libnsl.so.1\fR.
+.BR rpc.nisd (1M).
+The
+.B NOTES
+section in
+.BR ypfiles (4)
+discusses
+the implications of being an
+.B NIS
+client of an
+.B NIS+
+server in
+.BR "YP-compatibility mode" .
+For commands used to access
+.B NIS
+from a
+client machine, see \fBypbind\fR(1M),
+.BR ypwhich (1),
+.BR ypmatch (1),
+and
+.BR ypcat (1).
+The package can be loaded from the standard library,
+.BR /usr/lib/libnsl.so.1 .
 .sp
 .LP
-All input parameter names begin with \fIin\fR. Output parameters begin with
-\fIout\fR. Output parameters of type \fBchar **\fR should be addresses of
+All input parameter names begin with
+.IR in .
+Output parameters begin with
+.IR out .
+Output parameters of type
+.B "char **"
+should be addresses of
 uninitialized character pointers. Memory is allocated by the NIS client
 package using \fBmalloc\fR(3C) and can be freed by the user code if it has
-no continuing need for it. For each \fIoutkey\fR and \fIoutval\fR, two extra
+no continuing need for it. For each
+.I outkey
+and
+.IR outval ,
+two extra
 bytes of memory are allocated at the end that contain NEWLINE and
-\fInull\fR, respectively, but these two bytes are not reflected in
-\fIoutkeylen\fR or \fIoutvallen\fR. The \fIindomain\fR and \fIinmap\fR
+.IR null ,
+respectively, but these two bytes are not reflected in
+\fIoutkeylen\fR or
+.IR outvallen .
+The
+.I indomain
+and
+.IR inmap
 strings must be non-null and null-terminated. String parameters that are
-accompanied by a count parameter may not be \fInull\fR, but they may point
+accompanied by a count parameter may not be
+.IR null ,
+but they may point
 to null strings, with the count parameter indicating this. Counted strings
 need not be null-terminated.
 .sp
 .LP
-All functions in this package of type \fIint\fR return \fB0\fR if they
+All functions in this package of type
+.I int
+return
+.B 0
+if they
 succeed. Otherwise, they return a failure code (\fBYPERR_\fIxxxx\fR).
-Failure codes are described in the \fBERRORS\fR section.
+Failure codes are described in the
+.B ERRORS
+section.
 .SS "Routines"
 .sp
 .ne 2
 .mk
 .na
-\fByp_bind()\fR
+.B yp_bind()
 .ad
 .RS 27n
 .rt
 To use the NIS name services, the client process must be "bound" to an NIS
-server that serves the appropriate domain using \fByp_bind()\fR. Binding
+server that serves the appropriate domain using
+.BR yp_bind() .
+Binding
 need not be done explicitly by user code. Binding is done automatically
-whenever an NIS lookup function is called. The \fByp_bind()\fR function can
+whenever an NIS lookup function is called. The
+.B yp_bind()
+function can
 be called directly for processes that make use of a backup strategy , for
 example, a local file in cases when NIS services are not available. A
-process should call \fByp_unbind()\fR when it is finished using \fBNIS\fR in
+process should call
+.B yp_unbind()
+when it is finished using
+.B NIS
+in
 order to free up resources.
 .RE
 
@@ -150,22 +213,30 @@ order to free up resources.
 .ne 2
 .mk
 .na
-\fByp_unbind()\fR
+.B yp_unbind()
 .ad
 .RS 27n
 .rt
 Each binding allocates or uses up one client process socket descriptor.
 Each bound domain costs one socket descriptor. However, multiple requests to
-the same domain use that same descriptor. The \fByp_unbind()\fR function is
+the same domain use that same descriptor. The
+.B yp_unbind()
+function is
 available at the client interface for processes that explicitly manage their
 socket descriptors while accessing multiple domains. The call to
-\fByp_unbind()\fR makes the domain \fIunbound\fR, and frees all per-process
+\fByp_unbind()\fR makes the domain
+.IR unbound ,
+and frees all per-process
 and per-node resources used to bind it.
 .sp
 If an RPC failure results upon use of a binding, that domain will be
-unbound automatically. At that point, the \fBypclnt()\fR layer will retry a
+unbound automatically. At that point, the
+.B ypclnt()
+layer will retry a
 few more times or until the operation succeeds, provided that
-\fBrpcbind\fR(1M) and \fBypbind\fR(1M) are running, and either:
+.BR rpcbind (1M)
+and
+.BR ypbind "(1M) are running, and either:"
 .RS +4
 .TP
 .ie t \(bu
@@ -180,7 +251,9 @@ RPC requests to the server fail.
 .RE
 .sp
 .LP
-Under the following circumstances, the \fBypclnt\fR layer will return
+Under the following circumstances, the
+.B ypclnt
+layer will return
 control to the user code, with either an error or success code and the
 results:
 .RS +4
@@ -193,19 +266,25 @@ If an error is not RPC-related.
 .TP
 .ie t \(bu
 .el o
-If \fBrpcbind\fR is not running.
+If
+.B rpcbind
+is not running.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fBypbind\fR is not running.
+If
+.B ypbind
+is not running.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If a bound \fBypserv\fR process returns any answer (success or failure).
+If a bound
+.B ypserv
+process returns any answer (success or failure).
 .RE
 .RE
 
@@ -222,8 +301,11 @@ The client process should know the name of the map of interest. Client
 processes fetch the node's default domain by calling
 \fByp_get_default_domain()\fR and use the returned \fIoutdomain\fR as the
 \fIindomain\fR parameter to successive \fBNIS\fR name service calls. The
-domain returned is the same as that returned using the \fBSI_SRPC_DOMAIN\fR
-command to the \fBsysinfo\fR(2) system call. The value returned in
+domain returned is the same as that returned using the
+.BR SI_SRPC_DOMAIN
+command to the
+.BR sysinfo (2)
+system call. The value returned in
 \fIoutdomain\fR should not be freed.
 .RE
 
@@ -231,14 +313,17 @@ command to the \fBsysinfo\fR(2) system call. The value returned in
 .ne 2
 .mk
 .na
-\fByp_match()\fR
+.B yp_match()
 .ad
 .RS 27n
 .rt
-The \fByp_match()\fR function returns the value associated with a passed
+The
+.B yp_match()
+function returns the value associated with a passed
 key. This key must be exact because no pattern matching is available.
 \fByp_match()\fR requires a full YP map name, such as \fBhosts.byname\fR,
-instead of the nickname \fBhosts\fR.
+instead of the nickname
+.BR hosts .
 .RE
 
 .sp
@@ -257,16 +342,27 @@ named map in the named domain.
 .ne 2
 .mk
 .na
-\fByp_next()\fR
+.B yp_next()
 .ad
 .RS 27n
 .rt
-The \fByp_next()\fR function returns the next key-value pair in a named
-map. The \fIinkey\fR parameter must be the \fIoutkey\fR returned from an
+The
+.B yp_next()
+function returns the next key-value pair in a named
+map. The
+.I inkey
+parameter must be the
+.I outkey
+returned from an
 initial call to \fByp_first()\fR (to get the second key-value pair) or the
-one returned from the \fIn\fRth call to \fByp_next()\fR (to get the
+one returned from the
+.IR n "th call to"
+.B yp_next()
+(to get the
 \fIn\fRth + second key-value pair). Similarly, the \fIinkeylen\fR parameter
-must be the \fIoutkeylen\fR returned from the earlier \fByp_first()\fR or
+must be the
+.I outkeylen
+returned from the earlier \fByp_first()\fR or
 \fByp_next()\fR call.
 .sp
 The concept of first and next is particular to the structure of the NIS map
@@ -274,9 +370,12 @@ being processed. Retrieval order is not related to either the lexical order
 within any original (non-NIS name service) data base, or to any obvious
 numerical sorting order on the keys, values, or key-value pairs. The only
 ordering guarantee is that if the \fByp_first()\fR function is called on a
-particular map, and then the \fByp_next()\fR function is repeatedly called
+particular map, and then the
+.B yp_next()
+function is repeatedly called
 on the same map at the same server until the call fails with a reason of
-\fBYPERR_NOMORE\fR, every entry in the data base is seen exactly once.
+.BR YPERR_NOMORE ,
+every entry in the data base is seen exactly once.
 Further, if the same sequence of operations is performed on the same map at
 the same server, the entries are seen in the same order.
 .sp
@@ -293,22 +392,28 @@ to enumerating all entries in a map, see \fByp_all()\fR.
 .ne 2
 .mk
 .na
-\fByp_all()\fR
+.B yp_all()
 .ad
 .RS 27n
 .rt
-The \fByp_all()\fR function provides a way to transfer an entire map from
+The
+.B yp_all()
+function provides a way to transfer an entire map from
 server to client in a single request using TCP (rather than UDP as with
 other functions in this package). The entire transaction takes place as a
-single RPC request and response. The \fByp_all()\fR function can be used
+single RPC request and response. The
+.B yp_all()
+function can be used
 just like any other NIS name service procedure to identify the map in the
 normal manner and to supply the name of a function that will be called to
-process each key-value pair within the map. The call to \fByp_all()\fR
+.RB "process each key-value pair within the map. The call to" " yp_all()"
 returns only when the transaction is completed (successfully or
 unsuccessfully), or the \fBforeach()\fR function decides that it does not
 want to see any more key-value pairs.
 .sp
-The third parameter to \fByp_all()\fR is:
+The third parameter to
+.B yp_all()
+is:
 .sp
 .in +2
 .nf
@@ -329,13 +434,22 @@ int \fIinvallen\fR, char *\fIindata\fR);
 .fi
 .in -2
 
-The \fIinstatus\fR parameter holds one of the return status values defined
-in <\fBrpcsvc/yp_prot.h\fR>, either \fBYP_TRUE\fR or an error code. See
-\fBypprot_err()\fR, for a function that converts an NIS name service
-protocol error code to a \fBypclnt\fR layer error code.
+The
+.I instatus
+parameter holds one of the return status values defined
+in <\fBrpcsvc/yp_prot.h\fR>, either
+.B YP_TRUE
+or an error code. See
+.BR ypprot_err() ,
+for a function that converts an NIS name service
+protocol error code to a
+.B ypclnt
+layer error code.
 .sp
 The key and value parameters are somewhat different than defined in the
-synopsis section above. First, the memory pointed to by the \fIinkey\fR and
+synopsis section above. First, the memory pointed to by the
+.I inkey
+and
 \fIinval\fR parameters is private to the \fByp_all()\fR function, and is
 overwritten with the arrival of each new key-value pair. The \fBforeach()\fR
 function must do something useful with the contents of that memory, but it
@@ -344,29 +458,39 @@ does not own the memory itself. Key and value objects presented to the
 they were not NEWLINE-terminated or null-terminated in the map, they would
 not be here either.
 .sp
-The \fIindata\fR parameter is the contents of the
+The
+.I indata
+parameter is the contents of the
 \fIincallback\fR->\fIdata\fR element passed to \fByp_all()\fR. The
 \fBdata\fR element of the callback structure can be used to share state
 information between the \fBforeach()\fR function and the mainline code. Its
 use is optional, and no part of the NIS client package inspects its
 contents; cast it to something useful, or ignore it. The \fBforeach()\fR
-function is Boolean. It should return \fB0\fR to indicate that it wants to
+function is Boolean. It should return
+.B 0
+to indicate that it wants to
 be called again for further received key-value pairs, or non-zero to stop
 the flow of key-value pairs. If \fBforeach()\fR returns a non-zero value, it
-is not called again. The functional value of \fByp_all()\fR is then
-\fB0\fR.
+is not called again. The functional value of
+.B yp_all()
+is then
+.BR 0 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fByp_order()\fR
+.B yp_order()
 .ad
 .RS 27n
 .rt
-The \fByp_order()\fR function returns the order number for a map. The
-function is not supported if the \fBypbind\fR process on the client's system
+The
+.B yp_order()
+function returns the order number for a map. The
+function is not supported if the
+.B ypbind
+process on the client's system
 is bound to an \fBNIS+\fR server running in "YP-compatibility mode".
 .RE
 
@@ -374,11 +498,13 @@ is bound to an \fBNIS+\fR server running in "YP-compatibility mode".
 .ne 2
 .mk
 .na
-\fByp_master()\fR
+.B yp_master()
 .ad
 .RS 27n
 .rt
-The \fByp_master()\fR function returns the machine name of the master NIS
+The
+.B yp_master()
+function returns the machine name of the master NIS
 server for a map.
 .RE
 
@@ -386,11 +512,13 @@ server for a map.
 .ne 2
 .mk
 .na
-\fByperr_string()\fR
+.B yperr_string()
 .ad
 .RS 27n
 .rt
-The \fByperr_string()\fR function returns a pointer to an error message
+The
+.B yperr_string()
+function returns a pointer to an error message
 string that is null-terminated but contains no period or NEWLINE.
 .RE
 
@@ -398,25 +526,32 @@ string that is null-terminated but contains no period or NEWLINE.
 .ne 2
 .mk
 .na
-\fBypprot_err()\fR
+.B ypprot_err()
 .ad
 .RS 27n
 .rt
-The \fBypprot_err()\fR function takes an NIS name service protocol error
-code as input, and returns a \fBypclnt()\fR layer error code, which can be
-used as an input to \fByperr_string()\fR.
+The
+.B ypprot_err()
+function takes an NIS name service protocol error
+code as input, and returns a
+.B ypclnt()
+layer error code, which can be
+used as an input to
+.BR yperr_string() .
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-All integer functions return \fB0\fR if the requested operation is
+All integer functions return
+.B 0
+if the requested operation is
 successful, or one of the following errors if the operation fails:
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_ACCESS\fR
+.B YPERR_ACCESS
 .ad
 .RS 17n
 .rt
@@ -427,7 +562,7 @@ Access violation.
 .ne 2
 .mk
 .na
-\fBYPERR_BADARGS\fR
+.B YPERR_BADARGS
 .ad
 .RS 17n
 .rt
@@ -438,18 +573,20 @@ The arguments to the function are bad.
 .ne 2
 .mk
 .na
-\fBYPERR_BADDB\fR
+.B YPERR_BADDB
 .ad
 .RS 17n
 .rt
-The \fBYP\fR database is bad.
+The
+.B YP
+database is bad.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_BUSY\fR
+.B YPERR_BUSY
 .ad
 .RS 17n
 .rt
@@ -460,7 +597,7 @@ The database is busy.
 .ne 2
 .mk
 .na
-\fBYPERR_DOMAIN\fR
+.B YPERR_DOMAIN
 .ad
 .RS 17n
 .rt
@@ -471,7 +608,7 @@ Cannot bind to server on this domain.
 .ne 2
 .mk
 .na
-\fBYPERR_KEY\fR
+.B YPERR_KEY
 .ad
 .RS 17n
 .rt
@@ -482,7 +619,7 @@ No such key in map.
 .ne 2
 .mk
 .na
-\fBYPERR_MAP\fR
+.B YPERR_MAP
 .ad
 .RS 17n
 .rt
@@ -493,7 +630,7 @@ No such map in server's domain.
 .ne 2
 .mk
 .na
-\fBYPERR_NODOM\fR
+.B YPERR_NODOM
 .ad
 .RS 17n
 .rt
@@ -504,7 +641,7 @@ Local domain name not set.
 .ne 2
 .mk
 .na
-\fBYPERR_NOMORE\fR
+.B YPERR_NOMORE
 .ad
 .RS 17n
 .rt
@@ -515,18 +652,19 @@ No more records in map database.
 .ne 2
 .mk
 .na
-\fBYPERR_PMAP\fR
+.B YPERR_PMAP
 .ad
 .RS 17n
 .rt
-Cannot communicate with \fBrpcbind\fR.
+Cannot communicate with
+.BR rpcbind .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_RESRC\fR
+.B YPERR_RESRC
 .ad
 .RS 17n
 .rt
@@ -537,7 +675,7 @@ Resource allocation failure.
 .ne 2
 .mk
 .na
-\fBYPERR_RPC\fR
+.B YPERR_RPC
 .ad
 .RS 17n
 .rt
@@ -548,40 +686,44 @@ Resource allocation failure.
 .ne 2
 .mk
 .na
-\fBYPERR_YPBIND\fR
+.B YPERR_YPBIND
 .ad
 .RS 17n
 .rt
-Cannot communicate with \fBypbind\fR.
+Cannot communicate with
+.BR ypbind .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_YPERR\fR
+.B YPERR_YPERR
 .ad
 .RS 17n
 .rt
-Internal \fBYP\fR server or client error.
+Internal
+.B YP
+server or client error.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_YPSERV\fR
+.B YPERR_YPSERV
 .ad
 .RS 17n
 .rt
-Cannot communicate with \fBypserv\fR.
+Cannot communicate with
+.BR ypserv .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBYPERR_VERS\fR
+.B YPERR_VERS
 .ad
 .RS 17n
 .rt
@@ -591,11 +733,13 @@ Cannot communicate with \fBypserv\fR.
 .SH FILES
 .sp
 .LP
-\fB/usr/lib/libnsl.so.1\fR
+.B /usr/lib/libnsl.so.1
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -612,6 +756,14 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBNIS+\fR(1), \fBypcat\fR(1), \fBypmatch\fR(1), \fBypwhich\fR(1),
-\fBrpc.nisd\fR(1M), \fBrpcbind\fR(1M), \fBypbind\fR(1M), \fBypserv\fR(1M),
-\fBsysinfo\fR(2), \fBmalloc\fR(3C), \fBypfiles\fR(4), \fBattributes\fR(5)
+.BR NIS+ (1),
+.BR ypcat (1),
+.BR ypmatch (1),
+.BR ypwhich (1),
+.BR rpc.nisd (1M),
+.BR rpcbind (1M),
+.BR ypbind (1M),
+.BR ypserv (1M),
+\fBsysinfo\fR(2), \fBmalloc\fR(3C),
+.BR ypfiles (4),
+.BR attributes (5)

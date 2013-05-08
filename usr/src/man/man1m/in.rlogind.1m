@@ -32,14 +32,18 @@ in.rlogind, rlogind \- remote login server
 .SH DESCRIPTION
 .sp
 .LP
-\fBin.rlogind\fR is the server for the \fBrlogin\fR(1) program.  The server
+\fBin.rlogind\fR is the server for the
+.BR rlogin (1)
+program.  The server
 provides a remote login facility with authentication based on Kerberos V5 or
 privileged port numbers.
 .sp
 .LP
 \fBin.rlogind\fR is invoked by \fBinetd\fR(1M) when a remote login
 connection is established. When Kerberos V5 authentication is required (see
-option \fB-k\fR below), the authentication sequence is as follows:
+option
+.B -k
+below), the authentication sequence is as follows:
 .RS +4
 .TP
 .ie t \(bu
@@ -50,7 +54,8 @@ Check Kerberos V5 authentication.
 .TP
 .ie t \(bu
 .el o
-Check authorization according to the rules in \fBkrb5_auth_rules\fR(5).
+Check authorization according to the rules in
+.BR krb5_auth_rules (5).
 .RE
 .RS +4
 .TP
@@ -63,22 +68,28 @@ configured to do so.
 .LP
 In order for Kerberos authentication to work, a \fBhost/\fI<FQDN>\fR
 Kerberos principal must exist for each Fully Qualified Domain Name
-associated with the \fBin.rlogind\fR server. Each of these
+associated with the
+.B in.rlogind
+server. Each of these
 \fBhost/\fI<FQDN>\fR principals must have a \fBkeytab\fR entry in the
 \fB/etc/krb5/krb5.keytab\fR file on the \fBin.rlogind\fR server. An example
 principal might be:
 .sp
 .LP
-\fBhost/bigmachine.eng.example.com\fR
+.B host/bigmachine.eng.example.com
 .sp
 .LP
 See \fBkadmin\fR(1M) or \fBgkadmin\fR(1M) for instructions on adding a
-principal to a \fBkrb5.keytab\fR file. See \fR for a discussion of
+principal to a
+.B krb5.keytab
+file. See\fR  for a discussion of
 Kerberos authentication.
 .sp
 .LP
 If Kerberos V5 authentication is not enabled, then the authentication
-procedure follows the standard \fBrlogin\fR protocol:
+procedure follows the standard
+.B rlogin
+protocol:
 .RS +4
 .TP
 .ie t \(bu
@@ -91,30 +102,48 @@ The server checks the client's source port. If the port is not in the range
 .ie t \(bu
 .el o
 The server checks the client's source address. If an entry for the client
-exists in both \fB/etc/hosts\fR and \fB/etc/hosts.equiv\fR, a user logging
+exists in both
+.B /etc/hosts
+and
+.BR /etc/hosts.equiv ,
+a user logging
 in from the client is not prompted for a password. If the address is
 associated with a host for which no corresponding entry exists in
-\fB/etc/hosts\fR, the user is prompted for a password, regardless of
+.BR /etc/hosts ,
+the user is prompted for a password, regardless of
 whether or not an entry for the client is present in
-\fB/etc/hosts.equiv\fR. See \fBhosts\fR(4) and \fBhosts.equiv\fR(4).
+.BR /etc/hosts.equiv .
+See
+.BR hosts (4)
+and
+.BR hosts.equiv (4).
 .RE
 .sp
 .LP
-Once the source port and address have been checked, \fBin.rlogind\fR
+.RB "Once the source port and address have been checked," " in.rlogind"
 allocates a pseudo-terminal and manipulates file descriptors so that the
-slave half of the pseudo-terminal becomes the \fBstdin\fR, \fBstdout\fR, and
+slave half of the pseudo-terminal becomes the
+.BR stdin ,
+.BR stdout ,
+and
 \fBstderr\fR for a login process. The login process is an instance of the
-\fBlogin\fR(1) program, invoked with the \fB-r\fR.
+.BR login (1)
+program, invoked with the \fB-r\fR.
 .sp
 .LP
-The login process then proceeds with the \fBpam\fR(3PAM) authentication
-process. See \fBSECURITY\fR below.  If automatic authentication fails, it
+The login process then proceeds with the
+.BR pam "(3PAM) authentication"
+process. See
+.B SECURITY
+below.  If automatic authentication fails, it
 reprompts the user to login.
 .sp
 .LP
 The parent of the login process manipulates the master side of the
 pseudo-terminal, operating as an intermediary between the login process and
-the client instance of the \fBrlogin\fR program.  In normal operation, a
+the client instance of the
+.B rlogin
+program.  In normal operation, a
 packet protocol is invoked to provide Ctrl-S and Ctrl-Q type facilities and
 propagate interrupt signals to the remote programs. The login process
 propagates the client terminal's baud rate and terminal type, as found in
@@ -127,18 +156,20 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-5\fR
+.B -5
 .ad
 .RS 13n
 .rt
-Same as \fB-k\fR, for backwards compatibility.
+Same as
+.BR -k ,
+for backwards compatibility.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .RS 13n
 .rt
@@ -146,14 +177,16 @@ Requires Kerberos V5 clients to present a cryptographic checksum of initial
 connection information like the name of the user that the client is  trying
 to access in the initial authenticator. This checksum provides additionl
 security by preventing an attacker from changing the initial connection
-information. This option is mutually exclusive with the \fB-i\fR option.
+information. This option is mutually exclusive with the
+.B -i
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 13n
 .rt
@@ -164,32 +197,36 @@ Creates an encrypted session.
 .ne 2
 .mk
 .na
-\fB-E\fR
+.B -E
 .ad
 .RS 13n
 .rt
-Same as \fB-e\fR, for backwards compatibility.
+Same as
+.BR -e ,
+for backwards compatibility.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-i\fR
+.B -i
 .ad
 .RS 13n
 .rt
 Ignores authenticator checksums if provided. This option ignores
 authenticator checksums presented by current Kerberos clients to protect
-initial connection  information. Option \fB-i\fR is the opposite of option
-\fB-c\fR.
+initial connection  information. Option
+.B -i
+is the opposite of option
+.BR -c .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-k\fR
+.B -k
 .ad
 .RS 13n
 .rt
@@ -207,14 +244,16 @@ the authorization check is passed, then the user is allowed to log in.
 .RS 13n
 .rt
 Uses the indicated Kerberos V5 realm. By default, the daemon will determine
-its realm from the settings in the \fBkrb5.conf\fR(4) file.
+its realm from the settings in the
+.BR krb5.conf (4)
+file.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-p\fR
+.B -p
 .ad
 .RS 13n
 .rt
@@ -225,7 +264,7 @@ Prompts for authentication only if other authentication checks fail.
 .ne 2
 .mk
 .na
-\fB-P\fR
+.B -P
 .ad
 .RS 13n
 .rt
@@ -240,7 +279,9 @@ Prompts for a password in addition to other authentication methods.
 .ad
 .RS 13n
 .rt
-Sets the \fBIP\fR \fBTOS\fR option.
+Sets the
+.B "IP TOS"
+option.
 .RE
 
 .sp
@@ -251,7 +292,9 @@ Sets the \fBIP\fR \fBTOS\fR option.
 .ad
 .RS 13n
 .rt
-Sets the \fBKRB5\fR keytab file to use. The\fB/etc/krb5/krb5.keytab\fR file
+Sets the
+.B KRB5
+keytab file to use. The\fB/etc/krb5/krb5.keytab\fR file
 is used by default.
 .RE
 
@@ -259,22 +302,26 @@ is used by default.
 .ne 2
 .mk
 .na
-\fB-x\fR
+.B -x
 .ad
 .RS 13n
 .rt
-Same as \fB-e\fR, for backwards compatibility.
+Same as
+.BR -e ,
+for backwards compatibility.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-X\fR
+.B -X
 .ad
 .RS 13n
 .rt
-Same as \fB-e\fR, for backwards compatibility.
+Same as
+.BR -e ,
+for backwards compatibility.
 .RE
 
 .SH USAGE
@@ -284,8 +331,12 @@ Same as \fB-e\fR, for backwards compatibility.
 \fBIPv6\fR is not currently supported with Kerberos V5 authentication.
 .sp
 .LP
-Typically, Kerberized \fBrlogin\fR service runs on port 543 (klogin) and
-Kerberized, encrypted \fBrlogin\fR service runs on port 2105 (eklogin). The
+Typically, Kerberized
+.B rlogin
+service runs on port 543 (klogin) and
+Kerberized, encrypted
+.B rlogin
+service runs on port 2105 (eklogin). The
 corresponding FMRI entries are:
 .sp
 .in +2
@@ -300,9 +351,14 @@ svc:/network/login:eklogin (rlogin with kerberos and encryption)
 .sp
 .LP
 \fBin.rlogind\fR uses \fBpam\fR(3PAM) for authentication, account
-management, and session management. The \fBPAM\fR configuration policy,
-listed through \fB/etc/pam.conf\fR, specifies the modules to be used for
-\fBin.rlogind\fR. Here is a partial \fBpam.conf\fR file with entries for the
+management, and session management. The
+.B PAM
+configuration policy,
+listed through
+.BR /etc/pam.conf ,
+specifies the modules to be used for
+.BR in.rlogind .
+Here is a partial \fBpam.conf\fR file with entries for the
 \fBrlogin\fR command using the "rhosts" and UNIX authentication modules, and
 the UNIX account, session management, and password management modules.
 .sp
@@ -328,31 +384,46 @@ rloginsession requiredpam_unix_session.so.1
 .sp
 .LP
 With this configuration, the server checks the client's source address. If
-an entry for the client exists in both \fB/etc/hosts\fR and
-\fB/etc/hosts.equiv\fR, a user logging in from the client is not prompted
+an entry for the client exists in both
+.B /etc/hosts
+and
+.BR /etc/hosts.equiv ,
+a user logging in from the client is not prompted
 for a password. If the address is associated with a host for which no
-corresponding entry exists in \fB/etc/hosts\fR, the user is prompted for a
+corresponding entry exists in
+.BR /etc/hosts ,
+the user is prompted for a
 password, regardless of whether or not an entry for the client is present in
-\fB/etc/hosts.equiv\fR. See \fBhosts\fR(4) and \fBhosts.equiv\fR(4).
+.BR /etc/hosts.equiv .
+See
+.BR hosts (4)
+and
+.BR hosts.equiv (4).
 .sp
 .LP
 When running a Kerberized rlogin service (with or without the encryption
 option), the pam service name that should be used is "\fBkrlogin\fR".
 .sp
 .LP
-If there are no entries for the \fBrlogin\fR service, then the entries for
+If there are no entries for the
+.B rlogin
+service, then the entries for
 the "other" service will be used. If multiple authentication modules are
 listed, then the user may be prompted for multiple passwords. Removing the
 \fBpam_rhosts_auth.so.1\fR entry will disable the \fB/etc/hosts.equiv\fR and
 \fB~/.rhosts\fR authentication protocol and the user would always be forced
 to type the password. The \fIsufficient\fR flag indicates that
-authentication through the \fBpam_rhosts_auth.so.1\fR module is sufficient
+authentication through the
+.B pam_rhosts_auth.so.1
+module is sufficient
 to authenticate the user. Only if this authentication fails is the next
 authentication module used.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -369,14 +440,32 @@ AvailabilitySUNWrcmds
 .SH SEE ALSO
 .sp
 .LP
-\fBlogin\fR(1), \fBsvcs\fR(1), \fBrlogin\fR(1), \fBgkadmin\fR(1M),
-\fBin.rshd\fR(1M), \fBinetadm\fR(1M), \fBinetd\fR(1M), \fBkadmin\fR(1M),
-\fBsvcadm\fR(1M), \fBpam\fR(3PAM), \fBhosts\fR(4), \fBhosts.equiv\fR(4),
-\fBkrb5.conf\fR(4), \fBpam.conf\fR(4), \fBattributes\fR(5),
-\fBenviron\fR(5), \fBkrb5_auth_rules\fR(5), \fBpam_authtok_check\fR(5),
-\fBpam_authtok_get\fR(5), \fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5),
-\fBpam_passwd_auth\fR(5), \fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5),
-\fBpam_unix_session\fR(5), \fBsmf\fR(5)
+.BR login (1),
+.BR svcs (1),
+.BR rlogin (1),
+.BR gkadmin (1M),
+.BR in.rshd (1M),
+.BR inetadm (1M),
+.BR inetd (1M),
+.BR kadmin (1M),
+.BR svcadm (1M),
+.BR pam (3PAM),
+.BR hosts (4),
+.BR hosts.equiv (4),
+\fBkrb5.conf\fR(4),
+.BR pam.conf (4),
+.BR attributes (5),
+.BR environ (5),
+.BR krb5_auth_rules (5),
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_passwd_auth (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+.BR pam_unix_session (5),
+\fBsmf\fR(5)
 .sp
 .LP
 \fR
@@ -384,7 +473,8 @@ AvailabilitySUNWrcmds
 .sp
 .LP
 All diagnostic messages are returned on the connection associated with the
-\fBstderr\fR, after which any network connections are closed. An error is
+.BR stderr ,
+after which any network connections are closed. An error is
 indicated by a leading byte with a value of 1.
 .sp
 .ne 2
@@ -401,7 +491,7 @@ No entry in the host name database existed for the client's machine.
 .ne 2
 .mk
 .na
-\fBTry again.\fR
+.B Try again.
 .ad
 .sp .6
 .RS 4n
@@ -430,14 +520,24 @@ machine and the connecting medium.  This is insecure, but it is useful in an
 A facility to allow all data exchanges to be encrypted should be present.
 .sp
 .LP
-The \fBpam_unix\fR(5) module is no longer supported. Similar functionality
-is provided by \fBpam_authtok_check\fR(5), \fBpam_authtok_get\fR(5),
-\fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5), \fBpam_passwd_auth\fR(5),
-\fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5), and
-\fBpam_unix_session\fR(5).
+The
+.BR pam_unix (5)
+module is no longer supported. Similar functionality
+is provided by
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_passwd_auth (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+and
+.BR pam_unix_session (5).
 .sp
 .LP
-The \fBin.rlogind\fR service is managed by the service management facility,
+The
+.B in.rlogind
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -452,8 +552,13 @@ svc:/network/login:eklogin (rlogin with kerberos and encryption)
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). Responsibility
-for initiating and restarting this service is delegated to \fBinetd\fR(1M).
+requesting restart, can be performed using
+.BR svcadm (1M).
+Responsibility
+for initiating and restarting this service is delegated to
+.BR inetd (1M).
 Use \fBinetadm\fR(1M) to make configuration changes and to view
 configuration information for this service. The service's status can be
-queried using the \fBsvcs\fR(1) command.
+queried using the
+.BR svcs (1)
+command.

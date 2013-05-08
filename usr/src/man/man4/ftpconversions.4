@@ -33,12 +33,16 @@ ftpconversions \- FTP Server conversions database
 When the FTP Server, \fBin.ftpd\fR(1M), receives the retrieve (\fBRETR\fR)
 command, if the specified file does not exist, it looks for a conversion to
 change an existing file or directory of the same base name into the format
-requested, subject to the \fBftpaccess\fR(4) \fBcompress\fR and \fBtar\fR
+requested, subject to the
+.BR ftpaccess (4)
+\fBcompress\fR and \fBtar\fR
 capabilities.
 .sp
 .LP
 The conversions  and their attributes known by \fBin.ftpd\fR(1M) are stored
-in an \fBASCII\fR file of the following format. Each line in the file
+in an
+.B ASCII
+file of the following format. Each line in the file
 provides a description for a single conversion. The fields in this file are
 separated by colons (:).
 .sp
@@ -57,7 +61,7 @@ The fields are described as follows:
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -68,7 +72,7 @@ The fields are described as follows:
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .RS 5n
 .rt
@@ -79,7 +83,7 @@ The fields are described as follows:
 .ne 2
 .mk
 .na
-\fB3\fR
+.B 3
 .ad
 .RS 5n
 .rt
@@ -90,7 +94,7 @@ The fields are described as follows:
 .ne 2
 .mk
 .na
-\fB4\fR
+.B 4
 .ad
 .RS 5n
 .rt
@@ -101,44 +105,44 @@ The fields are described as follows:
 .ne 2
 .mk
 .na
-\fB5\fR
+.B 5
 .ad
 .RS 5n
 .rt
-\fBExternal command\fR.
+.BR "External command" .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB6\fR
+.B 6
 .ad
 .RS 5n
 .rt
-\fBTypes\fR.
+.BR Types .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB7\fR
+.B 7
 .ad
 .RS 5n
 .rt
-\fBOptions\fR.
+.BR Options .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB8\fR
+.B 8
 .ad
 .RS 5n
 .rt
-\fBDescription\fR.
+.BR Description .
 .RE
 
 .sp
@@ -151,15 +155,20 @@ The \fBStrip postfix\fR and \fBaddon postfix\fR fields are extensions to be
 added to or removed from the requested \fBfilename\fR in attempting to
 produce the name of an existing file or directory. When the attempt
 succeeds, the FTP Server runs the external command associated with the
-conversion. The magic cookie \fB%s\fR in the argument is passed to the
+conversion. The magic cookie
+.B %s
+in the argument is passed to the
 command, replaced with the name of the existing file or directory.
 .sp
 .LP
 \fBExternal command\fR is the absolute pathname of a command to run
 followed by the appropriate options to carry out the conversion. The
-standard output of the command is sent back in response to the \fBRETR\fR
+standard output of the command is sent back in response to the
+.BR RETR
 (retrieve) command. For anonymous and guest users to be able to execute the
-command, it must be present in their \fBchroot'd\fR hierarchy along with any
+command, it must be present in their
+.B chroot'd
+hierarchy along with any
 necessary dynamic libraries.
 .sp
 .LP
@@ -169,7 +178,7 @@ recognized:
 .ne 2
 .mk
 .na
-\fBT_ASCII\fR
+.B T_ASCII
 .ad
 .RS 11n
 .rt
@@ -180,7 +189,7 @@ ASCII transfers are allowed of a file produced by the conversion.
 .ne 2
 .mk
 .na
-\fBT_DIR\fR
+.B T_DIR
 .ad
 .RS 11n
 .rt
@@ -191,7 +200,7 @@ Directories can be converted.
 .ne 2
 .mk
 .na
-\fBT_REG\fR
+.B T_REG
 .ad
 .RS 11n
 .rt
@@ -200,15 +209,19 @@ Regular files can be converted.
 
 .sp
 .LP
-\fBOptions\fR are checked against the \fBftpaccess\fR(4) \fBcompress\fR and
+\fBOptions\fR are checked against the
+.BR ftpaccess (4)
+\fBcompress\fR and
 \fBtar\fR capabilities and are recorded in the \fBspecial-action-flag\fR
-field that is written to the FTP Server logfile. See \fBxferlog\fR(4). The
+field that is written to the FTP Server logfile. See
+.BR xferlog (4).
+The
 following options are supported:
 .sp
 .ne 2
 .mk
 .na
-\fBO_COMPRESS\fR
+.B O_COMPRESS
 .ad
 .RS 16n
 .rt
@@ -219,7 +232,7 @@ conversion compresses
 .ne 2
 .mk
 .na
-\fBO_TAR\fR
+.B O_TAR
 .ad
 .RS 16n
 .rt
@@ -230,7 +243,7 @@ conversion archives
 .ne 2
 .mk
 .na
-\fBO_UNCOMPRESS\fR
+.B O_UNCOMPRESS
 .ad
 .RS 16n
 .rt
@@ -240,24 +253,32 @@ conversion uncompresses
 .sp
 .LP
 You can specify more than one option by using "\fB|\fR" to separate
-options. For example, \fBO_TAR|O_COMPRESS\fR specifies that the conversion
+options. For example,
+.B O_TAR|O_COMPRESS
+specifies that the conversion
 archives and compresses.
 .sp
 .LP
  \fBDescription\fR is a one word description of the conversion that is used in error messages returned to the FTP client.
 .sp
 .LP
-Lines that begin with a \fB#\fR sign are treated as comment lines and are
+Lines that begin with a
+.B #
+sign are treated as comment lines and are
 ignored.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCompressing a Regular File for Transfer
+\fBExample 1\fR Compressing a Regular File for Transfer
 .sp
 .LP
 The following example specifies a conversion which generates
-\fBfilename.Z\fR by compressing an existing file \fBfilename\fR. The
+\fBfilename.Z\fR by compressing an existing file
+.BR filename .
+The
 conversion can only be applied to regular files, not directories, and the
-absence of \fBT_ASCII\fR prevents the resulting file from being transferred
+absence of
+.B T_ASCII
+prevents the resulting file from being transferred
 in ASCII mode.
 
 .sp
@@ -268,11 +289,13 @@ in ASCII mode.
 .in -2
 
 .LP
-\fBExample 2 \fR Uncompressing and Transferring in ASCII Mode
+\fBExample 2\fR  Uncompressing and Transferring in ASCII Mode
 .sp
 .LP
 The following example specifies a conversion that takes \fBfilename.Z\fR
-and uncompresses it to produce \fBfilename\fR, which then can be transferred
+and uncompresses it to produce
+.BR filename ,
+which then can be transferred
 in ASCII mode.
 
 .sp
@@ -297,7 +320,9 @@ in ASCII mode.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5)  for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -314,5 +339,8 @@ AvailabilitySUNWftpr
 .SH SEE ALSO
 .sp
 .LP
-\fBldd\fR(1), \fBin.ftpd\fR(1M), \fBftpaccess\fR(4), \fBxferlog\fR(4),
-\fBattributes\fR(5)
+.BR ldd (1),
+\fBin.ftpd\fR(1M),
+.BR ftpaccess (4),
+\fBxferlog\fR(4),
+.BR attributes (5)

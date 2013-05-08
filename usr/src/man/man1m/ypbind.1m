@@ -34,72 +34,144 @@ ypbind \- NIS binder process
 NIS provides a simple network lookup service consisting of databases and
 processes. The databases are stored at the machine that runs an NIS server
 process. The programmatic interface to NIS is described in
-\fBypclnt\fR(3NSL). Administrative tools are described in \fBypinit\fR(1M),
-\fBypwhich\fR(1), and \fBypset\fR(1M). Tools to see the contents of NIS maps
-are described in \fBypcat\fR(1), and \fBypmatch\fR(1).
+.BR ypclnt (3NSL).
+Administrative tools are described in
+.BR ypinit (1M),
+.BR ypwhich (1),
+and \fBypset\fR(1M). Tools to see the contents of NIS maps
+are described in
+.BR ypcat (1),
+and
+.BR ypmatch (1).
 .sp
 .LP
 \fBypbind\fR is a daemon process that is activated at system startup time
 from the \fBsvc:/network/nis/client:default\fR service. By default, it is
-invoked as \fBypbind\fR \fB-broadcast\fR. \fBypbind\fR runs on all client
-machines that are set up to use \fBNIS\fR. See \fBsysidtool\fR(1M). The
-function of \fBypbind\fR is to remember information that lets all \fBNIS\fR
-client processes on a node communicate with some \fBNIS\fR server process.
+invoked as
+.BR "ypbind -broadcast" .
+\fBypbind\fR runs on all client
+machines that are set up to use
+.BR NIS .
+See
+.BR sysidtool "(1M). The"
+function of
+.B ypbind
+is to remember information that lets all
+.BR NIS
+client processes on a node communicate with some
+.B NIS
+server process.
 \fBypbind\fR must run on every machine which has \fBNIS\fR client processes.
-The \fBNIS\fR server may or may not be running on the same node, but must be
-running somewhere on the network. If the \fBNIS\fR server is a \fBNIS+\fR
-server in \fBNIS\fR (YP) compatibility mode, see the \fBNOTES\fR section of
+The
+.B NIS
+server may or may not be running on the same node, but must be
+running somewhere on the network. If the
+.B NIS
+server is a
+.BR NIS+
+server in
+.B NIS
+(YP) compatibility mode, see the
+.B NOTES
+section of
 the \fBypfiles\fR(4)man page for more information.
 .sp
 .LP
-The information \fBypbind\fR remembers is called a \fIbinding\fR \(em the
-association of a domain name with a \fBNIS\fR server. The process of binding
+The information
+.B ypbind
+remembers is called a
+.I binding
+\(em the
+association of a domain name with a
+.B NIS
+server. The process of binding
 is driven by client requests.  As a request for  an unbound domain comes in,
-if started with the \fB-broadcast\fR option, the \fBypbind\fR process
-broadcasts on the net trying to find an \fBNIS\fR server, either a
+if started with the
+.B -broadcast
+option, the
+.B ypbind
+process
+broadcasts on the net trying to find an
+.B NIS
+server, either a
 \fBypserv\fR process serving the domain or an \fBrpc.nisd\fR process in
 "YP-compatibility mode" serving \fBNIS+\fR directory with name the same as
 (case sensitive) the domain in the client request. Since the binding is
-established by broadcasting,  there must be at least one \fBNIS\fR server on
-the net. If started without the \fB-broadcast\fR option, \fBypbind\fR
-process steps through the list of \fBNIS\fR servers that was created by
-\fBypinit\fR \fB-c\fR for the requested domain. There must be an \fBNIS\fR
-server process on at least one of the hosts in the \fBNIS\fR servers file.
+established by broadcasting,  there must be at least one
+.B NIS
+server on
+the net. If started without the
+.B -broadcast
+.RB option, " ypbind"
+process steps through the list of
+.B NIS
+servers that was created by
+\fBypinit -c\fR for the requested domain. There must be an \fBNIS\fR
+server process on at least one of the hosts in the
+.B NIS
+servers file.
 It is recommended that you list each of these NIS servers by name and
-numeric IP address in \fB/etc/hosts\fR. Though the practice is not
+numeric IP address in
+.BR /etc/hosts .
+Though the practice is not
 recommended, NIS allows you to list servers by numeric address only,
-bypassing \fB/etc/hosts\fR. In such a configuration, \fBypwhich\fR(1)
+bypassing
+.BR /etc/hosts .
+In such a configuration, \fBypwhich\fR(1)
 returns a numeric address instead of a name.
 .sp
 .LP
-Once a domain is bound by \fBypbind\fR, that same binding is given to every
-client process on the node. The \fBypbind\fR process on the local node or a
+Once a domain is bound by
+.BR ypbind ,
+that same binding is given to every
+client process on the node. The
+.B ypbind
+process on the local node or a
 remote node may be queried for the binding of a particular domain by using
-the \fBypwhich\fR(1) command.
+the
+.BR ypwhich (1)
+command.
 .sp
 .LP
-If \fBypbind\fR is unable to speak to the \fBNIS\fR server process it is
+If
+.B ypbind
+is unable to speak to the
+.B NIS
+server process it is
 bound to, it marks the domain as unbound, tells the client process that the
 domain is unbound, and tries to bind the domain once again. Requests
 received for an unbound domain will wait until the requested domain is
 bound. In general, a bound domain is marked as unbound when the node running
-the \fBNIS\fR server crashes or gets overloaded. In such a case,
+the
+.B NIS
+server crashes or gets overloaded. In such a case,
 \fBypbind\fR will try to bind to another \fBNIS\fR server using the process
 described above.\fBypbind\fR also accepts requests to set its binding for a
 particular domain.  The request is usually generated by the \fBypset\fR(1M)
-command. In order for \fBypset\fR to work, \fBypbind\fR must have been
-invoked with flags \fB-ypset\fR or  \fB-ypsetme\fR.
+command. In order for
+.B ypset
+to work,
+.B ypbind
+must have been
+invoked with flags
+.B -ypset
+or 
+.BR -ypsetme .
 .SH OPTIONS
 .sp
 .ne 2
 .mk
 .na
-\fB-broadcast\fR
+.B -broadcast
 .ad
 .sp .6
 .RS 4n
-Send a broadcast datagram using \fBUDP/IP\fR  that requests the information
-needed to bind to a specific \fBNIS\fR server. This option is analogous to
+Send a broadcast datagram using
+.B UDP/IP
+that requests the information
+needed to bind to a specific
+.B NIS
+server. This option is analogous to
 \fBypbind\fR with no options in earlier Sun releases and is recommended for
 ease of use.
 .RE
@@ -108,7 +180,7 @@ ease of use.
 .ne 2
 .mk
 .na
-\fB-ypset\fR
+.B -ypset
 .ad
 .sp .6
 .RS 4n
@@ -121,13 +193,21 @@ is insecure.
 .ne 2
 .mk
 .na
-\fB-ypsetme\fR
+.B -ypsetme
 .ad
 .sp .6
 .RS 4n
-Only allow \fBroot\fR on the local machine to change the binding to a
-desired server by means of the \fBypset\fR command.  \fBypbind\fR can verify
-the caller is indeed a \fBroot\fR user by accepting such requests only on
+Only allow
+.B root
+on the local machine to change the binding to a
+desired server by means of the
+.B ypset
+command. 
+.B ypbind
+can verify
+the caller is indeed a
+.B root
+user by accepting such requests only on
 the loopback transport. By default, no external process can change the
 binding.
 .RE
@@ -148,7 +228,7 @@ Lists the servers to which the NIS client is allowed to bind.
 .ne 2
 .mk
 .na
-\fB/etc/inet/hosts\fR
+.B /etc/inet/hosts
 .ad
 .sp .6
 .RS 4n
@@ -158,7 +238,9 @@ File in which it is recommended that NIS servers be listed.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -175,24 +257,40 @@ AvailabilitySUNWnisu
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBypcat\fR(1), \fBypmatch\fR(1), \fBypwhich\fR(1),
+.BR svcs (1),
+.BR ypcat (1),
+.BR ypmatch (1),
+.BR ypwhich (1),
 \fBifconfig\fR(1M), \fBrpc.nisd\fR(1M), \fBsvcadm\fR(1M), \fBypinit\fR(1M),
-\fBypset\fR(1M), \fBypclnt\fR(3NSL), \fBhosts\fR(4), \fBypfiles\fR(4),
-\fBattributes\fR(5), \fBsmf\fR(5)
+.BR ypset (1M),
+.BR ypclnt (3NSL),
+.BR hosts (4),
+\fBypfiles\fR(4),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
 \fBypbind\fR supports multiple domains. The  \fBypbind\fR process can
 maintain bindings to several domains and their servers, the default domain
-is the one specified by the  \fBdomainname\fR(1M) command at startup time.
+is the one specified by the 
+.BR domainname "(1M) command at startup time."
 .sp
 .LP
-The \fB-broadcast\fR option works only on the \fBUDP\fR transport. It is
+The
+.B -broadcast
+option works only on the
+.B UDP
+transport. It is
 insecure since it trusts "any" machine on the net that responds to the
-broadcast request and poses itself as an \fBNIS\fR server.
+broadcast request and poses itself as an
+.B NIS
+server.
 .sp
 .LP
-The \fBypbind\fR service is managed by the service management facility,
+The
+.B ypbind
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -205,5 +303,9 @@ svc:/network/nis/client:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.

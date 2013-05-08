@@ -43,7 +43,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIaddress\fR
+.I address
 .ad
 .RS 11n
 .rt
@@ -54,7 +54,7 @@ Source/destination kernel address of the copy.
 .ne 2
 .mk
 .na
-\fInbytes\fR
+.I nbytes
 .ad
 .RS 11n
 .rt
@@ -69,70 +69,121 @@ Number of bytes to copy.
 .ad
 .RS 11n
 .rt
-Flag indicating read or write operation. Possible values are \fBUIO_READ\fR
-and \fBUIO_WRITE\fR.
+.RB "Flag indicating read or write operation. Possible values are" " UIO_READ"
+and
+.BR UIO_WRITE .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIuio_p\fR
+.I uio_p
 .ad
 .RS 11n
 .rt
-Pointer to the \fBuio\fR structure for the copy.
+Pointer to the
+.B uio
+structure for the copy.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBuiomove()\fR function copies \fInbytes\fR of data to or from the
-space defined by the \fBuio\fR structure (described in \fBuio\fR(9S)) and
+The
+.B uiomove()
+function copies
+.I nbytes
+of data to or from the
+space defined by the
+.B uio
+structure (described in
+.BR uio (9S))
+and
 the driver.
 .sp
 .LP
-The \fBuio_segflg\fR member of the \fBuio\fR(9S) structure determines the
+The \fBuio_segflg\fR member of the
+.BR uio (9S)
+structure determines the
 type of space to or from which the transfer is being made. If it is set to
-\fBUIO_SYSSPACE\fR, the data transfer is between addresses in the kernel. If
-it is set to \fBUIO_USERSPACE\fR, the transfer is between a user program and
+.BR UIO_SYSSPACE ,
+the data transfer is between addresses in the kernel. If
+it is set to
+.BR UIO_USERSPACE ,
+the transfer is between a user program and
 kernel space.
 .sp
 .LP
 \fIrwflag\fR indicates the direction of the transfer. If \fBUIO_READ\fR is
-set, the data will be transferred from \fIaddress\fR to the buffer(s)
-described by \fIuio_p\fR. If \fBUIO_WRITE\fR is set, the data will be
-transferred from the buffer(s) described by \fIuio_p\fR to \fIaddress\fR.
+set, the data will be transferred from
+.I address
+to the buffer(s)
+described by
+.IR uio_p .
+If
+.B UIO_WRITE
+is set, the data will be
+transferred from the buffer(s) described by
+.I uio_p
+to
+.IR address .
 .sp
 .LP
-In addition to moving the data, \fBuiomove()\fR adds the number of bytes
-moved to the \fBiov_base\fR member of the \fBiovec\fR(9S) structure,
-decreases the \fBiov_len\fR member, increases the \fBuio_offset\fR member of
-the \fBuio\fR(9S) structure, and decreases the \fBuio_resid\fR member.
+In addition to moving the data,
+.B uiomove()
+adds the number of bytes
+moved to the
+.B iov_base
+member of the
+.BR iovec "(9S) structure,"
+decreases the
+.B iov_len
+member, increases the \fBuio_offset\fR member of
+the
+.BR uio "(9S) structure, and decreases the"
+.B uio_resid
+member.
 .sp
 .LP
-This function automatically handles page faults. \fInbytes\fR does not have
+This function automatically handles page faults.
+.I nbytes
+does not have
 to be word-aligned.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBuiomove()\fR function returns \fB0\fR upon success or \fBEFAULT\fR
+The
+.B uiomove()
+function returns
+.B 0
+upon success or
+.BR EFAULT
 on failure.
 .SH CONTEXT
 .sp
 .LP
-User context only, if \fBuio_segflg\fR is set to \fBUIO_USERSPACE\fR. User,
+User context only, if \fBuio_segflg\fR is set to
+.BR UIO_USERSPACE .
+User,
 interrupt, or kernel context, if \fBuio_segflg\fR is set to
-\fBUIO_SYSSPACE\fR.
+.BR UIO_SYSSPACE .
 .SH SEE ALSO
 .sp
 .LP
-\fBureadc\fR(9F), \fBuwritec\fR(9F), \fBiovec\fR(9S), \fBuio\fR(9S)
+.BR ureadc (9F),
+.BR uwritec (9F),
+.BR iovec (9S),
+.BR uio (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-If \fBuio_segflg\fR is set to \fBUIO_SYSSPACE\fR and \fIaddress\fR is
+If \fBuio_segflg\fR is set to
+.B UIO_SYSSPACE
+and
+.I address
+is
 selected from user space, the system may panic.

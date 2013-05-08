@@ -30,8 +30,11 @@ audit_control \- control information for system audit daemon
 .SH DESCRIPTION
 .sp
 .LP
-The \fBaudit_control\fR file contains audit control information used by
-\fBauditd\fR(1M). Each line consists of a title and a string, separated by a
+The
+.B audit_control
+file contains audit control information used by
+.BR auditd (1M).
+Each line consists of a title and a string, separated by a
 colon. There are no restrictions on the order of lines in the file, although
 some lines must appear only once. A line beginning with `\fB#\fR' is a
 comment. A line can be continued with the use of the backslash (\fB\e\fR)
@@ -56,13 +59,17 @@ The following configuration is recommended:
 \fB/etc/security/audit/\fIserver\fR/files\fR
 .sp
 .LP
-where \fIserver\fR is the name of a central machine, since audit files
+where
+.I server
+is the name of a central machine, since audit files
 belonging to different servers are usually stored in separate subdirectories
 of a single audit directory. The naming convention normally has \fIserver\fR
 be a directory on a server machine, and all clients mount
 \fB/etc/security/audit/\fIserver\fR at the same location in their local
 file systems. If the same server exports several different file systems for
-auditing, their \fIserver\fR names will, of course, be different.
+auditing, their
+.I server
+names will, of course, be different.
 .sp
 .LP
 There are several other ways for audit data to be arranged: some sites may
@@ -79,13 +86,17 @@ of the threshold line is:
 \fBminfree:\fIpercentage\fR
 .sp
 .LP
-where \fIpercentage\fR is indicates the amount of free space required. If
+where
+.I percentage
+is indicates the amount of free space required. If
 free space falls below this threshold, the audit daemon \fBauditd\fR(1M)
 invokes the shell script \fBaudit_warn\fR(1M). If no threshold is specified,
 the default is 0%.
 .sp
 .LP
-The \fBplugin\fR definition line selects a plugin to be loaded by the audit
+The
+.B plugin
+definition line selects a plugin to be loaded by the audit
 daemon for processing audit records.
 .sp
 .LP
@@ -105,7 +116,7 @@ The following keywords are defined:
 .ne 2
 .mk
 .na
-\fBname\fR
+.B name
 .ad
 .RS 9n
 .rt
@@ -116,12 +127,14 @@ The value is the pathname of the plugin. This specification is required.
 .ne 2
 .mk
 .na
-\fBqsize\fR
+.B qsize
 .ad
 .RS 9n
 .rt
 The value is the maximum number of records to queue for audit data sent to
-the plugin. If omitted, the current hiwater mark (see the \fB-getqctrl\fR of
+the plugin. If omitted, the current hiwater mark (see the
+.B -getqctrl
+of
 \fBauditconfig\fR(1M)) is used. When this maximum is reached, \fBauditd\fR
 will either block or discard data, depending on the audit policy \fBcnt\fR.
 See \fBauditconfig\fR(1M).
@@ -131,26 +144,37 @@ See \fBauditconfig\fR(1M).
 .ne 2
 .mk
 .na
-\fBp_*\fR
+.B p_*
 .ad
 .RS 9n
 .rt
-A keyword with the prefix \fBp_\fR is passed to the plugin defined by the
-value associated with the \fBname\fR attribute. These attributes are defined
+A keyword with the prefix
+.B p_
+is passed to the plugin defined by the
+value associated with the
+.B name
+attribute. These attributes are defined
 for each plugin. By convention, if the value associated with a \fBplugin\fR
 attribute is a list, the list items are separated with commas.
 .RE
 
 .sp
 .LP
-If pathname is a relative path (it does not start with \fB/\fR) the library
-path will be taken as relative to \fB/usr/lib/security/$ISA\fR. The
+If pathname is a relative path (it does not start with
+.BR / )
+the library
+path will be taken as relative to
+.BR /usr/lib/security/$ISA .
+The
 \fB$ISA\fR token is replaced by an implementation-defined directory name
-that defines the path relative to the \fBauditd\fR(1M) instruction set
+that defines the path relative to the
+.BR auditd "(1M) instruction set"
 architecture.
 .sp
 .LP
-See \fBaudit_syslog\fR(5) for the attributes expected for \fBplugin:
+See
+.BR audit_syslog (5)
+for the attributes expected for \fBplugin:
 name=audit_syslog.so\fR.
 .sp
 .LP
@@ -165,15 +189,25 @@ You must specify one or more plugins. (In the case of
 .sp
 .LP
 The audit flags line specifies the default system audit value. This value
-is combined with the user audit value read from \fBaudit_user\fR(4) to form
+is combined with the user audit value read from
+.BR audit_user (4)
+to form
 a user's process preselection mask.
 .sp
 .LP
 The algorithm for obtaining the process preselection mask is as follows:
 the audit flags from the \fBflags:\fR line in the \fBaudit_control\fR file
-are added to the flags from the \fBalways-audit\fR field in the user's entry
-in the \fBaudit_user\fR file. The flags from the \fBnever-audit\fR field
-from the user's entry in the \fBaudit_user\fR file are then subtracted from
+are added to the flags from the
+.B always-audit
+field in the user's entry
+in the
+.B audit_user
+file. The flags from the
+.B never-audit
+field
+from the user's entry in the
+.B audit_user
+file are then subtracted from
 the total:
 .sp
 .in +2
@@ -200,11 +234,19 @@ audited for failure only; successful attempts are not audited. A name
 preceded by `\fB+\fR' means that the class should be audited for success
 only; failing attempts are not audited. Without a prefix, the name indicates
 that the class is to be audited for both successes and failures. The special
-string \fBall\fR indicates that all events should be audited; \fB\(miall\fR
-indicates that all failed attempts are to be audited, and \fB+all\fR all
-successful attempts. The prefixes \fB^\fR, \fB^\(mi\fR, and \fB^+\fR turn
+string
+.B all
+indicates that all events should be audited; \fB\(miall\fR
+indicates that all failed attempts are to be audited, and
+.B +all
+all
+successful attempts. The prefixes
+.BR ^ ,
+\fB^\(mi\fR, and \fB^+\fR turn
 off flags specified earlier in the string (\fB^\(mi\fR and \fB^+\fR for
-failing and successful attempts, \fB^\fR for both). They are typically used
+failing and successful attempts,
+.B ^
+for both). They are typically used
 to reset flags.
 .sp
 .LP
@@ -219,22 +261,30 @@ an action cannot be attributed to a specific user. The format of a
 .LP
 The flags are separated by commas, with no spaces. See \fBaudit_class\fR(4)
 for a list of the predefined audit classes. Note that the classes are
-configurable as also described in \fBaudit_class\fR(4).
+configurable as also described in
+.BR audit_class (4).
 .sp
 .LP
 A line can be continued by appending a backslash (\fB\e\fR).
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRSample \fBaudit_control\fR File for Specific Host
+\fBExample 1\fR Sample \fBaudit_control\fR File for Specific Host
 .sp
 .LP
-The following is a sample \fB/etc/security/audit_control\fR file for the
-machine \fBeggplant\fR.
+The following is a sample
+.B /etc/security/audit_control
+file for the
+machine
+.BR eggplant .
 
 .sp
 .LP
-The file's contents identify server \fBjedgar\fR with two file systems
-normally used for audit data, another server, \fBglobal\fR, used only when
+The file's contents identify server
+.B jedgar
+with two file systems
+normally used for audit data, another server,
+.BR global ,
+used only when
 \fBjedgar\fR fills up or breaks, and specifies that the warning script is
 run when the file systems are 80% filled. It also specifies that all logins,
 administrative operations are to be audited, whether or not they succeed.
@@ -258,15 +308,25 @@ naflags: lo,ad
 .sp
 
 .LP
-\fBExample 2 \fRSample \fBaudit_control\fR File for syslog and Local
+\fBExample 2\fR Sample \fBaudit_control\fR File for syslog and Local
 Storage
 .sp
 .LP
-Shown below is a sample \fB/etc/security/audit_control\fR file for syslog
-and local storage. For the binary log, the output is all \fBlo\fR and
+Shown below is a sample
+.B /etc/security/audit_control
+file for syslog
+and local storage. For the binary log, the output is all
+.B lo
+and
 \fBad\fR records, all failures of class \fBfm\fR and any classes specified
-by means of \fBaudit_user\fR(4). For syslog output, all \fBlo\fR records are
-output, only failure \fBad\fR records are output, and no \fBfm\fR records
+by means of
+.BR audit_user (4).
+For syslog output, all
+.B lo
+records are
+output, only failure
+.B ad
+records are output, and no \fBfm\fR records
 are output. The specification for the plugin is given in two lines.
 
 .sp
@@ -288,10 +348,12 @@ qsize=512
 .sp
 
 .LP
-\fBExample 3 \fROverriding the Default Queue Size
+\fBExample 3\fR Overriding the Default Queue Size
 .sp
 .LP
-Shown below is a sample \fB/etc/security/audit_control\fR file that
+Shown below is a sample
+.B /etc/security/audit_control
+file that
 overrides the default queue size for binary audit log file generation.
 
 .sp
@@ -314,20 +376,22 @@ plugin: name=audit_binfile.so; qsize=256
 .SH FILES
 .sp
 .LP
-\fB/etc/security/audit_control\fR
+.B /etc/security/audit_control
 .sp
 .LP
-\fB/etc/security/audit_warn\fR
+.B /etc/security/audit_warn
 .sp
 .LP
-\fB/etc/security/audit/*/*/*\fR
+.B /etc/security/audit/*/*/*
 .sp
 .LP
-\fB/etc/security/audit_user\fR
+.B /etc/security/audit_user
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -344,9 +408,15 @@ Interface Stability Obsolete Committed
 .SH SEE ALSO
 .sp
 .LP
-\fBaudit\fR(1M), \fBaudit_warn\fR(1M), \fBauditd\fR(1M), \fBbsmconv\fR(1M),
-\fBaudit\fR(2), \fBgetfauditflags\fR(3BSM), \fBaudit.log\fR(4),
-\fBaudit_class\fR(4), \fBaudit_user\fR(4), \fBattributes\fR(5),
+.BR audit (1M),
+.BR audit_warn (1M),
+.BR auditd (1M),
+.BR bsmconv (1M),
+.BR audit (2),
+\fBgetfauditflags\fR(3BSM), \fBaudit.log\fR(4),
+.BR audit_class (4),
+.BR audit_user (4),
+.BR attributes (5),
 \fBaudit_binfile\fR(5), \fBaudit_syslog\fR(5)
 .sp
 .LP
@@ -355,14 +425,16 @@ Security Services\fR
 .SH NOTES
 .sp
 .LP
-Use of the plugin configuration line to include \fBaudit_syslog.so\fR
+Use of the plugin configuration line to include
+.BR audit_syslog.so
 requires that \fB/etc/syslog.conf\fR be configured for audit data. See
-\fBaudit_syslog\fR(5) for more details.
+.BR audit_syslog (5)
+for more details.
 .sp
 .LP
 Configuration changes do not affect audit sessions that are currently
 running, as the changes do not modify a process's preselection mask. To
-change the preselection mask on a running process, use the \fB-setpmask\fR
+.RB "change the preselection mask on a running process, use the" " -setpmask"
 option of the \fBauditconfig\fR command (see \fBauditconfig\fR(1M)). If the
 user logs out and logs back in, the new configuration changes will be
 reflected in the next audit session.

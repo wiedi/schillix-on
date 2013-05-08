@@ -60,62 +60,97 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-D_LARGEFILE64_SOURCE\fR \fB -
 .sp
 .LP
 These functions operate on contract control file descriptors obtained from
-the \fBcontract\fR(4) file system.
+the
+.BR contract (4)
+file system.
 .sp
 .LP
-The \fBct_ctl_adopt()\fR function adopts the contract referenced by the
-file descriptor \fIfd\fR. After a successful call to \fBct_ctl_adopt()\fR,
+The
+.B ct_ctl_adopt()
+function adopts the contract referenced by the
+file descriptor
+.IR fd .
+After a successful call to
+.BR ct_ctl_adopt() ,
 the contract is owned by the calling process and any events in that
 contract's event queue are appended to the process's bundle of the
 appropriate type.
 .sp
 .LP
-The \fBct_ctl_abandon()\fR function abandons the contract referenced by the
-file descriptor \fIfd\fR. After a successful call to \fBct_ctl_abandon()\fR
+The
+.B ct_ctl_abandon()
+function abandons the contract referenced by the
+file descriptor
+.IR fd .
+After a successful call to
+.BR ct_ctl_abandon()
 the process no longer owns the contract, any events sent by that contract
 are automatically removed from the process's bundle, and any critical events
 on the contract's event queue are automatically acknowledged. Depending on
 its type and terms, the contract will either be orphaned or destroyed.
 .sp
 .LP
-The \fBct_ctl_ack()\fR function acknowledges the critical event specified
+The
+.B ct_ctl_ack()
+function acknowledges the critical event specified
 by\fIevid\fR. If the event corresponds to an exit negotiation,
 \fBct_ctl_ack()\fR also indicates that the caller is prepared for the system
 to proceed with the referenced reconfiguration.
 .sp
 .LP
-The \fBct_ctl_nack()\fR function acknowledges the critical negotiation
-event specified by \fIevid\fR.  The \fBct_ctl_nack()\fR function also
+The
+.B ct_ctl_nack()
+function acknowledges the critical negotiation
+event specified by
+.IR evid .
+The
+.B ct_ctl_nack()
+function also
 indicates that the caller wishes to block the proposed reconfiguration
-indicated by event \fIevid\fR. Depending on the contract type, this function
+indicated by event
+.IR evid .
+Depending on the contract type, this function
 might require certain privileges to be asserted in the process's effective
 set. This function will fail and return an error if the event represented by
 \fIevid\fR is not a negotiation event.
 .sp
 .LP
-The \fBct_ctl_qack()\fR function requests a new quantum of time for the
-negotiation specified by the event ID \fIevid\fR.
+The
+.B ct_ctl_qack()
+function requests a new quantum of time for the
+negotiation specified by the event ID
+.IR evid .
 .sp
 .LP
-The \fBct_ctl_newct()\fR function instructs the contract specified by the
+The
+.B ct_ctl_newct()
+function instructs the contract specified by the
 file descriptor \fIfd\fR that when the current exit negotiation completes,
 another contract with the terms provided by the template specified by
 \fItemplatefd\fR should be automatically written.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBct_ctl_adopt()\fR, \fBct_ctl_abandon()\fR,
-\fBct_ctl_newct()\fR, \fBct_ctl_ack()\fR, and \fBct_ctl_qack()\fR return 0.
+Upon successful completion,
+.BR ct_ctl_adopt() ,
+.BR ct_ctl_abandon() ,
+.BR ct_ctl_newct() ,
+.BR ct_ctl_ack() ,
+and
+.B ct_ctl_qack()
+return 0.
 Otherwise, they return a non-zero error value.
 .SH ERRORS
 .sp
 .LP
-The \fBct_ctl_adopt()\fR function will fail if:
+The
+.B ct_ctl_adopt()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
@@ -126,7 +161,7 @@ The contract is in the owned state.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -136,13 +171,19 @@ created by a process in a different zone.
 
 .sp
 .LP
-The \fBct_ctl_abandon()\fR, \fBct_ctl_newct()\fR, \fBct_ctl_ack()\fR,
-\fBct_ctl_nack()\fR, and \fBct_ctl_qack()\fR functions will fail if:
+The
+.BR ct_ctl_abandon() ,
+.BR ct_ctl_newct() ,
+.BR ct_ctl_ack() ,
+.BR ct_ctl_nack() ,
+and
+.B ct_ctl_qack()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 9n
 .rt
@@ -151,27 +192,35 @@ The contract does not belong to the calling process.
 
 .sp
 .LP
-The \fBct_ctl_newct()\fR and \fBct_ctl_qack()\fR functions will fail if:
+The
+.B ct_ctl_newct()
+and
+.B ct_ctl_qack()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 9n
 .rt
-The event ID specified by \fIevid\fR does not correspond to an
+The event ID specified by
+.I evid
+does not correspond to an
 unacknowledged negotiation event.
 .RE
 
 .sp
 .LP
-The \fBct_ctl_newct()\fR function will fail if:
+The
+.B ct_ctl_newct()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -181,27 +230,35 @@ descriptor.
 
 .sp
 .LP
-The \fBct_ctl_ack()\fR and \fBct_ctl_nack()\fR functions will fail if:
+The
+.B ct_ctl_ack()
+and
+.B ct_ctl_nack()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 9n
 .rt
-The event ID specified by \fIevid\fR does not correspond to an
+The event ID specified by
+.I evid
+does not correspond to an
 unacknowledged negotiation event.
 .RE
 
 .sp
 .LP
-The \fBct_ctl_nack()\fR function will fail if:
+The
+.B ct_ctl_nack()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 9n
 .rt
@@ -211,12 +268,14 @@ reconfiguration.
 
 .sp
 .LP
-The \fBct_ctl_qack()\fR function will fail if:
+The
+.B ct_ctl_qack()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
@@ -226,7 +285,9 @@ The maximum amount of time has been requested.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -245,5 +306,7 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibcontract\fR(3LIB), \fBcontract\fR(4), \fBattributes\fR(5),
+.BR libcontract (3LIB),
+.BR contract (4),
+.BR attributes (5),
 \fBlfcompile\fR(5)

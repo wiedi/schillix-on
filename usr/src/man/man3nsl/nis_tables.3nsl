@@ -71,7 +71,9 @@ nis_first_entry, nis_next_entry \- NIS+ table functions
 Use the NIS+ table functions to search and modify NIS+ tables.
 \fBnis_list()\fR is used to search a table in the NIS+ namespace.
 \fBnis_first_entry()\fR and \fBnis_next_entry()\fR are used to enumerate a
-table one entry at a time. \fBnis_add_entry()\fR, \fBnis_remove_entry()\fR,
+table one entry at a time.
+.BR nis_add_entry() ,
+.BR nis_remove_entry() ,
 and \fBnis_modify_entry()\fR are used to change the information stored in a
 table. \fBnis_freeresult()\fR is used to free the memory associated with the
 \fBnis_result\fR structure.
@@ -91,24 +93,36 @@ Indexed names have the following form:
 
 .sp
 .LP
-The list function, \fBnis_list()\fR, takes an indexed name as the value for
-the \fIname\fR parameter. Here, the tablename should be a fully qualified
-NIS+ name unless the \fBEXPAND_NAME\fR flag (described below) is set. The
-second parameter, \fIflags\fR, defines how the function will respond to
+The list function,
+.BR nis_list() ,
+takes an indexed name as the value for
+the
+.I name
+parameter. Here, the tablename should be a fully qualified
+NIS+ name unless the
+.B EXPAND_NAME
+flag (described below) is set. The
+second parameter,
+.IR flags ,
+defines how the function will respond to
 various conditions. The value for this parameter is created by logically
 \fBOR\fRing together one or more flags from the following list.
 .sp
 .ne 2
 .mk
 .na
-\fBFOLLOW_LINKS\fR
+.B FOLLOW_LINKS
 .ad
 .RS 17n
 .rt
-If the table specified in \fIname\fR resolves to be a \fBLINK\fR type
+If the table specified in
+.I name
+resolves to be a
+.B LINK
+type
 object (see \fBnis_objects\fR(3NSL)), this flag specifies that the client
 library follow that link and do the search at that object. If this flag is
-not set and the name resolves to a link, the error \fBNIS_NOTSEARCHABLE\fR
+.RB "not set and the name resolves to a link, the error" " NIS_NOTSEARCHABLE"
 will be returned.
 .RE
 
@@ -116,15 +130,19 @@ will be returned.
 .ne 2
 .mk
 .na
-\fBFOLLOW_PATH\fR
+.B FOLLOW_PATH
 .ad
 .RS 17n
 .rt
 This flag specifies that if the entry is not found within this table, the
 list operation should follow the path specified in the table object. When
-used in conjunction with the \fBALL_RESULTS\fR flag below, it specifies that
+used in conjunction with the
+.B ALL_RESULTS
+flag below, it specifies that
 the path should be followed regardless of the result of the search. When
-used in conjunction with the \fBFOLLOW_LINKS\fR flag above, named tables in
+used in conjunction with the
+.B FOLLOW_LINKS
+flag above, named tables in
 the path that resolve to links will be followed until the table they point
 to is located. If a table in the path is not reachable because no server
 that serves it is available, the result of the operation will be either a
@@ -137,26 +155,30 @@ non-existent object then it is silently ignored.
 .ne 2
 .mk
 .na
-\fBHARD_LOOKUP\fR
+.B HARD_LOOKUP
 .ad
 .RS 17n
 .rt
 This flag specifies that the operation should continue trying to contact a
 server of the named table until a definitive result is returned (such as
-\fBNIS_NOTFOUND\fR).
+.BR NIS_NOTFOUND ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBALL_RESULTS\fR
+.B ALL_RESULTS
 .ad
 .RS 17n
 .rt
-This flag can only be used in conjunction with \fBFOLLOW_PATH\fR and
+This flag can only be used in conjunction with
+.B FOLLOW_PATH
+and
 a callback function. When specified, it forces all of the tables in the path
-to be searched. If \fIname\fR does not specify a search criteria (imply that
+to be searched. If
+.I name
+does not specify a search criteria (imply that
 all entries are to be returned), then this flag will cause all of the
 entries in all of the tables in the path to be returned.
 .RE
@@ -165,7 +187,7 @@ entries in all of the tables in the path to be returned.
 .ne 2
 .mk
 .na
-\fBNO_CACHE\fR
+.B NO_CACHE
 .ad
 .RS 17n
 .rt
@@ -178,16 +200,22 @@ replica server for the named table.
 .ne 2
 .mk
 .na
-\fBMASTER_ONLY\fR
+.B MASTER_ONLY
 .ad
 .RS 17n
 .rt
-This flag is even stronger than \fBNO_CACHE\fR in that it specifies that
-the client library should \fIonly\fR get its information from the master
+This flag is even stronger than
+.B NO_CACHE
+in that it specifies that
+the client library should
+.I only
+get its information from the master
 server for a particular table. This guarantees that the information will be
 up to date. However, there may be severe performance penalties associated
 with contacting the master server directly on large networks. When used in
-conjunction with the \fBHARD_LOOKUP\fR flag, this will block the list
+conjunction with the
+.B HARD_LOOKUP
+flag, this will block the list
 operation until the master  server is up and available.
 .RE
 
@@ -195,87 +223,140 @@ operation until the master  server is up and available.
 .ne 2
 .mk
 .na
-\fBEXPAND_NAME\fR
+.B EXPAND_NAME
 .ad
 .RS 17n
 .rt
 When specified, the client library will attempt to expand a partially
-qualified name by calling \fBnis_getnames()\fR, which uses the environment
-variable \fBNIS_PATH\fR. See \fBnis_local_names\fR(3NSL).
+qualified name by calling
+.BR nis_getnames() ,
+which uses the environment
+variable
+.BR NIS_PATH .
+See
+.BR nis_local_names (3NSL).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRETURN_RESULT\fR
+.B RETURN_RESULT
 .ad
 .RS 17n
 .rt
 This flag is used to specify that a copy of the returning object be
-returned in the \fBnis_result\fR structure if the operation was
+returned in the
+.B nis_result
+structure if the operation was
 successful.
 .RE
 
 .sp
 .LP
-The third parameter to \fBnis_list()\fR, \fIcallback\fR, is an optional
-pointer to a function that will process the \fBENTRY\fR type objects that
-are returned from the search. If this pointer is \fINULL\fR, then all
-entries that match the search criteria are returned in the \fInis_result\fR
+The third parameter to
+.BR nis_list() ,
+.IR callback ,
+is an optional
+pointer to a function that will process the
+.B ENTRY
+type objects that
+are returned from the search. If this pointer is
+.IR NULL ,
+then all
+entries that match the search criteria are returned in the
+.IR nis_result
 structure, otherwise this function will be called once for each entry
-returned. When called, this function should return \fB0\fR when additional
-objects are desired and \fB1\fR when it no longer wishes to see any more
-objects. The fourth parameter, \fIuserdata\fR, is simply passed to callback
+returned. When called, this function should return
+.B 0
+when additional
+objects are desired and
+.B 1
+when it no longer wishes to see any more
+objects. The fourth parameter,
+.IR userdata ,
+is simply passed to callback
 function along with the returned entry object. The client can use this
 pointer to pass state information or other relevant data that the callback
 function might need to process the entries.
 .sp
 .LP
-The \fBnis_list()\fR function is not MT-Safe with callbacks.
+The
+.B nis_list()
+function is not MT-Safe with callbacks.
 .sp
 .LP
 \fBnis_add_entry()\fR will add the  NIS+ object to the \fBNIS+\fR
-\fItable_name\fR. The \fIflags\fR parameter is used to specify the failure
+.IR table_name .
+The \fIflags\fR parameter is used to specify the failure
 semantics for the add operation. The default (\fIflags\fR equal 0) is to
 fail if the entry being added already exists in the table. The
 \fBADD_OVERWRITE\fR flag may be used to specify that existing object is to
 be overwritten if it exists, (a modify operation) or added if it does not
-exist. With the \fBADD_OVERWRITE\fR flag, this function will fail with the
-error \fBNIS_PERMISSION\fR if the existing object does not allow modify
+exist. With the
+.B ADD_OVERWRITE
+flag, this function will fail with the
+error
+.B NIS_PERMISSION
+if the existing object does not allow modify
 privileges to the client.
 .sp
 .LP
-If the flag \fBRETURN_RESULT\fR has been specified, the server will return
+If the flag
+.B RETURN_RESULT
+has been specified, the server will return
 a copy of the resulting object if the operation was successful.
 .sp
 .LP
 \fBnis_remove_entry()\fR removes the identified entry from the table or a
-set of entries identified  by \fItable_name\fR. If the parameter
+set of entries identified  by
+.IR table_name .
+If the parameter
 \fIobject\fR is non-null, it is presumed to point to a cached copy of the
 entry. When the removal is attempted, and the object that would be removed
-is not the same as the cached object pointed to by \fIobject\fR then the
-operation will fail with an \fBNIS_NOTSAMEOBJ\fR error. If an object is
+is not the same as the cached object pointed to by
+.I object
+then the
+operation will fail with an
+.B NIS_NOTSAMEOBJ
+error. If an object is
 passed with this function, the search criteria in name is optional as it can
 be constructed from the values within the entry. However, if no object is
-present, the search  criteria must be included in the \fIname\fR parameter.
+present, the search  criteria must be included in the
+.I name
+parameter.
 If the flags variable is null, and the search criteria  does not uniquely
-identify an entry, the \fBNIS_NOTUNIQUE\fR error is returned and the
-operation is aborted. If the flag parameter \fBREM_MULTIPLE\fR is passed,
+identify an entry, the
+.B NIS_NOTUNIQUE
+error is returned and the
+operation is aborted. If the flag parameter
+.B REM_MULTIPLE
+is passed,
 and if remove permission is allowed for each of these objects, then all
 objects that match the search criteria will be removed. Note that a null
-search criteria and the \fBREM_MULTIPLE\fR flag will remove all entries in a
+search criteria and the
+.B REM_MULTIPLE
+flag will remove all entries in a
 table.
 .sp
 .LP
-\fBnis_modify_entry()\fR modifies an object identified by \fIname\fR. The
-parameter \fIobject\fR should point to an entry with the  \fBEN_MODIFIED\fR
+\fBnis_modify_entry()\fR modifies an object identified by
+.IR name .
+The
+parameter
+.I object
+should point to an entry with the 
+.BR EN_MODIFIED
 flag set in each column that contains new information.
 .sp
 .LP
 The owner, group, and access rights of an entry are modified by placing the
 modified information into the respective fields of the parameter,
-\fIobject\fR: \fBzo_owner\fR, \fBzo_group\fR, and \fBzo_access\fR.
+.IR object :
+.BR zo_owner ,
+.BR zo_group ,
+and
+.BR zo_access .
 .sp
 .LP
 These columns will replace their counterparts in the entry that is stored
@@ -284,30 +365,49 @@ type, and valid data in the modified columns for this operation  to
 succeed.
 .sp
 .LP
-If the flags parameter contains the flag \fBMOD_SAMEOBJ\fR then the object
-pointed to by \fIobject\fR is assumed to be a  cached copy of the original
-object. If the \fBOID\fR of the object passed is different than the
+If the flags parameter contains the flag
+.B MOD_SAMEOBJ
+then the object
+pointed to by
+.I object
+is assumed to be a  cached copy of the original
+object. If the
+.B OID
+of the object passed is different than the
 \fBOID\fR of the object the server fetches, then the operation fails with
-the \fBNIS_NOTSAMEOBJ\fR error. This can be used to implement a simple
+the
+.B NIS_NOTSAMEOBJ
+error. This can be used to implement a simple
 read-modify-write protocol which will fail if the object is modified before
 the client can write the object back.
 .sp
 .LP
-If the flag \fBRETURN_RESULT\fR has been specified, the server will return
+If the flag
+.B RETURN_RESULT
+has been specified, the server will return
 a copy of the resulting object  if the operation was successful.
 .sp
 .LP
 \fBnis_first_entry()\fR fetches entries from a table one at a time. This
 mode of operation is extremely inefficient and callbacks should be used
 instead wherever possible. The table containing the entries of interest is
-identified by \fIname\fR. If a search criteria is present in \fIname\fR it
-is ignored. The value of \fIcookie\fR within the \fBnis_result\fR structure
+identified by
+.IR name .
+If a search criteria is present in
+.I name
+it
+is ignored. The value of
+.I cookie
+within the
+.B nis_result
+structure
 must be copied by the caller into local storage and passed as an argument to
-\fBnis_next_entry()\fR.
+.BR nis_next_entry() .
 .sp
 .LP
 \fBnis_next_entry()\fR retrieves the "next" entry from a table specified by
-\fItable_name\fR. The order in which entries are returned is not guaranteed.
+.IR table_name .
+The order in which entries are returned is not guaranteed.
 Further, should an update occur in the table between client calls to
 \fBnis_next_entry()\fR there is no guarantee that an entry that is added or
 modified will be seen by the client. Should an entry be removed from the
@@ -315,14 +415,18 @@ table that would have been the "next" entry returned, the error
 \fBNIS_CHAINBROKEN\fR is returned instead.
 .sp
 .LP
-The path used when the flag \fBFOLLOW_PATH\fR is specified, is the one
+The path used when the flag
+.B FOLLOW_PATH
+is specified, is the one
 present in the \fIfirst\fR table searched. The path values in tables that
 are subsequently searched are ignored.
 .sp
 .LP
 It is legal to call functions that would access the nameservice from within
 a list callback. However, calling a function that would  itself use a
-callback, or calling \fBnis_list()\fR with a callback from within a list
+callback, or calling
+.B nis_list()
+with a callback from within a list
 callback function is not currently supported.
 .sp
 .LP
@@ -330,15 +434,21 @@ There are currently no known methods for \fBnis_first_entry()\fR and
 \fBnis_next_entry()\fR to get their answers from only the master server.
 .sp
 .LP
-The \fBnis_list()\fR function is not MT-Safe with callbacks.
+The
+.B nis_list()
+function is not MT-Safe with callbacks.
 \fBnis_list()\fR callbacks are serialized.  A call to \fBnis_list()\fR with
-a callback from within  \fBnis_list()\fR will deadlock.   \fBnis_list()\fR
+a callback from within 
+.B nis_list()
+.RB "will deadlock.  " " nis_list()"
 with a callback cannot be called from an rpc server.  See
-\fBrpc_svc_calls\fR(3NSL). Otherwise, this function is MT-Safe.
+.BR rpc_svc_calls (3NSL).
+Otherwise, this function is MT-Safe.
 .SH RETURN VALUES
 .sp
 .LP
-These functions return a pointer to a structure of type \fBnis_result\fR:
+These functions return a pointer to a structure of type
+.BR nis_result :
 .sp
 .in +2
 .nf
@@ -359,18 +469,33 @@ struct nis_result {
 
 .sp
 .LP
-The \fIstatus\fR member contains the error status of the the operation. A
+The
+.I status
+member contains the error status of the the operation. A
 text message that describes the error can be obtained by calling the
-function \fBnis_sperrno()\fR. See \fBnis_error\fR(3NSL).
+function
+.BR nis_sperrno() .
+See
+.BR nis_error (3NSL).
 .sp
 .LP
-The \fBobjects\fR structure contains two members. \fIobjects_val\fR is an
-array of \fInis_object\fR structures; \fIobjects_len\fR is the number of
+The
+.B objects
+structure contains two members.
+.I objects_val
+is an
+array of
+.I nis_object
+structures;
+.I objects_len
+is the number of
 cells in the array. These objects will be freed by a call to
 \fBnis_freeresult()\fR. See \fBnis_names\fR(3NSL). If you need to keep a
 copy of one or more objects, they can be copied with the function
 \fBnis_clone_object()\fR and freed with the function
-\fBnis_destroy_object()\fR. See \fBnis_server\fR(3NSL).
+.BR nis_destroy_object() .
+See
+.BR nis_server (3NSL).
 .sp
 .LP
 The various ticks contain details of where the time, in microseconds, was
@@ -380,7 +505,7 @@ for faster access and to compare different database implementations.
 .ne 2
 .mk
 .na
-\fIzticks\fR
+.I zticks
 .ad
 .RS 10n
 .rt
@@ -392,7 +517,7 @@ server receives the request and stops when it sends the reply.
 .ne 2
 .mk
 .na
-\fIdticks\fR
+.I dticks
 .ad
 .RS 10n
 .rt
@@ -406,7 +531,7 @@ those calls.
 .ne 2
 .mk
 .na
-\fIaticks\fR
+.I aticks
 .ad
 .RS 10n
 .rt
@@ -418,7 +543,7 @@ required to locate the server needed to resolve the request.
 .ne 2
 .mk
 .na
-\fIcticks\fR
+.I cticks
 .ad
 .RS 10n
 .rt
@@ -430,9 +555,18 @@ of generating a NIS+ request.
 
 .sp
 .LP
-Subtracting the value in \fIdticks\fR from the value in \fIzticks\fR will
+Subtracting the value in
+.I dticks
+from the value in
+.I zticks
+will
 yield the time spent in the service code itself. Subtracting the sum of the
-values in \fIzticks\fR and  \fIaticks\fR from the value in  \fIcticks\fR
+values in
+.I zticks
+and 
+.I aticks
+from the value in 
+.IR cticks
 will yield the time spent in the client library itself. Note: all of the
 tick times are measured in microseconds.
 .SH ERRORS
@@ -444,7 +578,7 @@ The more salient ones are documented below.
 .ne 2
 .mk
 .na
-\fBNIS_BADATTRIBUTE\fR
+.B NIS_BADATTRIBUTE
 .ad
 .RS 23n
 .rt
@@ -456,7 +590,7 @@ or the attribute did not have an associated value.
 .ne 2
 .mk
 .na
-\fBNIS_BADNAME\fR
+.B NIS_BADNAME
 .ad
 .RS 23n
 .rt
@@ -467,7 +601,7 @@ The name passed to the function is not a legal NIS+ name.
 .ne 2
 .mk
 .na
-\fBNIS_BADREQUEST\fR
+.B NIS_BADREQUEST
 .ad
 .RS 23n
 .rt
@@ -479,13 +613,17 @@ library.
 .ne 2
 .mk
 .na
-\fBNIS_CACHEEXPIRED\fR
+.B NIS_CACHEEXPIRED
 .ad
 .RS 23n
 .rt
-The entry returned came from an object cache that has \fIexpired\fR. This
+The entry returned came from an object cache that has
+.IR expired .
+This
 means that the time to live value has gone to zero and the entry may have
-changed. If the flag \fBNO_CACHE\fR was passed to the lookup function then
+changed. If the flag
+.B NO_CACHE
+was passed to the lookup function then
 the lookup function will retry the operation to get an unexpired copy of the
 object.
 .RE
@@ -494,11 +632,13 @@ object.
 .ne 2
 .mk
 .na
-\fBNIS_CBERROR\fR
+.B NIS_CBERROR
 .ad
 .RS 23n
 .rt
-An \fBRPC\fR error occurred on the server while it was calling back to the
+An
+.B RPC
+error occurred on the server while it was calling back to the
 client. The transaction was aborted at that time and any unsent data was
 discarded.
 .RE
@@ -507,7 +647,7 @@ discarded.
 .ne 2
 .mk
 .na
-\fBNIS_CBRESULTS\fR
+.B NIS_CBRESULTS
 .ad
 .RS 23n
 .rt
@@ -519,13 +659,15 @@ to your callback function and are thus not included in this result.
 .ne 2
 .mk
 .na
-\fBNIS_FOREIGNNS\fR
+.B NIS_FOREIGNNS
 .ad
 .RS 23n
 .rt
 The name could not be completely resolved. When the name passed to the
 function would resolve in a namespace that is outside the NIS+ name tree,
-this error is returned with a NIS+ object of type \fBDIRECTORY\fR. The
+this error is returned with a NIS+ object of type
+.BR DIRECTORY .
+The
 returned object contains the type of namespace and contact information for a
 server within that namespace.
 .RE
@@ -534,11 +676,13 @@ server within that namespace.
 .ne 2
 .mk
 .na
-\fBNIS_INVALIDOBJ\fR
+.B NIS_INVALIDOBJ
 .ad
 .RS 23n
 .rt
-The object pointed to by \fIobject\fR is not a valid NIS+ entry object for
+The object pointed to by
+.I object
+is not a valid NIS+ entry object for
 the given table. This could occur if it had a mismatched number of columns,
 or a different data type than the associated column in the table, for
 example, binary or text.
@@ -548,11 +692,13 @@ example, binary or text.
 .ne 2
 .mk
 .na
-\fBNIS_LINKNAMEERROR\fR
+.B NIS_LINKNAMEERROR
 .ad
 .RS 23n
 .rt
-The name passed resolved to a \fBLINK\fR type object and the contents of
+The name passed resolved to a
+.B LINK
+type object and the contents of
 the object pointed to an invalid name.
 .RE
 
@@ -560,7 +706,7 @@ the object pointed to an invalid name.
 .ne 2
 .mk
 .na
-\fBNIS_MODFAIL\fR
+.B NIS_MODFAIL
 .ad
 .RS 23n
 .rt
@@ -571,7 +717,7 @@ The attempted modification failed for some reason.
 .ne 2
 .mk
 .na
-\fBNIS_NAMEEXISTS\fR
+.B NIS_NAMEEXISTS
 .ad
 .RS 23n
 .rt
@@ -584,21 +730,23 @@ existing named object.
 .ne 2
 .mk
 .na
-\fBNIS_NAMEUNREACHABLE\fR
+.B NIS_NAMEUNREACHABLE
 .ad
 .RS 23n
 .rt
 This soft error indicates that a server for the  desired directory of the
 named table object could not be reached.  This can occur when there is a
 network partition or the server has crashed. Attempting the operation again
-may succeed. See the \fBHARD_LOOKUP\fR flag.
+may succeed. See the
+.B HARD_LOOKUP
+flag.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBNIS_NOCALLBACK\fR
+.B NIS_NOCALLBACK
 .ad
 .RS 23n
 .rt
@@ -610,7 +758,7 @@ results in no data being returned.
 .ne 2
 .mk
 .na
-\fBNIS_NOMEMORY\fR
+.B NIS_NOMEMORY
 .ad
 .RS 23n
 .rt
@@ -622,7 +770,7 @@ space.
 .ne 2
 .mk
 .na
-\fBNIS_NOSUCHNAME\fR
+.B NIS_NOSUCHNAME
 .ad
 .RS 23n
 .rt
@@ -636,7 +784,7 @@ table resides.
 .ne 2
 .mk
 .na
-\fBNIS_NOSUCHTABLE\fR
+.B NIS_NOSUCHTABLE
 .ad
 .RS 23n
 .rt
@@ -647,7 +795,7 @@ The named table does not exist.
 .ne 2
 .mk
 .na
-\fBNIS_NOT_ME\fR
+.B NIS_NOT_ME
 .ad
 .RS 23n
 .rt
@@ -660,15 +808,18 @@ mechanism for servers, you may see this if your mechanism is broken.
 .ne 2
 .mk
 .na
-\fBNIS_NOTFOUND\fR
+.B NIS_NOTFOUND
 .ad
 .RS 23n
 .rt
 No entries in the table matched the search criteria. If the search criteria
 was null (return all entries) then this result means that the table is empty
-and may safely be removed by  calling the \fBnis_remove()\fR.
+and may safely be removed by  calling the
+.BR nis_remove() .
 .sp
-If the  \fBFOLLOW_PATH\fR flag was set, this error indicates that none of
+If the 
+.B FOLLOW_PATH
+flag was set, this error indicates that none of
 the tables in the path contain entries that match the search criteria.
 .RE
 
@@ -676,14 +827,16 @@ the tables in the path contain entries that match the search criteria.
 .ne 2
 .mk
 .na
-\fBNIS_NOTMASTER\fR
+.B NIS_NOTMASTER
 .ad
 .RS 23n
 .rt
 A change request was made to a server that  serves the name, but it is not
 the master server. This can occur when a directory object changes and it
 specifies a new master server. Clients that have cached copies of the
-directory object in the \fB/var/nis/NIS_SHARED_DIRCACHE\fR file will need to
+directory object in the
+.B /var/nis/NIS_SHARED_DIRCACHE
+file will need to
 have their cache managers restarted to flush this cache. Use \fBnis_cachemgr
 -i\fR.
 .RE
@@ -692,7 +845,7 @@ have their cache managers restarted to flush this cache. Use \fBnis_cachemgr
 .ne 2
 .mk
 .na
-\fBNIS_NOTSAMEOBJ\fR
+.B NIS_NOTSAMEOBJ
 .ad
 .RS 23n
 .rt
@@ -705,7 +858,7 @@ in the request.
 .ne 2
 .mk
 .na
-\fBNIS_NOTSEARCHABLE\fR
+.B NIS_NOTSEARCHABLE
 .ad
 .RS 23n
 .rt
@@ -716,11 +869,13 @@ The table name resolved to a  NIS+ object that was not searchable.
 .ne 2
 .mk
 .na
-\fBNIS_PARTIAL\fR
+.B NIS_PARTIAL
 .ad
 .RS 23n
 .rt
-This result is similar to \fBNIS_NOTFOUND\fR except that it means the
+This result is similar to
+.B NIS_NOTFOUND
+except that it means the
 request succeeded but resolved to zero entries. When this occurs, the server
 returns a copy of the table object instead of an entry so that the client
 may then process the path or implement some other local policy.
@@ -730,12 +885,15 @@ may then process the path or implement some other local policy.
 .ne 2
 .mk
 .na
-\fBNIS_RPCERROR\fR
+.B NIS_RPCERROR
 .ad
 .RS 23n
 .rt
-This fatal error indicates the  \fBRPC\fR subsystem failed in some way.
-Generally there will be a \fBsyslog\fR(3C) message indicating why the
+This fatal error indicates the 
+.B RPC
+subsystem failed in some way.
+Generally there will be a
+.BR syslog "(3C) message indicating why the"
 \fBRPC\fR request failed.
 .RE
 
@@ -743,7 +901,7 @@ Generally there will be a \fBsyslog\fR(3C) message indicating why the
 .ne 2
 .mk
 .na
-\fBNIS_S_NOTFOUND\fR
+.B NIS_S_NOTFOUND
 .ad
 .RS 23n
 .rt
@@ -755,7 +913,7 @@ path could be searched, so the entry may exist in one of those tables.
 .ne 2
 .mk
 .na
-\fBNIS_S_SUCCESS\fR
+.B NIS_S_SUCCESS
 .ad
 .RS 23n
 .rt
@@ -768,7 +926,7 @@ have received if that table had been accessible.
 .ne 2
 .mk
 .na
-\fBNIS_SUCCESS\fR
+.B NIS_SUCCESS
 .ad
 .RS 23n
 .rt
@@ -779,7 +937,7 @@ The request was successful.
 .ne 2
 .mk
 .na
-\fBNIS_SYSTEMERROR\fR
+.B NIS_SYSTEMERROR
 .ad
 .RS 23n
 .rt
@@ -791,7 +949,7 @@ Check the \fBsyslog\fR(3C) record for error messages from the server.
 .ne 2
 .mk
 .na
-\fBNIS_TOOMANYATTRS\fR
+.B NIS_TOOMANYATTRS
 .ad
 .RS 23n
 .rt
@@ -803,14 +961,18 @@ had searchable columns.
 .ne 2
 .mk
 .na
-\fBNIS_TRYAGAIN\fR
+.B NIS_TRYAGAIN
 .ad
 .RS 23n
 .rt
 The server connected to was too busy to handle your request.
-\fBadd_entry()\fR, \fBremove_entry()\fR, and \fBmodify_entry()\fR return
+.BR add_entry() ,
+.BR remove_entry() ,
+and \fBmodify_entry()\fR return
 this error when the master server is currently updating its internal state.
-It can be returned to \fBnis_list()\fR when the function specifies a
+It can be returned to
+.B nis_list()
+when the function specifies a
 callback and the server does not have the resources to handle callbacks.
 .RE
 
@@ -818,7 +980,7 @@ callback and the server does not have the resources to handle callbacks.
 .ne 2
 .mk
 .na
-\fBNIS_TYPEMISMATCH\fR
+.B NIS_TYPEMISMATCH
 .ad
 .RS 23n
 .rt
@@ -831,18 +993,24 @@ passed was of a different type than the table.
 .ne 2
 .mk
 .na
-\fBNIS_PATH\fR
+.B NIS_PATH
 .ad
 .RS 12n
 .rt
-When set, this variable is the search path used by \fBnis_list()\fR if the
-flag \fBEXPAND_NAME\fR is set.
+When set, this variable is the search path used by
+.B nis_list()
+if the
+flag
+.B EXPAND_NAME
+is set.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -859,16 +1027,28 @@ MT-LevelMT-Safe with exceptions
 .SH SEE ALSO
 .sp
 .LP
-\fBniscat\fR(1), \fBniserror\fR(1), \fBnismatch\fR(1),
-\fBnis_cachemgr\fR(1M), \fBnis_clone_object\fR(3NSL), n,
-\fBnis_destroy_object\fR(3NSL), \fBnis_error\fR(3NSL),
-\fBnis_getnames\fR(3NSL), \fBnis_local_names\fR(3NSL),
-\fBnis_names\fR(3NSL), \fBnis_objects\fR(3NSL), \fBnis_server\fR(3NSL),
-\fBrpc_svc_calls\fR(3NSL), \fBsyslog\fR(3C), \fBattributes\fR(5)
+.BR niscat (1),
+.BR niserror (1),
+.BR nismatch (1),
+.BR nis_cachemgr (1M),
+.BR nis_clone_object (3NSL),
+n,
+.BR nis_destroy_object (3NSL),
+.BR nis_error (3NSL),
+.BR nis_getnames (3NSL),
+.BR nis_local_names (3NSL),
+.BR nis_names (3NSL),
+.BR nis_objects (3NSL),
+.BR nis_server (3NSL),
+.BR rpc_svc_calls (3NSL),
+.BR syslog (3C),
+.BR attributes (5)
 .SH WARNINGS
 .sp
 .LP
-Use the flag \fBHARD_LOOKUP\fR carefully since it can cause the application
+Use the flag
+.B HARD_LOOKUP
+carefully since it can cause the application
 to block indefinitely during a network partition.
 .SH NOTES
 .sp

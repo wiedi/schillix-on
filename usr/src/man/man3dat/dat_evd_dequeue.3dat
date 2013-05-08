@@ -41,7 +41,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIevd_handle\fR
+.I evd_handle
 .ad
 .RS 14n
 .rt
@@ -52,7 +52,7 @@ Handle for an instance of the Event Dispatcher.
 .ne 2
 .mk
 .na
-\fIevent\fR
+.I event
 .ad
 .RS 14n
 .rt
@@ -63,32 +63,61 @@ event data.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_evd_dequeue()\fR function removes the first event from the Event
-Dispatcher event queue and fills the Consumer allocated \fIevent\fR
+The
+.B dat_evd_dequeue()
+function removes the first event from the Event
+Dispatcher event queue and fills the Consumer allocated
+.IR event
 structure with event data. The first element in this structure provides the
 type of the event; the rest provides the event-type-specific parameters. The
-Consumer should allocate an \fIevent\fR structure big enough to hold any
+Consumer should allocate an
+.I event
+structure big enough to hold any
 event that the Event Dispatcher can deliver.
 .sp
 .LP
-For all events the Provider fills the \fBdat_event\fR that the Consumer
-allocates. So for all events, all fields of \fBdat_event\fR are OUT from the
-Consumer point of view. For \fBDAT_CONNECTION_REQUEST_EVENT\fR, the Provider
-creates a Connection Request whose \fIcr_handle\fR is returned to the
-Consumer in \fBDAT_CR_ARRIVAL_EVENT_DATA\fR. That object is destroyed by the
-Provider as part of \fBdat_cr_accept\fR(3DAT), \fBdat_cr_reject\fR(3DAT), or
+For all events the Provider fills the
+.B dat_event
+that the Consumer
+allocates. So for all events, all fields of
+.B dat_event
+are OUT from the
+Consumer point of view. For
+.BR DAT_CONNECTION_REQUEST_EVENT ,
+the Provider
+creates a Connection Request whose
+.I cr_handle
+is returned to the
+Consumer in
+.BR DAT_CR_ARRIVAL_EVENT_DATA .
+That object is destroyed by the
+Provider as part of
+.BR dat_cr_accept (3DAT),
+.BR dat_cr_reject (3DAT),
+or
 \fBdat_cr_handoff\fR(3DAT). The Consumer should not use \fIcr_handle\fR or
-any of its parameters, including \fIprivate_data\fR, after one of these
+any of its parameters, including
+.IR private_data ,
+after one of these
 operations destroys the Connection Request.
 .sp
 .LP
-For \fBDAT_CONNECTION_EVENT_ESTABLISHED\fR for the Active side of
+For
+.B DAT_CONNECTION_EVENT_ESTABLISHED
+for the Active side of
 connection establishment, the Provider returns the pointer for
-\fIprivate_data\fR and the \fIprivate_data_size\fR. For the Passive side,
+\fIprivate_data\fR and the
+.IR private_data_size .
+For the Passive side,
 \fBDAT_CONNECTION_EVENT_ESTABLISHED\fR event \fIprivate_data\fR is not
-defined and \fIprivate_data_size\fR returns zero. The Provider is
+defined and
+.I private_data_size
+returns zero. The Provider is
 responsible for the memory allocation and deallocation for
-\fIprivate_data\fR. The \fIprivate_data\fR is valid until the Active side
+.IR private_data .
+The
+.I private_data
+is valid until the Active side
 Consumer destroys the connected Endpoint (\fBdat_ep_free\fR(3DAT)), or
 transitions the Endpoint into Unconnected state so it is ready for the next
 connection. So while the Endpoint is in Connected, Disconnect Pending, or
@@ -97,10 +126,16 @@ is still valid for Active side Consumers.
 .sp
 .LP
 Provider must pass to the Consumer the entire Private Data that the remote
-Consumer provided for \fBdat_ep_connect\fR(3DAT),
-\fBdat_ep_dup_connect\fR(3DAT), and \fBdat_cr_accept()\fR. If the Consumer
+Consumer provided for
+.BR dat_ep_connect (3DAT),
+.BR dat_ep_dup_connect (3DAT),
+and
+.BR dat_cr_accept() .
+If the Consumer
 provides more data than the Provider and Transport can support (larger than
-IA Attribute of \fImax_private_data_size\fR), \fBDAT_INVALID_PARAMETER\fR is
+IA Attribute of
+.IR max_private_data_size ),
+\fBDAT_INVALID_PARAMETER\fR is
 returned for that operation.
 .sp
 .LP
@@ -117,7 +152,7 @@ The ordering of events dequeued by overlapping calls to
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 22n
 .rt
@@ -128,7 +163,7 @@ The operation was successful. An event was returned to a Consumer.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 22n
 .rt
@@ -139,7 +174,7 @@ Invalid DAT handle; evd_handle is invalid.
 .ne 2
 .mk
 .na
-\fBDAT_QUEUE_EMPTY\fR
+.B DAT_QUEUE_EMPTY
 .ad
 .RS 22n
 .rt
@@ -150,7 +185,7 @@ There are no entries on the Event Dispatcher queue.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_STATE\fR
+.B DAT_INVALID_STATE
 .ad
 .RS 22n
 .rt
@@ -171,14 +206,18 @@ earlier than contexts receiving later events.
 .LP
 Preservation of event ordering within an Event Stream is an important
 feature of the DAT Event Model. Consumers are cautioned that overlapping or
-concurrent calls to \fBdat_evd_dequeue()\fR from multiple contexts can
+concurrent calls to
+.B dat_evd_dequeue()
+from multiple contexts can
 undermine this ordering information. After multiple contexts are involved,
 the Provider can only guarantee the order that it delivers events into the
 EVD. The Provider cannot guarantee that they are processed in the correct
 order.
 .sp
 .LP
-Although calling \fBdat_evd_dequeue()\fR does not cause a context switch,
+Although calling
+.B dat_evd_dequeue()
+does not cause a context switch,
 the Provider is under no obligation to prevent one. A context could
 successfully complete a dequeue, and then reach the end of its timeslice,
 before returning control to the Consumer code. Meanwhile, a context
@@ -192,7 +231,9 @@ or semaphore.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -211,7 +252,10 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_cr_accept\fR(3DAT), \fBdat_cr_handoff\fR(3DAT),
-\fBdat_cr_reject\fR(3DAT), \fBdat_ep_connect\fR(3DAT),
-\fBdat_ep_dup_connect\fR(3DAT), \fBdat_ep_free\fR(3DAT),
+.BR dat_cr_accept (3DAT),
+\fBdat_cr_handoff\fR(3DAT),
+.BR dat_cr_reject (3DAT),
+.BR dat_ep_connect (3DAT),
+.BR dat_ep_dup_connect (3DAT),
+\fBdat_ep_free\fR(3DAT),
 \fBdat_evd_wait\fR(3DAT)\fBlibdat\fR(3LIB), \fBattributes\fR(5)

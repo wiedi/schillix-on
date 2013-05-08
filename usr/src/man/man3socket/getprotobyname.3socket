@@ -61,48 +61,76 @@ getprotoent, getprotoent_r, setprotoent, endprotoent \- get protocol entry
 .LP
 These functions return a protocol entry. Two types of interfaces are
 supported: reentrant (\fBgetprotobyname_r()\fR, \fBgetprotobynumber_r()\fR,
-and \fBgetprotoent_r()\fR) and non-reentrant (\fBgetprotobyname()\fR,
-\fBgetprotobynumber()\fR, and \fBgetprotoent()\fR). The reentrant functions
+and
+.BR getprotoent_r() )
+and non-reentrant (\fBgetprotobyname()\fR,
+.BR getprotobynumber() ,
+and
+.BR getprotoent() ).
+The reentrant functions
 can be used in single-threaded applications and are safe for multithreaded
 applications, making them the preferred interfaces.
 .sp
 .LP
 The reentrant routines require additional parameters which are used to
-return results data. \fIresult\fR is a pointer to a \fBstruct protoent\fR
+return results data.
+.I result
+is a pointer to a
+.BR "struct protoent"
 structure and will be where the returned results will be stored.
 \fIbuffer\fR is used as storage space for elements of the returned results.
 \fIbuflen\fR is the size of \fIbuffer\fR and should be large enough to
 contain all returned data. \fIbuflen\fR must be at least 1024 bytes.
 .sp
 .LP
-\fBgetprotobyname_r()\fR, \fBgetprotobynumber_r()\fR, and
+.BR getprotobyname_r() ,
+.BR getprotobynumber_r() ,
+and
 \fBgetprotoent_r()\fR each return a protocol entry.
 .sp
 .LP
 The entry may come from one of the following sources: the protocols file
-(see \fBprotocols\fR(4)), the \fBNIS\fR maps ``protocols.byname'' and
-``protocols.bynumber'', and the \fBNIS+\fR table ``protocols''. The sources
+(see
+.BR protocols (4)),
+the
+.B NIS
+maps ``protocols.byname'' and
+``protocols.bynumber'', and the
+.B NIS+
+table ``protocols''. The sources
 and their lookup order are specified in the \fB/etc/nsswitch.conf\fR file
-(see \fBnsswitch.conf\fR(4) for details). Some name services such as NIS
+(see
+.BR nsswitch.conf (4)
+for details). Some name services such as NIS
 will return only one name for a host, whereas others such as NIS+ or DNS
 will return all aliases.
 .sp
 .LP
-The \fBgetprotobyname_r()\fR and \fBgetprotobynumber_r()\fR functions
+The
+.B getprotobyname_r()
+and
+.B getprotobynumber_r()
+functions
 sequentially search from the beginning of the file until a matching protocol
 name or protocol number is found, or until an EOF is encountered.
 .sp
 .LP
 \fBgetprotobyname()\fR and \fBgetprotobynumber()\fR have the same
-functionality as \fBgetprotobyname_r()\fR and \fBgetprotobynumber_r()\fR
+functionality as
+.B getprotobyname_r()
+and
+.BR getprotobynumber_r()
 except that a static buffer is used to store returned results.  These
 functions are Unsafe in a multithreaded application.
 .sp
 .LP
 \fBgetprotoent_r()\fR enumerates protocol entries: successive calls to
 \fBgetprotoent_r()\fR will return either successive protocol entries or
-\fINULL\fR. Enumeration might not be supported by some sources. If multiple
-threads call \fBgetprotoent_r()\fR, each will retrieve a subset of the
+.IR NULL .
+Enumeration might not be supported by some sources. If multiple
+threads call
+.BR getprotoent_r() ,
+each will retrieve a subset of the
 protocol database.
 .sp
 .LP
@@ -112,25 +140,40 @@ is unsafe in a multithreaded application.
 .sp
 .LP
 \fBsetprotoent()\fR "rewinds" to the beginning of the enumeration of
-protocol entries. If the \fIstayopen\fR flag is non-zero, resources such as
+protocol entries. If the
+.I stayopen
+flag is non-zero, resources such as
 open file descriptors are not deallocated after each call to
-\fBgetprotobynumber_r()\fR and \fBgetprotobyname_r()\fR. Calls to
-\fBgetprotobyname_r()\fR \fB,\fR The \fBgetprotobyname()\fR,
-\fBgetprotobynumber_r()\fR, and \fBgetprotobynumber()\fR functions might
-leave the enumeration in an indeterminate state, so \fBsetprotoent()\fR
-should be called before the first call to \fBgetprotoent_r()\fR or
-\fBgetprotoent()\fR. The \fBsetprotoent()\fR function has process-wide
+\fBgetprotobynumber_r()\fR and
+.BR getprotobyname_r() .
+Calls to
+\fBgetprotobyname_r() ,\fR The \fBgetprotobyname()\fR,
+.BR getprotobynumber_r() ,
+and
+.B getprotobynumber()
+functions might
+.RB "leave the enumeration in an indeterminate state, so" " setprotoent()"
+should be called before the first call to
+.B getprotoent_r()
+or
+.BR getprotoent() .
+The
+.B setprotoent()
+function has process-wide
 scope, and ``rewinds'' the protocol entries for all threads calling
 \fBgetprotoent_r()\fR as well as main-thread calls to \fBgetprotoent()\fR.
 .sp
 .LP
-The \fBendprotoent()\fR function can be called to indicate that protocol
+The
+.B endprotoent()
+function can be called to indicate that protocol
 processing is complete; the system may then close any open protocols file,
 deallocate storage, and so forth.  It is legitimate, but possibly less
 efficient, to call more protocol functions after \fBendprotoent()\fR.
 .sp
 .LP
-The internal representation of a protocol entry is a \fBprotoent\fR
+The internal representation of a protocol entry is a
+.BR protoent
 structure defined in <\fBnetdb.h\fR> with the following members:
 .sp
 .in +2
@@ -144,25 +187,43 @@ int   p_proto;
 .SH RETURN VALUES
 .sp
 .LP
-The \fBgetprotobyname_r()\fR, \fBgetprotobyname()\fR,
-\fBgetprotobynumber_r()\fR, and \fBgetprotobynumber()\fR functions return a
-pointer to a \fBstruct protoent\fR if they successfully locate the requested
-entry; otherwise they return \fBNULL.\fR
+The
+.BR getprotobyname_r() ,
+.BR getprotobyname() ,
+.BR getprotobynumber_r() ,
+and
+.B getprotobynumber()
+functions return a
+pointer to a
+.B "struct protoent"
+if they successfully locate the requested
+.RB "entry; otherwise they return" " NULL."
 .sp
 .LP
-The \fBgetprotoent_r()\fR and \fBgetprotoent()\fR functions return a
-pointer to a \fBstruct protoent\fR if they successfully enumerate an entry;
-otherwise they return \fINULL\fR, indicating the end of the enumeration.
+The
+.B getprotoent_r()
+and
+.B getprotoent()
+functions return a
+pointer to a
+.B "struct protoent"
+if they successfully enumerate an entry;
+otherwise they return
+.IR NULL ,
+indicating the end of the enumeration.
 .SH ERRORS
 .sp
 .LP
-The \fBgetprotobyname_r()\fR, \fBgetprotobynumber_r()\fR, and
+The
+.BR getprotobyname_r() ,
+.BR getprotobynumber_r() ,
+and
 \fBgetprotoent_r()\fR functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
@@ -173,14 +234,16 @@ store the result.
 .SH FILES
 .sp
 .LP
-\fB/etc/protocols\fR
+.B /etc/protocols
 .sp
 .LP
 \fB/etc/nsswitch.conf\fR
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -197,41 +260,67 @@ MT-LevelSee \fBNOTES\fR below.
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(3), \fBnsswitch.conf\fR(4), \fBprotocols\fR(4),
-\fBattributes\fR(5), \fBnetdb.h\fR(3HEAD)
+.BR Intro (3),
+\fBnsswitch.conf\fR(4), \fBprotocols\fR(4),
+.BR attributes (5),
+.BR netdb.h (3HEAD)
 .SH NOTES
 .sp
 .LP
-Although \fBgetprotobyname_r()\fR, \fBgetprotobynumber_r()\fR, and
+Although
+.BR getprotobyname_r() ,
+.BR getprotobynumber_r() ,
+and
 \fBgetprotoent_r()\fR are not mentioned by POSIX 1003.1:2001, they were
 added to complete the functionality provided by similar thread-safe
 functions.
 .sp
 .LP
-When compiling multithreaded applications, see  \fBIntro\fR(3), \fINotes On
+When compiling multithreaded applications, see 
+.BR Intro (3),
+\fINotes On
 Multithread Applications\fR, for information about the use of the
 \fB_REENTRANT\fR flag.
 .sp
 .LP
-The \fBgetprotobyname_r()\fR, \fBgetprotobynumber_r()\fR, and
+The
+.BR getprotobyname_r() ,
+.BR getprotobynumber_r() ,
+and
 \fBgetprotoent_r()\fR functions are reentrant and multithread safe. The
 reentrant interfaces can be used in single-threaded as well as multithreaded
 applications and are therefore the preferred interfaces.
 .sp
 .LP
-The \fBgetprotobyname()\fR, \fBgetprotobyaddr()\fR, and \fBgetprotoent()\fR
+The
+.BR getprotobyname() ,
+.BR getprotobyaddr() ,
+and
+.BR getprotoent()
 functions use static storage, so returned data must be copied if it is to be
 saved. Because of their use of static storage for returned data, these
 functions are not safe for multithreaded applications.
 .sp
 .LP
-The \fBsetprotoent()\fR and \fBendprotoent()\fR functions have process-wide
+The
+.B setprotoent()
+and
+.B endprotoent()
+functions have process-wide
 scope, and are therefore not safe in multi-threaded applications.
 .sp
 .LP
-Use of \fBgetprotoent_r()\fR and \fBgetprotoent()\fR is discouraged;
+Use of
+.B getprotoent_r()
+and
+.B getprotoent()
+is discouraged;
 enumeration is well-defined for the protocols file and is supported (albeit
-inefficiently) for \fBNIS\fR and \fBNIS+,\fR but in general may not be
+inefficiently) for
+.B NIS
+and
+.B NIS+,
+but in general may not be
 well-defined. The semantics of enumeration are discussed in
 \fBnsswitch.conf\fR(4).
 .SH BUGS

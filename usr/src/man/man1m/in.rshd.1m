@@ -32,7 +32,9 @@ in.rshd, rshd \- remote shell server
 .SH DESCRIPTION
 .sp
 .LP
-\fBin.rshd\fR is the server for the \fBrsh\fR(1) program. The server
+\fBin.rshd\fR is the server for the
+.BR rsh (1)
+program. The server
 provides remote execution facilities with authentication based on Kerberos
 V5 or privileged port numbers.
 .sp
@@ -52,35 +54,47 @@ Check Kerberos V5 authentication.
 .RS +4
 .TP
 2.
-Check authorization according to rules in \fBkrb5_auth_rules\fR(5).
+Check authorization according to rules in
+.BR krb5_auth_rules (5).
 .RE
 .RS +4
 .TP
 3.
 A null byte is returned on the initial socket and the command line is
-passed to the normal login shell of the user. (The \fBPATH\fR variable is
-set to \fB/usr/bin\fR.) The shell inherits the network connections
-established by \fBin.rshd\fR.
+passed to the normal login shell of the user. (The
+.B PATH
+variable is
+set to
+.BR /usr/bin .)
+The shell inherits the network connections
+established by
+.BR in.rshd .
 .RE
 .sp
 .LP
 In order for Kerberos authentication to work, a \fBhost/\fI<FQDN>\fR
 Kerberos principal must exist for each Fully Qualified Domain Name
-associated with the \fBin.rshd\fR server. Each of these
+associated with the
+.B in.rshd
+server. Each of these
 \fBhost/\fI<FQDN>\fR principals must have a \fBkeytab\fR entry in the
 \fB/etc/krb5/krb5.keytab\fR file on the \fBin.rshd\fR server. An example
 principal might be:
 .sp
 .LP
-\fBhost/bigmachine.eng.example.com\fR
+.B host/bigmachine.eng.example.com
 .sp
 .LP
 See \fBkadmin\fR(1M) or \fBgkadmin\fR(1M) for instructions on adding a
-principal to a \fBkrb5.keytab\fR file. See \fR for a discussion of
+principal to a
+.B krb5.keytab
+file. See\fR  for a discussion of
 Kerberos authentication.
 .sp
 .LP
-If Kerberos V5 authentication is not enabled, then \fBin.rshd\fR executes
+If Kerberos V5 authentication is not enabled, then
+.B in.rshd
+executes
 the following protocol:
 .RS +4
 .TP
@@ -88,19 +102,23 @@ the following protocol:
 The server checks the client's source port. If the port is not in the range
 512-1023, the server aborts the connection. The client's host address (in
 hex) and port number (in decimal) are the arguments passed to
-\fBin.rshd\fR.
+.BR in.rshd .
 .RE
 .RS +4
 .TP
 2.
 The server reads characters from the socket up to a null (\fB\0\fR) byte.
-The resultant string is interpreted as an \fBASCII\fR number, base 10.
+The resultant string is interpreted as an
+.B ASCII
+number, base 10.
 .RE
 .RS +4
 .TP
 3.
 If the number received in step 2 is non-zero, it is interpreted as the port
-number of a secondary stream to be used for the \fBstderr\fR. A second
+number of a secondary stream to be used for the
+.BR stderr .
+A second
 connection is then created to the specified port on the client's machine.
 The source port of this second connection is also in the range 512-1023.
 .RE
@@ -116,7 +134,8 @@ initial socket. This user name is interpreted as the user identity on the
 5.
 A null terminated user name of at most 16 characters is retrieved on the
 initial socket. This user name is interpreted as a user identity to use on
-the \fIserver\fR's machine.
+the
+.IR server "'s machine."
 .RE
 .RS +4
 .TP
@@ -129,15 +148,28 @@ the size of the system's argument list.
 .TP
 7.
 \fBin.rshd\fR then validates the user according to the following steps. The
-remote user name is looked up in the password file and a \fBchdir\fR is
+remote user name is looked up in the password file and a
+.B chdir
+is
 performed to the user's home directory. If the lookup fails, the connection
-is terminated. If the \fBchdir\fR fails, it does a \fBchdir\fR to \fB/\fR
-(root). If the user is not the superuser, (user \fBID\fR 0), and if the
-pam_rhosts_auth \fBPAM\fR module is configured for authentication, the file
+is terminated. If the
+.B chdir
+fails, it does a
+.B chdir
+to
+.BR /
+(root). If the user is not the superuser, (user
+.B ID
+0), and if the
+pam_rhosts_auth
+.B PAM
+module is configured for authentication, the file
 \fB/etc/hosts.equiv\fR is consulted for a list of hosts considered
 "equivalent". If the client's host name is present in this file, the
 authentication is considered successful. See the SECURITY section below for
-a discussion of \fBPAM\fR authentication.
+a discussion of
+.B PAM
+authentication.
 .sp
 If the lookup fails, or the user is the superuser, then the file
 \fB\&.rhosts\fR in the home directory of the remote user is checked for the
@@ -148,9 +180,13 @@ lookup fails, the connection is terminated
 .TP
 8.
 A null byte is returned on the initial connection and the command line is
-passed to the normal login shell of the user. The \fBPATH\fR variable is set
-to \fB/usr/bin\fR. The shell inherits the network connections established by
-\fBin.rshd\fR.
+passed to the normal login shell of the user. The
+.B PATH
+variable is set
+to
+.BR /usr/bin .
+The shell inherits the network connections established by
+.BR in.rshd .
 .RE
 .SH OPTIONS
 .sp
@@ -160,18 +196,20 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-5\fR
+.B -5
 .ad
 .RS 14n
 .rt
-Same as \fB-k\fR, for backwards compatibility
+Same as
+.BR -k ,
+for backwards compatibility
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .RS 14n
 .rt
@@ -179,14 +217,16 @@ Requires Kerberos V5 clients to present a cryptographic checksum of initial
 connection information like the name of the user that the client is trying
 to access in the initial authenticator. This checksum provides additionl
 security by preventing an attacker from changing the initial connection
-information. This option is mutually exclusive with the \fB-i\fR option.
+information. This option is mutually exclusive with the
+.B -i
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 14n
 .rt
@@ -197,21 +237,23 @@ Requires the client to encrypt the connection.
 .ne 2
 .mk
 .na
-\fB-i\fR
+.B -i
 .ad
 .RS 14n
 .rt
 Ignores authenticator checksums if provided. This option ignores
 authenticator checksums presented by current Kerberos clients to protect
-initial connection information. Option \fB-i\fR is the opposite of option
-\fB-c\fR.
+initial connection information. Option
+.B -i
+is the opposite of option
+.BR -c .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-k\fR
+.B -k
 .ad
 .RS 14n
 .rt
@@ -240,7 +282,9 @@ List of environment variables that need to be saved and passed along.
 .RS 14n
 .rt
 Uses the indicated Kerberos V5 realm. By default, the daemon will determine
-its realm from the settings in the \fBkrb5.conf\fR(4) file.
+its realm from the settings in the
+.BR krb5.conf (4)
+file.
 .RE
 
 .sp
@@ -251,7 +295,9 @@ its realm from the settings in the \fBkrb5.conf\fR(4) file.
 .ad
 .RS 14n
 .rt
-Sets the \fBIP\fR \fBTOS\fR option.
+Sets the
+.B "IP TOS"
+option.
 .RE
 
 .sp
@@ -262,7 +308,9 @@ Sets the \fBIP\fR \fBTOS\fR option.
 .ad
 .RS 14n
 .rt
-Sets the \fBKRB5\fR keytab file to use. The\fB/etc/krb5/krb5.keytab\fR file
+Sets the
+.B KRB5
+keytab file to use. The\fB/etc/krb5/krb5.keytab\fR file
 is used by default.
 .RE
 
@@ -270,7 +318,7 @@ is used by default.
 .ne 2
 .mk
 .na
-\fB-U\fR
+.B -U
 .ad
 .RS 14n
 .rt
@@ -285,7 +333,9 @@ Refuses connections that cannot be mapped to a name through the
 \fBIPv6\fR is not currently supported with Kerberos V5 authentication.
 .sp
 .LP
-The Kerberized \fBrshd\fR service runs on port 544 (kshell). The
+The Kerberized
+.B rshd
+service runs on port 544 (kshell). The
 corresponding FMRI entry is: :
 .sp
 .in +2
@@ -299,10 +349,16 @@ svc:/network/shell:kshell (rshd with kerberos (ipv4 only))
 .sp
 .LP
 \fBin.rshd\fR uses \fBpam\fR(3PAM) for authentication, account management,
-and session management. The \fBPAM\fR configuration policy, listed through
+and session management. The
+.B PAM
+configuration policy, listed through
 \fB/etc/pam.conf\fR, specifies the modules to be used for \fBin.rshd\fR.
-Here is a partial \fBpam.conf\fR file with entries for the \fBrsh\fR command
-using rhosts authentication, \fBUNIX\fR account management, and session
+Here is a partial \fBpam.conf\fR file with entries for the
+.B rsh
+command
+using rhosts authentication,
+.B UNIX
+account management, and session
 management module.
 .sp
 
@@ -323,24 +379,31 @@ rshsessionrequiredpam_unix_session.so.1
 
 .sp
 .LP
-If there are no entries for the \fBrsh\fR service, then the entries for the
+If there are no entries for the
+.B rsh
+service, then the entries for the
 "other" service are used. To maintain the authentication requirement for
-\fBin.rshd\fR, the rsh entry must always be configured with the
+.BR in.rshd ,
+the rsh entry must always be configured with the
 \fBpam_rhosts_auth.so.1\fR module.
 .sp
 .LP
 \fBin.rshd\fR can authenticate using Kerberos V5 authentication or
-\fBpam\fR(3PAM). For Kerberized \fBrsh\fR service, the appropriate \fBPAM\fR
-service name is \fBkrsh\fR.
+.BR pam (3PAM).
+For Kerberized
+.B rsh
+.RB "service, the appropriate" " PAM"
+service name is
+.BR krsh .
 .SH FILES
 .sp
 .LP
-\fB/etc/hosts.equiv\fR
+.B /etc/hosts.equiv
 .sp
 .ne 2
 .mk
 .na
-\fB$HOME/.k5login\fR
+.B $HOME/.k5login
 .ad
 .RS 23n
 .rt
@@ -361,7 +424,9 @@ Kerberos configuration file.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -378,15 +443,31 @@ AvailabilitySUNWrcmds
 .SH SEE ALSO
 .sp
 .LP
-\fBrsh\fR(1), \fBsvcs\fR(1), \fBgkadmin\fR(1M), \fBinetadm\fR(1M),
-\fBinetd\fR(1M), \fBkadmin\fR(1M), \fBsvcadm\fR(1M), \fBpam\fR(3PAM),
-\fBgetnameinfo\fR(3SOCKET), \fBhosts\fR(4), \fBkrb5.conf\fR(4),
-\fBpam.conf\fR(4), \fB attributes\fR(5), \fBenviron\fR(5),
-\fBkrb5_auth_rules\fR(5), \fBpam_authtok_check\fR(5),
-\fBpam_authtok_get\fR(5), \fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5),
-\fBpam_passwd_auth\fR(5), \fBpam_rhosts_auth\fR(5),
-\fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5),
-\fBpam_unix_session\fR(5), \fBsmf\fR(5), \fBip6\fR(7P)
+.BR rsh (1),
+.BR svcs (1),
+.BR gkadmin (1M),
+.BR inetadm (1M),
+.BR inetd (1M),
+.BR kadmin (1M),
+.BR svcadm (1M),
+.BR pam (3PAM),
+\fBgetnameinfo\fR(3SOCKET),
+.BR hosts (4),
+\fBkrb5.conf\fR(4),
+\fBpam.conf\fR(4),
+.BR " attributes" (5),
+.BR environ (5),
+.BR krb5_auth_rules (5),
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_passwd_auth (5),
+.BR pam_rhosts_auth (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+.BR pam_unix_session (5),
+\fBsmf\fR(5), \fBip6\fR(7P)
 .sp
 .LP
 \fR
@@ -394,7 +475,9 @@ AvailabilitySUNWrcmds
 .sp
 .LP
 The following diagnostic messages are returned on the connection associated
-with \fBstderr\fR, after which any network connections are closed. An error
+with
+.BR stderr ,
+after which any network connections are closed. An error
 is indicated by a leading byte with a value of 1 in step 8 above (\fB0\fR is
 returned above upon successful completion of all the steps prior to the
 command execution).
@@ -402,7 +485,7 @@ command execution).
 .ne 2
 .mk
 .na
-\fBlocuser too long\fR
+.B locuser too long
 .ad
 .sp .6
 .RS 4n
@@ -414,7 +497,7 @@ characters.
 .ne 2
 .mk
 .na
-\fBremuser too long\fR
+.B remuser too long
 .ad
 .sp .6
 .RS 4n
@@ -425,7 +508,7 @@ The name of the user on the remote machine is longer than 16 characters.
 .ne 2
 .mk
 .na
-\fBcommand too long\fR
+.B command too long
 .ad
 .sp .6
 .RS 4n
@@ -448,7 +531,7 @@ No entry in the host name database existed for the client's machine.
 .ne 2
 .mk
 .na
-\fBLogin incorrect.\fR
+.B Login incorrect.
 .ad
 .sp .6
 .RS 4n
@@ -459,7 +542,7 @@ No password file entry for the user name existed.
 .ne 2
 .mk
 .na
-\fBPermission denied.\fR
+.B Permission denied.
 .ad
 .sp .6
 .RS 4n
@@ -470,18 +553,20 @@ The authentication procedure described above failed.
 .ne 2
 .mk
 .na
-\fBCan't make pipe.\fR
+.B Can't make pipe.
 .ad
 .sp .6
 .RS 4n
-The pipe needed for the \fBstderr\fR was not created.
+The pipe needed for the
+.B stderr
+was not created.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBTry again.\fR
+.B Try again.
 .ad
 .sp .6
 .RS 4n
@@ -499,14 +584,24 @@ machine and the connecting medium. This is insecure, but it is useful in an
 A facility to allow all data exchanges to be encrypted should be present.
 .sp
 .LP
-The \fBpam_unix\fR(5) module is no longer supported. Similar functionality
-is provided by \fBpam_authtok_check\fR(5), \fBpam_authtok_get\fR(5),
-\fBpam_authtok_store\fR(5), \fBpam_dhkeys\fR(5), \fBpam_passwd_auth\fR(5),
-\fBpam_unix_account\fR(5), \fBpam_unix_auth\fR(5), and
-\fBpam_unix_session\fR(5).
+The
+.BR pam_unix (5)
+module is no longer supported. Similar functionality
+is provided by
+.BR pam_authtok_check (5),
+.BR pam_authtok_get (5),
+.BR pam_authtok_store (5),
+.BR pam_dhkeys (5),
+.BR pam_passwd_auth (5),
+.BR pam_unix_account (5),
+.BR pam_unix_auth (5),
+and
+.BR pam_unix_session (5).
 .sp
 .LP
-The \fBin.rshd\fR service is managed by the service management facility,
+The
+.B in.rshd
+service is managed by the service management facility,
 \fBsmf\fR(5), under the service identifier:
 .sp
 .in +2
@@ -519,8 +614,13 @@ svc:/network/shell:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). Responsibility
-for initiating and restarting this service is delegated to \fBinetd\fR(1M).
+requesting restart, can be performed using
+.BR svcadm (1M).
+Responsibility
+for initiating and restarting this service is delegated to
+.BR inetd (1M).
 Use \fBinetadm\fR(1M) to make configuration changes and to view
 configuration information for this service. The service's status can be
-queried using the \fBsvcs\fR(1) command.
+queried using the
+.BR svcs (1)
+command.

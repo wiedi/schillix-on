@@ -53,7 +53,7 @@ close devices
 .ne 2
 .mk
 .na
-\fIlh\fR
+.I lh
 .ad
 .RS 14n
 .rt
@@ -64,7 +64,7 @@ Layered handle
 .ne 2
 .mk
 .na
-\fIlhp\fR
+.I lhp
 .ad
 .RS 14n
 .rt
@@ -75,7 +75,7 @@ Pointer to a layered handle that is returned upon a successful open.
 .ne 2
 .mk
 .na
-\fIli\fR
+.I li
 .ad
 .RS 14n
 .rt
@@ -86,7 +86,7 @@ LDI identifier.
 .ne 2
 .mk
 .na
-\fIcr\fR
+.I cr
 .ad
 .RS 14n
 .rt
@@ -97,7 +97,7 @@ Pointer to the credential structure used to open a device.
 .ne 2
 .mk
 .na
-\fIdevp\fR
+.I devp
 .ad
 .RS 14n
 .rt
@@ -108,7 +108,7 @@ Pointer to a device number.
 .ne 2
 .mk
 .na
-\fIpathname\fR
+.I pathname
 .ad
 .RS 14n
 .rt
@@ -119,7 +119,7 @@ Pathname to a device.
 .ne 2
 .mk
 .na
-\fIdevid\fR
+.I devid
 .ad
 .RS 14n
 .rt
@@ -130,7 +130,7 @@ Device ID.
 .ne 2
 .mk
 .na
-\fIminor_name\fR
+.I minor_name
 .ad
 .RS 14n
 .rt
@@ -141,7 +141,7 @@ Minor device node name.
 .ne 2
 .mk
 .na
-\fIotyp\fR
+.I otyp
 .ad
 .RS 14n
 .rt
@@ -151,7 +151,7 @@ settings are:
 .ne 2
 .mk
 .na
-\fBOTYP_BLK\fR
+.B OTYP_BLK
 .ad
 .RS 12n
 .rt
@@ -162,7 +162,7 @@ Open the device block interface.
 .ne 2
 .mk
 .na
-\fBOTYP_CHR\fR
+.B OTYP_CHR
 .ad
 .RS 12n
 .rt
@@ -170,7 +170,7 @@ Open the device character interface.
 .RE
 
 Only one OTYP flag can be specified. To open streams devices, specify
-\fBOTYP_CHR\fR.
+.BR OTYP_CHR .
 .RE
 
 .sp
@@ -187,7 +187,7 @@ settings are:
 .ne 2
 .mk
 .na
-\fBFEXCL\fR
+.B FEXCL
 .ad
 .RS 11n
 .rt
@@ -199,7 +199,7 @@ device.
 .ne 2
 .mk
 .na
-\fBFNDELAY\fR
+.B FNDELAY
 .ad
 .RS 11n
 .rt
@@ -211,7 +211,7 @@ something is wrong.
 .ne 2
 .mk
 .na
-\fBFREAD\fR
+.B FREAD
 .ad
 .RS 11n
 .rt
@@ -223,11 +223,13 @@ allow both read and write access).
 .ne 2
 .mk
 .na
-\fBFWRITE\fR
+.B FWRITE
 .ad
 .RS 11n
 .rt
-Open a device with write-only permission (if ORed with \fBFREAD\fR, then
+Open a device with write-only permission (if ORed with
+.BR FREAD ,
+then
 allow both read and write access).
 .RE
 
@@ -235,7 +237,7 @@ allow both read and write access).
 .ne 2
 .mk
 .na
-\fBFNOCTTY\fR
+.B FNOCTTY
 .ad
 .RS 11n
 .rt
@@ -248,48 +250,82 @@ session-controlling tty.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBldi_open_by_dev()\fR, \fBldi_open_by_name()\fR and
+The
+.BR ldi_open_by_dev() ,
+\fBldi_open_by_name()\fR and
 \fBldi_open_by_devid()\fR functions allow a caller to open a block,
 character, or streams device. Upon a successful open, a layered handle to
-the device is returned via the layered handle pointed to by \fIlhp\fR. The
+the device is returned via the layered handle pointed to by
+.IR lhp .
+The
 ldi identifier passed to these functions is previously allocated with
 \fBldi_ident_from_stream\fR(9F), \fBldi_ident_from_dev\fR(9F), and
 \fBldi_ident_from_dip\fR(9F).
 .sp
 .LP
-The \fBldi_open_by_dev()\fR function opens a device specified by the dev_t
+The
+.B ldi_open_by_dev()
+function opens a device specified by the dev_t
 pointed to by devp.  Upon successful open, the caller should check the value
 of the dev_t to see if it has changed. (Cloning devices will change this
 value during opens.)   When opening a streams device, otyp must be
 OTYP_CHR.
 .sp
 .LP
-The \fBldi_open_by_devid()\fR function opens a device by devid. The caller
+The
+.B ldi_open_by_devid()
+function opens a device by devid. The caller
 must specify the minor node name to open.
 .sp
 .LP
-The \fBldi_open_by_name()\fR function opens a device by pathname. Pathname
+The
+.B ldi_open_by_name()
+function opens a device by pathname. Pathname
 is a null terminated string in the kernel address space. Pathname must be an
 absolute path, meaning that it must begin with '/'. The format of the
-pathname supplied to this function is either a \fB/devices\fR path or any
-other filesystem path to a device node. Opens utilizing \fB/devices\fR paths
+pathname supplied to this function is either a
+.B /devices
+path or any
+other filesystem path to a device node. Opens utilizing
+.B /devices
+paths
 are supported before root is mounted. Opens utilizing other filesystem paths
 to device nodes are supported only if root is already mounted.
 .sp
 .LP
-The \fBldi_close()\fR function closes a layered handle that was obtained
-with either \fBldi_open_by_dev()\fR, \fBldi_open_by_name()\fR, or
-\fBldi_open_by_devid()\fR. After \fBldi_close()\fR returns the layered
-handle, the \fIlh\fR that was previously passed in is no longer valid.
+The
+.B ldi_close()
+function closes a layered handle that was obtained
+with either
+.BR ldi_open_by_dev() ,
+.BR ldi_open_by_name() ,
+or
+.BR ldi_open_by_devid() .
+After
+.B ldi_close()
+returns the layered
+handle, the
+.I lh
+that was previously passed in is no longer valid.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBldi_close()\fR function returns \fB0\fR for success. \fBEINVAL\fR is
+The
+.B ldi_close()
+function returns
+.B 0
+for success.
+.B EINVAL
+is
 returned for invalid input parameters. Otherwise, any other error number may
 be returned by the device.
 .sp
 .LP
-The \fBldi_open_by_dev()\fR and \fBldi_open_by_devid()\fR functions return
+The
+.B ldi_open_by_dev()
+and
+.B ldi_open_by_devid()
+functions return
 \fB0\fR upon success. If a failure occurs before the device is open,
 possible return values are shown below. Otherwise any other error number may
 be returned by the device.
@@ -297,7 +333,7 @@ be returned by the device.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -308,7 +344,7 @@ Invalid input parameters.
 .ne 2
 .mk
 .na
-\fBENODEV\fR
+.B ENODEV
 .ad
 .RS 10n
 .rt
@@ -319,7 +355,7 @@ Requested device does not exist.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
@@ -328,14 +364,18 @@ Unsupported device operation or access mode.
 
 .sp
 .LP
-The \fBldi_open_by_name()\fR function returns \fB0\fR upon success. If a
+The
+.B ldi_open_by_name()
+function returns
+.B 0
+upon success. If a
 failure occurs before the device is open, possible return values are shown
 below. Otherwise any other error number may be returned by the device.
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -346,7 +386,7 @@ Invalid input parameters.
 .ne 2
 .mk
 .na
-\fBENODEV\fR
+.B ENODEV
 .ad
 .RS 10n
 .rt
@@ -357,19 +397,21 @@ Requested device path does not exist.
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 10n
 .rt
 Search permission is denied on a component of the path prefix, or the file
-exists and the permissions specified by \fIcr\fR are denied.
+exists and the permissions specified by
+.I cr
+are denied.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 10n
 .rt
@@ -387,7 +429,8 @@ power entry point. This could result in a system crash or deadlock.
 .SH SEE ALSO
 .sp
 .LP
-\fBscsi_vhci\fR(7D), \fBldi_ident_from_dev\fR(9F),
+.BR scsi_vhci (7D),
+\fBldi_ident_from_dev\fR(9F),
 \fBldi_ident_from_dip\fR(9F), \fBldi_ident_from_stream\fR(9F)
 .SH NOTES
 .sp
@@ -399,21 +442,28 @@ be used with these interfaces.
 .sp
 .LP
 The caller should be aware of cases when multiple paths to a single device
-may exist.  (This can occur for scsi disk devices if \fBscsi_vhci\fR(7D)) is
+may exist.  (This can occur for scsi disk devices if
+.BR scsi_vhci (7D))
+is
 disabled or a disk is connected to multiple controllers not supported by
 scsi_vhci(7D).
 .sp
 .LP
-In these cases, \fBldi_open_by_devid()\fR returns a device handle that
+In these cases,
+.B ldi_open_by_devid()
+returns a device handle that
 corresponds to a  particular path to a target device. This path may not be
-the same across multiple calls to \fBldi_open_by_devid()\fR.  Device handles
+the same across multiple calls to
+.BR ldi_open_by_devid() .
+Device handles
 associated with the same device but different access paths should have
 different filesystem device paths and dev_t values.
 .sp
 .LP
 In the cases where multiple paths to a device exist and access to the
 device has not been virtualized via MPXIO (as with scsi disk devices not
-accessed via \fBscsi_vhci\fR(7D)), the LDI does not provide any path
+accessed via
+.BR scsi_vhci "(7D)), the LDI does not provide any path"
 fail-over capabilities. If the caller wishes to do their own path management
 and failover they should open all available paths to a device via
-\fBldi_open_by_name()\fR.
+.BR ldi_open_by_name() .

@@ -46,21 +46,44 @@ send, sendto, sendmsg \- send a message from a socket
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsend()\fR, \fBsendto()\fR, and \fBsendmsg()\fR functions are used to
-transmit a message to another transport end-point. The \fBsend()\fR function
+The
+.BR send() ,
+.BR sendto() ,
+and
+.B sendmsg()
+functions are used to
+transmit a message to another transport end-point. The
+.B send()
+function
 can be used only when the socket is in a connected state. See
-\fBconnect\fR(3SOCKET). The \fBsendto()\fR and \fBsendmsg()\fR functions can
-be used at any time. The \fIs\fR socket is created with
-\fBsocket\fR(3SOCKET).
+.BR connect (3SOCKET).
+The
+.B sendto()
+and
+.B sendmsg()
+functions can
+be used at any time. The
+.I s
+socket is created with
+.BR socket (3SOCKET).
 .sp
 .LP
-The address of the target is supplied by \fIto\fR with a \fItolen\fR
+The address of the target is supplied by
+.I to
+with a
+.IR tolen
 parameter used to specify the size. The length of the message is supplied by
-the \fIlen\fR parameter. For socket types such as \fBSOCK_DGRAM\fR and
+the
+.I len
+parameter. For socket types such as
+.B SOCK_DGRAM
+and
 \fBSOCK_RAW\fR that require atomic messages, the error \fBEMSGSIZE\fR is
 returned and the message is not transmitted when it is too long to pass
 atomically through the underlying protocol. The same restrictions do not
-apply to \fBSOCK_STREAM\fR sockets.
+apply to
+.B SOCK_STREAM
+sockets.
 .sp
 .LP
 A return value \fB\(mi1\fR indicates locally detected errors. It does not
@@ -68,9 +91,16 @@ imply a delivery failure.
 .sp
 .LP
 If the socket does not have enough buffer space available to hold a
-message, the \fBsend()\fR function blocks the message, unless the socket has
-been placed in non-blocking I/O mode (see \fBfcntl\fR(2)). The
-\fBselect\fR(3C) or \fBpoll\fR(2) call can be used to determine when it is
+message, the
+.B send()
+function blocks the message, unless the socket has
+been placed in non-blocking I/O mode (see
+.BR fcntl (2)).
+The
+.BR select (3C)
+or
+.BR poll (2)
+call can be used to determine when it is
 possible to send more data.
 .sp
 .LP
@@ -80,7 +110,7 @@ the following:
 .ne 2
 .mk
 .na
-\fBMSG_OOB\fR
+.B MSG_OOB
 .ad
 .RS 17n
 .rt
@@ -94,33 +124,46 @@ address family support out-of-band data.
 .ne 2
 .mk
 .na
-\fBMSG_DONTROUTE\fR
+.B MSG_DONTROUTE
 .ad
 .RS 17n
 .rt
-The \fBSO_DONTROUTE\fR option is turned on for the duration of the
+The
+.B SO_DONTROUTE
+option is turned on for the duration of the
 operation. It is used only by diagnostic or routing programs.
 .RE
 
 .sp
 .LP
-See \fBrecv\fR(3SOCKET) for a description of the \fBmsghdr\fR structure.
+See \fBrecv\fR(3SOCKET) for a description of the
+.B msghdr
+structure.
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, these functions return the number of bytes
-sent. Otherwise, they return \fB-1\fR and set \fBerrno\fR to indicate the
+sent. Otherwise, they return
+.B -1
+and set
+.B errno
+to indicate the
 error.
 .SH ERRORS
 .sp
 .LP
-The \fBsend()\fR, \fBsendto()\fR, and \fBsendmsg()\fR functions return
+The
+.BR send() ,
+.BR sendto() ,
+and
+.B sendmsg()
+functions return
 errors under the following conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 16n
 .rt
@@ -131,7 +174,7 @@ errors under the following conditions:
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 16n
 .rt
@@ -143,12 +186,16 @@ be buffered to be sent.
 .ne 2
 .mk
 .na
-\fBEMSGSIZE\fR
+.B EMSGSIZE
 .ad
 .RS 16n
 .rt
 The message is too large to be sent all at once (as the socket requires),
-or the \fImsg_iovlen\fR member of the \fBmsghdr\fR structure pointed to by
+or the
+.I msg_iovlen
+member of the
+.B msghdr
+structure pointed to by
 message is less than or equal to 0 or is greater than {\fBIOV_MAX\fR}.
 .RE
 
@@ -156,7 +203,7 @@ message is less than or equal to 0 or is greater than {\fBIOV_MAX\fR}.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 16n
 .rt
@@ -167,7 +214,7 @@ Insufficient memory is available to complete the operation.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
@@ -179,7 +226,7 @@ complete.
 .ne 2
 .mk
 .na
-\fBENOTSOCK\fR
+.B ENOTSOCK
 .ad
 .RS 16n
 .rt
@@ -190,7 +237,7 @@ complete.
 .ne 2
 .mk
 .na
-\fBEWOULDBLOCK\fR
+.B EWOULDBLOCK
 .ad
 .RS 16n
 .rt
@@ -204,7 +251,7 @@ be retried later.
 .ne 2
 .mk
 .na
-\fBECONNREFUSED\fR
+.B ECONNREFUSED
 .ad
 .RS 16n
 .rt
@@ -216,34 +263,45 @@ prior transmission.
 
 .sp
 .LP
-The \fBsend()\fR and \fBsendto()\fR functions return errors under the
+The
+.B send()
+and
+.B sendto()
+functions return errors under the
 following conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIlen\fR argument overflows a \fBssize_t\fR.
+The
+.I len
+argument overflows a
+.BR ssize_t .
 .sp
 Inconsistent port attributes for system call.
 .RE
 
 .sp
 .LP
-The \fBsendto()\fR function returns errors under the following
+The
+.B sendto()
+function returns errors under the following
 conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The value specified for the \fItolen\fR parameter is not the size of a
+The value specified for the
+.I tolen
+parameter is not the size of a
 valid address for the specified address family.
 .RE
 
@@ -251,7 +309,7 @@ valid address for the specified address family.
 .ne 2
 .mk
 .na
-\fBEISCON\fR
+.B EISCON
 .ad
 .RS 10n
 .rt
@@ -260,49 +318,76 @@ A destination address was specified and the socket is already connected.
 
 .sp
 .LP
-The \fBsendmsg()\fR function returns errors under the following
+The
+.B sendmsg()
+function returns errors under the following
 conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fBmsg_iovlen\fR member of the \fBmsghdr\fR structure pointed to by
-\fImsg\fR is less than or equal to \fB0\fR, or the sum of the \fIiov_len\fR
-values in the \fBmsg_iov\fR array overflows a \fBssize_t\fR.
+The
+.B msg_iovlen
+member of the
+.B msghdr
+structure pointed to by
+\fImsg\fR is less than or equal to
+.BR 0 ,
+or the sum of the
+.IR iov_len
+values in the
+.B msg_iov
+array overflows a
+.BR ssize_t .
 .sp
-One of the \fIiov_len\fR values in the \fBmsg_iov\fR array member of the
+One of the
+.I iov_len
+values in the
+.B msg_iov
+array member of the
 \fBmsghdr\fR structure pointed to by \fImsg\fR is negative, or the sum of
-the \fIiov_len\fR values in the \fBmsg_iov\fR array overflows a
-\fBssize_t\fR.
+the
+.I iov_len
+values in the
+.B msg_iov
+array overflows a
+.BR ssize_t .
 .sp
 \fBmsg_iov\fR contents are inconsistent with port attributes.
 .RE
 
 .sp
 .LP
-The \fBsend()\fR function returns errors under the following conditions:
+The
+.B send()
+function returns errors under the following conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBEPIPE\fR
+.B EPIPE
 .ad
 .RS 9n
 .rt
 The socket is shut down for writing, or the socket is connection-mode and
 is no longer connected. In the latter case, if the socket is of type
-\fBSOCK_STREAM\fR, the \fBSIGPIPE\fR signal is generated to the calling
+.BR SOCK_STREAM ,
+the
+.B SIGPIPE
+signal is generated to the calling
 thread.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -321,6 +406,12 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBfcntl\fR(2), \fBpoll\fR(2), \fBwrite\fR(2), \fBconnect\fR(3SOCKET),
-\fBgetsockopt\fR(3SOCKET), \fBrecv\fR(3SOCKET), \fBselect\fR(3C),
-\fBsocket\fR(3SOCKET), \fBsocket.h\fR(3HEAD), \fBattributes\fR(5)
+\fBfcntl\fR(2), \fBpoll\fR(2),
+.BR write (2),
+.BR connect (3SOCKET),
+.BR getsockopt (3SOCKET),
+.BR recv (3SOCKET),
+.BR select (3C),
+.BR socket (3SOCKET),
+.BR socket.h (3HEAD),
+.BR attributes (5)

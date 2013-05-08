@@ -35,14 +35,18 @@ tapes \- creates /dev entries for tape drives attached to the system
 .sp
 .LP
 \fBtapes\fR creates symbolic links in the \fB/dev/rmt\fR directory to the actual
-tape device special files under the \fB/devices\fR directory tree. \fBtapes\fR
+tape device special files under the
+.B /devices
+.RB "directory tree." " tapes"
 searches the kernel device tree to see what tape devices are attached to the
 system. For each equipped tape drive, the following steps are performed:
 .RS +4
 .TP
 1.
 The \fB/dev/rmt\fR directory is searched for a \fB/dev/rmt/\fIn\fR entry that
-is a symbolic link to the \fB/devices\fR special node of the current tape drive.
+is a symbolic link to the
+.B /devices
+special node of the current tape drive.
 If one is found, this determines the logical controller number of the tape
 drive.
 .RE
@@ -66,11 +70,15 @@ by hand.
 .sp
 .LP
 \fBtapes\fR is run each time a reconfiguration-boot is performed, or when
-\fBadd_drv\fR(1M) is executed.
+.BR add_drv (1M)
+is executed.
 .SS "Notice to Driver Writers"
 .sp
 .LP
-\fBtapes\fR(1M) considers all devices with the node type \fBDDI_NT_TAPE\fR to be
+.BR tapes (1M)
+considers all devices with the node type
+.B DDI_NT_TAPE
+to be
 tape devices; these devices must have their minor name created with a specific
 format. The minor name encodes operational modes for the tape device and consists
 of an \fBASCII\fR string of the form [ \fBl\fR,\fBm\fR,\fBh\fR,\fBc\fR,\fBu\fR ][
@@ -78,22 +86,59 @@ of an \fBASCII\fR string of the form [ \fBl\fR,\fBm\fR,\fBh\fR,\fBc\fR,\fBu\fR ]
 .sp
 .LP
 The first character set is used to specify the tape density of the device, and
-are named low (\fBl\fR), medium (\fBm\fR), high (\fBh\fR), compressed (\fBc\fR),
-and ultra (\fBu\fR). These specifiers only express a relative density; it is up
+are named low
+.RB ( l ),
+medium
+.RB ( m ),
+high
+.RB ( h ),
+compressed
+.RB ( c ),
+and ultra
+.RB ( u ).
+These specifiers only express a relative density; it is up
 to the driver to assign specific meanings as needed. For example, 9 track tape
-devices interpret these as actual bits-per-inch densities, where \fBl\fR means
-800 \fBBPI,\fR \fBm\fR means 1600 \fBBPI ,\fR and \fBh\fR means 6250 \fBBPI,\fR
-whereas 4mm \fBDAT\fR tapes defines \fBl\fR as standard format, and \fBm\fR, \fB
-h\fR, \fBc\fR and \fBu\fR as compressed format. Drivers may choose to implement
+devices interpret these as actual bits-per-inch densities, where
+.B l
+means
+800
+.B "BPI, m"
+means 1600
+.B "BPI ,"
+and
+.B h
+means 6250
+.BR BPI,
+whereas 4mm
+.B DAT
+tapes defines
+.B l
+as standard format, and
+.BR m ", " h ", " c
+and
+.B u
+as compressed format. Drivers may choose to implement
 any or all of these format types.
 .sp
 .LP
-During normal tape operation (non-\fBBSD\fR behavior), once an \fBEOF\fR mark
+During normal tape operation (non-\fBBSD\fR behavior), once an
+.B EOF
+mark
 has been reached, subsequent reads from the tape device return an error. An
-explicit IOCTL must be issued to space over the \fBEOF\fR mark before the next
-file can be read. \fBb\fR instructs the device to observe \fBBSD\fR behavior,
-where reading at \fBEOF\fR will cause the tape device to automatically space over
-the \fBEOF\fR mark and begin reading from the next file.
+explicit IOCTL must be issued to space over the
+.B EOF
+mark before the next
+file can be read.
+.B b
+instructs the device to observe
+.B BSD
+behavior,
+where reading at
+.B EOF
+will cause the tape device to automatically space over
+the
+.B EOF
+mark and begin reading from the next file.
 .sp
 .LP
 \fBn\fR or no-rewind-on-close instructs the driver to not rewind to the
@@ -102,14 +147,22 @@ to reposition to BOT when closing. See \fBmtio\fR(7I).
 .sp
 .LP
 The minor number for tape devices should be created by encoding the device's
-instance number using the tape macro \fBMTMINOR\fR and ORing in the proper
-combination of density, \fBBSD\fR behavior, and no-rewind flags. See
-\fBmtio\fR(7I).
+instance number using the tape macro
+.B MTMINOR
+and ORing in the proper
+combination of density,
+.B BSD
+behavior, and no-rewind flags. See
+.BR mtio (7I).
 .sp
 .LP
-To prevent \fBtapes\fR from attempting to automatically generate links for a
+To prevent
+.B tapes
+from attempting to automatically generate links for a
 device, drivers must specify a private node type and refrain from using the node
-type string \fBDDI_NT_TAPE\fR when calling\fBddi_create_minor_node\fR(9F).
+type string
+.B DDI_NT_TAPE
+when calling\fBddi_create_minor_node\fR(9F).
 .SH OPTIONS
 .sp
 .LP
@@ -122,22 +175,33 @@ The following options are supported:
 .ad
 .RS 15n
 .rt
-Causes \fBtapes\fR to presume that the \fB/dev/rmt\fR directory tree is found
-under \fIroot_dir\fR, not directly under \fB/\fR.
+Causes
+.B tapes
+to presume that the
+.B /dev/rmt
+directory tree is found
+under
+.IR root_dir ,
+not directly under
+.BR / .
 .RE
 
 .SH ERRORS
 .sp
 .LP
-If \fBtapes\fR finds entries of a particular logical controller linked to
+If
+.B tapes
+finds entries of a particular logical controller linked to
 different physical controllers, it prints an error message and exits without
-making any changes to the \fB/dev\fR directory, since it cannot determine which
+making any changes to the
+.B /dev
+directory, since it cannot determine which
 of the two alternative logical to physical mappings is correct. The links should
 be manually corrected or removed before another reconfiguration boot is
 performed.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCreating Tape Device Nodes From Within the Driver's
+\fBExample 1\fR Creating Tape Device Nodes From Within the Driver's
 \fBattach()\fR Function
 .sp
 .LP
@@ -189,10 +253,15 @@ xktapeattach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 .sp
 .LP
-Installing the \fBxktape\fR driver on a Sun Fire 4800, with the driver
-controlling a \fBSCSI\fR tape (target 4 attached to an \fBisp\fR(7D) \fBSCSI
+Installing the
+.B xktape
+driver on a Sun Fire 4800, with the driver
+controlling a
+.B SCSI
+tape (target 4 attached to an \fBisp\fR(7D) \fBSCSI
 HBA)\fR and performing a reconfiguration-boot creates the following special files
-in \fB/devices\fR.
+in
+.BR /devices .
 
 .sp
 .in +2
@@ -224,7 +293,8 @@ crw-rw-rw-   1 root sys   33,140 Aug 29 00:02  xktape@4,0:n
 .sp
 .LP
 \fB/dev/rmt\fR will contain the logical tape devices (symbolic links to tape
-devices in \fB/devices\fR).
+devices in
+.BR /devices ).
 
 .sp
 .in +2
@@ -258,7 +328,7 @@ devices in \fB/devices\fR).
 .ne 2
 .mk
 .na
-\fB/dev/rmt/*\fR
+.B /dev/rmt/*
 .ad
 .RS 14n
 .rt
@@ -269,7 +339,7 @@ logical tape devices
 .ne 2
 .mk
 .na
-\fB/devices/*\fR
+.B /devices/*
 .ad
 .RS 14n
 .rt
@@ -279,7 +349,9 @@ tape device nodes
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -296,9 +368,12 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
-\fBadd_drv\fR(1M), \fBdevfsadm\fR(1M), \fBattributes\fR(5), \fBisp\fR(7D),
+.BR add_drv (1M),
+\fBdevfsadm\fR(1M),
+.BR attributes (5),
+.BR isp (7D),
 \fBdevfs\fR(7FS), \fBmtio\fR(7I), \fBattach\fR(9E),
-\fBddi_create_minor_node\fR(9F)
+.BR ddi_create_minor_node (9F)
 .sp
 .LP
 \fR

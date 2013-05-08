@@ -76,22 +76,26 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIrwlp\fR
+.I rwlp
 .ad
 .RS 14n
 .rt
-Pointer to a \fBkrwlock_t\fR readers/writer lock.
+Pointer to a
+.B krwlock_t
+readers/writer lock.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 14n
 .rt
-Descriptive string. This is obsolete and should be \fBNULL\fR. (Non-null
+Descriptive string. This is obsolete and should be
+.BR NULL .
+(Non-null
 strings are legal, but they're a waste of kernel memory.)
 .RE
 
@@ -99,7 +103,7 @@ strings are legal, but they're a waste of kernel memory.)
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 14n
 .rt
@@ -110,7 +114,7 @@ Type of readers/writer lock.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 14n
 .rt
@@ -121,11 +125,15 @@ Type-specific argument for initialization function.
 .ne 2
 .mk
 .na
-\fIenter_type\fR
+.I enter_type
 .ad
 .RS 14n
 .rt
-One of the values \fBRW_READER\fR or \fBRW_WRITER\fR, indicating whether the
+One of the values
+.B RW_READER
+or
+.BR RW_WRITER ,
+indicating whether the
 lock is to be acquired non-exclusively (\fBRW_READER\fR) or exclusively
 (\fBRW_WRITER\fR).
 .RE
@@ -133,7 +141,7 @@ lock is to be acquired non-exclusively (\fBRW_READER\fR) or exclusively
 .SH DESCRIPTION
 .sp
 .LP
-A multiple-readers, single-writer lock is represented by the \fBkrwlock_t\fR
+.RB "A multiple-readers, single-writer lock is represented by the" " krwlock_t"
 data type. This type of lock will allow many threads to have simultaneous
 read-only access to an object. Only one thread may have write access at any
 one time. An object which is searched more frequently than it is changed is a
@@ -145,26 +153,46 @@ advantage of multiple read access may not occur if the lock will only be held
 for a short time.
 .sp
 .LP
-The \fBrw_init()\fR function initializes a readers/writer lock. It is an
-error to initialize a lock more than once. The \fItype\fR argument should be
-set to \fBRW_DRIVER\fR. If the lock is used by the interrupt handler, the
-type-specific argument, \fIarg\fR, should be the interrupt priority returned
+The
+.B rw_init()
+function initializes a readers/writer lock. It is an
+error to initialize a lock more than once. The
+.I type
+argument should be
+set to
+.BR RW_DRIVER .
+If the lock is used by the interrupt handler, the
+type-specific argument,
+.IR arg ,
+should be the interrupt priority returned
 from \fBddi_intr_get_pri\fR(9F) or \fBddi_intr_get_softint_pri\fR(9F). Note
 that arg should be the value of the interrupt priority cast by calling the
 \fBDDI_INTR_PRI\fR macro. If the lock is not used by any interrupt handler,
-the argument should be \fINULL.\fR
+the argument should be
+.IR NULL.
 .sp
 .LP
-The \fBrw_destroy()\fR function releases any resources that might have been
-allocated by \fBrw_init()\fR. It should be called before freeing the memory
+The
+.B rw_destroy()
+function releases any resources that might have been
+allocated by
+.BR rw_init() .
+It should be called before freeing the memory
 containing the lock. The lock must not be held by any thread when it is
 destroyed.
 .sp
 .LP
-The \fBrw_enter()\fR function acquires the lock, and blocks if necessary. If
-\fIenter_type\fR is \fBRW_READER\fR, the caller blocks if there is a writer
-or a thread attempting to enter for writing. If \fIenter_type\fR is
-\fBRW_WRITER\fR, the caller blocks if any thread holds the lock.
+The
+.B rw_enter()
+function acquires the lock, and blocks if necessary. If
+\fIenter_type\fR is
+.BR RW_READER ,
+the caller blocks if there is a writer
+or a thread attempting to enter for writing. If
+.I enter_type
+is
+.BR RW_WRITER ,
+the caller blocks if any thread holds the lock.
 .sp
 .LP
 NOTE: It is a programming error for any thread to acquire an rwlock it
@@ -176,37 +204,53 @@ for W; but W cannot run until R drops the lock. Thus threads R and W
 deadlock.
 .sp
 .LP
-The \fBrw_exit()\fR function releases the lock and may wake up one or more
+The
+.B rw_exit()
+function releases the lock and may wake up one or more
 threads waiting on the lock.
 .sp
 .LP
-The \fBrw_tryenter()\fR function attempts to enter the lock, like
-\fBrw_enter()\fR, but never blocks. It returns a non-zero value if the lock
+The
+.B rw_tryenter()
+function attempts to enter the lock, like
+.BR rw_enter() ,
+but never blocks. It returns a non-zero value if the lock
 was successfully entered, and zero otherwise.
 .sp
 .LP
-A thread which holds the lock exclusively (entered with \fBRW_WRITER\fR),
-may call \fBrw_downgrade()\fR to convert to holding the lock non-exclusively
-(as if entered with \fBRW_READER\fR). One or more waiting readers may be
+A thread which holds the lock exclusively  (entered with
+.BR RW_WRITER ),
+may call
+.B rw_downgrade()
+to convert to holding the lock non-exclusively
+(as if entered with
+.BR RW_READER ).
+One or more waiting readers may be
 unblocked.
 .sp
 .LP
-The \fBrw_tryupgrade()\fR function can be called by a thread which holds the
+The
+.B rw_tryupgrade()
+function can be called by a thread which holds the
 lock for reading to attempt to convert to holding it for writing. This
 upgrade can only succeed if no other thread is holding the lock and no other
 thread is blocked waiting to acquire the lock for writing.
 .sp
 .LP
-The \fBrw_read_locked()\fR function returns non-zero if the calling thread
+The
+.B rw_read_locked()
+function returns non-zero if the calling thread
 holds the lock for read, and zero if the caller holds the lock for write. The
-caller must hold the lock. The system may panic if \fBrw_read_locked()\fR is
+caller must hold the lock. The system may panic if
+.B rw_read_locked()
+is
 called for a lock that isn't held by the caller.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -217,7 +261,7 @@ called for a lock that isn't held by the caller.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -229,7 +273,7 @@ threads holding or waiting to hold the lock.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -241,41 +285,58 @@ write.
 .ne 2
 .mk
 .na
-\fBnon-zero\fR
+.B non-zero
 .ad
 .RS 12n
 .rt
-from \fBrw_read_locked()\fR if the lock is held by the caller for read.
+from
+.B rw_read_locked()
+if the lock is held by the caller for read.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnon-zero\fR
+.B non-zero
 .ad
 .RS 12n
 .rt
-successful return from \fBrw_tryenter()\fR or \fBrw_tryupgrade()\fR.
+successful return from
+.B rw_tryenter()
+or
+.BR rw_tryupgrade() .
 .RE
 
 .SH CONTEXT
 .sp
 .LP
 These functions can be called from user, interrupt, or kernel context,
-except for \fBrw_init()\fR and \fBrw_destroy()\fR, which can be called from
+except for
+.B rw_init()
+and
+.BR rw_destroy() ,
+which can be called from
 user context only.
 .SH SEE ALSO
 .sp
 .LP
-\fBcondvar\fR(9F), \fBddi_intr_alloc\fR(9F), \fBddi_intr_add_handler\fR(9F),
-\fBddi_intr_get_pri\fR(9F), \fBddi_intr_get_softint_pri\fR(9F),
-\fBmutex\fR(9F), \fBsemaphore\fR(9F)
+.BR condvar (9F),
+.BR ddi_intr_alloc (9F),
+.BR ddi_intr_add_handler (9F),
+.BR ddi_intr_get_pri (9F),
+\fBddi_intr_get_softint_pri\fR(9F),
+.BR mutex (9F),
+.BR semaphore (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
-Compiling with \fB_LOCKTEST\fR or \fB_MPSTATS\fR defined no longer has any
+Compiling with
+.B _LOCKTEST
+or
+.B _MPSTATS
+defined no longer has any
 effect. To gather lock statistics, see \fBlockstat\fR(1M).

@@ -33,15 +33,26 @@ fmtmsg \- display a message on stderr or system console
 .SH DESCRIPTION
 .sp
 .LP
-The \fBfmtmsg()\fR function writes a formatted message to \fBstderr\fR, to
+The \fBfmtmsg()\fR function writes a formatted message to
+.BR stderr ,
+to
 the console, or to both, on a message's classification component. It can be
 used instead of the traditional \fBprintf\fR(3C) interface to display
-messages to \fBstderr\fR, and in conjunction with \fBgettxt\fR(3C), provides
+messages to
+.BR stderr ,
+and in conjunction with
+.BR gettxt "(3C), provides"
 a simple interface for producing language-independent applications.
 .sp
 .LP
 A formatted message consists of up to five standard components (
-\fIlabel\fR, \fIseverity\fR, \fItext\fR, \fIaction\fR, and \fItag\fR) as
+.IR label ,
+.IR severity ,
+.IR text ,
+.IR action ,
+and
+.IR tag )
+as
 described below. The \fIclassification\fR component is not part of the
 standard message displayed to the user, but rather defines the source of the
 message and directs the display of the formatted message.
@@ -59,13 +70,19 @@ combination by ORing the values together with a single identifier from a
 different subclass. Two or more identifiers from the same subclass should
 not be used together, with the exception of identifiers from the display
 subclass. (Both display subclass identifiers may be used so that messages
-can be displayed to both \fBstderr\fR and the system console).
+can be displayed to both
+.B stderr
+and the system console).
 .RS +4
 .TP
 .ie t \(bu
 .el o
 "Major classifications" identify the source of the condition. Identifiers
-are: \fBMM_HARD\fR (hardware), \fBMM_SOFT\fR (software), and \fBMM_FIRM\fR
+are:
+.B MM_HARD
+(hardware),
+.B MM_SOFT
+(software), and \fBMM_FIRM\fR
 (firmware).
 .RE
 .RS +4
@@ -73,7 +90,9 @@ are: \fBMM_HARD\fR (hardware), \fBMM_SOFT\fR (software), and \fBMM_FIRM\fR
 .ie t \(bu
 .el o
 "Message source subclassifications" identify the type of software in which
-the problem is spotted. Identifiers are: \fBMM_APPL\fR (application),
+the problem is spotted. Identifiers are:
+.B MM_APPL
+(application),
 \fBMM_UTIL\fR (utility), and \fBMM_OPSYS\fR (operating system).
 .RE
 .RS +4
@@ -81,8 +100,12 @@ the problem is spotted. Identifiers are: \fBMM_APPL\fR (application),
 .ie t \(bu
 .el o
 "Display subclassifications" indicate where the message is to be displayed.
-Identifiers are: \fBMM_PRINT\fR to display the message on the standard error
-stream, \fBMM_CONSOLE\fR to display the message on the system console.
+Identifiers are:
+.B MM_PRINT
+to display the message on the standard error
+stream,
+.B MM_CONSOLE
+to display the message on the system console.
 Neither, either, or both identifiers may be used.
 .RE
 .RS +4
@@ -90,14 +113,18 @@ Neither, either, or both identifiers may be used.
 .ie t \(bu
 .el o
 "Status subclassifications" indicate whether the application will recover
-from the condition. Identifiers are: \fBMM_RECOVER\fR (recoverable) and
+from the condition. Identifiers are:
+.B MM_RECOVER
+(recoverable) and
 \fBMM_NRECOV\fR (non-recoverable).
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-An additional identifier, \fBMM_NULLMC\fR, indicates that no classification
+An additional identifier,
+.BR MM_NULLMC ,
+indicates that no classification
 component is supplied for the message.
 .RE
 .RE
@@ -106,28 +133,36 @@ component is supplied for the message.
 .ne 2
 .mk
 .na
-\fIlabel\fR
+.I label
 .ad
 .RS 18n
 .rt
 Identifies the source of the message. The format of this component is two
 fields separated by a colon. The first field is up to 10 characters long;
-the second is up to 14 characters. Suggested usage is that \fIlabel\fR
+.RI "the second is up to 14 characters. Suggested usage is that" " label"
 identifies the package in which the application resides as well as the
-program or application name. For example, the \fIlabel\fR \fBUX:cat\fR
-indicates the \fBUNIX\fR System V package and the \fBcat\fR(1) utility.
+program or application name. For example, the
+.I label
+.B UX:cat
+indicates the
+.B UNIX
+System V package and the
+.BR cat (1)
+utility.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIseverity\fR
+.I severity
 .ad
 .RS 18n
 .rt
 Indicates the seriousness of the condition. Identifiers for the standard
-levels of \fIseverity\fR are:
+levels of
+.I severity
+are:
 .RS +4
 .TP
 .ie t \(bu
@@ -140,7 +175,8 @@ and is halting. Produces the print string \fBHALT\fR.
 .ie t \(bu
 .el o
 \fBMM_ERROR\fR indicates that the application has detected a fault.
-Produces the print string \fBERROR\fR.
+Produces the print string
+.BR ERROR .
 .RE
 .RS +4
 .TP
@@ -154,7 +190,8 @@ problem and should be watched. Produces the print string \fBWARNING\fR.
 .ie t \(bu
 .el o
 \fBMM_INFO\fR provides information about a condition that is not in error.
-Produces the print string \fBINFO\fR.
+Produces the print string
+.BR INFO .
 .RE
 .RS +4
 .TP
@@ -163,7 +200,8 @@ Produces the print string \fBINFO\fR.
 \fBMM_NOSEV\fR indicates that no severity level is supplied for the
 message.
 .RE
-Other severity levels may be added by using the \fBaddseverity()\fR
+Other severity levels may be added by using the
+.BR addseverity()
 routine.
 .RE
 
@@ -171,11 +209,13 @@ routine.
 .ne 2
 .mk
 .na
-\fItext\fR
+.I text
 .ad
 .RS 18n
 .rt
-Describes the condition that produced the message. The \fItext\fR string is
+Describes the condition that produced the message. The
+.I text
+string is
 not limited to a specific size.
 .RE
 
@@ -183,7 +223,7 @@ not limited to a specific size.
 .ne 2
 .mk
 .na
-\fIaction\fR
+.I action
 .ad
 .RS 18n
 .rt
@@ -197,30 +237,43 @@ size.
 .ne 2
 .mk
 .na
-\fItag\fR
+.I tag
 .ad
 .RS 18n
 .rt
 An identifier which references on-line documentation for the message.
-Suggested usage is that \fItag\fR includes the \fIlabel\fR and a unique
-identifying number. A sample \fItag\fR is \fBUX:cat:146\fR.
+Suggested usage is that
+.I tag
+includes the
+.I label
+and a unique
+identifying number. A sample
+.I tag
+is
+.BR UX:cat:146 .
 .RE
 
 .SS "Environment Variables"
 .sp
 .LP
-The \fBMSGVERB\fR and \fBSEV_LEVEL\fR environment variables control the
+The
+.B MSGVERB
+and
+.B SEV_LEVEL
+environment variables control the
 behavior of \fBfmtmsg()\fR as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBMSGVERB\fR
+.B MSGVERB
 .ad
 .RS 13n
 .rt
 This variable determines which message components \fBfmtmsg()\fR selects
-when writing messages to \fBstderr\fR. Its value is a colon-separated list
+when writing messages to
+.BR stderr .
+Its value is a colon-separated list
 of optional keywords and can be set as follows:
 .sp
 .in +2
@@ -230,23 +283,45 @@ of optional keywords and can be set as follows:
 .fi
 .in -2
 
-Valid \fIkeywords\fR are: \fBlabel\fR, \fBseverity\fR, \fBtext\fR,
-\fBaction\fR, and \fBtag\fR. If \fBMSGVERB\fR contains a keyword for a
+Valid
+.I keywords
+are:
+.BR label ,
+.BR severity ,
+.BR text ,
+.BR action ,
+and
+.BR tag .
+If
+.B MSGVERB
+contains a keyword for a
 component and the component's value is not the component's null value,
 \fBfmtmsg()\fR includes that component in the message when writing the
-message to \fBstderr\fR. If \fBMSGVERB\fR does not include a keyword for a
+message to
+.BR stderr .
+If
+.B MSGVERB
+does not include a keyword for a
 message component, that component is not included in the display of the
-message. The keywords may appear in any order. If \fBMSGVERB\fR is not
+message. The keywords may appear in any order. If
+.B MSGVERB
+is not
 defined, if its value is the null string, if its value is not of the correct
 format, or if it contains keywords other than the valid ones listed above,
 \fBfmtmsg()\fR selects all components.
 .sp
-The first time \fBfmtmsg()\fR is called, it examines \fBMSGVERB\fR to
+The first time \fBfmtmsg()\fR is called, it examines
+.B MSGVERB
+to
 determine which message components are to be selected when generating a
-message to write to the standard error stream, \fBstderr\fR. The values
+message to write to the standard error stream,
+.BR stderr .
+The values
 accepted on the initial call are saved for future calls.
 .sp
-The \fBMSGVERB\fR environment variable affects only those components that
+The
+.B MSGVERB
+environment variable affects only those components that
 are selected for display to the standard error stream. All message
 components are included in console messages.
 .RE
@@ -255,22 +330,29 @@ components are included in console messages.
 .ne 2
 .mk
 .na
-\fBSEV_LEVEL\fR
+.B SEV_LEVEL
 .ad
 .RS 13n
 .rt
 This variable defines severity levels and associates print strings with
-them for use by \fBfmtmsg()\fR. The standard severity levels listed below
+them for use by
+.BR fmtmsg() .
+The standard severity levels listed below
 cannot be modified. Additional severity levels can also be defined,
-redefined, and removed using \fBaddseverity()\fR (see
-\fBaddseverity\fR(3C)). If the same severity level is defined by both
-\fBSEV_LEVEL\fR and \fBaddseverity()\fR, the definition by
+redefined, and removed using
+.B addseverity()
+(see
+.BR addseverity (3C)).
+If the same severity level is defined by both
+\fBSEV_LEVEL\fR and
+.BR addseverity() ,
+the definition by
 \fBaddseverity()\fR takes precedence.
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -281,47 +363,49 @@ redefined, and removed using \fBaddseverity()\fR (see
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
-\fBHALT\fR
+.B HALT
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .RS 5n
 .rt
-\fBERROR\fR
+.B ERROR
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB3\fR
+.B 3
 .ad
 .RS 5n
 .rt
-\fBWARNING\fR
+.B WARNING
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB4\fR
+.B 4
 .ad
 .RS 5n
 .rt
-\fBINFO\fR
+.B INFO
 .RE
 
-The \fBSEV_LEVEL\fR variable can be set as follows:
+The
+.B SEV_LEVEL
+variable can be set as follows:
 .sp
 .in +2
 .nf
@@ -330,33 +414,51 @@ The \fBSEV_LEVEL\fR variable can be set as follows:
 .fi
 .in -2
 
-where \fIdescription\fR is a comma-separated list containing three
+where
+.I description
+is a comma-separated list containing three
 fields:
 .sp
 \fIdescription\fR=\fIseverity_keyword\fR,\fIlevel\fR,\fIprintstring\fR
 .sp
-The \fIseverity_keyword\fR field is a character string that is used as the
+The
+.I severity_keyword
+field is a character string that is used as the
 keyword on the \fB-s\fB \fIseverity\fR option to the
 \fBfmtmsg\fR(1) utility. (This field is not used by the \fBfmtmsg()\fR
 function.)
 .sp
-The \fIlevel\fR field is a character string that evaluates to a positive
+The
+.I level
+field is a character string that evaluates to a positive
 integer (other than 0, 1, 2, 3, or 4, which are reserved for the standard
-severity levels). If the keyword \fIseverity_keyword\fR is used, \fIlevel\fR
+severity levels). If the keyword
+.I severity_keyword
+.RI "is used," " level"
 is the severity value passed on to the \fBfmtmsg()\fR function.
 .sp
-The \fIprintstring\fR field is the character string used by \fBfmtmsg()\fR
-in the standard message format whenever the severity value \fIlevel\fR is
+The
+.I printstring
+field is the character string used by \fBfmtmsg()\fR
+in the standard message format whenever the severity value
+.I level
+is
 used.
 .sp
-If a \fIdescription\fR in the colon list is not a three-field comma list,
+If a
+.I description
+in the colon list is not a three-field comma list,
 or if the second field of a comma list does not evaluate to a positive
-integer, that \fIdescription\fR in the colon list is ignored.
+integer, that
+.I description
+in the colon list is ignored.
 .sp
 The first time \fBfmtmsg()\fR is called, it examines the \fBSEV_LEVEL\fR
 environment variable, if defined, to determine whether the environment
 expands the levels of severity beyond the five standard levels and those
-defined using \fBaddseverity()\fR. The values accepted on the initial call
+defined using
+.BR addseverity() .
+The values accepted on the initial call
 are saved for future calls.
 .RE
 
@@ -390,8 +492,12 @@ ArgumentTypeNull-ValueIdentifier
 .sp
 .LP
 Another means of systematically omitting a component is by omitting the
-component keyword(s) when defining the \fBMSGVERB\fR environment variable
-(see the \fBEnvironment Variables\fR section above).
+component keyword(s) when defining the
+.B MSGVERB
+environment variable
+(see the
+.B "Environment Variables"
+section above).
 .SH RETURN VALUES
 .sp
 .LP
@@ -400,7 +506,7 @@ The \fBfmtmsg()\fR returns the following values:
 .ne 2
 .mk
 .na
-\fBMM_OK\fR
+.B MM_OK
 .ad
 .RS 12n
 .rt
@@ -411,7 +517,7 @@ The function succeeded.
 .ne 2
 .mk
 .na
-\fBMM_NOTOK\fR
+.B MM_NOTOK
 .ad
 .RS 12n
 .rt
@@ -422,7 +528,7 @@ The function failed completely.
 .ne 2
 .mk
 .na
-\fBMM_NOMSG\fR
+.B MM_NOMSG
 .ad
 .RS 12n
 .rt
@@ -434,7 +540,7 @@ but otherwise succeeded.
 .ne 2
 .mk
 .na
-\fBMM_NOCON\fR
+.B MM_NOCON
 .ad
 .RS 12n
 .rt
@@ -444,7 +550,7 @@ succeeded.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe following example of \fBfmtmsg()\fR:
+\fBExample 1\fR The following example of \fBfmtmsg()\fR:
 .sp
 .in +2
 .nf
@@ -466,7 +572,7 @@ TO FIX: refer to manual   UX:cat:001
 .in -2
 
 .LP
-\fBExample 2 \fRWhen the environment variable \fBMSGVERB\fR is set as
+\fBExample 2\fR When the environment variable \fBMSGVERB\fR is set as
 follows:
 .sp
 .in +2
@@ -488,7 +594,7 @@ TO FIX: refer to manual
 .in -2
 
 .LP
-\fBExample 3 \fRWhen the environment variable \fBSEV_LEVEL\fR is set as
+\fBExample 3\fR When the environment variable \fBSEV_LEVEL\fR is set as
 follows:
 .sp
 .in +2
@@ -524,7 +630,9 @@ TO FIX: refer to manual   UX:cat:001
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -544,4 +652,5 @@ MT-LevelSafe
 .sp
 .LP
 \fBfmtmsg\fR(1), \fBaddseverity\fR(3C), \fBgettxt\fR(3C), \fBprintf\fR(3C),
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR attributes (5),
+.BR standards (5)

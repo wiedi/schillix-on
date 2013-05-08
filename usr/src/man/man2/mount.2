@@ -36,13 +36,25 @@ mount \- mount a file system
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmount()\fR function requests that a removable file system contained
-on the block special file identified by \fIspec\fR be mounted on the
-directory identified by \fIdir\fR. The \fIspec\fR and \fIdir\fR arguments
+The
+.B mount()
+function requests that a removable file system contained
+on the block special file identified by
+.I spec
+be mounted on the
+directory identified by
+.IR dir .
+The
+.I spec
+and
+.I dir
+arguments
 are pointers to path names.
 .sp
 .LP
-After a successful call to \fBmount()\fR, all references to the file
+After a successful call to
+.BR mount() ,
+all references to the file
 \fIdir\fR refer to the root directory on the mounted file system. The
 mounted file system is inserted into the kernel list of all mounted file
 systems. This list can be examined through the mounted file system table
@@ -50,32 +62,52 @@ systems. This list can be examined through the mounted file system table
 .sp
 .LP
 The \fIfstype\fR argument is the file system type name. Standard file
-system names are defined with the prefix \fBMNTTYPE_\fR in
+system names are defined with the prefix
+.B MNTTYPE_
+in
 <\fBsys/mntent.h\fR>. If neither \fBMS_DATA\fR nor \fBMS_OPTIONSTR\fR is set
-in \fImflag\fR, then \fIfstype\fR is ignored and the type of the root file
+in
+.IR mflag ,
+then \fIfstype\fR is ignored and the type of the root file
 system is assumed.
 .sp
 .LP
-The \fIdataptr\fR argument is 0 if no file system-specific data is to be
-passed; otherwise it points to an area of size \fIdatalen\fR that contains
-the file system-specific data for this mount and the \fBMS_DATA\fR flag
+The
+.I dataptr
+argument is 0 if no file system-specific data is to be
+passed; otherwise it points to an area of size
+.I datalen
+that contains
+the file system-specific data for this mount and the
+.B MS_DATA
+flag
 should be set.
 .sp
 .LP
-If the \fBMS_OPTIONSTR\fR flag is set, then \fIoptptr\fR points to a buffer
+If the
+.B MS_OPTIONSTR
+flag is set, then
+.I optptr
+points to a buffer
 containing the list of options to be used for this mount. The \fIoptlen\fR
 argument specifies the length of the buffer. On completion of the
 \fBmount()\fR call, the options in effect for the mounted file system are
-returned in this buffer. If \fBMS_OPTIONSTR\fR is not specified, then the
+returned in this buffer. If
+.B MS_OPTIONSTR
+is not specified, then the
 options for this mount will not appear in the mounted file systems table.
 .sp
 .LP
 If the caller does not have all privileges available in the current zone,
-the \fBnosuid\fR option is automatically set on the mount point. The
+the
+.B nosuid
+option is automatically set on the mount point. The
 \fBrestrict\fR option is automatically added for \fBautofs\fR mounts.
 .sp
 .LP
-If the caller is not in the global zone, the \fBnodevices\fR option is
+If the caller is not in the global zone, the
+.B nodevices
+option is
 automatically set.
 .sp
 .LP
@@ -85,15 +117,24 @@ from the following list, defined in <\fBsys/mount.h\fR>.
 .ne 2
 .mk
 .na
-\fBMS_DATA\fR
+.B MS_DATA
 .ad
 .RS 16n
 .rt
-The \fIdataptr\fR and \fIdatalen\fR arguments describe a block of file
-system-specific binary data at address \fIdataptr\fR of length
-\fIdatalen\fR. This is interpreted by file system-specific code within the
+The
+.I dataptr
+and
+.I datalen
+arguments describe a block of file
+system-specific binary data at address
+.I dataptr
+of length
+.IR datalen .
+This is interpreted by file system-specific code within the
 operating system and its format depends on the file system type. If a
-particular file system type does not require this data, \fIdataptr\fR and
+particular file system type does not require this data,
+.I dataptr
+and
 \fIdatalen\fR should both be 0.
 .RE
 
@@ -101,7 +142,7 @@ particular file system type does not require this data, \fIdataptr\fR and
 .ne 2
 .mk
 .na
-\fBMS_GLOBAL\fR
+.B MS_GLOBAL
 .ad
 .RS 16n
 .rt
@@ -113,12 +154,16 @@ of a cluster (see \fBclinfo\fR(1M)).
 .ne 2
 .mk
 .na
-\fBMS_NOSUID\fR
+.B MS_NOSUID
 .ad
 .RS 16n
 .rt
 Prevent programs that are marked set-user-\fBID\fR or set-group-\fBID\fR
-from executing (see \fBchmod\fR(1)). It also causes \fBopen\fR(2) to return
+from executing (see
+.BR chmod (1)).
+It also causes
+.BR open (2)
+to return
 \fBENXIO\fR when attempting to open block or character special files.
 .RE
 
@@ -126,22 +171,39 @@ from executing (see \fBchmod\fR(1)). It also causes \fBopen\fR(2) to return
 .ne 2
 .mk
 .na
-\fBMS_OPTIONSTR\fR
+.B MS_OPTIONSTR
 .ad
 .RS 16n
 .rt
-The \fIoptptr\fR and \fIoptlen\fR arguments describe a character buffer at
-address \fIoptptr\fR of size \fIoptlen\fR. When calling \fBmount()\fR, the
+The
+.I optptr
+and
+.I optlen
+arguments describe a character buffer at
+address
+.I optptr
+of size
+.IR optlen .
+When calling
+.BR mount() ,
+the
 character buffer should contain a null-terminated string of options to be
 passed to the file system-specific code within the operating system. On a
 successful return, the file system-specific code will return the list of
 options recognized. Unrecognized options are ignored. The format of the
 string is a list of option names separated by commas. Options that have
-values (rather than binary options such as \fBsuid\fR or \fBnosuid\fR), are
+values (rather than binary options such as
+.B suid
+or
+.BR nosuid ),
+are
 separated by "\fB=\fR" such as \fBdev=2c4046c\fR. Standard option names are
 defined in <\fBsys/mntent.h\fR>. Only strings defined in the "C" locale are
 supported. The maximum length option string that can be passed to or
-returned from a \fBmount()\fR call is defined by the \fBMAX_MNTOPT_STR\fR
+returned from a
+.B mount()
+call is defined by the
+.BR MAX_MNTOPT_STR
 constant. The buffer should be long enough to contain more options than were
 passed in, as the state of any default options that were not passed in the
 input option string may also be returned in the recognized options list that
@@ -152,12 +214,13 @@ is returned.
 .ne 2
 .mk
 .na
-\fBMS_OVERLAY\fR
+.B MS_OVERLAY
 .ad
 .RS 16n
 .rt
 Allow the file system to be mounted over an existing file system mounted on
-\fIdir\fR, making the underlying file system inaccessible. If a mount is
+.IR dir ,
+making the underlying file system inaccessible. If a mount is
 attempted on a pre-existing mount point without setting this flag, the mount
 will fail.
 .RE
@@ -166,7 +229,7 @@ will fail.
 .ne 2
 .mk
 .na
-\fBMS_RDONLY\fR
+.B MS_RDONLY
 .ad
 .RS 16n
 .rt
@@ -180,7 +243,7 @@ accessibility.
 .ne 2
 .mk
 .na
-\fBMS_REMOUNT\fR
+.B MS_REMOUNT
 .ad
 .RS 16n
 .rt
@@ -190,17 +253,23 @@ Remount a read-only file system as read-write.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. Otherwise, \fB\(mi1\fR is
-returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B 0
+is returned. Otherwise, \fB\(mi1\fR is
+returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBmount()\fR function will fail if:
+The
+.B mount()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
@@ -220,11 +289,13 @@ read-only mounts or read-write access in the case of read/write mounts.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 16n
 .rt
-The \fIdir\fR argument is currently mounted on, is someone's current
+The
+.I dir
+argument is currently mounted on, is someone's current
 working directory, or is otherwise busy; or the device associated with
 \fIspec\fR is currently mounted.
 .RE
@@ -233,11 +304,17 @@ working directory, or is otherwise busy; or the device associated with
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 16n
 .rt
-The \fIspec\fR, \fIdir\fR, \fIfstype\fR, \fIdataptr\fR, or \fIoptptr\fR
+The
+.IR spec ,
+.IR dir ,
+\fIfstype\fR,
+.IR dataptr ,
+or
+.IR optptr
 argument points outside the allocated address space of the process.
 .RE
 
@@ -245,36 +322,49 @@ argument points outside the allocated address space of the process.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
 The super block has an invalid magic number, the \fIfstype\fR is invalid,
-or \fIdir\fR is not an absolute path.
+or
+.I dir
+is not an absolute path.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
-Too many symbolic links were encountered in translating \fIspec\fR or
-\fIdir\fR.
+Too many symbolic links were encountered in translating
+.I spec
+or
+.IR dir .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-The length of the \fIpath\fR argument exceeds \fIPATH_MAX\fR, or the length
-of a \fIpath\fR component exceeds \fINAME_MAX\fR while \fB_POSIX_NO_TRUNC\fR
+The length of the
+.I path
+argument exceeds
+.IR PATH_MAX ,
+or the length
+of a
+.I path
+component exceeds
+.I NAME_MAX
+while
+.BR _POSIX_NO_TRUNC
 is in effect.
 .RE
 
@@ -282,7 +372,7 @@ is in effect.
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
@@ -293,11 +383,13 @@ None of the named files exists or is a null pathname.
 .ne 2
 .mk
 .na
-\fBENOLINK\fR
+.B ENOLINK
 .ad
 .RS 16n
 .rt
-The \fIpath\fR argument points to a remote machine and the link to that
+The
+.I path
+argument points to a remote machine and the link to that
 machine is no longer active.
 .RE
 
@@ -305,11 +397,13 @@ machine is no longer active.
 .ne 2
 .mk
 .na
-\fBENOSPC\fR
+.B ENOSPC
 .ad
 .RS 16n
 .rt
-The file system state in the super-block is not \fBFsOKAY\fR and
+The file system state in the super-block is not
+.B FsOKAY
+and
 \fImflag\fR requests write permission.
 .RE
 
@@ -317,22 +411,26 @@ The file system state in the super-block is not \fBFsOKAY\fR and
 .ne 2
 .mk
 .na
-\fBENOTBLK\fR
+.B ENOTBLK
 .ad
 .RS 16n
 .rt
-The \fIspec\fR argument is not a block special device.
+The
+.I spec
+argument is not a block special device.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOTDIR\fR
+.B ENOTDIR
 .ad
 .RS 16n
 .rt
-The \fIdir\fR argument is not a directory, or a component of a path prefix
+The
+.I dir
+argument is not a directory, or a component of a path prefix
 is not a directory.
 .RE
 
@@ -340,13 +438,17 @@ is not a directory.
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 16n
 .rt
-A global mount is attempted (the \fBMS_GLOBAL\fR flag is set in
+A global mount is attempted (the
+.B MS_GLOBAL
+flag is set in
 \fImflag\fR) on a machine which is not booted as a cluster; a local mount is
-attempted and \fIdir\fR is within a globally mounted file system; or a
+attempted and
+.I dir
+is within a globally mounted file system; or a
 remount was attempted on a file system that does not support remounting.
 .RE
 
@@ -354,30 +456,35 @@ remount was attempted on a file system that does not support remounting.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 16n
 .rt
-The device associated with \fIspec\fR does not exist.
+The device associated with
+.I spec
+does not exist.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEOVERFLOW\fR
+.B EOVERFLOW
 .ad
 .RS 16n
 .rt
-The length of the option string to be returned in the \fIoptptr\fR argument
-exceeds the size of the buffer specified by \fIoptlen\fR.
+The length of the option string to be returned in the
+.I optptr
+argument
+exceeds the size of the buffer specified by
+.IR optlen .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 16n
 .rt
@@ -389,34 +496,42 @@ of the calling process.
 .ne 2
 .mk
 .na
-\fBEREMOTE\fR
+.B EREMOTE
 .ad
 .RS 16n
 .rt
-The \fIspec\fR argument is remote and cannot be mounted.
+The
+.I spec
+argument is remote and cannot be mounted.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEROFS\fR
+.B EROFS
 .ad
 .RS 16n
 .rt
-The \fIspec\fR argument is write protected and \fImflag\fR requests write
+The
+.I spec
+argument is write protected and \fImflag\fR requests write
 permission.
 .RE
 
 .SH USAGE
 .sp
 .LP
-The \fBmount()\fR function can be invoked only by processes with
+The
+.B mount()
+function can be invoked only by processes with
 appropriate privileges.
 .SH SEE ALSO
 .sp
 .LP
-\fBmount\fR(1M), \fBumount\fR(2), \fBmnttab\fR(4)
+.BR mount (1M),
+.BR umount (2),
+.BR mnttab (4)
 .SH NOTES
 .sp
 .LP

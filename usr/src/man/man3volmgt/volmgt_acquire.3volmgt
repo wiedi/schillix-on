@@ -38,60 +38,107 @@ volmgt_acquire \- reserve removable media device
 .sp
 .LP
 This function is obsolete. The management of removable media by the Volume
-Management feature, including \fBvold\fR, has been replaced by software that
+Management feature, including
+.BR vold ,
+has been replaced by software that
 supports the Hardware Abstraction Layer (HAL). Programmatic support for HAL
 is through the HAL APIs, which are documented on the HAL web site. See
-\fBhal\fR(5). The return value of this function is undefined.
+.BR hal (5).
+The return value of this function is undefined.
 .sp
 .LP
-The  \fBvolmgt_acquire()\fR routine reserves the removable media device
-specified as  \fIdev\fR. \fBvolmgt_acquire()\fR operates in two different
+The 
+.B volmgt_acquire()
+routine reserves the removable media device
+specified as
+.IR dev .
+\fBvolmgt_acquire()\fR operates in two different
 modes, depending on whether or not volume management is running.
 .sp
 .LP
-If  volume management  \fIis\fR running, \fBvolmgt_acquire()\fR attempts to
-reserve the removable media device specified as \fIdev\fR. Specify \fIdev\fR
-as \fIeither\fR a symbolic device name (for example,  \fBfloppy0\fR) or a
+If  volume management 
+.I is
+running,
+.B volmgt_acquire()
+attempts to
+reserve the removable media device specified as
+.IR dev .
+Specify
+.IR dev
+as
+.I either
+a symbolic device name (for example, 
+.BR floppy0 )
+or a
 physical device pathname (for example, \fB/dsk/unnamed_floppy\fR).
 .sp
 .LP
-If  volume management  \fIis\fR \fInot\fR running, \fBvolmgt_acquire()\fR
-requires callers to specify a physical device pathname for  \fIdev\fR.
-Specifying \fIdev\fR as a symbolic  device name is  \fInot\fR acceptable. In
-this mode,  \fBvolmgt_acquire()\fR relies entirely on the major and minor
+If  volume management 
+.I "is not"
+.RB running, " volmgt_acquire()"
+requires callers to specify a physical device pathname for 
+.IR dev .
+Specifying
+.I dev
+as a symbolic  device name is 
+.I not
+acceptable. In
+this mode, 
+.B volmgt_acquire()
+relies entirely on the major and minor
 numbers of the device to determine whether or not the device is reserved.
 .sp
 .LP
-If  \fIdev\fR is free,  \fBvolmgt_acquire()\fR updates the internal device
+If 
+.I dev
+is free, 
+.B volmgt_acquire()
+updates the internal device
 reservation database with the caller's process id  (\fIpid\fR) and the
-specified \fBid\fR string.
+specified
+.B id
+string.
 .sp
 .LP
-If  \fIdev\fR is reserved  by another process, the reservation attempt
+If 
+.I dev
+is reserved  by another process, the reservation attempt
 fails and  \fBvolmgt_acquire(\|):\fR
 .RS +4
 .TP
 .ie t \(bu
 .el o
-sets \fBerrno\fR to \fBEBUSY\fR
+sets
+.B errno
+to
+.BR EBUSY
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-fills the caller's \fBid\fR value in the array pointed to by \fIerr\fR
+fills the caller's
+.B id
+value in the array pointed to by
+.IR err
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-fills in the  \fIpid\fR to which the pointer  \fIpidp\fR points with the
+fills in the 
+.I pid
+to which the pointer 
+.I pidp
+points with the
 \fIpid\fR of the process which holds the reservation,   if the supplied
 \fIpidp\fR is non-zero
 .RE
 .sp
 .LP
-If the override  \fIovr\fR is non-zero, the call overrides the device
+If the override 
+.I ovr
+is non-zero, the call overrides the device
 reservation.
 .SH RETURN VALUES
 .sp
@@ -100,13 +147,15 @@ The return from this function is undefined.
 .SH ERRORS
 .sp
 .LP
-The  \fBvolmgt_acquire()\fR routine fails if one or more of the following
+The 
+.B volmgt_acquire()
+routine fails if one or more of the following
 are true:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -117,7 +166,7 @@ One of the specified arguments is invalid or missing.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
@@ -127,7 +176,7 @@ to a non-zero value)
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBvolmgt_acquire()\fR
+\fBExample 1\fR Using \fBvolmgt_acquire()\fR
 .sp
 .LP
 In the following example, volume management is running and the first floppy
@@ -152,12 +201,13 @@ if (!volmgt_release("floppy0")) {
 .in -2
 
 .LP
-\fBExample 2 \fRUsing  \fBvolmgt_acquire()\fR To Override A Lock On Another
+\fBExample 2\fR Using  \fBvolmgt_acquire()\fR To Override A Lock On Another
 Process
 .sp
 .LP
 The following example shows how callers can override a  lock on another
-process using  \fBvolmgt_acquire()\fR.
+process using 
+.BR volmgt_acquire() .
 
 .sp
 .in +2
@@ -192,7 +242,9 @@ if (override) {
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -212,16 +264,21 @@ Interface StabilityObsolete
 .sp
 .LP
 \fBfree\fR(3C), \fBmalloc\fR(3C), \fBvolmgt_release\fR(3VOLMGT),
-\fBattributes\fR(5), \fBhal\fR(5)
+.BR attributes (5),
+.BR hal (5)
 .SH NOTES
 .sp
 .LP
-When returning a string through  \fIerr\fR, \fBvolmgt_acquire()\fR
+When returning a string through
+.IR err ,
+.B volmgt_acquire()
 allocates a memory area using  \fBmalloc\fR(3C). Use \fBfree\fR(3C) to
 release the memory area  when no longer needed.
 .sp
 .LP
-The \fIovr\fR argument is intended to allow callers to override the current
+The
+.I ovr
+argument is intended to allow callers to override the current
 device reservation. It is assumed that the calling application has
 determined that the current reservation can safely be cleared. See
-\fBEXAMPLES.\fR
+.B EXAMPLES.

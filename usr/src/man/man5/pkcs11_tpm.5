@@ -35,21 +35,34 @@ pkcs11_tpm \- RSA PKCS#11 token for Trusted Platform Modules (TPM)
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpkcs11_tpm.so\fR object implements the RSA PKCS#11 v2.20
+The
+.B pkcs11_tpm.so
+object implements the RSA PKCS#11 v2.20
 specification using Trusted Computing Group protocols to talk to a TPM
 security device. This provider implements the PKCS#11 specification and uses
-the TCG Software Stack (TSS) APIs in the \fBSUNWtrousers\fR package.
+the TCG Software Stack (TSS) APIs in the
+.B SUNWtrousers
+package.
 .sp
 .LP
-Application developers should link to \fBlibpkcs11.so.1\fR rather than link
-directly with \fBpkcs11_tpm.so\fR. See \fBlibpkcs11\fR(3LIB).
+Application developers should link to
+.B libpkcs11.so.1
+rather than link
+directly with
+.BR pkcs11_tpm.so .
+See
+.BR libpkcs11 (3LIB).
 .sp
 .LP
 The following cryptographic algorithms are implemented: \fBRSA\fR,
-\fBSHA1\fR, and \fBMD5\fR.
+.BR SHA1 ,
+and
+.BR MD5 .
 .sp
 .LP
-All of the standard PKCS#11 functions listed in \fBlibpkcs11\fR(3LIB) are
+All of the standard PKCS#11 functions listed in
+.BR libpkcs11 (3LIB)
+are
 implemented except for the following:
 .sp
 .in +2
@@ -96,10 +109,15 @@ CKM_MD5_HMAC_GENERAL
 .SS "Per-User Initialization"
 .sp
 .LP
-The \fBpkcs11_tpm\fR provider can only be used on a system which has a TPM
-device and which also has the \fBSUNWtrousers\fR package installed. If those
+The
+.B pkcs11_tpm
+provider can only be used on a system which has a TPM
+device and which also has the
+.B SUNWtrousers
+package installed. If those
 prerequisites are met, users can create their own private tokens using
-\fBpktool\fR(1), which will allow them to perform operations using the TPM
+.BR pktool (1),
+which will allow them to perform operations using the TPM
 device and protect their private data with TPM-protected keys.
 .sp
 .LP
@@ -122,7 +140,9 @@ Set the user's unique PIN.
 .RE
 .sp
 .LP
-Initializing the token is done using the \fBpktool\fR(1) command as
+Initializing the token is done using the
+.BR pktool (1)
+command as
 follows:
 .sp
 .in +2
@@ -136,23 +156,35 @@ $ \fBpktool inittoken currlabel=TPM newlabel=tpm/myname\fR
 .TP
 .ie t \(bu
 .el o
-By default, an uninitialized TPM is recognized by the name \fBTPM\fR. When
+By default, an uninitialized TPM is recognized by the name
+.BR TPM .
+When
 a user initializes their own private token, it can either be renamed to
-something else (for example, \fBtpm/joeuser\fR) or kept as \fBTPM\fR (in
-which case the \fBnewlabel\fR argument would be omitted).
+something else (for example,
+.BR tpm/joeuser )
+or kept as
+.B TPM
+(in
+which case the
+.B newlabel
+argument would be omitted).
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 The user will have to supply the default SO PIN before being able to
-initialize his or her token. The default SO PIN is \fB87654321\fR. It is
+initialize his or her token. The default SO PIN is
+.BR 87654321 .
+It is
 changed in step 2, above.
 .RE
 .sp
 .LP
 Once the token is initialized, the SO and user PINs must be changed from
-the default values. Again, \fBpktool\fR(1) is used to change these PIN
+the default values. Again,
+.BR pktool (1)
+is used to change these PIN
 values.
 .sp
 .LP
@@ -187,18 +219,23 @@ $ \fBpktool setpin token=tmp/joeuser\fR
 
 .sp
 .LP
-The default PIN for a non-SO user is \fB12345678\fR. The user must enter
+The default PIN for a non-SO user is
+.BR 12345678 .
+The user must enter
 the default PIN and then enter (and confirm) a new, unique PIN.
 .sp
 .LP
-The PIN provided for the \fBpktool\fR \fBsetpin\fR operation or by calling
+The PIN provided for the
+.B "pktool setpin"
+operation or by calling
 \fBC_Login()\fR and \fBC_SetPIN()\fR functions can be any string of
 characters with a length between 1 and 256 and no embedded nulls.
 .SS "Accessing the Token"
 .sp
 .LP
 After a user initializes their token, they can begin using it with
-\fBpktool\fR(1) or by writing PKCS11 applications and locating the token
+.BR pktool (1)
+or by writing PKCS11 applications and locating the token
 using the name created above (\fBtpm/joeuser\fR in the examples above).
 .sp
 .LP
@@ -228,7 +265,9 @@ same machine.
 .sp
 .LP
 Each TPM is unique and the token keys created on one TPM may not be used on
-another TPM. The \fBpkcs11_tpm.so\fR token data is all managed on the system
+another TPM. The
+.B pkcs11_tpm.so
+token data is all managed on the system
 where the TPM resides and may not be moved to other systems. If the TPM is
 reset and the SRK (Storage Root Key) is changed, all of the keys previously
 generated for that TPM will no longer be valid.
@@ -236,21 +275,24 @@ generated for that TPM will no longer be valid.
 .LP
 \fBpkcs11_tpm.so\fR creates a private workspace to manage administrative
 files for each token created. By default, this area is created as
-\fB/var/tpm/pkcs11/$USERNAME\fR. However, users may override this by setting
-the \fBPKCS11_TPM_DIR\fR environment variable prior to initializing or using
+.BR /var/tpm/pkcs11/$USERNAME .
+However, users may override this by setting
+the
+.B PKCS11_TPM_DIR
+environment variable prior to initializing or using
 the token.
 .SH RETURN VALUES
 .sp
 .LP
 The return values for each of the implemented functions are defined and
 listed in the RSA PKCS#11 v2.20 specification. See
-\fBhttp://www.rsasecurity.com\fR.
+.BR http://www.rsasecurity.com .
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB/var/tpm/pkcs11/USERNAME\fR
+.B /var/tpm/pkcs11/USERNAME
 .ad
 .sp .6
 .RS 4n
@@ -261,7 +303,7 @@ User's default token object store.
 .ne 2
 .mk
 .na
-\fB${PKCS11_TPM_DIR}\fR
+.B ${PKCS11_TPM_DIR}
 .ad
 .sp .6
 .RS 4n
@@ -271,7 +313,9 @@ Alternate token object store.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -296,8 +340,10 @@ PKCS#11 v2.20.
 .SH SEE ALSO
 .sp
 .LP
-\fBpktool\fR(1), \fBcryptoadm\fR(1M), \fBlibpkcs11\fR(3LIB),
-\fBattributes\fR(5)
+.BR pktool (1),
+.BR cryptoadm (1M),
+.BR libpkcs11 (3LIB),
+.BR attributes (5)
 .sp
 .LP
 TCG Software Stack (TSS) Specifications:

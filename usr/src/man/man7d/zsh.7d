@@ -40,85 +40,150 @@ open(/dev/zsh\fI, mode \fB);\fR
 .SH DESCRIPTION
 .sp
 .LP
-The \fBzsh\fR module is a loadable \fBSTREAMS\fR driver that implements the
-sending and receiving of data packets as \fBHDLC\fR frames over synchronous
+The
+.B zsh
+module is a loadable
+.B STREAMS
+driver that implements the
+sending and receiving of data packets as
+.B HDLC
+frames over synchronous
 serial lines. The module is not a standalone driver, but instead depends upon
-the \fBzs\fR module for the hardware support required by all on-board serial
-devices. When loaded this module acts as an extension to the \fBzs\fR driver,
-providing access to an \fBHDLC\fR interface through character-special
+the
+.B zs
+module for the hardware support required by all on-board serial
+devices. When loaded this module acts as an extension to the
+.B zs
+driver,
+providing access to an
+.B HDLC
+interface through character-special
 devices.
 .sp
 .LP
 The \fBzsh\fIn\fR devices provide what is known as a \fBdata path\fR which
-supports the transfer of data via \fBread\fR(2) and \fBwrite\fR(2) system
-calls, as well as \fBioctl\fR(2) calls. Data path opens are exclusive in order
+supports the transfer of data via
+.BR read (2)
+and
+.BR write (2)
+system
+calls, as well as
+.BR ioctl (2)
+calls. Data path opens are exclusive in order
 to protect against injection or diversion of data by another process.
 .sp
 .LP
-The \fBzsh\fR device provides a separate \fBcontrol path\fR for use by
+The
+.B zsh
+device provides a separate
+.B "control path"
+for use by
 programs that need to configure or monitor a connection independent of any
 exclusive access restrictions imposed by data path opens.  Up to three control
 paths may be active on a particular serial channel at any one time.  Control
-path accesses are restricted to \fBioctl\fR(2) calls only; no data transfer is
+path accesses are restricted to
+.BR ioctl (2)
+calls only; no data transfer is
 possible.
 .sp
 .LP
-When used in synchronous modes, the \fBZ8530 SCC\fR supports several options
-for \fBclock sourcing\fR and \fBdata encoding\fR. Both the transmit and
+When used in synchronous modes, the
+.B "Z8530 SCC"
+supports several options
+for
+.B "clock sourcing"
+and
+.BR "data encoding" .
+Both the transmit and
 receive clock sources can be set to be the external \fBT\fRransmit \fBC\fRlock
-(\fBTRxC\fR), external \fBR\fReceive \fBC\fRlock (\fBRTxC\fR), the internal
-\fBB\fRaud \fBR\fRate \fBG\fRenerator (\fBBRG\fR), or the output of the
+(\fBTRxC\fR), external \fBR\fReceive \fBC\fRlock
+.RB ( RTxC ),
+the internal
+\fBB\fRaud \fBR\fRate \fBG\fRenerator
+.RB ( BRG ),
+or the output of the
 \fBSCC\fR's \fBD\fRigital \fBP\fRhase-\fBL\fRock \fBL\fRoop (\fBDPLL\fR).
 .sp
 .LP
 The \fBB\fRaud \fBR\fRate \fBG\fRenerator is a programmable divisor that
-derives a clock frequency from the \fBPCLK\fR input signal to the \fBSCC\fR. A
-programmed baud rate is translated into a 16-bit \fBtime\fR \fBconstant\fR
-that is stored in the \fBSCC\fR. When using the \fBBRG\fR as a clock source
+derives a clock frequency from the
+.B PCLK
+input signal to the
+.BR SCC .
+A
+.RB "programmed baud rate is translated into a 16-bit" " time constant"
+that is stored in the
+.BR SCC .
+When using the
+.B BRG
+as a clock source
 the driver may answer a query of its current speed with a value different from
 the one specified.  This is because baud rates translate into time constants
 in discrete steps, and reverse translation shows the change.  If an exact baud
-rate is required that cannot be obtained with the \fBBRG\fR, an external clock
+rate is required that cannot be obtained with the
+.BR BRG ,
+an external clock
 source must be selected.
 .sp
 .LP
-Use of the \fBDPLL\fR option requires the selection of \fBNRZI\fR data
+Use of the
+.B DPLL
+option requires the selection of
+.B NRZI
+data
 encoding and the setting of a non-zero value for the baud rate, because the
 \fBDPLL\fR uses the \fBBRG\fR as its reference clock source.
 .sp
 .LP
-A \fBlocal loopback mode\fR is available, primarily for use by the
-\fBsyncloop\fR(1M) utility for testing purposes, and should not be confused
-with \fBSDLC\fR loop mode, which is not supported on this interface.  Also, an
+A
+.B "local loopback mode"
+is available, primarily for use by the
+.BR syncloop (1M)
+utility for testing purposes, and should not be confused
+with
+.B SDLC
+loop mode, which is not supported on this interface.  Also, an
 \fBauto-echo\fR feature may be selected that causes all incoming data to be
 routed to the transmit data line, allowing the port to act as the remote end
 of a digital loop. Neither of these options should be selected casually, or
 left in use when not needed.
 .sp
 .LP
-The \fBzsh\fR driver keeps running totals of various hardware generated
+The
+.B zsh
+driver keeps running totals of various hardware generated
 events for each channel.  These include numbers of packets and characters sent
-and received, abort conditions detected by the receiver, receive \fBCRC\fR
+.RB "and received, abort conditions detected by the receiver, receive" " CRC"
 errors, transmit underruns, receive overruns, input errors and output errors,
 and message block allocation failures. Input errors are logged whenever an
-incoming message must be discarded, such as when an abort or \fBCRC\fR error
+incoming message must be discarded, such as when an abort or
+.B CRC
+error
 is detected, a receive overrun occurs, or when no message block is available
 to store incoming data.  Output errors are logged when the data must be
-discarded due to underruns, \fBCTS\fR drops during transmission, \fBCTS\fR
+discarded due to underruns,
+.B CTS
+.RB "drops during transmission," " CTS"
 timeouts, or excessive watchdog timeouts caused by a cable break.
 .SH IOCTLS
 .sp
 .LP
-The \fBzsh\fR driver supports several \fBioctl()\fR commands, including:
+The
+.B zsh
+driver supports several
+.B ioctl()
+commands, including:
 .sp
 .ne 2
 .mk
 .na
-\fBS_IOCGETMODE\fR
+.B S_IOCGETMODE
 .ad
 .RS 17n
 .rt
-Return a \fBstruct scc_mode\fR containing parameters currently in use. These
+Return a
+.B "struct scc_mode"
+containing parameters currently in use. These
 include the transmit and receive clock sources, boolean loopback and
 \fBNRZI\fR mode flags and the integer baud rate.
 .RE
@@ -127,11 +192,15 @@ include the transmit and receive clock sources, boolean loopback and
 .ne 2
 .mk
 .na
-\fBS_IOCSETMODE\fR
+.B S_IOCSETMODE
 .ad
 .RS 17n
 .rt
-The argument is a \fBstruct scc_mode\fR from which the \fBSCC\fR channel will
+The argument is a
+.B "struct scc_mode"
+from which the
+.B SCC
+channel will
 be programmed.
 .RE
 
@@ -139,13 +208,17 @@ be programmed.
 .ne 2
 .mk
 .na
-\fBS_IOCGETSTATS\fR
+.B S_IOCGETSTATS
 .ad
 .RS 17n
 .rt
-Return a \fBstruct sl_stats\fR containing the current totals of
+Return a
+.B "struct sl_stats"
+containing the current totals of
 hardware-generated events. These include numbers of packets and characters
-sent and received by the driver, aborts and \fBCRC\fR errors detected,
+sent and received by the driver, aborts and
+.B CRC
+errors detected,
 transmit underruns, and receive overruns.
 .RE
 
@@ -153,7 +226,7 @@ transmit underruns, and receive overruns.
 .ne 2
 .mk
 .na
-\fBS_IOCCLRSTATS\fR
+.B S_IOCCLRSTATS
 .ad
 .RS 17n
 .rt
@@ -164,7 +237,7 @@ Clear the hardware statistics for this channel.
 .ne 2
 .mk
 .na
-\fBS_IOCGETSPEED\fR
+.B S_IOCGETSPEED
 .ad
 .RS 17n
 .rt
@@ -176,17 +249,23 @@ actual data transfer rate if external clocks are used.
 .ne 2
 .mk
 .na
-\fBS_IOCGETMCTL\fR
+.B S_IOCGETMCTL
 .ad
 .RS 17n
 .rt
-Returns the current state of the \fBCTS\fR and \fBDCD\fR incoming modem
+Returns the current state of the
+.B CTS
+and
+.B DCD
+incoming modem
 interface signals as an integer.
 .RE
 
 .sp
 .LP
-The following structures are used with \fBzsh\fR \fBioctl()\fR commands:
+The following structures are used with
+.B "zsh ioctl()"
+commands:
 .sp
 .in +2
 .nf
@@ -219,13 +298,17 @@ struct  sl_stats {
 .SH ERRORS
 .sp
 .LP
-An \fBopen()\fR will fail if a \fBSTREAMS\fR message block cannot be
+An
+.B open()
+will fail if a
+.B STREAMS
+message block cannot be
 allocated, or:
 .sp
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 9n
 .rt
@@ -236,7 +319,7 @@ The unit being opened does not exist.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 9n
 .rt
@@ -245,12 +328,14 @@ The device is in use by another serial protocol.
 
 .sp
 .LP
-An \fBioctl()\fR will fail if:
+An
+.B ioctl()
+will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -261,12 +346,13 @@ An attempt was made to select an invalid clocking source.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
 The baud rate specified for use with the baud rate generator would translate
-to a null time constant in the \fBSCC\fR's registers.
+to a null time constant in the
+.BR SCC "'s registers."
 .RE
 
 .SH FILES
@@ -285,7 +371,7 @@ character-special devices
 .ne 2
 .mk
 .na
-\fB/usr/include/sys/ser_sync.h\fR
+.B /usr/include/sys/ser_sync.h
 .ad
 .sp .6
 .RS 4n
@@ -295,7 +381,9 @@ header file specifying synchronous serial communication definitions
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -312,9 +400,15 @@ Architecturex86
 .SH SEE ALSO
 .sp
 .LP
-\fBsyncinit\fR(1M), \fBsyncloop\fR(1M), \fBsyncstat\fR(1M), \fBioctl\fR(2),
-\fBopen\fR(2), \fBread\fR(2), \fBwrite\fR(2), \fBattributes\fR(5),
-\fBzs\fR(7D)
+.BR syncinit (1M),
+.BR syncloop (1M),
+.BR syncstat (1M),
+.BR ioctl (2),
+.BR open (2),
+.BR read (2),
+.BR write (2),
+.BR attributes (5),
+.BR zs (7D)
 .sp
 .LP
 Refer to the \fIZilog Z8530 SCC Serial Communications Controller Technical
@@ -340,18 +434,23 @@ Manual\fR for details of the \fBSCC\fR's operation and capabilities.
 .sp .6
 .RS 4n
 A kernel memory allocation failed for one of the private data structures. The
-value of \fInnn\fR is the address of the read queue passed to \fBopen\fR(2).
+value of
+.I nnn
+is the address of the read queue passed to
+.BR open (2).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBzsh_open: can't alloc message block\fR
+.B zsh_open: can't alloc message block
 .ad
 .sp .6
 .RS 4n
-The open could not proceed because an initial \fBSTREAMS\fR message block
+The open could not proceed because an initial
+.B STREAMS
+message block
 could not be made available for incoming data.
 .RE
 
@@ -375,8 +474,14 @@ attached to a particular serial channel.
 .ad
 .sp .6
 .RS 4n
-An inappropriate \fBSTREAMS\fR message type was passed through a control
-path. Only \fBM_IOCTL\fR and \fBM_PROTO\fR message types are permitted.
+An inappropriate
+.B STREAMS
+message type was passed through a control
+path. Only
+.B M_IOCTL
+and
+.B M_PROTO
+message types are permitted.
 .RE
 
 .sp
@@ -387,9 +492,13 @@ path. Only \fBM_IOCTL\fR and \fBM_PROTO\fR message types are permitted.
 .ad
 .sp .6
 .RS 4n
-An \fBM_DATA\fR message was passed to the driver for a channel that had not
+An
+.B M_DATA
+message was passed to the driver for a channel that had not
 been programmed at least once since the driver was loaded.  The \fBSCC\fR's
-registers were in an unknown state.  The \fBS_IOCSETMODE\fR ioctl command
+registers were in an unknown state.  The
+.B S_IOCSETMODE
+ioctl command
 performs the programming operation.
 .RE
 

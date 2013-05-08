@@ -38,10 +38,14 @@ dladdr, dladdr1 \- translate address to symbolic information
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdladdr()\fR and \fBdladdr1()\fR functions determine if the specified
+The
+.B dladdr()
+and
+.B dladdr1()
+functions determine if the specified
 \fIaddress\fR is located within one of the mapped objects that make up the
 current applications address space. An address is deemed to fall within a
-mapped object when it is between the base address, and the \fI_end\fR
+.RI "mapped object when it is between the base address, and the" " _end"
 address of that object. See NOTES. If a mapped object fits this criteria,
 the symbol table made available to the runtime linker is searched to locate
 the nearest symbol to the specified address.  The nearest symbol is one that
@@ -49,8 +53,11 @@ has a value less than or equal to the required address.
 .sp
 .LP
 The \fBDl_info_t\fR structure must be preallocated by the user. The
-structure members are filled in by \fBdladdr()\fR, based on the specified
-\fIaddress\fR. The \fBDl_info_t\fR structure includes the following
+structure members are filled in by
+.BR dladdr() ,
+based on the specified
+.IR address .
+The \fBDl_info_t\fR structure includes the following
 members:
 .sp
 .in +2
@@ -91,7 +98,7 @@ Contains the base address of the containing object.
 .ne 2
 .mk
 .na
-\fBdli_sname\fR
+.B dli_sname
 .ad
 .RS 13n
 .rt
@@ -104,31 +111,38 @@ or is the nearest symbol with a lower address.
 .ne 2
 .mk
 .na
-\fBdli_saddr\fR
+.B dli_saddr
 .ad
 .RS 13n
 .rt
-Contains the actual address of the symbol pointed to by \fBdli_sname\fR.
+Contains the actual address of the symbol pointed to by
+.BR dli_sname .
 .RE
 
 .sp
 .LP
-The \fBdladdr1()\fR function provides for addition information to be
+The
+.B dladdr1()
+function provides for addition information to be
 returned as specified by the \fIflags\fR argument:
 .sp
 .ne 2
 .mk
 .na
-\fBRTLD_DL_SYMENT\fR
+.B RTLD_DL_SYMENT
 .ad
 .RS 19n
 .rt
-Obtain the \fBELF\fR symbol table entry for the matched symbol. The
+Obtain the
+.B ELF
+symbol table entry for the matched symbol. The
 \fIinfo\fR argument points to a symbol pointer as defined in
 <\fBsys/elf.h\fR> (\fBElf32_Sym **\fIinfo\fR or \fBElf64_Sym
 **\fIinfo\fR). Most of the information found in an ELF symbol can only be
 properly interpreted by the runtime linker. However, there are two fields
-that contain information useful to the caller of \fBdladdr1()\fR: The
+that contain information useful to the caller of
+.BR dladdr1() :
+The
 \fBst_size\fR field contains the size of the referenced item. The
 \fBst_info\fR field provides symbol type and binding attributes. See the
 \fILinker and Libraries Guild\fR for more information.
@@ -138,32 +152,44 @@ that contain information useful to the caller of \fBdladdr1()\fR: The
 .ne 2
 .mk
 .na
-\fBRTLD_DL_LINKMAP\fR
+.B RTLD_DL_LINKMAP
 .ad
 .RS 19n
 .rt
-Obtain the \fBLink_map\fR for the matched file. The \fIinfo\fR argument
-points to a \fBLink_map\fR pointer as defined in <\fBsys/link.h\fR>
+Obtain the
+.B Link_map
+for the matched file. The \fIinfo\fR argument
+points to a
+.B Link_map
+pointer as defined in <\fBsys/link.h\fR>
 (\fBLink_map **\fIinfo\fR).
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-If the specified \fIaddress\fR cannot be matched to a mapped object, a
+If the specified
+.I address
+cannot be matched to a mapped object, a
 \fB0\fR is returned. Otherwise, a non-zero return is made and the associated
 \fBDl_info_t\fR elements are filled.
 .SH USAGE
 .sp
 .LP
-The \fBdladdr()\fR and \fBdladdr1()\fR functions are one of a family of
+The
+.B dladdr()
+and
+.B dladdr1()
+functions are one of a family of
 functions that give the user direct access to the dynamic linking
 facilities. These facilities are available to dynamically-linked processes
 only. See \fILinker and Libraries Guide\fR.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -180,11 +206,16 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBld\fR(1), \fBdlclose\fR(3C), \fBdldump\fR(3C), \fBdlerror\fR(3C),
-\fBdlopen\fR(3C), \fBdlsym\fR(3C), \fBattributes\fR(5)
+.BR ld (1),
+.BR dlclose (3C),
+.BR dldump (3C),
+.BR dlerror (3C),
+.BR dlopen (3C),
+.BR dlsym (3C),
+.BR attributes (5)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide
 .SH NOTES
 .sp
 .LP
@@ -199,17 +230,30 @@ If no symbol is found to describe the specified address, both the
 .LP
 If the address specified exists within a mapped object in the range between
 the base address and the address of the first global symbol in the object,
-the reserved local symbol \fB_START_\fR is returned. This symbol acts as a
+the reserved local symbol
+.B _START_
+is returned. This symbol acts as a
 label representing the start of the mapped object. As a label, this symbol
-has no size. The \fBdli_saddr\fR member is set to the base address of the
-associated object. The \fBdli_sname\fR member is set to the symbol name
-\fB_START_\fR. If the flag argument is set to \fBRTLD_DL_SYMENT\fR, symbol
-information for \fB_START_\fR is returned.
+has no size. The
+.B dli_saddr
+member is set to the base address of the
+associated object. The
+.B dli_sname
+member is set to the symbol name
+.BR _START_ .
+If the flag argument is set to
+.BR RTLD_DL_SYMENT ,
+symbol
+information for
+.B _START_
+is returned.
 .sp
 .LP
 If an object is acting as a filter, care should be taken when interpreting
 the address of any symbol obtained using a handle to this object. For
 example, using \fBdlsym\fR(3C) to obtain the symbol \fI_end\fR for this
-object, results in returning the address of the symbol \fI_end\fR within the
+object, results in returning the address of the symbol
+.I _end
+within the
 filtee, not the filter. For more information on filters see the \fILinker
 and Libraries Guide\fR.

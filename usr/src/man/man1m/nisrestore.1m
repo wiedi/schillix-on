@@ -41,35 +41,56 @@ nisrestore \- restore NIS+ directory backup
 .sp
 .LP
 \fBnisrestore\fR restores an existing backup of a NIS+ directory object
-that was created using \fBnisbackup\fR(1M). The \fIbackup-dir\fR is the UNIX
+that was created using
+.BR nisbackup "(1M). The"
+.I backup-dir
+is the UNIX
 directory that contains the NIS+ backup on the server being restored. The
 \fBnisrestore\fR command can be used to restore a NIS+ directory object or a
 complete NIS+ database. It also can be used as an "out of band" fast
 replication for a new replica server being initialized. The
-\fBrpc.nisd\fR(1M) daemon must be stopped before running \fBnisrestore\fR.
+.BR rpc.nisd (1M)
+daemon must be stopped before running
+.BR nisrestore .
 .sp
 .LP
 The first synopsis is used to restore a single directory object or a
 specified list of directory objects. The directory can be partially
 qualified or fully qualified. The server being restored will be verified
 against the list of servers serving the directory. If this server is not
-configured to serve this object, \fBnisrestore\fR will exit with an error.
+configured to serve this object,
+.B nisrestore
+will exit with an error.
 The \fB-f\fR option will override this check and force the operation.
 .sp
 .LP
 The second synopsis will restore all of the directory objects contained in
-the \fIbackup-dir\fR. Again, the server will be validated against the
-serving list for each of the directory objects in the \fIbackup-dir\fR. If
-one of the objects in the \fIbackup-dir\fR are not served by this server,
+the
+.IR backup-dir .
+Again, the server will be validated against the
+serving list for each of the directory objects in the
+.IR backup-dir .
+If
+one of the objects in the
+.I backup-dir
+are not served by this server,
 \fBnisrestore\fR will exit with an error. The \fB-f\fR option will override
 this check and force the operation.
 .sp
 .LP
-The \fB-a\fR option will attempt to restore all NIS+ objects contained in
-the \fIbackup-dir\fR. If any of these objects are not served by the server,
+The
+.B -a
+option will attempt to restore all NIS+ objects contained in
+the
+.IR backup-dir .
+If any of these objects are not served by the server,
 \fBnisrestore\fR will exit with an error. If the \fIbackup-dir\fR contains
-objects that are not served by the server, \fBnisrestore\fR must be executed
-without the \fB-a\fR option and the specific directory objects listed.
+objects that are not served by the server,
+.B nisrestore
+must be executed
+without the
+.B -a
+option and the specific directory objects listed.
 .sp
 .LP
 The \fB-f\fR option will disable verification of the server being
@@ -80,12 +101,15 @@ single server domain (master server only) or if the other NIS+ servers are
 unavailable for NIS+ lookups.
 .sp
 .LP
-The combination of options \fB-f\fR and \fB-a\fR should be used with
+The combination of options \fB-f\fR and
+.B -a
+should be used with
 caution, as no validation of the server serving the restored objects will be
 done.
 .sp
 .LP
-New replicas can be quickly added to a namespace with the \fBnisrestore\fR
+New replicas can be quickly added to a namespace with the
+.BR nisrestore
 command. The steps are as follows.
 .sp
 .LP
@@ -100,7 +124,9 @@ master# \fBnisserver -R -h replica\fR
 
 .sp
 .LP
-Temporarily stop the \fBrpc.nisd\fR server process on the new replica
+Temporarily stop the
+.B rpc.nisd
+server process on the new replica
 server:
 .sp
 .in +2
@@ -113,7 +139,11 @@ replica# \fBsvcadm disable -t network/rpc/nisplus:default\fR
 .sp
 .LP
 Create a backup of the NIS+ database on the master, which will include the
-new replica information. See \fBnisbackup\fR(1M). The \fB/backup\fR will
+new replica information. See
+.BR nisbackup (1M).
+The
+.B /backup
+will
 need to be exported to the new replica. See \fBshare_nfs\fR(1M).
 .sp
 .in +2
@@ -139,7 +169,8 @@ replica# nisrestore -f -a //nfs-mnt/backup
 
 .sp
 .LP
-Restart the \fBrpc.nisd\fR(1M) process on the new replica, and the server
+Restart the
+.BR rpc.nisd "(1M) process on the new replica, and the server"
 will immediately be available for service:
 .sp
 .in +2
@@ -157,11 +188,12 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-a\fR
+.B -a
 .ad
 .RS 6n
 .rt
-Restores all directory objects included in the \fIbackup-dir\fR
+Restores all directory objects included in the
+.IR backup-dir
 partition.
 .RE
 
@@ -181,18 +213,19 @@ in the directory object's serving list.
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .RS 6n
 .rt
-Lists all directory objects contained in \fIbackup-dir\fR.
+Lists all directory objects contained in
+.IR backup-dir .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 6n
 .rt
@@ -208,7 +241,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fIbackup-dir\fR
+.I backup-dir
 .ad
 .RS 14n
 .rt
@@ -220,7 +253,7 @@ objects to be restored.
 .ne 2
 .mk
 .na
-\fIdirectory\fR
+.I directory
 .ad
 .RS 14n
 .rt
@@ -230,12 +263,15 @@ partially qualified name.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRRestoring the Directory Object on a Replica Server from a
+\fBExample 1\fR Restoring the Directory Object on a Replica Server from a
 Local UFS Partition
 .sp
 .LP
-To restore the \fBorg_dir\fR directory object of the domain \fBfoo.com\fR
-on a replica server from a local ufs partition named \fB/var/backup\fR:
+To restore the
+.B org_dir
+directory object of the domain \fBfoo.com\fR
+on a replica server from a local ufs partition named
+.BR /var/backup :
 
 .sp
 .in +2
@@ -246,12 +282,13 @@ replica_server# \fBnisrestore /var/backup org_dir.foo.com.\fR
 .sp
 
 .LP
-\fBExample 2 \fRForcing the Restore of a Backed up NIS+ Namespace to a
+\fBExample 2\fR Forcing the Restore of a Backed up NIS+ Namespace to a
 Replica Server From the Backup Partition
 .sp
 .LP
 To force the restore of an entire backed up NIS+ namespace to a replica
-server from the backup partition named \fB/var/backup\fR:
+server from the backup partition named
+.BR /var/backup :
 
 .sp
 .in +2
@@ -262,7 +299,7 @@ replica_server# \fBnisrestore -f -a /var/backup\fR
 .sp
 
 .LP
-\fBExample 3 \fRRestoring the Subdomain on a Master Server From a Backup
+\fBExample 3\fR Restoring the Subdomain on a Master Server From a Backup
 that Includes Other Directory Objects
 .sp
 .LP
@@ -283,7 +320,7 @@ master_server# \fBnisrestore /var/backup sub.foo.com. \e
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -294,7 +331,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -319,11 +356,13 @@ This ASCII file contains a list of all the objects contained in this
 .ne 2
 .mk
 .na
-\fI/backup-dir/directory-object\fR
+.I /backup-dir/directory-object
 .ad
 .sp .6
 .RS 4n
-A subdirectory that is created in the \fIbackup-dir\fR which contains the
+A subdirectory that is created in the
+.I backup-dir
+which contains the
 directory-object backup.
 .RE
 
@@ -365,7 +404,9 @@ directory-object backup.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -382,9 +423,16 @@ AvailabilitySUNWnisu
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBNIS+\fR(1), \fBnisdefaults\fR(1), \fBnisbackup\fR(1M),
-\fBnisserver\fR(1M), \fBrpc.nisd\fR(1M), \fBshare_nfs\fR( 1M),
-\fBsvcadm\fR(1M), \fBnisfiles\fR(4), \fBattributes\fR(5), \fBsmf\fR(5)
+.BR svcs (1),
+.BR NIS+ (1),
+\fBnisdefaults\fR(1), \fBnisbackup\fR(1M),
+.BR nisserver (1M),
+.BR rpc.nisd (1M),
+\fBshare_nfs\fR( 1M),
+.BR svcadm (1M),
+\fBnisfiles\fR(4),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
@@ -407,5 +455,9 @@ svc:/network/rpc/nisplus:default
 .sp
 .LP
 Administrative actions on this service, such as enabling, disabling, or
-requesting restart, can be performed using \fBsvcadm\fR(1M). The service's
-status can be queried using the \fBsvcs\fR(1) command.
+requesting restart, can be performed using
+.BR svcadm (1M).
+The service's
+status can be queried using the
+.BR svcs (1)
+command.

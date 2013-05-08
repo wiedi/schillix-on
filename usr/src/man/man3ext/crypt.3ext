@@ -89,72 +89,135 @@ points to the encrypted password. The first two characters are the salt
 itself.
 .sp
 .LP
-The \fBdes_setkey()\fR and \fBdes_encrypt()\fR entries provide (rather
+The
+.B des_setkey()
+and
+.B des_encrypt()
+entries provide (rather
 primitive) access to the actual hashing algorithm. The argument of
 \fBdes_setkey()\fR is a character array of length 64 containing only the
 characters with numerical value 0 and 1. If this string is divided into
 groups of 8, the low-order bit in each group is ignored, thereby creating a
 56-bit key that is set into the machine. This key is the key that will be
-used with the hashing algorithm to encrypt the string \fIblock\fR with the
-function \fBdes_encrypt()\fR.
+used with the hashing algorithm to encrypt the string
+.I block
+with the
+function
+.BR des_encrypt() .
 .sp
 .LP
-The argument to the \fBdes_encrypt()\fR entry is a character array of
+The argument to the
+.B des_encrypt()
+entry is a character array of
 length 64 containing only the characters with numerical value 0 and 1. The
 argument array is modified in place to a similar array representing the bits
 of the argument after having been subjected to the hashing algorithm using
-the key set by \fBdes_setkey()\fR. If  \fIflag\fR is zero, the argument is
+the key set by
+.BR des_setkey() .
+If  \fIflag\fR is zero, the argument is
 encrypted; if non-zero, it is decrypted.
 .sp
 .LP
 Note that decryption is not provided in the international version of
-\fBcrypt()\fR. The international version is part of the C Development Set,
+.BR crypt() .
+The international version is part of the C Development Set,
 and the domestic version is part of the Security Administration Utilities.
 If decryption is attempted with the international version of
-\fBdes_encrypt()\fR, an error message is printed.
+.BR des_encrypt() ,
+an error message is printed.
 .sp
 .LP
-\fBcrypt()\fR, \fBsetkey()\fR, and \fBencrypt()\fR are front-end routines
-that invoke \fBdes_crypt()\fR, \fBdes_setkey()\fR, and \fBdes_encrypt()\fR
+.BR crypt() ,
+.BR setkey() ,
+and
+.B encrypt()
+are front-end routines
+that invoke
+.BR des_crypt() ,
+.BR des_setkey() ,
+and
+.BR des_encrypt()
 respectively.
 .sp
 .LP
-The routines \fBrun_setkey()\fR and \fBrun_crypt()\fR are designed for use
+The routines
+.B run_setkey()
+and
+.B run_crypt()
+are designed for use
 by applications that need cryptographic capabilities, such as \fBed\fR(1)
-and \fBvi\fR(1). \fBrun_setkey()\fR establishes a two-way pipe connection
-with the \fBcrypt\fR utility, using \fIkey\fR as the password argument.
+and
+.BR vi (1).
+\fBrun_setkey()\fR establishes a two-way pipe connection
+with the
+.B crypt
+utility, using
+.I key
+as the password argument.
 \fBrun_crypt()\fR takes a block of characters and transforms the cleartext
-or ciphertext into their ciphertext or cleartext using the \fBcrypt\fR
+or ciphertext into their ciphertext or cleartext using the
+.BR crypt
 utility. \fIoffset\fR is the relative byte position from the beginning of
-the file that the block of text provided in \fIblock\fR is coming from.
-\fIcount\fR is the number of characters in \fIblock\fR, and \fIconnection\fR
+the file that the block of text provided in
+.I block
+is coming from.
+\fIcount\fR is the number of characters in
+.IR block ,
+and
+.IR connection
 is an array containing indices to a table of input and output file streams.
-When encryption is finished, \fBcrypt_close()\fR is used to terminate the
-connection with the \fBcrypt\fR utility.
+When encryption is finished,
+.B crypt_close()
+is used to terminate the
+connection with the
+.B crypt
+utility.
 .sp
 .LP
 \fBrun_setkey()\fR returns  \fB\(mi1\fR if a connection with the
 \fBcrypt\fR utility cannot be established. This result will occur in
-international versions of the UNIX system in which the \fBcrypt\fR utility
-is not available.  If a null key is passed to \fBrun_setkey()\fR, \fB0\fR is
-returned. Otherwise,  \fB1\fR is returned. \fBrun_crypt()\fR returns
+international versions of the UNIX system in which the
+.B crypt
+utility
+is not available.  If a null key is passed to
+.BR run_setkey() ,
+\fB0\fR is
+returned. Otherwise, 
+.B 1
+is returned.
+.B run_crypt()
+returns
 \fB\(mi1\fR if it cannot write output or read input from the pipe attached
-to \fBcrypt()\fR. Otherwise it returns  \fB0\fR.
+to
+.BR crypt() .
+Otherwise it returns 
+.BR 0 .
 .sp
 .LP
 The program must be linked with the object file access routine library
-\fBlibcrypt.a\fR.
+.BR libcrypt.a .
 .SH RETURN VALUES
 .sp
 .LP
-In the international version of \fBcrypt()\fR, a flag argument of  \fB1\fR
-to \fBencrypt()\fR or \fBdes_encrypt()\fR is not accepted, and \fBerrno\fR
-is set to \fBENOSYS\fR to indicate that the functionality is not
+In the international version of
+.BR crypt() ,
+a flag argument of 
+.BR 1
+to
+.B encrypt()
+or
+.B des_encrypt()
+.RB "is not accepted, and" " errno"
+is set to
+.B ENOSYS
+to indicate that the functionality is not
 available.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -171,10 +234,17 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBed\fR(1), \fBlogin\fR(1), \fBpasswd\fR(1), \fBvi\fR(1),
-\fBgetpass\fR(3C), \fBpasswd\fR(4), \fBattributes\fR(5)
+.BR ed (1),
+.BR login (1),
+.BR passwd (1),
+.BR vi (1),
+.BR getpass (3C),
+.BR passwd (4),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-The return value in \fBcrypt()\fR points to static data that are
+The return value in
+.B crypt()
+points to static data that are
 overwritten by each call.

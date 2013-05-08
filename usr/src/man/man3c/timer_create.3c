@@ -62,34 +62,72 @@ timer_create \- create a timer
 .SH DESCRIPTION
 .sp
 .LP
-The \fBtimer_create()\fR function creates a timer using the specified
-clock, \fIclock_id\fR, as the timing base. The \fBtimer_create()\fR function
-returns, in the location referenced by \fItimerid\fR, a timer \fBID\fR of
-type \fBtimer_t\fR used to identify the timer in timer requests. This timer
+The
+.B timer_create()
+function creates a timer using the specified
+clock,
+.IR clock_id ,
+as the timing base. The
+.B timer_create()
+function
+returns, in the location referenced by
+.IR timerid ,
+a timer
+.B ID
+of
+type
+.B timer_t
+used to identify the timer in timer requests. This timer
 \fBID\fR will be unique within the calling process until the timer is
-deleted. The particular clock, \fIclock_id\fR, is defined in <\fBtime.h\fR>.
-The timer whose \fBID\fR is returned will be in a disarmed state upon return
-from \fBtimer_create()\fR.
+deleted. The particular clock,
+.IR clock_id ,
+is defined in <\fBtime.h\fR>.
+The timer whose
+.B ID
+is returned will be in a disarmed state upon return
+from
+.BR timer_create() .
 .sp
 .LP
-The \fIevp\fR argument, if non-null, points to a \fBsigevent\fR structure.
+The
+.I evp
+argument, if non-null, points to a
+.B sigevent
+structure.
 This structure, allocated by the application, defines the asynchronous
 notification that will occur when the timer expires (see
-\fBsignal.h\fR(3HEAD) for event notification details). If the \fIevp\fR
-argument is \fINULL\fR, the effect is as if the \fIevp\fR argument pointed
-to a \fBsigevent\fR structure with the \fBsigev_notify\fR member having the
-value \fBSIGEV_SIGNAL\fR, the \fBsigev_signo\fR having the value
-\fBSIGALARM\fR, and the \fBsigev_value\fR member having the value of the
-timer \fBID\fR.
+.BR signal.h (3HEAD)
+for event notification details). If the \fIevp\fR
+argument is
+.IR NULL ,
+the effect is as if the
+.I evp
+argument pointed
+to a
+.B sigevent
+structure with the \fBsigev_notify\fR member having the
+value
+.BR SIGEV_SIGNAL ,
+the
+.B sigev_signo
+having the value
+.BR SIGALARM ,
+and the
+.B sigev_value
+member having the value of the
+timer
+.BR ID .
 .sp
 .LP
 The system defines a set of clocks that can be used as timing bases for
-per-process timers. The following values for \fIclock_id\fR are supported:
+per-process timers. The following values for
+.I clock_id
+are supported:
 .sp
 .ne 2
 .mk
 .na
-\fBCLOCK_REALTIME\fR
+.B CLOCK_REALTIME
 .ad
 .RS 18n
 .rt
@@ -100,7 +138,7 @@ wall clock
 .ne 2
 .mk
 .na
-\fBCLOCK_VIRTUAL\fR
+.B CLOCK_VIRTUAL
 .ad
 .RS 18n
 .rt
@@ -111,7 +149,7 @@ user CPU usage clock
 .ne 2
 .mk
 .na
-\fBCLOCK_PROF\fR
+.B CLOCK_PROF
 .ad
 .RS 18n
 .rt
@@ -122,7 +160,7 @@ user and system CPU usage clock
 .ne 2
 .mk
 .na
-\fBCLOCK_HIGHRES\fR
+.B CLOCK_HIGHRES
 .ad
 .RS 18n
 .rt
@@ -131,7 +169,11 @@ non-adjustable, high-resolution clock
 
 .sp
 .LP
-For timers created with a \fIclock_id\fR of \fBCLOCK_HIGHRES\fR, the system
+For timers created with a
+.I clock_id
+of
+.BR CLOCK_HIGHRES ,
+the system
 will attempt to use an optimal hardware source. This may include, but is not
 limited to, per-CPU timer sources.  The actual hardware source used is
 transparent to the user and may change over the lifetime of the timer. For
@@ -142,26 +184,44 @@ hardware source  that better reflects the new binding. Timers based on a
 that have minimal jitter tolerence.
 .sp
 .LP
-Timers are not inherited by a child process across a \fBfork\fR(2) and are
-disarmed and deleted by a call to one of the \fBexec\fR functions (see
-\fBexec\fR(2)). 
+Timers are not inherited by a child process across a
+.BR fork (2)
+and are
+disarmed and deleted by a call to one of the
+.B exec
+functions (see
+.BR exec (2)).
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBtimer_create()\fR returns \fB0\fR and
-updates the location referenced by \fItimerid\fR to a \fBtimer_t\fR, which
+Upon successful completion,
+.B timer_create()
+returns
+.B 0
+and
+updates the location referenced by
+.I timerid
+to a
+.BR timer_t ,
+which
 can be passed to the per-process timer calls. If an error occurs, the
-function returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error. The
-value of \fItimerid\fR is undefined if an error occurs.
+function returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error. The
+value of
+.I timerid
+is undefined if an error occurs.
 .SH ERRORS
 .sp
 .LP
-The \fBtimer_create()\fR function will fail if:
+The
+.B timer_create()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -174,22 +234,30 @@ by the system.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The specified clock \fBID\fR, \fIclock_id\fR, is not defined.
+The specified clock
+.BR ID ,
+.IR clock_id ,
+is not defined.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
-The specified clock \fBID\fR, \fIclock_id\fR, is \fBCLOCK_HIGHRES\fR and
+The specified clock
+.BR ID ,
+.IR clock_id ,
+is
+.B CLOCK_HIGHRES
+and
 the {\fBPRIV_PROC_CLOCK_HIGHRES\fR} is not asserted in the effective set of
 the calling process.
 .RE
@@ -197,7 +265,9 @@ the calling process.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -218,7 +288,14 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBfork\fR(2), \fBtime\fR(2), \fBclock_settime\fR(3C),
-\fBsignal\fR(3C), \fBsignal.h\fR(3HEAD), \fBtimer_delete\fR(3C),
-\fBtimer_settime\fR(3C), \fBattributes\fR(5), \fBprivileges\fR(5),
-\fBstandards\fR(5)
+.BR exec (2),
+\fBfork\fR(2),
+.BR time (2),
+.BR clock_settime (3C),
+.BR signal (3C),
+.BR signal.h (3HEAD),
+.BR timer_delete (3C),
+.BR timer_settime (3C),
+.BR attributes (5),
+.BR privileges (5),
+.BR standards (5)

@@ -37,15 +37,22 @@ files. Audit files can be from one or more machines.
 The merge function merges together audit records from one or more input
 audit trail files into a single output file. The records in an audit trail
 file are assumed to be sorted in chronological order (oldest first) and this
-order is maintained by \fBauditreduce\fR in the output file.
+order is maintained by
+.B auditreduce
+in the output file.
 .sp
 .LP
-Unless instructed otherwise, \fBauditreduce\fR will merge the entire audit
+Unless instructed otherwise,
+.B auditreduce
+will merge the entire audit
 trail, which consists of all the audit trail files in the directory
-structure \fIaudit_root_dir\fR/*/files (see \fBaudit_control\fR(4) for
+structure \fIaudit_root_dir\fR/*/files (see
+.BR audit_control (4)
+for
 details of the structure of the audit root). Unless specified with the
 -\fBR\fR or -\fBS\fR option, \fIaudit_root_dir\fR defaults to
-\fB/etc/security/audit\fR. By using the file selection options it is
+.BR /etc/security/audit .
+By using the file selection options it is
 possible to select some subset of these files, or files from another
 directory, or files named explicitly on the command line.
 .sp
@@ -59,7 +66,9 @@ for details of record content). A record must meet all of the
 .LP
 Any audit trail file not named on the command line must conform to the
 audit trail filename format. Files produced by the audit system already have
-this format. Output file names produced by \fBauditreduce\fR are in this
+this format. Output file names produced by
+.B auditreduce
+are in this
 format. It is:
 .sp
 .in +2
@@ -71,14 +80,22 @@ format. It is:
 
 .sp
 .LP
-where \fIstart-time\fR is the 14-character timestamp of when the file was
-opened, \fIend-time\fR is the 14-character timestamp of when the file was
+where
+.I start-time
+is the 14-character timestamp of when the file was
+opened,
+.I end-time
+is the 14-character timestamp of when the file was
 closed, and \fIsuffix\fR is the name of the machine which generated the
 audit trail file, or some other meaningful suffix (for example, \fBall\fR,
 if the file contains a combined group of records from many machines). The
-\fIend-time\fR can be the literal string \fBnot_terminated\fR, to indicate
+\fIend-time\fR can be the literal string
+.BR not_terminated ,
+to indicate
 that the file is still being written to by the audit system. Timestamps are
-of the form \fIyyyymmddhhmmss\fR (year, month, day, hour, minute, second).
+of the form
+.I yyyymmddhhmmss
+(year, month, day, hour, minute, second).
 The timestamps are in Greenwich Mean Time (GMT).
 .SH OPTIONS
 .SS "File Selection Options"
@@ -90,30 +107,46 @@ certain types of special treatment.
 .ne 2
 .mk
 .na
-\fB-A\fR
+.B -A
 .ad
 .sp .6
 .RS 4n
 All of the records from the input files will be selected regardless of
-their timestamp. This option effectively disables the \fB-a\fR, \fB-b\fR,
-and \fB-d\fR options. This is useful in preventing the loss of records if
-the \fB-D\fR option is used to delete the input files after they are
-processed. Note, however, that if a record is \fInot\fR selected due to
-another option, then \fB-A\fR will not override that.
+their timestamp. This option effectively disables the
+.BR -a ,
+.BR -b ,
+and
+.B -d
+options. This is useful in preventing the loss of records if
+the
+.B -D
+option is used to delete the input files after they are
+processed. Note, however, that if a record is
+.I not
+selected due to
+another option, then
+.B -A
+will not override that.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-C\fR
+.B -C
 .ad
 .sp .6
 .RS 4n
-Only process complete files. Files whose filename \fIend-time\fR timestamp
-is \fBnot_terminated\fR are not processed (such a file is currently being
+Only process complete files. Files whose filename
+.I end-time
+timestamp
+is
+.B not_terminated
+are not processed (such a file is currently being
 written to by the audit system). This is useful in preventing the loss of
-records if \fB-D\fR is used to delete the input files after they are
+records if
+.B -D
+is used to delete the input files after they are
 processed. It does not apply to files specified on the command line.
 .RE
 
@@ -127,11 +160,21 @@ processed. It does not apply to files specified on the command line.
 .RS 4n
 Delete input files after they are read if the entire run is successful. If
 \fBauditreduce\fR detects an error while reading a file, then that file is
-not deleted. If \fB-D\fR is specified, \fB-A\fR, \fB-C\fR and \fB-O\fR are
-also implied. \fIsuffix\fR is given to the \fB-O\fR option. This helps
+not deleted. If
+.B -D
+is specified,
+.BR -A ,
+\fB-C\fR and \fB-O\fR are
+also implied. \fIsuffix\fR is given to the
+.B -O
+option. This helps
 prevent the loss of audit records by ensuring that all of the records are
 written, only complete files are processed, and the records are written to a
-file before being deleted. Note that if both \fB-D\fR and \fB-O\fR are
+file before being deleted. Note that if both
+.B -D
+and
+.B -O
+are
 specified in the command line, the order of specification is significant.
 The \fIsuffix\fR associated with the latter specification is in effect.
 .RE
@@ -144,9 +187,15 @@ The \fIsuffix\fR associated with the latter specification is in effect.
 .ad
 .sp .6
 .RS 4n
-Allows selection of records from files with \fImachine\fR as the filename
-suffix. If \fB-M\fR is not specified, all files are processed regardless of
-suffix. \fB-M\fR can also be used to allow selection of records from files
+Allows selection of records from files with
+.I machine
+as the filename
+suffix. If
+.B -M
+is not specified, all files are processed regardless of
+suffix.
+.B -M
+can also be used to allow selection of records from files
 that contain combined records from many machines and have a common suffix
 (such as \fBall\fR).
 .RE
@@ -155,16 +204,29 @@ that contain combined records from many machines and have a common suffix
 .ne 2
 .mk
 .na
-\fB-N\fR
+.B -N
 .ad
 .sp .6
 .RS 4n
 Select objects in \fBnew mode\fR.This flag is off by default, thus
 retaining backward compatibility. In the existing, \fBold mode\fR,
-specifying the \fB-e\fR, \fB-f\fR, \fB-g\fR, \fB-r\fR, or \fB-u\fR flags
-would select not only actions taken with those \fBID\fRs, but also certain
-objects owned by those \fBID\fRs. When running in \fBnew mode\fR, only
-actions are selected. In order to select objects, the \fB-o\fR option must
+specifying the
+.BR -e ,
+\fB-f\fR,
+.BR -g ,
+.BR -r ,
+or
+.B -u
+flags
+would select not only actions taken with those
+.BR ID "s, but also certain"
+objects owned by those
+.BR ID "s. When running in"
+.BR "new mode" ,
+only
+actions are selected. In order to select objects, the
+.B -o
+option must
 be used.
 .RE
 
@@ -176,21 +238,30 @@ be used.
 .ad
 .sp .6
 .RS 4n
-Direct output stream to a file in the current \fBaudit_root_dir\fR with the
+Direct output stream to a file in the current
+.B audit_root_dir
+with the
 indicated suffix. \fIsuffix\fR can alternatively contain a full pathname, in
 which case the last component is taken as the suffix, ahead of which the
 timestamps will be placed, ahead of which the remainder of the pathname will
-be placed. If the \fB-O\fR option is not specified, the output is sent to
-the standard output. When \fBauditreduce\fR places timestamps in the
+be placed. If the
+.B -O
+option is not specified, the output is sent to
+the standard output. When
+.B auditreduce
+places timestamps in the
 filename, it uses the times of the first and last records in the merge as
-the \fIstart-time\fR and \fIend-time\fR.
+the
+.I start-time
+and
+.IR end-time .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-Q\fR
+.B -Q
 .ad
 .sp .6
 .RS 4n
@@ -206,7 +277,9 @@ Quiet. Suppress notification about errors with input files.
 .sp .6
 .RS 4n
 Specify the pathname of an alternate audit root directory
-\fIaudit_root_dir\fR to be \fIpathname\fR. Therefore, rather than using
+\fIaudit_root_dir\fR to be
+.IR pathname .
+Therefore, rather than using
 \fB/etc/security/audit\fR/*/files by default, \fIpathname\fR/*/files will be
 examined instead.
 .LP
@@ -214,7 +287,9 @@ Note -
 .sp
 .RS 2
 The root file system of any non-global zones must not be referenced with
-the \fB-R\fR option. Doing so might damage the global zone's file system,
+the
+.B -R
+option. Doing so might damage the global zone's file system,
 might compromise the security of the global zone, and might damage the
 non-global zone's file system. See \fBzones\fR(5).
 .RE
@@ -228,22 +303,29 @@ non-global zone's file system. See \fBzones\fR(5).
 .ad
 .sp .6
 .RS 4n
-This option causes \fBauditreduce\fR to read audit trail files from a
-specific location (server directory). \fIserver\fR is normally interpreted
+This option causes
+.B auditreduce
+to read audit trail files from a
+specific location (server directory).
+.I server
+is normally interpreted
 as the name of a subdirectory of the audit root, therefore \fBauditreduce\fR
 will look in \fIaudit_root_dir\fR/\fIserver\fR/files for the audit trail
-files. But if \fIserver\fR contains any `\fB/\fR' characters, it is the name
+files. But if
+.I server
+contains any `\fB/\fR' characters, it is the name
 of a specific directory not necessarily contained in the audit root. In this
 case, \fIserver\fR/files will be consulted. This option allows archived
 files to be manipulated easily, without requiring that they be physically
-located in a directory structure like that of \fB/etc/security/audit\fR.
+located in a directory structure like that of
+.BR /etc/security/audit .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-V\fR
+.B -V
 .ad
 .sp .6
 .RS 4n
@@ -255,7 +337,8 @@ records total were written to the output stream.
 .sp
 .LP
 The record selection options listed below are used to indicate which
-records are written to the output file produced by \fBauditreduce\fR.
+records are written to the output file produced by
+.BR auditreduce .
 .sp
 .LP
 Multiple arguments of the same type are not permitted.
@@ -267,8 +350,12 @@ Multiple arguments of the same type are not permitted.
 .ad
 .sp .6
 .RS 4n
-Select records that occurred at or after \fIdate-time\fR. The
-\fIdate-time\fR argument is described under \fBOption Arguments\fR, below.
+Select records that occurred at or after
+.IR date-time .
+The
+\fIdate-time\fR argument is described under
+.BR "Option Arguments" ,
+below.
 \fIdate-time\fR is in local time. The \fB-a\fR and \fB-b\fR options can be
 used together to form a range.
 .RE
@@ -281,7 +368,8 @@ used together to form a range.
 .ad
 .sp .6
 .RS 4n
-Select records that occurred before \fIdate-time\fR.
+Select records that occurred before
+.IR date-time .
 .RE
 
 .sp
@@ -293,10 +381,21 @@ Select records that occurred before \fIdate-time\fR.
 .sp .6
 .RS 4n
 Select records by audit class. Records with events that are mapped to the
-audit classes specified by \fIaudit-classes\fR are selected. Audit class
-names are defined in \fBaudit_class\fR(4). The \fIaudit-classes\fR can be a
-comma separated list of \fBaudit\fR \fIflags\fR like those described in
-\fBaudit_control\fR(4). Using the \fBaudit\fR \fIflags,\fR one can select
+audit classes specified by
+.I audit-classes
+are selected. Audit class
+names are defined in
+.BR audit_class (4).
+The
+.I audit-classes
+can be a
+comma separated list of
+.B audit
+\fIflags\fR like those described in
+.BR audit_control (4).
+Using the
+.B audit
+\fIflags,\fR one can select
 records based upon success and failure criteria.
 .RE
 
@@ -312,8 +411,14 @@ Select records that occurred on a specific day (a 24-hour period beginning
 at 00:00:00 of the day specified and ending at 23:59:59). The day specified
 is in local time. The time portion of the argument, if supplied, is ignored.
 Any records with timestamps during that day are selected. If any hours,
-minutes, or seconds are given in \fItime,\fR they are ignored. \fB-d\fR can
-not be used with \fB-a\fR or \fB-b\fB\&.\fR
+minutes, or seconds are given in
+.I time,
+they are ignored.
+.B -d
+can
+not be used with
+.B -a
+or \fB-b\fB\&.\fR
 .RE
 
 .sp
@@ -346,7 +451,8 @@ Select records with the specified \fIeffective-group.\fR
 .ad
 .sp .6
 .RS 4n
-Select records with the specified \fIreal-group.\fR
+Select records with the specified
+.IR real-group.
 .RE
 
 .sp
@@ -357,7 +463,10 @@ Select records with the specified \fIreal-group.\fR
 .ad
 .sp .6
 .RS 4n
-Select records with the specified \fIsubject-ID\fR where \fIsubject-ID\fR
+Select records with the specified
+.I subject-ID
+where
+.IR subject-ID
 is a process ID.
 .RE
 
@@ -382,8 +491,14 @@ is configured with Trusted Extensions.
 .ad
 .sp .6
 .RS 4n
-Select records with the indicated \fIevent\fR. The \fIevent\fR is the
-literal string or the \fIevent\fR number.
+Select records with the indicated
+.IR event .
+The
+.I event
+is the
+literal string or the
+.I event
+number.
 .RE
 
 .sp
@@ -395,8 +510,12 @@ literal string or the \fIevent\fR number.
 .sp .6
 .RS 4n
 Select records by object type. A match occurs when the record contains the
-information describing the specified \fIobject_type\fR and the object ID
-equals the value specified by \fIobjectID_value.\fR The allowable object
+information describing the specified
+.I object_type
+and the object ID
+equals the value specified by
+.I objectID_value.
+The allowable object
 types and values are as follows:
 .sp
 .ne 2
@@ -408,14 +527,24 @@ types and values are as follows:
 .RS 4n
 Select records containing file system objects with the specified pathname,
 where pathname is a comma separated list of regular expressions. If a
-regular expression is preceded by a tilde (\fB~\fR), files matching the
+regular expression is preceded by a tilde
+.RB ( ~ ),
+files matching the
 expression are excluded from the output. For example, the option
 \fBfile=~/usr/openwin,/usr,/etc\fR would select all files in \fB/usr\fR or
-\fB/etc\fR except those in \fB/usr/openwin\fR. The order of the regular
+\fB/etc\fR except those in
+.BR /usr/openwin .
+The order of the regular
 expressions is important because auditreduce processes them from left to
 right, and stops when a file is known to be either selected or excluded.
-Thus the option \fBfile=\fR \fB/usr\fR, \fB/etc\fR, \fB~/usr/openwin\fR
-would select all files in \fB/usr\fR and all files in \fB/etc\fR. Files in
+Thus the option \fBfile= /usr\fR,
+.BR /etc ,
+.B ~/usr/openwin
+would select all files in
+.B /usr
+and all files in
+.BR /etc .
+Files in
 \fB/usr/openwin\fR are not excluded because the regular expression
 \fB/usr\fR is matched first. Care should be given in surrounding the
 \fIpathname\fR with quotes so as to prevent the shell from expanding any
@@ -430,7 +559,9 @@ tildes.
 .ad
 .sp .6
 .RS 4n
-Select records containing file system objects with \fIgroup\fR as the
+Select records containing file system objects with
+.I group
+as the
 owning group.
 .RE
 
@@ -442,7 +573,9 @@ owning group.
 .ad
 .sp .6
 .RS 4n
-Select records containing file system objects with \fIuser\fR as the owning
+Select records containing file system objects with
+.I user
+as the owning
 user.
 .RE
 
@@ -454,8 +587,12 @@ user.
 .ad
 .sp .6
 .RS 4n
-Select records containing message queue objects with the specified \fIID\fR
-where \fIID\fR is a message queue \fBID\fR.
+Select records containing message queue objects with the specified
+.IR ID
+where
+.I ID
+is a message queue
+.BR ID .
 .RE
 
 .sp
@@ -466,7 +603,9 @@ where \fIID\fR is a message queue \fBID\fR.
 .ad
 .sp .6
 .RS 4n
-Select records containing message queue objects with \fIgroup\fR as the
+Select records containing message queue objects with
+.I group
+as the
 owning or creating group.
 .RE
 
@@ -478,7 +617,9 @@ owning or creating group.
 .ad
 .sp .6
 .RS 4n
-Select records containing message queue objects with \fIuser\fR as the
+Select records containing message queue objects with
+.I user
+as the
 owning or creating user.
 .RE
 
@@ -490,8 +631,12 @@ owning or creating user.
 .ad
 .sp .6
 .RS 4n
-Select records containing process objects with the specified \fIID\fR where
-\fIID\fR is a process \fBID\fR. Process are objects when they are receivers
+Select records containing process objects with the specified
+.I ID
+where
+\fIID\fR is a process
+.BR ID .
+Process are objects when they are receivers
 of signals.
 .RE
 
@@ -503,7 +648,9 @@ of signals.
 .ad
 .sp .6
 .RS 4n
-Select records containing process objects with \fIgroup\fR as the real or
+Select records containing process objects with
+.I group
+as the real or
 effective group.
 .RE
 
@@ -515,7 +662,9 @@ effective group.
 .ad
 .sp .6
 .RS 4n
-Select records containing process objects with \fIuser\fR as the real or
+Select records containing process objects with
+.I user
+as the real or
 effective user.
 .RE
 
@@ -527,8 +676,12 @@ effective user.
 .ad
 .sp .6
 .RS 4n
-Select records containing semaphore objects with the specified \fIID\fR
-where \fIID\fR is a semaphore \fBID\fR.
+Select records containing semaphore objects with the specified
+.IR ID
+where
+.I ID
+is a semaphore
+.BR ID .
 .RE
 
 .sp
@@ -539,7 +692,9 @@ where \fIID\fR is a semaphore \fBID\fR.
 .ad
 .sp .6
 .RS 4n
-Select records containing semaphore objects with \fIgroup\fR as the owning
+Select records containing semaphore objects with
+.I group
+as the owning
 or creating group.
 .RE
 
@@ -551,7 +706,9 @@ or creating group.
 .ad
 .sp .6
 .RS 4n
-Select records containing semaphore objects with \fIuser\fR as the owning
+Select records containing semaphore objects with
+.I user
+as the owning
 or creating user.
 .RE
 
@@ -563,8 +720,12 @@ or creating user.
 .ad
 .sp .6
 .RS 4n
-Select records containing shared memory objects with the specified \fIID\fR
-where \fIID\fR is a shared memory \fBID\fR.
+Select records containing shared memory objects with the specified
+.IR ID
+where
+.I ID
+is a shared memory
+.BR ID .
 .RE
 
 .sp
@@ -575,7 +736,9 @@ where \fIID\fR is a shared memory \fBID\fR.
 .ad
 .sp .6
 .RS 4n
-Select records containing shared memory objects with \fIgroup\fR as the
+Select records containing shared memory objects with
+.I group
+as the
 owning or creating group.
 .RE
 
@@ -587,7 +750,9 @@ owning or creating group.
 .ad
 .sp .6
 .RS 4n
-Select records containing shared memory objects with \fIuser\fR as the
+Select records containing shared memory objects with
+.I user
+as the
 owning or creating user.
 .RE
 
@@ -601,7 +766,8 @@ owning or creating user.
 .RS 4n
 Select records containing socket objects with the specified
 \fIport_number\fR or the specified \fImachine\fR where \fImachine\fR is a
-machine name as defined in \fBhosts\fR(4).
+machine name as defined in
+.BR hosts (4).
 .RE
 
 .sp
@@ -613,7 +779,9 @@ machine name as defined in \fBhosts\fR(4).
 .sp .6
 .RS 4n
 Select records containing fault management resource identifier (FMRI)
-objects with the specified \fIservice instance\fR. See \fBsmf\fR(5).
+objects with the specified
+.IR "service instance" .
+See \fBsmf\fR(5).
 .RE
 
 .RE
@@ -626,7 +794,8 @@ objects with the specified \fIservice instance\fR. See \fBsmf\fR(5).
 .ad
 .sp .6
 .RS 4n
-Select records with the specified \fIreal-user\fR.
+Select records with the specified
+.IR real-user .
 .RE
 
 .sp
@@ -637,7 +806,8 @@ Select records with the specified \fIreal-user\fR.
 .ad
 .sp .6
 .RS 4n
-Select audit records with the specified \fIsession-id\fR.
+Select audit records with the specified
+.IR session-id .
 .RE
 
 .sp
@@ -648,7 +818,8 @@ Select audit records with the specified \fIsession-id\fR.
 .ad
 .sp .6
 .RS 4n
-Select records with the specified \fIaudit-user\fR.
+Select records with the specified
+.IR audit-user .
 .RE
 
 .sp
@@ -667,7 +838,10 @@ case-sensitive.
 .LP
 When one or more \fIfilename\fR arguments appear on the command line, only
 the named files are processed. Files specified in this way need not conform
-to the audit trail filename format. However, \fB-M\fR, \fB-S\fR, and
+to the audit trail filename format. However,
+.BR -M ,
+.BR -S ,
+and
 \fB-R\fR must not be used when processing named files. If the \fIfilename\fR
 is ``\(mi'' then the input is taken from the standard input.
 .SS "Option Arguments"
@@ -679,17 +853,26 @@ is ``\(mi'' then the input is taken from the standard input.
 .ad
 .sp .6
 .RS 4n
-An audit trail file as defined in \fBaudit.log\fR(4). An audit trail file
+An audit trail file as defined in
+.BR audit.log (4).
+An audit trail file
 not named on the command line must conform to the audit trail file name
-format. Audit trail files produced as output of \fBauditreduce\fR are in
+format. Audit trail files produced as output of
+.B auditreduce
+are in
 this format as well. The format is:
 .sp
 \fIstart-time . \|end-time . \|suffix\fR
 .sp
 \fIstart-time\fR is the 14 character time stamp denoting when the file was
-opened. \fIend-time\fR is the 14 character time stamp denoting when the file
-was closed. \fIend-time\fR can also be the literal string
-\fBnot_terminated\fR, indicating the file is still be written to by the
+opened.
+.I end-time
+is the 14 character time stamp denoting when the file
+was closed.
+.I end-time
+can also be the literal string
+.BR not_terminated ,
+indicating the file is still be written to by the
 audit daemon or the file was not closed properly (a system crash or abrupt
 halt occurred). \fIsuffix\fR is the name of the machine that generated the
 audit trail file (or some other meaningful suffix; for example, \fBall\fR
@@ -701,37 +884,65 @@ records from many machines).
 .ne 2
 .mk
 .na
-\fIdate-time\fR
+.I date-time
 .ad
 .sp .6
 .RS 4n
-The \fIdate-time\fR argument to \fB-a\fR, \fB-b\fR, and \fB-d\fR can be of
-two forms: An absolute \fIdate-time\fR takes the form:
+The
+.I date-time
+argument to
+.BR -a ,
+.BR -b ,
+and
+.B -d
+can be of
+two forms: An absolute
+.I date-time
+takes the form:
 .sp
 \fR yyyymmdd [ \fIhh\fR [ \fImm\fR [ \fIss\fR ]]]
 .sp
-where \fIyyyy\fR specifies a year (with 1970 as the earliest value),
+where
+.I yyyy
+specifies a year (with 1970 as the earliest value),
 \fImm\fR is the month (01-12), \fBdd\fR is the day (01-31), \fIhh\fR is the
-hour (00-23), \fImm\fR is the minute (00-59), and \fIss\fR is the second
-(00-59). The default is 00 for \fIhh\fR, \fImm\fR and \fIss\fR.
+hour (00-23),
+.I mm
+is the minute (00-59), and
+.I ss
+is the second
+(00-59). The default is 00 for
+.IR hh ,
+\fImm\fR and \fIss\fR.
 .sp
 An offset can be specified as: \fB+\fIn\fR \fBd\fR|\fBh\fR|\fBm\fR|
-\fBs\fR where \fIn\fR is a number of units, and the tags \fBd\fR, \fBh\fR,
-\fBm\fR, and \fBs\fR stand for days, hours, minutes and seconds,
+\fBs\fR where \fIn\fR is a number of units, and the tags
+.BR d ,
+.BR h ,
+.BR m ,
+and
+.B s
+stand for days, hours, minutes and seconds,
 respectively. An offset is relative to the starting time. Thus, this form
-can only be used with the \fB-b\fR option.
+can only be used with the
+.B -b
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIevent\fR
+.I event
 .ad
 .sp .6
 .RS 4n
 The literal string or ordinal event number as found in
-\fBaudit_event\fR(4). If \fIevent\fR is not found in the \fBaudit_event\fR
+.BR audit_event (4).
+If
+.I event
+is not found in the
+.BR audit_event
 file it is considered invalid.
 .RE
 
@@ -739,26 +950,41 @@ file it is considered invalid.
 .ne 2
 .mk
 .na
-\fIgroup\fR
+.I group
 .ad
 .sp .6
 .RS 4n
-The literal string or ordinal group ID number as found in \fBgroup\fR(4).
-If \fIgroup\fR is not found in the \fBgroup\fR file it is considered
-invalid. \fIgroup\fR can be negative.
+The literal string or ordinal group ID number as found in
+.BR group (4).
+If
+.I group
+is not found in the
+.B group
+file it is considered
+invalid.
+.I group
+can be negative.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlabel\fR
+.I label
 .ad
 .sp .6
 .RS 4n
 The literal string representation of a MAC label or a range of two valid
-MAC labels. To specify a range, use \fBx;y\fR where \fBx\fR and \fBy\fR are
-valid MAC labels. Only those records that are fully bounded by \fBx\fR and
+MAC labels. To specify a range, use
+.B x;y
+where
+.B x
+and
+.B y
+are
+valid MAC labels. Only those records that are fully bounded by
+.B x
+and
 \fBy\fR will be selected. If \fBx\fR or \fBy\fR is omitted, the default uses
 \fBADMIN_LOW\fR or \fBADMIN_HIGH\fR respectively. Notice that quotes must be
 used when specifying a range.
@@ -768,7 +994,7 @@ used when specifying a range.
 .ne 2
 .mk
 .na
-\fIpathname\fR
+.I pathname
 .ad
 .sp .6
 .RS 4n
@@ -779,21 +1005,27 @@ A regular expression describing a pathname.
 .ne 2
 .mk
 .na
-\fIuser\fR
+.I user
 .ad
 .sp .6
 .RS 4n
-The literal username or ordinal user ID number as found in \fBpasswd\fR(4).
-If the username is not found in the \fBpasswd\fR file it is considered
-invalid. \fIuser\fR can be negative.
+The literal username or ordinal user ID number as found in
+.BR passwd (4).
+If the username is not found in the
+.B passwd
+file it is considered
+invalid.
+.I user
+can be negative.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRThe auditreduce command
+\fBExample 1\fR The auditreduce command
 .sp
 .LP
-\fBpraudit\fR(1M) is available to display audit records in a human-readable
+.BR praudit (1M)
+is available to display audit records in a human-readable
 form.
 
 .sp
@@ -824,7 +1056,9 @@ appearing twice:
 
 .sp
 .LP
-This displays what user \fBmilner\fR did on April 13, 1988. The output is
+This displays what user
+.B milner
+did on April 13, 1988. The output is
 displayed in a human-readable form to the standard output:
 
 .sp
@@ -837,9 +1071,13 @@ displayed in a human-readable form to the standard output:
 
 .sp
 .LP
-The above example might produce a large volume of data if \fBmilner\fR has
+The above example might produce a large volume of data if
+.B milner
+has
 been busy. Perhaps looking at only login and logout times would be simpler.
-The \fB-c\fR option will select records from a specified class:
+The
+.B -c
+option will select records from a specified class:
 
 .sp
 .in +2
@@ -854,8 +1092,12 @@ The \fB-c\fR option will select records from a specified class:
 To see \fBmilner\fR's login/logout activity for April 13, 14, and 15, the
 following is used. The results are saved to a file in the current working
 directory. Notice that the name of the output file will have \fBmilnerlo\fR
-as the \fIsuffix\fR, with the appropriate timestamp prefixes. Notice also
-that the long form of the name is used for the \fB-c\fR option:
+as the
+.IR suffix ,
+with the appropriate timestamp prefixes. Notice also
+that the long form of the name is used for the
+.B -c
+option:
 
 .sp
 .in +2
@@ -868,11 +1110,15 @@ that the long form of the name is used for the \fB-c\fR option:
 .sp
 .LP
 To follow \fBmilner\fR's movement about the file system on April 13, 14,
-and 15 the \fBchdir\fR record types could be viewed. Notice that in order to
+and 15 the
+.B chdir
+record types could be viewed. Notice that in order to
 get the same time range as the above example we needed to specify the
 \fB-b\fR time as the day \fBafter\fR our range. This is because
 \fB19880416\fR defaults to midnight of that day, and records before that
-fall on \fB0415\fR, the end-day of the range.
+fall on
+.BR 0415 ,
+the end-day of the range.
 
 .sp
 .in +2
@@ -899,7 +1145,9 @@ records from existing twice in the audit root.
 
 .sp
 .LP
-If activity for user \fBID\fR 9944 has been observed, but that user is not
+If activity for user
+.B ID
+9944 has been observed, but that user is not
 known to the system administrator, then the command in the following example
 searches the entire audit trail for any records generated by that user.
 \fBauditreduce\fR queries the system about the current validity of \fBID\fR
@@ -939,7 +1187,9 @@ location of audit trails, when stored
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -962,9 +1212,16 @@ binary file contents is Unstable.
 .SH SEE ALSO
 .sp
 .LP
-\fBbsmconv\fR(1M), \fBpraudit\fR(1M), \fBaudit.log\fR(4),
-\fBaudit_class\fR(4), \fBaudit_control\fR(4), \fBgroup\fR(4),
-\fBhosts\fR(4), \fBpasswd\fR(4), \fBattributes\fR(5), \fBsmf\fR(5)
+.BR bsmconv (1M),
+.BR praudit (1M),
+.BR audit.log (4),
+.BR audit_class (4),
+.BR audit_control (4),
+.BR group (4),
+.BR hosts (4),
+.BR passwd (4),
+.BR attributes (5),
+\fBsmf\fR(5)
 .sp
 .LP
 See the section on Solaris Auditing in \fISystem Administration Guide:
@@ -976,19 +1233,31 @@ Security Services\fR.
 and then exits. If there are fatal errors during the run, \fBauditreduce\fR
 displays an explanatory message and exits. In this case, the output file
 might be in an inconsistent state (no trailer or partially written record)
-and \fBauditreduce\fR displays a warning message before exiting. Successful
-invocation returns \fB0\fR and unsuccessful invocation returns \fB1\fR.
+and
+.B auditreduce
+displays a warning message before exiting. Successful
+invocation returns
+.B 0
+and unsuccessful invocation returns
+.BR 1 .
 .sp
 .LP
-Since \fBauditreduce\fR might be processing a large number of input files,
+Since
+.B auditreduce
+might be processing a large number of input files,
 it is possible that the machine-wide limit on open files will be exceeded.
-If this happens, \fBauditreduce\fR displays a message to that effect, give
+If this happens,
+.B auditreduce
+displays a message to that effect, give
 information on how many file there are, and exit.
 .sp
 .LP
-If \fBauditreduce\fR displays a record's timestamp in a diagnostic message,
+If
+.B auditreduce
+displays a record's timestamp in a diagnostic message,
 that time is in local time. However, when filenames are displayed, their
-timestamps are in \fBGMT\fR.
+timestamps are in
+.BR GMT .
 .SH BUGS
 .sp
 .LP
@@ -1002,5 +1271,8 @@ Solaris Auditing has been enabled. See \fBbsmconv\fR(1M) for more
 information.
 .sp
 .LP
-The \fB-z\fR option should be used only if the audit policy \fBzonename\fR
+The
+.B -z
+option should be used only if the audit policy
+.BR zonename
 is set. If there is no zonename token, then no records will be selected.

@@ -42,7 +42,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIia_handle\fR
+.I ia_handle
 .ad
 .RS 18n
 .rt
@@ -53,7 +53,7 @@ A handle for an open instance of the IA.
 .ne 2
 .mk
 .na
-\fIlocal_segments\fR
+.I local_segments
 .ad
 .RS 18n
 .rt
@@ -64,23 +64,29 @@ An array of buffer segments.
 .ne 2
 .mk
 .na
-\fInum_segments\fR
+.I num_segments
 .ad
 .RS 18n
 .rt
-The number of segments in the \fIlocal_segments\fR argument.
+The number of segments in the
+.I local_segments
+argument.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_lmr_sync_rdma_read()\fR function makes memory changes visible to
+The
+.B dat_lmr_sync_rdma_read()
+function makes memory changes visible to
 an incoming RDMA Read operation. This operation guarantees consistency by
 locally flushing the non-coherent cache prior to it being retrieved by
 remote peer RDMA read operations.
 .sp
 .LP
-The \fBdat_lmr_sync_rdma_read()\fR function is needed if and only if the
+The
+.B dat_lmr_sync_rdma_read()
+function is needed if and only if the
 Provider attribute specifies that this operation is needed prior to an
 incoming RDMA Read operation. The Consumer must call
 \fBdat_lmr_sync_rdma_read()\fR after modifying data in a memory range in
@@ -88,23 +94,30 @@ this region that will be the target of an incoming RDMA Read operation. The
 \fBdat_lmr_sync_rdma_read()\fR function must be called after the Consumer
 has modified the memory range but before the RDMA Read operation begins. The
 memory range that will be accessed by the RDMA read operation must be
-supplied by the caller in the \fIlocal_segments\fR array. After this call
+supplied by the caller in the
+.I local_segments
+array. After this call
 returns, the RDMA Read operation can safely see the modified contents of the
 memory range. It is permissible to batch synchronizations for multiple RDMA
-Read operations in a single call by passing a \fIlocal_segments\fR array
-that includes all modified memory ranges. The \fIlocal_segments\fR entries
+Read operations in a single call by passing a
+.I local_segments
+array
+that includes all modified memory ranges. The
+.I local_segments
+entries
 need not contain the same LMR and need not be in the same Protection Zone.
 .sp
 .LP
 If the Provider attribute specifying that this operation is required
 attempts to read from a memory range that is not properly synchronized using
-\fBdat_lmr_sync_rdma_read()\fR, the returned contents are undefined.
+.BR dat_lmr_sync_rdma_read() ,
+the returned contents are undefined.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 25n
 .rt
@@ -115,7 +128,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 25n
 .rt
@@ -126,7 +139,7 @@ The DAT handle is invalid.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 25n
 .rt
@@ -140,7 +153,9 @@ Region or the LMR handle was invalid.
 .LP
 Determining when an RDMA Read will start and what memory range it will read
 is the Consumer's responsibility. One possibility is to have the Consumer
-that is modifying memory call \fBdat_lmr_sync_rdma_read()\fR and then post a
+that is modifying memory call
+.B dat_lmr_sync_rdma_read()
+and then post a
 Send DTO message that identifies the range in the body of the Send. The
 Consumer wanting to perform the RDMA Read can receive this message and know
 when it is safe to initiate the RDMA Read operation.
@@ -171,7 +186,9 @@ CPU noncoherent cache will be flushed.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -190,5 +207,6 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_lmr_sync_rdma_write\fR(3DAT), \fBlibdat\fR(3LIB),
-\fBattributes\fR(5)
+.BR dat_lmr_sync_rdma_write (3DAT),
+.BR libdat (3LIB),
+.BR attributes (5)

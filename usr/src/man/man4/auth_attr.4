@@ -31,20 +31,32 @@ auth_attr \- authorization description database
 .sp
 .LP
 \fB/etc/security/auth_attr\fR is a local source for authorization names and
-descriptions. The \fBauth_attr\fR file can be used with other authorization
-sources, including the \fBauth_attr\fR \fBNIS\fR map and \fBNIS+\fR table.
+descriptions. The
+.B auth_attr
+file can be used with other authorization
+sources, including the
+.B "auth_attr NIS"
+map and
+.B NIS+
+table.
 Programs use the \fBgetauthattr\fR(3SECDB) routines to access this information.
 .sp
 .LP
 The search order for multiple authorization sources is specified in the
-\fB/etc/nsswitch.conf\fR file, as described in the \fBnsswitch.conf\fR(4) man
+\fB/etc/nsswitch.conf\fR file, as described in the
+.BR nsswitch.conf (4)
+man
 page.
 .sp
 .LP
 An authorization is a right assigned to users that is checked by certain
 privileged programs to determine whether users can execute restricted
-functionality. Each entry in the \fBauth_attr\fR database consists of one line of
-text containing six fields separated by colons (\fB:\fR). Line continuations
+functionality. Each entry in the
+.B auth_attr
+database consists of one line of
+text containing six fields separated by colons
+.RB ( : ).
+Line continuations
 using the backslash (\fB\e\fR) character are permitted. The format of each entry
 is:
 .sp
@@ -58,7 +70,7 @@ is:
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 14n
 .rt
@@ -75,10 +87,14 @@ authorization names using the following convention:
 .RS 10n
 .rt
 Everything in the name field up to the final dot (\fB\&.\fR). Authorizations
-from Sun Microsystems, Inc. use \fBsolaris\fR as a prefix. To avoid name
+from Sun Microsystems, Inc. use
+.B solaris
+as a prefix. To avoid name
 conflicts, all other authorizations should use a prefix that begins with the
 reverse-order Internet domain name of the organization that creates the
-authorization (for example, \fBcom.xyzcompany\fR). Prefixes can have additional
+authorization (for example,
+.BR com.xyzcompany ).
+Prefixes can have additional
 arbitrary components chosen by the authorization's developer, with components
 separated by dots.
 .RE
@@ -95,10 +111,12 @@ The final component in the name field. Specifies what is being authorized.
 .sp
 When there is no suffix, the name is defined as a heading. Headings are not
 assigned to users but are constructed for use by applications in their
-\fBGUI\fRs.
+.BR GUI s.
 .RE
 
-When a name ends with the word \fBgrant\fR, the entry defines a grant
+When a name ends with the word
+.BR grant ,
+the entry defines a grant
 authorization. Grant authorizations are used to support fine-grained delegation.
 Users with appropriate grant authorizations can delegate some of their
 authorizations to others. To assign an authorization, the user needs to have both
@@ -109,7 +127,7 @@ the authorization itself and the appropriate grant authorization.
 .ne 2
 .mk
 .na
-\fIres1\fR
+.I res1
 .ad
 .RS 14n
 .rt
@@ -120,7 +138,7 @@ Reserved for future use.
 .ne 2
 .mk
 .na
-\fIres2\fR
+.I res2
 .ad
 .RS 14n
 .rt
@@ -131,20 +149,20 @@ Reserved for future use.
 .ne 2
 .mk
 .na
-\fIshort_desc\fR
+.I short_desc
 .ad
 .RS 14n
 .rt
 A short description or terse name for the authorization. This name should be
 suitable for displaying in user interfaces, such as in a scrolling list in a
-\fBGUI\fR.
+.BR GUI .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlong_desc\fR
+.I long_desc
 .ad
 .RS 14n
 .rt
@@ -158,22 +176,25 @@ help text of an application.
 .ne 2
 .mk
 .na
-\fIattr\fR
+.I attr
 .ad
 .RS 14n
 .rt
 An optional list of semicolon-separated (\fB;\fR) key-value pairs that describe
 the attributes of an authorization. Zero or more keys may be specified. The
-keyword \fBhelp\fR identifies a help file in HTML.
+keyword
+.B help
+identifies a help file in HTML.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRConstructing a Name
+\fBExample 1\fR Constructing a Name
 .sp
 .LP
 In the following example, the name has a prefix (\fBsolaris.admin.usermgr\fR)
-followed by a suffix (\fBread\fR):
+followed by a suffix
+.RB ( read ):
 
 .sp
 .in +2
@@ -183,7 +204,7 @@ solaris.admin.usermgr.read
 .in -2
 
 .LP
-\fBExample 2 \fRDefining a Heading
+\fBExample 2\fR Defining a Heading
 .sp
 .LP
 Because the name field ends with a dot, the following entry defines a heading:
@@ -196,13 +217,17 @@ solaris.admin.usermgr.:::User Accounts::help=AuthUsermgrHeader.html
 .in -2
 
 .LP
-\fBExample 3 \fRAssigning Separate Authorizations to Set User Attributes
+\fBExample 3\fR Assigning Separate Authorizations to Set User Attributes
 .sp
 .LP
 In this example, a heading entry is followed by other associated authorization
 entries. The entries below the heading provide separate authorizations for
-setting user attributes. The \fIattr\fR field for each entry, including the
-heading entry, assigns a help file. The application that uses the \fBhelp\fR key
+setting user attributes. The
+.I attr
+field for each entry, including the
+heading entry, assigns a help file. The application that uses the
+.B help
+key
 requires the value to equal the name of a file ending in \fB\&.htm\fR or
 \fB\&.html\fR:
 
@@ -216,7 +241,7 @@ solaris.admin.usermgr.write:::Manage Users::help=AuthUsermgrWrite.html
 .in -2
 
 .LP
-\fBExample 4 \fRAssigning a Grant Authorization
+\fBExample 4\fR Assigning a Grant Authorization
 .sp
 .LP
 This example assigns to an administrator the following authorizations:
@@ -235,21 +260,30 @@ solaris.login.enable
 .sp
 .LP
 With the above authorizations, the administrator can assign to others the
-\fBsolaris.admin.printer.delete\fR, \fBsolaris.admin.printer.modify\fR, and
+.BR solaris.admin.printer.delete ,
+\fBsolaris.admin.printer.modify\fR, and
 \fBsolaris.admin.printer.read\fR authorizations, but not the
 \fBsolaris.login.enable\fR authorization. If the administrator has both the grant
-authorization, \fBsolaris.admin.printmgr.grant\fR, and the wildcard
-authorization, \fBsolaris.admin.printmgr.*\fR, the administrator can grant to
-others any of the printer authorizations. See \fBuser_attr\fR(4) for more
+authorization,
+.BR solaris.admin.printmgr.grant ,
+and the wildcard
+authorization,
+.BR solaris.admin.printmgr.* ,
+the administrator can grant to
+others any of the printer authorizations. See
+.BR user_attr (4)
+for more
 information about how wildcards can be used to assign multiple authorizations
 whose names begin with the same components.
 
 .LP
-\fBExample 5 \fRAuthorizing the Ability to Assign Other Authorizations
+\fBExample 5\fR Authorizing the Ability to Assign Other Authorizations
 .sp
 .LP
 The following entry defines an authorization that grants the ability to assign
-any authorization created with a \fBsolaris\fR prefix, when the administrator
+any authorization created with a
+.B solaris
+prefix, when the administrator
 also has either the specific authorization being granted or a matching wildcard
 entry:
 
@@ -261,10 +295,12 @@ solaris.grant:::Grant All Solaris Authorizations::help=PriAdmin.html
 .in -2
 
 .LP
-\fBExample 6 \fRConsulting the Local Authorization File Ahead of the NIS Table
+\fBExample 6\fR Consulting the Local Authorization File Ahead of the NIS Table
 .sp
 .LP
-With the following entry from \fB/etc/nsswitch.conf\fR, the local
+With the following entry from
+.BR /etc/nsswitch.conf ,
+the local
 \fBauth_attr\fR file is consulted before the \fBNIS\fR table:
 
 .sp
@@ -280,21 +316,26 @@ auth_attr:files nisplus
 \fB/etc/nsswitch.conf\fR
 .sp
 .LP
-\fB/etc/user_attr\fR
+.B /etc/user_attr
 .sp
 .LP
-\fB/etc/security/auth_attr\fR
+.B /etc/security/auth_attr
 .SH SEE ALSO
 .sp
 .LP
-\fBgetauthattr\fR(3SECDB), \fBgetexecattr\fR(3SECDB), \fBgetprofattr\fR(3SECDB),
-\fBgetuserattr\fR(3SECDB), \fBexec_attr\fR(4), \fBnsswitch.conf\fR(4),
-\fBuser_attr\fR(4) 
+.BR getauthattr (3SECDB),
+.BR getexecattr (3SECDB),
+\fBgetprofattr\fR(3SECDB),
+.BR getuserattr (3SECDB),
+.BR exec_attr (4),
+\fBnsswitch.conf\fR(4),
+.BR user_attr (4)
 .SH NOTES
 .sp
 .LP
-When deciding which authorization source to use, keep in mind that \fBNIS+\fR
-provides stronger authentication than \fBNIS\fR.
+.RB "When deciding which authorization source to use, keep in mind that" " NIS+"
+provides stronger authentication than
+.BR NIS .
 .sp
 .LP
 Because the list of legal keys is likely to expand, any code that parses this
@@ -309,5 +350,10 @@ requirement is for the name of a file.
 .sp
 .LP
 The following characters are used in describing the database format and must be
-escaped with a backslash if used as data: colon (\fB:\fR), semicolon (\fB;\fR),
-equals (\fB=\fR), and backslash (\fB\e\fR).
+escaped with a backslash if used as data: colon
+.RB ( : ),
+semicolon
+.RB ( ; ),
+equals
+.RB ( = ),
+and backslash (\fB\e\fR).

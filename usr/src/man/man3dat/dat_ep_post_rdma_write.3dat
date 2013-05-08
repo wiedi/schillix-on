@@ -44,7 +44,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIep_handle\fR
+.I ep_handle
 .ad
 .RS 20n
 .rt
@@ -55,18 +55,21 @@ Handle for an instance of the Endpoint.
 .ne 2
 .mk
 .na
-\fInum_segments\fR
+.I num_segments
 .ad
 .RS 20n
 .rt
-Number of \fIlmr_triplets\fR in \fIlocal_iov\fR.
+Number of
+.I lmr_triplets
+in
+.IR local_iov .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlocal_iov\fR
+.I local_iov
 .ad
 .RS 20n
 .rt
@@ -78,7 +81,7 @@ transferred.
 .ne 2
 .mk
 .na
-\fIuser_cookie\fR
+.I user_cookie
 .ad
 .RS 20n
 .rt
@@ -112,16 +115,16 @@ is 0x00. Other values are as follows:
 .ne 2
 .mk
 .na
-\fBCompletion Suppression\fR
+.B Completion Suppression
 .ad
 .RS 30n
 .rt
-\fBDAT_COMPLETION_SUPPRESS_FLAG\fR
+.B DAT_COMPLETION_SUPPRESS_FLAG
 .sp
 .ne 2
 .mk
 .na
-\fB0x01\fR
+.B 0x01
 .ad
 .RS 8n
 .rt
@@ -138,12 +141,12 @@ Suppress successful Completion.
 .ad
 .RS 30n
 .rt
-\fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
 .sp
 .ne 2
 .mk
 .na
-\fB0x04\fR
+.B 0x04
 .ad
 .RS 8n
 .rt
@@ -157,16 +160,16 @@ Notification Suppression.
 .ne 2
 .mk
 .na
-\fBBarrier Fence\fR
+.B Barrier Fence
 .ad
 .RS 30n
 .rt
-\fBDAT_COMPLETION_BARRIER_FENCE_FLAG\fR
+.B DAT_COMPLETION_BARRIER_FENCE_FLAG
 .sp
 .ne 2
 .mk
 .na
-\fB0x08\fR
+.B 0x08
 .ad
 .RS 8n
 .rt
@@ -180,30 +183,51 @@ Request for Barrier Fence.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_ep_post_rdma_write()\fR function requests the transfer of all
-the data specified by the \fIlocal_iov\fR over the connection of the
+The
+.B dat_ep_post_rdma_write()
+function requests the transfer of all
+the data specified by the
+.I local_iov
+over the connection of the
 \fIep_handle\fR Endpoint into the \fIremote_buffer\fR.
 .sp
 .LP
-The \fInum_segments\fR parameter specifies the number of segments in the
-\fIlocal_iov\fR. The \fIlocal_iov\fR segments are traversed in the I/O
+The
+.I num_segments
+parameter specifies the number of segments in the
+.IR local_iov .
+The
+.I local_iov
+segments are traversed in the I/O
 Vector order until all the data is transferred.
 .sp
 .LP
-A Consumer must not modify the \fIlocal_iov\fR or its content until the DTO
+A Consumer must not modify the
+.I local_iov
+or its content until the DTO
 is completed. When a Consumer does not adhere to this rule, the behavior of
 the Provider and the underlying Transport is not defined. Providers that
-allow Consumers to get ownership of the \fIlocal_iov\fR but not the memory
-it specifies back after the \fBdat_ep_post_rdma_write()\fR returns should
+allow Consumers to get ownership of the
+.I local_iov
+but not the memory
+it specifies back after the
+.B dat_ep_post_rdma_write()
+returns should
 document this behavior and also specify its support in Provider attributes.
-This behavior allows Consumers full control of the \fIlocal_iov\fR after
+This behavior allows Consumers full control of the
+.I local_iov
+after
 \fBdat_ep_post_rdma_write()\fR returns. Because this behavior is not
 guaranteed by all Providers, portable Consumers should not rely on this
-behavior. Consumers should not rely on the Provider copying \fIlocal_iov\fR
+.RI "behavior. Consumers should not rely on the Provider copying" " local_iov"
 information.
 .sp
 .LP
-The \fBDAT_SUCCESS\fR return of the \fBdat_ep_post_rdma_write()\fR is at
+The
+.B DAT_SUCCESS
+return of the
+.B dat_ep_post_rdma_write()
+is at
 least the equivalent of posting an RDMA Write operation directly by native
 Transport. Providers should avoid resource allocation as part of
 \fBdat_ep_post_rdma_write()\fR to ensure that this operation is nonblocking
@@ -214,11 +238,15 @@ The completion of the posted RDMA Write is reported to the Consumer
 asynchronously through a DTO Completion event based on the specified
 \fIcompletion_flags\fR value. The value of
 \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR is only valid if the Endpoint Request
-Completion Flags \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR. Otherwise,
+Completion Flags
+.BR DAT_COMPLETION_UNSIGNALLED_FLAG .
+Otherwise,
 \fBDAT_INVALID_PARAMETER\fR is returned.
 .sp
 .LP
-The \fIuser_cookie\fR allows Consumers to have unique identifiers for each
+The
+.I user_cookie
+allows Consumers to have unique identifiers for each
 DTO. These identifiers are completely under user control and are opaque to
 the Provider. There is no requirement on the Consumer that the value
 \fIuser_cookie\fR should be unique for each DTO. The \fIuser_cookie\fR is
@@ -226,16 +254,22 @@ returned to the Consumer in the Completion event for the posted RDMA
 Write.
 .sp
 .LP
-The operation is valid for the Endpoint in the \fBDAT_EP_STATE_CONNECTED\fR
-and \fBDAT_EP_STATE_DISCONNECTED\fR states. If the operation returns
-successfully for the Endpoint in the \fBDAT_EP_STATE_DISCONNECTED\fR state,
-the posted RDMA Write is immediately flushed to \fIrequest_evd_handle\fR.
+The operation is valid for the Endpoint in the
+.BR DAT_EP_STATE_CONNECTED
+and
+.B DAT_EP_STATE_DISCONNECTED
+states. If the operation returns
+successfully for the Endpoint in the
+.B DAT_EP_STATE_DISCONNECTED
+state,
+the posted RDMA Write is immediately flushed to
+.IR request_evd_handle .
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -246,7 +280,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -257,7 +291,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
@@ -269,18 +303,20 @@ outside its LMR.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
-The \fIep_handle\fR parameter is invalid.
+The
+.I ep_handle
+parameter is invalid.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_STATE\fR
+.B DAT_INVALID_STATE
 .ad
 .RS 30n
 .rt
@@ -292,7 +328,7 @@ A parameter is in an invalid state. Endpoint was not in the
 .ne 2
 .mk
 .na
-\fBDAT_LENGTH_ERROR\fR
+.B DAT_LENGTH_ERROR
 .ad
 .RS 30n
 .rt
@@ -304,26 +340,34 @@ size of the remote buffer is too small for the data of the local buffer.
 .ne 2
 .mk
 .na
-\fBDAT_PROTECTION_VIOLATION\fR
+.B DAT_PROTECTION_VIOLATION
 .ad
 .RS 30n
 .rt
 Protection violation for local or remote memory access. Protection Zone
-mismatch between either an LMR of one of the \fIlocal_iov\fR segments and
-the local Endpoint or the \fIrmr_context\fR and the remote Endpoint.
+mismatch between either an LMR of one of the
+.I local_iov
+segments and
+the local Endpoint or the
+.I rmr_context
+and the remote Endpoint.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDAT_PRIVILEGES_VIOLATION\fR
+.B DAT_PRIVILEGES_VIOLATION
 .ad
 .RS 30n
 .rt
 Privileges violation for local or remote memory access. Either one of the
-LMRs used in \fIlocal_iov\fR is invalid or does not have the local read
-privileges, or \fIrmr_context\fR does not have the remote write
+LMRs used in
+.I local_iov
+is invalid or does not have the local read
+privileges, or
+.I rmr_context
+does not have the remote write
 privileges.
 .RE
 
@@ -331,13 +375,20 @@ privileges.
 .sp
 .LP
 For best RDMA Write operation performance, the Consumer should align each
-buffer segment of \fIlocal_iov\fR to the Optimal Buffer Alignment attribute
+buffer segment of
+.I local_iov
+to the Optimal Buffer Alignment attribute
 of the Provider. For portable applications, the Consumer should align each
-buffer segment of \fIlocal_iov\fR to the \fBDAT_OPTIMAL_ALIGNMENT\fR.
+buffer segment of
+.I local_iov
+to the
+.BR DAT_OPTIMAL_ALIGNMENT .
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -356,4 +407,5 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibdat\fR(3LIB), \fBattributes\fR(5)
+.BR libdat (3LIB),
+.BR attributes (5)

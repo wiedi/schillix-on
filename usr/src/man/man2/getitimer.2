@@ -26,15 +26,33 @@ getitimer, setitimer \- get or set value of interval timer
 .LP
 The system provides each process with four interval timers, defined in
 <\fBsys/time.h\fR>. The \fBgetitimer()\fR function stores the current value
-of the timer specified by \fIwhich\fR into the structure pointed to by
-\fIvalue\fR. The \fBsetitimer()\fR function call sets the value of the timer
-specified by \fIwhich\fR to the value specified in the structure pointed to
-by \fIvalue\fR, and if \fIovalue\fR is not \fINULL\fR, stores the previous
-value of the timer in the structure pointed to by \fIovalue\fR.
+of the timer specified by
+.I which
+into the structure pointed to by
+.IR value .
+The
+.B setitimer()
+function call sets the value of the timer
+specified by
+.I which
+to the value specified in the structure pointed to
+by
+.IR value ,
+and if
+.I ovalue
+is not
+.IR NULL ,
+stores the previous
+value of the timer in the structure pointed to by
+.IR ovalue .
 .sp
 .LP
-A timer value is defined by the \fBitimerval\fR structure (see
-\fBgettimeofday\fR(3C)) for the definition of \fBtimeval\fR), which includes
+A timer value is defined by the
+.B itimerval
+structure (see
+\fBgettimeofday\fR(3C)) for the definition of
+.BR timeval ),
+which includes
 the following members:
 .sp
 .in +2
@@ -46,10 +64,16 @@ struct timeval    it_value;            /* current value */
 
 .sp
 .LP
-The \fBit_value\fR member indicates the time to the next timer expiration.
-The \fBit_interval\fR member specifies a value to be used in reloading
+The
+.B it_value
+member indicates the time to the next timer expiration.
+The
+.B it_interval
+member specifies a value to be used in reloading
 \fBit_value\fR when the timer expires. Setting \fBit_value\fR to 0 disables
-a timer, regardless of the value of \fBit_interval\fR. Setting
+a timer, regardless of the value of
+.BR it_interval .
+Setting
 \fBit_interval\fR to 0 disables a timer after its next expiration (assuming
 \fBit_value\fR is non-zero).
 .sp
@@ -62,11 +86,13 @@ four timers are as follows:
 .ne 2
 .mk
 .na
-\fBITIMER_REAL\fR
+.B ITIMER_REAL
 .ad
 .RS 19n
 .rt
-Decrements in real time.  A \fBSIGALRM\fR signal is delivered to the
+Decrements in real time.  A
+.B SIGALRM
+signal is delivered to the
 process when this timer expires.
 .RE
 
@@ -74,12 +100,14 @@ process when this timer expires.
 .ne 2
 .mk
 .na
-\fBITIMER_VIRTUAL\fR
+.B ITIMER_VIRTUAL
 .ad
 .RS 19n
 .rt
 Decrements in lightweight process (lwp) virtual time. It runs only when the
-calling lwp is executing. A \fBSIGVTALRM\fR signal is delivered to the
+calling lwp is executing. A
+.B SIGVTALRM
+signal is delivered to the
 calling lwp when it expires.
 .RE
 
@@ -87,14 +115,16 @@ calling lwp when it expires.
 .ne 2
 .mk
 .na
-\fBITIMER_PROF\fR
+.B ITIMER_PROF
 .ad
 .RS 19n
 .rt
 Decrements both in lightweight process (lwp) virtual time and when the
 system is running on behalf of the lwp.  It is designed to be used by
 interpreters in statistically profiling the execution of interpreted
-programs. Each time the \fBITIMER_PROF\fR timer expires, the \fBSIGPROF\fR
+programs. Each time the
+.B ITIMER_PROF
+.RB "timer expires, the" " SIGPROF"
 signal is delivered to the calling lwp. Because this signal may interrupt
 in-progress functions, programs using this timer must be prepared to restart
 interrupted functions.
@@ -104,22 +134,31 @@ interrupted functions.
 .ne 2
 .mk
 .na
-\fBITIMER_REALPROF\fR
+.B ITIMER_REALPROF
 .ad
 .RS 19n
 .rt
 Decrements in real time. It is designed to be used for real-time profiling
-of multithreaded programs. Each time the \fBITIMER_REALPROF\fR timer
+of multithreaded programs. Each time the
+.B ITIMER_REALPROF
+timer
 expires, one counter in a set of counters maintained by the system for each
 lightweight process (lwp) is incremented. The counter corresponds to the
 state of the lwp at the time of the timer tick. All lwps executing in user
 mode when the timer expires are interrupted into system mode. When each lwp
 resumes execution in user mode, if any of the elements in its set of
-counters are non-zero, the \fBSIGPROF\fR signal is delivered to the lwp. The
+counters are non-zero, the
+.B SIGPROF
+signal is delivered to the lwp. The
 \fBSIGPROF\fR signal is delivered before any other signal except
-\fBSIGKILL\fR. This signal does not interrupt any in-progress function. A
-\fBsiginfo\fR structure, defined in \fB<sys/siginfo.h>\fR, is associated
-with the delivery of the \fBSIGPROF\fR signal, and includes the following
+.BR SIGKILL .
+This signal does not interrupt any in-progress function. A
+\fBsiginfo\fR structure, defined in
+.BR <sys/siginfo.h> ,
+is associated
+with the delivery of the
+.B SIGPROF
+signal, and includes the following
 members: 
 .sp
 .in +2
@@ -134,40 +173,57 @@ si_mstate[\|];     /* ticks in each microstate */
 .fi
 .in -2
 
-The enumeration of microstates (indices into  \fBsi_mstate\fR) is defined
-in \fB<sys/msacct.h>\fR.
+The enumeration of microstates (indices into 
+.BR si_mstate )
+is defined
+in
+.BR <sys/msacct.h> .
 .sp
-Unlike the other interval timers, the \fBITIMER_REALPROF\fR interval timer
-is not inherited across a call to one of the \fBexec\fR(2) family of
+Unlike the other interval timers, the
+.B ITIMER_REALPROF
+interval timer
+is not inherited across a call to one of the
+.BR exec (2)
+family of
 functions.
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fB0\fR is returned. Otherwise, \fB\(mi1\fR is
-returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B 0
+is returned. Otherwise, \fB\(mi1\fR is
+returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBgetitimer()\fR and \fBsetitimer()\fR functions will fail if:
+The
+.B getitimer()
+and
+.B setitimer()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
 The specified number of seconds is greater than 100,000,000, the number of
-microseconds is greater than or equal to 1,000,000, or the \fIwhich\fR
+.RI "microseconds is greater than or equal to 1,000,000, or the" " which"
 argument is unrecognized.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -186,16 +242,29 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBalarm\fR(2), \fBexec\fR(2), \fBgettimeofday\fR(3C), \fBsleep\fR(3C),
-\fBsysconf\fR(3C), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR alarm (2),
+.BR exec (2),
+\fBgettimeofday\fR(3C), \fBsleep\fR(3C),
+\fBsysconf\fR(3C),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
-The \fBsetitimer()\fR function is independent of the \fBalarm\fR(2) and
-\fBsleep\fR(3C) functions.
+The
+.B setitimer()
+function is independent of the
+.BR alarm (2)
+and
+.BR sleep (3C)
+functions.
 .sp
 .LP
-The \fBITIMER_PROF\fR and \fBITIMER_REALPROF\fR timers deliver the same
+The
+.B ITIMER_PROF
+and
+.B ITIMER_REALPROF
+timers deliver the same
 signal and have different semantics. They cannot be used together.
 .sp
 .LP

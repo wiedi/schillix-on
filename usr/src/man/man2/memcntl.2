@@ -35,15 +35,20 @@ memcntl \- memory management control
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmemcntl()\fR function allows the calling process to apply a variety
+The
+.B memcntl()
+function allows the calling process to apply a variety
 of control operations over the address space identified by the mappings
 established for the address range [\fIaddr\fR, \fIaddr\fR + \fIlen\fR).
 .sp
 .LP
-The \fIaddr\fR argument must be a multiple of the pagesize as returned by
+The
+.I addr
+argument must be a multiple of the pagesize as returned by
 \fBsysconf\fR(3C). The scope of the control operations can be further
 defined with additional selection criteria (in the form of attributes)
-according to the bit pattern contained in \fIattr\fR.
+according to the bit pattern contained in
+.IR attr .
 .sp
 .LP
 The following attributes specify page mapping selection criteria:
@@ -51,7 +56,7 @@ The following attributes specify page mapping selection criteria:
 .ne 2
 .mk
 .na
-\fBSHARED\fR
+.B SHARED
 .ad
 .RS 11n
 .rt
@@ -62,7 +67,7 @@ Page is mapped shared.
 .ne 2
 .mk
 .na
-\fBPRIVATE\fR
+.B PRIVATE
 .ad
 .RS 11n
 .rt
@@ -78,7 +83,7 @@ attribute bits and must match exactly.
 .ne 2
 .mk
 .na
-\fBPROT_READ\fR
+.B PROT_READ
 .ad
 .RS 14n
 .rt
@@ -89,7 +94,7 @@ Page can be read.
 .ne 2
 .mk
 .na
-\fBPROT_WRITE\fR
+.B PROT_WRITE
 .ad
 .RS 14n
 .rt
@@ -100,7 +105,7 @@ Page can be written.
 .ne 2
 .mk
 .na
-\fBPROT_EXEC\fR
+.B PROT_EXEC
 .ad
 .RS 14n
 .rt
@@ -114,7 +119,7 @@ The following criteria may also be specified:
 .ne 2
 .mk
 .na
-\fBPROC_TEXT\fR
+.B PROC_TEXT
 .ad
 .RS 13n
 .rt
@@ -125,7 +130,7 @@ Process text.
 .ne 2
 .mk
 .na
-\fBPROC_DATA\fR
+.B PROC_DATA
 .ad
 .RS 13n
 .rt
@@ -134,29 +139,39 @@ Process data.
 
 .sp
 .LP
-The \fBPROC_TEXT\fR attribute specifies all privately mapped segments with
-read and execute permission, and the \fBPROC_DATA\fR attribute specifies all
+The
+.B PROC_TEXT
+attribute specifies all privately mapped segments with
+read and execute permission, and the
+.B PROC_DATA
+attribute specifies all
 privately mapped segments with write permission.
 .sp
 .LP
 Selection criteria can be used to describe various abstract memory objects
 within the address space on which to operate. If an operation shall not be
-constrained by the selection criteria, \fIattr\fR must have the value
-\fB0\fR.
+constrained by the selection criteria,
+.I attr
+must have the value
+.BR 0 .
 .sp
 .LP
-The operation to be performed is identified by the argument \fIcmd\fR. The
+The operation to be performed is identified by the argument
+.IR cmd .
+The
 symbolic names for the operations are defined in <\fBsys/mman.h\fR> as
 follows:
 .sp
 .ne 2
 .mk
 .na
-\fBMC_LOCK\fR
+.B MC_LOCK
 .ad
 .sp .6
 .RS 4n
-Lock in memory all pages in the range with attributes \fIattr\fR. A given
+Lock in memory all pages in the range with attributes
+.IR attr .
+A given
 page may be locked multiple times through different mappings; however,
 within a given mapping, page locks do not nest. Multiple lock operations on
 the same address in the same process will all be removed with a single
@@ -165,10 +180,14 @@ visible through a different mapping in the locking process) is locked in
 memory as long as the locking process does neither an implicit nor explicit
 unlock operation. If a locked mapping is removed, or a page is deleted
 through file removal or truncation, an unlock operation is implicitly
-performed. If a writable \fBMAP_PRIVATE\fR page in the address range is
+performed. If a writable
+.B MAP_PRIVATE
+page in the address range is
 changed, the lock will be transferred to the private page.
 .sp
-The \fIarg\fR argument is not used, but must be 0 to ensure compatibility
+The
+.I arg
+argument is not used, but must be 0 to ensure compatibility
 with potential future enhancements.
 .RE
 
@@ -176,20 +195,27 @@ with potential future enhancements.
 .ne 2
 .mk
 .na
-\fBMC_LOCKAS\fR
+.B MC_LOCKAS
 .ad
 .sp .6
 .RS 4n
 Lock in memory all pages mapped by the address space with attributes
-\fIattr\fR. The \fIaddr\fR and \fIlen\fR arguments are not used, but must be
+.IR attr .
+The
+.I addr
+and
+.I len
+arguments are not used, but must be
 \fINULL\fR and \fB0\fR respectively, to ensure compatibility with potential
-future enhancements.  The \fIarg\fR argument is a bit pattern built from the
+future enhancements.  The
+.I arg
+argument is a bit pattern built from the
 flags:
 .sp
 .ne 2
 .mk
 .na
-\fBMCL_CURRENT\fR
+.B MCL_CURRENT
 .ad
 .RS 15n
 .rt
@@ -200,16 +226,20 @@ Lock current mappings.
 .ne 2
 .mk
 .na
-\fBMCL_FUTURE\fR
+.B MCL_FUTURE
 .ad
 .RS 15n
 .rt
 Lock future mappings.
 .RE
 
-The value of \fIarg\fR determines whether the pages to be locked are those
+The value of
+.I arg
+determines whether the pages to be locked are those
 currently mapped by the address space, those that will be mapped in the
-future, or both. If \fBMCL_FUTURE\fR is specified, then all mappings
+future, or both. If
+.B MCL_FUTURE
+is specified, then all mappings
 subsequently added to the address space will be locked, provided sufficient
 memory is available.
 .RE
@@ -218,21 +248,29 @@ memory is available.
 .ne 2
 .mk
 .na
-\fBMC_SYNC\fR
+.B MC_SYNC
 .ad
 .sp .6
 .RS 4n
 Write to their backing storage locations all modified pages in the range
-with attributes \fIattr\fR. Optionally, invalidate cache copies. The backing
-storage for a modified \fBMAP_SHARED\fR mapping is the file the page is
-mapped to; the backing storage for a modified \fBMAP_PRIVATE\fR mapping is
-its swap area. The \fIarg\fR argument is a bit pattern built from the flags
+with attributes
+.IR attr .
+Optionally, invalidate cache copies. The backing
+storage for a modified
+.B MAP_SHARED
+mapping is the file the page is
+mapped to; the backing storage for a modified
+.B MAP_PRIVATE
+mapping is
+its swap area. The
+.I arg
+argument is a bit pattern built from the flags
 used to control the behavior of the operation:
 .sp
 .ne 2
 .mk
 .na
-\fBMS_ASYNC\fR
+.B MS_ASYNC
 .ad
 .RS 17n
 .rt
@@ -243,7 +281,7 @@ Perform asynchronous writes.
 .ne 2
 .mk
 .na
-\fBMS_SYNC\fR
+.B MS_SYNC
 .ad
 .RS 17n
 .rt
@@ -254,7 +292,7 @@ Perform synchronous writes.
 .ne 2
 .mk
 .na
-\fBMS_INVALIDATE\fR
+.B MS_INVALIDATE
 .ad
 .RS 17n
 .rt
@@ -262,7 +300,9 @@ Invalidate mappings.
 .RE
 
 \fBMS_ASYNC\fR Return immediately once all write operations are scheduled;
-with \fBMS_SYNC\fR the function will not return until all write operations
+with
+.B MS_SYNC
+the function will not return until all write operations
 are completed.
 .sp
 \fBMS_INVALIDATE\fR Invalidate all cached copies of data in memory, so that
@@ -275,12 +315,17 @@ that require a memory object to be in a known state.
 .ne 2
 .mk
 .na
-\fBMC_UNLOCK\fR
+.B MC_UNLOCK
 .ad
 .sp .6
 .RS 4n
-Unlock all pages in the range with attributes \fIattr\fR. The \fIarg\fR
-argument is not used, but must be \fB0\fR to ensure compatibility with
+Unlock all pages in the range with attributes
+.IR attr .
+The
+.IR arg
+argument is not used, but must be
+.B 0
+to ensure compatibility with
 potential future enhancements.
 .RE
 
@@ -288,13 +333,21 @@ potential future enhancements.
 .ne 2
 .mk
 .na
-\fBMC_UNLOCKAS\fR
+.B MC_UNLOCKAS
 .ad
 .sp .6
 .RS 4n
 Remove address space memory locks and locks on all pages in the address
-space with attributes \fIattr\fR. The \fIaddr\fR, \fIlen\fR, and \fIarg\fR
-arguments are not used, but must be \fINULL\fR, 0 and 0, respectively, to
+space with attributes
+.IR attr .
+The
+.IR addr ,
+.IR len ,
+and
+.IR arg
+arguments are not used, but must be
+.IR NULL ,
+0 and 0, respectively, to
 ensure compatibility with potential future enhancements.
 .RE
 
@@ -302,13 +355,14 @@ ensure compatibility with potential future enhancements.
 .ne 2
 .mk
 .na
-\fBMC_HAT_ADVISE\fR
+.B MC_HAT_ADVISE
 .ad
 .sp .6
 .RS 4n
 Advise system how a region of user-mapped memory will be accessed. The
 \fIarg\fR argument is interpreted as a "\fBstruct memcntl_mha *\fR". The
-following members are defined in a \fBstruct memcntl_mha\fR:
+following members are defined in a
+.BR "struct memcntl_mha" :
 .sp
 .in +2
 .nf
@@ -318,7 +372,9 @@ size_t mha_pagesize;
 .fi
 .in -2
 
-The accepted values for \fBmha_cmd\fR are:
+The accepted values for
+.B mha_cmd
+are:
 .sp
 .in +2
 .nf
@@ -329,13 +385,25 @@ MHA_MAPSIZE_BSSBRK
 .in -2
 
 The \fBmha_flags\fR member is reserved for future use and must always be
-set to 0. The \fBmha_pagesize\fR member must be a valid size as obtained
-from \fBgetpagesizes\fR(3C) or the constant value 0 to allow the system to
+set to 0. The
+.B mha_pagesize
+member must be a valid size as obtained
+from
+.BR getpagesizes "(3C) or the constant value 0 to allow the system to"
 choose an appropriate hardware address translation mapping size.
 .sp
 \fBMHA_MAPSIZE_VA\fR sets the preferred hardware address translation
-mapping size of the region of memory from \fIaddr\fR to \fIaddr\fR +
-\fIlen\fR. Both \fIaddr\fR and \fIlen\fR must be aligned to an
+mapping size of the region of memory from
+.I addr
+to
+.I addr
++
+.IR len .
+Both
+.I addr
+and
+.I len
+must be aligned to an
 \fBmha_pagesize\fR boundary. The entire virtual address region from
 \fIaddr\fR to \fIaddr\fR + \fIlen\fR must not have any holes. Permissions
 within each \fBmha_pagesize\fR-aligned portion of the region must be
@@ -344,36 +412,65 @@ size based on the size and alignment of the memory region, type of
 processor, and other considerations.
 .sp
 \fBMHA_MAPSIZE_STACK\fR sets the preferred hardware address translation
-mapping size of the process main thread stack segment. The \fIaddr\fR and
+mapping size of the process main thread stack segment. The
+.I addr
+and
 \fIlen\fR arguments must be \fINULL\fR and 0, respectively.
 .sp
 \fBMHA_MAPSIZE_BSSBRK\fR sets the preferred hardware address translation
-mapping size of the process heap. The \fIaddr\fR and \fIlen\fR arguments
-must be \fINULL\fR and 0, respectively. See the NOTES section of the
-\fBppgsz\fR(1) manual page for additional information on process heap
+mapping size of the process heap. The
+.I addr
+and
+.I len
+arguments
+must be
+.I NULL
+and 0, respectively. See the NOTES section of the
+.BR ppgsz (1)
+manual page for additional information on process heap
 alignment.
 .sp
-The \fIattr\fR argument must be 0 for all \fBMC_HAT_ADVISE\fR operations.
+The
+.I attr
+argument must be 0 for all
+.B MC_HAT_ADVISE
+operations.
 .RE
 
 .sp
 .LP
-The \fImask\fR argument must be \fB0\fR; it is reserved for future use.
+The
+.I mask
+argument must be
+.BR 0 ;
+it is reserved for future use.
 .sp
 .LP
 Locks established with the lock operations are not inherited by a child
-process after \fBfork\fR(2). The \fBmemcntl()\fR function fails if it
+process after
+.BR fork (2).
+The
+.B memcntl()
+function fails if it
 attempts to lock more memory than a system-specific limit.
 .sp
 .LP
 Due to the potential impact on system resources, the operations
-\fBMC_LOCKAS\fR, \fBMC_LOCK\fR, \fBMC_UNLOCKAS\fR, and \fBMC_UNLOCK\fR are
+.BR MC_LOCKAS ,
+.BR MC_LOCK ,
+.BR MC_UNLOCKAS ,
+and
+.B MC_UNLOCK
+are
 restricted to privileged processes.
 .SH USAGE
 .sp
 .LP
-The \fBmemcntl()\fR function subsumes the operations of \fBplock\fR(3C) and
-\fBmctl\fR(3UCB).
+The
+.B memcntl()
+function subsumes the operations of
+.BR plock "(3C) and"
+.BR mctl (3UCB).
 .sp
 .LP
 \fBMC_HAT_ADVISE\fR is intended to improve performance of applications that
@@ -386,28 +483,52 @@ for other applications and result in slower system wide performance.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBmemcntl()\fR returns \fB0\fR; otherwise, it
-returns \fB\(mi1\fR and sets \fBerrno\fR to indicate an error.
+Upon successful completion,
+.B memcntl()
+returns
+.BR 0 ;
+otherwise, it
+returns \fB\(mi1\fR and sets
+.B errno
+to indicate an error.
 .SH ERRORS
 .sp
 .LP
-The \fBmemcntl()\fR function will fail if:
+The
+.B memcntl()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
 When the selection criteria match, some or all of the memory identified by
-the operation could not be locked when \fBMC_LOCK\fR or \fBMC_LOCKAS\fR was
+the operation could not be locked when
+.B MC_LOCK
+or
+.B MC_LOCKAS
+was
 specified, some or all mappings in the address range [\fIaddr\fR, \fIaddr\fR
-+ \fIlen\fR) are locked for I/O when \fBMC_HAT_ADVISE\fR was specified, or
-the system has insufficient resources when \fBMC_HAT_ADVISE\fR was
++
+.IR len )
+are locked for I/O when
+.B MC_HAT_ADVISE
+was specified, or
+the system has insufficient resources when
+.B MC_HAT_ADVISE
+was
 specified.
 .sp
-The \fIcmd\fR is \fBMC_LOCK\fR or \fBMC_LOCKAS\fR and locking the memory
+The
+.I cmd
+is
+.B MC_LOCK
+or
+.B MC_LOCKAS
+and locking the memory
 identified by this operation would exceed a limit or resource control on
 locked memory.
 .RE
@@ -416,12 +537,14 @@ locked memory.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 10n
 .rt
 When the selection criteria match, some or all of the addresses in the
-range [\fIaddr, addr + len\fR) are locked and \fBMC_SYNC\fR with the
+range [\fIaddr, addr + len\fR) are locked and
+.B MC_SYNC
+with the
 \fBMS_INVALIDATE\fR option was specified.
 .RE
 
@@ -429,16 +552,28 @@ range [\fIaddr, addr + len\fR) are locked and \fBMC_SYNC\fR with the
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIaddr\fR argument specifies invalid selection criteria or is not a
+The
+.I addr
+argument specifies invalid selection criteria or is not a
 multiple of the page size as returned by  \fBsysconf\fR(3C); the \fIaddr\fR
-and/or \fIlen\fR argument does not have the value \fB0\fR when
+and/or
+.I len
+argument does not have the value
+.B 0
+when
 \fBMC_LOCKAS\fR or \fBMC_UNLOCKAS\fR is specified; the \fIarg\fR argument is
-not valid for the function specified; \fBmha_pagesize\fR or \fBmha_cmd\fR is
-invalid; or \fBMC_HAT_ADVISE\fR is specified and not all pages in the
+not valid for the function specified;
+.B mha_pagesize
+or
+.B mha_cmd
+is
+invalid; or
+.B MC_HAT_ADVISE
+is specified and not all pages in the
 specified region have the same access permissions within the given size
 boundaries.
 .RE
@@ -447,12 +582,16 @@ boundaries.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
 When the selection criteria match, some or all of the addresses in the
-range [\fIaddr\fR, \fIaddr\fR + \fIlen\fR) are invalid for the address space
+range [\fIaddr\fR,
+.I addr
++
+.IR len )
+are invalid for the address space
 of a process or specify one or more pages which are not mapped.
 .RE
 
@@ -460,19 +599,26 @@ of a process or specify one or more pages which are not mapped.
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 10n
 .rt
 The {\fBPRIV_PROC_LOCK_MEMORY\fR} privilege is not asserted in the
-effective set of the calling process and \fBMC_LOCK\fR, \fBMC_LOCKAS\fR,
-\fBMC_UNLOCK\fR, or \fBMC_UNLOCKAS\fR was specified.
+effective set of the calling process and
+.BR MC_LOCK ,
+.BR MC_LOCKAS ,
+.BR MC_UNLOCK ,
+or
+.B MC_UNLOCKAS
+was specified.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -489,7 +635,16 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBppgsz\fR(1), \fBfork\fR(2), \fBmmap\fR(2), \fBmprotect\fR(2),
-\fBgetpagesizes\fR(3C), \fBmctl\fR(3UCB), \fBmlock\fR(3C),
-\fBmlockall\fR(3C), \fBmsync\fR(3C), \fBplock\fR(3C), \fBsysconf\fR(3C),
-\fBattributes\fR(5), \fBprivileges\fR(5)
+.BR ppgsz (1),
+\fBfork\fR(2),
+.BR mmap (2),
+.BR mprotect (2),
+.BR getpagesizes (3C),
+.BR mctl (3UCB),
+.BR mlock (3C),
+.BR mlockall (3C),
+.BR msync (3C),
+.BR plock (3C),
+\fBsysconf\fR(3C),
+.BR attributes (5),
+.BR privileges (5)

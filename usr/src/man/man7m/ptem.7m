@@ -35,41 +35,80 @@ ptem \- STREAMS Pseudo Terminal Emulation module
 discipline and pseudo terminal driver, emulates a terminal.
 .sp
 .LP
-The \fBptem\fR module must be pushed (see  \fBI_PUSH\fR,
-\fBstreamio\fR(7I)) onto the slave side of a pseudo terminal STREAM, before
-the \fBldterm\fR(7M) module is pushed.
+The
+.B ptem
+module must be pushed (see  \fBI_PUSH\fR,
+.BR streamio (7I))
+onto the slave side of a pseudo terminal STREAM, before
+the
+.BR ldterm "(7M) module is pushed."
 .sp
 .LP
-On the write-side, the \fBTCSETA\fR, \fBTCSETAF\fR, \fBTCSETAW\fR,
-\fBTCGETA\fR, \fBTCSETS\fR, \fBTCSETSW\fR, \fBTCSETSF\fR, \fBTCGETS\fR,
-\fBTCSBRK\fR, \fBJWINSIZE\fR, \fBTIOCGWINSZ\fR, and \fBTIOCSWINSZ\fR
-\fBtermio\fR \fBioctl\fR(2) messages are processed and acknowledged. If
-remote mode is not in effect, \fBptem\fR handles the \fBTIOCSTI\fR ioctl by
-copying the argument bytes into an  \fBM_DATA\fR message and passing it back
+On the write-side, the
+.BR TCSETA ,
+.BR TCSETAF ,
+.BR TCSETAW ,
+.BR TCGETA ,
+.BR TCSETS ,
+.BR TCSETSW ,
+.BR TCSETSF ,
+.BR TCGETS ,
+.BR TCSBRK ,
+.BR JWINSIZE ,
+.BR TIOCGWINSZ ,
+and
+.BR TIOCSWINSZ
+.BR "termio ioctl" (2)
+messages are processed and acknowledged. If
+remote mode is not in effect,
+.B ptem
+handles the
+.B TIOCSTI
+ioctl by
+copying the argument bytes into an 
+.B M_DATA
+message and passing it back
 up the read side. Regardless of the remote mode setting, \fBptem\fR
 acknowledges the ioctl and passes a copy of it downstream for possible
-further processing. A hang up (that is, \fBstty 0\fR) is converted to a zero
-length \fBM_DATA\fR message and passed downstream. Termio \fBcflags\fR and
+further processing. A hang up (that is,
+.BR "stty 0" )
+is converted to a zero
+length
+.B M_DATA
+message and passed downstream. Termio \fBcflags\fR and
 window row and column information are stored locally one per stream.
 \fBM_DELAY\fR messages are discarded. All other messages are passed
 downstream unmodified.
 .sp
 .LP
 On the read-side all messages are passed upstream unmodified with the
-following exceptions. All \fBM_READ\fR and \fBM_DELAY\fR messages are freed
-in both directions. A \fBTCSBRK\fR ioctl is converted to an \fBM_BREAK\fR
+following exceptions. All
+.B M_READ
+and
+.B M_DELAY
+messages are freed
+in both directions. A
+.B TCSBRK
+ioctl is converted to an
+.BR M_BREAK
 message and  passed upstream and an acknowledgement is returned downstream.
-A \fBTIOCSIGNAL\fR ioctl is converted into an \fBM_PCSIG\fR message,  and
+A
+.B TIOCSIGNAL
+ioctl is converted into an
+.B M_PCSIG
+message,  and
 passed upstream and an acknowledgement is returned downstream. Finally a
 \fBTIOCREMOTE\fR ioctl is converted into an \fBM_CTL\fR message,
 acknowledged, and passed upstream; the resulting mode is retained for use in
-subsequent \fBTIOCSTI\fR parsing.
+subsequent
+.B TIOCSTI
+parsing.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB<\fBsys/ptem.h\fR> \fR
+\fB<\fBsys/ptem.h\fR>\fR 
 .ad
 .RS 17n
 .rt
@@ -79,8 +118,12 @@ subsequent \fBTIOCSTI\fR parsing.
 .SH SEE ALSO
 .sp
 .LP
-\fBstty\fR(1), \fBioctl\fR(2), \fBldterm\fR(7M), \fBpckt\fR(7M),
-\fBstreamio\fR(7I), \fBtermio\fR(7I)
+.BR stty (1),
+.BR ioctl (2),
+.BR ldterm (7M),
+.BR pckt (7M),
+.BR streamio (7I),
+.BR termio (7I)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

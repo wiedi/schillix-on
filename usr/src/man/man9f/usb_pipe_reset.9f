@@ -43,7 +43,7 @@ Solaris DDI specific (Solaris DDI)
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 16n
 .rt
@@ -54,7 +54,7 @@ Pointer to the device's \fBdev_info\fR structure.
 .ne 2
 .mk
 .na
-\fIpipe_handle\fR
+.I pipe_handle
 .ad
 .RS 16n
 .rt
@@ -77,7 +77,7 @@ USB_FLAGS_SLEEP is the only flag recognized. Wait for completion.
 .ne 2
 .mk
 .na
-\fIcallback\fR
+.I callback
 .ad
 .RS 16n
 .rt
@@ -89,7 +89,7 @@ If NULL, no notification of completion is provided.
 .ne 2
 .mk
 .na
-\fIcallback_arg\fR
+.I callback_arg
 .ad
 .RS 16n
 .rt
@@ -99,8 +99,10 @@ Second argument to callback function.
 .SH DESCRIPTION
 .sp
 .LP
-Call \fBusb_pipe_reset()\fR to reset a pipe which is in an error state, or
-to abort a current request and clear the pipe. The \fBusb_pipe_reset()\fR
+Call
+.B usb_pipe_reset()
+to reset a pipe which is in an error state, or
+.RB "to abort a current request and clear the pipe. The" " usb_pipe_reset()"
 function can be called on any pipe other than the default control pipe.
 .sp
 .LP
@@ -112,10 +114,14 @@ callback with the USB_CB_STALL_CLEARED callback flag set in such cases.
 Stalls on pipes executing requests without the USB_ATTRS_AUTOCLEARING
 attribute set must be cleared by the client driver. The client driver is
 notified of the stall via an exception callback. The client driver must then
-call \fBusb_pipe_reset()\fR to clear the stall.
+call
+.B usb_pipe_reset()
+to clear the stall.
 .sp
 .LP
-The \fBusb_pipe_reset()\fR function resets a pipe as follows:
+The
+.B usb_pipe_reset()
+function resets a pipe as follows:
 .br
 .in +2
 1. Any polling activity is stopped if the pipe being reset is an interrupt
@@ -136,7 +142,9 @@ Requests to reset the default control pipe are not allowed. No action is
 taken on a pipe which is closing.
 .sp
 .LP
-If USB_FLAGS_SLEEP is specified in \fIflags\fR, this function waits for the
+If USB_FLAGS_SLEEP is specified in
+.IR flags ,
+this function waits for the
 action to complete before calling the callback handler and returning. If not
 specified, this function queues the request and returns immediately, and the
 specified callback is called upon completion.
@@ -147,7 +155,7 @@ specified callback is called upon completion.
 .ne 2
 .mk
 .na
-\fBusb_pipe_handle_t cb_pipe_handle\fR
+.B usb_pipe_handle_t cb_pipe_handle
 .ad
 .sp .6
 .RS 4n
@@ -158,18 +166,19 @@ Handle of the pipe to reset.
 .ne 2
 .mk
 .na
-\fBusb_opaque_t callback_arg\fR
+.B usb_opaque_t callback_arg
 .ad
 .sp .6
 .RS 4n
-Callback_arg specified to \fBusb_pipe_reset()\fR.
+Callback_arg specified to
+.BR usb_pipe_reset() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBint rval\fR
+.B int rval
 .ad
 .sp .6
 .RS 4n
@@ -200,7 +209,7 @@ Possible callback hander rval argument values are:
 .ne 2
 .mk
 .na
-\fBUSB_SUCCESS\fR
+.B USB_SUCCESS
 .ad
 .RS 23n
 .rt
@@ -211,7 +220,7 @@ Pipe successfully reset.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_PIPE\fR
+.B USB_INVALID_PIPE
 .ad
 .RS 23n
 .rt
@@ -222,11 +231,13 @@ Pipe successfully reset.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_ARGS\fR
+.B USB_INVALID_ARGS
 .ad
 .RS 23n
 .rt
-\fIdip\fR or \fIpipe_handle\fR arguments are \fBNULL\fR. USB_FLAGS_SLEEP is
+\fIdip\fR or \fIpipe_handle\fR arguments are
+.BR NULL .
+USB_FLAGS_SLEEP is
 clear and callback is NULL.
 .RE
 
@@ -234,7 +245,7 @@ clear and callback is NULL.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_CONTEXT\fR
+.B USB_INVALID_CONTEXT
 .ad
 .RS 23n
 .rt
@@ -245,7 +256,7 @@ Called from interrupt context with the USB_FLAGS_SLEEP flag set.
 .ne 2
 .mk
 .na
-\fBUSB_INVALID_PERM\fR
+.B USB_INVALID_PERM
 .ad
 .RS 23n
 .rt
@@ -256,7 +267,7 @@ Called from interrupt context with the USB_FLAGS_SLEEP flag set.
 .ne 2
 .mk
 .na
-\fBUSB_FAILURE\fR
+.B USB_FAILURE
 .ad
 .RS 23n
 .rt
@@ -318,7 +329,9 @@ usb_pipe_reset(dip, bulk_pipe, USB_FLAGS_SLEEP, NULL, NULL);
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -339,10 +352,14 @@ AvailabilitySUNWusb
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBusb_get_cfg\fR(9F), \fBusb_pipe_bulk_xfer\fR(9F),
-\fBusb_pipe_close\fR(9F), \fBusb_get_status\fR(9F),
+.BR attributes (5),
+\fBusb_get_cfg\fR(9F), \fBusb_pipe_bulk_xfer\fR(9F),
+.BR usb_pipe_close (9F),
+.BR usb_get_status (9F),
 \fBusb_pipe_ctrl_xfer\fR(9F), \fBusb_pipe_drain_reqs\fR(9F),
-\fBusb_pipe_get_state\fR(9F), \fBusb_pipe_intr_xfer\fR(9F),
+.BR usb_pipe_get_state (9F),
+\fBusb_pipe_intr_xfer\fR(9F),
 \fBusb_pipe_isoc_xfer\fR(9F), \fBusb_pipe_open\fR(9F),
-\fBusb_pipe_stop_intr_polling\fR(9F), \fBusb_pipe_stop_isoc_polling\fR(9F),
+.BR usb_pipe_stop_intr_polling (9F),
+.BR usb_pipe_stop_isoc_polling (9F),
 \fBusb_callback_flags\fR(9S)

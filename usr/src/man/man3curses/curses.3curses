@@ -32,25 +32,34 @@ cc [ \fIflag\fR.\|.\|. ] \fIfile\fR.. .-lcurses [ \fIlibrary\fR.\|.\|. ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBcurses\fR library routines give the user a terminal-independent method
+The
+.B curses
+library routines give the user a terminal-independent method
 of updating character screens with reasonable optimization.
 .sp
 .LP
-The \fBcurses\fR package allows:  overall screen, window and pad manipulation;
+The
+.B curses
+package allows:  overall screen, window and pad manipulation;
 output to windows and pads; reading terminal input; control over terminal and
 \fBcurses\fR input and output options; environment query routines; color
 manipulation; use of soft label keys; terminfo access; and access to low-level
 \fBcurses\fR routines.
 .sp
 .LP
-To initialize the routines, the routine \fBinitscr()\fR or \fBnewterm()\fR
+To initialize the routines, the routine
+.B initscr()
+or
+.BR newterm()
 must be called before any of the other routines that deal with windows and
-screens are used. The routine \fBendwin()\fR must be called before exiting. To
+screens are used. The routine
+.B endwin()
+must be called before exiting. To
 get character-at-a-time input without echoing (most interactive, screen
 oriented programs want this), the following sequence should be used:
 .sp
 .LP
-\fBinitscr,cbreak,noecho;\fR
+.B initscr,cbreak,noecho;
 .sp
 .LP
 Most programs would additionally use the sequence:
@@ -59,37 +68,67 @@ Most programs would additionally use the sequence:
 \fBnonl,intrflush(stdscr,FALSE),keypad(stdscr,TRUE);\fR
 .sp
 .LP
-Before a \fBcurses\fR program is run, the tab stops of the terminal should be
+Before a
+.B curses
+program is run, the tab stops of the terminal should be
 set and its initialization strings, if defined, must be output. This can be
-done by executing the \fBtput init\fR command after the shell environment
-variable \fBTERM\fR has been exported. (See \fBterminfo\fR(4) for further
+done by executing the
+.B "tput init"
+command after the shell environment
+variable
+.B TERM
+has been exported. (See
+.BR terminfo (4)
+for further
 details.)
 .sp
 .LP
-The \fBcurses\fR library permits manipulation of data structures, called
-\fIwindows\fR, which can be thought of as two-dimensional arrays of characters
-representing all or part of a \fBCRT\fR screen. A default window called
-\fBstdscr\fR, which is the size of the terminal screen, is supplied. Others may
-be created with \fBnewwin\fR(3CURSES).
+The
+.B curses
+library permits manipulation of data structures, called
+.IR windows ,
+which can be thought of as two-dimensional arrays of characters
+representing all or part of a
+.B CRT
+screen. A default window called
+.BR stdscr ,
+which is the size of the terminal screen, is supplied. Others may
+be created with
+.BR newwin (3CURSES).
 .sp
 .LP
-Windows are referred to by variables declared as \fBWINDOW *\fR. These data
+Windows are referred to by variables declared as
+.BR "WINDOW *" .
+These data
 structures are manipulated with routines described on 3CURSES pages (whose
 names begin "curs_"). Among which the most basic routines are
-\fBmove\fR(3CURSES) and \fBaddch\fR(3CURSES). More general versions of these
-routines are included with names beginning with \fBw\fR, allowing the user to
-specify a window. The routines not beginning with \fBw\fR affect
-\fBstdscr\fR.
+.BR move (3CURSES)
+and \fBaddch\fR(3CURSES). More general versions of these
+routines are included with names beginning with
+.BR w ,
+allowing the user to
+specify a window. The routines not beginning with
+.B w
+affect
+.BR stdscr .
 .sp
 .LP
 After using routines to manipulate a window, \fBrefresh\fR(3CURSES) is called,
-telling \fBcurses\fR to make the user's \fBCRT\fR screen look like
-\fBstdscr\fR. The characters in a window are actually of type \fBchtype\fR,
+telling
+.B curses
+to make the user's
+.B CRT
+screen look like
+.BR stdscr .
+The characters in a window are actually of type
+.BR chtype ,
 (character and attribute data) so that other information about the character
 may also be stored with each character.
 .sp
 .LP
-Special windows called \fIpads\fR may also be manipulated. These are windows
+Special windows called
+.I pads
+may also be manipulated. These are windows
 which are not constrained to the size of the screen and whose contents need not
 be completely displayed. See \fBcurs_pad\fR(3CURSES) for more information.
 .sp
@@ -101,19 +140,34 @@ enhancements. Line drawing characters may be specified to be output. On input,
 \fBcurses\fR is also able to translate arrow and function keys that transmit
 escape sequences into single values. The video attributes, line drawing
 characters, and input values use names, defined in <\fBcurses.h\fR>,  such as
-\fBA_REVERSE\fR, \fBACS_HLINE\fR, and \fBKEY_LEFT\fR.
+.BR A_REVERSE ,
+.BR ACS_HLINE ,
+and
+.BR KEY_LEFT .
 .sp
 .LP
-If the environment variables \fBLINES\fR and \fBCOLUMNS\fR are set, or if the
+If the environment variables
+.B LINES
+and
+.B COLUMNS
+are set, or if the
 program is executing in a window environment, line and column information in
-the environment will override information read by \fIterminfo\fR. This would
+the environment will override information read by
+.IR terminfo .
+This would
 effect a program running in an AT&T 630 layer, for example, where the size of a
 screen is changeable.
 .sp
 .LP
-If the environment variable \fBTERMINFO\fR is defined, any program using
+If the environment variable
+.B TERMINFO
+is defined, any program using
 \fBcurses\fR checks for a local terminal definition before checking in the
-standard place. For example, if \fBTERM\fR is set to \fBatt4424\fR, then the
+standard place. For example, if
+.B TERM
+is set to
+.BR att4424 ,
+then the
 compiled terminal definition is found in
 .sp
 .LP
@@ -121,11 +175,14 @@ compiled terminal definition is found in
 .sp
 .LP
 (The `\fBa\fR' is copied from the first letter of \fBatt4424\fR to avoid
-creation of huge directories.) However, if \fBTERMINFO\fR is set to
-\fB$HOME/myterms\fR, \fBcurses\fR first checks
+creation of huge directories.) However, if
+.B TERMINFO
+is set to
+.BR $HOME/myterms ,
+\fBcurses\fR first checks
 .sp
 .LP
-\fB$HOME/myterms/a/att4424\fR,
+.BR $HOME/myterms/a/att4424 ,
 .sp
 .LP
 and if that fails, it then checks
@@ -138,15 +195,33 @@ This is useful for developing experimental definitions or when write
 permission in \fB/usr/share/lib/terminfo\fR is not available.
 .sp
 .LP
-The integer variables \fBLINES\fR and \fBCOLS\fR are defined in
+The integer variables
+.B LINES
+and
+.B COLS
+are defined in
 \fB<curses.h>\fR and will be filled in by \fBinitscr\fR with the size of the
-screen. The constants \fBTRUE\fR and \fBFALSE\fR have the values \fB1\fR and
-\fB0\fR, respectively.
+screen. The constants
+.B TRUE
+and
+.B FALSE
+have the values
+.B 1
+and
+.BR 0 ,
+respectively.
 .sp
 .LP
-The \fBcurses\fR routines also define the \fBWINDOW *\fR variable \fBcurscr\fR
+The
+.B curses
+routines also define the
+.B "WINDOW *"
+variable
+.BR curscr
 which is used for certain low-level operations like clearing and redrawing a
-screen containing garbage. The \fBcurscr\fR can be used in only a few
+screen containing garbage. The
+.B curscr
+can be used in only a few
 routines.
 .SS "International Functions"
 .sp
@@ -163,7 +238,9 @@ desirable.
 .LP
 Overwriting characters (\fBaddch\fR, for example) operates on a screen level.
 Overwriting a character by a character that requires a different number of
-columns may produce \fIorphaned columns\fR. These orphaned columns are filled
+columns may produce
+.IR "orphaned columns" .
+These orphaned columns are filled
 with background characters.
 .sp
 .LP
@@ -181,7 +258,9 @@ points to. Before deletion, the cursor position is adjusted to the first column
 of the character.
 .sp
 .LP
-A \fImulti-column\fR character cannot be put on the last column of a line.
+A
+.I multi-column
+character cannot be put on the last column of a line.
 When such attempts are made, the last column is set to the background
 character. In addition, when such an operation creates orphaned columns, the
 orphaned columns are filled with background characters.
@@ -199,43 +278,88 @@ column of the character before the insertion or deletion.
 .SS "Routine and Argument Names"
 .sp
 .LP
-Many \fBcurses\fR routines have two or more versions. The routines prefixed
-with \fBw\fR require a window argument. The routines prefixed with \fBp\fR
+Many
+.B curses
+routines have two or more versions. The routines prefixed
+with
+.B w
+require a window argument. The routines prefixed with \fBp\fR
 require a pad argument. Those without a prefix generally use \fBstdscr\fR.
 .sp
 .LP
-The routines prefixed with \fBmv\fR require an \fIx\fR and \fIy\fR coordinate
-to move to before performing the appropriate action. The \fBmv\fR routines
+The routines prefixed with
+.B mv
+require an
+.I x
+and
+.I y
+coordinate
+to move to before performing the appropriate action. The
+.B mv
+routines
 imply a call to \fBmove\fR(3CURSES) before the call to the other routine. The
-coordinate \fIy\fR always refers to the row (of the window), and \fIx\fR always
+coordinate
+.I y
+always refers to the row (of the window), and
+.I x
+always
 refers to the column. The upper left-hand corner is always (0,0), not (1,1).
 .sp
 .LP
-The routines prefixed with \fBmvw\fR take both a window argument and \fIx\fR
-and \fIy\fR coordinates. The window argument is always specified before the
+The routines prefixed with
+.B mvw
+take both a window argument and
+.IR x
+and
+.I y
+coordinates. The window argument is always specified before the
 coordinates.
 .sp
 .LP
-In each case, \fIwin\fR is the window affected, and \fIpad\fR is the pad
-affected; \fIwin\fR and \fIpad\fR are always pointers to type \fBWINDOW\fR
+In each case,
+.I win
+is the window affected, and
+.I pad
+is the pad
+affected;
+.I win
+and
+.I pad
+are always pointers to type
+.BR WINDOW
 .sp
 .LP
 Option setting routines require a Boolean flag \fIbf\fR with the value
-\fBTRUE\fR or \fBFALSE\fR; \fIbf\fR is always of type \fBbool\fR. The variables
-\fIch\fR and \fIattrs\fR below are always of type \fBchtype\fR. The types
-\fBWINDOW\fR, \fBSCREEN\fR, \fBbool\fR, and \fBchtype\fR are defined in
-\fB<curses.h>\fR\&. The type \fBTERMINAL\fR is defined in \fB<term.h>\fR\&. All
+\fBTRUE\fR or
+.BR FALSE ;
+\fIbf\fR is always of type
+.BR bool .
+The variables
+\fIch\fR and \fIattrs\fR below are always of type
+.BR chtype .
+The types
+.BR WINDOW ,
+.BR SCREEN ,
+.BR bool ,
+and
+.B chtype
+are defined in
+\fB<curses.h>\fR\&. The type \fBTERMINAL\fR is defined in
+.BR <term.h> \&.
+All
 other arguments are integers.
 .SS "Routine Name Index"
 .sp
 .LP
-The following table lists each \fBcurses\fR routine and the name of the manual
+The following table lists each
+.B curses
+routine and the name of the manual
 page on which it is described.
 .sp
 .ne 2
 .mk
 .na
-\fBcurses Routine Name\fR
+.B curses Routine Name
 .ad
 .RS 23n
 .rt
@@ -246,121 +370,121 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBaddch\fR
+.B addch
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddchnstr\fR
+.B addchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddchstr\fR
+.B addchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddnstr\fR
+.B addnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddnwstr\fR
+.B addnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddstr\fR
+.B addstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddwch\fR
+.B addwch
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddwchnstr\fR
+.B addwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddwchstr\fR
+.B addwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBaddwstr\fR
+.B addwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBadjcurspos\fR
+.B adjcurspos
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
@@ -371,194 +495,194 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBattron\fR
+.B attron
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBattrset\fR
+.B attrset
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBbaudrate\fR
+.B baudrate
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBbeep\fR
+.B beep
 .ad
 .RS 23n
 .rt
-\fBcurs_beep\fR(3CURSES)
+.BR curs_beep (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBbkgd\fR
+.B bkgd
 .ad
 .RS 23n
 .rt
-\fBcurs_bkgd\fR(3CURSES)
+.BR curs_bkgd (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBbkgdset\fR
+.B bkgdset
 .ad
 .RS 23n
 .rt
-\fBcurs_bkgd\fR(3CURSES)
+.BR curs_bkgd (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBborder\fR
+.B border
 .ad
 .RS 23n
 .rt
-\fBcurs_border\fR(3CURSES)
+.BR curs_border (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBbox\fR
+.B box
 .ad
 .RS 23n
 .rt
-\fBcurs_border\fR(3CURSES)
+.BR curs_border (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcan_change_color\fR
+.B can_change_color
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcbreak\fR
+.B cbreak
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBclear\fR
+.B clear
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBclearok\fR
+.B clearok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBclrtobot\fR
+.B clrtobot
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBclrtoeol\fR
+.B clrtoeol
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcolor_content\fR
+.B color_content
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcopywin\fR
+.B copywin
 .ad
 .RS 23n
 .rt
-\fBcurs_overlay\fR(3CURSES)
+.BR curs_overlay (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcurs_set\fR
+.B curs_set
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
@@ -569,7 +693,7 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
@@ -580,14 +704,14 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdel_curterm\fR
+.B del_curterm
 .ad
 .RS 23n
 .rt
@@ -598,73 +722,73 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBdelay_output\fR
+.B delay_output
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdelch\fR
+.B delch
 .ad
 .RS 23n
 .rt
-\fBcurs_delch\fR(3CURSES)
+.BR curs_delch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdeleteln\fR
+.B deleteln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdelscreen\fR
+.B delscreen
 .ad
 .RS 23n
 .rt
-\fBcurs_initscr\fR(3CURSES)
+.BR curs_initscr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdelwin\fR
+.B delwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBderwin\fR
+.B derwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBdoupdate\fR
+.B doupdate
 .ad
 .RS 23n
 .rt
@@ -675,77 +799,77 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBdupwin\fR
+.B dupwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBecho\fR
+.B echo
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBechochar\fR
+.B echochar
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBechowchar\fR
+.B echowchar
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBendwin\fR
+.B endwin
 .ad
 .RS 23n
 .rt
-\fBcurs_initscr\fR(3CURSES)
+.BR curs_initscr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBerase\fR
+.B erase
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBerasechar\fR
+.B erasechar
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
@@ -756,7 +880,7 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
@@ -767,7 +891,7 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_beep\fR(3CURSES)
+.BR curs_beep (3CURSES)
 .RE
 
 .sp
@@ -778,128 +902,128 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetbegyx\fR
+.B getbegyx
 .ad
 .RS 23n
 .rt
-\fBcurs_getyx\fR(3CURSES)
+.BR curs_getyx (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetch\fR
+.B getch
 .ad
 .RS 23n
 .rt
-\fBcurs_getch\fR(3CURSES)
+.BR curs_getch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetmaxyx\fR
+.B getmaxyx
 .ad
 .RS 23n
 .rt
-\fBcurs_getyx\fR(3CURSES)
+.BR curs_getyx (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetnwstr\fR
+.B getnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetparyx\fR
+.B getparyx
 .ad
 .RS 23n
 .rt
-\fBcurs_getyx\fR(3CURSES)
+.BR curs_getyx (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetstr\fR
+.B getstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getstr\fR(3CURSES)
+.BR curs_getstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetsyx\fR
+.B getsyx
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetwch\fR
+.B getwch
 .ad
 .RS 23n
 .rt
-\fBcurs_getwch\fR(3CURSES)
+.BR curs_getwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetwin\fR
+.B getwin
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetwstr\fR
+.B getwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBgetyx\fR
+.B getyx
 .ad
 .RS 23n
 .rt
-\fBcurs_getyx\fR(3CURSES)
+.BR curs_getyx (3CURSES)
 .RE
 
 .sp
@@ -910,260 +1034,260 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBhas_colors\fR
+.B has_colors
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBhas_ic\fR
+.B has_ic
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBhas_il\fR
+.B has_il
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBidcok\fR
+.B idcok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBidlok\fR
+.B idlok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBimmedok\fR
+.B immedok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinch\fR
+.B inch
 .ad
 .RS 23n
 .rt
-\fBcurs_inch\fR(3CURSES)
+.BR curs_inch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinchnstr\fR
+.B inchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinchstr\fR
+.B inchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinit_color\fR
+.B init_color
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinit_pair\fR
+.B init_pair
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinitscr\fR
+.B initscr
 .ad
 .RS 23n
 .rt
-\fBcurs_initscr\fR(3CURSES)
+.BR curs_initscr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinnstr\fR
+.B innstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinnwstr\fR
+.B innwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsch\fR
+.B insch
 .ad
 .RS 23n
 .rt
-\fBcurs_insch\fR(3CURSES)
+.BR curs_insch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsdelln\fR
+.B insdelln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsertln\fR
+.B insertln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsnstr\fR
+.B insnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsnwstr\fR
+.B insnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinsstr\fR
+.B insstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinstr\fR
+.B instr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinswch\fR
+.B inswch
 .ad
 .RS 23n
 .rt
-\fBcurs_inswch\fR(3CURSES)
+.BR curs_inswch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinswstr\fR
+.B inswstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
@@ -1174,300 +1298,300 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinwch\fR
+.B inwch
 .ad
 .RS 23n
 .rt
-\fBcurs_inwch\fR(3CURSES)
+.BR curs_inwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinwchnstr\fR
+.B inwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinwchstr\fR
+.B inwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBinwstr\fR
+.B inwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBis_linetouched\fR
+.B is_linetouched
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBis_wintouched\fR
+.B is_wintouched
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBisendwin\fR
+.B isendwin
 .ad
 .RS 23n
 .rt
-\fBcurs_initscr\fR(3CURSES)
+.BR curs_initscr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBkeyname\fR
+.B keyname
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBkeypad\fR
+.B keypad
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBkillchar\fR
+.B killchar
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBleaveok\fR
+.B leaveok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBlongname\fR
+.B longname
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmeta\fR
+.B meta
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmove\fR
+.B move
 .ad
 .RS 23n
 .rt
-\fBcurs_move\fR(3CURSES)
+.BR curs_move (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmovenextch\fR
+.B movenextch
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmoveprevch\fR
+.B moveprevch
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddch\fR
+.B mvaddch
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddchnstr\fR
+.B mvaddchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddchstr\fR
+.B mvaddchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddnstr\fR
+.B mvaddnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddnwstr\fR
+.B mvaddnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddstr\fR
+.B mvaddstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddwch\fR
+.B mvaddwch
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddwchnstr\fR
+.B mvaddwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddwchstr\fR
+.B mvaddwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvaddwstr\fR
+.B mvaddwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvcur\fR
+.B mvcur
 .ad
 .RS 23n
 .rt
@@ -1478,748 +1602,748 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBmvdelch\fR
+.B mvdelch
 .ad
 .RS 23n
 .rt
-\fBcurs_delch\fR(3CURSES)
+.BR curs_delch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvderwin\fR
+.B mvderwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvgetch\fR
+.B mvgetch
 .ad
 .RS 23n
 .rt
-\fBcurs_getch\fR(3CURSES)
+.BR curs_getch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvgetnwstr\fR
+.B mvgetnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvgetstr\fR
+.B mvgetstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getstr\fR(3CURSES)
+.BR curs_getstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvgetwch\fR
+.B mvgetwch
 .ad
 .RS 23n
 .rt
-\fBcurs_getwch\fR(3CURSES)
+.BR curs_getwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvgetwstr\fR
+.B mvgetwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinch\fR
+.B mvinch
 .ad
 .RS 23n
 .rt
-\fBcurs_inch\fR(3CURSES)
+.BR curs_inch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinchnstr\fR
+.B mvinchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinchstr\fR
+.B mvinchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinnstr\fR
+.B mvinnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinnwstr\fR
+.B mvinnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinsch\fR
+.B mvinsch
 .ad
 .RS 23n
 .rt
-\fBcurs_insch\fR(3CURSES)
+.BR curs_insch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinsnstr\fR
+.B mvinsnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinsnwstr\fR
+.B mvinsnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinsstr\fR
+.B mvinsstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinstr\fR
+.B mvinstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinswch\fR
+.B mvinswch
 .ad
 .RS 23n
 .rt
-\fBcurs_inswch\fR(3CURSES)
+.BR curs_inswch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinswstr\fR
+.B mvinswstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinwch\fR
+.B mvinwch
 .ad
 .RS 23n
 .rt
-\fBcurs_inwch\fR(3CURSES)
+.BR curs_inwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinwchnstr\fR
+.B mvinwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinwchstr\fR
+.B mvinwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvinwstr\fR
+.B mvinwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvprintw\fR
+.B mvprintw
 .ad
 .RS 23n
 .rt
-\fBcurs_printw\fR(3CURSES)
+.BR curs_printw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvscanw\fR
+.B mvscanw
 .ad
 .RS 23n
 .rt
-\fBcurs_scanw\fR(3CURSES)
+.BR curs_scanw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddch\fR
+.B mvwaddch
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddchnstr\fR
+.B mvwaddchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddchstr\fR
+.B mvwaddchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddnstr\fR
+.B mvwaddnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddnwstr\fR
+.B mvwaddnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddstr\fR
+.B mvwaddstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddwch\fR
+.B mvwaddwch
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddwchnstr\fR
+.B mvwaddwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddwchstr\fR
+.B mvwaddwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwaddwstr\fR
+.B mvwaddwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwdelch\fR
+.B mvwdelch
 .ad
 .RS 23n
 .rt
-\fBcurs_delch\fR(3CURSES)
+.BR curs_delch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwgetch\fR
+.B mvwgetch
 .ad
 .RS 23n
 .rt
-\fBcurs_getch\fR(3CURSES)
+.BR curs_getch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwgetnwstr\fR
+.B mvwgetnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwgetstr\fR
+.B mvwgetstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getstr\fR(3CURSES)
+.BR curs_getstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwgetwch\fR
+.B mvwgetwch
 .ad
 .RS 23n
 .rt
-\fBcurs_getwch\fR(3CURSES)
+.BR curs_getwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwgetwstr\fR
+.B mvwgetwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwin\fR
+.B mvwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinch\fR
+.B mvwinch
 .ad
 .RS 23n
 .rt
-\fBcurs_inch\fR(3CURSES)
+.BR curs_inch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinchnstr\fR
+.B mvwinchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinchstr\fR
+.B mvwinchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinnstr\fR
+.B mvwinnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinnwstr\fR
+.B mvwinnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinsch\fR
+.B mvwinsch
 .ad
 .RS 23n
 .rt
-\fBcurs_insch\fR(3CURSES)
+.BR curs_insch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinsnstr\fR
+.B mvwinsnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinsstr\fR
+.B mvwinsstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinstr\fR
+.B mvwinstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinswch\fR
+.B mvwinswch
 .ad
 .RS 23n
 .rt
-\fBcurs_inswch\fR(3CURSES)
+.BR curs_inswch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinswstr\fR
+.B mvwinswstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinwch\fR
+.B mvwinwch
 .ad
 .RS 23n
 .rt
-\fBcurs_inwch\fR(3CURSES)
+.BR curs_inwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinwchnstr\fR
+.B mvwinwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinwchstr\fR
+.B mvwinwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwinwstr\fR
+.B mvwinwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwprintw\fR
+.B mvwprintw
 .ad
 .RS 23n
 .rt
-\fBcurs_printw\fR(3CURSES)
+.BR curs_printw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBmvwscanw\fR
+.B mvwscanw
 .ad
 .RS 23n
 .rt
-\fBcurs_scanw\fR(3CURSES)
+.BR curs_scanw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnapms\fR
+.B napms
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnewpad\fR
+.B newpad
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnewterm\fR
+.B newterm
 .ad
 .RS 23n
 .rt
-\fBcurs_initscr\fR(3CURSES)
+.BR curs_initscr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnewwin\fR
+.B newwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnl\fR
+.B nl
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnocbreak\fR
+.B nocbreak
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnodelay\fR
+.B nodelay
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoecho\fR
+.B noecho
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnonl\fR
+.B nonl
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
@@ -2230,84 +2354,84 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnoraw\fR
+.B noraw
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnotimeout\fR
+.B notimeout
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBoverlay\fR
+.B overlay
 .ad
 .RS 23n
 .rt
-\fBcurs_overlay\fR(3CURSES)
+.BR curs_overlay (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBoverwrite\fR
+.B overwrite
 .ad
 .RS 23n
 .rt
-\fBcurs_overlay\fR(3CURSES)
+.BR curs_overlay (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpair_content\fR
+.B pair_content
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpechochar\fR
+.B pechochar
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpechowchar\fR
+.B pechowchar
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
@@ -2318,7 +2442,7 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
@@ -2329,25 +2453,25 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBprintw\fR
+.B printw
 .ad
 .RS 23n
 .rt
-\fBcurs_printw\fR(3CURSES)
+.BR curs_printw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBputp\fR
+.B putp
 .ad
 .RS 23n
 .rt
@@ -2358,11 +2482,11 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBputwin\fR
+.B putwin
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
@@ -2373,25 +2497,25 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBraw\fR
+.B raw
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBredrawwin\fR
+.B redrawwin
 .ad
 .RS 23n
 .rt
@@ -2413,40 +2537,40 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBreset_prog_mode\fR
+.B reset_prog_mode
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBreset_shell_mode\fR
+.B reset_shell_mode
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBresetty\fR
+.B resetty
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrestartterm\fR
+.B restartterm
 .ad
 .RS 23n
 .rt
@@ -2461,146 +2585,102 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsavetty\fR
+.B savetty
 .ad
 .RS 23n
 .rt
-\fBcurs_kernel\fR(3CURSES)
+.BR curs_kernel (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscanw\fR
+.B scanw
 .ad
 .RS 23n
 .rt
-\fBcurs_scanw\fR(3CURSES)
+.BR curs_scanw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscr_dump\fR
+.B scr_dump
 .ad
 .RS 23n
 .rt
-\fBcurs_scr_dump\fR(3CURSES)
+.BR curs_scr_dump (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscr_init\fR
+.B scr_init
 .ad
 .RS 23n
 .rt
-\fBcurs_scr_dump\fR(3CURSES)
+.BR curs_scr_dump (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscr_restore\fR
+.B scr_restore
 .ad
 .RS 23n
 .rt
-\fBcurs_scr_dump\fR(3CURSES)
+.BR curs_scr_dump (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscr_set\fR
+.B scr_set
 .ad
 .RS 23n
 .rt
-\fBcurs_scr_dump\fR(3CURSES)
+.BR curs_scr_dump (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscroll\fR
+.B scroll
 .ad
 .RS 23n
 .rt
-\fBcurs_scroll\fR(3CURSES)
+.BR curs_scroll (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBscrollok\fR
+.B scrollok
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBset_curterm\fR
-.ad
-.RS 23n
-.rt
-\fBcurs_terminfo\fR(3CURSES)
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBset_term\fR
-.ad
-.RS 23n
-.rt
-\fBcurs_initscr\fR(3CURSES)
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBsetscrreg\fR
-.ad
-.RS 23n
-.rt
-\fBcurs_outopts\fR(3CURSES)
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBsetsyx\fR
-.ad
-.RS 23n
-.rt
-\fBcurs_kernel\fR(3CURSES)
-.RE
-
-.sp
-.ne 2
-.mk
-.na
-\fBsetterm\fR
+.B set_curterm
 .ad
 .RS 23n
 .rt
@@ -2611,7 +2691,51 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBsetupterm\fR
+.B set_term
+.ad
+.RS 23n
+.rt
+.BR curs_initscr (3CURSES)
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B setscrreg
+.ad
+.RS 23n
+.rt
+.BR curs_outopts (3CURSES)
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B setsyx
+.ad
+.RS 23n
+.rt
+.BR curs_kernel (3CURSES)
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B setterm
+.ad
+.RS 23n
+.rt
+\fBcurs_terminfo\fR(3CURSES)
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B setupterm
 .ad
 .RS 23n
 .rt
@@ -2626,62 +2750,62 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_attron\fR
+.B slk_attron
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_attrset\fR
+.B slk_attrset
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_clear\fR
+.B slk_clear
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_init\fR
+.B slk_init
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_label\fR
+.B slk_label
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
@@ -2692,7 +2816,7 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
@@ -2703,150 +2827,150 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_restore\fR
+.B slk_restore
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_set\fR
+.B slk_set
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBslk_touch\fR
+.B slk_touch
 .ad
 .RS 23n
 .rt
-\fBcurs_slk\fR(3CURSES)
+.BR curs_slk (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsrcl\fR
+.B srcl
 .ad
 .RS 23n
 .rt
-\fBcurs_scroll\fR(3CURSES)
+.BR curs_scroll (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstandend\fR
+.B standend
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstandout\fR
+.B standout
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstart_color\fR
+.B start_color
 .ad
 .RS 23n
 .rt
-\fBcurs_color\fR(3CURSES)
+.BR curs_color (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsubpad\fR
+.B subpad
 .ad
 .RS 23n
 .rt
-\fBcurs_pad\fR(3CURSES)
+.BR curs_pad (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsubwin\fR
+.B subwin
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsyncok\fR
+.B syncok
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtermattrs\fR
+.B termattrs
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtermname\fR
+.B termname
 .ad
 .RS 23n
 .rt
-\fBcurs_termattrs\fR(3CURSES)
+.BR curs_termattrs (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtgetent\fR
+.B tgetent
 .ad
 .RS 23n
 .rt
-\fBcurs_termcap\fR(3CURSES)
+.BR curs_termcap (3CURSES)
 .RE
 
 .sp
@@ -2857,40 +2981,40 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_termcap\fR(3CURSES)
+.BR curs_termcap (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtgetnum\fR
+.B tgetnum
 .ad
 .RS 23n
 .rt
-\fBcurs_termcap\fR(3CURSES)
+.BR curs_termcap (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtgetstr\fR
+.B tgetstr
 .ad
 .RS 23n
 .rt
-\fBcurs_termcap\fR(3CURSES)
+.BR curs_termcap (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtgoto\fR
+.B tgoto
 .ad
 .RS 23n
 .rt
-\fBcurs_termcap\fR(3CURSES)
+.BR curs_termcap (3CURSES)
 .RE
 
 .sp
@@ -2908,7 +3032,7 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBtigetnum\fR
+.B tigetnum
 .ad
 .RS 23n
 .rt
@@ -2919,7 +3043,7 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBtigetstr\fR
+.B tigetstr
 .ad
 .RS 23n
 .rt
@@ -2930,40 +3054,40 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBtimeout\fR
+.B timeout
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtouchline\fR
+.B touchline
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtouchwin\fR
+.B touchwin
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtparm\fR
+.B tparm
 .ad
 .RS 23n
 .rt
@@ -2974,7 +3098,7 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBtputs\fR
+.B tputs
 .ad
 .RS 23n
 .rt
@@ -2985,73 +3109,73 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBtypeahead\fR
+.B typeahead
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBunctrl\fR
+.B unctrl
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBungetch\fR
+.B ungetch
 .ad
 .RS 23n
 .rt
-\fBcurs_getch\fR(3CURSES)
+.BR curs_getch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBungetwch\fR
+.B ungetwch
 .ad
 .RS 23n
 .rt
-\fBcurs_getwch\fR(3CURSES)
+.BR curs_getwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBuntouchwin\fR
+.B untouchwin
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBuse_env\fR
+.B use_env
 .ad
 .RS 23n
 .rt
-\fBcurs_util\fR(3CURSES)
+.BR curs_util (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBvidattr\fR
+.B vidattr
 .ad
 .RS 23n
 .rt
@@ -3062,7 +3186,7 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBvidputs\fR
+.B vidputs
 .ad
 .RS 23n
 .rt
@@ -3073,143 +3197,143 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBvwprintw\fR
+.B vwprintw
 .ad
 .RS 23n
 .rt
-\fBcurs_printw\fR(3CURSES)
+.BR curs_printw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBvwscanw\fR
+.B vwscanw
 .ad
 .RS 23n
 .rt
-\fBcurs_scanw\fR(3CURSES)
+.BR curs_scanw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddch\fR
+.B waddch
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddchnstr\fR
+.B waddchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddchstr\fR
+.B waddchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addchstr\fR(3CURSES)
+.BR curs_addchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddnstr\fR
+.B waddnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddnwstr\fR
+.B waddnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddstr\fR
+.B waddstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addstr\fR(3CURSES)
+.BR curs_addstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddwch\fR
+.B waddwch
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddwchnstr\fR
+.B waddwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddwchstr\fR
+.B waddwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwchstr\fR(3CURSES)
+.BR curs_addwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwaddwstr\fR
+.B waddwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_addwstr\fR(3CURSES)
+.BR curs_addwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwadjcurspos\fR
+.B wadjcurspos
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
@@ -3220,469 +3344,469 @@ Manual Page Name
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwattron\fR
+.B wattron
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwattrset\fR
+.B wattrset
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwbkgd\fR
+.B wbkgd
 .ad
 .RS 23n
 .rt
-\fBcurs_bkgd\fR(3CURSES)
+.BR curs_bkgd (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwbkgdset\fR
+.B wbkgdset
 .ad
 .RS 23n
 .rt
-\fBcurs_bkgd\fR(3CURSES)
+.BR curs_bkgd (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwborder\fR
+.B wborder
 .ad
 .RS 23n
 .rt
-\fBcurs_border\fR(3CURSES)
+.BR curs_border (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwclear\fR
+.B wclear
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwclrtobot\fR
+.B wclrtobot
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwclrtoeol\fR
+.B wclrtoeol
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwcursyncup\fR
+.B wcursyncup
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwdelch\fR
+.B wdelch
 .ad
 .RS 23n
 .rt
-\fBcurs_delch\fR(3CURSES)
+.BR curs_delch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwdeleteln\fR
+.B wdeleteln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwechochar\fR
+.B wechochar
 .ad
 .RS 23n
 .rt
-\fBcurs_addch\fR(3CURSES)
+.BR curs_addch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwechowchar\fR
+.B wechowchar
 .ad
 .RS 23n
 .rt
-\fBcurs_addwch\fR(3CURSES)
+.BR curs_addwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwerase\fR
+.B werase
 .ad
 .RS 23n
 .rt
-\fBcurs_clear\fR(3CURSES)
+.BR curs_clear (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetch\fR
+.B wgetch
 .ad
 .RS 23n
 .rt
-\fBcurs_getch\fR(3CURSES)
+.BR curs_getch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetnstr\fR
+.B wgetnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getstr\fR(3CURSES)
+.BR curs_getstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetnwstr\fR
+.B wgetnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetstr\fR
+.B wgetstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getstr\fR(3CURSES)
+.BR curs_getstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetwch\fR
+.B wgetwch
 .ad
 .RS 23n
 .rt
-\fBcurs_getwch\fR(3CURSES)
+.BR curs_getwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwgetwstr\fR
+.B wgetwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_getwstr\fR(3CURSES)
+.BR curs_getwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwhline\fR
+.B whline
 .ad
 .RS 23n
 .rt
-\fBcurs_border\fR(3CURSES)
+.BR curs_border (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinch\fR
+.B winch
 .ad
 .RS 23n
 .rt
-\fBcurs_inch\fR(3CURSES)
+.BR curs_inch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinchnstr\fR
+.B winchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinchstr\fR
+.B winchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inchstr\fR(3CURSES)
+.BR curs_inchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinnstr\fR
+.B winnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinnwstr\fR
+.B winnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsch\fR
+.B winsch
 .ad
 .RS 23n
 .rt
-\fBcurs_insch\fR(3CURSES)
+.BR curs_insch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsdelln\fR
+.B winsdelln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsertln\fR
+.B winsertln
 .ad
 .RS 23n
 .rt
-\fBcurs_deleteln\fR(3CURSES)
+.BR curs_deleteln (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsnstr\fR
+.B winsnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsnwstr\fR
+.B winsnwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinsstr\fR
+.B winsstr
 .ad
 .RS 23n
 .rt
-\fBcurs_insstr\fR(3CURSES)
+.BR curs_insstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinstr\fR
+.B winstr
 .ad
 .RS 23n
 .rt
-\fBcurs_instr\fR(3CURSES)
+.BR curs_instr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinswch\fR
+.B winswch
 .ad
 .RS 23n
 .rt
-\fBcurs_inswch\fR(3CURSES)
+.BR curs_inswch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinswstr\fR
+.B winswstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inswstr\fR(3CURSES)
+.BR curs_inswstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinwch\fR
+.B winwch
 .ad
 .RS 23n
 .rt
-\fBcurs_inwch\fR(3CURSES)
+.BR curs_inwch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinwchnstr\fR
+.B winwchnstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinwchstr\fR
+.B winwchstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwchstr\fR(3CURSES)
+.BR curs_inwchstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwinwstr\fR
+.B winwstr
 .ad
 .RS 23n
 .rt
-\fBcurs_inwstr\fR(3CURSES)
+.BR curs_inwstr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwmove\fR
+.B wmove
 .ad
 .RS 23n
 .rt
-\fBcurs_move\fR(3CURSES)
+.BR curs_move (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwmovenextch\fR
+.B wmovenextch
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwmoveprevch\fR
+.B wmoveprevch
 .ad
 .RS 23n
 .rt
-\fBcurs_alecompat\fR(3CURSES)
+.BR curs_alecompat (3CURSES)
 .RE
 
 .sp
@@ -3700,18 +3824,18 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBwprintw\fR
+.B wprintw
 .ad
 .RS 23n
 .rt
-\fBcurs_printw\fR(3CURSES)
+.BR curs_printw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwredrawln\fR
+.B wredrawln
 .ad
 .RS 23n
 .rt
@@ -3733,132 +3857,153 @@ Manual Page Name
 .ne 2
 .mk
 .na
-\fBwscanw\fR
+.B wscanw
 .ad
 .RS 23n
 .rt
-\fBcurs_scanw\fR(3CURSES)
+.BR curs_scanw (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwscrl\fR
+.B wscrl
 .ad
 .RS 23n
 .rt
-\fBcurs_scroll\fR(3CURSES)
+.BR curs_scroll (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwsetscrreg\fR
+.B wsetscrreg
 .ad
 .RS 23n
 .rt
-\fBcurs_outopts\fR(3CURSES)
+.BR curs_outopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwstandend\fR
+.B wstandend
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwstandout\fR
+.B wstandout
 .ad
 .RS 23n
 .rt
-\fBcurs_attr\fR(3CURSES)
+.BR curs_attr (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwsyncdown\fR
+.B wsyncdown
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwsyncup\fR
+.B wsyncup
 .ad
 .RS 23n
 .rt
-\fBcurs_window\fR(3CURSES)
+.BR curs_window (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwtimeout\fR
+.B wtimeout
 .ad
 .RS 23n
 .rt
-\fBcurs_inopts\fR(3CURSES)
+.BR curs_inopts (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwtouchln\fR
+.B wtouchln
 .ad
 .RS 23n
 .rt
-\fBcurs_touch\fR(3CURSES)
+.BR curs_touch (3CURSES)
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwvline\fR
+.B wvline
 .ad
 .RS 23n
 .rt
-\fBcurs_border\fR(3CURSES)
+.BR curs_border (3CURSES)
 .RE
 
 .SH RETURN VALUES
 .sp
 .LP
-Routines that return an integer return \fBERR\fR upon failure and an integer
-value other than \fBERR\fR upon successful completion, unless otherwise noted
+Routines that return an integer return
+.B ERR
+upon failure and an integer
+value other than
+.B ERR
+upon successful completion, unless otherwise noted
 in the routine descriptions.
 .sp
 .LP
-All macros return the value of the \fBw\fR version, except \fBsetscrreg()\fR,
-\fBwsetscrreg()\fR, \fBgetyx()\fR, \fBgetbegyx()\fR, and \fBgetmaxyx()\fR. The
-return values of \fBsetscrreg()\fR, \fBwsetscrreg()\fR, \fBgetyx()\fR,
-\fBgetbegyx()\fR, and \fBgetmaxyx()\fR are undefined (that is, these should not
+All macros return the value of the
+.B w
+version, except \fBsetscrreg()\fR,
+.BR wsetscrreg() ,
+.BR getyx() ,
+.BR getbegyx() ,
+and
+.BR getmaxyx() .
+The
+return values of
+.BR setscrreg() ,
+.BR wsetscrreg() ,
+.BR getyx() ,
+.BR getbegyx() ,
+and
+.B getmaxyx()
+are undefined (that is, these should not
 be used as the right-hand side of assignment statements).
 .sp
 .LP
-Routines that return pointers return \fINULL\fR on error.
+Routines that return pointers return
+.I NULL
+on error.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -3875,7 +4020,9 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBcurses\fR(3XCURSES), \fBlibcurses\fR(3LIB), \fBlibcurses\fR(3XCURSES),
+.BR curses (3XCURSES),
+.BR libcurses (3LIB),
+.BR libcurses (3XCURSES),
 \fBterminfo\fR(4), \fBattributes\fR(5)
 .SH NOTES
 .sp

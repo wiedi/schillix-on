@@ -41,7 +41,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIq\fR
+.I q
 .ad
 .RS 8n
 .rt
@@ -52,7 +52,7 @@ Queue to which the message is to be sent.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 8n
 .rt
@@ -62,44 +62,85 @@ Message type (must be control, not data type).
 .SH DESCRIPTION
 .sp
 .LP
-The \fBputnextctl()\fR function tests the \fItype\fR argument to make sure
+The
+.B putnextctl()
+function tests the
+.I type
+argument to make sure
 a data type has not been specified, and then attempts to allocate a message
-block. \fBputnextctl()\fR fails if \fItype\fR is \fBM_DATA\fR,
-\fBM_PROTO\fR, or \fBM_PCPROTO\fR, or if a message block cannot be
-allocated. If successful, \fBputnextctl()\fR calls the  \fBput\fR(9E)
-routine of the queue pointed to by \fIq\fR with the newly allocated and
+block.
+.B putnextctl()
+fails if
+.I type
+is
+.BR M_DATA ,
+.BR M_PROTO ,
+or
+.BR M_PCPROTO ,
+or if a message block cannot be
+allocated. If successful,
+.B putnextctl()
+calls the 
+.BR put (9E)
+routine of the queue pointed to by
+.I q
+with the newly allocated and
 initialized messages.
 .sp
 .LP
 A call to \fBputnextctl(\fIq\fB,\fItype\fB)\fR is an atomic
 equivalent of \fBputctl(\fIq\fB->q_next\fR,\fItype\fI).\fR The
 STREAMS framework provides whatever mutual exclusion is necessary to insure
-that dereferencing \fIq\fR through its \fBq_next\fR field and then invoking
-\fBputctl\fR(9F) proceeds without interference from other threads.
+that dereferencing
+.I q
+through its
+.B q_next
+field and then invoking
+.BR putctl (9F)
+proceeds without interference from other threads.
 .sp
 .LP
-The \fBputnextctl()\fR function should always be used in preference to
-\fBputctl\fR(9F) 
+The
+.B putnextctl()
+function should always be used in preference to
+.BR putctl (9F)
 .SH RETURN VALUES
 .sp
 .LP
-On success, \fB1\fR is returned. If \fItype\fR is a data type, or if a
-message block cannot be allocated, \fB0\fR is returned.
+On success,
+.B 1
+is returned. If
+.I type
+is a data type, or if a
+message block cannot be allocated,
+.B 0
+is returned.
 .SH CONTEXT
 .sp
 .LP
-The \fBputnextctl()\fR function can be user, interrupt, or kernel
+The
+.B putnextctl()
+function can be user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .sp
 .LP
-The \fBsend_ctl\fR routine is used to pass control messages downstream.
-\fBM_BREAK\fR messages are handled with  \fBputnextctl\fR(\|) (line 8).
-\fBputnextctl1\fR(9F) (line 13) is used for \fBM_DELAY\fR messages,  so that
+The
+.B send_ctl
+routine is used to pass control messages downstream.
+\fBM_BREAK\fR messages are handled with
+.BR putnextctl (\|)
+(line 8).
+.BR putnextctl1 (9F)
+(line 13) is used for
+.B M_DELAY
+messages,  so that
 \fIparm\fR can be used to specify the length of the delay. In either case,
 if a message block cannot be allocated  a  variable recording the number of
 allocation failures  is incremented (lines 9, 14). If an invalid message
-type is detected,  \fBcmn_err\fR(9F) panics the system (line 18).
+type is detected, 
+.BR cmn_err (9F)
+panics the system (line 18).
 .sp
 .in +2
 .nf
@@ -130,11 +171,14 @@ type is detected,  \fBcmn_err\fR(9F) panics the system (line 18).
 .SH SEE ALSO
 .sp
 .LP
-\fBput\fR(9E), \fBcmn_err\fR(9F), \fBdatamsg\fR(9F), \fBputctl\fR(9F),
-\fBputnextctl1\fR(9F)
+.BR put (9E),
+.BR cmn_err (9F),
+.BR datamsg (9F),
+.BR putctl (9F),
+.BR putnextctl1 (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

@@ -43,12 +43,13 @@ The following keys are defined:
 .ne 2
 .mk
 .na
-\fBAUTHS_GRANTED\fR
+.B AUTHS_GRANTED
 .ad
 .sp .6
 .RS 4n
 Specify the default set of authorizations granted to all users. This entry
-is interpreted by \fBchkauthattr\fR(3SECDB). The value is zero or more
+is interpreted by
+.BR chkauthattr "(3SECDB). The value is zero or more"
 comma-separated authorizations defined in \fBauth_attr\fR(4).
 .RE
 
@@ -56,12 +57,15 @@ comma-separated authorizations defined in \fBauth_attr\fR(4).
 .ne 2
 .mk
 .na
-\fBPROFS_GRANTED\fR
+.B PROFS_GRANTED
 .ad
 .sp .6
 .RS 4n
 Specify the default set of profiles granted to all users. This entry is
-interpreted by \fBchkauthattr\fR(3SECDB) and \fBgetexecuser\fR(3SECDB). The
+interpreted by
+.BR chkauthattr "(3SECDB) and"
+.BR getexecuser (3SECDB).
+The
 value is zero or more comma-separated profiles defined in
 \fBprof_attr\fR(4).
 .RE
@@ -70,13 +74,16 @@ value is zero or more comma-separated profiles defined in
 .ne 2
 .mk
 .na
-\fBCONSOLE_USER\fR
+.B CONSOLE_USER
 .ad
 .sp .6
 .RS 4n
 Specify an additional default set of profiles granted to the \fIconsole
-user\fR user. This entry is interpreted by \fBchkauthattr\fR(3SECDB) and
-\fBgetexecuser\fR(3SECDB). The value is zero or more comma-separated
+user\fR user. This entry is interpreted by
+.BR chkauthattr (3SECDB)
+and
+.BR getexecuser (3SECDB).
+The value is zero or more comma-separated
 profiles defined in \fBprof_attr\fR(4).
 .RE
 
@@ -89,24 +96,38 @@ profiles defined in \fBprof_attr\fR(4).
 .sp .6
 .RS 4n
 Settings for these keys determine the default privileges that users have.
-(See \fBprivileges\fR(5).) If these keys are not set, the default privileges
-are taken from the inherited set. \fBPRIV_DEFAULT\fR determines the default
-set on login. \fBPRIV_LIMIT\fR defines the limit set on login. Users can
-have privileges assigned or taken away through use of \fBuser_attr\fR(4).
+(See
+.BR privileges (5).)
+If these keys are not set, the default privileges
+are taken from the inherited set.
+.B PRIV_DEFAULT
+determines the default
+set on login.
+.B PRIV_LIMIT
+defines the limit set on login. Users can
+have privileges assigned or taken away through use of
+.BR user_attr (4).
 Privileges can also be assigned to profiles, in which case users who have
 those profiles can exercise the assigned privileges through
 \fBpfexec\fR(1).
 .sp
 For maximum future compatibility, the privilege specifications should
-always include \fBbasic\fR or \fBall\fR. Privileges should then be removed
+always include
+.B basic
+or
+.BR all .
+Privileges should then be removed
 using negation. See EXAMPLES. By assigning privileges in this way, you avoid
 a situation where, following an addition of a currently unprivileged
 operation to the basic privilege set, a user unexpectedly does not have the
 privileges he needs to perform that now-privileged operation.
 .sp
-Note that removing privileges from the limit set requires \fBextreme\fR
+Note that removing privileges from the limit set requires
+.BR extreme
 care, as any set-uid root program might suddenly fail because it lacks
-certain privilege(s). Note also that dropping \fBbasic\fR privileges from
+certain privilege(s). Note also that dropping
+.B basic
+privileges from
 the default privilege set can cause unexpected failure modes in
 applications.
 .RE
@@ -115,72 +136,100 @@ applications.
 .ne 2
 .mk
 .na
-\fBLOCK_AFTER_RETRIES=YES|NO\fR
+.B LOCK_AFTER_RETRIES=YES|NO
 .ad
 .sp .6
 .RS 4n
 Specifies whether a local account is locked after the count of failed
 logins for a user equals or exceeds the allowed number of retries as defined
-by \fBRETRIES\fR in \fB/etc/default/login\fR. The default value for users is
-\fBNO\fR. Individual account overrides are provided by \fBuser_attr\fR(4).
+by
+.B RETRIES
+in
+.BR /etc/default/login .
+The default value for users is
+.BR NO .
+Individual account overrides are provided by
+.BR user_attr (4).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCRYPT_ALGORITHMS_ALLOW\fR
+.B CRYPT_ALGORITHMS_ALLOW
 .ad
 .sp .6
 .RS 4n
 Specify the algorithms that are allowed for new passwords and is enforced
-only in \fBcrypt_gensalt\fR(3C).
+only in
+.BR crypt_gensalt (3C).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCRYPT_ALGORITHMS_DEPRECATE\fR
+.B CRYPT_ALGORITHMS_DEPRECATE
 .ad
 .sp .6
 .RS 4n
 Specify the algorithm for new passwords that is to be deprecated. For
 example, to deprecate use of the traditional UNIX algorithm, specify
 \fBCRYPT_ALGORITHMS_DEPRECATE=__unix__\fR and change \fBCRYPT_DEFAULT=\fR to
-another algorithm, such as \fBCRYPT_DEFAULT=1\fR for BSD and Linux MD5.
+another algorithm, such as
+.B CRYPT_DEFAULT=1
+for BSD and Linux MD5.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCRYPT_DEFAULT\fR
+.B CRYPT_DEFAULT
 .ad
 .sp .6
 .RS 4n
 Specify the default algorithm for new passwords. The Solaris default is the
-traditional UNIX algorithm. This is not listed in \fBcrypt.conf\fR(4) since
-it is internal to \fBlibc\fR. The reserved name \fB__unix__\fR is used to
+traditional UNIX algorithm. This is not listed in
+.BR crypt.conf (4)
+since
+it is internal to
+.BR libc .
+The reserved name
+.B __unix__
+is used to
 refer to it.
 .RE
 
 .sp
 .LP
 The key/value pair must appear on a single line, and the key must start the
-line. Lines starting with \fB#\fR are taken as comments and ignored. Option
+line. Lines starting with
+.B #
+are taken as comments and ignored. Option
 name comparisons are case-insensitive.
 .sp
 .LP
-Only one \fBCRYPT_ALGORITHMS_ALLOW\fR or \fBCRYPT_ALGORITHMS_DEPRECATE\fR
+Only one
+.B CRYPT_ALGORITHMS_ALLOW
+or
+.BR CRYPT_ALGORITHMS_DEPRECATE
 value can be specified. Whichever is listed first in the file takes
-precedence. The algorithm specified for \fBCRYPT_DEFAULT\fR must either be
-specified for \fBCRYPT_ALGORITHMS_ALLOW\fR or not be specified for
-\fBCRYPT_ALGORITHMS_DEPRECATE\fR. If \fBCRYPT_DEFAULT\fR is not specified,
-the default is \fB__unix__\fR.
+precedence. The algorithm specified for
+.B CRYPT_DEFAULT
+must either be
+specified for
+.B CRYPT_ALGORITHMS_ALLOW
+or not be specified for
+.BR CRYPT_ALGORITHMS_DEPRECATE .
+If
+.B CRYPT_DEFAULT
+is not specified,
+the default is
+.BR __unix__ .
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRDefining a Key/Value Pair
+\fBExample 1\fR Defining a Key/Value Pair
 .sp
 .in +2
 .nf
@@ -190,11 +239,13 @@ the default is \fB__unix__\fR.
 .sp
 
 .LP
-\fBExample 2 \fRSpecifying Privileges
+\fBExample 2\fR Specifying Privileges
 .sp
 .LP
 As noted above, you should specify privileges through negation, specifying
-\fBall\fR for \fBPRIV_LIMIT\fR and \fBbasic\fR for \fBPRIV_DEFAULT\fR, then
+\fBall\fR for \fBPRIV_LIMIT\fR and \fBbasic\fR for
+.BR PRIV_DEFAULT ,
+then
 subtracting privileges, as shown below.
 
 .sp
@@ -207,7 +258,9 @@ PRIV_DEFAULT=basic,!file_link_any
 
 .sp
 .LP
-The first line, above, takes away only the \fBsys_linkdir\fR privilege. The
+The first line, above, takes away only the
+.B sys_linkdir
+privilege. The
 second line takes away only the \fBfile_link\fR privilege. These privilege
 specifications are unaffected by any future addition of privileges that
 might occur.
@@ -217,7 +270,7 @@ might occur.
 .ne 2
 .mk
 .na
-\fB/etc/user_attr\fR
+.B /etc/user_attr
 .ad
 .RS 29n
 .rt
@@ -228,7 +281,7 @@ Defines extended user attributes.
 .ne 2
 .mk
 .na
-\fB/etc/security/auth_attr\fR
+.B /etc/security/auth_attr
 .ad
 .RS 29n
 .rt
@@ -260,7 +313,9 @@ Defines policy for the system.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -279,11 +334,19 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBlogin\fR(1), \fBpfexec\fR(1), \fBchkauthattr\fR(3SECDB),
-\fBgetexecuser\fR(3SECDB), \fBauth_attr\fR(4), \fBcrypt.conf\fR(4),
-\fBprof_attr\fR(4), \fBuser_attr\fR(4), \fBattributes\fR(5),
-\fBprivileges\fR(5)
+.BR login (1),
+\fBpfexec\fR(1), \fBchkauthattr\fR(3SECDB),
+.BR getexecuser (3SECDB),
+.BR auth_attr (4),
+\fBcrypt.conf\fR(4),
+\fBprof_attr\fR(4),
+.BR user_attr (4),
+.BR attributes (5),
+.BR privileges (5)
 .SH NOTES
 .sp
 .LP
-The \fIconsole user\fR is defined as the owner of \fB/dev/console\fR.
+The
+.I "console user"
+is defined as the owner of
+.BR /dev/console .

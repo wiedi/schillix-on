@@ -31,15 +31,23 @@ fcip \- IP/ARP over Fibre Channel datagram encapsulation driver
 .sp
 .LP
 The \fBfcip\fR driver is a Fibre Channel upper layer protocol module for
-encapsulating \fBIP\fR (IPv4) and \fBARP\fR datagrams over Fibre Channel. The
+encapsulating
+.B IP
+(IPv4) and
+.B ARP
+datagrams over Fibre Channel. The
 \fBfcip\fR driver is  a  loadable,  clonable, \fBSTREAMS\fR driver supporting
-the connectionless Data Link Provider Interface, \fBdlpi\fR(7P) over any Sun
+the connectionless Data Link Provider Interface,
+.BR dlpi (7P)
+over any Sun
 Fibre Channel transport layer-compliant host adapter.
 .sp
 .LP
 The \fBfcip\fR driver complies with the \fIRFC 2625\fR specification for
 encapsulating IP/ARP datagrams over Fibre Channel, and allows encapsulation of
-IPv4 only, as specified in  \fIRFC 2625\fR. The \fBfcip\fR  driver interfaces
+IPv4 only, as specified in
+.IR "RFC 2625" .
+The \fBfcip\fR  driver interfaces
 with the \fBfp\fR(7d) Sun Fibre Channel port driver.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
@@ -52,32 +60,47 @@ system.
 .LP
 The \fBfcip\fR driver is a "style 2" Data Link Service Provider. All
 \fBM_PROTO\fR and \fBM_PCPROTO\fR type messages  are interpreted as \fBDLPI\fR
-primitives. Valid \fBDLPI\fR primitives are defined in \fB<sys/dlpi.h>\fR\&.
-Refer to \fBdlpi\fR(7P) for  more information on \fBDLPI\fR primitives.
+primitives. Valid
+.B DLPI
+primitives are defined in \fB<sys/dlpi.h>\fR\&.
+Refer to \fBdlpi\fR(7P) for  more information on
+.B DLPI
+primitives.
 .sp
 .LP
-An explicit \fBDL_ATTACH_REQ\fR message must be sent to  associate the opened
+An explicit
+.B DL_ATTACH_REQ
+message must be sent to  associate the opened
 stream with a  particular Fibre Channel port (ppa). The ppa ID is interpreted
 as an unsigned long data type and indicates the corresponding Fibre Channel
 port driver instance number. An error  (\fBDL_ERROR_ACK\fR) is  returned by the
 driver if the ppa field value does not correspond to a valid port driver
-instance number or if the Fibre Channel port is  not \fBONLINE\fR. Refer  to
+instance number or if the Fibre Channel port is  not
+.BR ONLINE .
+Refer  to
 \fBfp\fR(7d) for more  details on the Fibre Channel port driver.
 .sp
 .LP
-The values returned by the driver in the \fBDL_INFO_ACK\fR primitive in
-response to  a \fBDL_INFO_REQ\fR from the user are as follows:
+The values returned by the driver in the
+.B DL_INFO_ACK
+primitive in
+response to  a
+.B DL_INFO_REQ
+from the user are as follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Maximum SDU is \fB65280\fR (defined in \fIRFC 2625\fR).
+Maximum SDU is
+.B 65280
+(defined in \fIRFC 2625\fR).
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Minimum SDU is \fB0\fR.
+Minimum SDU is
+.BR 0 .
 .RE
 .RS +4
 .TP
@@ -89,7 +112,8 @@ Minimum SDU is \fB0\fR.
 .TP
 .ie t \(bu
 .el o
-MAC type is \fBDL_ETHER\fR.
+MAC type is
+.BR DL_ETHER .
 .RE
 .RS +4
 .TP
@@ -101,7 +125,8 @@ MAC type is \fBDL_ETHER\fR.
 .TP
 .ie t \(bu
 .el o
-Service mode is \fBDL_CLDLS\fR.
+Service mode is
+.BR DL_CLDLS .
 .RE
 .RS +4
 .TP
@@ -113,58 +138,108 @@ Optional quality of service (\fBQOS\fR) fields are set to \fB0\fR.
 .TP
 .ie t \(bu
 .el o
-Provider style is \fBDL_STYLE2\fR.
+Provider style is
+.BR DL_STYLE2 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Provider version is \fBDL_VERSION_2\fR.
+Provider version is
+.BR DL_VERSION_2 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Broadcast address value is \fB0xFFFFFFFF\fR.
+Broadcast address value is
+.BR 0xFFFFFFFF .
 .RE
 .sp
 .LP
-Once in \fBDL_ATTACHED\fR state, the user must send a \fBDL_BIND_REQ\fR to
-associate a particular \fBSAP\fR (Service Access Point) with the stream. The
+Once in
+.B DL_ATTACHED
+state, the user must send a
+.B DL_BIND_REQ
+to
+associate a particular
+.B SAP
+(Service Access Point) with the stream. The
 \fBfcip\fR driver \fBDLSAP\fR address format consists of the 6-byte physical
-address component followed immediately by the 2-byte  \fBSAP\fR component
-producing an 8-byte \fBDLSAP\fR address. Applications should not be programmed
-to use this implementation-specific  \fBDLSAP\fR address format, but use
-information returned in the \fBDL_INFO_ACK\fR primitive to compose and
-decompose \fBDLSAP\fR addresses. The \fBSAP\fR length, full \fBDLSAP\fR length,
+address component followed immediately by the 2-byte 
+.B SAP
+component
+producing an 8-byte
+.B DLSAP
+address. Applications should not be programmed
+to use this implementation-specific 
+.B DLSAP
+address format, but use
+information returned in the
+.B DL_INFO_ACK
+primitive to compose and
+decompose
+.B DLSAP
+addresses. The
+.B SAP
+length, full
+.B DLSAP
+length,
 and \fBSAP\fR/physical ordering  are included  within the \fBDL_INFO_ACK\fR.
-The physical address length is the full  \fBDLSAP\fR address length minus the
+The physical address length is the full 
+.B DLSAP
+address length minus the
 \fBSAP\fR length. The  physical address  length can  also be  computed by
-issuing the \fBDL_PHYS_ADDR_REQ\fR primitive to obtain the current physical
+issuing the
+.B DL_PHYS_ADDR_REQ
+primitive to obtain the current physical
 address associated with the stream.
 .sp
 .LP
-Once in the \fBDL_BOUND\fR state, the user can transmit frames on the fibre by
-sending \fBDL_UNITDATA_REQ\fR messages to  the  \fBfcip\fR driver. The
+Once in the
+.B DL_BOUND
+state, the user can transmit frames on the fibre by
+sending
+.B DL_UNITDATA_REQ
+messages to  the  \fBfcip\fR driver. The
 \fBfcip\fR driver will route  received frames up any of the open and  bound
-streams having a \fBSAP\fR which matches the received frame's  \fBSAP\fR type
-as \fBDL_UNITDATA_IND\fR messages. Received Fibre Channel frames are
+streams having a
+.B SAP
+which matches the received frame's 
+.B SAP
+type
+as
+.B DL_UNITDATA_IND
+messages. Received Fibre Channel frames are
 duplicated and routed up multiple open streams if necessary. The \fBDLSAP\fR
-address contained  within the \fBDL_UNITDATA_REQ\fR and \fBDL_UNITDATA_IND\fR
-messages consists  of both the \fBSAP\fR (type) and physical address
+address contained  within the
+.B DL_UNITDATA_REQ
+and
+.BR DL_UNITDATA_IND
+messages consists  of both the
+.B SAP
+(type) and physical address
 (WorldWideName) components.
 .SS "Other Primitives"
 .sp
 .LP
-In Fibre Channel, \fBmulticasting\fR is defined as an optional service for
+In Fibre Channel,
+.B multicasting
+is defined as an optional service for
 Fibre Channel classes three and six only. If required, the Fibre Channel
 broadcast service can be used for multicasting. The \fIRFC 2625\fR
-specification does not support \fBIP \fRmulticasting or promiscuous mode.
+specification does not support
+.B IP
+multicasting or promiscuous mode.
 .SS "fcip Fibre Channel ELS"
 .sp
 .LP
-The \fBfcip\fR driver will use the \fBFARP\fR Fibre Channel Extended  Link
-Service (\fBELS\fR), where supported, to resolve WorldWide Names (MAC address)
+The \fBfcip\fR driver will use the
+.B FARP
+Fibre Channel Extended  Link
+Service
+.RB ( ELS ),
+where supported, to resolve WorldWide Names (MAC address)
 to FC Port Identifiers(Port_ID). The \fBfcip\fR driver also supports InARP to
 resolve WorldWide Name and Port_ID to an IP address.
 .SH FILES
@@ -226,7 +301,9 @@ fcip driver configuration file
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -245,11 +322,14 @@ AvailabilitySUNWfcip
 .SH SEE ALSO
 .sp
 .LP
-\fBnetstat\fR(1M), \fBprtconf\fR(1M), \fBdriver.conf\fR(4), \fBfp\fR(7d),
-\fBdlpi\fR(7P) 
+.BR netstat (1M),
+\fBprtconf\fR(1M),
+.BR driver.conf (4),
+\fBfp\fR(7d),
+.BR dlpi (7P)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
 \fIIP and ARP over Fibre Channel, RFC 2625\fR M. Rajagopal, R. Bhagwat, W.
@@ -260,7 +340,7 @@ Rickard. Gadzoox Networks, June 1999
 (FC-PH)\fR
 .sp
 .LP
-\fIANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)\fR
+.I "ANSI X3.272-1996, Fibre Channel Arbitrated Loop (FC-AL)
 .SH NOTES
 .sp
 .LP
@@ -272,4 +352,6 @@ first port on the adapter.
 \fIRFC 2625\fR requires that both source  and destination WorldWideNames have
 their 4 bit NAA identifiers set to binary '0001,' indicating that an IEEE
 48-bit MAC address is contained in the lower 48 bits of the network address
-fields. For additional details, see the \fIRFC 2625\fR specification.
+fields. For additional details, see the
+.I "RFC 2625"
+specification.

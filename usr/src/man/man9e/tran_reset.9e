@@ -40,18 +40,19 @@ Solaris architecture specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIap\fR
+.I ap
 .ad
 .RS 10n
 .rt
-Pointer to the \fBscsi_address\fR(9S) structure.
+Pointer to the
+.BR scsi_address "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIlevel\fR
+.I level
 .ad
 .RS 10n
 .rt
@@ -61,14 +62,24 @@ The level of reset required.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBtran_reset()\fR vector in the \fBscsi_hba_tran\fR(9S) structure must
-be initialized during the \fBHBA\fR driver's \fBattach\fR(9E) to point to an
+The
+.B tran_reset()
+vector in the
+.BR scsi_hba_tran "(9S) structure must"
+be initialized during the
+.B HBA
+driver's
+.BR attach (9E)
+to point to an
 \fBHBA\fR entry point to be called when a target driver calls
-\fBscsi_reset\fR(9F). 
+.BR scsi_reset (9F).
 .sp
 .LP
 \fBtran_reset()\fR must reset either the \fBSCSI\fR bus, a \fBSCSI\fR
-target device, or a \fBSCSI\fR logical unit as specified by \fIlevel\fR.
+target device, or a
+.B SCSI
+logical unit as specified by
+.IR level .
 .sp
 .LP
 \fIlevel\fR must be one of the following:
@@ -76,63 +87,91 @@ target device, or a \fBSCSI\fR logical unit as specified by \fIlevel\fR.
 .ne 2
 .mk
 .na
-\fBRESET_ALL\fR
+.B RESET_ALL
 .ad
 .RS 17n
 .rt
-Reset the \fBSCSI\fR bus.
+Reset the
+.B SCSI
+bus.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRESET_TARGET\fR
+.B RESET_TARGET
 .ad
 .RS 17n
 .rt
-Reset the target specified by \fIap\fR.
+Reset the target specified by
+.IR ap .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBRESET_LUN\fR
+.B RESET_LUN
 .ad
 .RS 17n
 .rt
-Reset the logical unit specified by \fIap\fR.
+Reset the logical unit specified by
+.IR ap .
 .RE
 
 .sp
 .LP
 \fBtran_reset\fR should set the \fBpkt_reason\fR field of all outstanding
 packets in the transport layer associated with each target or logical unit
-that was successfully reset to \fBCMD_RESET\fR and the \fBpkt_statistics\fR
+that was successfully reset to
+.B CMD_RESET
+and the
+.BR pkt_statistics
 field must be \fBOR\fR'ed with either \fBSTAT_BUS_RESET\fR (if the SCSI bus
-was reset) or \fBSTAT_DEV_RESET\fR (if the target or logical unit was
+was reset) or
+.B STAT_DEV_RESET
+(if the target or logical unit was
 reset). 
 .sp
 .LP
-The \fBHBA\fR driver should use a \fBSCSI\fR Bus Device Reset Message to
+The
+.B HBA
+driver should use a
+.B SCSI
+Bus Device Reset Message to
 reset a target device. The HBA driver should use a  SCSI Logical Unit Reset
 Message to reset a logical unit.
 .sp
 .LP
 Packets that are in the transport layer but not yet active on the bus
-should be returned with \fBpkt_reason\fR set to \fBCMD_RESET\fR and
-\fBpkt_statistics\fR \fBOR\fR'ed with \fBSTAT_ABORTED\fR.
+should be returned with
+.B pkt_reason
+set to
+.B CMD_RESET
+and
+\fBpkt_statistics OR\fR'ed with \fBSTAT_ABORTED\fR.
 .sp
 .LP
-Support for \fBRESET_LUN\fR is optional but strongly encouraged for new and
-updated HBA drivers. If an HBA driver provides \fBRESET_LUN\fR support, it
-must also create the \fBlun-reset\fR capability with a value of zero for
-each target device instance represented by a valid \fIap\fR. The HBA is also
+Support for
+.B RESET_LUN
+is optional but strongly encouraged for new and
+updated HBA drivers. If an HBA driver provides
+.B RESET_LUN
+support, it
+must also create the
+.B lun-reset
+capability with a value of zero for
+each target device instance represented by a valid
+.IR ap .
+The HBA is also
 required to provide the means to return the current value of the
 \fBlun-reset\fR capability in its \fBtran_getcap\fR(9E) routine, as well as
-the means to change the value of the \fBlun_reset\fR capability in its
-\fBtran_getcap\fR(9E) routine.
+the means to change the value of the
+.B lun_reset
+capability in its
+.BR tran_getcap (9E)
+routine.
 .SH RETURN VALUES
 .sp
 .LP
@@ -141,7 +180,7 @@ the means to change the value of the \fBlun_reset\fR capability in its
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 6n
 .rt
@@ -152,7 +191,7 @@ on success.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 6n
 .rt
@@ -162,19 +201,28 @@ on failure.
 .SH CONTEXT
 .sp
 .LP
-The \fBtran_reset()\fR function can be called from user or interrupt
+The
+.B tran_reset()
+function can be called from user or interrupt
 context. This requirement comes from \fBscsi_reset()\fR.
 .SH SEE ALSO
 .sp
 .LP
-\fBattach\fR(9E), \fBddi_dma_buf_setup\fR(9F), \fBscsi_hba_attach\fR(9F),
-\fBscsi_reset\fR(9F), \fBscsi_address\fR(9S), \fBscsi_hba_tran\fR(9S)
+.BR attach (9E),
+\fBddi_dma_buf_setup\fR(9F), \fBscsi_hba_attach\fR(9F),
+.BR scsi_reset (9F),
+.BR scsi_address (9S),
+.BR scsi_hba_tran (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
-If \fBpkt_reason\fR already indicates that an earlier error had occurred
-for a particular \fIpkt\fR, \fBtran_reset()\fR should not overwrite
+If
+.B pkt_reason
+already indicates that an earlier error had occurred
+for a particular
+.IR pkt ,
+\fBtran_reset()\fR should not overwrite
 \fBpkt_reason\fR with \fBCMD_RESET\fR.

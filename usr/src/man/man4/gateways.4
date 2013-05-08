@@ -31,14 +31,21 @@ daemon
 .SH DESCRIPTION
 .sp
 .LP
-The \fB/etc/gateways\fR file is used by the routing daemon,
-\fBin.routed\fR(1M). When the daemon starts, it reads \fB/etc/gateways\fR to
+The
+.B /etc/gateways
+file is used by the routing daemon,
+.BR in.routed (1M).
+When the daemon starts, it reads
+.B /etc/gateways
+to
 find such distant gateways that cannot be located using only information
 from a routing socket, to discover if some of the local gateways are
 passive, and to obtain other parameters.
 .sp
 .LP
-The \fB/etc/gateways\fR file consists of a series of lines, each in one of
+The
+.B /etc/gateways
+file consists of a series of lines, each in one of
 the two formats shown below or consisting of parameters described later.
 Blank lines and lines starting with "\fB#\fR" are treated as comments.
 .sp
@@ -76,17 +83,23 @@ The parameters in the lines shown above are described as follows:
 .sp .6
 .RS 4n
 Name of the destination network or host. It can be a symbolic network name
-or an Internet address specified in \fBdot\fR notation (see
-\fBinet\fR(3SOCKET)). If it is a name, then it must either be defined in
-\fB/etc/networks\fR or \fB/etc/hosts\fR, or a naming service must have been
-started before \fBin.routed\fR(1M).
+or an Internet address specified in
+.B dot
+notation (see
+.BR inet (3SOCKET)).
+If it is a name, then it must either be defined in
+\fB/etc/networks\fR or
+.BR /etc/hosts ,
+or a naming service must have been
+started before
+.BR in.routed (1M).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIMask\fR
+.I Mask
 .ad
 .sp .6
 .RS 4n
@@ -98,7 +111,7 @@ Nname.
 .ne 2
 .mk
 .na
-\fIGname\fR
+.I Gname
 .ad
 .sp .6
 .RS 4n
@@ -110,7 +123,7 @@ forwarded.
 .ne 2
 .mk
 .na
-\fIValue\fR
+.I Value
 .ad
 .sp .6
 .RS 4n
@@ -134,14 +147,19 @@ to exchange RIP packets. See \fBin.routed\fR(1M) for further details.
 
 .sp
 .LP
-After turning on debugging in \fBin.routed\fR with the \fB-t\fR option, you
+After turning on debugging in
+.B in.routed
+with the
+.B -t
+option, you
 can see that lines that follow the format described above create
 pseudo-interfaces. To set parameters for remote or external interfaces, use
 a line starting with \fBif=alias(\fIHname\fR)\fR,
 \fBif=remote(\fIHname\fR)\fR, and so forth.
 .sp
 .LP
-For backward compatibility with the previous Solaris \fBin.routed\fR
+For backward compatibility with the previous Solaris
+.BR in.routed
 implementation, three special keyword formats are accepted. If present,
 these forms must each be on a separate line, and must not be combined on the
 same line with any of the keywords listed elsewhere in this document. These
@@ -182,7 +200,11 @@ Disable RIP output on the specified interface.
 
 .sp
 .LP
-Lines that start with neither \fBnet\fR nor \fBhost\fR must consist of one
+Lines that start with neither
+.B net
+nor
+.B host
+must consist of one
 or more of the following parameter settings, separated by commas or
 blanks:
 .sp
@@ -194,7 +216,9 @@ blanks:
 .sp .6
 .RS 4n
 Indicates that the other parameters on the line apply only to the interface
-name \fIifname\fR. If this parameter is not specified, then other parameters
+name
+.IR ifname .
+If this parameter is not specified, then other parameters
 on the line apply to all interfaces.
 .RE
 
@@ -207,10 +231,14 @@ on the line apply to all interfaces.
 .sp .6
 .RS 4n
 Advertises a route to network nname with mask mask and the supplied metric
-(default 1). This is useful for filling \fBholes\fR in CIDR allocations.
+(default 1). This is useful for filling
+.B holes
+in CIDR allocations.
 This parameter must appear by itself on a line. The network number must
-specify a full, 32-bit value, as in \fB192.0.2.0\fR instead of
-\fB192.0.2\fR.
+specify a full, 32-bit value, as in
+.B 192.0.2.0
+instead of
+.BR 192.0.2 .
 .RE
 
 .sp
@@ -222,11 +250,16 @@ specify a full, 32-bit value, as in \fB192.0.2.0\fR instead of
 .sp .6
 .RS 4n
 Specifies that the netmask of the network of which \fInname\fR/\fImask1\fR
-is a subnet should be \fImask2\fR. For example,
+is a subnet should be
+.IR mask2 .
+For example,
 \fBripv1_mask=192.0.2.16/28,27\fR marks \fB192.0.2.16/28\fR as a subnet of
-\fB192.0.2.0/27\fR instead of \fB192.0.2.0/24\fR. It is better to turn on
+\fB192.0.2.0/27\fR instead of
+.BR 192.0.2.0/24 .
+It is better to turn on
 RIPv2 instead of using this facility. See the description of
-\fBripv2_out\fR, below.
+.BR ripv2_out ,
+below.
 .RE
 
 .sp
@@ -242,15 +275,23 @@ responses sent, and checked on all RIPv2 responses received. Any blanks, tab
 characters, commas, or "\fB#\fR", "\fB|\fR", or NULL characters in the
 password must be escaped with a backslash (\fB\e\fR). The common escape
 sequences \fB\en\fR, \fB\er\fR, \fB\et\fR, \fB\eb\fR, and \fB\e\fIxxx\fR
-have their usual meanings. The \fIKeyID\fR must be unique but is ignored for
-cleartext passwords. If present, \fIstart\fR and \fIstop\fR are timestamps
+have their usual meanings. The
+.I KeyID
+must be unique but is ignored for
+cleartext passwords. If present,
+.I start
+and
+.I stop
+are timestamps
 in the form year/month/day@hour:minute. They specify when the password is
 valid. The valid password with the longest future is used on output packets,
 unless all passwords have expired, in which case the password that expired
 most recently is used. If no passwords are valid yet, no password is output.
 Incoming packets can carry any password that is valid, will be valid within
 24 hours, or that was valid within 24 hours. To protect password secrecy,
-the passwd settings are valid only in the \fB/etc/gateways\fR file and only
+the passwd settings are valid only in the
+.B /etc/gateways
+file and only
 when that file is readable only by UID 0.
 .RE
 
@@ -263,14 +304,16 @@ when that file is readable only by UID 0.
 .sp .6
 .RS 4n
 Specifies a RIPv2 MD5 password. Except that a KeyID is required, this
-keyword is similar to \fBpasswd\fR (described above).
+keyword is similar to
+.B passwd
+(described above).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBno_ag\fR
+.B no_ag
 .ad
 .sp .6
 .RS 4n
@@ -281,7 +324,7 @@ Turns off aggregation of subnets in RIPv1 and RIPv2 responses.
 .ne 2
 .mk
 .na
-\fBno_host\fR
+.B no_host
 .ad
 .sp .6
 .RS 4n
@@ -292,7 +335,7 @@ Turns off acceptance of host routes.
 .ne 2
 .mk
 .na
-\fBno_super_ag\fR
+.B no_super_ag
 .ad
 .sp .6
 .RS 4n
@@ -303,7 +346,7 @@ Turns off aggregation of networks into supernets in RIPv2 responses.
 .ne 2
 .mk
 .na
-\fBpassive\fR
+.B passive
 .ad
 .sp .6
 .RS 4n
@@ -316,16 +359,24 @@ interface.
 .ne 2
 .mk
 .na
-\fBno_rip\fR
+.B no_rip
 .ad
 .sp .6
 .RS 4n
 Disables all RIP processing on the specified interface. If no interfaces
-are allowed to process RIP packets, \fBin.routed\fR acts purely as a router
+are allowed to process RIP packets,
+.B in.routed
+acts purely as a router
 discovery daemon.
 .sp
 Note that turning off RIP without explicitly turning on router discovery
-advertisements with \fBrdisc_adv\fR or \fB-s\fR causes \fBin.routed\fR to
+advertisements with
+.B rdisc_adv
+or
+.B -s
+causes
+.B in.routed
+to
 act as a client router discovery daemon, which does not advertise.
 .RE
 
@@ -333,7 +384,7 @@ act as a client router discovery daemon, which does not advertise.
 .ne 2
 .mk
 .na
-\fBno_rip_mcast\fR
+.B no_rip_mcast
 .ad
 .sp .6
 .RS 4n
@@ -344,7 +395,7 @@ Causes RIPv2 packets to be broadcast instead of multicast.
 .ne 2
 .mk
 .na
-\fBno_ripv1_in\fR
+.B no_ripv1_in
 .ad
 .sp .6
 .RS 4n
@@ -355,7 +406,7 @@ Causes RIPv1 received responses to be ignored.
 .ne 2
 .mk
 .na
-\fBno_ripv2_in\fR
+.B no_ripv2_in
 .ad
 .sp .6
 .RS 4n
@@ -366,7 +417,7 @@ Causes RIPv2 received responses to be ignored.
 .ne 2
 .mk
 .na
-\fBripv2_out\fR
+.B ripv2_out
 .ad
 .sp .6
 .RS 4n
@@ -378,11 +429,15 @@ possible.
 .ne 2
 .mk
 .na
-\fBripv2\fR
+.B ripv2
 .ad
 .sp .6
 .RS 4n
-Equivalent to \fBno_ripv1_in\fR and \fBripv2_out\fR. This enables RIPv2 and
+Equivalent to
+.B no_ripv1_in
+and
+.BR ripv2_out .
+This enables RIPv2 and
 disables RIPv1.
 .RE
 
@@ -390,7 +445,7 @@ disables RIPv1.
 .ne 2
 .mk
 .na
-\fBno_rdisc\fR
+.B no_rdisc
 .ad
 .sp .6
 .RS 4n
@@ -401,7 +456,7 @@ Disables the Internet Router Discovery Protocol.
 .ne 2
 .mk
 .na
-\fBno_solicit\fR
+.B no_solicit
 .ad
 .sp .6
 .RS 4n
@@ -412,7 +467,7 @@ Disables the transmission of Router Discovery Solicitations.
 .ne 2
 .mk
 .na
-\fBsend_solicit\fR
+.B send_solicit
 .ad
 .sp .6
 .RS 4n
@@ -425,7 +480,7 @@ messages.
 .ne 2
 .mk
 .na
-\fBno_rdisc_adv\fR
+.B no_rdisc_adv
 .ad
 .sp .6
 .RS 4n
@@ -436,7 +491,7 @@ Disables the transmission of Router Discovery Advertisements.
 .ne 2
 .mk
 .na
-\fBrdisc_adv\fR
+.B rdisc_adv
 .ad
 .sp .6
 .RS 4n
@@ -449,7 +504,7 @@ messages.
 .ne 2
 .mk
 .na
-\fBbcast_rdisc\fR
+.B bcast_rdisc
 .ad
 .sp .6
 .RS 4n
@@ -466,7 +521,9 @@ multicast.
 .sp .6
 .RS 4n
 Sets the preference in Router Discovery Advertisements to the optionally
-signed integer \fIN\fR. The default preference is 0. Default routes with
+signed integer
+.IR N .
+The default preference is 0. Default routes with
 higher or less negative preferences are preferred by clients.
 .RE
 
@@ -479,7 +536,9 @@ higher or less negative preferences are preferred by clients.
 .sp .6
 .RS 4n
 Sets the nominal interval with which Router Discovery Advertisements are
-transmitted to \fIN\fR seconds and their lifetime to 3*\fIN\fR.
+transmitted to
+.I N
+seconds and their lifetime to 3*\fIN\fR.
 .RE
 
 .sp
@@ -490,7 +549,7 @@ transmitted to \fIN\fR seconds and their lifetime to 3*\fIN\fR.
 .ad
 .sp .6
 .RS 4n
-Has an identical effect to \fB-F\fR \fBnet\fR[/\fImask\fR][=\fImetric\fR]
+Has an identical effect to \fB-F net\fR[/\fImask\fR][=\fImetric\fR]
 with the network number and netmask coming from the specified interface.
 .RE
 
@@ -498,15 +557,19 @@ with the network number and netmask coming from the specified interface.
 .ne 2
 .mk
 .na
-\fBpm_rdisc\fR
+.B pm_rdisc
 .ad
 .sp .6
 .RS 4n
-Similar to \fBfake_default\fR. To prevent RIPv1 listeners from receiving
+Similar to
+.BR fake_default .
+To prevent RIPv1 listeners from receiving
 RIPv2 routes when those routes are multicast, this feature causes a RIPv1
 default route to be broadcast to RIPv1 listeners. Unless modified with
 \fBfake_default\fR, the default route is broadcast with a metric of 14. That
-serves as a \fBpoor man's router discovery\fR protocol.
+serves as a
+.B "poor man's router discovery"
+protocol.
 .RE
 
 .sp
@@ -527,7 +590,7 @@ be ignored from that router.
 .ne 2
 .mk
 .na
-\fBredirect_ok\fR
+.B redirect_ok
 .ad
 .sp .6
 .RS 4n
@@ -547,7 +610,9 @@ overridden.
 By default, RIPv1 advertisements over point-to-point links are sent to the
 peer's address (255.255.255.255, if none is available), and RIPv2
 advertisements are sent to either the RIP multicast address or the peer's
-address if \fBno_rip_mcast\fR is set. This option overrides those defaults
+address if
+.B no_rip_mcast
+is set. This option overrides those defaults
 and configures a specific address to use on the indicated interface. This
 can be used to set a broadcast type advertisement on a point-to-point
 link.
@@ -556,8 +621,10 @@ link.
 .SH SEE ALSO
 .sp
 .LP
-\fBin.routed\fR(1M), \fBroute\fR(1M), \fBrtquery\fR(1M),
-\fBinet\fR(3SOCKET), 
+.BR in.routed (1M),
+.BR route (1M),
+.BR rtquery (1M),
+.BR inet (3SOCKET),
 .sp
 .LP
 \fIInternet Transport Protocols, XSIS 028112, Xerox System Integration

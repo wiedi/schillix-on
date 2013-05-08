@@ -47,34 +47,54 @@ services.
 Services are no longer managed by editing the inetd configuration file,
 \fBinetd.conf\fR(4). Instead, you use \fBinetconv\fR(1M) to convert the
 configuration file content into SMF format services, then manage these
-services using \fBinetadm\fR(1M) and \fBsvcadm\fR(1M). Once a service has
-been converted by \fBinetconv\fR, any changes to the legacy data in the
+services using
+.BR inetadm "(1M) and"
+.BR svcadm (1M).
+Once a service has
+been converted by
+.BR inetconv ,
+any changes to the legacy data in the
 \fBinetd\fR config file will not become effective. However, \fBinetd\fR does
 alert the administrator when it notices change in the configuration file.
 See the start description under the "inetd Methods" section for further
 information.
 .sp
 .LP
-Also note that the current \fBinetd\fR cannot be run from outside the SMF.
+Also note that the current
+.B inetd
+cannot be run from outside the SMF.
 This means it cannot be run from the command line, as was supported by the
-previous \fBinetd\fR. If you attempt to do this, a message is sent to stderr
+previous
+.BR inetd .
+If you attempt to do this, a message is sent to stderr
 displaying mappings between the options supported by the previous
 \fBinetd\fR to the SMF version of \fBinetd\fR.
 .sp
 .LP
 \fBinetd\fR listens for connections on behalf of all services that are in
-either the \fBonline\fR or \fBdegraded\fR state. A service enters one of
-these states when the service is enabled by the user and \fBinetd\fR manages
+either the
+.B online
+or
+.B degraded
+state. A service enters one of
+these states when the service is enabled by the user and
+.B inetd
+manages
 to listen on its behalf. A listen attempt can fail if another server
 (whether standalone or a third-party internet service) is already listening
-on the same port. When this occurs, \fBinetd\fR logs this condition and
+on the same port. When this occurs,
+.B inetd
+logs this condition and
 continues trying to bind to the port at configured intervals a configured
 number of times. See the property \fBbind_fail_max\fR under "Service
 Properties," below, for more details.
 .sp
 .LP
-The configuration of all \fBinetd\fR's managed SMF services is read when it
-is started. It is reread when \fBinetd\fR is refreshed, which occurs in
+The configuration of all
+.BR inetd "'s managed SMF services is read when it"
+is started. It is reread when
+.B inetd
+is refreshed, which occurs in
 response to an SMF request, or when it receives a SIGHUP signal. See the
 \fBrefresh\fR description under "inetd Methods" for the behavior on
 configuration refresh.
@@ -87,15 +107,19 @@ Internet/RPC service context.
 .SS "Service States"
 .sp
 .LP
-As part of its service management duties, \fBinetd\fR implements a state
+As part of its service management duties,
+.B inetd
+implements a state
 machine for each of its managed services. The states in this machine are
-made up of the \fBsmf\fR(5) set of states. The semantics of these states are
+made up of the
+.BR smf (5)
+set of states. The semantics of these states are
 as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBuninitialized\fR
+.B uninitialized
 .ad
 .sp .6
 .RS 4n
@@ -106,7 +130,7 @@ as follows:
 .ne 2
 .mk
 .na
-\fBonline\fR
+.B online
 .ad
 .sp .6
 .RS 4n
@@ -118,7 +142,7 @@ connections active.
 .ne 2
 .mk
 .na
-\fBdegraded\fR
+.B degraded
 .ad
 .sp .6
 .RS 4n
@@ -151,23 +175,30 @@ service's state will be re-evaluated.
 .ie t \(bu
 .el o
 The service has exceeded its configured connection rate limit,
-\fBmax_con_rate\fR. The service's state is re-evaluated when its connection
-offline timer, \fBcon_rate_offline\fR, expires.
+.BR max_con_rate .
+The service's state is re-evaluated when its connection
+offline timer,
+.BR con_rate_offline ,
+expires.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 The service has reached its allowed number of active connections,
-\fBmax_copies\fR. The service's state is re-evaluated when the number of
-active connections drops below \fBmax_copies\fR.
+.BR max_copies .
+The service's state is re-evaluated when the number of
+active connections drops below
+.BR max_copies .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 \fBinetd\fR failed to listen on behalf of the service on all its protocols.
-As mentioned above, \fBinetd\fR retries up to a configured maximum number of
+As mentioned above,
+.B inetd
+retries up to a configured maximum number of
 times, at configured intervals.The service's state is re-evaluated when
 either a listen attempt is successful or the retry limit is reached.
 .RE
@@ -177,7 +208,7 @@ either a listen attempt is successful or the retry limit is reached.
 .ne 2
 .mk
 .na
-\fBdisabled\fR
+.B disabled
 .ad
 .sp .6
 .RS 4n
@@ -190,7 +221,7 @@ exit this state.
 .ne 2
 .mk
 .na
-\fBmaintenance\fR
+.B maintenance
 .ad
 .sp .6
 .RS 4n
@@ -214,18 +245,24 @@ Use \fBinetadm\fR(1M) to obtain the current state of a managed service.
 .SS "Service Methods"
 .sp
 .LP
-As part of certain state transitions \fBinetd\fR will execute, if supplied,
+As part of certain state transitions
+.B inetd
+will execute, if supplied,
 one of a set of methods provided by the service. The set of supported
 methods are:
 .sp
 .ne 2
 .mk
 .na
-\fBinetd_start\fR
+.B inetd_start
 .ad
 .sp .6
 .RS 4n
-Executed to handle a request for an \fBonline\fR or \fBdegraded\fR service.
+Executed to handle a request for an
+.B online
+or
+.B degraded
+service.
 Since there is no separate state to distinguish a service with active
 connections, this method is not executed as part of a state transition.
 .RE
@@ -238,7 +275,10 @@ connections, this method is not executed as part of a state transition.
 .ad
 .sp .6
 .RS 4n
-Executed when a service is taken from the \fBonline\fR or \fBdegraded\fR
+Executed when a service is taken from the
+.B online
+or
+.BR degraded
 state to the \fBoffline\fR state. For a \fBwait\fR-type service that at the
 time of execution is performing its own listening, this method should result
 in it ceasing listening. This method will be executed before the
@@ -251,7 +291,7 @@ service.
 .ne 2
 .mk
 .na
-\fBinetd_online\fR
+.B inetd_online
 .ad
 .sp .6
 .RS 4n
@@ -264,7 +304,7 @@ preparation prior to a service starting to handle requests.
 .ne 2
 .mk
 .na
-\fBinetd_disable\fR
+.B inetd_disable
 .ad
 .sp .6
 .RS 4n
@@ -293,7 +333,9 @@ request comes in to refresh the service, and
 .TP
 .ie t \(bu
 .el o
-the service is currently in the \fBonline\fR state and there are no
+the service is currently in the
+.B online
+state and there are no
 configuration changes that would result in the service needing to be taken
 \fBoffline\fR and brought back again.
 .RE
@@ -301,8 +343,12 @@ configuration changes that would result in the service needing to be taken
 
 .sp
 .LP
-The only compulsory method is the \fBinetd_start\fR method. In the absence
-of any of the others, \fBinetd\fR runs no method but behaves as if one was
+The only compulsory method is the
+.B inetd_start
+method. In the absence
+of any of the others,
+.B inetd
+runs no method but behaves as if one was
 run successfully.
 .SS "Service Properties"
 .sp
@@ -310,7 +356,8 @@ run successfully.
 Configuration for SMF-managed services is stored in the SMF repository. The
 configuration is made up of the basic configuration of a service, the
 configuration for each of the service's methods, and the default
-configuration applicable to all \fBinetd\fR-managed services.
+configuration applicable to all
+.BR inetd "-managed services."
 .sp
 .LP
 For details on viewing and modifying the configuration of a service and the
@@ -324,7 +371,7 @@ configuration are as follows:
 .ne 2
 .mk
 .na
-\fBbind_addr\fR
+.B bind_addr
 .ad
 .sp .6
 .RS 4n
@@ -342,7 +389,11 @@ network interface.
 .sp .6
 .RS 4n
 The time interval in seconds between a failed bind attempt and a retry. The
-values \fB0\fR and \fB-1\fR specify that no retries are attempted and the
+values
+.B 0
+and
+.B -1
+specify that no retries are attempted and the
 first failure is handled the same as exceeding \fBbind_fail_max\fR.
 .RE
 
@@ -354,12 +405,18 @@ first failure is handled the same as exceeding \fBbind_fail_max\fR.
 .ad
 .sp .6
 .RS 4n
-The maximum number of times \fBinetd\fR retries binding to a service's
-associated port before giving up. The value \fB-1\fR specifies that no retry
+The maximum number of times
+.B inetd
+retries binding to a service's
+associated port before giving up. The value
+.B -1
+specifies that no retry
 limit is imposed. If none of the service's protocols were bound to before
-any imposed limit is reached, the service goes to the \fBmaintenance\fR
+.RB "any imposed limit is reached, the service goes to the" " maintenance"
 state; otherwise, if not all of the protocols were bound to, the service
-goes to the \fBdegraded\fR state.
+goes to the
+.B degraded
+state.
 .RE
 
 .sp
@@ -371,15 +428,20 @@ goes to the \fBdegraded\fR state.
 .sp .6
 .RS 4n
 The time in seconds a service will remain offline if it exceeds its
-configured maximum connection rate, \fBmax_con_rate\fR. The values \fB0\fR
-and \fB-1\fR specify that connection rate limiting is disabled.
+configured maximum connection rate,
+.BR max_con_rate .
+The values
+.BR 0
+and
+.B -1
+specify that connection rate limiting is disabled.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBconnection_backlog\fR
+.B connection_backlog
 .ad
 .sp .6
 .RS 4n
@@ -391,13 +453,17 @@ requests that can be queued at the listening endpoints for servers.
 .ne 2
 .mk
 .na
-\fBendpoint_type\fR
+.B endpoint_type
 .ad
 .sp .6
 .RS 4n
-The type of the socket used by the service or the value \fBtli\fR to
+The type of the socket used by the service or the value
+.B tli
+to
 signify a TLI-based service. Valid socket type values are: \fBstream\fR,
-\fBdgram\fR, \fBraw\fR, \fBseqpacket\fR.
+.BR dgram ,
+.BR raw ,
+.BR seqpacket .
 .RE
 
 .sp
@@ -411,13 +477,25 @@ signify a TLI-based service. Valid socket type values are: \fBstream\fR,
 The count portion of the service's failure rate limit. The failure rate
 limit applies to \fBwait\fR-type services and is reached when \fIcount\fR
 instances of the service are started within a given time. Exceeding the rate
-results in the service being transitioned to the \fBmaintenance\fR state.
-This is different from the behavior of the previous \fBinetd\fR, which
+results in the service being transitioned to the
+.B maintenance
+state.
+This is different from the behavior of the previous
+.BR inetd ,
+which
 continued to retry every 10 minutes, indefinitely. The \fBfailrate_cnt\fR
 check accounts for badly behaving servers that fail before consuming the
 service request and which would otherwise be continually restarted, taxing
-system resources. Failure rate is equivalent to the \fB-r\fR option of the
-previous \fBinetd\fR. The values \fB0\fR and \fB-1\fR specify that this
+system resources. Failure rate is equivalent to the
+.B -r
+option of the
+previous
+.BR inetd .
+The values
+.B 0
+and
+.B -1
+specify that this
 feature is disabled.
 .RE
 
@@ -438,13 +516,19 @@ disabled.
 .ne 2
 .mk
 .na
-\fBinherit_env\fR
+.B inherit_env
 .ad
 .sp .6
 .RS 4n
 If true, pass \fBinetd\fR's environment on to the service's start method.
-Regardless of this setting, \fBinetd\fR will set the variables
-\fBSMF_FMRI\fR, \fBSMF_METHOD\fR, and \fBSMF_RESTARTER\fR in the start
+Regardless of this setting,
+.B inetd
+will set the variables
+.BR SMF_FMRI ,
+.BR SMF_METHOD ,
+and
+.B SMF_RESTARTER
+in the start
 method's environment, as well as any environment variables set in the method
 context. These variables are described in \fBsmf_method\fR(5).
 .RE
@@ -453,7 +537,7 @@ context. These variables are described in \fBsmf_method\fR(5).
 .ne 2
 .mk
 .na
-\fBisrpc\fR
+.B isrpc
 .ad
 .sp .6
 .RS 4n
@@ -464,7 +548,7 @@ If true, this is an RPC service.
 .ne 2
 .mk
 .na
-\fBmax_con_rate\fR
+.B max_con_rate
 .ad
 .sp .6
 .RS 4n
@@ -477,12 +561,18 @@ connection rate limiting is disabled.
 .ne 2
 .mk
 .na
-\fBmax_copies\fR
+.B max_copies
 .ad
 .sp .6
 .RS 4n
-The maximum number of copies of a \fBnowait\fR service that can run
-concurrently. The values \fB0\fR and \fB-1\fR specify that copies limiting
+The maximum number of copies of a
+.B nowait
+service that can run
+concurrently. The values
+.B 0
+and
+.B -1
+specify that copies limiting
 is disabled.
 .RE
 
@@ -490,7 +580,7 @@ is disabled.
 .ne 2
 .mk
 .na
-\fBname\fR
+.B name
 .ad
 .sp .6
 .RS 4n
@@ -499,20 +589,29 @@ Can be set to one of the following values:
 .TP
 .ie t \(bu
 .el o
-a service name understood by \fBgetservbyname\fR(3SOCKET);
+a service name understood by
+.BR getservbyname (3SOCKET);
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-if \fBisrpc\fR is set to \fBtrue\fR, a service name understood by
-\fBgetrpcbyname\fR(3NSL);
+if
+.B isrpc
+is set to
+.BR true ,
+a service name understood by
+.BR getrpcbyname (3NSL);
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-if \fBisrpc\fR is set to \fBtrue\fR, a valid RPC program number.
+if
+.B isrpc
+is set to
+.BR true ,
+a valid RPC program number.
 .RE
 .RE
 
@@ -520,19 +619,37 @@ if \fBisrpc\fR is set to \fBtrue\fR, a valid RPC program number.
 .ne 2
 .mk
 .na
-\fBproto\fR
+.B proto
 .ad
 .sp .6
 .RS 4n
 In the case of socket-based services, this is a list of protocols supported
-by the service. Valid protocols are: \fBtcp\fR, \fBtcp6\fR, \fBtcp6only\fR,
-\fBudp\fR, \fBudp6\fR, and \fBudp6only\fR. In the case of TLI services, this
+by the service. Valid protocols are:
+.BR tcp ,
+.BR tcp6 ,
+.BR tcp6only ,
+.BR udp ,
+.BR udp6 ,
+and
+.BR udp6only .
+In the case of TLI services, this
 is a list of netids recognized by \fBgetnetconfigent\fR(3NSL) supported by
-the service, plus the values \fBtcp6only\fR and \fBudp6only\fR. RPC/TLI
-services also support nettypes in this list, and \fBinetd\fR first tries to
+the service, plus the values
+.B tcp6only
+and
+.BR udp6only .
+RPC/TLI
+services also support nettypes in this list, and
+.B inetd
+first tries to
 interpret the list member as a nettype for these service types. The values
-\fBtcp6only\fR and \fBudp6only\fR are new to \fBinetd\fR; these values
-request that \fBinetd\fR listen only for and pass on true \fBIPv6\fR
+\fBtcp6only\fR and \fBudp6only\fR are new to
+.BR inetd ;
+these values
+request that
+.B inetd
+listen only for and pass on true
+.BR IPv6
 requests (not IPv4 mapped ones). See "Configuring Protocols for
 Sockets-Based Services," below.
 .RE
@@ -541,68 +658,92 @@ Sockets-Based Services," below.
 .ne 2
 .mk
 .na
-\fBrpc_low_version\fR
+.B rpc_low_version
 .ad
 .sp .6
 .RS 4n
-Lowest supported RPC version. Required when \fBisrpc\fR is set to
-\fBtrue\fR.
+Lowest supported RPC version. Required when
+.B isrpc
+is set to
+.BR true .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBrpc_high_version\fR
+.B rpc_high_version
 .ad
 .sp .6
 .RS 4n
-Highest supported RPC version. Required when \fBisrpc\fR is set to
-\fBtrue\fR.
+Highest supported RPC version. Required when
+.B isrpc
+is set to
+.BR true .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtcp_trace\fR
+.B tcp_trace
 .ad
 .sp .6
 .RS 4n
-If true, and this is a \fBnowait\fR-type service, \fBinetd\fR logs the
+If true, and this is a \fBnowait\fR-type service,
+.B inetd
+logs the
 client's IP address and TCP port number, along with the name of the service,
 for each incoming connection, using the \fBsyslog\fR(3C) facility.
 \fBinetd\fR uses the \fBsyslog\fR facility \fBcode\fR daemon and
-\fBnotice\fR priority level. See \fBsyslog.conf\fR(4) for a description of
+\fBnotice\fR priority level. See
+.BR syslog.conf (4)
+for a description of
 \fBsyslog\fR codes and severity levels. This logging is separate from the
 logging done by the TCP wrappers facility.
 .sp
 \fBtcp_trace\fR is equivalent to the previous \fBinetd\fR's \fB-t\fR option
 (and the \fB/etc/default/inetd\fR property
-\fBENABLE_CONNECTION_LOGGING\fR).
+.BR ENABLE_CONNECTION_LOGGING ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtcp_wrappers\fR
+.B tcp_wrappers
 .ad
 .sp .6
 .RS 4n
-If \fBtrue\fR, enable TCP wrappers access control. This applies only to
-services with \fBendpoint_type\fR set to \fBstreams\fR and \fBwait\fR set to
+If
+.BR true ,
+enable TCP wrappers access control. This applies only to
+services with
+.B endpoint_type
+set to
+.B streams
+and
+.B wait
+set to
 \fBfalse\fR. The \fBsyslog\fR facility \fBcode\fR daemon is used to log
-allowed connections (using the \fBnotice\fR severity level) and denied
-traffic (using the \fBwarning\fR severity level). See \fBsyslog.conf\fR(4)
-for a description of \fBsyslog\fR codes and severity levels. The stability
+allowed connections (using the
+.B notice
+severity level) and denied
+traffic (using the
+.B warning
+severity level). See \fBsyslog.conf\fR(4)
+for a description of
+.B syslog
+codes and severity levels. The stability
 level of the TCP wrappers facility and its configuration files is External.
 As the TCP wrappers facility is not controlled by Sun, intra-release
 incompatibilities are not uncommon. See \fBattributes\fR(5).
 .sp
 For more information about configuring TCP wrappers, you can refer to the
 \fBtcpd(1M)\fR and \fBhosts_access(4)\fR man pages, which are delivered as
-part of the Solaris operating system at \fB/usr/sfw/man\fR. These pages are
+part of the Solaris operating system at
+.BR /usr/sfw/man .
+These pages are
 not part of the standard Solaris man pages, available at \fB/usr/man\fR.
 .sp
 \fBtcp_wrappers\fR is equivalent to the previous inetd's
@@ -613,18 +754,23 @@ not part of the standard Solaris man pages, available at \fB/usr/man\fR.
 .ne 2
 .mk
 .na
-\fBwait\fR
+.B wait
 .ad
 .sp .6
 .RS 4n
-If \fBtrue\fR this is a \fBwait\fR-type service, otherwise it is a
+If
+.B true
+this is a
+.BR wait "-type service, otherwise it is a"
 \fBnowait\fR-type service. A \fBwait\fR-type service has the following
 characteristics:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-Its \fBinetd_start\fR method will take over listening duties on the
+Its
+.B inetd_start
+method will take over listening duties on the
 service's bound endpoint when it is executed.
 .RE
 .RS +4
@@ -634,21 +780,28 @@ service's bound endpoint when it is executed.
 \fBinetd\fR will wait for it to exit after it is executed before it resumes
 listening duties.
 .RE
-Datagram servers must be configured as being of type \fBwait\fR, as they
+Datagram servers must be configured as being of type
+.BR wait ,
+as they
 are always invoked with the original datagram endpoint that will participate
 in delivering the service bound to the specified service. They do not have
 separate "listening" and "accepting" sockets. Connection-oriented services,
-such as TCP stream services can be designed to be either of type \fBwait\fR
-or \fBnowait\fR.
+such as TCP stream services can be designed to be either of type
+.BR wait
+or
+.BR nowait .
 .RE
 
 .sp
 .LP
 A number of the basic properties are optional for a service. In their
 absence, their values are taken from the set of default values present in
-the \fBdefaults\fR property group in the \fBinetd\fR service. These
+the \fBdefaults\fR property group in the
+.B inetd
+service. These
 properties, with their seed values, are listed below. Note that these values
-are configurable through \fBinetadm\fR(1M).
+are configurable through
+.BR inetadm (1M).
 .sp
 .in +2
 .nf
@@ -672,19 +825,28 @@ Each method specified for a service will have its configuration stored in
 the SMF repository, within a property group of the same name as the method.
 The set of properties allowable for these methods includes those specified
 for the services managed by \fBsvc.startd\fR(1M). (See \fBsvc.startd\fR(1M)
-for further details.) Additionally, for the \fBinetd_start\fR method, you
-can set the \fBarg0\fR property.
+for further details.) Additionally, for the
+.B inetd_start
+method, you
+can set the
+.B arg0
+property.
 .sp
 .LP
-The \fBarg0\fR property allows external wrapper programs to be used with
+The
+.B arg0
+property allows external wrapper programs to be used with
 \fBinetd\fR services. Specifically, it allows the first argument,
-\fBargv[0]\fR, of the service's start method to be something other than the
+.BR argv[0] ,
+of the service's start method to be something other than the
 path of the server program.
 .sp
 .LP
 In the case where you want to use an external wrapper program and pass
 arguments to the service's daemon, the arguments should be incorporated as
-arguments to the wrapper program in the \fBexec\fR property. For example:
+arguments to the wrapper program in the
+.B exec
+property. For example:
 .sp
 .in +2
 .nf
@@ -698,27 +860,44 @@ arg0='/path/to/service/daemon'
 In addition to the special method tokens mentioned in \fBsmf_method\fR(5),
 \fBinetd\fR also supports the \fB:kill_process\fR token for \fBwait\fR-type
 services. This results in behavior identical to that if the \fB:kill\fR
-token were supplied, except that the \fBkill\fR signal is sent only to the
-parent process of the \fBwait\fR-type service's \fBstart\fR method, not to
+token were supplied, except that the
+.B kill
+signal is sent only to the
+parent process of the
+.BR wait "-type service's"
+.B start
+method, not to
 all members of its encompassing process contract (see \fBprocess\fR(4)).
 .SS "Configuring Protocols for Sockets-Based Services"
 .sp
 .LP
-When configuring \fBinetd\fR for a sockets-based service, you have the
+When configuring
+.B inetd
+for a sockets-based service, you have the
 choice, depending on what is supported by the service, of the alternatives
-described under the \fBproto\fR property, above. The following are
-guidelines for which \fBproto\fR values to use:
+described under the
+.B proto
+property, above. The following are
+guidelines for which
+.B proto
+values to use:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-For a service that supports only IPv4: \fBtcp\fR and \fBudp\fR
+For a service that supports only IPv4:
+.B tcp
+and
+.BR udp
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-For a service that supports only IPv6: \fBtcp6only\fR and \fBudp6only\fR
+For a service that supports only IPv6:
+.B tcp6only
+and
+.BR udp6only
 .RE
 .RS +4
 .TP
@@ -729,15 +908,24 @@ For a service that supports both IPv4 and IPv6:
 .TP
 .ie t \(bu
 .el o
-Obsolete and not recommended: \fBtcp6\fR and \fBudp6\fR
+Obsolete and not recommended:
+.B tcp6
+and
+.BR udp6
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 Recommended: use two separate entries that differ only in the proto field.
-One entry has \fBtcp\fR and the other has \fBtcp6only\fR, or \fBudp\fR plus
-\fBudp6only\fR.
+One entry has
+.B tcp
+and the other has
+.BR tcp6only ,
+or
+.B udp
+plus
+.BR udp6only .
 .RE
 .RE
 .sp
@@ -753,31 +941,43 @@ restarter, \fBsvc.startd\fR(1M).
 .ne 2
 .mk
 .na
-\fBstart\fR
+.B start
 .ad
 .sp .6
 .RS 4n
-Causes \fBinetd\fR to start providing service. This results in \fBinetd\fR
+Causes
+.B inetd
+.RB "to start providing service. This results in" " inetd"
 beginning to handle \fBsmf\fR requests for its managed services and network
-requests for those services that are in either the \fBonline\fR or
+requests for those services that are in either the
+.B online
+or
 \fBdegraded\fR state.
 .sp
-In addition, \fBinetd\fR also checks if the \fBinetd.conf\fR(4)-format
+In addition,
+.B inetd
+also checks if the \fBinetd.conf\fR(4)-format
 configuration file it is monitoring has changed since the last
-\fBinetconv\fR(1M) conversion was carried out. If it has, then a message
-telling the administrator to re-run \fBinetconv\fR to effect the changes
-made is logged in \fBsyslog\fR.
+.BR inetconv (1M)
+conversion was carried out. If it has, then a message
+telling the administrator to re-run
+.B inetconv
+to effect the changes
+made is logged in
+.BR syslog .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstop\fR
+.B stop
 .ad
 .sp .6
 .RS 4n
-Causes \fBinetd\fR to stop providing service. At this point, \fBinetd\fR
+Causes
+.B inetd
+.RB "to stop providing service. At this point," " inetd"
 transitions each of its services that are not in either the
 \fBmaintenance\fR or \fBdisabled\fR states to the \fBoffline\fR state,
 running any appropriate methods in the process.
@@ -792,14 +992,22 @@ running any appropriate methods in the process.
 .sp .6
 .RS 4n
 Results in a refresh being performed for each of its managed services and
-the \fBinetd.conf\fR(4) format configuration file being checked for change,
-as in the \fBstart\fR method. When a service is refreshed, its behavior
+the
+.BR inetd.conf (4)
+format configuration file being checked for change,
+as in the
+.B start
+method. When a service is refreshed, its behavior
 depends on its current state:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-if it is in the \fBmaintenance\fR or \fBdisabled\fR states, no action is
+if it is in the
+.B maintenance
+or
+.B disabled
+states, no action is
 performed because the configuration will be read and consumed when the
 service leaves the state;
 .RE
@@ -814,7 +1022,11 @@ changes consumed immediately;
 .TP
 .ie t \(bu
 .el o
-if it is in the \fBonline\fR or \fBdegraded\fR state and the configuration
+if it is in the
+.B online
+or
+.B degraded
+state and the configuration
 has changed such that a re-binding is necessary to conform to it, then the
 service will be transitioned to the \fBoffline\fR state and back again,
 using the new configuration for the bind;
@@ -823,9 +1035,12 @@ using the new configuration for the bind;
 .TP
 .ie t \(bu
 .el o
-if it is in the \fBonline\fR state and a re-binding is not necessary, then
+if it is in the
+.B online
+state and a re-binding is not necessary, then
 the \fBinetd_refresh\fR method of the service, if provided, will be run to
-allow \fBonline\fR \fBwait\fR-type services to consume any other changes.
+allow
+.BR "online wait" "-type services to consume any other changes."
 .RE
 .RE
 
@@ -854,16 +1069,19 @@ Specifies an alternate location for the legacy service file
 .ad
 .sp .6
 .RS 4n
-Specifies which of \fBinetd\fR's methods should be run.
+Specifies which of
+.BR inetd "'s methods should be run."
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRConfiguring a Service that Supports Both IPv4 and IPv6
+\fBExample 1\fR Configuring a Service that Supports Both IPv4 and IPv6
 .sp
 .LP
 The following commands illustrate the existence of services that support
-both IPv4 and IPv6 and assign \fBproto\fR properties to those services.
+both IPv4 and IPv6 and assign
+.B proto
+properties to those services.
 
 .sp
 .in +2
@@ -884,13 +1102,17 @@ online         15:52:10 svc:/network/mysvc:stream6
 
 .sp
 .LP
-See \fBsvcs\fR(1) and \fBinetadm\fR(1M) for descriptions of those
+See
+.BR svcs (1)
+and \fBinetadm\fR(1M) for descriptions of those
 commands.
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -910,15 +1132,23 @@ Interface StabilityEvolving
 .sp
 .LP
 \fBfmd\fR(1M), \fBinetadm\fR(1M), \fBinetconv\fR(1M), \fBsvcadm\fR(1M),
-\fBsvccfg\fR(1M), \fBsvcs\fR(1), \fBsvc.startd\fR(1M), \fBsyslog\fR(3C),
+\fBsvccfg\fR(1M),
+.BR svcs (1),
+.BR svc.startd (1M),
+.BR syslog (3C),
 \fBgetnetconfigent\fR(3NSL), \fBgetrpcbyname\fR(3NSL),
-\fBgetservbyname\fR(3SOCKET), \fBinetd.conf\fR(4), \fBprocess\fR(4),
-\fBsyslog.conf\fR(4), \fBattributes\fR(5), \fBsmf\fR(5),
+.BR getservbyname (3SOCKET),
+\fBinetd.conf\fR(4), \fBprocess\fR(4),
+\fBsyslog.conf\fR(4),
+.BR attributes (5),
+\fBsmf\fR(5),
 \fBsmf_method\fR(5)
 .SH NOTES
 .sp
 .LP
-The \fBinetd\fR daemon performs the same function as, but is implemented
+The
+.B inetd
+daemon performs the same function as, but is implemented
 significantly differently from, the daemon of the same name in Solaris 9 and
 prior Solaris operating system releases. In the current Solaris release,
 \fBinetd\fR is part of the Solaris Management Facility (see \fBsmf\fR(5))
@@ -926,7 +1156,9 @@ and will run only within that facility.
 .sp
 .LP
 The \fB/etc/default/inetd\fR file has been deprecated. The functionality
-represented by the properties \fBENABLE_CONNECTION_LOGGING\fR and
+represented by the properties
+.B ENABLE_CONNECTION_LOGGING
+and
 \fBENABLE_TCP_WRAPPERS\fR are now available as the \fBtcp_trace\fR and
 \fBtcp_wrappers\fR properties, respectively. These properties are described
 above, under "Service Properties".

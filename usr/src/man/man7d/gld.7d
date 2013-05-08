@@ -20,7 +20,9 @@
 .\" CDDL HEADER END
 .TH gld 7D "10 Nov 2005" "SunOS 5.11" "Devices"
 .SH NAME
-gld \- Generic \fBLAN\fR Driver
+gld \- Generic
+.B LAN
+Driver
 .SH SYNOPSIS
 .LP
 .nf
@@ -51,7 +53,8 @@ Solaris architecture specific (Solaris DDI).
 .LP
 GLD is a multi-threaded, clonable, loadable kernel module providing support
 for Solaris local area network  (\fBLAN\fR) device drivers. \fBLAN\fR
-drivers in Solaris are \fBSTREAMS\fR-based drivers that use the Data Link
+drivers in Solaris are
+.BR STREAMS "-based drivers that use the Data Link"
 Provider Interface (\fBDLPI\fR) to communicate with network protocol stacks.
 These protocol stacks use the network drivers to send and receive packets on
 a local area network. A network device driver must implement and adhere to
@@ -60,19 +63,25 @@ specification, DLPI specification, and programmatic interface of the device
 itself.
 .sp
 .LP
-GLD implements most \fBSTREAMS\fR and DLPI functionality required of a
+GLD implements most
+.B STREAMS
+and DLPI functionality required of a
 Solaris LAN driver. Several Solaris network drivers are implemented using
 GLD.
 .sp
 .LP
 A Solaris network driver implemented using GLD comprises two distinct
-parts: a generic component that deals with \fBSTREAMS\fR and DLPI
+parts: a generic component that deals with
+.B STREAMS
+and DLPI
 interfaces, and a device-specific component that deals with the particular
 hardware device. The device-specific module indicates its dependency on the
 GLD module and registers itself with GLD from within the driver's
-\fBattach\fR(9E) function. Once it is successfully loaded, the driver is
+.BR attach (9E)
+function. Once it is successfully loaded, the driver is
 \fBDLPI\fR-compliant. The device-specific part of the driver calls
-\fBgld\fR(9F) functions when it receives data or needs some service from
+.BR gld (9F)
+functions when it receives data or needs some service from
 GLD. GLD makes calls into the \fBgld\fR(9E) entry points of the
 device-specific driver through pointers provided to GLD by the
 device-specific driver when it registered itself with GLD. The
@@ -80,8 +89,12 @@ device-specific driver when it registered itself with GLD. The
 the device-specific driver.
 .sp
 .LP
-The GLD facility currently supports devices of type \fBDL_ETHER\fR,
-\fBDL_TPR\fR, and \fBDL_FDDI\fR. GLD drivers are expected to process
+The GLD facility currently supports devices of type
+.BR DL_ETHER ,
+.BR DL_TPR ,
+and
+.BR DL_FDDI .
+GLD drivers are expected to process
 fully-formed MAC-layer packets and should not perform logical link control
 (LLC) handling.
 .LP
@@ -101,11 +114,14 @@ DLPI service not supported by GLD is required.
 .sp
 .LP
 The name of the device-specific driver module must adhere to the naming
-constraints outlined in the NOTES section of \fBdlpi\fR(7P).
+constraints outlined in the NOTES section of
+.BR dlpi (7P).
 .SS "Type DL_ETHER: Ethernet V2 and ISO 8802-3 (IEEE 802.3)"
 .sp
 .LP
-For devices designated type \fBDL_ETHER\fR, GLD provides support for both
+For devices designated type
+.BR DL_ETHER ,
+GLD provides support for both
 Ethernet V2 and ISO 8802-3 (IEEE 802.3) packet processing. Ethernet V2
 enables a data link service user to access and use any of a variety of
 conforming data link service providers without special knowledge of the
@@ -113,18 +129,26 @@ provider's protocol. A service access point (\fBSAP\fR) is the point through
 which the user communicates with the service provider.
 .sp
 .LP
-SAP 0 denotes  that the  user  wishes to use \fI802.3\fR mode. In
+SAP 0 denotes  that the  user  wishes to use
+.I 802.3
+mode. In
 transmission, GLD checks the destination SAP value of the DL_UNITDATA_REQ
 and the SAP value to which the stream is bound. If both  are 0, the GLD
-computes the length of the packet payload and transmits \fI802.3\fR frames
+computes the length of the packet payload and transmits
+.I 802.3
+frames
 having that length in the MAC frame header type field. Such lengths will
 never exceed 1500.
 .sp
 .LP
 All frames received from the media that have a type field in the range
 [0-1500] are assumed to be \fI802.3\fR frames and are routed up all open
-streams that are in \fI802.3\fR mode,  (those streams  bound to a SAP value
-in of 0. If more than one stream is in \fI802.3\fR mode, the incoming frame
+streams that are in
+.I 802.3
+mode,  (those streams  bound to a SAP value
+in of 0. If more than one stream is in
+.I 802.3
+mode, the incoming frame
 is duplicated and routed up each such stream.
 .sp
 .LP
@@ -181,7 +205,9 @@ a future release of Solaris.
 .RE
 .sp
 .LP
-For type \fBDL_TPR\fR devices, GLD implements minimal support for source
+For type
+.B DL_TPR
+devices, GLD implements minimal support for source
 routing. Source routing enables a station that is sending a packet across a
 bridged medium to specify (in the packet MAC header) routing information
 that determines the route that the packet will take through the network.
@@ -204,14 +230,27 @@ implementations that may exist in the same (or a bridged) network.
 GLD implements both Style 1 and Style 2 providers. A physical point of
 attachment (\fBPPA\fR) is the point at which a system attaches itself to a
 physical communication medium. All communication on that physical medium
-funnels through the \fBPPA\fR. The Style 1 provider attaches the stream to a
-particular \fBPPA\fR based on the major/minor device that has been opened.
+funnels through the
+.BR PPA .
+The Style 1 provider attaches the stream to a
+particular
+.B PPA
+based on the major/minor device that has been opened.
 The Style 2 provider requires the DLS user to explicitly identify the
-desired \fBPPA\fR using \fBDL_ATTACH_REQ.\fR In this case, \fBopen\fR(9E)
-creates a stream between the user and GLD and \fBDL_ATTACH_REQ\fR
-subsequently associates a particular \fBPPA\fR with that stream. Style 2 is
+desired
+.B PPA
+using
+.B DL_ATTACH_REQ.
+In this case, \fBopen\fR(9E)
+creates a stream between the user and GLD and
+.BR DL_ATTACH_REQ
+subsequently associates a particular
+.B PPA
+with that stream. Style 2 is
 denoted by a minor number of zero. If a device node whose minor number is
-not zero is opened, Style 1 is indicated and the associated \fBPPA\fR is the
+not zero is opened, Style 1 is indicated and the associated
+.B PPA
+is the
 minor number minus 1. In both Style 1 and Style 2 opens, the device is
 cloned.
 .SS "Implemented DLPI Primitives"
@@ -220,92 +259,166 @@ cloned.
 GLD implements the following DLPI primitives:
 .sp
 .LP
-The \fBDL_INFO_REQ\fR primitive requests information about the DLPI stream.
-The message consists of one \fBM_PROTO\fR message block. GLD returns
-device-dependent values in the \fBDL_INFO_ACK\fR response to this request,
+The
+.B DL_INFO_REQ
+primitive requests information about the DLPI stream.
+The message consists of one
+.B M_PROTO
+message block. GLD returns
+device-dependent values in the
+.B DL_INFO_ACK
+response to this request,
 based on information the GLD-based driver specified in the
-\fBgld_mac_info\fR(9S) structure passed to \fBgld_register()\fR. However GLD
+\fBgld_mac_info\fR(9S) structure passed to
+.BR gld_register() .
+However GLD
 returns the following values on behalf of all GLD-based drivers:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The version is \fBDL_VERSION_2\fR.
+The version is
+.BR DL_VERSION_2 .
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The service mode is \fBDL_CLDLS\fR \(em GLD implements connectionless-mode
+The service mode is
+.B DL_CLDLS
+\(em GLD implements connectionless-mode
 service.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The provider style is \fBDL_STYLE1\fR or \fBDL_STYLE2,\fR depending on how
+The provider style is
+.B DL_STYLE1
+or
+.B DL_STYLE2,
+depending on how
 the stream was opened.
 .RE
 .sp
 .LP
-The \fBDL_ATTACH_REQ\fR primitive is called to associate a \fBPPA\fR with a
+The
+.B DL_ATTACH_REQ
+primitive is called to associate a
+.B PPA
+with a
 stream. This request is needed for Style 2 DLS providers to identify the
 physical medium over which the communication will transpire. Upon
-completion, the state changes from \fBDL_UNATTACHED\fR to \fBDL_UNBOUND.\fR
-The message consists of one \fBM_PROTO\fR message block. This request may
+completion, the state changes from
+.B DL_UNATTACHED
+to
+.BR DL_UNBOUND.
+The message consists of one
+.B M_PROTO
+message block. This request may
 not be issued when using the driver in Style 1 mode; streams opened using
-Style 1 are already attached to a \fBPPA\fR by the time the open
+Style 1 are already attached to a
+.B PPA
+by the time the open
 completes.
 .sp
 .LP
-The \fBDL_DETACH_REQ\fR primitive requests to detach the \fBPPA\fR from the
+The
+.B DL_DETACH_REQ
+primitive requests to detach the
+.B PPA
+from the
 stream. This is only allowed if the stream was opened using Style 2.
 .sp
 .LP
-The \fBDL_BIND_REQ\fR and \fBDL_UNBIND_REQ\fR primitives bind and unbind a
+The
+.B DL_BIND_REQ
+and
+.B DL_UNBIND_REQ
+primitives bind and unbind a
 \fBDLSAP\fR to the stream. The \fBPPA\fR associated with each stream will
 have been initialized upon completion of the processing of the
-\fBDL_BIND_REQ.\fR Multiple streams may be bound to the same \fBSAP\fR; each
+\fBDL_BIND_REQ.\fR Multiple streams may be bound to the same
+.BR SAP ;
+each
 such stream receives a copy of any packets received for that SAP.
 .sp
 .LP
-The \fBDL_ENABMULTI_REQ\fR and \fBDL_DISABMULTI_REQ\fR primitives enable
+The
+.B DL_ENABMULTI_REQ
+and
+.B DL_DISABMULTI_REQ
+primitives enable
 and disable reception of individual multicast group addresses. A set of
 multicast addresses may be iteratively created and modified on a per-stream
-basis using these primitives. The stream must be attached to a \fBPPA\fR for
+basis using these primitives. The stream must be attached to a
+.B PPA
+for
 these primitives to be accepted.
 .sp
 .LP
-The \fBDL_PROMISCON_REQ\fR and \fBDL_PROMISCOFF_REQ\fR primitives enable
+The
+.B DL_PROMISCON_REQ
+and
+.B DL_PROMISCOFF_REQ
+primitives enable
 and disable promiscuous mode on a per-stream basis, either at a physical
-level or at the \fBSAP\fR level. The DL Provider will route all received
-messages on the media to the DLS user until either a \fBDL_DETACH_REQ\fR or
-a \fBDL_PROMISCOFF_REQ\fR is received or the stream is closed. Physical
+level or at the
+.B SAP
+level. The DL Provider will route all received
+messages on the media to the DLS user until either a
+.B DL_DETACH_REQ
+or
+a
+.B DL_PROMISCOFF_REQ
+is received or the stream is closed. Physical
 level promiscuous mode may be specified for all packets on the medium or for
-multicast packets only. The stream must be attached to a \fBPPA\fR for these
+multicast packets only. The stream must be attached to a
+.B PPA
+for these
 primitives to be accepted.
 .sp
 .LP
-The \fBDL_UNITDATA_REQ\fR primitive is used to send data in a
+The
+.B DL_UNITDATA_REQ
+primitive is used to send data in a
 connectionless transfer. Because this is an unacknowledged service, there is
-no guarantee of delivery. The message consists of one \fBM_PROTO\fR message
-block followed by one or more \fBM_DATA\fR blocks containing at least one
+no guarantee of delivery. The message consists of one
+.B M_PROTO
+message
+block followed by one or more
+.B M_DATA
+blocks containing at least one
 byte of data.
 .sp
 .LP
-The \fBDL_UNITDATA_IND\fR type is used when a packet is received and is to
-be passed upstream. The packet is put into an \fBM_PROTO\fR message with the
-primitive set to \fBDL_UNITDATA_IND\fR.
+The
+.B DL_UNITDATA_IND
+type is used when a packet is received and is to
+be passed upstream. The packet is put into an
+.B M_PROTO
+message with the
+primitive set to
+.BR DL_UNITDATA_IND .
 .sp
 .LP
-The \fBDL_PHYS_ADDR_REQ\fR primitive returns the MAC address currently
-associated with the \fBPPA\fR attached to the stream, in the
+The
+.B DL_PHYS_ADDR_REQ
+primitive returns the MAC address currently
+associated with the
+.B PPA
+attached to the stream, in the
 \fBDL_PHYS_ADDR_ACK\fR primitive. When using style 2, this primitive is only
-valid following a successful \fBDL_ATTACH_REQ\fR.
+valid following a successful
+.BR DL_ATTACH_REQ .
 .sp
 .LP
-The \fBDL_SET_PHYS_ADDR_REQ\fR primitive changes the MAC address currently
-associated with the \fBPPA\fR attached to the stream. This primitive affects
+The
+.B DL_SET_PHYS_ADDR_REQ
+primitive changes the MAC address currently
+associated with the
+.B PPA
+attached to the stream. This primitive affects
 all other current and future streams attached to this device. Once changed,
 all streams currently or subsequently opened and attached to this device
 will obtain this new physical address. The new physical address will remain
@@ -313,10 +426,16 @@ in effect until this primitive is used to change the physical address again
 or the driver is reloaded.
 .sp
 .LP
-The \fBDL_GET_STATISTICS_REQ\fR primitive requests a
+The
+.B DL_GET_STATISTICS_REQ
+primitive requests a
 \fBDL_GET_STATISTICS_ACK\fR response containing statistics information
 associated with the PPA attached to the stream. Style 2 streams must be
-attached to a particular \fBPPA\fR using \fBDL_ATTACH_REQ\fR before this
+attached to a particular
+.B PPA
+using
+.B DL_ATTACH_REQ
+before this
 primitive will be successful.
 .sp
 .LP
@@ -325,7 +444,10 @@ notifications using the DL_NOTIFY_IND primitive. See \fBdlpi\fR(7P).
 .SS "Implemented ioctl Functions"
 .sp
 .LP
-GLD implements the \fBDLIOCRAW\fR ioctl described in \fBdlpi\fR(7P).  For
+GLD implements the
+.B DLIOCRAW
+ioctl described in
+.BR dlpi "(7P).  For"
 any other ioctl command, GLD passes it to the device-specific driver's
 \fBgldm_ioctl()\fR function as described in \fBgld\fR(9E).
 .SS "Requirements on GLD Drivers"
@@ -339,12 +461,14 @@ GLD-based  drivers  must also specify  a link dependency on "misc/gld".
 .sp
 .LP
 GLD implements the \fBopen\fR(9E) and \fBclose\fR(9E) functions and the
-required \fBSTREAMS\fR \fBput\fR(9E) and \fBsrv\fR(9E) functions on behalf
+required \fBSTREAMS put\fR(9E) and \fBsrv\fR(9E) functions on behalf
 of the device-specific driver. GLD also implements the \fBgetinfo\fR(9E)
 function for the driver.
 .sp
 .LP
-The \fBmi_idname\fR element of the \fBmodule_info\fR(9S) structure is a
+The
+.B mi_idname
+element of the \fBmodule_info\fR(9S) structure is a
 string specifying the name of the driver. This must exactly match the name
 of the driver module as it exists in the file system.
 .sp
@@ -355,44 +479,44 @@ elements as shown below:
 .ne 2
 .mk
 .na
-\fBqi_putp\fR
+.B qi_putp
 .ad
 .RS 14n
 .rt
-\fINULL\fR
+.I NULL
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_srvp\fR
+.B qi_srvp
 .ad
 .RS 14n
 .rt
-\fBgld_rsrv\fR
+.B gld_rsrv
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_qopen\fR
+.B qi_qopen
 .ad
 .RS 14n
 .rt
-\fBgld_open\fR
+.B gld_open
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_qclose\fR
+.B qi_qclose
 .ad
 .RS 14n
 .rt
-\fBgld_close\fR
+.B gld_close
 .RE
 
 .sp
@@ -403,49 +527,51 @@ elements as shown below:
 .ne 2
 .mk
 .na
-\fBqi_putp\fR
+.B qi_putp
 .ad
 .RS 14n
 .rt
-\fBgld_wput\fR
+.B gld_wput
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_srvp\fR
+.B qi_srvp
 .ad
 .RS 14n
 .rt
-\fBgld_wsrv\fR
+.B gld_wsrv
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_qopen\fR
+.B qi_qopen
 .ad
 .RS 14n
 .rt
-\fINULL\fR
+.I NULL
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBqi_qclose\fR
+.B qi_qclose
 .ad
 .RS 14n
 .rt
-\fINULL\fR
+.I NULL
 .RE
 
 .sp
 .LP
-The \fBdevo_getinfo\fR element of the \fBdev_ops\fR(9S) structure should
+The \fBdevo_getinfo\fR element of the
+.BR dev_ops (9S)
+structure should
 specify \fBgld_getinfo\fR as the \fBgetinfo\fR(9E) routine.
 .sp
 .LP
@@ -455,50 +581,90 @@ device and driver for use.
 .sp
 .LP
 The \fBattach\fR(9E) function allocates a \fBgld_mac_info\fR(9S)
-(``macinfo'') structure using \fBgld_mac_alloc()\fR. The driver usually
+(``macinfo'') structure using
+.BR gld_mac_alloc() .
+The driver usually
 needs to save more information per device than is defined in the macinfo
 structure; it should allocate the additional required data structure and
-save a pointer to it in the \fBgldm_private\fR member of the
+save a pointer to it in the
+.B gldm_private
+member of the
 \fBgld_mac_info\fR(9S) structure.
 .sp
 .LP
 The \fBattach\fR(9E) routine must initialize the macinfo structure as
-described in \fBgld_mac_info\fR(9S) and then call \fBgld_register()\fR to
+described in \fBgld_mac_info\fR(9S) and then call
+.B gld_register()
+to
 link the driver with the GLD module. The driver should map registers if
 necessary and be fully initialized and prepared to accept interrupts before
-calling \fBgld_register()\fR. The \fBattach\fR(9E) function should add
+calling
+.BR gld_register() .
+The \fBattach\fR(9E) function should add
 interrupts but not enable the device to generate them. The driver should
-reset the hardware before calling \fBgld_register()\fR to ensure it is
+reset the hardware before calling
+.B gld_register()
+to ensure it is
 quiescent; the device must not be started or put into a state where it may
-generate an interrupt before \fBgld_register()\fR is called. That will be
-done later when GLD calls the driver's \fBgldm_start()\fR entry point
-described in \fBgld\fR(9E). Once \fBgld_register()\fR succeeds, the
-\fBgld\fR(9E) entry points may be called by GLD at any time.
+generate an interrupt before
+.B gld_register()
+is called. That will be
+done later when GLD calls the driver's
+.B gldm_start()
+entry point
+described in
+.BR gld "(9E). Once"
+.B gld_register()
+succeeds, the
+.BR gld (9E)
+entry points may be called by GLD at any time.
 .sp
 .LP
 The \fBattach\fR(9E) routine should return \fBDDI_SUCCESS\fR if
 \fBgld_register()\fR succeeds. If \fBgld_register()\fR fails, it returns
 \fBDDI_FAILURE\fR and the \fBattach\fR(9E) routine should deallocate any
-resources it allocated before calling \fBgld_register()\fR and then also
-return \fBDDI_FAILURE\fR. Under no circumstances should a failed macinfo
+resources it allocated before calling
+.B gld_register()
+and then also
+return
+.BR DDI_FAILURE .
+Under no circumstances should a failed macinfo
 structure be reused; it should be deallocated using \fBgld_mac_free\fR().
 .sp
 .LP
 The \fBdetach\fR(9E) function should attempt to unregister the driver from
-GLD. This is done by calling \fBgld_unregister()\fR described in
-\fBgld\fR(9F). The \fBdetach\fR(9E) routine can get a pointer to the needed
+GLD. This is done by calling
+.B gld_unregister()
+described in
+.BR gld (9F).
+The
+.BR detach "(9E) routine can get a pointer to the needed"
 \fBgld_mac_info\fR(9S) structure from the device's private data using
-\fBddi_get_driver_private\fR(9F). \fBgld_unregister\fR() checks certain
+.BR ddi_get_driver_private (9F).
+.BR gld_unregister ()
+checks certain
 conditions that could require that the driver not be detached. If the checks
-fail, \fBgld_unregister()\fR returns \fBDDI_FAILURE\fR, in which case the
-driver's \fBdetach\fR(9E) routine must leave the device operational and
-return \fBDDI_FAILURE\fR. If the checks succeed, \fBgld_unregister()\fR
+fail,
+.B gld_unregister()
+returns
+.BR DDI_FAILURE ,
+in which case the
+driver's
+.BR detach (9E)
+routine must leave the device operational and
+return
+.BR DDI_FAILURE .
+If the checks succeed, \fBgld_unregister()\fR
 ensures that the device interrupts are stopped, calling the driver's
 \fBgldm_stop()\fR routine if necessary, unlinks the driver from the GLD
-framework, and returns \fBDDI_SUCCESS\fR. In this case, the \fBdetach\fR(9E)
+framework, and returns
+.BR DDI_SUCCESS .
+In this case, the \fBdetach\fR(9E)
 routine should remove interrupts, deallocate any data structures allocated
 in the \fBattach\fR(9E) routine, using \fBgld_mac_free()\fR to deallocate
-the macinfo structure, and return \fBDDI_SUCCESS\fR. It is important to
+the macinfo structure, and return
+.BR DDI_SUCCESS .
+It is important to
 remove the interrupt \fIbefore\fR calling \fBgld_mac_free()\fR.
 .SS "Network Statistics"
 .sp
@@ -507,7 +673,10 @@ Solaris network drivers must implement statistics variables. GLD itself
 tallies some network statistics, but other statistics must be counted by
 each GLD-based driver. GLD provides support for GLD-based drivers to report
 a standard set of network driver statistics. Statistics are reported by GLD
-using the \fBkstat\fR(7D) and \fBkstat\fR(9S) mechanism. The
+using the
+.BR kstat "(7D) and"
+.BR kstat (9S)
+mechanism. The
 \fBDL_GET_STATISTICS_REQ\fR DLPI command may also be used to retrieve the
 current statistics counters. All statistics are maintained as unsigned, and
 all are 32 bits unless otherwise noted.
@@ -518,7 +687,7 @@ GLD maintains and reports the following statistics.
 .ne 2
 .mk
 .na
-\fBrbytes64\fR
+.B rbytes64
 .ad
 .RS 15n
 .rt
@@ -529,7 +698,7 @@ Total bytes successfully received on the interface (64 bits).
 .ne 2
 .mk
 .na
-\fBrbytes\fR
+.B rbytes
 .ad
 .RS 15n
 .rt
@@ -540,7 +709,7 @@ Total bytes successfully received on the interface.
 .ne 2
 .mk
 .na
-\fBobytes64\fR
+.B obytes64
 .ad
 .RS 15n
 .rt
@@ -551,7 +720,7 @@ Total bytes requested to be transmitted on the interface (64 bits).
 .ne 2
 .mk
 .na
-\fBobytes\fR
+.B obytes
 .ad
 .RS 15n
 .rt
@@ -562,7 +731,7 @@ Total bytes requested to be transmitted on the interface.
 .ne 2
 .mk
 .na
-\fBipackets64\fR
+.B ipackets64
 .ad
 .RS 15n
 .rt
@@ -573,7 +742,7 @@ Total packets successfully received on the interface (64 bits).
 .ne 2
 .mk
 .na
-\fBipackets\fR
+.B ipackets
 .ad
 .RS 15n
 .rt
@@ -584,7 +753,7 @@ Total packets successfully received on the interface.
 .ne 2
 .mk
 .na
-\fBopackets64\fR
+.B opackets64
 .ad
 .RS 15n
 .rt
@@ -595,7 +764,7 @@ Total packets requested to be transmitted on the interface (64 bits).
 .ne 2
 .mk
 .na
-\fBopackets\fR
+.B opackets
 .ad
 .RS 15n
 .rt
@@ -606,7 +775,7 @@ Total packets requested to be transmitted on the interface.
 .ne 2
 .mk
 .na
-\fBmultircv\fR
+.B multircv
 .ad
 .RS 15n
 .rt
@@ -618,7 +787,7 @@ addresses (long).
 .ne 2
 .mk
 .na
-\fBmultixmt\fR
+.B multixmt
 .ad
 .RS 15n
 .rt
@@ -630,7 +799,7 @@ functional addresses (long).
 .ne 2
 .mk
 .na
-\fBbrdcstrcv\fR
+.B brdcstrcv
 .ad
 .RS 15n
 .rt
@@ -641,7 +810,7 @@ Broadcast packets successfully received (long).
 .ne 2
 .mk
 .na
-\fBbrdcstxmt\fR
+.B brdcstxmt
 .ad
 .RS 15n
 .rt
@@ -652,7 +821,7 @@ Broadcast packets requested to be transmitted (long).
 .ne 2
 .mk
 .na
-\fBunknowns\fR
+.B unknowns
 .ad
 .RS 15n
 .rt
@@ -675,7 +844,7 @@ could be allocated for transmit (long).
 .ne 2
 .mk
 .na
-\fBblocked\fR
+.B blocked
 .ad
 .RS 15n
 .rt
@@ -687,7 +856,7 @@ flow controlled (long).
 .ne 2
 .mk
 .na
-\fBxmtretry\fR
+.B xmtretry
 .ad
 .RS 15n
 .rt
@@ -699,7 +868,7 @@ resources (long).
 .ne 2
 .mk
 .na
-\fBpromisc\fR
+.B promisc
 .ad
 .RS 15n
 .rt
@@ -710,9 +879,12 @@ Current ``promiscuous'' state of the interface (string).
 .LP
 The device dependent driver counts the following statistics, keeping track
 of them in a private per-instance structure. When GLD is asked to report
-statistics, it calls the driver's \fBgldm_get_stats()\fR entry point, as
+statistics, it calls the driver's
+.B gldm_get_stats()
+entry point, as
 described in \fBgld\fR(9E), to update the device-specific statistics in the
-\fBgld_stats\fR(9S) structure. GLD then reports the updated statistics using
+.BR gld_stats (9S)
+structure. GLD then reports the updated statistics using
 the named statistics variables below.
 .sp
 .ne 2
@@ -730,7 +902,7 @@ bits).
 .ne 2
 .mk
 .na
-\fBmedia\fR
+.B media
 .ad
 .RS 13n
 .rt
@@ -741,7 +913,7 @@ Current media type in use by the device (string).
 .ne 2
 .mk
 .na
-\fBintr\fR
+.B intr
 .ad
 .RS 13n
 .rt
@@ -764,7 +936,7 @@ buffer could be allocated for receive (long).
 .ne 2
 .mk
 .na
-\fBierrors\fR
+.B ierrors
 .ad
 .RS 13n
 .rt
@@ -776,7 +948,7 @@ errors (long).
 .ne 2
 .mk
 .na
-\fBoerrors\fR
+.B oerrors
 .ad
 .RS 13n
 .rt
@@ -788,7 +960,7 @@ Total packets that weren't successfully transmitted because of errors
 .ne 2
 .mk
 .na
-\fBmissed\fR
+.B missed
 .ad
 .RS 13n
 .rt
@@ -820,13 +992,14 @@ Times receiver overflowed during receive (long).
 .sp
 .LP
 The following group of statistics applies to networks of type
-\fBDL_ETHER\fR; these are maintained by device-specific drivers of that
+.BR DL_ETHER ;
+these are maintained by device-specific drivers of that
 type, as above.
 .sp
 .ne 2
 .mk
 .na
-\fBalign_errors\fR
+.B align_errors
 .ad
 .RS 23n
 .rt
@@ -849,7 +1022,7 @@ Packets received with CRC errors (long).
 .ne 2
 .mk
 .na
-\fBduplex\fR
+.B duplex
 .ad
 .RS 23n
 .rt
@@ -860,7 +1033,7 @@ Current duplex mode of the interface (string).
 .ne 2
 .mk
 .na
-\fBcarrier_errors\fR
+.B carrier_errors
 .ad
 .RS 23n
 .rt
@@ -872,7 +1045,7 @@ Times carrier was lost or never detected on a transmission attempt
 .ne 2
 .mk
 .na
-\fBcollisions\fR
+.B collisions
 .ad
 .RS 23n
 .rt
@@ -883,7 +1056,7 @@ Ethernet collisions during transmit (long).
 .ne 2
 .mk
 .na
-\fBex_collisions\fR
+.B ex_collisions
 .ad
 .RS 23n
 .rt
@@ -895,7 +1068,7 @@ failure (long).
 .ne 2
 .mk
 .na
-\fBtx_late_collisions\fR
+.B tx_late_collisions
 .ad
 .RS 23n
 .rt
@@ -929,7 +1102,7 @@ Packets successfully transmitted with exactly one collision.
 .ne 2
 .mk
 .na
-\fBmulti_collisions\fR
+.B multi_collisions
 .ad
 .RS 23n
 .rt
@@ -940,7 +1113,7 @@ Packets successfully transmitted with multiple collisions.
 .ne 2
 .mk
 .na
-\fBsqe_errors\fR
+.B sqe_errors
 .ad
 .RS 23n
 .rt
@@ -951,7 +1124,7 @@ Times SQE test error was reported.
 .ne 2
 .mk
 .na
-\fBmacxmt_errors\fR
+.B macxmt_errors
 .ad
 .RS 23n
 .rt
@@ -963,7 +1136,7 @@ failures.
 .ne 2
 .mk
 .na
-\fBmacrcv_errors\fR
+.B macrcv_errors
 .ad
 .RS 23n
 .rt
@@ -974,7 +1147,7 @@ Packets received with MAC errors, except align, fcs, and toolong errors.
 .ne 2
 .mk
 .na
-\fBtoolong_errors\fR
+.B toolong_errors
 .ad
 .RS 23n
 .rt
@@ -985,7 +1158,7 @@ Packets received larger than the maximum permitted length.
 .ne 2
 .mk
 .na
-\fBrunt_errors\fR
+.B runt_errors
 .ad
 .RS 23n
 .rt
@@ -994,13 +1167,14 @@ Packets received smaller than the minimum permitted length (long).
 
 .sp
 .LP
-The following group of statistics applies to networks of type \fBDL_TPR\fR;
+The following group of statistics applies to networks of type
+.BR DL_TPR ;
 these are maintained by device-specific drivers of that type, as above.
 .sp
 .ne 2
 .mk
 .na
-\fBline_errors\fR
+.B line_errors
 .ad
 .RS 24n
 .rt
@@ -1011,7 +1185,7 @@ Packets received with non-data bits or FCS errors.
 .ne 2
 .mk
 .na
-\fBburst_errors\fR
+.B burst_errors
 .ad
 .RS 24n
 .rt
@@ -1022,7 +1196,7 @@ Times an absence of transitions for five half-bit timers was detected.
 .ne 2
 .mk
 .na
-\fBsignal_losses\fR
+.B signal_losses
 .ad
 .RS 24n
 .rt
@@ -1033,7 +1207,7 @@ Times loss of signal condition on the ring was detected.
 .ne 2
 .mk
 .na
-\fBace_errors\fR
+.B ace_errors
 .ad
 .RS 24n
 .rt
@@ -1045,7 +1219,7 @@ followed by another such SMP frame without an intervening AMP frame.
 .ne 2
 .mk
 .na
-\fBinternal_errors\fR
+.B internal_errors
 .ad
 .RS 24n
 .rt
@@ -1079,7 +1253,7 @@ bit set to 1.
 .ne 2
 .mk
 .na
-\fBtoken_errors\fR
+.B token_errors
 .ad
 .RS 24n
 .rt
@@ -1102,13 +1276,14 @@ frequency.
 .sp
 .LP
 The following group of statistics applies to networks of type
-\fBDL_FDDI\fR; these are maintained by device-specific drivers of that type,
+.BR DL_FDDI ;
+these are maintained by device-specific drivers of that type,
 as above.
 .sp
 .ne 2
 .mk
 .na
-\fBmac_errors\fR
+.B mac_errors
 .ad
 .RS 20n
 .rt
@@ -1120,7 +1295,7 @@ another MAC.
 .ne 2
 .mk
 .na
-\fBmac_lost_errors\fR
+.B mac_lost_errors
 .ad
 .RS 20n
 .rt
@@ -1131,7 +1306,7 @@ Frames received with format errors such that the frame was stripped.
 .ne 2
 .mk
 .na
-\fBmac_tokens\fR
+.B mac_tokens
 .ad
 .RS 20n
 .rt
@@ -1142,7 +1317,7 @@ Number of tokens received (total of non-restricted and restricted).
 .ne 2
 .mk
 .na
-\fBmac_tvx_expired\fR
+.B mac_tvx_expired
 .ad
 .RS 20n
 .rt
@@ -1153,7 +1328,7 @@ Number of times that TVX has expired.
 .ne 2
 .mk
 .na
-\fBmac_late\fR
+.B mac_late
 .ad
 .RS 20n
 .rt
@@ -1165,7 +1340,7 @@ received.
 .ne 2
 .mk
 .na
-\fBmac_ring_ops\fR
+.B mac_ring_ops
 .ad
 .RS 20n
 .rt
@@ -1178,7 +1353,7 @@ the ``Ring Not Operational'' state.
 .ne 2
 .mk
 .na
-\fB/kernel/misc/gld\fR
+.B /kernel/misc/gld
 .ad
 .RS 21n
 .rt
@@ -1188,23 +1363,35 @@ loadable kernel module
 .SH SEE ALSO
 .sp
 .LP
-\fBld\fR(1), \fBkstat\fR(7D), \fBdlpi\fR(7P), \fBattach\fR(9E),
-\fBgld\fR(9E), \fBopen\fR(9E), \fBgld\fR(9F), \fBgld_mac_info\fR(9S),
-\fBgld_stats\fR(9S), \fBkstat\fR(9S)
+.BR ld (1),
+.BR kstat (7D),
+.BR dlpi (7P),
+.BR attach (9E),
+.BR gld (9E),
+.BR open (9E),
+.BR gld (9F),
+\fBgld_mac_info\fR(9S),
+.BR gld_stats (9S),
+.BR kstat (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
 Contrary to the DLPI specification, GLD returns the device's correct
-address length and broadcast address in \fBDL_INFO_ACK\fR even before the
-stream has been attached to a \fBPPA\fR.
+address length and broadcast address in
+.B DL_INFO_ACK
+even before the
+stream has been attached to a
+.BR PPA .
 .sp
 .LP
 Promiscuous mode may only be entered by streams that are attached to a
-\fBPPA\fR.
+.BR PPA .
 .sp
 .LP
-The physical address of a \fBPPA\fR may be changed by the superuser while
+The physical address of a
+.B PPA
+may be changed by the superuser while
 other streams are bound to the same PPA.

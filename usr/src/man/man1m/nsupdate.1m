@@ -28,39 +28,59 @@ nsupdate \- Dynamic DNS update utility
 .SH DESCRIPTION
 .sp
 .LP
-The \fBnsupdate\fR utility submits Dynamic DNS Update requests as defined
+The
+.B nsupdate
+utility submits Dynamic DNS Update requests as defined
 in RFC 2136 to a name server. This utility allows resource records to be
 added or removed from a zone without manually editing the zone file. A
 single update request can contain requests to add or remove more than one
 resource record.
 .sp
 .LP
-Zones that are under dynamic control with \fBnsupdate\fR or a DHCP server
+Zones that are under dynamic control with
+.B nsupdate
+or a DHCP server
 should not be edited by hand. Manual edits could conflict with dynamic
 updates and cause data to be lost.
 .sp
 .LP
 The resource records that are dynamically added or removed with
 \fBnsupdate\fR must be in the same zone. Requests are sent to the zone's
-master servers identified by the \fBMNAME\fR field of the zone's SOA
+master servers identified by the
+.B MNAME
+field of the zone's SOA
 record.
 .sp
 .LP
 Transaction signatures can be used to authenticate the Dynamic DNS updates
 using the TSIG resource record type described in RFC 2845. The signatures
-rely on a shared secret that should only be known to \fBnsupdate\fR and the
+rely on a shared secret that should only be known to
+.B nsupdate
+and the
 name server. Currently, the only supported encryption algorithm for TSIG is
 HMAC-MD5, which is defined in RFC 2104. Once other algorithms are defined
 for TSIG, applications will need to ensure that they select the appropriate
 algorithm as well as the key when authenticating each other. For instance,
-suitable \fBkey\fR and \fBserver\fR statements would be added to
+suitable
+.B key
+and
+.B server
+statements would be added to
 \fB/etc/named.conf\fR so that the name server can associate the appropriate
 secret key and algorithm with the IP address of the client application that
-will be using TSIG authentication. The \fBnsupdate\fR utility does not read
+will be using TSIG authentication. The
+.B nsupdate
+utility does not read
 \fB/etc/named.conf\fR.
 .sp
 .LP
-The \fBnsupdate\fR utility uses the \fB-y\fR or \fB-k\fR option to provide
+The
+.B nsupdate
+utility uses the
+.B -y
+or
+.B -k
+option to provide
 the shared secret needed to generate a TSIG record for authenticating
 Dynamic DNS update requests. These options are mutually exclusive. See
 OPTIONS.
@@ -72,7 +92,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 21n
 .rt
@@ -88,7 +108,9 @@ requests that are made and the replies received from the name server.
 .ad
 .RS 21n
 .rt
-Read the shared secret from the file \fIkeyfile\fR, whose name is of the
+Read the shared secret from the file
+.IR keyfile ,
+whose name is of the
 form \fBK{\fIname\fR}.+157.+{\fIrandom\fR}.private\fR. For historical
 reasons, the file \fBK{\fIname\fR}.+157.+{\fIrandom\fR}.key\fR must also be
 present.
@@ -114,7 +136,9 @@ Set the number of UDP retries. The default is 3 retries. If
 .ad
 .RS 21n
 .rt
-Set \fItimeout\fR interval in seconds before update is aborted. The default
+Set
+.I timeout
+interval in seconds before update is aborted. The default
 is 300 seconds. A setting of zero disables the timeout.
 .RE
 
@@ -128,19 +152,22 @@ is 300 seconds. A setting of zero disables the timeout.
 .rt
 Set interval in seconds between UDP retires, the default is 3 seconds. A
 setting of zero causes the interval to be calculated based on the timeout
-(\fB-t\fR) and the number of UDP retries (\fB-r\fR).
+(\fB-t\fR) and the number of UDP retries
+.RB ( -r ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 21n
 .rt
 Use a TCP connection. Using a TCP connection could be preferable when a
-batch of update requests is made. By default, \fBnsupdate\fR uses UDP to
+batch of update requests is made. By default,
+.B nsupdate
+uses UDP to
 send update requests to the name server.
 .RE
 
@@ -153,19 +180,27 @@ send update requests to the name server.
 .RS 21n
 .rt
 Generate a  signature from \fIkeyname\fR:\fIsecret\fR, where\fIkeyname\fR
-is the name of the key and \fIsecret\fR is the base64 encoded shared
+is the name of the key and
+.I secret
+is the base64 encoded shared
 secret.
 .sp
-Use of the \fB-y\fR option is discouraged because the shared secret is
+Use of the
+.B -y
+option is discouraged because the shared secret is
 supplied as a command line argument in clear text and could be visible in
-the output from \fBps\fR(1) or in a history file maintained by the user's
+the output from
+.BR ps (1)
+or in a history file maintained by the user's
 shell.
 .RE
 
 .SH INPUT FORMAT
 .sp
 .LP
-The \fBnsupdate\fR utility reads input from \fIfilename\fR or the standard
+The
+.B nsupdate
+utility reads input from \fIfilename\fR or the standard
 input. Each command is supplied on exactly one line of input. Some commands
 are for administrative purposes. The others are either update instructions
 or prerequisite checks on the contents of the zone. These checks set
@@ -178,7 +213,9 @@ prerequisite conditions fail.
 Every update request consists of zero or more prerequisites and zero or
 more updates. This condition allows a suitably authenticated update request
 to proceed if some specified resource records are present or missing from
-the zone. A blank input line (or the \fBsend\fR command) causes the
+the zone. A blank input line (or the
+.B send
+command) causes the
 accumulated commands to be sent as one Dynamic DNS update request to the
 name server.
 .sp
@@ -192,11 +229,23 @@ The command formats and their meaning are as follows:
 .ad
 .sp .6
 .RS 4n
-Send all dynamic update requests to the name server \fIservername\fR. When
-no \fBserver\fR statement is provided, \fBnsupdate\fR sends updates to the
-master server of the correct zone. The \fBMNAME\fR field of that zone's SOA
-record identifies the master server for that zone. The \fIport\fR argument
-is the port number on \fIservername\fR where the dynamic update requests get
+Send all dynamic update requests to the name server
+.IR servername .
+When
+no
+.B server
+statement is provided,
+.B nsupdate
+sends updates to the
+master server of the correct zone. The
+.B MNAME
+field of that zone's SOA
+record identifies the master server for that zone. The
+.I port
+argument
+is the port number on
+.I servername
+where the dynamic update requests get
 sent. If no port number is specified, the default DNS port number of 53 is
 used.
 .RE
@@ -209,9 +258,13 @@ used.
 .ad
 .sp .6
 .RS 4n
-Send all dynamic update requests using the local \fIaddress\fR. When no
+Send all dynamic update requests using the local
+.IR address .
+When no
 \fBlocal\fR statement is provided, \fBnsupdate\fR sends updates using an
-address and port chosen by the system. The \fIport\fR argument can also be
+address and port chosen by the system. The
+.I port
+argument can also be
 used to make requests come from a specific port. If no port number is
 specified, the system assigns one.
 .RE
@@ -224,7 +277,9 @@ specified, the system assigns one.
 .ad
 .sp .6
 .RS 4n
-Specify that all updates are to be made to the zone \fIzonename\fR. If no
+Specify that all updates are to be made to the zone
+.IR zonename .
+If no
 \fBzone\fR statement is provided, \fBnsupdate\fR attempts to determine the
 correct zone to update based on the rest of the input.
 .RE
@@ -245,13 +300,17 @@ IN.
 .ne 2
 .mk
 .na
-\fBkey\fR \fIname\fR \fIsecret\fR
+\fBkey\fR \fIname secret\fR
 .ad
 .sp .6
 .RS 4n
-Specify that all updates are to be TSIG signed using the \fIname\fR
+Specify that all updates are to be TSIG signed using the
+.IR name
 \fIsecret\fR pair. The \fBkey\fR command overrides any key specified on the
-command line with \fB-y\fR or \fB-k\fR.
+command line with
+.B -y
+or
+.BR -k .
 .RE
 
 .sp
@@ -263,7 +322,7 @@ command line with \fB-y\fR or \fB-k\fR.
 .sp .6
 .RS 4n
 Require that no resource record of any type exists withthe name
-\fIdomain-name\fR.
+.IR domain-name .
 .RE
 
 .sp
@@ -274,7 +333,9 @@ Require that no resource record of any type exists withthe name
 .ad
 .sp .6
 .RS 4n
-Require that \fIdomain-name\fR exists (has as at least one resource record,
+Require that
+.I domain-name
+exists (has as at least one resource record,
 of any type).
 .RE
 
@@ -286,8 +347,13 @@ of any type).
 .ad
 .sp .6
 .RS 4n
-Require that no resource record exists of the specified \fItype\fR,
-\fIclass\fR and \fIdomain-name\fR. If \fIclass\fR is omitted, IN (internet)
+Require that no resource record exists of the specified
+.IR type ,
+\fIclass\fR and
+.IR domain-name .
+If
+.I class
+is omitted, IN (internet)
 is assumed.
 .RE
 
@@ -299,7 +365,9 @@ is assumed.
 .ad
 .sp .6
 .RS 4n
-Require that a resource record of the specified \fItype\fR, \fIclass\fR and
+Require that a resource record of the specified
+.IR type ,
+\fIclass\fR and
 \fIdomain-name\fR must exist. If \fIclass\fR is omitted, IN (internet) is
 assumed.
 .RE
@@ -309,14 +377,26 @@ assumed.
 .mk
 .na
 \fBprereq yxrrset\fR \fIdomain-name\fR [ \fIclass\fR ]  \fItype\fR
-\fIdata\fR.\|.\|.\fR
+.IR data .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
-The \fIdata\fR from each set of prerequisites of this form sharing a common
-\fItype\fR, \fIclass\fR, and \fIdomain-name\fR are combined to form a set of
+The
+.I data
+from each set of prerequisites of this form sharing a common
+.IR type ,
+.IR class ,
+and
+.I domain-name
+are combined to form a set of
 RRs. This set of RRs must exactly match the set of RRs existing in the zone
-at the given \fItype\fR, \fIclass\fR, and \fIdomain-name\fR. The \fIdata\fR
+at the given
+.IR type ,
+.IR class ,
+and
+.IR domain-name .
+The
+.IR data
 are written in the standard text representation of the resource record's
 RDATA.
 .RE
@@ -330,9 +410,17 @@ RDATA.
 .ad
 .sp .6
 .RS 4n
-Delete any resource records named \fIdomain-name\fR. If \fItype\fR and
+Delete any resource records named
+.IR domain-name .
+If
+.I type
+and
 \fIdata\fR are provided, only matching resource records are removed. The
-internet class is assumed if \fIclass\fR is not supplied. The \fIttl\fR is
+internet class is assumed if
+.I class
+is not supplied. The
+.I ttl
+is
 ignored, and is only provided for compatibility.
 .RE
 
@@ -340,20 +428,22 @@ ignored, and is only provided for compatibility.
 .ne 2
 .mk
 .na
-\fBupdate add\fR \fIdomain-name\fR \fIttl\fR [ \fIclass\fR ]  \fItype\fR
-\fIdata\fR.\|.\|.\fR
+\fBupdate add\fR \fIdomain-name ttl\fR [ \fIclass\fR ]  \fItype\fR
+.IR data .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
-Add a new resource record with the specified \fIttl\fR, \fIclass\fR and
-\fIdata\fR.
+Add a new resource record with the specified
+.IR ttl ,
+\fIclass\fR and
+.IR data .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBshow\fR
+.B show
 .ad
 .sp .6
 .RS 4n
@@ -365,7 +455,7 @@ updates specified since the last send.
 .ne 2
 .mk
 .na
-\fBsend\fR
+.B send
 .ad
 .sp .6
 .RS 4n
@@ -376,7 +466,7 @@ Sends the current message. This is equivalent to entering a blank line.
 .ne 2
 .mk
 .na
-\fBanswer\fR
+.B answer
 .ad
 .sp .6
 .RS 4n
@@ -388,14 +478,19 @@ Displays the answer.
 Lines beginning with a semicolon are comments and are ignored.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRInserting and Deleting Resource Records from the Zone
+\fBExample 1\fR Inserting and Deleting Resource Records from the Zone
 .sp
 .LP
-The examples below show how \fBnsupdate\fR could be used to insert and
-delete resource records from the \fBexample.com\fR zone. Notice that the
+The examples below show how
+.B nsupdate
+could be used to insert and
+delete resource records from the
+.B example.com
+zone. Notice that the
 input in each example contains a trailing blank line so that a group of
 commands are sent as one dynamic update request to the master name server
-for \fBexample.com\fR.
+for
+.BR example.com .
 
 .sp
 .in +2
@@ -410,12 +505,14 @@ for \fBexample.com\fR.
 
 .sp
 .LP
-Any A records for \fBoldhost.example.com\fR are deleted. An A record for
+Any A records for
+.B oldhost.example.com
+are deleted. An A record for
 \fBnewhost.example.com\fR with IP address 172.16.1.1 is added. The
 newly-added record has a 1 day TTL (86400 seconds).
 
 .LP
-\fBExample 2 \fRAdding CNAME Only If No Records Exist
+\fBExample 2\fR Adding CNAME Only If No Records Exist
 .sp
 .LP
 The following command adds a CNAME only if no records already exist for
@@ -435,13 +532,24 @@ it.
 .sp
 .LP
 The prerequisite condition gets the name server to check that there are no
-resource records of any type for \fBnickname.example.com\fR. If there are,
-the update request fails. If this name does not exist, a \fBCNAME\fR for it
-is added. This action ensures that when the \fBCNAME\fR is added, it cannot
+resource records of any type for
+.BR nickname.example.com .
+If there are,
+the update request fails. If this name does not exist, a
+.B CNAME
+for it
+is added. This action ensures that when the
+.B CNAME
+is added, it cannot
 conflict with the long-standing rule in RFC 1034 that a name must not exist
-as any other record type if it exists as a \fBCNAME\fR. (The rule has been
+as any other record type if it exists as a
+.BR CNAME .
+(The rule has been
 updated for DNSSEC in RFC 4035 to allow \fBCNAME\fRs to have \fBRSIG\fR,
-\fBDNSKEY\fR, and \fBNSEC\fR records.)
+.BR DNSKEY ,
+and
+.B NSEC
+records.)
 
 .SH FILES
 .sp
@@ -481,12 +589,16 @@ base-64 encoding of HMAC-MD5 key created by \fBdnssec-keygen\fR(1M)
 .sp
 .LP
 The TSIG key is redundantly stored in two separate files. This is a
-consequence of \fBnsupdate\fR using the DST library for its cryptographic
+consequence of
+.B nsupdate
+using the DST library for its cryptographic
 operations and could change in future releases.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -505,8 +617,17 @@ Interface StabilityExternal
 .SH SEE ALSO
 .sp
 .LP
-\fBnamed\fR(1M), \fBdnssec-keygen\fR(1M), \fBattributes\fR(5)
+.BR named (1M),
+.BR dnssec-keygen (1M),
+.BR attributes (5)
 .sp
 .LP
-\fIRFC 2136\fR, \fIRFC 3007\fR, \fIRFC 2104\fR, \fIRFC 2845\fR, \fIRFC
-1034\fR, \fIRFC 2535\fR, \fIRFC 2931\fR, \fIRFC 4035\fR
+.IR "RFC 2136" ,
+.IR "RFC 3007" ,
+.IR "RFC 2104" ,
+.IR "RFC 2845" ,
+\fIRFC
+1034\fR,
+.IR "RFC 2535" ,
+.IR "RFC 2931" ,
+.I RFC 4035

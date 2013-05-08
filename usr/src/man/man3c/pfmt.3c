@@ -33,13 +33,19 @@ pfmt \- display error message in standard format
 .sp
 .LP
 The \fBpfmt()\fR retrieves a format string from a locale-specific message
-database (unless \fBMM_NOGET\fR is specified) and uses it for
-\fBprintf\fR(3C) style formatting of \fIargs\fR. The output is displayed on
-\fIstream\fR.
+database (unless
+.B MM_NOGET
+is specified) and uses it for
+\fBprintf\fR(3C) style formatting of
+.IR args .
+The output is displayed on
+.IR stream .
 .sp
 .LP
 The \fBpfmt()\fR function encapsulates the output in the standard error
-message format (unless \fBMM_NOSTD\fR is specified, in which case the output
+message format (unless
+.B MM_NOSTD
+is specified, in which case the output
 is similar to \fBprintf()\fR).
 .sp
 .LP
@@ -50,31 +56,47 @@ database, the \fBformat\fR argument must have the following structure:
 \fI<catalog>\fB:\fI<msgnum>\fB:\fI<defmsg>\fR\&.
 .sp
 .LP
-If \fBMM_NOGET\fR is specified, only the \fIdefmsg\fR field must be
+If
+.B MM_NOGET
+is specified, only the \fIdefmsg\fR field must be
 specified.
 .sp
 .LP
-The \fIcatalog\fR field is used to indicate the message database that
+The
+.I catalog
+field is used to indicate the message database that
 contains the localized version of the format string. This field must be
 limited to 14 characters selected from the set of all characters values,
-excluding \fB\e0\fR (null) and the ASCII codes for \fB/\fR (slash) and
+excluding \fB\e0\fR (null) and the ASCII codes for
+.B /
+(slash) and
 \fB:\fR (colon).
 .sp
 .LP
-The \fImsgnum\fR field is a positive number that indicates the index of the
+The
+.I msgnum
+field is a positive number that indicates the index of the
 string into the message database.
 .sp
 .LP
 If the catalog does not exist in the locale (specified by the last call to
-\fBsetlocale\fR(3C) using the \fBLC_ALL\fR or \fBLC_MESSAGES\fR categories),
+.BR setlocale (3C)
+using the
+.B LC_ALL
+or
+.B LC_MESSAGES
+categories),
 or if the message number is out of bound, \fBpfmt()\fR will attempt to
 retrieve the message from the C locale. If this second retrieval fails,
 \fBpfmt()\fR uses the \fIdefmsg\fR field of the \fBformat\fR argument.
 .sp
 .LP
-If \fIcatalog\fR is omitted, \fBpfmt()\fR will attempt to retrieve the
+If
+.I catalog
+is omitted, \fBpfmt()\fR will attempt to retrieve the
 string from the default catalog specified by the last call to
-\fBsetcat\fR(3C). In this case, the \fBformat\fR argument has the following
+.BR setcat (3C).
+In this case, the \fBformat\fR argument has the following
 structure:
 .sp
 .LP
@@ -82,8 +104,14 @@ structure:
 .sp
 .LP
 The \fBpfmt()\fR will output \fBMessage not found!!\en\fR as format string
-if \fIcatalog\fR is not a valid catalog name, if no catalog is specified
-(either explicitely or with \fBsetcat()\fR), if \fImsgnum\fR is not a valid
+if
+.I catalog
+is not a valid catalog name, if no catalog is specified
+(either explicitely or with
+.BR setcat() ),
+if
+.I msgnum
+is not a valid
 number, or if no message could be retrieved from the message databases and
 \fIdefmsg\fR was omitted.
 .sp
@@ -103,20 +131,22 @@ following values (one from each group):
 .ne 2
 .mk
 .na
-\fBMM_NOSTD\fR
+.B MM_NOSTD
 .ad
 .RS 12n
 .rt
 Do not use the standard message format, interpret \fBformat\fR as
-\fBprintf()\fR \fBformat\fR. Only \fIcatalog access control flags\fR should
-be specified if \fBMM_NOSTD\fR is used; all other flags will be ignored.
+\fBprintf() format\fR. Only \fIcatalog access control flags\fR should
+be specified if
+.B MM_NOSTD
+is used; all other flags will be ignored.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_STD\fR
+.B MM_STD
 .ad
 .RS 12n
 .rt
@@ -125,16 +155,18 @@ Output using the standard message format (default value 0).
 
 .sp
 .LP
-\fICatalog access control\fR
+.I Catalog access control
 .sp
 .ne 2
 .mk
 .na
-\fBMM_NOGET\fR
+.B MM_NOGET
 .ad
 .RS 12n
 .rt
-Do not retrieve a localized version of \fBformat\fR. In this case, only the
+Do not retrieve a localized version of
+.BR format .
+In this case, only the
 \fIdefmsg\fR field of the \fBformat\fR is specified.
 .RE
 
@@ -142,11 +174,13 @@ Do not retrieve a localized version of \fBformat\fR. In this case, only the
 .ne 2
 .mk
 .na
-\fBMM_GET\fR
+.B MM_GET
 .ad
 .RS 12n
 .rt
-Retrieve a localized version of \fBformat\fR from the \fIcatalog\fR, using
+Retrieve a localized version of \fBformat\fR from the
+.IR catalog ,
+using
 \fImsgid\fR as the index and \fIdefmsg\fR as the default message (default
 value 0).
 .RE
@@ -158,54 +192,63 @@ value 0).
 .ne 2
 .mk
 .na
-\fBMM_HALT\fR
+.B MM_HALT
 .ad
 .RS 14n
 .rt
-Generate a localized version of \fBHALT,\fR but do not halt the machine.
+Generate a localized version of
+.B HALT,
+but do not halt the machine.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_ERROR\fR
+.B MM_ERROR
 .ad
 .RS 14n
 .rt
-Generate a localized version of \fBERROR\fR (default value 0).
+Generate a localized version of
+.B ERROR
+(default value 0).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_WARNING\fR
+.B MM_WARNING
 .ad
 .RS 14n
 .rt
-Generate a localized version of \fBWARNING.\fR
+Generate a localized version of
+.BR WARNING.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBMM_INFO\fR
+.B MM_INFO
 .ad
 .RS 14n
 .rt
-Generate a localized version of \fBINFO.\fR
+Generate a localized version of
+.BR INFO.
 .RE
 
 .sp
 .LP
 Additional severities can be defined. Add-on severities can be defined with
 number-string pairs with numeric values from the range [5-255], using
-\fBaddsev\fR(3C). The specified severity will be generated from the bitwise
+.BR addsev (3C).
+The specified severity will be generated from the bitwise
 \fBOR\fR operation of the numeric value and other \fIflags\fR If the
 severity is not defined, \fBpfmt()\fR uses the string \fBSEV=\fIN\fR,
-where \fIN\fR is replaced by the integer severity value passed in
+where
+.I N
+is replaced by the integer severity value passed in
 \fIflags\fR.
 .sp
 .LP
@@ -215,17 +258,18 @@ cause the display of either a severity string (if defined) or the string
 \fBSEV=\fIN\fR (if undefined).
 .sp
 .LP
-\fIAction\fR
+.I Action
 .sp
 .ne 2
 .mk
 .na
-\fBMM_ACTION\fR
+.B MM_ACTION
 .ad
 .RS 13n
 .rt
 Specify an action message. Any severity value is superseded and replaced by
-a localized version of \fBTO FIX\fR.
+a localized version of
+.BR "TO FIX" .
 .RE
 
 .SH STANDARD ERROR MESSAGE FORMAT
@@ -242,7 +286,10 @@ format:
 
 .sp
 .LP
-If no \fIlabel\fR was defined by a call to \fBsetlabel\fR(3C), the message
+If no
+.I label
+was defined by a call to
+.BR setlabel "(3C), the message"
 is displayed in the format:
 .sp
 .in +2
@@ -283,12 +330,13 @@ failure, it returns a negative value:
 .ad
 .RS 9n
 .rt
-Write error to \fIstream\fR.
+Write error to
+.IR stream .
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExample of \fBpfmt()\fR function.
+\fBExample 1\fR Example of \fBpfmt()\fR function.
 .sp
 .LP
 Example 1:
@@ -339,7 +387,9 @@ Since it uses \fBgettxt\fR(3C), \fBpfmt()\fR should not be used.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -356,6 +406,11 @@ MT-LevelMT-safe
 .SH SEE ALSO
 .sp
 .LP
-\fBaddsev\fR(3C), \fBgettxt\fR(3C), \fBlfmt\fR(3C), \fBprintf\fR(3C),
-\fBsetcat\fR(3C), \fBsetlabel\fR(3C), \fBsetlocale\fR(3C),
-\fBattributes\fR(5), \fBenviron\fR(5)
+.BR addsev (3C),
+.BR gettxt (3C),
+\fBlfmt\fR(3C), \fBprintf\fR(3C),
+.BR setcat (3C),
+.BR setlabel (3C),
+.BR setlocale (3C),
+.BR attributes (5),
+.BR environ (5)

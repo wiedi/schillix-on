@@ -34,32 +34,67 @@ dlpi_open \- open DLPI link
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdlpi_open()\fR function creates an open instance of the \fBDLPI\fR
-Version 2 link named by \fIlinkname\fR and associates it with a
-dynamically-allocated \fBdlpi_handle_t\fR, which is returned to the caller in
+The
+.B dlpi_open()
+function creates an open instance of the
+.BR DLPI
+Version 2 link named by
+.I linkname
+and associates it with a
+dynamically-allocated
+.BR dlpi_handle_t ,
+which is returned to the caller in
 \fIdhp\fR upon success. The \fBDLPI\fR handle is left in the \fBDL_UNBOUND\fR
 \fBDLPI\fR state after a successful open of the \fBDLPI\fR link. The DLPI
 handles can only be used by one thread at a time, but multiple handles can be
-used by multiple threads. This function can open both \fBDL_STYLE1\fR and
-\fBDL_STYLE2\fR \fBDLPI\fR links.
+used by multiple threads. This function can open both
+.B DL_STYLE1
+and
+\fBDL_STYLE2 DLPI\fR links.
 .sp
 .LP
-By default (if \fBDLPI_DEVIPNET\fR is not set in \fIflags\fR), the
+By default (if
+.B DLPI_DEVIPNET
+is not set in
+.IR flags ),
+the
 \fBdlpi_open()\fR function scans the \fB/dev/net\fR and \fB/dev\fR directories
 for DLPI links, in order. Within each scanned directory, \fBdlpi_open()\fR
-first looks for a matching \fBDL_STYLE1\fR link, then for a matching
+first looks for a matching
+.B DL_STYLE1
+link, then for a matching
 \fBDL_STYLE2\fR link. If \fIprovider\fR is considered the \fIlinkname\fR with
-its trailing digits removed, a matching \fBDL_STYLE1\fR link has a filename of
-\fIlinkname\fR, and a matching \fBDL_STYLE2\fR link has a filename of
-\fIprovider\fR. If a \fBDL_STYLE2\fR link is opened, \fBdlpi_open()\fR
-automatically performs the necessary \fBDLPI\fR operations to place the
+its trailing digits removed, a matching
+.B DL_STYLE1
+link has a filename of
+.IR linkname ,
+and a matching
+.B DL_STYLE2
+link has a filename of
+.IR provider .
+If a
+.B DL_STYLE2
+.RB "link is opened," " dlpi_open()"
+automatically performs the necessary
+.B DLPI
+operations to place the
 \fBDLPI\fR link instance and the associated \fBDLPI\fR handle in the
 \fBDL_UNBOUND\fR state. See \fBdlpi\fR(7P) for the definition of
-\fIlinkname\fR.
+.IR linkname .
 .sp
 .LP
-If \fBDLPI_DEVIPNET\fR is set in \fIflags\fR, \fBdlpi_open()\fR opens the
-file \fIlinkname\fR in \fB/dev/ipnet\fR as a \fBDL_STYLE1\fR DLPI device and
+If
+.B DLPI_DEVIPNET
+is set in
+.IR flags ,
+\fBdlpi_open()\fR opens the
+file
+.I linkname
+in
+.B /dev/ipnet
+as a
+.B DL_STYLE1
+DLPI device and
 does not look in any other directories.
 .sp
 .LP
@@ -69,12 +104,15 @@ flags listed below, defined in \fB<libdlpi.h>\fR.
 .ne 2
 .mk
 .na
-\fBDLPI_DEVIPNET\fR
+.B DLPI_DEVIPNET
 .ad
 .RS 18n
 .rt
 Specify that the named DLPI device is an IP observability device (see
-\fBipnet\fR(7D)), and \fBdl_open()\fR will open the device from the
+.BR ipnet (7D)),
+and
+.B dl_open()
+will open the device from the
 \fB/dev/ipnet/\fR directory.
 .RE
 
@@ -82,13 +120,17 @@ Specify that the named DLPI device is an IP observability device (see
 .ne 2
 .mk
 .na
-\fBDLPI_IPNETINFO\fR
+.B DLPI_IPNETINFO
 .ad
 .RS 18n
 .rt
 This flag is applicable only when opening IP Observability devices (with
 \fBDLPI_DEVIPNET\fR or by opening the \fB/dev/lo0\fR device). This flag causes
-the \fBipnet\fR driver to prepend an \fBipnet\fR header to each received IP
+the
+.B ipnet
+driver to prepend an
+.B ipnet
+header to each received IP
 packet. See \fBipnet\fR(7D) for the contents of this header.
 .RE
 
@@ -96,99 +138,143 @@ packet. See \fBipnet\fR(7D) for the contents of this header.
 .ne 2
 .mk
 .na
-\fBDLPI_NATIVE\fR
+.B DLPI_NATIVE
 .ad
 .RS 18n
 .rt
-Enable \fBDLPI\fR native mode (see \fBDLIOCNATIVE\fR in \fBdlpi\fR(7P)) on a
+Enable
+.B DLPI
+native mode (see
+.B DLIOCNATIVE
+in
+.BR dlpi "(7P)) on a"
 \fBDLPI\fR link instance. Native mode persists until the \fBDLPI\fR handle is
-closed by \fBdlpi_close\fR(3DLPI).
+closed by
+.BR dlpi_close (3DLPI).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_PASSIVE\fR
+.B DLPI_PASSIVE
 .ad
 .RS 18n
 .rt
-Enable \fBDLPI\fR passive mode (see \fBDL_PASSIVE_REQ\fR in \fBdlpi\fR(7P))
-on a \fBDLPI\fR link instance. Passive mode persists until the \fBDLPI\fR
-handle is closed by \fBdlpi_close\fR(3DLPI).
+Enable
+.B DLPI
+passive mode (see
+.B DL_PASSIVE_REQ
+in
+.BR dlpi (7P))
+on a
+.B DLPI
+.RB "link instance. Passive mode persists until the" " DLPI"
+handle is closed by
+.BR dlpi_close (3DLPI).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_RAW\fR
+.B DLPI_RAW
 .ad
 .RS 18n
 .rt
-Enable \fBDLPI\fR raw mode (see \fBDLIOCRAW\fR in \fBdlpi\fR(7P)) on a
+Enable
+.B DLPI
+raw mode (see
+.B DLIOCRAW
+in
+.BR dlpi "(7P)) on a"
 \fBDLPI\fR link instance. Raw mode persists until the \fBDLPI\fR handle is
-closed by \fBdlpi_close\fR(3DLPI).
+closed by
+.BR dlpi_close (3DLPI).
 .RE
 
 .sp
 .LP
-Each \fBDLPI\fR handle has an associated timeout value that is used as a
-timeout interval for certain \fBlibdlpi\fR operations. The default timeout
-value ensures that \fBDLPI_ETIMEDOUT\fR is returned from a \fBlibdlpi\fR
-operation only in the event that the \fBDLPI\fR link becomes unresponsive. The
-timeout value can be changed with \fBdlpi_set_timeout\fR(3DLPI), although this
+Each
+.B DLPI
+handle has an associated timeout value that is used as a
+timeout interval for certain
+.B libdlpi
+operations. The default timeout
+value ensures that
+.B DLPI_ETIMEDOUT
+is returned from a
+.BR libdlpi
+operation only in the event that the
+.B DLPI
+link becomes unresponsive. The
+timeout value can be changed with
+.BR dlpi_set_timeout "(3DLPI), although this"
 should seldom be necessary.
 .SH RETURN VALUES
 .sp
 .LP
-Upon success, \fBDLPI_SUCCESS\fR is returned. If \fBDL_SYSERR\fR is returned,
+Upon success,
+.B DLPI_SUCCESS
+is returned. If
+.B DL_SYSERR
+is returned,
 \fBerrno\fR contains the specific UNIX system error value. Otherwise, a
 \fBDLPI\fR error value defined in \fB<sys/dlpi.h>\fR or listed in the
 following section is returned.
 .SH ERRORS
 .sp
 .LP
-The \fBdlpi_open()\fR function will fail if:
+The
+.B dlpi_open()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_EBADLINK\fR
+.B DLPI_EBADLINK
 .ad
 .RS 25n
 .rt
-Bad \fBDLPI\fR link
+Bad
+.B DLPI
+link
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_EIPNETINFONOTSUP\fR
+.B DLPI_EIPNETINFONOTSUP
 .ad
 .RS 25n
 .rt
-The \fBDLPI_IPNETINFO\fR flag was set but the device opened does not support
-the \fBDLIOCIPNETINFO\fR ioctl.
+The
+.B DLPI_IPNETINFO
+flag was set but the device opened does not support
+the
+.B DLIOCIPNETINFO
+ioctl.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_ELINKNAMEINVAL\fR
+.B DLPI_ELINKNAMEINVAL
 .ad
 .RS 25n
 .rt
-Invalid \fBDLPI\fR \fIlinkname\fR
+Invalid
+.B DLPI
+.I linkname
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDLPI_ENOLINK\fR
+.B DLPI_ENOLINK
 .ad
 .RS 25n
 .rt
@@ -199,7 +285,7 @@ Invalid \fBDLPI\fR \fIlinkname\fR
 .ne 2
 .mk
 .na
-\fBDLPI_ERAWNOTSUP\fR
+.B DLPI_ERAWNOTSUP
 .ad
 .RS 25n
 .rt
@@ -210,7 +296,7 @@ DLPI raw mode not supported
 .ne 2
 .mk
 .na
-\fBDLPI_ETIMEDOUT\fR
+.B DLPI_ETIMEDOUT
 .ad
 .RS 25n
 .rt
@@ -221,7 +307,7 @@ DLPI raw mode not supported
 .ne 2
 .mk
 .na
-\fBDLPI_FAILURE\fR
+.B DLPI_FAILURE
 .ad
 .RS 25n
 .rt
@@ -231,7 +317,9 @@ DLPI operation failed
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -250,5 +338,9 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdlpi_close\fR(3DLPI), \fBdlpi_set_timeout\fR(3DLPI), \fBlibdlpi\fR(3LIB),
-\fBattributes\fR(5), \fBdlpi\fR(7P), \fBipnet\fR(7D)
+.BR dlpi_close (3DLPI),
+.BR dlpi_set_timeout (3DLPI),
+.BR libdlpi (3LIB),
+.BR attributes (5),
+.BR dlpi (7P),
+.BR ipnet (7D)

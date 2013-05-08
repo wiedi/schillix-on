@@ -79,16 +79,24 @@ regcomp, regexec, regerror, regfree \- regular expression matching
 .SH DESCRIPTION
 .sp
 .LP
-These functions interpret \fIbasic\fR and \fIextended\fR regular
-expressions (described on the \fBregex\fR(5) manual page).
+These functions interpret
+.I basic
+and
+.I extended
+regular
+expressions (described on the
+.BR regex (5)
+manual page).
 .sp
 .LP
-The structure type \fBregex_t\fR contains at least the following member:
+The structure type
+.B regex_t
+contains at least the following member:
 .sp
 .ne 2
 .mk
 .na
-\fBsize_t\fR \fBre_nsub\fR
+.B size_t re_nsub
 .ad
 .RS 18n
 .rt
@@ -97,44 +105,59 @@ Number of parenthesised subexpressions.
 
 .sp
 .LP
-The structure type \fBregmatch_t\fR contains at least the following
+The structure type
+.B regmatch_t
+contains at least the following
 members:
 .sp
 .ne 2
 .mk
 .na
-\fBregoff_t\fR \fBrm_so\fR
+\fBregoff_t rm_so\fR
 .ad
 .RS 18n
 .rt
-Byte offset from start of \fIstring\fR to start of substring.
+Byte offset from start of
+.I string
+to start of substring.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBregoff_t\fR \fBrm_eo\fR
+\fBregoff_t rm_eo\fR
 .ad
 .RS 18n
 .rt
-Byte offset from start of \fIstring\fR of the first character after the end
+Byte offset from start of
+.I string
+of the first character after the end
 of substring.
 .RE
 
 .SS "\fBregcomp()\fR"
 .sp
 .LP
-The \fBregcomp()\fR function will compile the regular expression contained
-in the string pointed to by the \fIpattern\fR argument and place the results
-in the structure pointed to by \fIpreg\fR. The \fIcflags\fR argument is the
-bitwise inclusive \fBOR\fR of zero or more of the following flags, which are
-defined in the header \fB<regex.h>\fR:
+The
+.B regcomp()
+function will compile the regular expression contained
+in the string pointed to by the
+.I pattern
+argument and place the results
+in the structure pointed to by
+.IR preg .
+The \fIcflags\fR argument is the
+bitwise inclusive
+.B OR
+of zero or more of the following flags, which are
+defined in the header
+.BR <regex.h> :
 .sp
 .ne 2
 .mk
 .na
-\fBREG_EXTENDED\fR
+.B REG_EXTENDED
 .ad
 .RS 16n
 .rt
@@ -145,7 +168,7 @@ Use Extended Regular Expressions.
 .ne 2
 .mk
 .na
-\fBREG_ICASE\fR
+.B REG_ICASE
 .ad
 .RS 16n
 .rt
@@ -156,7 +179,7 @@ Ignore case in match.
 .ne 2
 .mk
 .na
-\fBREG_NOSUB\fR
+.B REG_NOSUB
 .ad
 .RS 16n
 .rt
@@ -167,74 +190,120 @@ Report only success/fail in \fBregexec()\fR.
 .ne 2
 .mk
 .na
-\fBREG_NEWLINE\fR
+.B REG_NEWLINE
 .ad
 .RS 16n
 .rt
-Change the handling of \fBNEWLINE\fR characters, as described in the
+Change the handling of
+.B NEWLINE
+characters, as described in the
 text.
 .RE
 
 .sp
 .LP
-The default regular expression type for \fIpattern\fR is a Basic Regular
+The default regular expression type for
+.I pattern
+is a Basic Regular
 Expression. The application can specify Extended Regular Expressions using
-the \fBREG_EXTENDED\fR \fIcflags\fR flag.
+the
+.B REG_EXTENDED
+\fIcflags\fR flag.
 .sp
 .LP
-If the \fBREG_NOSUB\fR flag was not set in \fIcflags\fR, then
+If the
+.B REG_NOSUB
+flag was not set in
+.IR cflags ,
+then
 \fBregcomp()\fR will set \fIre_nsub\fR to the number of parenthesised
 subexpressions (delimited by \e(\e) in basic regular expressions or () in
 extended regular expressions) found in \fI pattern\fR.
 .SS "\fBregexec()\fR"
 .sp
 .LP
-The \fBregexec()\fR function compares the null-terminated string specified
-by \fIstring\fR with the compiled regular expression \fIpreg\fR initialized
-by a previous call to \fBregcomp()\fR. The \fIeflags\fR argument is the
-bitwise inclusive \fBOR\fR of zero or more of the following flags, which are
+The
+.B regexec()
+function compares the null-terminated string specified
+by
+.I string
+with the compiled regular expression
+.I preg
+initialized
+by a previous call to
+.BR regcomp() .
+The \fIeflags\fR argument is the
+bitwise inclusive
+.B OR
+of zero or more of the following flags, which are
 defined in the header <\fBregex.h\fR>:
 .sp
 .ne 2
 .mk
 .na
-\fBREG_NOTBOL\fR
+.B REG_NOTBOL
 .ad
 .RS 14n
 .rt
-The first character of the string pointed to by \fIstring\fR is not the
-beginning of the line. Therefore, the circumflex character (\fI^\fR), when
+The first character of the string pointed to by
+.I string
+is not the
+beginning of the line. Therefore, the circumflex character
+.RI ( ^ ),
+when
 taken as a special character, will not match the beginning of
-\fIstring\fR.
+.IR string .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBREG_NOTEOL\fR
+.B REG_NOTEOL
 .ad
 .RS 14n
 .rt
-The last character of the string pointed to by \fIstring\fR is not the end
-of the line. Therefore, the dollar sign (\fI$\fR), when taken as a special
+The last character of the string pointed to by
+.I string
+is not the end
+of the line. Therefore, the dollar sign
+.RI ( $ ),
+when taken as a special
 character, will not match the end of \fIstring\fR.
 .RE
 
 .sp
 .LP
-If \fInmatch\fR is zero or \fBREG_NOSUB\fR was set in the \fIcflags\fR
-argument to \fBregcomp()\fR, then \fBregexec()\fR will ignore the
+If
+.I nmatch
+is zero or
+.B REG_NOSUB
+was set in the \fIcflags\fR
+argument to
+.BR regcomp() ,
+then
+.B regexec()
+will ignore the
 \fIpmatch\fR argument. Otherwise, the \fIpmatch\fR argument must point to an
-array with at least \fInmatch\fR elements, and \fBregexec()\fR will fill in
-the elements of that array with offsets of the substrings of \fIstring\fR
-that correspond to the parenthesised subexpressions of \fIpattern\fR:
+array with at least
+.I nmatch
+elements, and
+.B regexec()
+will fill in
+the elements of that array with offsets of the substrings of
+.IR string
+that correspond to the parenthesised subexpressions of
+.IR pattern :
 \fIpmatch\fB[\fIi\fB]\fR.\fIrm_so\fR will be the byte offset of the
 beginning and \fIpmatch\fB[\fIi\fB]\fR.\fIrm_eo\fR will be one
-greater than the byte offset of the end of substring \fIi\fR. (Subexpression
+greater than the byte offset of the end of substring
+.IR i .
+(Subexpression
 \fIi\fR begins at the \fIi\fRth matched open parenthesis, counting from 1.)
 Offsets in \fIpmatch\fB[0]\fR identify the substring that corresponds to
-the entire regular expression. Unused elements of \fIpmatch\fR up to
+the entire regular expression. Unused elements of
+.I pmatch
+up to
 \fIpmatch\fB[\fInmatch\fB\(mi1]\fR will be filled with
 \fB\(mi1\fR\&. If there are more than \fInmatch\fR subexpressions in
 \fIpattern\fR (\fIpattern\fR itself counts as a subexpression), then
@@ -243,20 +312,28 @@ the entire regular expression. Unused elements of \fIpmatch\fR up to
 .sp
 .LP
 When matching a basic or extended regular expression, any given
-parenthesised subexpression of \fIpattern\fR might participate in the match
-of several different substrings of \fIstring\fR, or it might not match any
+parenthesised subexpression of
+.I pattern
+might participate in the match
+of several different substrings of
+.IR string ,
+or it might not match any
 substring even though the pattern as a whole did match. The following rules
-are used to determine which substrings to report in \fIpmatch\fR when
+are used to determine which substrings to report in
+.I pmatch
+when
 matching regular expressions:
 .sp
 .ne 2
 .mk
 .na
-\fB1.\fR
+.B 1.
 .ad
 .RS 6n
 .rt
-If subexpression \fIi\fR in a regular expression is not contained within
+If subexpression
+.I i
+in a regular expression is not contained within
 another subexpression, and it participated in the match several times, then
 the byte offsets in \fIpmatch\fB[\fIi\fB]\fR will delimit the last
 such match.
@@ -266,17 +343,22 @@ such match.
 .ne 2
 .mk
 .na
-\fB2.\fR
+.B 2.
 .ad
 .RS 6n
 .rt
-If subexpression \fIi\fR is not contained within another subexpression, and
+If subexpression
+.I i
+is not contained within another subexpression, and
 it did not participate in an otherwise successful match, the byte offsets in
 \fIpmatch\fB[\fIi\fB]\fR will be \fB\(mi1\fR\&. A subexpression
 does not participate in the match when:
 .sp
-\fB*\fR or \fB\e{\e} \fR appears immediately after the subexpression in a
-basic regular expression, or \fB*\fR, \fB?\fR, or \fB{\|}\fR appears
+\fB*\fR or \fB\e{\e}\fR  appears immediately after the subexpression in a
+basic regular expression, or
+.BR * ,
+.BR ? ,
+or \fB{\|}\fR appears
 immediately after the subexpression in an extended regular expression, and
 the subexpression did not match (matched zero times)
 .sp
@@ -290,13 +372,22 @@ subexpression or another, and the other subexpression matched.
 .ne 2
 .mk
 .na
-\fB3.\fR
+.B 3.
 .ad
 .RS 6n
 .rt
-If subexpression \fIi\fR is contained within another subexpression \fIj\fR,
-and \fIi\fR is not contained within any other subexpression that is
-contained within \fIj\fR, and a match of subexpression \fIj\fR is reported
+If subexpression
+.I i
+is contained within another subexpression
+.IR j ,
+and
+.I i
+is not contained within any other subexpression that is
+contained within
+.IR j ,
+and a match of subexpression
+.I j
+is reported
 in \fIpmatch\fB[\fIj\fB]\fR, then the match or non-match of
 subexpression \fIi\fR reported in \fIpmatch\fB[\fIi\fB]\fR will be
 as described in 1. and 2. above, but within the substring reported in
@@ -307,11 +398,15 @@ as described in 1. and 2. above, but within the substring reported in
 .ne 2
 .mk
 .na
-\fB4.\fR
+.B 4.
 .ad
 .RS 6n
 .rt
-If subexpression \fIi\fR is contained in subexpression \fIj\fR, and the
+If subexpression
+.I i
+is contained in subexpression
+.IR j ,
+and the
 byte offsets in \fIpmatch\fB[\fIj\fB]\fR are \fB\(mi1\fR, then the
 pointers in \fIpmatch\fB[\fIi\fB]\fR also will be \fB\(mi1\fR\&.
 .RE
@@ -320,35 +415,56 @@ pointers in \fIpmatch\fB[\fIi\fB]\fR also will be \fB\(mi1\fR\&.
 .ne 2
 .mk
 .na
-\fB5.\fR
+.B 5.
 .ad
 .RS 6n
 .rt
-If subexpression \fIi\fR matched a zero-length string, then both byte
+If subexpression
+.I i
+matched a zero-length string, then both byte
 offsets in \fIpmatch\fB[\fIi\fB]\fR will be the byte offset of the
-character or \fINULL\fR terminator immediately following the zero-length
+character or
+.I NULL
+terminator immediately following the zero-length
 string.
 .RE
 
 .sp
 .LP
-If, when \fBregexec()\fR is called, the locale is different from when the
+If, when
+.B regexec()
+is called, the locale is different from when the
 regular expression was compiled, the result is undefined.
 .sp
 .LP
-If \fBREG_NEWLINE\fR is not set in \fIcflags\fR, then a \fBNEWLINE\fR
-character in \fIpattern\fR or \fIstring\fR will be treated as an ordinary
-character. If \fBREG_NEWLINE\fR is set, then newline will be treated as an
+If
+.B REG_NEWLINE
+is not set in
+.IR cflags ,
+then a
+.BR NEWLINE
+character in
+.I pattern
+or
+.I string
+will be treated as an ordinary
+character. If
+.B REG_NEWLINE
+is set, then newline will be treated as an
 ordinary character except as follows:
 .sp
 .ne 2
 .mk
 .na
-\fB1.\fR
+.B 1.
 .ad
 .RS 6n
 .rt
-A \fBNEWLINE\fR character in \fIstring\fR will not be matched by a period
+A
+.B NEWLINE
+character in
+.I string
+will not be matched by a period
 outside a bracket expression or by any form of a non-matching list.
 .RE
 
@@ -356,33 +472,42 @@ outside a bracket expression or by any form of a non-matching list.
 .ne 2
 .mk
 .na
-\fB2.\fR
+.B 2.
 .ad
 .RS 6n
 .rt
-A circumflex (^) in \fIpattern\fR, when used to specify expression
+A circumflex (^) in
+.IR pattern ,
+when used to specify expression
 anchoring will match the zero-length string immediately after a newline in
-\fIstring\fR, regardless of the setting of \fBREG_NOTBOL\fR.
+.IR string ,
+regardless of the setting of
+.BR REG_NOTBOL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB3.\fR
+.B 3.
 .ad
 .RS 6n
 .rt
-A dollar-sign ($) in \fIpattern\fR, when used to specify expression
+A dollar-sign ($) in
+.IR pattern ,
+when used to specify expression
 anchoring, will match the zero-length string immediately before a newline in
-\fIstring\fR, regardless of the setting of \fBREG_NOTEOL.\fR
+.IR string ,
+regardless of the setting of
+.BR REG_NOTEOL.
 .RE
 
 .SS "\fBregfree()\fR"
 .sp
 .LP
 The \fBregfree()\fR function frees any memory allocated by \fBregcomp()\fR
-associated with \fIpreg\fR.
+associated with
+.IR preg .
 .sp
 .LP
 The following constants are defined as error return values:
@@ -390,18 +515,20 @@ The following constants are defined as error return values:
 .ne 2
 .mk
 .na
-\fBREG_NOMATCH\fR
+.B REG_NOMATCH
 .ad
 .RS 16n
 .rt
-The \fBregexec()\fR function failed to match.
+The
+.B regexec()
+function failed to match.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBREG_BADPAT\fR
+.B REG_BADPAT
 .ad
 .RS 16n
 .rt
@@ -412,7 +539,7 @@ Invalid regular expression.
 .ne 2
 .mk
 .na
-\fBREG_ECOLLATE\fR
+.B REG_ECOLLATE
 .ad
 .RS 16n
 .rt
@@ -423,7 +550,7 @@ Invalid collating element referenced.
 .ne 2
 .mk
 .na
-\fBREG_ECTYPE\fR
+.B REG_ECTYPE
 .ad
 .RS 16n
 .rt
@@ -434,7 +561,7 @@ Invalid character class type referenced.
 .ne 2
 .mk
 .na
-\fBREG_EESCAPE\fR
+.B REG_EESCAPE
 .ad
 .RS 16n
 .rt
@@ -445,7 +572,7 @@ Trailing \e in pattern.
 .ne 2
 .mk
 .na
-\fBREG_ESUBREG\fR
+.B REG_ESUBREG
 .ad
 .RS 16n
 .rt
@@ -456,7 +583,7 @@ Number in \e\fIdigit\fR invalid or in error.
 .ne 2
 .mk
 .na
-\fBREG_EBRACK\fR
+.B REG_EBRACK
 .ad
 .RS 16n
 .rt
@@ -467,7 +594,7 @@ Number in \e\fIdigit\fR invalid or in error.
 .ne 2
 .mk
 .na
-\fBREG_ENOSYS\fR
+.B REG_ENOSYS
 .ad
 .RS 16n
 .rt
@@ -478,7 +605,7 @@ The function is not supported.
 .ne 2
 .mk
 .na
-\fBREG_EPAREN\fR
+.B REG_EPAREN
 .ad
 .RS 16n
 .rt
@@ -489,7 +616,7 @@ The function is not supported.
 .ne 2
 .mk
 .na
-\fBREG_EBRACE\fR
+.B REG_EBRACE
 .ad
 .RS 16n
 .rt
@@ -500,7 +627,7 @@ The function is not supported.
 .ne 2
 .mk
 .na
-\fBREG_BADBR\fR
+.B REG_BADBR
 .ad
 .RS 16n
 .rt
@@ -512,7 +639,7 @@ numbers, first larger than second.
 .ne 2
 .mk
 .na
-\fBREG_ERANGE\fR
+.B REG_ERANGE
 .ad
 .RS 16n
 .rt
@@ -523,7 +650,7 @@ Invalid endpoint in range expression.
 .ne 2
 .mk
 .na
-\fBREG_ESPACE\fR
+.B REG_ESPACE
 .ad
 .RS 16n
 .rt
@@ -534,7 +661,7 @@ Out of memory.
 .ne 2
 .mk
 .na
-\fBREG_BADRPT\fR
+.B REG_BADRPT
 .ad
 .RS 16n
 .rt
@@ -544,25 +671,56 @@ Out of memory.
 .SS "\fBregerror()\fR"
 .sp
 .LP
-The \fBregerror()\fR function provides a mapping from error codes returned
-by \fBregcomp()\fR and \fBregexec()\fR to unspecified printable strings. It
-generates a string corresponding to the value of the \fIerrcode\fR argument,
-which must be the last non-zero value returned by \fBregcomp()\fR or
-\fBregexec()\fR with the given value of \fIpreg\fR. If \fIerrcode\fR is not
+The
+.B regerror()
+function provides a mapping from error codes returned
+by
+.B regcomp()
+and
+.B regexec()
+to unspecified printable strings. It
+generates a string corresponding to the value of the
+.I errcode
+argument,
+which must be the last non-zero value returned by
+.B regcomp()
+or
+\fBregexec()\fR with the given value of
+.IR preg .
+If
+.I errcode
+is not
 such a value, an error message indicating that the error code is invalid is
 returned.
 .sp
 .LP
-If \fIpreg\fR is a \fINULL\fR pointer, but \fIerrcode\fR is a value
-returned by a previous call to \fBregexec()\fR or \fBregcomp()\fR, the
+If
+.I preg
+is a
+.I NULL
+pointer, but
+.I errcode
+is a value
+returned by a previous call to
+.B regexec()
+or
+.BR regcomp() ,
+the
 \fBregerror()\fR still generates an error string corresponding to the value
-of \fIerrcode\fR.
+of
+.IR errcode .
 .sp
 .LP
-If the \fIerrbuf_size\fR argument is not zero, \fBregerror()\fR will place
+If the \fIerrbuf_size\fR argument is not zero,
+.B regerror()
+will place
 the generated string into the buffer of size \fIerrbuf_size\fR bytes pointed
-to by \fIerrbuf\fR. If the string (including the terminating \fBNULL)\fR
-cannot fit in the buffer, \fBregerror()\fR will truncate the string and
+to by
+.IR errbuf .
+If the string (including the terminating \fBNULL)\fR
+cannot fit in the buffer,
+.B regerror()
+will truncate the string and
 null-terminate the result.
 .sp
 .LP
@@ -571,29 +729,51 @@ argument, and returns the size of the buffer needed to hold the generated
 string.
 .sp
 .LP
-If the \fIpreg\fR argument to \fBregexec()\fR or \fBregfree()\fR is not a
-compiled regular expression returned by \fBregcomp()\fR, the result is
-undefined. A \fIpreg\fR is no longer treated as a compiled regular
+If the
+.I preg
+argument to
+.B regexec()
+or \fBregfree()\fR is not a
+compiled regular expression returned by
+.BR regcomp() ,
+the result is
+undefined. A
+.I preg
+is no longer treated as a compiled regular
 expression after it is given to \fBregfree()\fR.
 .sp
 .LP
-See \fBregex\fR(5) for BRE (Basic Regular Expression) Anchoring.
+See
+.BR regex (5)
+for BRE (Basic Regular Expression) Anchoring.
 .SH RETURN VALUES
 .sp
 .LP
-On successful completion, the \fBregcomp()\fR function returns \fB0\fR.
+On successful completion, the
+.B regcomp()
+function returns
+.BR 0 .
 Otherwise, it returns an integer value indicating an error as described in
 <\fBregex.h\fR>, and the content of \fIpreg\fR is undefined.
 .sp
 .LP
-On successful completion, the \fBregexec()\fR function returns \fB0\fR.
-Otherwise it returns \fBREG_NOMATCH\fR to indicate no match, or
+On successful completion, the
+.B regexec()
+function returns
+.BR 0 .
+Otherwise it returns
+.B REG_NOMATCH
+to indicate no match, or
 \fBREG_ENOSYS\fR to indicate that the function is not supported.
 .sp
 .LP
-Upon successful completion, the \fBregerror()\fR function returns the
+Upon successful completion, the
+.B regerror()
+function returns the
 number of bytes needed to hold the entire generated string. Otherwise, it
-returns \fB0\fR to indicate that the function is not implemented.
+returns
+.B 0
+to indicate that the function is not implemented.
 .sp
 .LP
 The \fBregfree()\fR function returns no value.
@@ -607,18 +787,22 @@ No errors are defined.
 An application could use:
 .sp
 .LP
-\fBregerror(code,preg,(char *)NULL,(size_t)0)\fR
+.B regerror(code,preg,(char *)NULL,(size_t)0)
 .sp
 .LP
 to find out how big a buffer is needed for the generated string,
 \fBmalloc\fR a buffer to hold the string, and then call \fBregerror()\fR
-again to get the string (see \fBmalloc\fR(3C)). Alternately, it could
+again to get the string (see
+.BR malloc (3C)).
+Alternately, it could
 allocate a fixed, static buffer that is big enough to hold most strings, and
-then use \fBmalloc()\fR to allocate a larger buffer if it finds that this is
+then use
+.B malloc()
+to allocate a larger buffer if it finds that this is
 too small.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRExample to match string against the extended regular
+\fBExample 1\fR Example to match string against the extended regular
 expression in pattern.
 .sp
 .in +2
@@ -651,7 +835,9 @@ match(const char *string, char *pattern)
 
 .sp
 .LP
-The following demonstrates how the \fBREG_NOTBOL\fR flag could be used with
+The following demonstrates how the
+.B REG_NOTBOL
+flag could be used with
 \fBregexec()\fR to find all substrings in a line that match a pattern
 supplied by a user. (For simplicity of the example, very little error
 checking is done.)
@@ -673,7 +859,9 @@ while (error == 0) {	/* while matches found */
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -695,10 +883,15 @@ MT-LevelMT-Safe with exceptions
 .sp
 .LP
 \fBfnmatch\fR(3C), \fBglob\fR(3C), \fBmalloc\fR(3C), \fBsetlocale\fR(3C),
-\fBattributes\fR(5), \fBstandards\fR(5), \fBregex\fR(5)
+.BR attributes (5),
+.BR standards (5),
+.BR regex (5)
 .SH NOTES
 .sp
 .LP
-The \fBregcomp()\fR function can be used safely in a multithreaded
-application as long as \fBsetlocale\fR(3C) is not being called to change the
+The
+.B regcomp()
+function can be used safely in a multithreaded
+application as long as
+.BR setlocale "(3C) is not being called to change the"
 locale.

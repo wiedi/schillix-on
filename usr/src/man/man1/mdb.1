@@ -33,10 +33,14 @@ mdb \- modular debugger
 .SS "Introduction"
 .sp
 .LP
-The \fBmdb\fR utility is an extensible utility for low-level debugging and
+The
+.B mdb
+utility is an extensible utility for low-level debugging and
 editing of the live operating system, operating system crash dumps, user
 processes, user process core dumps, and object files. For a more detailed
-description of \fBmdb\fR features, refer to the manual, \fISolaris Modular
+description of
+.B mdb
+features, refer to the manual, \fISolaris Modular
 Debugger Guide\fR.
 .sp
 .LP
@@ -58,34 +62,50 @@ developer can only access post-mortem information.
 \fBmdb\fR provides a completely customizable environment for debugging
 these programs and scenarios, including a dynamic module facility that
 programmers can use to implement their own debugging commands to perform
-program-specific analysis. Each \fBmdb\fR module can be used to examine the
+program-specific analysis. Each
+.B mdb
+module can be used to examine the
 program in several different contexts, including live and post-mortem.
 .SS "Definitions"
 .sp
 .LP
-The \fItarget\fR is the program being inspected by the debugger. \fBmdb\fR
+The
+.I target
+.RB "is the program being inspected by the debugger." " mdb"
 currently provides support for the following types of targets: user
 processes, user process core files, the live operating system (via
-\fB/dev/kmem\fR and \fB/dev/ksyms\fR), operating system crash dumps, user
-process images recorded inside an operating system crash dump, \fBELF\fR
+\fB/dev/kmem\fR and
+.BR /dev/ksyms ),
+operating system crash dumps, user
+.RB "process images recorded inside an operating system crash dump," " ELF"
 object files, and raw binary files. Each target exports a standard set of
 properties, including one or more address spaces, one or more symbol tables,
 a set of load objects, and a set of threads that can be examined using the
 debugger commands described below.
 .sp
 .LP
-A debugger command, or \fIdcmd\fR (pronounced dee-command) in \fBmdb\fR
+A debugger command, or
+.I dcmd
+.RB "(pronounced dee-command) in" " mdb"
 terminology, is a routine in the debugger that can access any of the
-properties of the current target. \fBmdb\fR parses commands from standard
+properties of the current target.
+.B mdb
+parses commands from standard
 input, and then executes the corresponding dcmds. Each dcmd can also accept
 a list of string or numerical arguments, as shown in the syntax description
-below. \fBmdb\fR contains a set of built-in dcmds, described below, that are
-always available. You can also extend the capabilities of \fBmdb\fR itself
+below.
+.B mdb
+contains a set of built-in dcmds, described below, that are
+always available. You can also extend the capabilities of
+.B mdb
+itself
 by writing your own dcmds, as described in the \fISolaris Modular Debugger
 Guide\fR.
 .sp
 .LP
-A \fIwalker\fR is a set of routines that describe how to walk, or iterate,
+A
+.I walker
+is a set of routines that describe how to walk, or iterate,
 through the elements of a particular program data structure. A walker
 encapsulates the data structure's implementation from dcmds and from
 \fBmdb\fR itself. You can use walkers interactively, or use them as a
@@ -93,34 +113,50 @@ primitive to build other dcmds or walkers. As with dcmds, you can extend
 \fBmdb\fR by implementing your own walkers as part of a debugger module.
 .sp
 .LP
-A debugger module, or \fIdmod\fR (pronounced dee-mod), is a dynamically
+A debugger module, or
+.I dmod
+(pronounced dee-mod), is a dynamically
 loaded library containing a set of dcmds and walkers. During initialization,
 \fBmdb\fR attempts to load dmods corresponding to the load objects present
 in the target. You can subsequently load or unload dmods at any time while
-running \fBmdb\fR. \fBmdb\fR ships with a set of standard dmods for
-debugging the Solaris kernel. The \fISolaris Modular Debugger Guide\fR
+running
+.BR mdb .
+\fBmdb\fR ships with a set of standard dmods for
+.RI "debugging the Solaris kernel. The" " Solaris Modular Debugger Guide"
 contains more information on developing your own debugger modules.
 .sp
 .LP
 A \fImacro file\fR is a text file containing a set of commands to execute.
 Macro files are typically used to automate the process of displaying a
-simple data structure. \fBmdb\fR provides complete backward compatibility
-for the execution of macro files written for \fBadb\fR(1), and the Solaris
+simple data structure.
+.B mdb
+provides complete backward compatibility
+for the execution of macro files written for
+.BR adb (1),
+and the Solaris
 installation includes a set of macro files for debugging the Solaris kernel
 that can be used with either tool.
 .SS "Syntax"
 .sp
 .LP
 The debugger processes commands from standard input. If standard input is a
-terminal, \fBmdb\fR provides terminal editing capabilities. \fBmdb\fR can
+terminal,
+.B mdb
+provides terminal editing capabilities.
+.B mdb
+can
 also process commands from macro files and from dcmd pipelines, described
 below. The language syntax is designed around the concept of computing the
 value of an expression (typically a memory address in the target), and then
 applying a dcmd to that address. The current address location is referred to
-as \fIdot\fR, and its value is referenced using ``.''.
+as
+.IR dot ,
+and its value is referenced using ``.''.
 .sp
 .LP
-A \fImetacharacter\fR is one of the following characters:
+A
+.I metacharacter
+is one of the following characters:
 .sp
 .in +2
 .nf
@@ -132,13 +168,23 @@ A \fImetacharacter\fR is one of the following characters:
 
 .sp
 .LP
-A \fIblank\fR is a \fITAB\fR or a \fISPACE\fR. A \fIword\fR is a sequence
+A
+.I blank
+is a
+.I TAB
+or a
+.IR SPACE .
+A
+.I word
+is a sequence
 of characters separated by one or more non-quoted metacharacters. Some of
 the metacharacters only function as delimiters in certain contexts, as
 described below. An \fIidentifier\fR is a sequence of letters, digits,
 underscores, periods, or backquotes beginning with a letter, underscore, or
 period. Identifiers are used as the names of symbols, variables, dcmds, and
-walkers. Commands are delimited by a \fINEWLINE\fR or semicolon ( \fB;\fR
+walkers. Commands are delimited by a
+.I NEWLINE
+.RB "or semicolon (" " ;"
 ).
 .sp
 .LP
@@ -153,38 +199,65 @@ A dcmd is denoted by one of the following words or metacharacters:
 
 .sp
 .LP
-dcmds named by metacharacters or prefixed by a single \fB$\fR or \fB:\fR
+dcmds named by metacharacters or prefixed by a single
+.B $
+or
+.BR :
 are provided as built-in operators, and implement complete compatibility
-with the command set of the legacy \fBadb\fR(1) utility. Once a dcmd has
-been parsed, the \fB/\fR, \fB\e\fR, \fB?\fR, \fB=\fR, \fB>\fR, \fB$\fR, and
+with the command set of the legacy
+.BR adb (1)
+utility. Once a dcmd has
+been parsed, the
+.BR / ,
+\fB\e\fR,
+.BR ? ,
+.BR = ,
+.BR > ,
+.BR $ ,
+and
 \fB:\fR characters are no longer recognized as metacharacters until the
 termination of the argument list.
 .sp
 .LP
-A \fIsimple-command\fR is a dcmd followed by a sequence of zero or more
+A
+.I simple-command
+is a dcmd followed by a sequence of zero or more
 blank-separated words. The words are passed as arguments to the invoked
 dcmd, except as specified under \fBQuoting and Arithmetic Expansion\fR
 below. Each dcmd returns an exit status that indicates it was either
 successful, failed, or was invoked with invalid arguments.
 .sp
 .LP
-A \fIpipeline\fR is a sequence of one or more simple commands separated by
-\fB|\fR. Unlike the shell, dcmds in \fBmdb\fR pipelines are not executed as
+A
+.I pipeline
+is a sequence of one or more simple commands separated by
+.BR | .
+Unlike the shell, dcmds in
+.B mdb
+pipelines are not executed as
 separate processes. After the pipeline has been parsed, each dcmd is invoked
 in order from left to right. Each dcmd's output is processed and stored as
-described under \fBdcmd Pipelines\fR below. Once the left-hand dcmd is
+described under
+.B "dcmd Pipelines"
+below. Once the left-hand dcmd is
 complete, its processed output is used as input for the next dcmd in the
 pipeline. If any dcmd does not return a successful exit status, the pipeline
 is aborted.
 .sp
 .LP
-An \fIexpression\fR is a sequence of words that is evaluated to compute a
+An
+.I expression
+is a sequence of words that is evaluated to compute a
 64-bit unsigned integer value. The words are evaluated using the rules
-described under \fBArithmetic Expansion\fR below.
+described under
+.B "Arithmetic Expansion"
+below.
 .SS "Commands"
 .sp
 .LP
-A \fIcommand\fR is one of the following:
+A
+.I command
+is one of the following:
 .sp
 .ne 2
 .mk
@@ -194,18 +267,28 @@ A \fIcommand\fR is one of the following:
 .sp .6
 .RS 4n
 A simple-command or pipeline can be optionally suffixed with the \fB!\fR
-character, indicating that the debugger should open a \fBpipe\fR(2) and send
-the standard output of the last dcmd in the \fBmdb\fR pipeline to an
-external process created by executing \fB$SHELL\fR \fB-c\fR followed by the
-string formed by concatenating the words after the \fB!\fR character. For
-more details, refer to \fBShell Escapes\fR below.
+character, indicating that the debugger should open a
+.BR pipe (2)
+and send
+the standard output of the last dcmd in the
+.B mdb
+pipeline to an
+external process created by executing
+.B "$SHELL -c"
+followed by the
+string formed by concatenating the words after the
+.B !
+character. For
+more details, refer to
+.B "Shell Escapes"
+below.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIexpression\fR \fI pipeline\fR [\fB!\fR \fIword\fR .\|.\|.] [ \fB;\fR
+\fIexpression  pipeline\fR [\fB!\fR \fIword\fR .\|.\|.] [ \fB;\fR
 ]\fR
 .ad
 .sp .6
@@ -219,7 +302,7 @@ execution of the pipeline, the value of dot (the variable denoted by
 .ne 2
 .mk
 .na
-\fIexpression\fB ,\fR \fIexpression\fR \fIpipeline \fR [\fB!\fR
+\fIexpression\fB ,\fR \fIexpression pipeline\fR  [\fB!\fR
 \fIword\fR .\|.\|.] [ \fB;\fR ]\fR
 .ad
 .sp .6
@@ -227,7 +310,9 @@ execution of the pipeline, the value of dot (the variable denoted by
 A simple-command or pipeline can be prefixed with two expressions. The
 first is evaluated to determine the new value of dot, and the second is
 evaluated to determine a repeat count for the first dcmd in the pipeline.
-This dcmd is executed \fIcount\fR times before the next dcmd in the pipeline
+This dcmd is executed
+.I count
+times before the next dcmd in the pipeline
 is executed. The repeat count only applies to the first dcmd in the
 pipeline.
 .RE
@@ -236,8 +321,8 @@ pipeline.
 .ne 2
 .mk
 .na
-\fB,\fR \fIexpression\fR \fIpipeline\fR [\fB!\fR \fIword\fR .\|.\|.] [
-\fB;\fR ]\fR
+\fB,\fR \fIexpression pipeline\fR [\fB!\fR \fIword\fR .\|.\|.] [
+.BR ; " ]"
 .ad
 .sp .6
 .RS 4n
@@ -277,7 +362,7 @@ of the second expression.
 .ne 2
 .mk
 .na
-\fB,\fR \fIexpression \fR  [\fB!\fR \fIword\fR .\|.\|.] [ \fB;\fR ]\fR
+\fB,\fR \fIexpression\fR   [\fB!\fR \fIword\fR .\|.\|.] [ \fB;\fR ]\fR
 .ad
 .sp .6
 .RS 4n
@@ -294,20 +379,32 @@ the value of the count expression.
 .ad
 .sp .6
 .RS 4n
-If the command begins with the \fB!\fR character, no dcmds are executed and
-the debugger simply executes \fB$SHELL\fR \fB-c\fR followed by the string
-formed by concatenating the words after the \fB!\fR character.
+If the command begins with the
+.B !
+character, no dcmds are executed and
+the debugger simply executes
+.B "$SHELL -c"
+followed by the string
+formed by concatenating the words after the
+.B !
+character.
 .RE
 
 .SS "Comments"
 .sp
 .LP
-A word beginning with \fB//\fR causes that word and all the subsequent
-characters up to a \fINEWLINE\fR to be ignored.
+A word beginning with
+.B //
+causes that word and all the subsequent
+characters up to a
+.I NEWLINE
+to be ignored.
 .SS "Arithmetic Expansion"
 .sp
 .LP
-Arithmetic expansion is performed when an \fBmdb\fR command is preceded by
+Arithmetic expansion is performed when an
+.B mdb
+command is preceded by
 an optional expression representing a start address, or a start address and
 a repeat count. Arithmetic expansion can also be performed to compute a
 numerical argument for a dcmd. An arithmetic expression can appear in an
@@ -320,14 +417,26 @@ Expressions can contain any of the following special words:
 .ne 2
 .mk
 .na
-\fIinteger\fR
+.I integer
 .ad
 .RS 22n
 .rt
 The specified integer value. Integer values can be prefixed with \fB0i\fR
-or \fB0I\fR to indicate binary values, \fB0o\fR or \fB0O\fR to indicate
-octal values, \fB0t\fR or \fB0T\fR to indicate decimal values, and \fB0x\fR
-or \fB0X\fR to indicate hexadecimal values (the default).
+or
+.B 0I
+to indicate binary values,
+.B 0o
+or
+.B 0O
+to indicate
+octal values,
+.B 0t
+or
+.B 0T
+.RB "to indicate decimal values, and" " 0x"
+or
+.B 0X
+to indicate hexadecimal values (the default).
 .RE
 
 .sp
@@ -351,7 +460,9 @@ double-precision floating point representation.
 .RS 22n
 .rt
 The integer value computed by converting each character to a byte equal to
-its \fBASCII\fR value. Up to eight characters can be specified in a
+its
+.B ASCII
+value. Up to eight characters can be specified in a
 character constant. Characters are packed into the integer in reverse order
 (right-to-left) beginning at the least significant byte.
 .RE
@@ -386,7 +497,8 @@ The value of the symbol named by \fIidentifier\fR.
 .ad
 .RS 22n
 .rt
-The value of \fIexpression\fR.
+The value of
+.IR expression .
 .RE
 
 .sp
@@ -404,7 +516,7 @@ The value of dot.
 .ne 2
 .mk
 .na
-\fB&\fR
+.B &
 .ad
 .RS 22n
 .rt
@@ -415,7 +527,7 @@ The most recent value of dot used to execute a dcmd.
 .ne 2
 .mk
 .na
-\fB+\fR
+.B +
 .ad
 .RS 22n
 .rt
@@ -426,7 +538,7 @@ The value of dot incremented by the current increment.
 .ne 2
 .mk
 .na
-\fB^\fR
+.B ^
 .ad
 .RS 22n
 .rt
@@ -437,7 +549,9 @@ The value of dot decremented by the current increment.
 .LP
 The increment is a global variable that stores the total bytes read by the
 last formatting dcmd. For more information on the increment, refer to the
-discussion of \fBFormatting dcmds\fR below.
+discussion of
+.B "Formatting dcmds"
+below.
 .sp
 .LP
 Unary operators are right associative and have higher precedence than
@@ -484,7 +598,9 @@ Integer negation.
 .RS 23n
 .rt
 The value of a pointer-sized quantity at the object file location
-corresponding to virtual address \fIexpression\fR in the target's virtual
+corresponding to virtual address
+.I expression
+in the target's virtual
 address space.
 .RE
 
@@ -497,7 +613,9 @@ address space.
 .RS 23n
 .rt
 The value of a char, short, int, or long-sized quantity at the object file
-location corresponding to virtual address \fIexpression\fR in the target's
+location corresponding to virtual address
+.I expression
+in the target's
 virtual address space.
 .RE
 
@@ -510,7 +628,9 @@ virtual address space.
 .RS 23n
 .rt
 The value of a one, two, four, or eight-byte quantity at the object file
-location corresponding to virtual address \fIexpression\fR in the target's
+location corresponding to virtual address
+.I expression
+in the target's
 virtual address space.
 .RE
 
@@ -559,7 +679,7 @@ lowest, are:
 .ne 2
 .mk
 .na
-\fB*\fR
+.B *
 .ad
 .RS 6n
 .rt
@@ -570,7 +690,7 @@ Integer multiplication.
 .ne 2
 .mk
 .na
-\fB%\fR
+.B %
 .ad
 .RS 6n
 .rt
@@ -581,7 +701,7 @@ Integer division.
 .ne 2
 .mk
 .na
-\fB#\fR
+.B #
 .ad
 .RS 6n
 .rt
@@ -592,7 +712,7 @@ Left-hand side rounded up to next multiple of right-hand side.
 .ne 2
 .mk
 .na
-\fB+\fR
+.B +
 .ad
 .RS 6n
 .rt
@@ -603,7 +723,7 @@ Integer addition.
 .ne 2
 .mk
 .na
-\fB-\fR
+.B -
 .ad
 .RS 6n
 .rt
@@ -614,7 +734,7 @@ Integer subtraction.
 .ne 2
 .mk
 .na
-\fB<<\fR
+.B <<
 .ad
 .RS 6n
 .rt
@@ -625,7 +745,7 @@ Bitwise shift left.
 .ne 2
 .mk
 .na
-\fB>>\fR
+.B >>
 .ad
 .RS 6n
 .rt
@@ -636,7 +756,7 @@ Bitwise shift right.
 .ne 2
 .mk
 .na
-\fB==\fR
+.B ==
 .ad
 .RS 6n
 .rt
@@ -647,7 +767,7 @@ Logical equality.
 .ne 2
 .mk
 .na
-\fB!=\fR
+.B !=
 .ad
 .RS 6n
 .rt
@@ -658,7 +778,7 @@ Logical inequality.
 .ne 2
 .mk
 .na
-\fB&\fR
+.B &
 .ad
 .RS 6n
 .rt
@@ -680,7 +800,7 @@ Bitwise exclusive OR.
 .ne 2
 .mk
 .na
-\fB|\fR
+.B |
 .ad
 .RS 6n
 .rt
@@ -690,34 +810,54 @@ Bitwise inclusive OR.
 .SS "Quoting"
 .sp
 .LP
-Each metacharacter described above (see \fBSyntax\fR) terminates a word
-unless quoted. Characters can be quoted (forcing \fBmdb\fR to interpret each
+Each metacharacter described above
+.RB "(see " Syntax )
+terminates a word
+unless quoted. Characters can be quoted (forcing
+.B mdb
+to interpret each
 character as itself without any special significance) by enclosing them in a
 pair of single (\fB\&' '\fR) or double (\fB" "\fR) quote marks. A single
-quote cannot appear within single quotes. Inside double quotes, \fBmdb\fR
+.RB "quote cannot appear within single quotes. Inside double quotes," " mdb"
 recognizes the C programming language character escape sequences.
 .SS "Shell Escapes"
 .sp
 .LP
-The \fB!\fR character can be used to create a pipeline between an \fBmdb\fR
+The
+.B !
+character can be used to create a pipeline between an
+.BR mdb
 command and the user's shell. If the $\fBSHELL\fR environment variable is
-set, \fBmdb\fR forks and execs this program for shell escapes; otherwise
+set,
+.B mdb
+forks and execs this program for shell escapes; otherwise
 \fB/bin/sh\fR is used. The shell is invoked with the \fB-c\fR option
-followed by a string formed by concatenating the words after the \fB!\fR
-character. The \fB!\fR character takes precedence over all other
-metacharacters, except semicolon (\fB;\fR) and \fINEWLINE\fR. Once a shell
+followed by a string formed by concatenating the words after the
+.BR !
+character. The
+.B !
+character takes precedence over all other
+metacharacters, except semicolon (\fB;\fR) and
+.IR NEWLINE .
+Once a shell
 escape is detected, the remaining characters up to the next semicolon or
 \fINEWLINE\fR are passed as is to the shell. The output of shell commands
-can not be piped to \fBmdb\fR dcmds. Commands executed by a shell escape
+can not be piped to
+.B mdb
+dcmds. Commands executed by a shell escape
 have their output sent directly to the terminal, not to \fBmdb\fR.
 .SS "Variables"
 .sp
 .LP
-A \fIvariable\fR is a variable name, a corresponding integer value, and a
+A
+.I variable
+is a variable name, a corresponding integer value, and a
 set of attributes. A variable name is a sequence of letters, digits,
 underscores, or periods. A variable can be assigned a value using the
 \fB>\fR dcmd or \fB::typeset\fR dcmd, and its attributes can be manipulated
-using the \fB::typeset\fR dcmd. Each variable's value is represented as a
+using the
+.B ::typeset
+dcmd. Each variable's value is represented as a
 64-bit unsigned integer. A variable can have one or more of the following
 attributes: read-only (cannot be modified by the user), persistent (cannot
 be unset by the user), and tagged (user-defined indicator).
@@ -728,11 +868,15 @@ The following variables are defined as persistent:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 10n
 .rt
-The most recent value printed using the \fB/\fR, \fB\e\fR, \fB?\fR, or
+The most recent value printed using the
+.BR / ,
+\fB\e\fR,
+.BR ? ,
+or
 \fB=\fR dcmd.
 .RE
 
@@ -740,18 +884,20 @@ The most recent value printed using the \fB/\fR, \fB\e\fR, \fB?\fR, or
 .ne 2
 .mk
 .na
-\fB9\fR
+.B 9
 .ad
 .RS 10n
 .rt
-The most recent count used with the \fB$<\fR dcmd.
+The most recent count used with the
+.B $<
+dcmd.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBb\fR
+.B b
 .ad
 .RS 10n
 .rt
@@ -762,7 +908,7 @@ The virtual address of the base of the data section.
 .ne 2
 .mk
 .na
-\fBd\fR
+.B d
 .ad
 .RS 10n
 .rt
@@ -773,7 +919,7 @@ The size of the data section in bytes.
 .ne 2
 .mk
 .na
-\fBe\fR
+.B e
 .ad
 .RS 10n
 .rt
@@ -784,7 +930,7 @@ The virtual address of the entry point.
 .ne 2
 .mk
 .na
-\fBm\fR
+.B m
 .ad
 .RS 10n
 .rt
@@ -796,7 +942,7 @@ zero if no object file has been read yet.
 .ne 2
 .mk
 .na
-\fBt\fR
+.B t
 .ad
 .RS 10n
 .rt
@@ -807,37 +953,45 @@ The size of the text section in bytes.
 .ne 2
 .mk
 .na
-\fBhits\fR
+.B hits
 .ad
 .RS 10n
 .rt
 The count of the number of times the matched software event specifier has
-been matched. See \fBEvent Callbacks\fR, below.
+been matched. See
+.BR "Event Callbacks" ,
+below.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBthread\fR
+.B thread
 .ad
 .RS 10n
 .rt
 The thread identifier of the current representative thread. The value of
 the identifier depends on the threading model used by the current target.
-See \fBThread Support\fR, below.
+See
+.BR "Thread Support" ,
+below.
 .RE
 
 .sp
 .LP
-In addition, the \fBmdb\fR kernel and process targets export the current
+In addition, the
+.B mdb
+kernel and process targets export the current
 values of the representative thread's register set as named variables. The
 names of these variables depend on the target's platform and instruction set
 architecture.
 .SS "Symbol Name Resolution"
 .sp
 .LP
-As explained in the \fBSyntax\fR description above, a symbol identifier
+As explained in the
+.B Syntax
+description above, a symbol identifier
 present in an expression context evaluates to the value of this symbol. The
 value typically denotes the virtual address of the storage associated with
 the symbol in the target's virtual address space. A target can support
@@ -847,37 +1001,54 @@ table, and standard and dynamic symbol tables for each of a number of load
 objects (such as shared libraries in a user process, or kernel modules in
 the Solaris kernel). The target typically searches the primary executable's
 symbol tables first, and then one or more of the other symbol tables. Notice
-that \fBELF\fR symbol tables only contain entries for external, global, and
+that
+.B ELF
+symbol tables only contain entries for external, global, and
 static symbols; automatic symbols do not appear in the symbol tables
-processed by \fBmdb\fR.
+processed by
+.BR mdb .
 .sp
 .LP
-Additionally, \fBmdb\fR provides a private user-defined symbol table that
+Additionally,
+.B mdb
+provides a private user-defined symbol table that
 is searched prior to any of the target symbol tables. The private symbol
-table is initially empty, and can be manipulated using the \fB::nmadd\fR and
-\fB::nmdel\fR dcmds. The \fB::nm\fR \fB-P\fR option can be used to display
+table is initially empty, and can be manipulated using the
+.B ::nmadd
+and
+\fB::nmdel\fR dcmds. The \fB::nm -P\fR option can be used to display
 the contents of the private symbol table. The private symbol table allows
 the user to create symbol definitions for program functions or data that
 were either missing from the original program or stripped out. These
-definitions are then used whenever \fBmdb\fR converts a symbolic name to an
+definitions are then used whenever
+.B mdb
+converts a symbolic name to an
 address, or an address to the nearest symbol.
 .sp
 .LP
 As targets contain multiple symbol tables, and each symbol table can
 include symbols from multiple object files, different symbols with the same
-name can exist. \fBmdb\fR uses the backquote (\fB`\fR) character as a symbol
+name can exist.
+.B mdb
+uses the backquote (\fB`\fR) character as a symbol
 name scoping operator to allow the programmer to obtain the value of the
 desired symbol in this situation. The programmer can specify the scope used
 to resolve a symbol name as either: \fIobject\fB`\fIname\fR, or
 \fIfile\fB`\fIname\fR, or
 \fIobject\fB`\fIfile\fB`\fIname\fR. The object identifier refers
 to the name of a load object. The file identifier refers to the basename of
-a source file that has a symbol of type \fBSTT_FILE\fR in the specified
+a source file that has a symbol of type
+.B STT_FILE
+in the specified
 object's symbol table. The object identifier's interpretation depends on the
 target type.
 .sp
 .LP
-The \fBmdb\fR kernel target expects \fIobject\fR to specify the basename of
+The
+.B mdb
+kernel target expects
+.I object
+to specify the basename of
 a loaded kernel module. For example, the symbol name
 .sp
 .in +2
@@ -889,11 +1060,17 @@ specfs`_init
 
 .sp
 .LP
-evaluates to the value of the \fB_init\fR symbol in the \fBspecfs\fR kernel
+evaluates to the value of the
+.B _init
+symbol in the \fBspecfs\fR kernel
 module.
 .sp
 .LP
-The \fBmdb\fR process target expects \fIobject\fR to specify the name of
+The
+.B mdb
+process target expects
+.I object
+to specify the name of
 the executable or of a loaded shared library. It can take any of the
 following forms:
 .RS +4
@@ -904,18 +1081,22 @@ An exact match (that is, a full pathname): \fB/usr/lib/libc.so.1\fR
 .RS +4
 .TP
 2.
-An exact basename match: \fBlibc.so.1\fR
+.RB "An exact basename match:" " libc.so.1"
 .RE
 .RS +4
 .TP
 3.
-An initial basename match up to a ``\fB\&.\fR'' suffix: \fBlibc.so\fR or
-\fBlibc\fR
+An initial basename match up to a ``\fB\&.\fR'' suffix:
+.B libc.so
+or
+.B libc
 .RE
 .RS +4
 .TP
 4.
-The literal string \fBa.out\fR is accepted as an alias for the
+The literal string
+.B a.out
+is accepted as an alias for the
 executable.
 .RE
 .sp
@@ -934,27 +1115,47 @@ LM0`libc.so.1`_init
 
 .sp
 .LP
-evaluates to the value of the \fB_init\fR symbol in the \fBlibc.so.1\fR
-library that is loaded on link-map 0 (\fBLM_ID_BASE\fR). The link-map
+evaluates to the value of the
+.B _init
+symbol in the
+.BR libc.so.1
+library that is loaded on link-map 0
+.RB ( LM_ID_BASE ).
+The link-map
 specifier can be necessary to resolve symbol naming conflicts in the event
 that the same library is loaded on more than one link map. For more
-information on link maps, refer to the \fILinker and Libraries Guide\fR and
-\fBdlopen\fR(3C). Link-map identifiers are displayed when symbols are
-printed according to the setting of the \fBshowlmid\fR option, as described
+information on link maps, refer to the
+.I "Linker and Libraries Guide"
+and
+.BR dlopen (3C).
+Link-map identifiers are displayed when symbols are
+printed according to the setting of the
+.B showlmid
+option, as described
 under OPTIONS.
 .sp
 .LP
 In the case of a naming conflict between symbols and hexadecimal integer
-values, \fBmdb\fR attempts to evaluate an ambiguous token as a symbol first,
+values,
+.B mdb
+attempts to evaluate an ambiguous token as a symbol first,
 before evaluating it as an integer value. For example, the token \fBf\fR can
-either refer to the decimal integer value \fB15\fR specified in hexadecimal
+either refer to the decimal integer value
+.B 15
+specified in hexadecimal
 (the default base), or to a global variable named \fBf\fR in the target's
 symbol table. If a symbol with an ambiguous name is present, the integer
-value can be specified by using an explicit \fB0x\fR or \fB0X\fR prefix.
+value can be specified by using an explicit
+.B 0x
+or
+.B 0X
+prefix.
 .SS "dcmd and Walker Name Resolution"
 .sp
 .LP
-As described earlier, each \fBmdb\fR dmod provides a set of dcmds and
+As described earlier, each
+.B mdb
+dmod provides a set of dcmds and
 walkers. dcmds and walkers are tracked in two distinct, global namespaces.
 \fBmdb\fR also keeps track of a dcmd and walker namespace associated with
 each dmod. Identically named dcmds or walkers within a given dmod are not
@@ -965,13 +1166,19 @@ that particular name to be loaded is given precedence in the global
 namespace. Alternate definitions are kept in a list in load order. The
 backquote character (\fB`\fR) can be used in a dcmd or walker name as a
 scoping operator to select an alternate definition. For example, if dmods
-\fBm1\fR and \fBm2\fR each provide a dcmd \fBd\fR, and \fBm1\fR is loaded
-prior to \fBm2\fR, then:
+\fBm1\fR and \fBm2\fR each provide a dcmd
+.BR d ,
+and
+.B m1
+is loaded
+prior to
+.BR m2 ,
+then:
 .sp
 .ne 2
 .mk
 .na
-\fB::d\fR
+.B ::d
 .ad
 .RS 10n
 .rt
@@ -982,7 +1189,7 @@ Executes \fBm1\fR's definition of \fBd\fR.
 .ne 2
 .mk
 .na
-\fB::m1`d\fR
+.B ::m1`d
 .ad
 .RS 10n
 .rt
@@ -993,7 +1200,7 @@ Executes \fBm1\fR's definition of \fBd\fR.
 .ne 2
 .mk
 .na
-\fB::m2`d\fR
+.B ::m2`d
 .ad
 .RS 10n
 .rt
@@ -1002,15 +1209,21 @@ Executes \fBm2'\fRs definition of \fBd\fR.
 
 .sp
 .LP
-If module \fBm1\fR were now unloaded, the next dcmd on the global
+If module
+.B m1
+were now unloaded, the next dcmd on the global
 definition list (\fBm2`d\fR) would be promoted to global visibility. The
 current definition of a dcmd or walker can be determined using the
 \fB::which\fR dcmd, described below. The global definition list can be
-displayed using the \fB::which\fR \fB-v\fR option.
+displayed using the
+.B "::which -v"
+option.
 .SS "dcmd Pipelines"
 .sp
 .LP
-dcmds can be composed into a pipeline using the \fB|\fR operator. The
+dcmds can be composed into a pipeline using the
+.B |
+operator. The
 purpose of a pipeline is to pass a list of values, typically virtual
 addresses, from one dcmd or walker to another. Pipeline stages might be used
 to map a pointer from one type of data structure to a pointer to a
@@ -1021,20 +1234,32 @@ addresses of structures with certain properties.
 \fBmdb\fR executes each dcmd in the pipeline in order from left to right.
 The leftmost dcmd is executed using the current value of dot, or using the
 value specified by an explicit expression at the start of the command. When
-a \fB|\fR operator is encountered, \fBmdb\fR creates a pipe (a shared
-buffer) between the output of the dcmd to its left and the \fBmdb\fR parser,
+a
+.B |
+operator is encountered,
+.B mdb
+creates a pipe (a shared
+buffer) between the output of the dcmd to its left and the
+.B mdb
+parser,
 and an empty list of values. As the dcmd executes, its standard output is
 placed in the pipe and then consumed and evaluated by the parser, as if
 \fBmdb\fR were reading this data from standard input. Each line must consist
-of an arithmetic expression terminated by a \fINEWLINE\fR or semicolon
+of an arithmetic expression terminated by a
+.I NEWLINE
+or semicolon
 (\fB;\fR). The value of the expression is appended to the list of values
 associated with the pipe. If a syntax error is detected, the pipeline is
 aborted.
 .sp
 .LP
-When the dcmd to the left of a \fB|\fR operator completes, the list of
+When the dcmd to the left of a
+.B |
+operator completes, the list of
 values associated with the pipe is then used to invoke the dcmd to the right
-of the \fB|\fR operator. For each value in the list, dot is set to this
+of the
+.B |
+operator. For each value in the list, dot is set to this
 value and the right-hand dcmd is executed. Only the rightmost dcmd in the
 pipeline has its output printed to standard output. If any dcmd in the
 pipeline produces output to standard error, these messages are printed
@@ -1042,12 +1267,25 @@ directly to standard error and are not processed as part of the pipeline.
 .SS "Signal Handling"
 .sp
 .LP
-The debugger ignores the \fBPIPE\fR and \fBQUIT\fR signals. The \fBINT\fR
+The debugger ignores the
+.B PIPE
+and
+.B QUIT
+.RB "signals. The" " INT"
 signal aborts the command that is currently executing. The debugger
-intercepts and provides special handling for the \fBILL\fR, \fBTRAP\fR,
-\fBEMT\fR, \fBFPE\fR, \fBBUS\fR, and \fBSEGV\fR signals. If any of these
+intercepts and provides special handling for the
+.BR ILL ,
+.BR TRAP ,
+.BR EMT ,
+.BR FPE ,
+.BR BUS ,
+and
+.B SEGV
+signals. If any of these
 signals are generated asynchronously (that is, delivered from another
-process using \fBkill\fR(2)), \fBmdb\fR restores the signal to its default
+process using
+.BR kill (2)),
+\fBmdb\fR restores the signal to its default
 disposition and dump core. However, if any of these signals are generated
 synchronously by the debugger process itself and a dcmd from an externally
 loaded dmod is currently executing, and standard input is a terminal,
@@ -1062,29 +1300,39 @@ the resume option.
 .SS "Command Re-entry"
 .sp
 .LP
-The text of the last \fBHISTSIZE \fR (default 128) commands entered from a
+The text of the last
+.B HISTSIZE
+(default 128) commands entered from a
 terminal device are saved in memory. The in-line editing facility, described
 next, provides key mappings for searching and fetching elements from the
 history list.
 .SS "In-line Editing"
 .sp
 .LP
-If standard input is a terminal device, \fBmdb\fR provides some simple
+If standard input is a terminal device,
+.B mdb
+provides some simple
 emacs-style facilities for editing the command line. The \fBsearch\fR,
-\fBprevious\fR, and \fBnext\fR commands in edit mode provide access to the
+.BR previous ,
+and
+.B next
+commands in edit mode provide access to the
 history list. Only strings, not patterns, are matched when searching. In the
 table below, the notation for control characters is caret (\fB^\fR) followed
 by a character shown in upper case. The notation for escape sequences is
 \fBM-\fR followed by a character. For example, \fBM-f\fR (pronounced
 meta-eff) is entered by depressing ESC followed by '\fBf\fR', or by
 depressing Meta followed by '\fBf\fR' on keyboards that support a \fBMeta\fR
-key. A command line is committed and executed using \fIRETURN\fR or
-\fINEWLINE\fR. The edit commands are:
+key. A command line is committed and executed using
+.I RETURN
+or
+.IR NEWLINE .
+The edit commands are:
 .sp
 .ne 2
 .mk
 .na
-\fB^F\fR
+.B ^F
 .ad
 .RS 14n
 .rt
@@ -1106,7 +1354,7 @@ Move cursor forward one word.
 .ne 2
 .mk
 .na
-\fB^B\fR
+.B ^B
 .ad
 .RS 14n
 .rt
@@ -1117,7 +1365,7 @@ Move cursor backward (left) one character.
 .ne 2
 .mk
 .na
-\fBM-b\fR
+.B M-b
 .ad
 .RS 14n
 .rt
@@ -1128,7 +1376,7 @@ Move cursor backward one word.
 .ne 2
 .mk
 .na
-\fB^A\fR
+.B ^A
 .ad
 .RS 14n
 .rt
@@ -1139,7 +1387,7 @@ Move cursor to start of line.
 .ne 2
 .mk
 .na
-\fB^E\fR
+.B ^E
 .ad
 .RS 14n
 .rt
@@ -1150,19 +1398,23 @@ Move cursor to end of line.
 .ne 2
 .mk
 .na
-\fB^D\fR
+.B ^D
 .ad
 .RS 14n
 .rt
 Delete current character, if the current line is not empty. If the current
-line is empty, \fB^D\fR denotes \fBEOF\fR and the debugger exits.
+line is empty,
+.B ^D
+denotes
+.B EOF
+and the debugger exits.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBM-^H\fR
+.B M-^H
 .ad
 .RS 14n
 .rt
@@ -1173,7 +1425,7 @@ line is empty, \fB^D\fR denotes \fBEOF\fR and the debugger exits.
 .ne 2
 .mk
 .na
-\fB^K\fR
+.B ^K
 .ad
 .RS 14n
 .rt
@@ -1184,7 +1436,7 @@ Delete from the cursor to the end of the line.
 .ne 2
 .mk
 .na
-\fB^L\fR
+.B ^L
 .ad
 .RS 14n
 .rt
@@ -1195,7 +1447,7 @@ Clear the screen and reprint the current line.
 .ne 2
 .mk
 .na
-\fB^T\fR
+.B ^T
 .ad
 .RS 14n
 .rt
@@ -1206,11 +1458,13 @@ Transpose current character with next character.
 .ne 2
 .mk
 .na
-\fB^N\fR
+.B ^N
 .ad
 .RS 14n
 .rt
-Fetch the next command from the history. Each time \fB^N\fR is entered, the
+Fetch the next command from the history. Each time
+.B ^N
+is entered, the
 next command forward in time is retrieved.
 .RE
 
@@ -1218,11 +1472,13 @@ next command forward in time is retrieved.
 .ne 2
 .mk
 .na
-\fB^P\fR
+.B ^P
 .ad
 .RS 14n
 .rt
-Fetch the previous command from the history. Each time \fB^P\fR is entered,
+Fetch the previous command from the history. Each time
+.B ^P
+is entered,
 the next command backward in time is retrieved.
 .RE
 
@@ -1235,8 +1491,14 @@ the next command backward in time is retrieved.
 .RS 14n
 .rt
 Search backward in the history for a previous command line containing
-\fIstring\fR. The string should be terminated by a \fIRETURN\fR or
-\fINEWLINE\fR. If \fIstring\fR is omitted, the previous history element
+.IR string .
+The string should be terminated by a
+.I RETURN
+or
+.IR NEWLINE .
+If
+.I string
+is omitted, the previous history element
 containing the most recent string is retrieved.
 .RE
 
@@ -1244,16 +1506,21 @@ containing the most recent string is retrieved.
 .LP
 The editing mode also interprets the following user-defined sequences as
 editing commands. User defined sequences can be read or modified using the
-\fBstty\fR(1) command.
+.BR stty (1)
+command.
 .sp
 .ne 2
 .mk
 .na
-\fBerase\fR
+.B erase
 .ad
 .RS 11n
 .rt
-User defined erase character (usually \fB^H\fR or \fB^?\fR). Delete
+User defined erase character (usually
+.B ^H
+or
+.BR ^? ).
+Delete
 previous character.
 .RE
 
@@ -1261,11 +1528,13 @@ previous character.
 .ne 2
 .mk
 .na
-\fBintr\fR
+.B intr
 .ad
 .RS 11n
 .rt
-User defined interrupt character (usually \fB^C\fR). Abort the current
+User defined interrupt character (usually
+.BR ^C ).
+Abort the current
 command and print a new prompt.
 .RE
 
@@ -1273,11 +1542,13 @@ command and print a new prompt.
 .ne 2
 .mk
 .na
-\fBkill\fR
+.B kill
 .ad
 .RS 11n
 .rt
-User defined kill character (usually \fB^U\fR). Kill the entire current
+User defined kill character (usually
+.BR ^U ).
+Kill the entire current
 command line.
 .RE
 
@@ -1285,7 +1556,7 @@ command line.
 .ne 2
 .mk
 .na
-\fBquit\fR
+.B quit
 .ad
 .RS 11n
 .rt
@@ -1296,34 +1567,38 @@ User defined quit character (usually \fB^\e\fR). Quit the debugger.
 .ne 2
 .mk
 .na
-\fBsuspend\fR
+.B suspend
 .ad
 .RS 11n
 .rt
-User defined suspend character (usually \fB^Z\fR). Suspend the debugger.
+User defined suspend character (usually
+.BR ^Z ).
+Suspend the debugger.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBwerase\fR
+.B werase
 .ad
 .RS 11n
 .rt
-User defined word erase character (usually \fB^W\fR). Erase the preceding
+User defined word erase character (usually
+.BR ^W ).
+Erase the preceding
 word.
 .RE
 
 .sp
 .LP
-On keyboards that support an extended keypad with arrow keys, \fBmdb\fR
+.RB "On keyboards that support an extended keypad with arrow keys," " mdb"
 interprets these keystrokes as editing commands:
 .sp
 .ne 2
 .mk
 .na
-\fBup-arrow\fR
+.B up-arrow
 .ad
 .RS 15n
 .rt
@@ -1334,7 +1609,7 @@ Fetch the previous command from the history (same as \fB^P\fR).
 .ne 2
 .mk
 .na
-\fBdown-arrow\fR
+.B down-arrow
 .ad
 .RS 15n
 .rt
@@ -1349,14 +1624,15 @@ Fetch the next command from the history (same as \fB^N\fR).
 .ad
 .RS 15n
 .rt
-Move cursor backward one character (same as \fB^B\fR).
+Move cursor backward one character  (same as
+.BR ^B ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBright-arrow\fR
+.B right-arrow
 .ad
 .RS 15n
 .rt
@@ -1368,7 +1644,9 @@ Move cursor forward one character (same as \fB^F\fR).
 .LP
 \fBmdb\fR provides a built-in output pager. The output pager is enabled if
 the debugger's standard output is a terminal device. Each time a command is
-executed, \fBmdb\fR pauses after one screenful of output is produced and
+executed,
+.B mdb
+pauses after one screenful of output is produced and
 displays a pager prompt:
 .sp
 .in +2
@@ -1385,7 +1663,7 @@ The following key sequences are recognized by the pager:
 .ne 2
 .mk
 .na
-\fISPACE\fR
+.I SPACE
 .ad
 .RS 25n
 .rt
@@ -1396,7 +1674,7 @@ Display the next screenful of output.
 .ne 2
 .mk
 .na
-\fBa, A\fR
+.B a, A
 .ad
 .RS 25n
 .rt
@@ -1407,7 +1685,7 @@ Abort the current top-level command and return to the prompt.
 .ne 2
 .mk
 .na
-\fBc, C\fR
+.B c, C
 .ad
 .RS 25n
 .rt
@@ -1440,10 +1718,18 @@ Quit (abort) the current dcmd only.
 .SS "Formatting dcmds"
 .sp
 .LP
-The \fB/\fR, \fB\e\fR, \fB?\fR, and \fB=\fR metacharacters are used to
+The
+.BR / ,
+\fB\e\fR,
+.BR ? ,
+and
+.B =
+metacharacters are used to
 denote the special output formatting dcmds. Each of these dcmds accepts an
 argument list consisting of one or more format characters, repeat counts, or
-quoted strings. A format character is one of the \fBASCII\fR characters
+quoted strings. A format character is one of the
+.B ASCII
+characters
 shown in the table below. Format characters are used to read and format data
 from the target. A repeat count is a positive integer preceding the format
 character that is always interpreted in base 10 (decimal). A repeat count
@@ -1458,7 +1744,7 @@ The formatting dcmds are:
 .ne 2
 .mk
 .na
-\fB/\fR
+.B /
 .ad
 .RS 6n
 .rt
@@ -1482,7 +1768,7 @@ physical address specified by dot.
 .ne 2
 .mk
 .na
-\fB?\fR
+.B ?
 .ad
 .RS 6n
 .rt
@@ -1494,7 +1780,7 @@ file location corresponding to the virtual address specified by dot.
 .ne 2
 .mk
 .na
-\fB=\fR
+.B =
 .ad
 .RS 6n
 .rt
@@ -1505,12 +1791,20 @@ arithmetic.
 
 .sp
 .LP
-In addition to dot, \fBmdb\fR keeps track of another global value called
-the \fIincrement\fR. The increment represents the distance between dot and
+In addition to dot,
+.B mdb
+keeps track of another global value called
+the
+.IR increment .
+The increment represents the distance between dot and
 the address following all the data read by the last formatting dcmd. For
 example, if a formatting dcmd is executed with dot equal to address A, and
 displays a 4-byte integer, then after this dcmd completes, dot is still A,
-but the increment is set to \fB4\fR. The \fB+\fR character (described under
+but the increment is set to
+.BR 4 .
+The
+.B +
+character (described under
 \fBArithmetic Expansion\fR above) would now evaluate to the value \fBA +
 4\fR, and could be used to reset dot to the address of the next data object
 for a subsequent dcmd.
@@ -1518,7 +1812,9 @@ for a subsequent dcmd.
 .LP
 Most format characters increase the value of the increment by the number of
 bytes corresponding to the size of the data format, shown in the table. The
-table of format characters can be displayed from within \fBmdb\fR using the
+table of format characters can be displayed from within
+.B mdb
+using the
 \fB::formats\fR dcmd. The format characters are:
 .sp
 
@@ -1591,7 +1887,9 @@ ydecoded time64_t (8 bytes)
 
 .sp
 .LP
-The \fB/\fR, \fB\e\fR, and \fB?\fR formatting dcmds can also be used to
+The
+.BR / ,
+\fB\e\fR, and \fB?\fR formatting dcmds can also be used to
 write to the target's virtual address space, physical address space, or
 object file by specifying one of the following modifiers as the first format
 character, and then specifying a list of words that are either immediate
@@ -1604,7 +1902,7 @@ The write modifiers are:
 .ne 2
 .mk
 .na
-\fBv\fR
+.B v
 .ad
 .RS 5n
 .rt
@@ -1616,7 +1914,7 @@ beginning at the location specified by dot.
 .ne 2
 .mk
 .na
-\fBw\fR
+.B w
 .ad
 .RS 5n
 .rt
@@ -1628,7 +1926,7 @@ beginning at the location specified by dot.
 .ne 2
 .mk
 .na
-\fBW\fR
+.B W
 .ad
 .RS 5n
 .rt
@@ -1640,7 +1938,7 @@ beginning at the location specified by dot.
 .ne 2
 .mk
 .na
-\fBZ\fR
+.B Z
 .ad
 .RS 5n
 .rt
@@ -1650,17 +1948,30 @@ beginning at the location specified by dot.
 
 .sp
 .LP
-The \fB/\fR, \fB\e\fR, and \fB?\fR formatting dcmds can also be used to
+The
+.BR / ,
+\fB\e\fR, and \fB?\fR formatting dcmds can also be used to
 search for a particular integer value in the target's virtual address space,
 physical address space, and object file, respectively, by specifying one of
 the following modifiers as the first format character, and then specifying a
 value and optional mask. The value and mask are each specified as either
 immediate values or expressions enclosed in square brackets preceded by a
-dollar sign. If only a value is specified, \fBmdb\fR reads integers of the
+dollar sign. If only a value is specified,
+.B mdb
+reads integers of the
 appropriate size and stops at the address containing the matching value. If
-a value \fBV\fR and mask \fBM\fR are specified, \fBmdb\fR reads integers of
-the appropriate size and stops at the address containing a value \fBX\fR
-where \fB(X & M) == V\fR. At the completion of the dcmd, dot is updated to
+a value
+.B V
+and mask
+.B M
+are specified,
+.B mdb
+reads integers of
+the appropriate size and stops at the address containing a value
+.BR X
+where
+.BR "(X & M) == V" .
+At the completion of the dcmd, dot is updated to
 the address containing the match. If no match is found, dot is left at the
 last address that was read.
 .sp
@@ -1691,10 +2002,20 @@ end of the segment boundary fails.
 .LP
 \fBmdb\fR provides facilities for controlling and tracing the execution of
 a live running program. Currently, only the user process target provides
-support for execution control. \fBmdb\fR provides a simple model of
+support for execution control.
+.B mdb
+provides a simple model of
 execution control: a target process can be started from within the debugger
-using \fB::run\fR, or \fBmdb\fR can attach to an existing process using
-\fB:A\fR, \fB::attach\fR, or the \fB-p\fR command-line option, as described
+using
+.BR ::run ,
+or
+.B mdb
+can attach to an existing process using
+.BR :A ,
+.BR ::attach ,
+or the
+.B -p
+command-line option, as described
 below. A list of traced software events can be specified by the user. Each
 time a traced event occurs in the target process, all threads in the target
 stop, the thread that triggered the event is chosen as the representative
@@ -1711,22 +2032,36 @@ breakpoint) or the delivery of a particular signal.
 .LP
 A \fBsoftware event specifier\fR is a description of a class of software
 events that is used by the debugger to instrument the target program in
-order to observe these events. The \fB::events\fR dcmd is used to list the
+order to observe these events. The
+.B ::events
+dcmd is used to list the
 software event specifiers. A set of standard properties is associated with
-each event specifier, as described under \fB::events\fR, below.
+each event specifier, as described under
+.BR ::events ,
+below.
 .sp
 .LP
 The debugger can observe a variety of different software events, including
 breakpoints, watchpoints, signals, machine faults, and system calls. New
-specifiers can be created using \fB::bp\fR, \fB::fltbp\fR, \fB::sigbp\fR,
-\fB::sysbp\fR, or \fB::wp\fR. Each specifier has an associated callback (an
+specifiers can be created using
+.BR ::bp ,
+\fB::fltbp\fR, \fB::sigbp\fR,
+.BR ::sysbp ,
+or
+.BR ::wp .
+Each specifier has an associated callback (an
 \fBmdb\fR command string to execute as if it had been typed at the command
 prompt) and a set of properties, as described below. Any number of
 specifiers for the same event can be created, each with different callbacks
 and properties. The current list of traced events and the properties of the
-corresponding event specifiers can be displayed using the \fB::events\fR
+corresponding event specifiers can be displayed using the
+.BR ::events
 dcmd. The event specifier properties are defined as part of the description
-of the \fB::events\fR and \fB::evset\fR dcmds, below.
+of the
+.B ::events
+and
+.B ::evset
+dcmds, below.
 .sp
 .LP
 The execution control built-in dcmds, described below, are always
@@ -1737,9 +2072,15 @@ with debugger execution control, refer to NOTES, below.
 .SS "Event Callbacks"
 .sp
 .LP
-The \fB::evset\fR dcmd and event tracing dcmds allow you to associate an
-event callback (using the \fB-c\fR option) with each event specifier. The
-event callbacks are strings that represent \fBmdb\fR commands to execute
+The
+.B ::evset
+dcmd and event tracing dcmds allow you to associate an
+event callback (using the
+.B -c
+option) with each event specifier. The
+event callbacks are strings that represent
+.B mdb
+commands to execute
 when the corresponding event occurs in the target. These commands are
 executed as if they had been typed at the command prompt. Before executing
 each callback, the dot variable is set to the value of the representative
@@ -1748,7 +2089,11 @@ of times this specifier has been matched, including the current match.
 .sp
 .LP
 If the event callbacks themselves contain one or more commands to continue
-the target (for example, \fB::cont\fR or \fB::step\fR), these commands do
+the target (for example,
+.B ::cont
+or
+.BR ::step ),
+these commands do
 not immediately continue the target and wait for it to stop again. Instead,
 inside of an event callback, the continue dcmds note that a continue
 operation is now pending, and then return immediately. Therefore, if
@@ -1765,33 +2110,59 @@ highest to lowest is: step, step-over (next), step-out, continue.
 \fBmdb\fR provides facilities to examine the stacks and registers of each
 thread associated with the target. The persistent "\fBthread\fR" variable
 contains the current representative thread identifier. The format of the
-thread identifier depends on the target. The \fB::regs\fR and \fB::fpregs\fR
+thread identifier depends on the target. The
+.B ::regs
+and \fB::fpregs\fR
 dcmds can be used to examine the register set of the representative thread,
 or of another thread if its register set is currently available. In
 addition, the register set of the representative thread is exported as a set
 of named variables. The user can modify the value of one or more registers
-by applying the \fB>\fR dcmd to the corresponding named variable.
+by applying the
+.B >
+dcmd to the corresponding named variable.
 .sp
 .LP
-The \fBmdb\fR kernel target exports the virtual address of the
+The
+.B mdb
+kernel target exports the virtual address of the
 corresponding internal thread structure as the identifier for a given
-thread. The \fISolaris Modular Debugger Guide\fR provides more information
+thread. The
+.I "Solaris Modular Debugger Guide"
+provides more information
 on debugging support for threads in the Solaris kernel. The \fBmdb\fR
 process target provides proper support for examination of multi-threaded
-user processes that use the native \fBlwp_*\fR interfaces,
-\fB/usr/lib/libthread.so\fR or \fB/usr/lib/lwp/libthread.so\fR. When
-debugging a live user process, \fBmdb\fR detects if a single threaded
-process \fBdlopen\fRs or closes \fBlibthread\fR and automatically adjusts
+user processes that use the native
+.B lwp_*
+interfaces,
+\fB/usr/lib/libthread.so\fR or
+.BR /usr/lib/lwp/libthread.so .
+When
+debugging a live user process,
+.B mdb
+detects if a single threaded
+process
+.BR dlopen "s or closes"
+.B libthread
+and automatically adjusts
 its view of the threading model on-the-fly. The process target thread
-identifiers corresponds to either the \fBlwpid_t\fR, \fBthread_t\fR, or
+identifiers corresponds to either the
+.BR lwpid_t ,
+.BR thread_t ,
+or
 \fBpthread_t\fR of the representative, depending on the threading model used
 by the application.
 .sp
 .LP
-If \fBmdb\fR is debugging a user process target and the target makes use of
-compiler-supported thread-local storage, \fBmdb\fR automatically evaluates
+If
+.B mdb
+is debugging a user process target and the target makes use of
+compiler-supported thread-local storage,
+.B mdb
+automatically evaluates
 symbol names referring to thread-local storage to the address of the storage
-corresponding to the current representative thread. The \fB::tls\fR built-in
+corresponding to the current representative thread. The
+.B ::tls
+built-in
 dcmd can be used to display the value of the symbol for threads other than
 the representative thread.
 .SS "Built-in dcmds"
@@ -1802,11 +2173,26 @@ these dcmds are only applicable to certain targets: if a dcmd is not
 applicable to the current target, it fails and prints a message indicating
 "command is not supported by current target". In many cases, \fBmdb\fR
 provides a mnemonic equivalent (\fB::identifier\fR) for the legacy
-\fBadb\fR(1) dcmd names. For example, \fB::quit\fR is provided as the
-equivalent of \fB$q\fR. Programmers who are experienced with \fBadb\fR(1) or
-who appreciate brevity or arcana can prefer the \fB$\fR or \fB:\fR forms of
-the built-ins. Programmers who are new to \fBmdb\fR might prefer the more
-verbose \fB::\fR form. The built-ins are shown in alphabetical order. If a
+.BR adb (1)
+dcmd names. For example,
+.B ::quit
+is provided as the
+equivalent of
+.BR $q .
+Programmers who are experienced with
+.BR adb (1)
+or
+who appreciate brevity or arcana can prefer the
+.B $
+or
+.B :
+forms of
+the built-ins. Programmers who are new to
+.B mdb
+might prefer the more
+verbose
+.B ::
+form. The built-ins are shown in alphabetical order. If a
 \fB$\fR or \fB:\fR form has a \fB::identifier\fR equivalent, it is shown
 underneath the \fB::identifier\fR form. The built-in dcmds are:
 .sp
@@ -1822,14 +2208,18 @@ underneath the \fB::identifier\fR form. The built-in dcmds are:
 .sp .6
 .RS 4n
 Assign the value of dot to the specified named variable. Some variables are
-read-only and can not be modified. If the \fB>\fR is followed by a modifier
-character surrounded by \fB/ /\fR, then the value is modified as part of the
+read-only and can not be modified. If the
+.B >
+is followed by a modifier
+character surrounded by
+.BR "/ /" ,
+then the value is modified as part of the
 assignment. The modifier characters are:
 .sp
 .ne 2
 .mk
 .na
-\fBc\fR
+.B c
 .ad
 .RS 5n
 .rt
@@ -1840,7 +2230,7 @@ unsigned char quantity (1-byte)
 .ne 2
 .mk
 .na
-\fBs\fR
+.B s
 .ad
 .RS 5n
 .rt
@@ -1851,7 +2241,7 @@ unsigned short quantity (2-byte)
 .ne 2
 .mk
 .na
-\fBi\fR
+.B i
 .ad
 .RS 5n
 .rt
@@ -1862,7 +2252,7 @@ unsigned int quantity (4-byte)
 .ne 2
 .mk
 .na
-\fBl\fR
+.B l
 .ad
 .RS 5n
 .rt
@@ -1872,7 +2262,9 @@ unsigned long quantity (4-byte in 32-bit, 8-byte in 64-bit)
 Notice that these operators do not perform a cast. Instead, they fetch the
 specified number of low-order bytes (on little-endian architectures) or
 high-order bytes (big-endian architectures). Modifiers are provided for
-backwards compatibility; the \fBmdb\fR */\fImodifier\fR/ and
+backwards compatibility; the
+.B mdb
+*/\fImodifier\fR/ and
 %/\fImodifier\fR/ syntax should be used instead.
 .RE
 
@@ -1907,7 +2299,7 @@ but do not close the current open macro file.
 .ne 2
 .mk
 .na
-\fB$?\fR
+.B $?
 .ad
 .sp .6
 .RS 4n
@@ -1925,10 +2317,14 @@ representative thread.
 .sp .6
 .RS 4n
 Print a C stack backtrace, including stack frame pointer information. If
-the dcmd is preceded by an explicit \fIaddress\fR, a backtrace beginning at
+the dcmd is preceded by an explicit
+.IR address ,
+a backtrace beginning at
 this virtual memory address is displayed. Otherwise the stack of the
 representative thread is displayed. If an optional count value is given as
-an argument, no more than \fIcount\fR arguments are displayed for each stack
+an argument, no more than
+.I count
+arguments are displayed for each stack
 frame in the output.
 .RE
 
@@ -1950,14 +2346,20 @@ radix is base 16 (hexadecimal).
 .ne 2
 .mk
 .na
-\fB$e\fR
+.B $e
 .ad
 .sp .6
 .RS 4n
 Print a list of all known external (global) symbols of type object or
-function, the value of the symbol, and the first 4 (32-bit \fBmdb\fR) or 8
-(64-bit \fBmdb\fR) bytes stored at this location in the target's virtual
-address space. The \fB::nm\fR dcmd provides more flexible options for
+function, the value of the symbol, and the first 4 (32-bit
+.BR mdb )
+or 8
+(64-bit
+.BR mdb )
+bytes stored at this location in the target's virtual
+address space. The
+.B ::nm
+dcmd provides more flexible options for
 displaying symbol tables.
 .RE
 
@@ -1969,8 +2371,10 @@ displaying symbol tables.
 .ad
 .sp .6
 .RS 4n
-Set the prompt to the specified \fIprompt-string\fR. The default prompt is
-\&'\fB>\fR '. The prompt can also be set using \fB::set\fR \fB-P\fR or the
+Set the prompt to the specified
+.IR prompt-string .
+The default prompt is
+\&'\fB>\fR '. The prompt can also be set using \fB::set -P\fR or the
 \fB-P\fR command-line option.
 .RE
 
@@ -1982,10 +2386,14 @@ Set the prompt to the specified \fIprompt-string\fR. The default prompt is
 .ad
 .sp .6
 .RS 4n
-Get or set the symbol matching \fIdistance\fR for address-to-symbol-name
+Get or set the symbol matching
+.I distance
+for address-to-symbol-name
 conversions. The symbol matching distance modes are discussed along with the
 \fB-s\fR command-line option under OPTIONS. The symbol matching distance can
-also be modified using the \fB::set\fR \fB-s\fR option. If no distance is
+also be modified using the
+.B "::set -s"
+option. If no distance is
 specified, the current setting is displayed.
 .RE
 
@@ -1993,7 +2401,7 @@ specified, the current setting is displayed.
 .ne 2
 .mk
 .na
-\fB$v\fR
+.B $v
 .ad
 .sp .6
 .RS 4n
@@ -2009,8 +2417,12 @@ Print a list of the named variables that have non-zero values. The
 .ad
 .sp .6
 .RS 4n
-Set the output page \fIwidth\fR to the specified value. Typically, this
-command is not necessary as \fBmdb\fR queries the terminal for its width and
+Set the output page
+.I width
+to the specified value. Typically, this
+command is not necessary as
+.B mdb
+queries the terminal for its width and
 handles resize events.
 .RE
 
@@ -2018,20 +2430,22 @@ handles resize events.
 .ne 2
 .mk
 .na
-\fB$W\fR
+.B $W
 .ad
 .sp .6
 .RS 4n
-Re-open the target for writing, as if \fBmdb\fR had been executed with the
+Re-open the target for writing, as if
+.B mdb
+had been executed with the
 \fB-w\fR option on the command line. Write mode can also be enabled with the
-\fB::set\fR \fB-w\fR option.
+\fB::set -w\fR option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB[ \fIpid\fR ] \fB::attach \fR [ \fIcore\fR | \fIpid\fR ]\fR
+\fB[ \fIpid\fR ] \fB::attach\fR  [ \fIcore\fR | \fIpid\fR ]\fR
 .ad
 .br
 .na
@@ -2061,7 +2475,9 @@ specified as expressions.
 .ad
 .sp .6
 .RS 4n
-Set a breakpoint at the specified locations. The \fB::bp\fR dcmd sets a
+Set a breakpoint at the specified locations. The
+.B ::bp
+dcmd sets a
 breakpoint at each address or symbol specified, including an optional
 address specified by an explicit expression preceding the dcmd, and each
 string or immediate value following the dcmd. The arguments can either be
@@ -2075,11 +2491,28 @@ automatically enabled when the load object is opened. Breakpoints on symbols
 defined in a shared library should always be set using a symbol name and not
 using an address expression, as the address can refer to the corresponding
 Procedure Linkage Table (\fBPLT\fR) entry instead of the actual symbol
-definition. Breakpoints set on \fBPLT\fR entries can be overwritten by the
-run-time link-editor when the \fBPLT\fR entry is subsequently resolved to
-the actual symbol definition. The \fB-d\fR, \fB-D\fR, \fB-e\fR, \fB-s\fR,
-\fB-t\fR, \fB-T\fR, \fB-c\fR, and \fB-n\fR options have the same meaning as
-they do for the \fB::evset\fR dcmd, as described below. If the \fB:b\fR form
+definition. Breakpoints set on
+.B PLT
+entries can be overwritten by the
+run-time link-editor when the
+.B PLT
+entry is subsequently resolved to
+the actual symbol definition. The
+.BR -d ,
+.BR -D ,
+.BR -e ,
+.BR -s ,
+.BR -t ,
+.BR -T ,
+.BR -c ,
+and
+.B -n
+options have the same meaning as
+they do for the
+.B ::evset
+dcmd, as described below. If the
+.B :b
+form
 of the dcmd is used, a breakpoint is only set at the virtual address
 specified by the expression preceding the dcmd. The arguments following the
 \fB:b\fR dcmd are concatenated together to form the callback string. If this
@@ -2097,7 +2530,9 @@ string contains meta-characters, it must be quoted.
 Concatenate and display files. Each filename can be specified as a relative
 or absolute pathname. The file contents are printed to standard output, but
 are not passed to the output pager. This dcmd is intended to be used with
-the \fB|\fR operator; the programmer can initiate a pipeline using a list of
+the
+.B |
+operator; the programmer can initiate a pipeline using a list of
 addresses stored in an external file.
 .RE
 
@@ -2116,16 +2551,27 @@ addresses stored in an external file.
 Suspend the debugger, continue the target program, and wait for it to
 terminate or stop following a software event of interest. If the target is
 already running because the debugger was attached to a running program with
-the \fB-o\fR \fBnostop\fR option enabled, this dcmd simply waits for the
+the
+.B "-o nostop"
+option enabled, this dcmd simply waits for the
 target to terminate or stop after an event of interest. If an optional
 signal name or number (see \fBsignal.h\fR(3HEAD)) is specified as an
 argument, the signal is immediately delivered to the target as part of
-resuming its execution. If the \fBSIGINT\fR signal is traced, control can be
+resuming its execution. If the
+.B SIGINT
+signal is traced, control can be
 asynchronously returned to the debugger by typing the user-defined interrupt
-character (usually \fB^C\fR). This \fBSIGINT\fR signal is automatically
+character (usually
+.BR ^C ).
+This
+.B SIGINT
+signal is automatically
 cleared and is not observed by the target the next time it is continued. If
-no target program is currently running, \fB::cont\fR starts a new program
-running as if by \fB::run\fR.
+no target program is currently running,
+.B ::cont
+starts a new program
+running as if by
+.BR ::run .
 .RE
 
 .sp
@@ -2142,29 +2588,41 @@ running as if by \fB::run\fR.
 .RS 4n
 Context switch to the specified process. A context switch operation is only
 valid when using the kernel target. The process context is specified using
-the \fIaddress\fR of its proc structure in the kernel's virtual address
+the
+.I address
+of its proc structure in the kernel's virtual address
 space. The special context address "\fB0\fR" is used to denote the context
-of the kernel itself. \fBmdb\fR can only perform a context switch when
+of the kernel itself.
+.B mdb
+can only perform a context switch when
 examining a crash dump if the dump contains the physical memory pages of the
 specified user process (as opposed to just kernel pages). The kernel crash
 dump facility can be configured to dump all pages or the pages of the
-current user process using \fBdumpadm\fR(1M). The \fB::status\fR dcmd can be
+current user process using
+.BR dumpadm "(1M). The"
+.B ::status
+dcmd can be
 used to display the contents of the current crash dump.
 .sp
 When the user requests a context switch from the kernel target, \fBmdb\fR
 constructs a new target representing the specified user process. Once the
 switch occurs, the new target interposes its dcmds at the global level: thus
-the \fB/\fR dcmd now formats and displays data from the virtual address
-space of the user process, the \fB::mappings\fR dcmd displays the mappings
+the
+.B /
+dcmd now formats and displays data from the virtual address
+space of the user process, the
+.B ::mappings
+dcmd displays the mappings
 in the address space of the user process, and so on. The kernel target can
-be restored by executing \fB0::context\fR.
+be restored by executing
+.BR 0::context .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB::dcmds\fR
+.B ::dcmds
 .ad
 .sp .6
 .RS 4n
@@ -2198,11 +2656,13 @@ specifiers.
 .mk
 .na
 \fB[ \fIaddress\fR ] \fB::dis\fR [ \fB-fw\fR ] [ \fB-n\fR \fIcount\fR ] [
-\fIaddress\fR ]\fR
+.IR address " ]"
 .ad
 .sp .6
 .RS 4n
-Disassemble starting at or around the \fIaddress\fR specified by the final
+Disassemble starting at or around the
+.I address
+specified by the final
 argument, or the current value of dot. If the address matches the start of a
 known function, the entire function is disassembled. Otherwise, a "window"
 of instructions before and after the specified address is printed in order
@@ -2213,20 +2673,24 @@ by default if the debugger is not currently attached to a live process, core
 file, or crash dump. The \fB-w\fR option can be used to force "window"-mode,
 even if the address is the start of a known function. The size of the window
 defaults to ten instructions; the number of instructions can be specified
-explicitly using the \fB-n\fR option.
+explicitly using the
+.B -n
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB::disasms\fR
+.B ::disasms
 .ad
 .sp .6
 .RS 4n
 List the available disassembler modes. When a target is initialized,
 \fBmdb\fR attempts to select the appropriate disassembler mode. The user can
-change the mode to any of the modes listed using the \fB::dismode\fR dcmd.
+change the mode to any of the modes listed using the
+.B ::dismode
+dcmd.
 .RE
 
 .sp
@@ -2237,14 +2701,18 @@ change the mode to any of the modes listed using the \fB::dismode\fR dcmd.
 .ad
 .br
 .na
-\fB$V\fR [ \fImode\fR ] \fR
+\fB$V\fR [ \fImode\fR ]\fR 
 .ad
 .sp .6
 .RS 4n
 Get or set the disassembler mode. If no argument is specified, print the
-current disassembler mode. If a \fImode\fR argument is specified, switch the
+current disassembler mode. If a
+.I mode
+argument is specified, switch the
 disassembler to the specified mode. The list of available disassemblers can
-be displayed using the \fB::disasms\fR dcmd.
+be displayed using the
+.B ::disasms
+dcmd.
 .RE
 
 .sp
@@ -2255,7 +2723,9 @@ be displayed using the \fB::disasms\fR dcmd.
 .ad
 .sp .6
 .RS 4n
-List the loaded debugger modules. If the \fB-l\fR option is specified, the
+List the loaded debugger modules. If the
+.B -l
+option is specified, the
 list of the dcmds and walkers associated with each dmod is printed below its
 name. The output can be restricted to a particular dmod by specifying its
 name as an additional argument.
@@ -2276,18 +2746,24 @@ name as an additional argument.
 .RS 4n
 Print a hexadecimal and ASCII memory dump of the 16-byte aligned region of
 memory containing the address specified by dot. If a repeat count is
-specified for \fB::dump\fR, this is interpreted as a number of bytes to dump
-rather than a number of iterations. The \fB::dump\fR dcmd also recognizes
+specified for
+.BR ::dump ,
+this is interpreted as a number of bytes to dump
+rather than a number of iterations. The
+.B ::dump
+dcmd also recognizes
 the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 17n
 .rt
-Adjusts for endian-ness. The \fB-e\fR option assumes 4-byte words. The
+Adjusts for endian-ness. The
+.B -e
+option assumes 4-byte words. The
 \fB-g\fR option can be used to change the default word size.
 .RE
 
@@ -2313,7 +2789,9 @@ live process, core file, or crash dump.
 .ad
 .RS 17n
 .rt
-Displays bytes in groups of \fIbytes\fR. The default group size is 4 bytes.
+Displays bytes in groups of
+.IR bytes .
+The default group size is 4 bytes.
 The group size must be a power of two that divides the line width.
 .RE
 
@@ -2321,11 +2799,13 @@ The group size must be a power of two that divides the line width.
 .ne 2
 .mk
 .na
-\fB-p\fR
+.B -p
 .ad
 .RS 17n
 .rt
-Interprets \fIaddress\fR as a physical address location in the target's
+Interprets
+.I address
+as a physical address location in the target's
 address space instead of a virtual address.
 .RE
 
@@ -2333,7 +2813,7 @@ address space instead of a virtual address.
 .ne 2
 .mk
 .na
-\fB-q\fR
+.B -q
 .ad
 .RS 17n
 .rt
@@ -2344,19 +2824,21 @@ Does not print an ASCII decoding of the data.
 .ne 2
 .mk
 .na
-\fB-r\fR
+.B -r
 .ad
 .RS 17n
 .rt
 Numbers lines relative to the start address instead of with the explicit
-address of each line. This option implies the \fB-u\fR option.
+address of each line. This option implies the
+.B -u
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .RS 17n
 .rt
@@ -2367,7 +2849,7 @@ Elides repeated lines.
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .RS 17n
 .rt
@@ -2379,7 +2861,7 @@ instead of reading and printing entire lines.
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .RS 17n
 .rt
@@ -2396,7 +2878,7 @@ Unaligns output instead of aligning the output at a paragraph boundary.
 .rt
 Displays paragraphs at 16-byte paragraphs per line. The default number of
 \fIparagraphs\fR is one. The maximum value accepted for \fB-w\fR is
-\fB16\fR.
+.BR 16 .
 .RE
 
 .RE
@@ -2409,8 +2891,11 @@ Displays paragraphs at 16-byte paragraphs per line. The default number of
 .ad
 .sp .6
 .RS 4n
-Print the arguments separated by blanks and terminated by a \fINEWLINE\fR
-to standard output. Expressions enclosed in \fB$[ ]\fR is  evaluated to a
+Print the arguments separated by blanks and terminated by a
+.IR NEWLINE
+to standard output. Expressions enclosed in
+.B "$[ ]"
+is  evaluated to a
 value and printed in the default base.
 .RE
 
@@ -2440,10 +2925,16 @@ single quotes.
 .sp .6
 .RS 4n
 Display the list of software event specifiers. Each event specifier is
-assigned a unique \fBID\fR number that can be used to delete or modify it at
+assigned a unique
+.B ID
+number that can be used to delete or modify it at
 a later time. The debugger can also have its own internal events enabled for
-tracing. These events are only be displayed if the \fB-a\fR option is
-present. If the \fB-v\fR option is present, a more verbose display,
+tracing. These events are only be displayed if the
+.B -a
+option is
+present. If the
+.B -v
+option is present, a more verbose display,
 including the reason for any specifier inactivity, are shown. Here is some
 sample output:
 .sp
@@ -2465,18 +2956,21 @@ sample output:
 .sp
 
 The following table explains the meaning of each column. A summary of this
-information is available using \fB::help\fR \fBevents\fR.
+information is available using
+.BR "::help events" .
 .sp
 .ne 2
 .mk
 .na
-\fBID\fR
+.B ID
 .ad
 .RS 15n
 .rt
 The event specifier identifier. The identifier is shown in square brackets
 \fB[ ]\fR if the specifier is enabled, in parentheses \fB( )\fR if the
-specifier is disabled, or in angle brackets \fB< >\fR if the target program
+specifier is disabled, or in angle brackets
+.B "< >"
+if the target program
 is currently stopped on an event that matches the given specifier.
 .RE
 
@@ -2484,7 +2978,7 @@ is currently stopped on an event that matches the given specifier.
 .ne 2
 .mk
 .na
-\fBS\fR
+.B S
 .ad
 .RS 15n
 .rt
@@ -2493,7 +2987,7 @@ The event specifier state. The state is one of the following symbols:
 .ne 2
 .mk
 .na
-\fB-\fR
+.B -
 .ad
 .RS 5n
 .rt
@@ -2507,7 +3001,7 @@ shared object that is not yet loaded).
 .ne 2
 .mk
 .na
-\fB+\fR
+.B +
 .ad
 .RS 5n
 .rt
@@ -2519,13 +3013,14 @@ type is detected by the debugger.
 .ne 2
 .mk
 .na
-\fB*\fR
+.B *
 .ad
 .RS 5n
 .rt
 The event specifier is armed. This state means that the target is currently
 running with instrumentation for this type of event. This state is only
-visible if the debugger is attached to a running program with the \fB-o\fR
+visible if the debugger is attached to a running program with the
+.BR -o
 \fBnostop\fR option.
 .RE
 
@@ -2533,12 +3028,12 @@ visible if the debugger is attached to a running program with the \fB-o\fR
 .ne 2
 .mk
 .na
-\fB!\fR
+.B !
 .ad
 .RS 5n
 .rt
 The event specifier was not armed due to an operating system error. The
-\fB::events\fR \fB-v\fR option can be used to display more information about
+\fB::events -v\fR option can be used to display more information about
 the reason the instrumentation failed.
 .RE
 
@@ -2548,7 +3043,7 @@ the reason the instrumentation failed.
 .ne 2
 .mk
 .na
-\fBTA\fR
+.B TA
 .ad
 .RS 15n
 .rt
@@ -2558,7 +3053,7 @@ more of the following symbols can be shown:
 .ne 2
 .mk
 .na
-\fBt\fR
+.B t
 .ad
 .RS 5n
 .rt
@@ -2570,20 +3065,23 @@ stops, regardless of whether it is matched.
 .ne 2
 .mk
 .na
-\fBT\fR
+.B T
 .ad
 .RS 5n
 .rt
 The event specifier is sticky, and is not be deleted by \fB::delete\fR
-\fBall\fR or \fB:z\fR. The specifier can be deleted by explicitly specifying
-its id number to \fB::delete\fR.
+\fBall\fR or
+.BR :z .
+The specifier can be deleted by explicitly specifying
+its id number to
+.BR ::delete .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBd\fR
+.B d
 .ad
 .RS 5n
 .rt
@@ -2595,7 +3093,7 @@ to the hit limit.
 .ne 2
 .mk
 .na
-\fBD\fR
+.B D
 .ad
 .RS 5n
 .rt
@@ -2607,7 +3105,7 @@ the hit limit.
 .ne 2
 .mk
 .na
-\fBs\fR
+.B s
 .ad
 .RS 5n
 .rt
@@ -2621,7 +3119,7 @@ limit.
 .ne 2
 .mk
 .na
-\fBHT\fR
+.B HT
 .ad
 .RS 15n
 .rt
@@ -2634,13 +3132,15 @@ of this event specifier.
 .ne 2
 .mk
 .na
-\fBLM\fR
+.B LM
 .ad
 .RS 15n
 .rt
 The current hit limit. This column displays the limit on the hit count at
 which the auto-disable, auto-delete, or auto-stop behavior takes effect.
-These behaviors can be configured using the \fB::evset\fR dcmd, described
+These behaviors can be configured using the
+.B ::evset
+dcmd, described
 below.
 .RE
 
@@ -2648,7 +3148,7 @@ below.
 .ne 2
 .mk
 .na
-\fBDescription\fR
+.B Description
 .ad
 .RS 15n
 .rt
@@ -2660,7 +3160,7 @@ specifier.
 .ne 2
 .mk
 .na
-\fBAction\fR
+.B Action
 .ad
 .RS 15n
 .rt
@@ -2684,21 +3184,27 @@ Modify the properties of one or more software event specifiers. The
 properties are set for each specifier identified by the optional expression
 preceding the dcmd and an optional list of arguments following the dcmd. The
 argument list is interpreted as a list of decimal integers, unless an
-explicit radix is specified. The \fB::evset\fR dcmd recognizes the following
+explicit radix is specified. The
+.B ::evset
+dcmd recognizes the following
 options:
 .sp
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 6n
 .rt
 Disables the event specifier when the hit count reaches the hit limit. If
-the \fB-d\fR form of the option is given, this behavior is disabled. Once an
+the
+.B -d
+form of the option is given, this behavior is disabled. Once an
 event specifier is disabled, the debugger removes any corresponding
 instrumentation and ignores the corresponding software events until the
-specifier is subsequently re-enabled. If the \fB-n\fR option is not present,
+specifier is subsequently re-enabled. If the
+.B -n
+option is not present,
 the specifier is disabled immediately.
 .RE
 
@@ -2706,25 +3212,31 @@ the specifier is disabled immediately.
 .ne 2
 .mk
 .na
-\fB-D\fR
+.B -D
 .ad
 .RS 6n
 .rt
 Deletes the event specifier when the hit count reaches the hit limit. If
-the \fB-D\fR form of the option is given, this behavior is disabled. The
+the
+.B -D
+form of the option is given, this behavior is disabled. The
 \fB-D\fR option takes precedence over the \fB-d\fR option. The hit limit can
-be configured using the \fB-n\fR option.
+be configured using the
+.B -n
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 6n
 .rt
-Enables the event specifier. If the \fB-e\fR form of the option is given,
+Enables the event specifier. If the
+.B -e
+form of the option is given,
 the specifier is disabled.
 .RE
 
@@ -2732,7 +3244,7 @@ the specifier is disabled.
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .RS 6n
 .rt
@@ -2741,37 +3253,53 @@ Stops the target program when the hit count reaches the hit limit. If the
 \fB-s\fR behavior tells the debugger to act as if the \fB::cont\fR were
 issued following each execution of the specifier's callback, except for the
 \fIN\fRth execution, where \fIN\fR is the current value of the specifier's
-hit limit. The \fB-s\fR option takes precedence over both the \fB-D\fR
-option and the \fB-d\fR option.
+hit limit. The
+.B -s
+option takes precedence over both the
+.BR -D
+option and the
+.B -d
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-t\fR
+.B -t
 .ad
 .RS 6n
 .rt
 Marks the event specifier as temporary. Temporary specifiers are
 automatically deleted the next time the target stops, regardless of whether
 it stopped as the result of a software event corresponding to the given
-specifier. If the \fB-t\fR form of the option is given, the temporary marker
-is removed. The \fB-t\fR option takes precedence over the \fB-T\fR option.
+specifier. If the
+.B -t
+form of the option is given, the temporary marker
+is removed. The
+.B -t
+option takes precedence over the
+.B -T
+option.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-T\fR
+.B -T
 .ad
 .RS 6n
 .rt
 Marks the event specifier as sticky. Sticky specifiers are not deleted by
-\fB::delete\fR \fBall\fR or \fB:z.\fR They can be deleted by specifying the
-corresponding specifier \fBID\fR as an explicit argument to \fB::delete\fR.
-If the \fB-T\fR form of the option is given, the sticky property is removed.
+\fB::delete all\fR or \fB:z.\fR They can be deleted by specifying the
+corresponding specifier
+.B ID
+as an explicit argument to
+.BR ::delete .
+If the
+.B -T
+form of the option is given, the sticky property is removed.
 The default set of event specifiers are all initially marked sticky.
 .RE
 
@@ -2779,30 +3307,40 @@ The default set of event specifiers are all initially marked sticky.
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .RS 6n
 .rt
-Executes the specified \fIcmd\fR string each time the corresponding
+Executes the specified
+.I cmd
+string each time the corresponding
 software event occurs in the target program. The current callback string can
-be displayed using \fB::events\fR.
+be displayed using
+.BR ::events .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .RS 6n
 .rt
-Sets the current value of the hit limit to \fIcount\fR. If no hit limit is
-currently set and the \fB-n\fR option does not accompany \fB-s\fR or D, the
+Sets the current value of the hit limit to
+.IR count .
+If no hit limit is
+currently set and the
+.B -n
+option does not accompany
+.B -s
+or D, the
 hit limit is set to one.
 .RE
 
-A summary of this information is available using \fB::help\fR
-\fBevset\fR.
+A summary of this information is available using
+.BR ::help
+.BR evset .
 .RE
 
 .sp
@@ -2832,9 +3370,20 @@ present in the various target symbol tables).
 .RS 4n
 Trace the specified machine faults. The faults are identified using an
 optional fault number preceding the dcmd, or a list of fault names or
-numbers (see \fB<sys/fault.h>\fR) following the dcmd. The \fB-d\fR,
-\fB-D\fR, \fB-e\fR, \fB-s\fR, \fB-t\fR, \fB-T\fR, \fB-c\fR, and \fB-n\fR
-options have the same meaning as they do for the \fB::evset\fR dcmd.
+numbers (see
+.BR <sys/fault.h> )
+following the dcmd. The \fB-d\fR,
+.BR -D ,
+.BR -e ,
+.BR -s ,
+.BR -t ,
+.BR -T ,
+.BR -c ,
+and
+.BR -n
+options have the same meaning as they do for the
+.B ::evset
+dcmd.
 .RE
 
 .sp
@@ -2845,14 +3394,20 @@ options have the same meaning as they do for the \fB::evset\fR dcmd.
 .ad
 .br
 .na
-\fB[ \fIthread\fR ] \fB$x\fR, \fB$X\fR, \fB$y\fR, \fB$Y\fR
+\fB[ \fIthread\fR ]
+.BR $x ,
+.BR $X ,
+.BR $y ,
+.B $Y
 .ad
 .sp .6
 .RS 4n
 Print the floating-point register set of the representative thread. If a
 thread is specified, the floating point registers of that thread are
 displayed. The thread expression should be one of the thread identifiers
-described under \fBThread Support\fR, above.
+described under
+.BR "Thread Support" ,
+above.
 .RE
 
 .sp
@@ -2863,9 +3418,16 @@ described under \fBThread Support\fR, above.
 .ad
 .sp .6
 .RS 4n
-List the available output format characters for use with the \fB/\fR,
-\fB\e\fR, \fB?\fR, and \fB=\fR formatting dcmds. The formats and their use
-is described under \fBFormatting dcmds\fR, above.
+List the available output format characters for use with the
+.BR / ,
+\fB\e\fR,
+.BR ? ,
+and
+.B =
+formatting dcmds. The formats and their use
+is described under
+.BR "Formatting dcmds" ,
+above.
 .RE
 
 .sp
@@ -2877,8 +3439,12 @@ is described under \fBFormatting dcmds\fR, above.
 .sp .6
 .RS 4n
 Evaluate the specified command string, and then print the old value of dot
-if the new value of dot is non-zero. If the \fIcommand\fR contains
-whitespace or metacharacters, it must be quoted. The \fB::grep\fR dcmd can
+if the new value of dot is non-zero. If the
+.I command
+contains
+whitespace or metacharacters, it must be quoted. The
+.B ::grep
+dcmd can
 be used in pipelines to filter a list of addresses.
 .RE
 
@@ -2890,8 +3456,14 @@ be used in pipelines to filter a list of addresses.
 .ad
 .sp .6
 .RS 4n
-With no arguments, the \fB::help\fR dcmd prints a brief overview of the
-help facilities available in \fBmdb\fR. If a \fIdcmd-name\fR is specified,
+With no arguments, the
+.B ::help
+dcmd prints a brief overview of the
+help facilities available in
+.BR mdb .
+If a
+.I dcmd-name
+is specified,
 \fBmdb\fR prints a usage summary for that dcmd.
 .RE
 
@@ -2908,7 +3480,9 @@ it to be delivered transparently to the target. All event specifiers that
 are tracing delivery of the specified signal is deleted from the list of
 traced events. By default, the set of ignored signals is initialized to the
 complement of the set of signals that cause a process to dump core by
-default (see \fBsignal.h\fR(3HEAD)), except for \fBSIGINT\fR, which is
+default (see \fBsignal.h\fR(3HEAD)), except for
+.BR SIGINT ,
+which is
 traced by default.
 .RE
 
@@ -2916,41 +3490,46 @@ traced by default.
 .ne 2
 .mk
 .na
-\fB$i\fR
+.B $i
 .ad
 .sp .6
 .RS 4n
 Display the list of signals that are ignored by the debugger and that is
 handled directly by the target. More information on traced signals can be
-obtained using the \fB::events\fR dcmd.
+obtained using the
+.B ::events
+dcmd.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB::kill\fR
+.B ::kill
 .ad
 .br
 .na
-\fB:k\fR
+.B :k
 .ad
 .sp .6
 .RS 4n
 Forcibly terminate the target if it is a live user process. The target is
 also forcibly terminated when the debugger exits if it was created by the
-debugger using \fB::run\fR.
+debugger using
+.BR ::run .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB$l\fR
+.B $l
 .ad
 .sp .6
 .RS 4n
-Print the \fBLWPID\fR of the representative thread, if the target is a user
+Print the
+.B LWPID
+of the representative thread, if the target is a user
 process.
 .RE
 
@@ -2958,7 +3537,7 @@ process.
 .ne 2
 .mk
 .na
-\fB$L\fR
+.B $L
 .ad
 .sp .6
 .RS 4n
@@ -2970,8 +3549,8 @@ user process.
 .ne 2
 .mk
 .na
-\fB[ \fIaddress\fR ] \fB::list\fR \fItype\fR \fImember\fR [
-\fIvariable-name\fR ]\fR
+\fB[ \fIaddress\fR ] \fB::list\fR \fItype member\fR [
+.IR variable-name " ]"
 .ad
 .sp .6
 .RS 4n
@@ -2980,16 +3559,34 @@ address of each element in the list. The address of the first element in the
 list can be specified using an optional address. Otherwise, the list is
 assumed to start at the current value of dot. The type parameter must name a
 C struct or union type and is used to describe the type of the list elements
-so that \fBmdb\fR can read in objects of the appropriate size. The member
-parameter is used to name the \fImember\fR of \fItype\fR that contains a
-pointer to the next list element. The \fB::list\fR dcmd continues iterating
-until a \fBNULL\fR pointer is encountered, the first element is reached
+so that
+.B mdb
+can read in objects of the appropriate size. The member
+parameter is used to name the
+.I member
+of
+.I type
+that contains a
+pointer to the next list element. The
+.B ::list
+dcmd continues iterating
+until a
+.B NULL
+pointer is encountered, the first element is reached
 again (a circular list), or an error occurs while reading an element. If the
-optional \fIvariable-name\fR is specified, the specified variable is
-assigned the value returned at each step of the walk when \fBmdb\fR invokes
-the next stage of a pipeline. The \fB::list\fR dcmd can only be used with
+optional
+.I variable-name
+is specified, the specified variable is
+assigned the value returned at each step of the walk when
+.B mdb
+invokes
+the next stage of a pipeline. The
+.B ::list
+dcmd can only be used with
 objects that contain symbolic debugging information designed for use with
-mdb. Refer to NOTES, \fBSymbolic Debugging Information\fR, below for more
+mdb. Refer to NOTES,
+.BR "Symbolic Debugging Information" ,
+below for more
 information.
 .RE
 
@@ -3002,10 +3599,16 @@ information.
 .sp .6
 .RS 4n
 Load the specified dmod. The module name can be given as an absolute or
-relative path. If \fImodule-name\fR is a simple name (that is, does not
+relative path. If
+.I module-name
+is a simple name (that is, does not
 contain a '\fB/\fR'), \fBmdb\fR searches for it in the module library path.
 Modules with conflicting names can not be loaded; the existing module must
-be unloaded first. If the \fB-s\fR option is present, \fBmdb\fR remains
+be unloaded first. If the
+.B -s
+option is present,
+.B mdb
+remains
 silent and not issue any error messages if the module is not found or could
 not be loaded.
 .RE
@@ -3022,14 +3625,22 @@ not be loaded.
 .ad
 .sp .6
 .RS 4n
-Enable or disable the output log. \fBmdb\fR provides an interactive logging
+Enable or disable the output log.
+.B mdb
+provides an interactive logging
 facility where both the input commands and standard output can be logged to
-a file while still interacting with the user. The \fB-e\fR option enables
+a file while still interacting with the user. The
+.B -e
+option enables
 logging to the specified file, or re-enables logging to the previous log
-file if no filename is given. The \fB-d\fR option disables logging. If the
+file if no filename is given. The
+.B -d
+option disables logging. If the
 \fB$>\fR dcmd is used, logging is enabled if a filename argument is
 specified; otherwise, logging is disabled. If the specified log file already
-exists, \fBmdb\fR appends any new log output to the file.
+exists,
+.B mdb
+appends any new log output to the file.
 .RE
 
 .sp
@@ -3040,7 +3651,8 @@ exists, \fBmdb\fR appends any new log output to the file.
 .ad
 .sp .6
 .RS 4n
-Map the value of dot to a corresponding value using the \fIcommand\fR
+Map the value of dot to a corresponding value using the
+.IR command
 specified as a string argument, and then print the new value of dot. If the
 command contains whitespace or metacharacters, it must be quoted. The
 \fB::map\fR dcmd can be used in pipelines to transform the list of addresses
@@ -3061,8 +3673,14 @@ into a new list of addresses.
 .RS 4n
 Print a list of each mapping in the target's virtual address space,
 including the address, size, and description of each mapping. If the dcmd is
-preceded by an \fIaddress\fR, \fBmdb\fR only shows the mapping that contains
-the given address. If a string \fIname\fR argument is given, \fBmdb\fR only
+preceded by an
+.IR address ,
+\fBmdb\fR only shows the mapping that contains
+the given address. If a string
+.I name
+argument is given,
+.B mdb
+only
 shows the mapping matching that description.
 .RE
 
@@ -3091,7 +3709,7 @@ the first instruction.
 .mk
 .na
 \fB[ \fIaddress\fR ] \fB::nm\fR [ \fB-DPdghnopuvx\fR ] [ \fB-t\fR
-\fItypes\fR ]\fR
+.IR types " ]"
 .ad
 .br
 .na
@@ -3101,14 +3719,18 @@ the first instruction.
 .RS 4n
 Print the symbol tables associated with the current target. If an optional
 address preceding the dcmd is specified, only the symbol table entry for the
-symbol corresponding to \fIaddress\fR is displayed. If an \fIobject\fR is
+symbol corresponding to
+.I address
+is displayed. If an
+.I object
+is
 specified, only the symbol table for this load object is displayed. The
 \fB::nm\fR dcmd also recognizes the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-D\fR
+.B -D
 .ad
 .RS 27n
 .rt
@@ -3119,7 +3741,7 @@ Prints \fB\&.dynsym\fR (dynamic symbol table) instead of \fB\&.symtab\fR.
 .ne 2
 .mk
 .na
-\fB-P\fR
+.B -P
 .ad
 .RS 27n
 .rt
@@ -3130,7 +3752,7 @@ Prints the private symbol table instead of \fB\&.symtab\fR.
 .ne 2
 .mk
 .na
-\fB-d\fR
+.B -d
 .ad
 .RS 27n
 .rt
@@ -3141,7 +3763,7 @@ Prints value and size fields in decimal.
 .ne 2
 .mk
 .na
-\fB-g\fR
+.B -g
 .ad
 .RS 27n
 .rt
@@ -3152,7 +3774,7 @@ Prints only global symbols.
 .ne 2
 .mk
 .na
-\fB-h\fR
+.B -h
 .ad
 .RS 27n
 .rt
@@ -3163,7 +3785,7 @@ Suppresses the header line.
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .RS 27n
 .rt
@@ -3174,7 +3796,7 @@ Sorts symbols by name.
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .RS 27n
 .rt
@@ -3185,20 +3807,25 @@ Prints value and size fields in octal.
 .ne 2
 .mk
 .na
-\fB-p\fR
+.B -p
 .ad
 .RS 27n
 .rt
-Prints symbols as a series of \fB::nmadd\fR commands. This option can be
-used with \fB-P\fR to produce a macro file that can be subsequently read
-into the debugger with \fB$<\fR.
+Prints symbols as a series of
+.B ::nmadd
+commands. This option can be
+used with
+.B -P
+to produce a macro file that can be subsequently read
+into the debugger with
+.BR $< .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .RS 27n
 .rt
@@ -3209,7 +3836,7 @@ Prints only undefined symbols.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 27n
 .rt
@@ -3220,7 +3847,7 @@ Sorts symbols by value.
 .ne 2
 .mk
 .na
-\fB-x\fR
+.B -x
 .ad
 .RS 27n
 .rt
@@ -3235,28 +3862,30 @@ Prints value and size fields in hexadecimal.
 .ad
 .RS 27n
 .rt
-Prints only symbols of the specified type(s). The valid \fItype\fR argument
+Prints only symbols of the specified type(s). The valid
+.I type
+argument
 strings are:
 .sp
 .ne 2
 .mk
 .na
-\fBnoty\fR
+.B noty
 .ad
 .RS 8n
 .rt
-\fISTT_NOTYPE\fR
+.I STT_NOTYPE
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBobjt\fR
+.B objt
 .ad
 .RS 8n
 .rt
-\fISTT_OBJECT\fR
+.I STT_OBJECT
 .RE
 
 .sp
@@ -3267,18 +3896,18 @@ strings are:
 .ad
 .RS 8n
 .rt
-\fISTT_FUNC\fR
+.I STT_FUNC
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBsect\fR
+.B sect
 .ad
 .RS 8n
 .rt
-\fISTT_SECTION\fR
+.I STT_SECTION
 .RE
 
 .sp
@@ -3289,40 +3918,40 @@ strings are:
 .ad
 .RS 8n
 .rt
-\fISTT_FILE\fR
+.I STT_FILE
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcomm\fR
+.B comm
 .ad
 .RS 8n
 .rt
-\fISTT_COMMON\fR
+.I STT_COMMON
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtls\fR
+.B tls
 .ad
 .RS 8n
 .rt
-\fISTT_TLS\fR
+.I STT_TLS
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBregi\fR
+.B regi
 .ad
 .RS 8n
 .rt
-\fISTT_SPARC_REGISTER\fR
+.I STT_SPARC_REGISTER
 .RE
 
 .RE
@@ -3341,7 +3970,7 @@ argument strings are:
 .ne 2
 .mk
 .na
-\fBndx\fR
+.B ndx
 .ad
 .RS 9n
 .rt
@@ -3352,7 +3981,7 @@ symbol table index
 .ne 2
 .mk
 .na
-\fBval\fR
+.B val
 .ad
 .RS 9n
 .rt
@@ -3363,7 +3992,7 @@ symbol value
 .ne 2
 .mk
 .na
-\fBsize\fR
+.B size
 .ad
 .RS 9n
 .rt
@@ -3374,7 +4003,7 @@ size in bytes
 .ne 2
 .mk
 .na
-\fBtype\fR
+.B type
 .ad
 .RS 9n
 .rt
@@ -3385,7 +4014,7 @@ symbol type
 .ne 2
 .mk
 .na
-\fBbind\fR
+.B bind
 .ad
 .RS 9n
 .rt
@@ -3396,7 +4025,7 @@ binding
 .ne 2
 .mk
 .na
-\fBoth\fR
+.B oth
 .ad
 .RS 9n
 .rt
@@ -3407,7 +4036,7 @@ other
 .ne 2
 .mk
 .na
-\fBshndx\fR
+.B shndx
 .ad
 .RS 9n
 .rt
@@ -3418,7 +4047,7 @@ section index
 .ne 2
 .mk
 .na
-\fBname\fR
+.B name
 .ad
 .RS 9n
 .rt
@@ -3429,7 +4058,7 @@ symbol name
 .ne 2
 .mk
 .na
-\fBctype\fR
+.B ctype
 .ad
 .RS 9n
 .rt
@@ -3440,7 +4069,7 @@ C type for symbol (if known)
 .ne 2
 .mk
 .na
-\fBobj\fR
+.B obj
 .ad
 .RS 9n
 .rt
@@ -3456,11 +4085,13 @@ object which defines symbol
 .mk
 .na
 \fIvalue\fR \fB::nmadd\fR [ \fB-fo\fR ] [ \fB-e\fR \fIend\fR ] [
-\fB-s\fR \fIsize\fR ] \fIname \fR
+\fB-s\fR \fIsize\fR ] \fIname\fR 
 .ad
 .sp .6
 .RS 4n
-Add the specified symbol \fIname\fR to the private symbol table. \fBmdb\fR
+Add the specified symbol
+.I name
+.RB "to the private symbol table." " mdb"
 provides a private, configurable symbol table that can be used to interpose
 on the target's symbol table, as described under \fBSymbol Name
 Resolution\fR above. The \fB::nmadd\fR dcmd also recognizes the following
@@ -3469,11 +4100,13 @@ options:
 .ne 2
 .mk
 .na
-\fB-e\fR
+.B -e
 .ad
 .RS 6n
 .rt
-Sets the size of the symbol to \fIend\fR - \fIvalue\fR.
+Sets the size of the symbol to
+.I end
+- \fIvalue\fR.
 .RE
 
 .sp
@@ -3484,29 +4117,32 @@ Sets the size of the symbol to \fIend\fR - \fIvalue\fR.
 .ad
 .RS 6n
 .rt
-Sets the type of the symbol to \fBSTT_FUNC\fR.
+Sets the type of the symbol to
+.BR STT_FUNC .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .RS 6n
 .rt
-Sets the type of the symbol to \fBSTT_OBJECT\fR.
+Sets the type of the symbol to
+.BR STT_OBJECT .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .RS 6n
 .rt
-Sets the size of the symbol to \fIsize\fR.
+Sets the size of the symbol to
+.IR size .
 .RE
 
 .RE
@@ -3519,7 +4155,9 @@ Sets the size of the symbol to \fIsize\fR.
 .ad
 .sp .6
 .RS 4n
-Delete the specified symbol \fIname\fR from the private symbol table.
+Delete the specified symbol
+.I name
+from the private symbol table.
 .RE
 
 .sp
@@ -3532,7 +4170,9 @@ Delete the specified symbol \fIname\fR from the private symbol table.
 .RS 4n
 Print a map of the target's virtual address space, showing only those
 mappings that correspond to the primary mapping (usually the text section)
-of each of the known load objects. The \fB-v\fR option displays the version
+of each of the known load objects. The
+.B -v
+option displays the version
 of each load object. Version information is not available for all load
 objects. Load objects without version information is listed as having a
 version of "\fBUnknown\fR" in the output for the \fB-v\fR option.
@@ -3546,14 +4186,23 @@ version of "\fBUnknown\fR" in the output for the \fB-v\fR option.
 .ad
 .sp .6
 .RS 4n
-Print the offset of the specified \fImember\fR of the specified \fItype\fR.
-The \fItype\fR should be the name of a C structure. The offset is printed in
+Print the offset of the specified
+.I member
+of the specified
+.IR type .
+The
+.I type
+should be the name of a C structure. The offset is printed in
 bytes, unless the member is a bit-field, in which case the offset can be
 printed in bits. The output is always suffixed with the appropriate units
 for clarity. The type name can use the backquote (\fB`\fR) scoping operator
-described under \fBSymbol Name Resolution\fR, above. The \fB::offsetof\fR
+described under
+.BR "Symbol Name Resolution" ,
+above. The \fB::offsetof\fR
 dcmd can only be used with objects that contain symbolic debugging
-information designed for use with \fBmdb\fR. Refer to NOTES, \fBSymbolic
+information designed for use with
+.BR mdb .
+Refer to NOTES, \fBSymbolic
 Debugging Information\fR, below for more information.
 .RE
 
@@ -3570,8 +4219,14 @@ Debugging Information\fR, below for more information.
 .ad
 .sp .6
 .RS 4n
-Print the data structure at the specified virtual \fIaddress\fR using the
-given \fItype\fR information. The \fItype\fR parameter can name a C struct,
+Print the data structure at the specified virtual
+.I address
+using the
+given
+.I type
+information. The
+.I type
+parameter can name a C struct,
 union, enum, fundamental integer type, or a pointer to any of these types.
 If the type name contains whitespace (for example, "\fBstruct foo\fR"), it
 must be enclosed in single or double quotes. The type name can use the
@@ -3579,39 +4234,86 @@ backquote (\fB`\fR) scoping operator described under \fBSymbol Name
 Resolution\fR, above. If the type is a structured type, the \fB::print\fR
 dcmd recursively prints each member of the struct or union. If the
 \fItype\fR argument is not present and a static or global \fISTT_OBJECT\fR
-symbol matches the address, \fB::print\fR infers the appropriate type
-automatically. If the \fItype\fR argument is specified, it can be followed
-by an optional list of \fImember\fR expressions, in which case only those
-members and submembers of the specified \fItype\fR are displayed. If
+symbol matches the address,
+.B ::print
+infers the appropriate type
+automatically. If the
+.I type
+argument is specified, it can be followed
+by an optional list of
+.I member
+expressions, in which case only those
+members and submembers of the specified
+.I type
+are displayed. If
 \fItype\fR contains other structured types, each member string can refer to
 a sub-structure element by forming a list of member names separated by
-period ('\fB\&.\fR') delimiters. The \fB::print\fR dcmd can only be used
+period ('\fB\&.\fR') delimiters. The
+.B ::print
+dcmd can only be used
 with objects that contain symbolic debugging information designed for use
-with \fBmdb\fR. Refer to NOTES, \fBSymbolic Debugging Information\fR, below
+with
+.BR mdb .
+Refer to NOTES,
+.BR "Symbolic Debugging Information" ,
+below
 for more information. After displaying the data structure, \fB::print\fR
-increments dot by the size of \fItype\fR in bytes.
+increments dot by the size of
+.I type
+in bytes.
 .sp
-If the \fB-a\fR option is present, the address of each member is displayed.
-If the \fB-p\fR option is present, \fB::print\fR interprets \fIaddress\fR as
+If the
+.B -a
+option is present, the address of each member is displayed.
+If the
+.B -p
+option is present,
+.B ::print
+interprets
+.I address
+as
 a physical memory address instead of a virtual memory address. If the
 \fB-t\fR option is present, the type of each member is displayed. If the
 \fB-d\fR or \fB-x\fR options are present, all integers are displayed in
-decimal (\fB-d\fR) or hexadecimal (\fB-x\fR). By default, a heuristic is
+decimal (\fB-d\fR) or hexadecimal
+.RB ( -x ).
+By default, a heuristic is
 used to determine if the value should be displayed in decimal or
 hexadecimal. The number of characters in a character array that is read and
-displayed as a string can be limited with the \fB-c\fR option. If the
+displayed as a string can be limited with the
+.B -c
+option. If the
 \fB-C\fR option is present, no limit is enforced. The number of elements in
-a standard array that is read and displayed can be limited with the \fB-l\fR
-option. If the \fB-L\fR option is present, no limit is enforced and all
-array elements are shown. The default values for \fB-c\fR and \fB-l\fR can
-be modified using \fB::set\fR or the \fB-o\fR command-line option as
+a standard array that is read and displayed can be limited with the
+.BR -l
+option. If the
+.B -L
+option is present, no limit is enforced and all
+array elements are shown. The default values for
+.B -c
+and
+.B -l
+can
+be modified using
+.B ::set
+or the
+.B -o
+command-line option as
 described under OPTIONS.
 .sp
-If the \fB-i\fR option is specified, the address value is interpreted as an
+If the
+.B -i
+option is specified, the address value is interpreted as an
 immediate value to be printed. You must give a type with which to interpret
 the value. If the type is smaller than 64 bits, the immediate value is
-interpreted as if it were the size of the type. The \fB-i\fR option cannot
-be used in conjunction with the \fB-p\fR option. If the \fB-a\fR option is
+interpreted as if it were the size of the type. The
+.B -i
+option cannot
+be used in conjunction with the
+.B -p
+option. If the
+.B -a
+option is
 given, the addresses shown are byte offsets starting at zero.
 .RE
 
@@ -3619,11 +4321,11 @@ given, the addresses shown are byte offsets starting at zero.
 .ne 2
 .mk
 .na
-\fB::quit\fR
+.B ::quit
 .ad
 .br
 .na
-\fB$q\fR
+.B $q
 .ad
 .sp .6
 .RS 4n
@@ -3645,7 +4347,9 @@ Quit the debugger.
 Print the general purpose register set of the representative thread. If a
 thread is specified, the general purpose register set of that thread is
 displayed. The thread expression should be one of the thread identifiers
-described under \fBThread Support\fR, above.
+described under
+.BR "Thread Support" ,
+above.
 .RE
 
 .sp
@@ -3662,10 +4366,19 @@ described under \fBThread Support\fR, above.
 .RS 4n
 Release the previously attached process or core file. If the \fB-a\fR
 option is present, the process is released and left stopped and abandoned.
-It can subsequently be continued by \fBprun\fR(1) (see \fBproc\fR(1)) or it
-can be resumed by applying \fBmdb\fR or another debugger. By default, a
-released process is forcibly terminated if it was created by \fBmdb\fR using
-\fB::run\fR, or it is released and set running if it was attached to by
+It can subsequently be continued by
+.BR prun (1)
+(see
+.BR proc (1))
+or it
+can be resumed by applying
+.B mdb
+or another debugger. By default, a
+released process is forcibly terminated if it was created by
+.B mdb
+using
+.BR ::run ,
+or it is released and set running if it was attached to by
 \fBmdb\fR using the \fB-p\fR option or using the \fB::attach\fR or \fB:A\fR
 dcmds.
 .RE
@@ -3685,7 +4398,8 @@ dcmds.
 Start a new target program running with the specified arguments and attach
 to it. The arguments are not interpreted by the shell. If the debugger is
 already examining a live running program, it first detaches from this
-program as if by \fB::release\fR.
+program as if by
+.BR ::release .
 .RE
 
 .sp
@@ -3702,18 +4416,26 @@ program as if by \fB::release\fR.
 .sp .6
 .RS 4n
 Get or set miscellaneous debugger properties. If no options are specified,
-the current set of debugger properties is displayed. The \fB::set\fR dcmd
+the current set of debugger properties is displayed. The
+.B ::set
+dcmd
 recognizes the following options:
 .sp
 .ne 2
 .mk
 .na
-\fB-F\fR
+.B -F
 .ad
 .RS 6n
 .rt
-Forcibly takes over the next user process that \fB::attach\fR is applied
-to, as if \fBmdb\fR had been executed with the \fB-F\fR option on the
+Forcibly takes over the next user process that
+.B ::attach
+is applied
+to, as if
+.B mdb
+had been executed with the
+.B -F
+option on the
 command line.
 .RE
 
@@ -3721,12 +4443,14 @@ command line.
 .ne 2
 .mk
 .na
-\fB-I\fR
+.B -I
 .ad
 .RS 6n
 .rt
 Sets the default path for locating macro files. The path argument can
-contain any of the special tokens described for the \fB-I\fR command-line
+contain any of the special tokens described for the
+.B -I
+command-line
 option under OPTIONS.
 .RE
 
@@ -3734,12 +4458,14 @@ option under OPTIONS.
 .ne 2
 .mk
 .na
-\fB-L\fR
+.B -L
 .ad
 .RS 6n
 .rt
 Sets the default path for locating debugger modules. The path argument can
-contain any of the special tokens described for the \fB-I\fR command-line
+contain any of the special tokens described for the
+.B -I
+command-line
 option under OPTIONS.
 .RE
 
@@ -3747,12 +4473,14 @@ option under OPTIONS.
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .RS 6n
 .rt
-Enables the specified debugger option. If the \fB-o\fR form is used, the
-option is disabled. The option strings are described along with the \fB-o\fR
+Enables the specified debugger option. If the
+.B -o
+form is used, the
+.RB "option is disabled. The option strings are described along with the" " -o"
 command-line option under OPTIONS.
 .RE
 
@@ -3760,7 +4488,7 @@ command-line option under OPTIONS.
 .ne 2
 .mk
 .na
-\fB-P\fR
+.B -P
 .ad
 .RS 6n
 .rt
@@ -3771,12 +4499,14 @@ Sets the command prompt to the specified prompt string.
 .ne 2
 .mk
 .na
-\fB-s\fR
+.B -s
 .ad
 .RS 6n
 .rt
 Sets the symbol matching distance to the specified distance. Refer to the
-description of the \fB-s\fR command-line option under OPTIONS for more
+description of the
+.B -s
+command-line option under OPTIONS for more
 information.
 .RE
 
@@ -3784,11 +4514,13 @@ information.
 .ne 2
 .mk
 .na
-\fB-w\fR
+.B -w
 .ad
 .RS 6n
 .rt
-Re-opens the target for writing, as if \fBmdb\fR had been executed with the
+Re-opens the target for writing, as if
+.B mdb
+had been executed with the
 \fB-w\fR option on the command line.
 .RE
 
@@ -3803,12 +4535,16 @@ Re-opens the target for writing, as if \fBmdb\fR had been executed with the
 .sp .6
 .RS 4n
 Display revision information for the hardware and software. With no options
-specified, general system information is displayed. The \fB-v\fR option
+specified, general system information is displayed. The
+.B -v
+option
 displays version information for all load objects, whereas the \fB-p\fR
 option displays the version information only for the load objects that have
 been installed on the system as part of a patch. Version information is not
 available for all load objects. Load objects without version information is
-omitted from the output for the \fB-p\fR option and is listed as having a
+omitted from the output for the
+.B -p
+option and is listed as having a
 version of "\fBUnknown\fR" in the output for the \fB-v\fR option.
 .RE
 
@@ -3829,8 +4565,17 @@ version of "\fBUnknown\fR" in the output for the \fB-v\fR option.
 Trace delivery of the specified signals. The signals are identified using
 an optional signal number preceding the dcmd, or a list of signal names or
 numbers (see \fBsignal.h\fR(3HEAD)) following the dcmd. The \fB-d\fR,
-\fB-D\fR, \fB-e\fR, \fB-s\fR, \fB-t\fR, \fB-T\fR, \fB-c\fR, and \fB-n\fR
-options have the same meaning as they do for the \fB::evset\fR dcmd.
+.BR -D ,
+.BR -e ,
+.BR -s ,
+.BR -t ,
+.BR -T ,
+.BR -c ,
+and
+.BR -n
+options have the same meaning as they do for the
+.B ::evset
+dcmd.
 Initially, the set of signals that cause the process to dump core by default
 (see \fBsignal.h\fR(3HEAD)) and \fBSIGINT\fR are traced.
 .RE
@@ -3843,12 +4588,18 @@ Initially, the set of signals that cause the process to dump core by default
 .ad
 .sp .6
 .RS 4n
-Print the size of the specified \fItype\fR in bytes. The \fItype\fR
+Print the size of the specified
+.I type
+.RI "in bytes. The" " type"
 parameter can name a C struct, union, enum, fundamental integer type, or a
 pointer to any of these types. The type name can use the backquote (\fB`\fR)
-scoping operator described under \fBSymbol Name Resolution\fR, above. The
+scoping operator described under
+.BR "Symbol Name Resolution" ,
+above. The
 \fB::sizeof\fR dcmd can only be used with objects that contain symbolic
-debugging information designed for use with \fBmdb\fR. Refer to NOTES,
+debugging information designed for use with
+.BR mdb .
+Refer to NOTES,
 \fBSymbolic Debugging Information\fR, below for more information.
 .RE
 
@@ -3856,7 +4607,7 @@ debugging information designed for use with \fBmdb\fR. Refer to NOTES,
 .ne 2
 .mk
 .na
-\fB[ \fIaddress\fR ] \fB::stack \fR [ \fIcount\fR ]\fR
+\fB[ \fIaddress\fR ] \fB::stack\fR  [ \fIcount\fR ]\fR
 .ad
 .br
 .na
@@ -3865,9 +4616,10 @@ debugging information designed for use with \fBmdb\fR. Refer to NOTES,
 .sp .6
 .RS 4n
 Print a C stack backtrace. If the dcmd is preceded by an explicit
-\fIaddress\fR, a backtrace beginning at this virtual memory address is
+.IR address ,
+a backtrace beginning at this virtual memory address is
 displayed. Otherwise the stack of the representative thread is displayed. If
-an optional count value is given as an argument, no more than \fIcount\fR
+.RI "an optional count value is given as an argument, no more than" " count"
 arguments are displayed for each stack frame in the output.
 .RE
 
@@ -3875,7 +4627,7 @@ arguments are displayed for each stack frame in the output.
 .ne 2
 .mk
 .na
-\fB::status\fR
+.B ::status
 .ad
 .sp .6
 .RS 4n
@@ -3902,13 +4654,19 @@ Step the target program one instruction. If an optional signal name or
 number (see \fBsignal.h\fR(3HEAD)) is specified as an argument, the signal
 is immediately delivered to the target as part of resuming its execution. If
 the optional "\fBover\fR" argument is specified, \fB::step\fR steps over
-subroutine calls. The \fB::step\fR \fBover\fR argument is the same as the
+subroutine calls. The
+.B "::step over"
+argument is the same as the
 \fB::next\fR dcmd. If the optional "\fBout\fR" argument is specified, the
 target program continues until the representative thread returns from the
 current function. If no target program is currently running, \fB::step\fR
 \fBout\fR starts a new program running as if by \fB::run\fR and stop at the
-first instruction. The \fB:s\fR dcmd is the same as \fB::step\fR. The
-\fB:u\fR dcmd is the same as \fB::step\fR \fBout\fR.
+first instruction. The
+.B :s
+dcmd is the same as
+.BR ::step .
+The
+\fB:u\fR dcmd is the same as \fB::step out\fR.
 .RE
 
 .sp
@@ -3926,12 +4684,25 @@ first instruction. The \fB:s\fR dcmd is the same as \fB::step\fR. The
 .RS 4n
 Trace entry to or exit from the specified system calls. The system calls
 are identified using an optional system call number preceding the dcmd, or a
-list of system call names or numbers (see \fB<sys/syscall.h>\fR) following
-the dcmd. If the \fB-i\fR option is specified (the default), the event
+list of system call names or numbers (see
+.BR <sys/syscall.h> )
+following
+the dcmd. If the
+.B -i
+option is specified (the default), the event
 specifiers trigger on entry into the kernel for each system call. If the
 \fB-o\fR option is specified, the event specifiers trigger on exit out from
-the kernel. The \fB-d\fR, \fB-D\fR, \fB-e\fR, \fB-s\fR, \fB-t\fR, \fB-T\fR,
-\fB-c\fR, and \fB-n\fR options have the same meaning as they do for the
+the kernel. The
+.BR -d ,
+.BR -D ,
+.BR -e ,
+.BR -s ,
+.BR -t ,
+.BR -T ,
+.BR -c ,
+and
+.B -n
+options have the same meaning as they do for the
 \fB::evset\fR dcmd.
 .RE
 
@@ -3939,7 +4710,9 @@ the kernel. The \fB-d\fR, \fB-D\fR, \fB-e\fR, \fB-s\fR, \fB-t\fR, \fB-T\fR,
 .ne 2
 .mk
 .na
-\fIthread\fR \fB::tls\fR \fIsymbol\fR
+.I thread
+.B ::tls
+.I symbol
 .ad
 .sp .6
 .RS 4n
@@ -3947,7 +4720,9 @@ Print the address of the storage for the specified thread-local storage
 (\fBTLS\fR) symbol in the context of the specified thread. The thread
 expression should be one of the thread identifiers described under \fBThread
 Support\fR, above. The symbol name can use any of the scoping operators
-described under \fBSymbol Name Resolution\fR, above.
+described under
+.BR "Symbol Name Resolution" ,
+above.
 .RE
 
 .sp
@@ -3961,7 +4736,9 @@ described under \fBSymbol Name Resolution\fR, above.
 Set attributes for named variables. If one or more variable names are
 specified, they are defined and set to the value of dot. If the \fB-t\fR
 option is present, the user-defined tag associated with each variable is
-set. If the \fB-t\fR option is present, the tag is cleared. If no variable
+set. If the
+.B -t
+option is present, the tag is cleared. If no variable
 names are specified, the list of variables and their values is printed.
 .RE
 
@@ -3974,7 +4751,9 @@ names are specified, the list of variables and their values is printed.
 .sp .6
 .RS 4n
 Unload the specified dmod. The list of active dmods can be printed using
-the \fB::dmods\fR dcmd. Built-in modules can not be unloaded. Modules that
+the
+.B ::dmods
+dcmd. Built-in modules can not be unloaded. Modules that
 are busy (that is, provide dcmds that are currently executing) can not be
 unloaded.
 .RE
@@ -3983,12 +4762,16 @@ unloaded.
 .ne 2
 .mk
 .na
-\fB::unset\fR \fIvariable-name\fR . . .\fR
+.B ::unset
+.I variable-name
+\&. . .\fR
 .ad
 .sp .6
 .RS 4n
 Unset (remove) the specified variable(s) from the list of defined
-variables. Some variables exported by \fBmdb\fR are marked as persistent,
+variables. Some variables exported by
+.B mdb
+are marked as persistent,
 and can not be unset by the user.
 .RE
 
@@ -3996,17 +4779,27 @@ and can not be unset by the user.
 .ne 2
 .mk
 .na
-\fB::vars\fR [ \fB-npt\fR] \fR
+\fB::vars\fR [ \fB-npt\fR]\fR 
 .ad
 .sp .6
 .RS 4n
-Print a listing of named variables. If the \fB-n\fR option is present, the
+Print a listing of named variables. If the
+.B -n
+option is present, the
 output is restricted to variables that currently have non-zero values. If
-the \fB-p\fR option is present, the variables are printed in a form suitable
-for re-processing by the debugger using the \fB$<\fR dcmd. This option can
+the
+.B -p
+option is present, the variables are printed in a form suitable
+for re-processing by the debugger using the
+.B $<
+dcmd. This option can
 be used to record the variables to a macro file and then restore these
-values later. If the \fB-t\fR option is present, only the tagged variables
-are printed. Variables can be tagged using the \fB-t\fR option of the
+values later. If the
+.B -t
+option is present, only the tagged variables
+are printed. Variables can be tagged using the
+.B -t
+option of the
 \fB::typeset\fR dcmd.
 .RE
 
@@ -4014,7 +4807,7 @@ are printed. Variables can be tagged using the \fB-t\fR option of the
 .ne 2
 .mk
 .na
-\fB::version\fR
+.B ::version
 .ad
 .sp .6
 .RS 4n
@@ -4030,11 +4823,15 @@ Print the debugger version number.
 .sp .6
 .RS 4n
 Print the physical address mapping for the specified virtual address, if
-possible. The \fB::vtop\fR dcmd is only available when examining a kernel
+possible. The
+.B ::vtop
+dcmd is only available when examining a kernel
 target, or when examining a user process inside a kernel crash dump (after a
 \fB::context\fR dcmd has been issued).
 .sp
-When examining a kernel target from the kernel context, the \fB-a\fR option
+When examining a kernel target from the kernel context, the
+.B -a
+option
 can be used to specify the address (\fIas\fR) of an alternate address space
 structure that should be used for the virtual to physical translation. By
 default, the kernel's address space is used for translation. This option is
@@ -4052,18 +4849,25 @@ kernel pages.
 .sp .6
 .RS 4n
 Walk through the elements of a data structure using the specified walker.
-The available walkers can be listed using the \fB::walkers\fR dcmd. Some
+The available walkers can be listed using the
+.B ::walkers
+dcmd. Some
 walkers operate on a global data structure and do not require a starting
 address. For example, walk the list of proc structures in the kernel. Other
 walkers operate on a specific data structure whose address must be specified
 explicitly. For example, given a pointer to an address space, walk the list
-of segments. When used interactively, the \fB::walk\fR dcmd prints the
+of segments. When used interactively, the
+.B ::walk
+dcmd prints the
 address of each element of the data structure in the default base. The dcmd
 can also be used to provide a list of addresses for a pipeline. The walker
 name can use the backquote (\fB`\fR) scoping operator described under
-\fBdcmd and Walker Name Resolution\fR, above. If the optional
+.BR "dcmd and Walker Name Resolution" ,
+above. If the optional
 \fIvariable-name\fR is specified, the specified variable is assigned the
-value returned at each step of the walk when \fBmdb\fR invokes the next
+value returned at each step of the walk when
+.B mdb
+invokes the next
 stage of the pipeline.
 .RE
 
@@ -4071,7 +4875,7 @@ stage of the pipeline.
 .ne 2
 .mk
 .na
-\fB::walkers\fR
+.B ::walkers
 .ad
 .sp .6
 .RS 4n
@@ -4094,7 +4898,9 @@ Print the dmod that exports the specified dcmds and walkers. These dcmds
 can be used to determine which dmod is currently providing the global
 definition of the given dcmd or walker. Refer to the section on \fBdcmd and
 Walker Name Resolution\fR above for more information on global name
-resolution. The \fB-v\fR option causes the dcmd to print the alternate
+resolution. The
+.B -v
+option causes the dcmd to print the alternate
 definitions of each dcmd and walker in order of precedence.
 .RE
 
@@ -4128,13 +4934,34 @@ watched region can be set by specifying an optional repeat count preceding
 the dcmd. If no length is explicitly set, the default is one byte. The
 \fB::wp\fR dcmd allows the watchpoint to be configured to trigger on any
 combination of read (\fB-r\fR option), write (\fB-w\fR option), or execute
-(\fB-x\fR option) access. The \fB-d\fR, \fB-D\fR, \fB-e\fR, \fB-s\fR,
-\fB-t\fR, \fB-T\fR, \fB-c\fR, and \fB-n\fR options have the same meaning as
-they do for the \fB::evset\fR dcmd. The \fB:a\fR dcmd sets a read access
-watchpoint at the specified address. The \fB:p\fR dcmd sets an execute
-access watchpoint at the specified address. The \fB:w\fR dcmd sets a write
+(\fB-x\fR option) access. The
+.BR -d ,
+.BR -D ,
+.BR -e ,
+.BR -s ,
+.BR -t ,
+.BR -T ,
+.BR -c ,
+and
+.B -n
+options have the same meaning as
+they do for the
+.B ::evset
+dcmd. The
+.B :a
+dcmd sets a read access
+watchpoint at the specified address. The
+.B :p
+dcmd sets an execute
+access watchpoint at the specified address. The
+.B :w
+dcmd sets a write
 access watchpoint at the specified address. The arguments following the
-\fB:a\fR, \fB:p\fR, and \fB:w\fR dcmds are concatenated together to form the
+.BR :a ,
+.BR :p ,
+and
+.B :w
+dcmds are concatenated together to form the
 callback string. If this string contains meta-characters, it must be
 quoted.
 .RE
@@ -4143,7 +4970,7 @@ quoted.
 .ne 2
 .mk
 .na
-\fB::xdata\fR
+.B ::xdata
 .ad
 .sp .6
 .RS 4n
@@ -4158,12 +4985,13 @@ more information, refer to the \fISolaris Modular Debugger Guide\fR.
 .ne 2
 .mk
 .na
-\fB:z\fR
+.B :z
 .ad
 .sp .6
 .RS 4n
 Delete all event specifiers from the list of traced software events. Event
-specifiers can also be deleted using \fB::delete\fR.
+specifiers can also be deleted using
+.BR ::delete .
 .RE
 
 .SH OPTIONS
@@ -4174,11 +5002,13 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-A\fR
+.B -A
 .ad
 .RS 15n
 .rt
-Disables automatic loading of \fBmdb\fR modules. By default, \fBmdb\fR
+Disables automatic loading of
+.B mdb
+modules. By default, \fBmdb\fR
 attempts to load debugger modules corresponding to the active shared
 libraries in a user process or core file, or to the loaded kernel modules in
 the live operating system or an operating system crash dump.
@@ -4192,11 +5022,15 @@ the live operating system or an operating system crash dump.
 .ad
 .RS 15n
 .rt
-Forces raw file debugging mode. By default, \fBmdb\fR attempts to infer
+Forces raw file debugging mode. By default,
+.B mdb
+attempts to infer
 whether the object and core file operands refer to a user executable and
 core dump or to a pair of operating system crash dump files. If the file
 type cannot be inferred, the debugger defaults to examining the files as
-plain binary data. The \fB-f\fR option forces \fBmdb\fR to interpret the
+plain binary data. The \fB-f\fR option forces
+.B mdb
+to interpret the
 arguments as a set of raw files to examine.
 .RE
 
@@ -4204,15 +5038,22 @@ arguments as a set of raw files to examine.
 .ne 2
 .mk
 .na
-\fB-F\fR
+.B -F
 .ad
 .RS 15n
 .rt
 Forcibly takes over the specified user process, if necessary. By default,
 \fBmdb\fR refuses to attach to a user process that is already under the
-control of another debugging tool, such as \fBtruss\fR(1). With the \fB-F\fR
-option, \fBmdb\fR attaches to these processes anyway. This can produce
-unexpected interactions between \fBmdb\fR and the other tools attempting to
+control of another debugging tool, such as
+.BR truss (1).
+With the
+.BR -F
+option,
+.B mdb
+attaches to these processes anyway. This can produce
+unexpected interactions between
+.B mdb
+and the other tools attempting to
 control the process.
 .RE
 
@@ -4226,14 +5067,16 @@ control the process.
 .rt
 Sets default path for locating macro files. Macro files are read using the
 \fB$<\fR or \fB$<<\fR dcmds. The path is a sequence of directory names
-delimited by colon (\fB:\fR) characters. The \fB-I\fR \fBinclude\fR path and
-\fB-L\fR \fBlibrary\fR path (see below) can also contain any of the
+delimited by colon (\fB:\fR) characters. The
+.B "-I include"
+path and
+\fB-L library\fR path (see below) can also contain any of the
 following tokens:
 .sp
 .ne 2
 .mk
 .na
-\fB%i\fR
+.B %i
 .ad
 .RS 6n
 .rt
@@ -4245,7 +5088,7 @@ Expands to the current instruction set architecture (\fBISA\fR) name
 .ne 2
 .mk
 .na
-\fB%o\fR
+.B %o
 .ad
 .RS 6n
 .rt
@@ -4257,11 +5100,13 @@ appending or prepending directories to an existing path.
 .ne 2
 .mk
 .na
-\fB%p\fR
+.B %p
 .ad
 .RS 6n
 .rt
-Expands to the current platform string (either \fBuname\fR \fB-i\fR or the
+Expands to the current platform string (either
+.B "uname -i"
+or the
 platform string stored in the process core file or crash dump).
 .RE
 
@@ -4269,23 +5114,32 @@ platform string stored in the process core file or crash dump).
 .ne 2
 .mk
 .na
-\fB%r\fR
+.B %r
 .ad
 .RS 6n
 .rt
 Expands to the pathname of the root directory. An alternate root directory
-can be specified using the \fB-R\fR option. If no \fB-R\fR option is
+can be specified using the
+.B -R
+option. If no
+.B -R
+option is
 present, the root directory is derived dynamically from the path to the
 \fBmdb\fR executable itself. For example, if \fB/bin/mdb\fR is executed, the
-root directory is \fB/\fR. If \fB/net/hostname/bin/mdb\fR were executed, the
-root directory would be derived as \fB/net/hostname\fR.
+root directory is
+.BR / .
+If
+.B /net/hostname/bin/mdb
+were executed, the
+root directory would be derived as
+.BR /net/hostname .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB%t\fR
+.B %t
 .ad
 .RS 6n
 .rt
@@ -4295,7 +5149,9 @@ string '\fBproc\fR' (a user process or user process core file), '\fBkvm\fR'
 file).
 .RE
 
-The default include path for 32-bit \fBmdb\fR is:
+The default include path for 32-bit
+.B mdb
+is:
 .sp
 .in +2
 .nf
@@ -4304,7 +5160,9 @@ The default include path for 32-bit \fBmdb\fR is:
 .in -2
 .sp
 
-The default include path for 64-bit \fBmdb\fR is:
+The default include path for 64-bit
+.B mdb
+is:
 .sp
 .in +2
 .nf
@@ -4319,17 +5177,25 @@ The default include path for 64-bit \fBmdb\fR is:
 .ne 2
 .mk
 .na
-\fB-k\fR
+.B -k
 .ad
 .RS 15n
 .rt
-Forces kernel debugging mode. By default, \fBmdb\fR attempts to infer
+Forces kernel debugging mode. By default,
+.B mdb
+attempts to infer
 whether the object and core file operands refer to a user executable and
 core dump, or to a pair of operating system crash dump files. The \fB-k\fR
-option forces \fBmdb\fR to assume these files are operating system crash
+option forces
+.B mdb
+to assume these files are operating system crash
 dump files. If no object or core operand is specified, but the \fB-k\fR
-option is specified, \fBmdb\fR defaults to an object file of
-\fB/dev/ksyms\fR and a core file of \fB/dev/kmem\fR. Read access to
+option is specified,
+.B mdb
+defaults to an object file of
+\fB/dev/ksyms\fR and a core file of
+.BR /dev/kmem .
+Read access to
 \fB/dev/kmem\fR is restricted to group sys. Write access requires ALL
 privileges.
 .RE
@@ -4338,13 +5204,19 @@ privileges.
 .ne 2
 .mk
 .na
-\fB-K\fR
+.B -K
 .ad
 .RS 15n
 .rt
-Load \fBkmdb\fR, stop the live running operating system kernel, and proceed
-to the \fBkmdb\fR debugger prompt. This option should only be used on the
-system console, as the subsequent \fBkmdb\fR prompt appears on the system
+Load
+.BR kmdb ,
+stop the live running operating system kernel, and proceed
+to the
+.B kmdb
+debugger prompt. This option should only be used on the
+system console, as the subsequent
+.B kmdb
+prompt appears on the system
 console. 
 .RE
 
@@ -4357,7 +5229,9 @@ console.
 .RS 15n
 .rt
 Sets default path for locating debugger modules. Modules are loaded
-automatically on startup or using the \fB::load\fR dcmd. The path is a
+automatically on startup or using the
+.B ::load
+dcmd. The path is a
 sequence of directory names delimited by colon (\fB:\fR) characters. The
 \fB-L\fR library path can also contain any of the tokens shown for \fB-I\fR
 above.
@@ -4367,15 +5241,19 @@ above.
 .ne 2
 .mk
 .na
-\fB-m\fR
+.B -m
 .ad
 .RS 15n
 .rt
 Disables demand-loading of kernel module symbols. By default, \fBmdb\fR
 processes the list of loaded kernel modules and performs demand loading of
-per-module symbol tables. If the \fB-m\fR option is specified, \fBmdb\fR
+per-module symbol tables. If the
+.B -m
+option is specified, \fBmdb\fR
 does not attempt to process the kernel module list or provide per-module
-symbol tables. As a result, \fBmdb\fR modules corresponding to active kernel
+symbol tables. As a result,
+.B mdb
+modules corresponding to active kernel
 modules are not loaded on startup.
 .RE
 
@@ -4383,14 +5261,20 @@ modules are not loaded on startup.
 .ne 2
 .mk
 .na
-\fB-M\fR
+.B -M
 .ad
 .RS 15n
 .rt
-Preloads all kernel module symbols. By default, \fBmdb\fR performs
+Preloads all kernel module symbols. By default,
+.B mdb
+performs
 demand-loading for kernel module symbols: the complete symbol table for a
 module is read when an address is that module's text or data section is
-referenced. With the \fB-M\fR option, \fBmdb\fR loads the complete symbol
+referenced. With the
+.B -M
+option,
+.B mdb
+loads the complete symbol
 table of all kernel modules during startup.
 .RE
 
@@ -4402,20 +5286,31 @@ table of all kernel modules during startup.
 .ad
 .RS 15n
 .rt
-Enables the specified debugger option. If the \fB-o\fR form of the option
-is used, the specified \fIoption\fR is disabled. Unless noted below, each
-option is off by default. \fBmdb\fR recognizes the following \fIoption\fR
+Enables the specified debugger option. If the
+.B -o
+form of the option
+is used, the specified
+.I option
+is disabled. Unless noted below, each
+option is off by default.
+.B mdb
+recognizes the following
+.IR option
 arguments:
 .sp
 .ne 2
 .mk
 .na
-\fBadb\fR
+.B adb
 .ad
 .RS 25n
 .rt
-Enables stricter \fBadb\fR(1) compatibility. The prompt is set to the empty
-string and many \fBmdb\fR features, such as the output pager, is disabled.
+Enables stricter
+.BR adb (1)
+compatibility. The prompt is set to the empty
+string and many
+.B mdb
+features, such as the output pager, is disabled.
 .RE
 
 .sp
@@ -4426,8 +5321,13 @@ string and many \fBmdb\fR features, such as the output pager, is disabled.
 .ad
 .RS 25n
 .rt
-Sets the default limit on the number of array members that \fB::print\fR
-displays. If \fIlimit\fR is the special token \fBnone\fR, all array members
+Sets the default limit on the number of array members that
+.BR ::print
+displays. If
+.I limit
+is the special token
+.BR none ,
+all array members
 are displayed by default.
 .RE
 
@@ -4439,9 +5339,12 @@ are displayed by default.
 .ad
 .RS 25n
 .rt
-Sets the default limit on the number of characters that \fB::print\fR
+Sets the default limit on the number of characters that
+.BR ::print
 attempts to display as an ASCII string when printing a char array. If
-\fIlimit\fR is the special token \fBnone\fR, the entire char array is
+\fIlimit\fR is the special token
+.BR none ,
+the entire char array is
 displayed as a string by default.
 .RE
 
@@ -4453,20 +5356,23 @@ displayed as a string by default.
 .ad
 .RS 25n
 .rt
-Sets the debugger behavior for following an \fBexec\fR(2) system call. The
+Sets the debugger behavior for following an
+.BR exec (2)
+system call. The
 \fImode\fR should be one of the following named constants:
 .sp
 .ne 2
 .mk
 .na
-\fBask\fR
+.B ask
 .ad
 .RS 10n
 .rt
 If stdout is a terminal device, the debugger stops after the \fBexec\fR(2)
 system call has returned and then prompts the user to decide whether to
 follow the exec or stop. If stdout is not a terminal device, the \fBask\fR
-mode defaults to \fBstop\fR.
+mode defaults to
+.BR stop .
 .RE
 
 .sp
@@ -4480,14 +5386,16 @@ mode defaults to \fBstop\fR.
 The debugger follows the exec by automatically continuing the target
 process and resetting all of its mappings and symbol tables based on the new
 executable. The \fBfollow\fR behavior is discussed in more detail under
-NOTES, \fBInteraction with Exec\fR, below.
+NOTES,
+.BR "Interaction with Exec" ,
+below.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBstop\fR
+.B stop
 .ad
 .RS 10n
 .rt
@@ -4506,14 +5414,20 @@ with Exec\fR, below.
 .ad
 .RS 25n
 .rt
-Sets the debugger behavior for following a \fBfork\fR(2), \fBfork1\fR(2),
-or \fBvfork\fR(2) system call. The \fImode\fR should be one of the following
+Sets the debugger behavior for following a
+.BR fork (2),
+\fBfork1\fR(2),
+or
+.BR vfork (2)
+system call. The
+.I mode
+should be one of the following
 named constants:
 .sp
 .ne 2
 .mk
 .na
-\fBask\fR
+.B ask
 .ad
 .RS 10n
 .rt
@@ -4527,7 +5441,7 @@ follow the parent or child. If stdout is not a terminal device, the
 .ne 2
 .mk
 .na
-\fBparent\fR
+.B parent
 .ad
 .RS 10n
 .rt
@@ -4539,7 +5453,7 @@ process and sets it running.
 .ne 2
 .mk
 .na
-\fBchild\fR
+.B child
 .ad
 .RS 10n
 .rt
@@ -4557,20 +5471,30 @@ process and sets it running.
 .ad
 .RS 25n
 .rt
-The debugger does not exit when an \fBEOF\fR sequence (\fB^D\fR) is entered
-at the terminal. The \fB::quit\fR dcmd must be used to quit.
+The debugger does not exit when an
+.B EOF
+sequence (\fB^D\fR) is entered
+at the terminal. The
+.B ::quit
+dcmd must be used to quit.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBnostop\fR
+.B nostop
 .ad
 .RS 25n
 .rt
-Does not stop a user process when attaching to it when the \fB-p\fR option
-is specified or when the \fB::attach\fR or \fB:A\fR dcmds are applied. The
+Does not stop a user process when attaching to it when the
+.B -p
+option
+is specified or when the
+.B ::attach
+or
+.B :A
+dcmds are applied. The
 \fBnostop\fR behavior is described in more detail under NOTES, \fBProcess
 Attach and Release\fR, below.
 .RE
@@ -4579,7 +5503,7 @@ Attach and Release\fR, below.
 .ne 2
 .mk
 .na
-\fBpager\fR
+.B pager
 .ad
 .RS 25n
 .rt
@@ -4590,35 +5514,61 @@ Enables the output pager (default).
 .ne 2
 .mk
 .na
-\fBrepeatlast\fR
+.B repeatlast
 .ad
 .RS 25n
 .rt
-If a \fINEWLINE\fR is entered as the complete command at the terminal,
+If a
+.I NEWLINE
+is entered as the complete command at the terminal,
 \fBmdb\fR repeats the previous command with the current value of dot. This
-option is implied by \fB-o\fR \fBadb\fR.
+option is implied by
+.BR "-o adb" .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBshowlmid\fR
+.B showlmid
 .ad
 .RS 25n
 .rt
 \fBmdb\fR provides support for symbol naming and identification in user
-applications that make use of link maps other than \fILM_ID_BASE\fR and
-\fILM_ID_LDSO\fR, as described in \fBSymbol Name Resolution\fR, above.
-Symbols on link maps other than \fILM_ID_BASE\fR or \fILM_ID_LDSO\fR is
-shown as \fBLMlmid`library`symbol\fR, where \fBlmid\fR is the link-map
+applications that make use of link maps other than
+.I LM_ID_BASE
+and
+.IR LM_ID_LDSO ,
+as described in
+.BR "Symbol Name Resolution" ,
+above.
+Symbols on link maps other than
+.I LM_ID_BASE
+or
+.I LM_ID_LDSO
+is
+shown as
+.BR LMlmid`library`symbol ,
+where
+.B lmid
+is the link-map
 \fBID\fR in the default output radix (16). The user can optionally configure
 \fBmdb\fR to show the link-map \fBID\fR scope of all symbols and objects,
-including those associated with \fILM_ID_BASE\fR and \fILM_ID_LDSO\fR, by
-enabling the \fBshowlmid\fR option. Built-in dcmds that deal with object
+including those associated with
+.I LM_ID_BASE
+and
+.IR LM_ID_LDSO ,
+by
+enabling the
+.B showlmid
+option. Built-in dcmds that deal with object
 file names displays link-map \fBID\fRs according to the value of
-\fBshowlmid\fR above, including \fB::nm\fR, \fB::mappings\fR, \fB$m\fR, and
-\fB::objects\fR.
+\fBshowlmid\fR above, including
+.BR ::nm ,
+.BR ::mappings ,
+.BR $m ,
+and
+.BR ::objects .
 .RE
 
 .RE
@@ -4631,7 +5581,9 @@ file names displays link-map \fBID\fRs according to the value of
 .ad
 .RS 15n
 .rt
-Attaches to and stops the specified process-id. \fBmdb\fR uses the
+Attaches to and stops the specified process-id.
+.B mdb
+uses the
 \fB/proc/\fIpid\fR/object/a.out\fR file as the executable file pathname.
 .RE
 
@@ -4655,8 +5607,12 @@ Sets the command prompt. The default prompt is '\fB>\fR '.
 .RS 15n
 .rt
 Sets root directory for pathname expansion. By default, the root directory
-is derived from the pathname of the \fBmdb\fR executable itself. The root
-directory is substituted in place of the \fB%r\fR token during pathname
+is derived from the pathname of the
+.B mdb
+executable itself. The root
+directory is substituted in place of the
+.B %r
+token during pathname
 expansion.
 .RE
 
@@ -4669,10 +5625,18 @@ expansion.
 .RS 15n
 .rt
 Sets the symbol matching distance for address-to-symbol-name conversions to
-the specified \fIdistance\fR. By default, \fBmdb\fR sets the distance to
-zero, which enables a smart-matching mode. Each \fBELF\fR symbol table entry
+the specified
+.IR distance .
+By default,
+.B mdb
+sets the distance to
+zero, which enables a smart-matching mode. Each
+.B ELF
+symbol table entry
 includes a value V and size S, representing the size of the function or data
-object in bytes. In smart mode, \fBmdb\fR matches an address A with the
+object in bytes. In smart mode,
+.B mdb
+matches an address A with the
 given symbol if A is in the range [ V, V + S ). If any non-zero distance is
 specified, the same algorithm is used, but S in the expression above is
 always the specified absolute distance and the symbol size is ignored.
@@ -4682,11 +5646,13 @@ always the specified absolute distance and the symbol size is ignored.
 .ne 2
 .mk
 .na
-\fB-S\fR
+.B -S
 .ad
 .RS 15n
 .rt
-Suppresses processing of the user's \fB~/.mdbrc\fR file. By default,
+Suppresses processing of the user's
+.B ~/.mdbrc
+file. By default,
 \fBmdb\fR reads and processes the macro file \fB\&.mdbrc\fR if one is
 present in the user's home directory, as defined by $\fBHOME\fR. If the
 \fB-S\fR option is present, this file is not read.
@@ -4696,14 +5662,20 @@ present in the user's home directory, as defined by $\fBHOME\fR. If the
 .ne 2
 .mk
 .na
-\fB-u\fR
+.B -u
 .ad
 .RS 15n
 .rt
-Forces user debugging mode. By default, \fBmdb\fR attempts to infer whether
+Forces user debugging mode. By default,
+.B mdb
+attempts to infer whether
 the object and core file operands refer to a user executable and core dump,
-or to a pair of operating system crash dump files. The \fB-u\fR option
-forces \fBmdb\fR to assume these files are not operating system crash dump
+or to a pair of operating system crash dump files. The
+.B -u
+option
+forces
+.B mdb
+to assume these files are not operating system crash dump
 files.
 .RE
 
@@ -4711,11 +5683,15 @@ files.
 .ne 2
 .mk
 .na
-\fB-U\fR
+.B -U
 .ad
 .RS 15n
 .rt
-Unload \fBkmdb\fR if it is loaded. You should unload \fBkmdb\fR when it is
+Unload
+.B kmdb
+if it is loaded. You should unload
+.B kmdb
+when it is
 not in use to release the memory used by the kernel debugger back to the
 free memory available to the operating system.
 .RE
@@ -4728,9 +5704,15 @@ free memory available to the operating system.
 .ad
 .RS 15n
 .rt
-Sets disassembler version. By default, \fBmdb\fR attempts to infer the
+Sets disassembler version. By default,
+.B mdb
+attempts to infer the
 appropriate disassembler version for the debug target. The disassembler can
-be set explicitly using the \fB-V\fR option. The \fB::disasms\fR dcmd lists
+be set explicitly using the
+.B -V
+option. The
+.B ::disasms
+dcmd lists
 the available disassembler versions.
 .RE
 
@@ -4738,7 +5720,7 @@ the available disassembler versions.
 .ne 2
 .mk
 .na
-\fB-w\fR
+.B -w
 .ad
 .RS 15n
 .rt
@@ -4749,12 +5731,14 @@ Opens the specified object and core files for writing.
 .ne 2
 .mk
 .na
-\fB-W\fR
+.B -W
 .ad
 .RS 15n
 .rt
 Permit access to memory addresses that are mapped to I/O devices. By
-default, \fBmdb\fR does not allow such access because many devices do not
+default,
+.B mdb
+does not allow such access because many devices do not
 provide hardware protection against invalid software manipulations. Use this
 option only when debugging device drivers and with caution.
 .RE
@@ -4763,14 +5747,17 @@ option only when debugging device drivers and with caution.
 .ne 2
 .mk
 .na
-\fB-y\fR
+.B -y
 .ad
 .RS 15n
 .rt
 Sends explicit terminal initialization sequences for tty mode. Some
-terminals, such as \fBcmdtool\fR(1), require explicit initialization
+terminals, such as
+.BR cmdtool (1),
+require explicit initialization
 sequences to switch into a tty mode. Without this initialization sequence,
-terminal features such as standout mode can not be available to \fBmdb\fR.
+terminal features such as standout mode can not be available to
+.BR mdb .
 .RE
 
 .SH OPERANDS
@@ -4781,14 +5768,24 @@ The following operands are supported:
 .ne 2
 .mk
 .na
-\fIobject\fR
+.I object
 .ad
 .RS 10n
 .rt
-Specifies an \fBELF\fR format object file to examine. \fBmdb\fR provides
-the ability to examine and edit \fBELF\fR format executables
-(\fBET_EXEC\fR), \fBELF\fR dynamic library files (\fBET_DYN\fR), \fBELF\fR
-relocatable object files (\fBET_REL\fR), and operating system unix.X symbol
+Specifies an
+.B ELF
+format object file to examine.
+.B mdb
+provides
+the ability to examine and edit
+.B ELF
+format executables
+(\fBET_EXEC\fR), \fBELF\fR dynamic library files
+.RB ( ET_DYN ),
+.B ELF
+relocatable object files
+.RB ( ET_REL ),
+and operating system unix.X symbol
 table files.
 .RE
 
@@ -4796,15 +5793,25 @@ table files.
 .ne 2
 .mk
 .na
-\fIcore\fR
+.I core
 .ad
 .RS 10n
 .rt
-Specifies an \fBELF\fR process core file (\fBET_CORE\fR), or an operating
-system crash dump vmcore.X file. If an \fBELF\fR core file operand is
-provided without a corresponding object file, \fBmdb\fR attempts to infer
+Specifies an
+.B ELF
+process core file
+.RB ( ET_CORE ),
+or an operating
+system crash dump vmcore.X file. If an
+.B ELF
+core file operand is
+provided without a corresponding object file,
+.B mdb
+attempts to infer
 the name of the executable file that produced the core using several
-different algorithms. If no executable is found, \fBmdb\fR still executes,
+different algorithms. If no executable is found,
+.B mdb
+still executes,
 but some symbol information can be unavailable.
 .RE
 
@@ -4838,7 +5845,7 @@ The following exit values are returned:
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 5n
 .rt
@@ -4849,7 +5856,7 @@ Debugger completed execution successfully.
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 5n
 .rt
@@ -4860,7 +5867,7 @@ A fatal error occurred.
 .ne 2
 .mk
 .na
-\fB2\fR
+.B 2
 .ad
 .RS 5n
 .rt
@@ -4872,20 +5879,20 @@ Invalid command line options were specified.
 .ne 2
 .mk
 .na
-\fBHISTSIZE\fR
+.B HISTSIZE
 .ad
 .RS 12n
 .rt
 This variable is used to determine the maximum length of the command
 history list. If this variable is not present, the default length is
-\fB128\fR.
+.BR 128 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBHOME\fR
+.B HOME
 .ad
 .RS 12n
 .rt
@@ -4898,13 +5905,17 @@ present, no \fB\&.mdbrc\fR processing occurs.
 .ne 2
 .mk
 .na
-\fBSHELL\fR
+.B SHELL
 .ad
 .RS 12n
 .rt
 This variable is used to determine the pathname of the shell used to
-process shell escapes requested using the \fB!\fR meta-character. If this
-variable is not present, \fB/bin/sh\fR is used.
+process shell escapes requested using the
+.B !
+meta-character. If this
+variable is not present,
+.B /bin/sh
+is used.
 .RE
 
 .SH FILES
@@ -4912,11 +5923,13 @@ variable is not present, \fB/bin/sh\fR is used.
 .ne 2
 .mk
 .na
-\fB$HOME/.mdbrc\fR
+.B $HOME/.mdbrc
 .ad
 .sp .6
 .RS 4n
-User \fBmdb\fR initialization file. The \fB\&.mdbrc\fR file, if present, is
+User
+.B mdb
+initialization file. The \fB\&.mdbrc\fR file, if present, is
 processed after the debug target has been initialized, but before module
 auto-loading is performed or any commands have been read from standard
 input.
@@ -4926,7 +5939,7 @@ input.
 .ne 2
 .mk
 .na
-\fB/dev/kmem\fR
+.B /dev/kmem
 .ad
 .sp .6
 .RS 4n
@@ -4938,7 +5951,7 @@ core file when examining the live operating system.
 .ne 2
 .mk
 .na
-\fB/dev/ksyms\fR
+.B /dev/ksyms
 .ad
 .sp .6
 .RS 4n
@@ -4962,7 +5975,7 @@ processes.
 .ne 2
 .mk
 .na
-\fB/usr/lib/adb\fR
+.B /usr/lib/adb
 .ad
 .br
 .na
@@ -4970,17 +5983,21 @@ processes.
 .ad
 .sp .6
 .RS 4n
-Default directories for macro files that are read with the \fB$<\fR and
+Default directories for macro files that are read with the
+.B $<
+and
 \fB$<<\fR dcmds. \fIplatform-name\fR is the name of the platform, derived
 either from information in a core file or crash dump, or from the current
-machine as if by \fBuname\fR \fB-i\fR (see \fBuname\fR(1)).
+machine as if by
+.B "uname -i"
+(see \fBuname\fR(1)).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/usr/lib/mdb\fR
+.B /usr/lib/mdb
 .ad
 .br
 .na
@@ -4991,13 +6008,17 @@ machine as if by \fBuname\fR \fB-i\fR (see \fBuname\fR(1)).
 Default directories for debugger modules that are loaded using the
 \fB::load\fR dcmd. \fIplatform-name\fR is the name of the platform, derived
 either from information in a core file or crash dump, or from the current
-machine as if by \fBuname\fR \fB-i\fR (see \fBuname\fR(1)).
+machine as if by
+.B "uname -i"
+(see \fBuname\fR(1)).
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -5016,30 +6037,56 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBadb\fR(1), \fBcmdtool\fR(1), \fBgcore\fR(1), \fBproc\fR(1),
-\fBpgrep\fR(1), \fBps\fR(1), \fBstty\fR(1), \fBtruss\fR(1), \fBuname\fR(1),
-\fBcoreadm\fR(1M), \fBdumpadm\fR(1M), \fBlargefile\fR(5),
-\fBsavecore\fR(1M), \fBexec\fR(2), \fBfork\fR(2), \fB_lwp_self\fR(2),
-\fBpipe\fR(2), \fBvfork\fR(2), \fBdlopen\fR(3C), \fBelf\fR(3ELF),
-\fBlibc_db\fR(3LIB), \fBlibkvm\fR(3LIB), \fBlibthread\fR(3LIB),
-\fBsignal\fR(3C), \fBsignal.h\fR(3HEAD), \fBthr_self\fR(3C), \fBcore\fR(4),
-\fBproc\fR(4), \fBattributes\fR(5), \fBlargefile\fR(5), \fBthreads\fR(5),
-\fBksyms\fR(7D), \fBmem\fR(7D)
+.BR adb (1),
+.BR cmdtool (1),
+.BR gcore (1),
+.BR proc (1),
+.BR pgrep (1),
+.BR ps (1),
+.BR stty (1),
+.BR truss (1),
+.BR uname (1),
+.BR coreadm (1M),
+.BR dumpadm (1M),
+\fBlargefile\fR(5),
+.BR savecore (1M),
+.BR exec (2),
+\fBfork\fR(2), \fB_lwp_self\fR(2),
+.BR pipe (2),
+\fBvfork\fR(2), \fBdlopen\fR(3C), \fBelf\fR(3ELF),
+.BR libc_db (3LIB),
+.BR libkvm (3LIB),
+.BR libthread (3LIB),
+.BR signal (3C),
+.BR signal.h (3HEAD),
+\fBthr_self\fR(3C), \fBcore\fR(4),
+.BR proc (4),
+.BR attributes (5),
+\fBlargefile\fR(5), \fBthreads\fR(5),
+.BR ksyms (7D),
+.BR mem (7D)
 .sp
 .LP
-\fILinker and Libraries Guide\fR
+.I Linker and Libraries Guide
 .sp
 .LP
-\fISolaris Modular Debugger Guide\fR
+.I Solaris Modular Debugger Guide
 .SH WARNINGS
 .SS "Use of the Error Recovery Mechanism"
 .sp
 .LP
 The debugger and its dmods execute in the same address space, and thus it
-is quite possible that a buggy dmod can cause \fBmdb\fR to dump core or
-otherwise misbehave. The \fBmdb\fR resume capability, described above under
-\fBSignal Handling\fR, provides a limited recovery mechanism for these
-situations. However, it is not possible for \fBmdb\fR to know definitively
+is quite possible that a buggy dmod can cause
+.B mdb
+to dump core or
+otherwise misbehave. The
+.B mdb
+resume capability, described above under
+.BR "Signal Handling" ,
+provides a limited recovery mechanism for these
+situations. However, it is not possible for
+.B mdb
+to know definitively
 whether the dmod in question has corrupted only its own state, or the
 debugger's global state. Therefore a resume operation cannot be guaranteed
 to be safe, or to prevent a subsequent crash of the debugger. The safest
@@ -5063,8 +6110,11 @@ data is not present in those core files, the symbol information might not
 match the data present in the process at the time it dumped core. In
 releases later than Solaris 9, text sections and read-only data are included
 in core files by default. Users can configure their processes to exclude
-that information from core files using \fBcoreadm\fR(1M). Thus, the
-information presented by \fBmdb\fR for those core files can not match the
+that information from core files using
+.BR coreadm "(1M). Thus, the"
+information presented by
+.B mdb
+for those core files can not match the
 data that was present at the time the process dumped core. Core files from
 Solaris x86 systems can not be examined on Solaris SPARC systems, and
 vice-versa.
@@ -5083,8 +6133,10 @@ vice-versa.
 .sp
 .LP
 \fBmdb\fR provides support for debugging both 32-bit and 64-bit programs.
-Once it has examined the target and determined its data model, \fBmdb\fR
-automatically re-executes the \fBmdb\fR binary that has the same data model
+.RB "Once it has examined the target and determined its data model," " mdb"
+automatically re-executes the
+.B mdb
+binary that has the same data model
 as the target, if necessary. This approach simplifies the task of writing
 debugger modules, because the modules that are loaded use the same data
 model as the primary target. Only the 64-bit debugger can be used to debug
@@ -5094,19 +6146,27 @@ that is running the 64-bit operating environment.
 .LP
 The debugger can also need to re-execute itself when debugging a 32-bit
 process that execs a 64-bit process, or vice-versa. The handling of this
-situation is discussed in more detail under \fBInteraction with Exec\fR,
+situation is discussed in more detail under
+.BR "Interaction with Exec" ,
 below.
 .SS "Interaction with Exec"
 .sp
 .LP
-When a controlled process performs a successful \fBexec\fR(2), the behavior
-of the debugger is controlled by the \fB::set\fR \fB-o\fR
+When a controlled process performs a successful
+.BR exec (2),
+the behavior
+of the debugger is controlled by the
+.BR "::set -o"
 \fBfollow_exec_mode\fR option, as described above. If the debugger and
 victim process have the same data model, then the "\fBstop\fR" and
 "\fBfollow\fR" modes determine whether \fBmdb\fR automatically continues the
 target or returns to the debugger prompt following the exec. If the debugger
 and victim process have a different data model, then the "\fBfollow\fR"
-behavior causes \fBmdb\fR to automatically re-exec the \fBmdb\fR binary with
+behavior causes
+.B mdb
+to automatically re-exec the
+.B mdb
+binary with
 the appropriate data model and to re-attach to the process, still stopped on
 return from the exec. Not all debugger state is preserved across this
 re-exec.
@@ -5115,8 +6175,14 @@ re-exec.
 If a 32-bit victim process execs a 64-bit program, then "\fBstop\fR"
 returns to the command prompt, but the debugger is no longer able to examine
 the process because it is now using the 64-bit data model. To resume
-debugging, execute the \fB::release\fR \fB-a\fR dcmd, quit \fBmdb\fR, and
-then execute \fBmdb\fR \fB-p\fR \fIpid\fR to re-attach the 64-bit debugger
+debugging, execute the
+.B "::release -a"
+dcmd, quit
+.BR mdb ,
+and
+then execute
+.B "mdb -p"
+\fIpid\fR to re-attach the 64-bit debugger
 to the process.
 .sp
 .LP
@@ -5131,15 +6197,26 @@ capabilities.
 .sp
 .LP
 If the debugger is attached to a process that is stopped by job control
-(that is, it stopped in response to \fBSIGTSTP\fR, \fBSIGTTIN\fR, or
-\fBSIGTTOU\fR), the process can not be able to be set running again when it
+(that is, it stopped in response to
+.BR SIGTSTP ,
+.BR SIGTTIN ,
+or
+.BR SIGTTOU ),
+the process can not be able to be set running again when it
 is continued by a continue dcmd. If the victim process is a member of the
 same session (that is, it shares the same controlling terminal as
-\fBmdb\fR), \fBmdb\fR attempts to bring the associated process group to the
-foreground and to continue the process with \fBSIGCONT\fR to resume it from
-job control stop. When \fBmdb\fR is detached from such a process, it
+.BR mdb ),
+\fBmdb\fR attempts to bring the associated process group to the
+foreground and to continue the process with
+.B SIGCONT
+to resume it from
+job control stop. When
+.B mdb
+is detached from such a process, it
 restores the process group to the background before exiting. If the victim
-process is not a member of the same session, \fBmdb\fR cannot safely bring
+process is not a member of the same session,
+.B mdb
+cannot safely bring
 the process group to the foreground, so it continues the process with
 respect to the debugger, but the process remains stopped by job control.
 \fBmdb\fR prints a warning in this case, and the user must issue an
@@ -5148,14 +6225,29 @@ process.
 .SS "Process Attach and Release"
 .sp
 .LP
-When \fBmdb\fR attaches to a running process, the process is stopped and
+When
+.B mdb
+attaches to a running process, the process is stopped and
 remains stopped until one of the continue dcmds is applied, or the debugger
-quits. If the \fB-o\fR \fBnostop\fR option is enabled prior to attaching the
-debugger to a process with \fB-p\fR, or prior to issuing an \fB::attach\fR
-or \fB:A\fR command, \fBmdb\fR attaches to the process but does not stop it.
+quits. If the
+.B "-o nostop"
+option is enabled prior to attaching the
+debugger to a process with
+.BR -p ,
+or prior to issuing an
+.BR ::attach
+or
+.B :A
+command,
+.B mdb
+attaches to the process but does not stop it.
 While the process is still running, it can be inspected as usual (albeit
 with inconsistent results) and breakpoints or other tracing flags might be
-enabled. If the \fB:c\fR or \fB::cont\fR dcmds are executed while the
+enabled. If the
+.B :c
+or
+.B ::cont
+dcmds are executed while the
 process is running, the debugger waits for the process to stop. If no traced
 software events occur, the user can send an interrupt (\fB^C\fR) after
 \fB:c\fR or \fB::cont\fR to force the process to stop and return control to
@@ -5163,28 +6255,59 @@ the debugger.
 .sp
 .LP
 \fBmdb\fR releases the current running process (if any) when the \fB:R\fR,
-\fB::release\fR, \fB:r\fR, \fB::run\fR, \fB$q\fR, or \fB::quit\fR dcmds are
-executed, or when the debugger terminates as the result of an \fBEOF\fR or
+.BR ::release ,
+.BR :r ,
+.BR ::run ,
+.BR $q ,
+or
+.B ::quit
+dcmds are
+executed, or when the debugger terminates as the result of an
+.B EOF
+or
 signal. If the process was originally created by the debugger using \fB:r\fR
-or \fB::run\fR, it is forcibly terminated as if by \fBSIGKILL\fR when it is
-released. If the process was already running prior to attaching \fBmdb\fR to
+or
+.BR ::run ,
+it is forcibly terminated as if by
+.B SIGKILL
+when it is
+released. If the process was already running prior to attaching
+.B mdb
+to
 it, it is set running again when it is released. A process can be released
-and left stopped and abandoned using the \fB::release\fR \fB-a\fR option.
+and left stopped and abandoned using the
+.B "::release -a"
+option.
 .SS "Symbolic Debugging Information"
 .sp
 .LP
-The \fB::list\fR, \fB::offsetof\fR, \fB::print\fR, and \fB::sizeof\fR dcmds
+The
+.BR ::list ,
+\fB::offsetof\fR,
+.BR ::print ,
+and \fB::sizeof\fR dcmds
 require that one or more load objects contain compressed symbolic debugging
-information suitable for use with \fBmdb\fR. This information is currently
+information suitable for use with
+.BR mdb .
+This information is currently
 only available for certain Solaris kernel modules.
 .SS "Developer Information"
 .sp
 .LP
-The \fISolaris Modular Debugger Guide\fR provides a more detailed
-description of \fBmdb\fR features, as well as information for debugger
+The
+.I "Solaris Modular Debugger Guide"
+provides a more detailed
+description of
+.B mdb
+features, as well as information for debugger
 module developers.
 .sp
 .LP
-The header file \fB<sys/mdb_modapi.h>\fR contains prototypes for the
-functions in the MDB Module \fBAPI\fR, and the SUNWmdbdm package provides
-source code for an example module in the directory \fB/usr/demo/mdb\fR.
+The header file
+.B <sys/mdb_modapi.h>
+contains prototypes for the
+functions in the MDB Module
+.BR API ,
+and the SUNWmdbdm package provides
+source code for an example module in the directory
+.BR /usr/demo/mdb .

@@ -45,24 +45,26 @@ put \- receive messages from the preceding queue
 .sp
 .LP
 Architecture independent level 1 (DDI/DKI). This entry point is required
-for \fBSTREAMS. \fR
+for
+.B STREAMS.
 .SH ARGUMENTS
 .sp
 .ne 2
 .mk
 .na
-\fIq\fR
+.I q
 .ad
 .RS 7n
 .rt
-Pointer to the \fBqueue\fR(9S) structure.
+Pointer to the
+.BR queue "(9S) structure."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fImp\fR
+.I mp
 .ad
 .RS 7n
 .rt
@@ -72,10 +74,16 @@ Pointer to the message block.
 .SH DESCRIPTION
 .sp
 .LP
-The primary task of the \fBput()\fR routine is to coordinate the passing of
-messages from one queue to the next in a stream. The \fBput()\fR routine is
+The primary task of the
+.B put()
+routine is to coordinate the passing of
+messages from one queue to the next in a stream. The
+.B put()
+routine is
 called by the preceding stream component (stream module, driver, or stream
-head). \fBput()\fR routines are designated ``write'' or ``read'' depending
+head).
+.B put()
+routines are designated ``write'' or ``read'' depending
 on the direction of message flow.
 .sp
 .LP
@@ -83,18 +91,24 @@ With few exceptions, a streams module or driver must have a \fBput()\fR
 routine. One exception is the read side of a driver, which does not need a
 \fBput()\fR routine because there is no component downstream to call it. The
 \fBput()\fR routine is always called before the component's corresponding
-\fBsrv\fR(9E) (service) routine, and so \fBput()\fR should be used for the
+.BR srv (9E)
+(service) routine, and so
+.B put()
+should be used for the
 immediate processing of messages.
 .sp
 .LP
-A \fBput()\fR routine must do at least one of the following when it
+A
+.B put()
+routine must do at least one of the following when it
 receives a message:
 .RS +4
 .TP
 .ie t \(bu
 .el o
 pass the message to the next component on the stream by calling the
-\fBputnext\fR(9F) function;
+.BR putnext (9F)
+function;
 .RE
 .RS +4
 .TP
@@ -108,23 +122,42 @@ handle high priority messages); or
 .ie t \(bu
 .el o
 enqueue the message (with the \fBputq\fR(9F) function) for deferred
-processing by the service \fBsrv\fR(9E) routine.
+processing by the service
+.BR srv "(9E) routine."
 .RE
 .sp
 .LP
-Typically, a \fBput()\fR routine will switch on message type, which is
-contained in the \fBdb_type\fR member of the \fBdatab\fR structure pointed
-to by \fImp\fR. The action taken by the \fBput()\fR routine depends on the
-message type. For example, a \fBput()\fR routine might process high priority
-messages, enqueue normal messages, and handle an unrecognized \fBM_IOCTL\fR
-message by changing its type to \fBM_IOCNAK\fR (negative acknowledgement)
-and sending it back to the stream head using the \fBqreply\fR(9F)
+Typically, a
+.B put()
+routine will switch on message type, which is
+contained in the
+.B db_type
+member of the
+.B datab
+structure pointed
+to by
+.IR mp .
+The action taken by the
+.B put()
+routine depends on the
+message type. For example, a
+.B put()
+routine might process high priority
+.RB "messages, enqueue normal messages, and handle an unrecognized" " M_IOCTL"
+message by changing its type to
+.B M_IOCNAK
+(negative acknowledgement)
+and sending it back to the stream head using the
+.BR qreply (9F)
 function.
 .sp
 .LP
-The \fBputq\fR(9F) function can be used as a module's \fBput()\fR routine
+The \fBputq\fR(9F) function can be used as a module's
+.B put()
+routine
 when no special processing is required and all messages are to be enqueued
-for the \fBsrv\fR(9E) routine.
+for the
+.BR srv "(9E) routine."
 .SH RETURN VALUES
 .sp
 .LP
@@ -136,12 +169,19 @@ Ignored.
 .SH SEE ALSO
 .sp
 .LP
-\fBsrv\fR(9E), \fBputctl\fR(9F), \fBputctl1\fR(9F), \fBputnext\fR(9F),
-\fBputnextctl\fR(9F), \fBputnextctl1\fR(9F), \fBputq\fR(9F),
-\fBqreply\fR(9F), \fBqueue\fR(9S), \fBstreamtab\fR(9S)
+.BR srv (9E),
+.BR putctl (9F),
+.BR putctl1 (9F),
+.BR putnext (9F),
+.BR putnextctl (9F),
+.BR putnextctl1 (9F),
+.BR putq (9F),
+.BR qreply (9F),
+.BR queue (9S),
+.BR streamtab (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide

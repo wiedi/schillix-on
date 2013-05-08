@@ -65,16 +65,22 @@ specific to that protocol.
 .sp
 .LP
 \fBARP\fR caches \fBIP-to-link-layer\fR address mappings. When an interface
-requests a mapping for an address not in the cache, \fBARP\fR queues the
+requests a mapping for an address not in the cache,
+.B ARP
+queues the
 message that requires the mapping and broadcasts a message on the associated
 network requesting the address mapping. If a response is provided, \fBARP\fR
-caches the new mapping and transmits any pending message. \fBARP\fR will
+caches the new mapping and transmits any pending message.
+.B ARP
+will
 queue a maximum of four packets while awaiting a response to a mapping
 request. ARP keeps only the first four transmitted packets.
 .SH APPLICATION PROGRAMMING INTERFACE
 .sp
 .LP
-The STREAMS device \fB/dev/arp\fR is not a Transport Level Interface
+The STREAMS device
+.B /dev/arp
+is not a Transport Level Interface
 (\fBTLI\fR) transport provider and may not be used with the \fBTLI\fR
 interface.
 .sp
@@ -99,11 +105,14 @@ ioctl(s, SIOCDARP, (caddr_t)&arpreq);
 
 .sp
 .LP
-\fBSIOCSARP\fR, \fBSIOCGARP\fR and \fBSIOCDARP\fR are BSD compatible
+.BR SIOCSARP ,
+\fBSIOCGARP\fR and \fBSIOCDARP\fR are BSD compatible
 ioctls. These ioctls do not communicate the mac address length between the
 user and the kernel (and thus only work for 6 byte wide Ethernet addresses).
 To manage the ARP cache for media that has different sized mac addresses,
-use \fBSIOCSXARP\fR, \fBSIOCGXARP\fR and \fBSIOCDXARP\fR ioctls.
+use
+.BR SIOCSXARP ,
+\fBSIOCGXARP\fR and \fBSIOCDXARP\fR ioctls.
 .sp
 .in +2
 .nf
@@ -121,11 +130,15 @@ ioctl(s, SIOCDXARP, (caddr_t)&xarpreq);
 
 .sp
 .LP
-Each \fBioctl()\fR request takes the same structure as an argument.
+Each
+.B ioctl()
+request takes the same structure as an argument.
 \fBSIOCS[X]ARP\fR sets an \fBARP\fR entry, \fBSIOCG[X]ARP\fR gets an
 \fBARP\fR entry, and \fBSIOCD[X]ARP\fR deletes an \fBARP\fR entry. These
 \fBioctl()\fR requests may be applied to any Internet family socket
-descriptor\fIs\fR, or to a descriptor for the \fBARP\fR device. Note that
+descriptor\fIs\fR, or to a descriptor for the
+.B ARP
+device. Note that
 \fBSIOCS[X]ARP\fR and \fBSIOCD[X]ARP\fR require a privileged user, while
 \fBSIOCG[X]ARP\fR 
 .sp
@@ -133,7 +146,9 @@ descriptor\fIs\fR, or to a descriptor for the \fBARP\fR device. Note that
 does not.
 .sp
 .LP
-The \fBarpreq\fR structure contains
+The
+.B arpreq
+structure contains
 .sp
 .in +2
 .nf
@@ -150,7 +165,9 @@ struct arpreq {
 
 .sp
 .LP
-The \fBxarpreq\fR structure contains:
+The
+.B xarpreq
+structure contains:
 .sp
 .in +2
 .nf
@@ -172,35 +189,56 @@ struct xarpreq {
 
 .sp
 .LP
-The address family for the [x]arp_pa sockaddr must be \fBAF_INET\fR. The
+The address family for the [x]arp_pa sockaddr must be
+.BR AF_INET .
+The
 \fBATF_COM\fR flag bits  ([x]arp_flags) cannot be altered.
 \fBATF_USETRAILERS\fR is not implemented on Solaris and is retained  for
-compatibility only. \fBATF_PERM\fR makes the entry permanent (disables
-aging) if the \fBioctl()\fR request succeeds. \fBATF_PUBL\fR specifies that
+compatibility only.
+.B ATF_PERM
+makes the entry permanent (disables
+aging) if the
+.B ioctl()
+request succeeds.
+.B ATF_PUBL
+specifies that
 the system should respond to ARP requests for the indicated protocol address
 coming from other machines. This allows a host to act as an ARP server,
 which may be useful in convincing an ARP-only machine to talk to a non-ARP
-machine. \fBATF_AUTHORITY\fR indicates that this machine owns the address.
+machine.
+.B ATF_AUTHORITY
+indicates that this machine owns the address.
 ARP does not update the entry based on received packets.
 .sp
 .LP
-The address family for the arp_ha sockaddr must be \fBAF_UNSPEC\fR.
+The address family for the arp_ha sockaddr must be
+.BR AF_UNSPEC .
 .sp
 .LP
-Before invoking any of the \fBSIOC*XARP\fR ioctls, user code must fill in
-the \fBxarp_pa\fR field with the protocol (IP) address information, similar
-to the BSD variant. The \fBSIOC*XARP\fR ioctls come in two (legal)
+Before invoking any of the
+.B SIOC*XARP
+ioctls, user code must fill in
+the
+.B xarp_pa
+field with the protocol (IP) address information, similar
+to the BSD variant. The
+.B SIOC*XARP
+ioctls come in two (legal)
 varieties, depending on \fBxarp_ha.sdl_nlen\fR:
 .RS +4
 .TP
 1.
-if \fBsdl_nlen\fR = 0, it behaves as an extended BSD ioctl. The kernel uses
+if
+.B sdl_nlen
+= 0, it behaves as an extended BSD ioctl. The kernel uses
 the IP address to determine the network interface.
 .RE
 .RS +4
 .TP
 2.
-if (\fBsdl_nlen\fR > 0) and (\fBsdl_nlen\fR < \fBLIFNAMSIZ\fR), the kernel
+if (\fBsdl_nlen\fR > 0) and (\fBsdl_nlen\fR <
+.BR LIFNAMSIZ ),
+the kernel
 uses the interface name in sdl_data[0] to determine the network interface;
 \fBsdl_nlen\fR represents the length of the string (excluding terminating
 null character).
@@ -208,30 +246,53 @@ null character).
 .RS +4
 .TP
 3.
-if (\fBsdl_nlen\fR >= \fBLIFNAMSIZ\fR), an error (\fBEINVAL\fR) is flagged
+if (\fBsdl_nlen\fR >=
+.BR LIFNAMSIZ ),
+an error (\fBEINVAL\fR) is flagged
 from the ioctl.
 .RE
 .sp
 .LP
-Other than the above, the \fBxarp_ha\fR structure should be 0-filled except
-for \fBSIOCSXARP\fR, where the \fBsdl_alen\fR field must be set to the size
+Other than the above, the
+.B xarp_ha
+structure should be 0-filled except
+for
+.BR SIOCSXARP ,
+where the
+.B sdl_alen
+field must be set to the size
 of hardware address length and the hardware address itself must be placed in
-the \fBLLADDR/sdl_data[]\fR area. (\fBEINVAL\fR will be returned if
-user specified \fBsdl_alen\fR does not match the address length of the
+the
+.B LLADDR/sdl_data[]
+area. (\fBEINVAL\fR will be returned if
+user specified
+.B sdl_alen
+does not match the address length of the
 identified interface).
 .sp
 .LP
-On return from the kernel on a \fBSIOCGXARP\fR ioctl, the kernel fills in
+On return from the kernel on a
+.B SIOCGXARP
+ioctl, the kernel fills in
 the name of the interface (excluding terminating NULL) and its hardware
-address, one after another, in the \fBsdl_data/LLADDR\fR area; if the two
+address, one after another, in the
+.B sdl_data/LLADDR
+area; if the two
 are larger than can be held in the 244 byte \fBsdl_data[\fR] area, an
 \fBENOSPC\fR error is returned. Assuming it fits, the kernel will also set
 \fBsdl_alen\fR with the length of hardware address, \fBsdl_nlen\fR with the
 length of name of the interface (excluding terminating NULL), \fBsdl_type\fR
-with an IFT_* value to indicate the type of the media, \fBsdl_slen\fR with
-0, sdl_family with \fBAF_LINK\fR and \fBsdl_index\fR (which if not 0) with
+with an IFT_* value to indicate the type of the media,
+.B sdl_slen
+with
+0, sdl_family with
+.B AF_LINK
+and
+.B sdl_index
+(which if not 0) with
 system given index for the interface. The information returned is very
-similar to that returned via routing sockets on an \fBRTM_IFINFO\fR
+similar to that returned via routing sockets on an
+.BR RTM_IFINFO
 message.
 .sp
 .LP
@@ -243,7 +304,10 @@ when used in conjunction with IPMP:
 .el o
 ARP  mappings for IPMP  data and test addresses are managed by  the kernel
 and cannot be changed through ARP  ioctls, though they may be retrieved
-using \fBSIOCGARP\fR or \fBSIOCGXARP\fR.
+using
+.B SIOCGARP
+or
+.BR SIOCGXARP .
 .RE
 .RS +4
 .TP
@@ -259,7 +323,9 @@ corresponding IPMP IP interface.
 .ie t \(bu
 .el o
 roxy ARP mappings for an IPMP group are automatically managed by the
-kernel. Specifically, if the  hardware address in a \fBSIOCSARP\fR or
+kernel. Specifically, if the  hardware address in a
+.B SIOCSARP
+or
 \fBSIOCSXARP\fR request matches the hardware  address of  an IP interface in
 an IPMP group and the IP address is not  local to the system, the kernel
 regards this as a  IPMP Proxy ARP entry. This  IPMP Proxy ARP entry  will
@@ -282,7 +348,9 @@ address reachable  (provided   the IPMP group has not entirely failed).
 .LP
 \fBARP\fR performs duplicate address detection for local addresses. When a
 logical interface is brought up (\fBIFF_UP\fR) or any time the hardware link
-goes up  (\fBIFF_RUNNING\fR), ARP sends probes (ar$spa == 0) for the
+goes up 
+.RB ( IFF_RUNNING ),
+ARP sends probes (ar$spa == 0) for the
 assigned address.  If  a conflict is  found, the interface is torn down. See
 \fBifconfig\fR(1M) for more details.
 .sp
@@ -290,7 +358,9 @@ assigned address.  If  a conflict is  found, the interface is torn down. See
 \fBARP\fR watches for hosts impersonating the local host, that is, any host
 that responds to an ARP request for the local host's address, and any
 address for which the local host is an authority. ARP defends local
-addresses and logs those with \fBATF_AUTHORITY\fR set, and can tear down
+addresses and logs those with
+.B ATF_AUTHORITY
+set, and can tear down
 local addresses on an excess of conflicts.
 .sp
 .LP
@@ -299,9 +369,13 @@ generate these messages.
 .SH PACKET EVENTS
 .sp
 .LP
-The \fBarp\fR driver registers itself with the netinfo  interface. To gain
+The
+.B arp
+driver registers itself with the netinfo  interface. To gain
 access to  these events, a handle from net_protocol_lookup must be acquired
-by passing it the value \fBNHF_ARP\fR. Through this interface, two packet
+by passing it the value
+.BR NHF_ARP .
+Through this interface, two packet
 events are supported:
 .sp
 .LP
@@ -333,14 +407,16 @@ Identifier indicating the  inbound  interface for packets received with the
 .sp .6
 .RS 4n
 Identifier indicating the outbound  interface  for packets received with
-the \fBphysical out\fR event.
+the
+.B "physical out"
+event.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBhpe_hdr\fR
+.B hpe_hdr
 .ad
 .sp .6
 .RS 4n
@@ -351,7 +427,7 @@ Pointer to the start of the ARP  header  (not  the ethernet header).
 .ne 2
 .mk
 .na
-\fBhpe_mp\fR
+.B hpe_mp
 .ad
 .sp .6
 .RS 4n
@@ -362,7 +438,7 @@ Pointer to the start of the mblk_t chain containing the ARP packet.
 .ne 2
 .mk
 .na
-\fBhpe_mb\fR
+.B hpe_mb
 .ad
 .sp .6
 .RS 4n
@@ -380,7 +456,7 @@ The list of events is as follows:
 .ne 2
 .mk
 .na
-\fBplumb\fR
+.B plumb
 .ad
 .sp .6
 .RS 4n
@@ -391,7 +467,7 @@ A new network interface has been instantiated.
 .ne 2
 .mk
 .na
-\fBunplumb\fR
+.B unplumb
 .ad
 .sp .6
 .RS 4n
@@ -401,16 +477,24 @@ A network interface is no longer  associated with ARP.
 .SH SEE ALSO
 .sp
 .LP
-\fBarp\fR(1M), \fBifconfig\fR(1M), \fBprivileges\fR(5), \fBif_tcp\fR(7P),
-\fBinet\fR(7P), \fBnetinfo\fR(9F)
+.BR arp (1M),
+\fBifconfig\fR(1M),
+.BR privileges (5),
+\fBif_tcp\fR(7P),
+.BR inet (7P),
+\fBnetinfo\fR(9F)
 .sp
 .LP
-Plummer, Dave, \fIAn Ethernet Address Resolution Protocol\fR or
+Plummer, Dave,
+.I "An Ethernet Address Resolution Protocol"
+or
 \fIConverting Network  Protocol  Addresses to 48 .bit Ethernet Addresses for
 Transmission on Ethernet  Hardware\fR, RFC  826, STD 0037, November 1982.
 .sp
 .LP
-Malkin,  Gary, \fIARP  Extension  - UNARP, RFC 1868\fR, November, 1995
+Malkin,  Gary,
+.IR "ARP  Extension  - UNARP, RFC 1868" ,
+November, 1995
 .SH DIAGNOSTICS
 .sp
 .LP
@@ -464,7 +548,7 @@ network.
 .ne 2
 .mk
 .na
-\fBRecovered address %d.%d.%d.%d on %s.\fR
+.B Recovered address %d.%d.%d.%d on %s.
 .ad
 .sp .6
 .RS 4n
@@ -481,7 +565,8 @@ automatically and reenabled. The conflict has been resolved.
 .ad
 .sp .6
 .RS 4n
-This  message appears if \fBarp\fR(1M) has been used to create a published
+This  message appears if
+.BR arp "(1M) has been used to create a published"
 permanent (\fBATF_AUTHORITY\fR) entry, and some other host on the local
 network responds to mapping requests for the published ARP entry.
 .RE

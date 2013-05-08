@@ -38,15 +38,20 @@ awrite \- asynchronous write to a device
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris \fBDDI \fRspecific (Solaris DDI). This entry point is optional. Drivers
-that do not support an  \fBawrite()\fR entry point should use  \fBnodev\fR(9F)
+Solaris
+.B DDI
+specific (Solaris DDI). This entry point is optional. Drivers
+that do not support an 
+.B awrite()
+entry point should use 
+.BR nodev (9F)
 
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 12n
 .rt
@@ -57,11 +62,12 @@ Device number.
 .ne 2
 .mk
 .na
-\fIaio_reqp\fR
+.I aio_reqp
 .ad
 .RS 12n
 .rt
-Pointer to the  \fBaio_req\fR(9S) structure that describes where the data is
+Pointer to the 
+.BR aio_req "(9S) structure that describes where the data is"
 stored.
 .RE
 
@@ -69,7 +75,7 @@ stored.
 .ne 2
 .mk
 .na
-\fIcred_p\fR
+.I cred_p
 .ad
 .RS 12n
 .rt
@@ -79,23 +85,49 @@ Pointer to the  credential structure.
 .SH DESCRIPTION
 .sp
 .LP
-The driver's \fBawrite()\fR routine is called to perform an asynchronous write.
-\fBgetminor\fR(9F) can be used to  access the minor number component of the
+The driver's
+.B awrite()
+routine is called to perform an asynchronous write.
+.BR getminor (9F)
+can be used to  access the minor number component of the
 \fIdev\fR argument. \fBawrite()\fR may use the  credential structure pointed to
-by \fIcred_p\fR to check for superuser access by calling  \fBdrv_priv\fR(9F).
-The \fBawrite()\fR routine may also examine the  \fBuio\fR(9S) structure through
-the \fBaio_req\fR structure pointer,  \fBaio_reqp\fR. \fBawrite()\fR must call
-\fBaphysio\fR(9F) with the \fBaio_req\fR pointer and a pointer to the driver's
-\fBstrategy\fR(9E) routine.
+by
+.I cred_p
+to check for superuser access by calling 
+.BR drv_priv (9F).
+The
+.B awrite()
+routine may also examine the 
+.BR uio "(9S) structure through"
+the
+.B aio_req
+structure pointer,
+.BR aio_reqp .
+\fBawrite()\fR must call
+.BR aphysio (9F)
+with the
+.B aio_req
+pointer and a pointer to the driver's
+.BR strategy (9E)
+routine.
 .sp
 .LP
-No fields of the \fBuio\fR(9S) structure pointed to by \fBaio_req\fR, other
-than \fBuio_offset\fR or \fBuio_loffset\fR, may be modified for non-seekable
+No fields of the
+.BR uio "(9S) structure pointed to by"
+.BR aio_req ,
+other
+than \fBuio_offset\fR or
+.BR uio_loffset ,
+may be modified for non-seekable
 devices.
 .SH RETURN VALUES
 .sp
 .LP
-The  \fBawrite()\fR routine should return   \fB0\fR for success, or the
+The 
+.B awrite()
+routine should return  
+.B 0
+for success, or the
 appropriate error number.
 .SH CONTEXT
 .sp
@@ -103,10 +135,12 @@ appropriate error number.
 This function is called from user context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing the \fBawrite()\fR routine:
+\fBExample 1\fR Using the \fBawrite()\fR routine:
 .sp
 .LP
-The following is an example of an  \fBawrite()\fR routine:
+The following is an example of an 
+.B awrite()
+routine:
 
 .sp
 .in +2
@@ -131,16 +165,26 @@ xxawrite(dev_t dev, struct aio_req *aio, cred_t *cred_p)
 .SH SEE ALSO
 .sp
 .LP
-\fBwrite\fR(2), \fBaiowrite\fR(3C), \fBaread\fR(9E), \fBread\fR(9E),
-\fBstrategy\fR(9E), \fBwrite\fR(9E), \fBanocancel\fR(9F), \fBaphysio\fR(9F),
+.BR write (2),
+.BR aiowrite (3C),
+.BR aread (9E),
+.BR read (9E),
+.BR strategy (9E),
+.BR write (9E),
+.BR anocancel (9F),
+.BR aphysio (9F),
 \fBddi_get_soft_state\fR(9F), \fBdrv_priv\fR(9F), \fBgetminor\fR(9F),
-\fBminphys\fR(9F), \fBnodev\fR(9F), \fBaio_req\fR(9S), \fBcb_ops\fR(9S),
-\fBuio\fR(9S) 
+.BR minphys (9F),
+.BR nodev (9F),
+.BR aio_req (9S),
+.BR cb_ops (9S),
+.BR uio (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH BUGS
 .sp
 .LP
-There is no way other than calling \fBaphysio\fR(9F) to accomplish an
+There is no way other than calling
+.BR aphysio "(9F) to accomplish an"
 asynchronous write.

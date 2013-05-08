@@ -38,48 +38,76 @@ cc -mt [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|.[ \fIlibrary\fR.\|.\|. ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBthr_suspend()\fR function immediately suspends the execution of the
-thread specified by \fItarget_thread\fR. On successful return from
-\fBthr_suspend()\fR, the suspended thread is no longer executing. Once a
-thread is suspended, subsequent calls to \fBthr_suspend()\fR have no
+The
+.B thr_suspend()
+function immediately suspends the execution of the
+thread specified by
+.IR target_thread .
+On successful return from
+.BR thr_suspend() ,
+the suspended thread is no longer executing. Once a
+thread is suspended, subsequent calls to
+.B thr_suspend()
+have no
 effect.
 .sp
 .LP
-The \fBthr_continue()\fR function resumes the execution of a suspended
+The
+.B thr_continue()
+function resumes the execution of a suspended
 thread. Once a suspended thread is continued, subsequent calls to
 \fBthr_continue()\fR have no effect.
 .sp
 .LP
 A suspended thread will not be awakened by any mechanism other than a call
-to \fBthr_continue()\fR.  Signals and the effect of calls
+to
+.BR thr_continue() .
+Signals and the effect of calls
 to\fBmutex_unlock\fR(3C), \fBrw_unlock\fR(3C), \fBsema_post\fR(3C),
-\fBcond_signal\fR(3C), and \fBcond_broadcast\fR(3C) remain pending until the
-execution of the thread is resumed by \fBthr_continue()\fR.
+.BR cond_signal (3C),
+and
+.BR cond_broadcast "(3C) remain pending until the"
+execution of the thread is resumed by
+.BR thr_continue() .
 .SH RETURN VALUES
 .sp
 .LP
-If successful, the \fBthr_suspend()\fR and \fBthr_continue()\fR functions
-return \fB0\fR. Otherwise, a non-zero value is returned to indicate the
+If successful, the
+.B thr_suspend()
+and
+.B thr_continue()
+functions
+return
+.BR 0 .
+Otherwise, a non-zero value is returned to indicate the
 error.
 .SH ERRORS
 .sp
 .LP
-The \fBthr_suspend()\fR and \fBthr_continue()\fR functions will fail if:
+The
+.B thr_suspend()
+and
+.B thr_continue()
+functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 10n
 .rt
-The \fItarget_thread\fR cannot be found in the current process.
+The
+.I target_thread
+cannot be found in the current process.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -96,22 +124,35 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBthr_create\fR(3C), \fBthr_join\fR(3C), \fBattributes\fR(5),
-\fBstandards\fR(5) 
+.BR thr_create (3C),
+.BR thr_join (3C),
+.BR attributes (5),
+.BR standards (5)
 .SH WARNINGS
 .sp
 .LP
-The \fBthr_suspend()\fR function is extremely difficult to use safely
+The
+.B thr_suspend()
+function is extremely difficult to use safely
 because it suspends the target thread with no concern for the target
 thread's state. The target thread could be holding locks, waiting for a
 lock, or waiting on a condition variable when it is unconditionally
-suspended. The thread will not run until \fBthr_continue()\fR is applied,
-regardless of any calls to \fBmutex_unlock()\fR, \fBcond_signal()\fR, or
+suspended. The thread will not run until
+.B thr_continue()
+is applied,
+regardless of any calls to
+.BR mutex_unlock() ,
+.BR cond_signal() ,
+or
 \fBcond_broadcast()\fR by other threads. Its existence on a sleep queue can
 interfere with the waking up of other threads that are on the same sleep
 queue.
 .sp
 .LP
-The \fBthr_suspend()\fR and \fBthr_continue()\fR functions should be
+The
+.B thr_suspend()
+and
+.B thr_continue()
+functions should be
 avoided. Mechanisms that involve the cooperation of the targeted thread,
 such as mutex locks and condition variables, should be employed instead.

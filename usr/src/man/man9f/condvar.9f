@@ -76,30 +76,34 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIcvp\fR
+.I cvp
 .ad
 .RS 11n
 .rt
-A pointer to an abstract data type \fBkcondvar_t\fR.
+A pointer to an abstract data type
+.BR kcondvar_t .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fImp\fR
+.I mp
 .ad
 .RS 11n
 .rt
-A pointer to a mutual exclusion lock (\fBkmutex_t\fR), initialized by
-\fBmutex_init\fR(9F) and held by the caller.
+A pointer to a mutual exclusion lock
+.RB ( kmutex_t ),
+initialized by
+.BR mutex_init (9F)
+and held by the caller.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 11n
 .rt
@@ -111,18 +115,19 @@ Descriptive string. This is obsolete and should be \fINULL\fR.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 11n
 .rt
-The constant \fBCV_DRIVER\fR.
+The constant
+.BR CV_DRIVER .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 11n
 .rt
@@ -133,11 +138,13 @@ A type-specific argument, drivers should pass arg as \fINULL\fR.
 .ne 2
 .mk
 .na
-\fItimeout\fR
+.I timeout
 .ad
 .RS 11n
 .rt
-A time, in absolute ticks since boot, when \fBcv_timedwait()\fR or
+A time, in absolute ticks since boot, when
+.B cv_timedwait()
+or
 \fBcv_timedwait_sig()\fR should return.
 .RE
 
@@ -149,18 +156,25 @@ designed to be used with mutual exclusion locks (mutexes). The associated
 mutex is used to ensure that a condition can be checked atomically and that
 the thread can block on the associated condition variable without missing
 either a change to the condition or a signal that the condition has changed.
-Condition variables must be initialized by calling \fBcv_init()\fR, and must
-be deallocated by calling \fBcv_destroy()\fR.
+Condition variables must be initialized by calling
+.BR cv_init() ,
+and must
+be deallocated by calling
+.BR cv_destroy() .
 .sp
 .LP
 The usual use of condition variables is to check a condition (for example,
 device state, data structure reference count, etc.) while holding a mutex
 which keeps other threads from changing the condition. If the condition is
-such that the thread should block, \fBcv_wait()\fR is called with a related
+such that the thread should block,
+.B cv_wait()
+is called with a related
 condition variable and the mutex. At some later point in time, another
 thread would acquire the mutex, set the condition such that the previous
-thread can be unblocked, unblock the previous thread with \fBcv_signal()\fR
-or \fBcv_broadcast()\fR, and then release the mutex.
+.RB "thread can be unblocked, unblock the previous thread with" " cv_signal()"
+or
+.BR cv_broadcast() ,
+and then release the mutex.
 .sp
 .LP
 \fBcv_wait()\fR suspends the calling thread and exits the mutex atomically
@@ -170,43 +184,74 @@ is reacquired.
 .sp
 .LP
 \fBcv_signal()\fR signals the condition and wakes one blocked thread. All
-blocked threads can be unblocked by calling \fBcv_broadcast()\fR.
+blocked threads can be unblocked by calling
+.BR cv_broadcast() .
 \fBcv_signal()\fR and \fBcv_broadcast()\fR can be called by a thread even if
-it does not hold the mutex passed into \fBcv_wait()\fR, though holding the
+it does not hold the mutex passed into
+.BR cv_wait() ,
+though holding the
 mutex is necessary to ensure predictable scheduling.
 .sp
 .LP
-The function \fBcv_wait_sig()\fR is similar to \fBcv_wait()\fR but returns
-\fB0\fR if a signal (for example, by \fBkill\fR(2)) is sent to the thread.
+The function
+.B cv_wait_sig()
+is similar to
+.B cv_wait()
+but returns
+\fB0\fR if a signal (for example, by
+.BR kill (2))
+is sent to the thread.
 In any case, the mutex is reacquired before returning.
 .sp
 .LP
-The function \fBcv_timedwait()\fR is similar to \fBcv_wait()\fR, except
+The function
+.B cv_timedwait()
+is similar to
+.BR cv_wait() ,
+except
 that it returns \fB\(mi1\fR without the condition being signaled after the
 timeout time has been reached.
 .sp
 .LP
-The function \fBcv_timedwait_sig()\fR is similar to \fBcv_timedwait()\fR
-and \fBcv_wait_sig()\fR, except that it returns \fB\(mi1\fR without the
+The function
+.B cv_timedwait_sig()
+is similar to
+.BR cv_timedwait()
+and
+.BR cv_wait_sig() ,
+except that it returns \fB\(mi1\fR without the
 condition being signaled after the timeout time has been reached, or \fB0\fR
-if a signal (for example, by \fBkill\fR(2)) is sent to the thread.
+if a signal (for example, by
+.BR kill (2))
+is sent to the thread.
 .sp
 .LP
-For both \fBcv_timedwait()\fR and \fBcv_timedwait_sig()\fR, time is in
+For both
+.B cv_timedwait()
+and
+.BR cv_timedwait_sig() ,
+time is in
 absolute clock ticks since the last system reboot. The current time may be
-found by calling \fBddi_get_lbolt\fR(9F).
+found by calling
+.BR ddi_get_lbolt (9F).
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 9n
 .rt
-For \fBcv_wait_sig()\fR and \fBcv_timedwait_sig()\fR indicates that the
+For
+.B cv_wait_sig()
+and
+.B cv_timedwait_sig()
+indicates that the
 condition was not necessarily signaled and the function returned because a
-signal (as in \fBkill\fR(2)) was pending.
+signal (as in
+.BR kill (2))
+was pending.
 .RE
 
 .sp
@@ -217,7 +262,11 @@ signal (as in \fBkill\fR(2)) was pending.
 .ad
 .RS 9n
 .rt
-For \fBcv_timedwait()\fR and \fBcv_timedwait_sig()\fR indicates that the
+For
+.B cv_timedwait()
+and
+.B cv_timedwait_sig()
+indicates that the
 condition was not necessarily signaled and the function returned because the
 timeout time was reached.
 .RE
@@ -226,13 +275,19 @@ timeout time was reached.
 .ne 2
 .mk
 .na
-\fB>0\fR
+.B >0
 .ad
 .RS 9n
 .rt
-For \fBcv_wait_sig()\fR, \fBcv_timedwait()\fR or \fBcv_timedwait_sig()\fR
+For
+.BR cv_wait_sig() ,
+\fBcv_timedwait()\fR or \fBcv_timedwait_sig()\fR
 indicates that the condition was met and the function returned due to a call
-to \fBcv_signal()\fR or \fBcv_broadcast()\fR, or due to a premature wakeup
+to
+.B cv_signal()
+or
+.BR cv_broadcast() ,
+or due to a premature wakeup
 (see NOTES).
 .RE
 
@@ -240,13 +295,22 @@ to \fBcv_signal()\fR or \fBcv_broadcast()\fR, or due to a premature wakeup
 .sp
 .LP
 These functions can be called from user, kernel or interrupt context. In
-most cases, however, \fBcv_wait()\fR, \fBcv_timedwait()\fR,
-\fBcv_wait_sig()\fR, and \fBcv_timedwait_sig()\fR should not be called from
+most cases, however,
+.BR cv_wait() ,
+.BR cv_timedwait() ,
+.BR cv_wait_sig() ,
+and
+.B cv_timedwait_sig()
+should not be called from
 interrupt context, and cannot be called from a high-level interrupt
 context.
 .sp
 .LP
-If \fBcv_wait()\fR, \fBcv_timedwait()\fR, \fBcv_wait_sig()\fR, or
+If
+.BR cv_wait() ,
+.BR cv_timedwait() ,
+.BR cv_wait_sig() ,
+or
 \fBcv_timedwait_sig()\fR are used from interrupt context, lower-priority
 interrupts will not be serviced during the wait. This means that if the
 thread that will eventually perform the wakeup becomes blocked on anything
@@ -261,7 +325,7 @@ predict, so it is advisable to avoid waiting on condition variables or
 semaphores in an interrupt context.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRWaiting for a Flag Value in a Driver's Unit
+\fBExample 1\fR Waiting for a Flag Value in a Driver's Unit
 .sp
 .LP
 Here the condition being waited for is a flag value in a driver's unit
@@ -280,7 +344,7 @@ flag word is protected by a mutex in the unit structure.
 .in -2
 
 .LP
-\fBExample 2 \fRUnblocking Threads Blocked by the Code in Example 1
+\fBExample 2\fR Unblocking Threads Blocked by the Code in Example 1
 .sp
 .LP
 At some later point in time, another thread would execute the following to
@@ -289,7 +353,7 @@ unblock any threads blocked by the above code.
 .sp
 .in +2
 .nf
-	
+
 mutex_enter(&un->un_lock);
 un->un_flag &= ~UNIT_BUSY;
 cv_broadcast(&un->un_cv);
@@ -300,36 +364,61 @@ mutex_exit(&un->un_lock);
 .SH NOTES
 .sp
 .LP
-It is possible for \fBcv_wait()\fR, \fBcv_wait_sig()\fR,
-\fBcv_timedwait()\fR, and \fBcv_timedwait_sig()\fR to return prematurely,
-that is, not due to a call to \fBcv_signal()\fR or \fBcv_broadcast()\fR.
-This occurs most commonly in the case of \fBcv_wait_sig()\fR and
+It is possible for
+.BR cv_wait() ,
+.BR cv_wait_sig() ,
+.BR cv_timedwait() ,
+and
+.B cv_timedwait_sig()
+to return prematurely,
+that is, not due to a call to
+.B cv_signal()
+or
+.BR cv_broadcast() .
+This occurs most commonly in the case of
+.B cv_wait_sig()
+and
 \fBcv_timedwait_sig()\fR when the thread is stopped and restarted by job
 control signals or by a debugger, but can happen in other cases as well,
-even for \fBcv_wait()\fR. Code that calls these functions must always
+even for
+.BR cv_wait() .
+Code that calls these functions must always
 recheck the reason for blocking and call again if the reason for blocking is
 still true.
 .sp
 .LP
 If your driver needs to wait on behalf of processes that have real-time
-constraints, use \fBcv_timedwait()\fR rather than \fBdelay\fR(9F). The
+constraints, use
+.B cv_timedwait()
+rather than
+.BR delay "(9F). The"
 \fBdelay()\fR function calls \fBtimeout\fR(9F), which can be subject to
 priority inversions.
 .sp
 .LP
 Not all threads can receive signals from user level processes. In cases
 where such reception is impossible (such as during execution of
-\fBclose\fR(9E) due to \fBexit\fR(2)), \fBcv_wait_sig()\fR behaves as
-\fBcv_wait()\fR, and \fBcv_timedwait_sig()\fR behaves as
-\fBcv_timedwait()\fR. To avoid unkillable processes, users of these
+.BR close (9E)
+due to
+.BR exit (2)),
+\fBcv_wait_sig()\fR behaves as
+.BR cv_wait() ,
+and
+.B cv_timedwait_sig()
+behaves as
+.BR cv_timedwait() .
+To avoid unkillable processes, users of these
 functions may need to protect against waiting indefinitely for events that
 might not occur. The \fBddi_can_receive_sig\fR(9F) function is provided to
 detect when signal reception is possible.
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(2), \fBddi_can_receive_sig\fR(9F), \fBddi_get_lbolt\fR(9F),
-\fBmutex\fR(9F), \fBmutex_init\fR(9F)
+.BR kill (2),
+.BR ddi_can_receive_sig (9F),
+.BR ddi_get_lbolt (9F),
+.BR mutex (9F),
+.BR mutex_init (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

@@ -59,51 +59,96 @@ mount, umount \- mount or unmount file systems and remote resources
 .sp
 .LP
 \fBmount\fR attaches a file system to the file system hierarchy at the
-\fImount_point\fR, which is the pathname of a directory. If
+.IR mount_point ,
+which is the pathname of a directory. If
 \fImount_point\fR has any contents prior to the \fBmount\fR operation, these
 are hidden until the file system is unmounted.
 .sp
 .LP
 \fBumount\fR unmounts a currently mounted file system, which may be
-specified either as a \fImount_point\fR or as \fIspecial\fR, the device on
+specified either as a
+.I mount_point
+or as
+.IR special ,
+the device on
 which the file system resides.
 .sp
 .LP
 The table of currently mounted file systems can be found by examining the
 mounted file system information file. This is provided by a file system that
-is usually mounted on \fB/etc/mnttab\fR. The mounted file system information
-is described in \fBmnttab\fR(4). Mounting a file system adds an entry to the
-mount table; a \fBumount\fR removes an entry from the table.
+is usually mounted on
+.BR /etc/mnttab .
+The mounted file system information
+is described in
+.BR mnttab (4).
+Mounting a file system adds an entry to the
+mount table; a
+.B umount
+removes an entry from the table.
 .sp
 .LP
-When invoked with both the \fIspecial\fR and \fImount_point\fR arguments
-and the \fB-F\fR option, \fBmount\fR validates all arguments except for
+When invoked with both the
+.I special
+and
+.I mount_point
+arguments
+and the
+.B -F
+option,
+.B mount
+validates all arguments except for
 \fIspecial\fR and invokes the appropriate \fIFSType\fR-specific \fBmount\fR
-module. If invoked with no arguments, \fBmount\fR lists all the mounted file
-systems recorded in the mount table, \fB/etc/mnttab\fR. If invoked with a
-partial argument list (with only one of \fIspecial\fR or \fImount_point\fR,
-or with both \fIspecial\fR or \fImount_point\fR specified but not
-\fIFSType\fR), \fBmount\fR will search \fB/etc/vfstab\fR for an entry that
+module. If invoked with no arguments,
+.B mount
+lists all the mounted file
+systems recorded in the mount table,
+.BR /etc/mnttab .
+If invoked with a
+partial argument list (with only one of
+.I special
+or
+.IR mount_point ,
+or with both
+.I special
+or
+.I mount_point
+specified but not
+.IR FSType ),
+\fBmount\fR will search \fB/etc/vfstab\fR for an entry that
 will supply the missing arguments. If no entry is found, and the special
-argument starts with \fB/\fR, the default local file system type specified
+argument starts with
+.BR / ,
+the default local file system type specified
 in \fB/etc/default/fs\fR will be used. Otherwise the default remote file
 system type will be used. The default remote file system type is determined
 by the first entry in the \fB/etc/dfs/fstypes\fR file. After filling in
-missing arguments, \fBmount\fR will invoke the \fIFSType\fR-specific
+missing arguments,
+.B mount
+will invoke the \fIFSType\fR-specific
 \fBmount\fR module.
 .sp
 .LP
 For file system types that support it, a file can be mounted directly as a
 file system by specifying the full path to the file as the special argument.
-In such a case, the \fBnosuid\fR option is enforced. If specific file system
+In such a case, the
+.B nosuid
+option is enforced. If specific file system
 support for such loopback file mounts is not present, you can still use
 \fBlofiadm\fR(1M) to mount a file system image. In this case, no special
 options are enforced.
 .sp
 .LP
-Only a user with sufficient privilege (at least \fBPRIV_SYS_MOUNT\fR) can
-mount or unmount file systems using \fBmount\fR and \fBumount\fR. However,
-any user can use \fBmount\fR to list mounted file systems and resources.
+Only a user with sufficient privilege (at least
+.BR PRIV_SYS_MOUNT )
+can
+mount or unmount file systems using
+.B mount
+and
+.BR umount .
+However,
+any user can use
+.B mount
+to list mounted file systems and resources.
 .SH OPTIONS
 .sp
 .ne 2
@@ -113,8 +158,14 @@ any user can use \fBmount\fR to list mounted file systems and resources.
 .ad
 .sp .6
 .RS 4n
-Used to specify the \fIFSType\fR on which to operate. The \fIFSType\fR must
-be specified or must be determinable from \fB/etc/vfstab\fR, or by
+Used to specify the
+.I FSType
+on which to operate. The
+.I FSType
+must
+be specified or must be determinable from
+.BR /etc/vfstab ,
+or by
 consulting \fB/etc/default/fs\fR or \fB/etc/dfs/fstypes\fR.
 .RE
 
@@ -128,16 +179,32 @@ consulting \fB/etc/default/fs\fR or \fB/etc/dfs/fstypes\fR.
 .RS 4n
 Perform mount or umount operations in parallel, when possible.
 .sp
-If mount points are not specified, \fBmount\fR will mount all file systems
+If mount points are not specified,
+.B mount
+will mount all file systems
 whose \fB/etc/vfstab\fR "mount at boot" field is \fByes\fR. If mount points
 are specified, then \fB/etc/vfstab\fR "mount at boot" field will be
 ignored.
 .sp
-If mount points are specified, \fBumount\fR will only \fBumount\fR those
-mount points. If none is specified, then \fBumount\fR will attempt to
-\fBunmount\fR all file systems in \fB/etc/mnttab\fR, with the exception of
-certain system required file systems: \fB/\fR, \fB/usr\fR, \fB/var\fR,
-\fB/var/adm\fR, \fB/var/run\fR, \fB/proc\fR, \fB/dev/fd\fR and \fB/tmp\fR.
+If mount points are specified,
+.B umount
+will only
+.B umount
+those
+mount points. If none is specified, then
+.B umount
+will attempt to
+\fBunmount\fR all file systems in
+.BR /etc/mnttab ,
+with the exception of
+certain system required file systems:
+.BR / ,
+.BR /usr ,
+.BR /var ,
+.BR /var/adm ,
+.BR /var/run ,
+.BR /proc ,
+\fB/dev/fd\fR and \fB/tmp\fR.
 .RE
 
 .sp
@@ -150,17 +217,20 @@ certain system required file systems: \fB/\fR, \fB/usr\fR, \fB/var\fR,
 .RS 4n
 Forcibly unmount a file system.
 .sp
-Without this option, \fBumount\fR does not allow a file system to be
+Without this option,
+.B umount
+does not allow a file system to be
 unmounted if a file on the file system is busy. Using this option can cause
 data loss for open files; programs which access files after the file system
-has been unmounted will get an error (\fBEIO\fR).
+has been unmounted will get an error
+.RB ( EIO ).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-p\fR
+.B -p
 .ad
 .sp .6
 .RS 4n
@@ -172,7 +242,7 @@ Must be the only option specified. See \fBBUGS\fR.
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .sp .6
 .RS 4n
@@ -184,14 +254,15 @@ option specified.
 .ne 2
 .mk
 .na
-\fB-V\fR
+.B -V
 .ad
 .sp .6
 .RS 4n
 Echo the complete command line, but do not execute the command.
 \fBumount\fR generates a command line by using the options and arguments
 provided by the user and adding to them information derived from
-\fB/etc/mnttab\fR. This option should be used to verify and validate the
+.BR /etc/mnttab .
+This option should be used to verify and validate the
 command line.
 .RE
 
@@ -199,7 +270,7 @@ command line.
 .ne 2
 .mk
 .na
-\fIgeneric_options\fR
+.I generic_options
 .ad
 .sp .6
 .RS 4n
@@ -209,18 +280,19 @@ modules. The following options are available:
 .ne 2
 .mk
 .na
-\fB-m\fR
+.B -m
 .ad
 .sp .6
 .RS 4n
-Mount the file system without making an entry in \fB/etc/mnttab\fR.
+Mount the file system without making an entry in
+.BR /etc/mnttab .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-g\fR
+.B -g
 .ad
 .sp .6
 .RS 4n
@@ -233,15 +305,19 @@ has no effect.
 .ne 2
 .mk
 .na
-\fB-o\fR
+.B -o
 .ad
 .sp .6
 .RS 4n
 Specify \fIFSType\fR-specific options in a comma separated (without spaces)
 list of suboptions and keyword-attribute pairs for interpretation by the
 \fIFSType\fR-specific module of the command. (See \fBmount_ufs\fR(1M).) When
-you use \fB-o\fR with a file system that has an entry in \fB/etc/vfstab\fR,
-any \fBmount\fR options entered for that file system in \fB/etc/vfstab\fR
+you use
+.B -o
+with a file system that has an entry in \fB/etc/vfstab\fR,
+any
+.B mount
+options entered for that file system in \fB/etc/vfstab\fR
 are ignored.
 .sp
 The following options are supported:
@@ -249,35 +325,44 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fBdevices | nodevices\fR
+.B devices | nodevices
 .ad
 .sp .6
 .RS 4n
 Allow or disallow the opening of device-special files. The default is
-\fBdevices\fR.
+.BR devices .
 .sp
-If you use \fBnosuid\fR in conjunction with \fBdevices\fR, the behavior is
-equivalent to that of \fBnosuid\fR.
+If you use
+.B nosuid
+in conjunction with
+.BR devices ,
+the behavior is
+equivalent to that of
+.BR nosuid .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBexec | noexec\fR
+.B exec | noexec
 .ad
 .sp .6
 .RS 4n
 Allow or disallow executing programs in the file system. Allow or disallow
-\fBmmap\fR(2) with \fBPROT_EXEC\fR for files within the file system. The
-default is \fBexec\fR.
+.BR mmap (2)
+with
+.B PROT_EXEC
+for files within the file system. The
+default is
+.BR exec .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBloop\fR
+.B loop
 .ad
 .sp .6
 .RS 4n
@@ -288,21 +373,27 @@ Ignored for compatibility.
 .ne 2
 .mk
 .na
-\fBnbmand | nonbmand\fR
+.B nbmand | nonbmand
 .ad
 .sp .6
 .RS 4n
 Allow or disallow non-blocking mandatory locking semantics on this file
 system. Non-blocking mandatory locking is disallowed by default.
 .sp
-If the file system is mounted with the \fBnbmand\fR option, then
-applications can use the \fBfcntl\fR(2) interface to place non-blocking
+If the file system is mounted with the
+.B nbmand
+option, then
+applications can use the
+.BR fcntl (2)
+interface to place non-blocking
 mandatory locks on files and the system enforces those semantics. If you
 enable this option, it can cause standards conformant applications to see
 unexpected errors.
 .sp
 To avoid the possibility of obtaining mandatory locks on system files, do
-not use the \fBnbmand\fR option with the following file systems:
+not use the
+.B nbmand
+option with the following file systems:
 .sp
 .in +2
 .nf
@@ -321,8 +412,14 @@ not use the \fBnbmand\fR option with the following file systems:
 .in -2
 .sp
 
-Do not use the \fBremount\fR option to change the \fBnbmand\fR disposition
-of the file system. The \fBnbmand\fR option is mutually exclusive of the
+Do not use the
+.B remount
+option to change the
+.B nbmand
+disposition
+of the file system. The
+.B nbmand
+option is mutually exclusive of the
 global option. See \fB-g\fR.
 .RE
 
@@ -330,7 +427,7 @@ global option. See \fB-g\fR.
 .ne 2
 .mk
 .na
-\fBro | rw\fR
+.B ro | rw
 .ad
 .sp .6
 .RS 4n
@@ -341,23 +438,40 @@ Specify read-only or read-write. The default is \fBrw\fR.
 .ne 2
 .mk
 .na
-\fBsetuid | nosetuid\fR
+.B setuid | nosetuid
 .ad
 .sp .6
 .RS 4n
-Allow or disallow \fBsetuid\fR or \fBsetgid\fR execution. The default is
-\fBsetuid\fR. 
+Allow or disallow
+.B setuid
+or
+.B setgid
+execution. The default is
+.BR setuid .
 .sp
-If you specify \fBsetuid\fR in conjunction with \fBnosuid\fR, the behavior
-is the same as \fBnosuid\fR.
+If you specify
+.B setuid
+in conjunction with
+.BR nosuid ,
+the behavior
+is the same as
+.BR nosuid .
 .sp
-\fBnosuid\fR is equivalent to \fBnosetuid\fR and \fBnodevices\fR. When
+\fBnosuid\fR is equivalent to \fBnosetuid\fR and
+.BR nodevices .
+When
 \fBsuid\fR or \fBnosuid\fR is combined with \fBsetuid\fR or \fBnosetuid\fR
-and \fBdevices\fR or \fBnodevices\fR, the most restrictive options take
+and
+.B devices
+or
+.BR nodevices ,
+the most restrictive options take
 effect.
 .sp
 This option is highly recommended whenever the file system is shared by way
-of NFS with the \fBroot=\fR option. Without it, NFS clients could add
+of NFS with the
+.B root=
+option. Without it, NFS clients could add
 \fBsetuid\fR programs to the server or create devices that could open
 security holes.
 .RE
@@ -366,22 +480,35 @@ security holes.
 .ne 2
 .mk
 .na
-\fBsuid | nosuid\fR
+.B suid | nosuid
 .ad
 .sp .6
 .RS 4n
-Allow or disallow \fBsetuid\fR or \fBsetgid\fR execution. The default is
-\fBsuid\fR. This option also allows or disallows opening any device-special
+Allow or disallow
+.B setuid
+or
+.B setgid
+execution. The default is
+.BR suid .
+This option also allows or disallows opening any device-special
 entries that appear within the filesystem.
 .sp
-\fBnosuid\fR is equivalent to \fBnosetuid\fR and \fBnodevices\fR. When
+\fBnosuid\fR is equivalent to \fBnosetuid\fR and
+.BR nodevices .
+When
 \fBsuid\fR or \fBnosuid\fR is combined with \fBsetuid\fR or \fBnosetuid\fR
-and \fBdevices\fR or \fBnodevices\fR, the most restrictive options take
+and
+.B devices
+or
+.BR nodevices ,
+the most restrictive options take
 effect.
 .sp
 This option is highly recommended whenever the file system is shared using
 NFS with the \fBroot=\fIoption\fR, because, without it, NFS clients could
-add \fBsetuid\fR programs to the server, or create devices that could open
+add
+.B setuid
+programs to the server, or create devices that could open
 security holes.
 .RE
 
@@ -391,7 +518,7 @@ security holes.
 .ne 2
 .mk
 .na
-\fB-O\fR
+.B -O
 .ad
 .sp .6
 .RS 4n
@@ -405,7 +532,7 @@ will fail, producing the error "device busy".
 .ne 2
 .mk
 .na
-\fB-r\fR
+.B -r
 .ad
 .sp .6
 .RS 4n
@@ -416,7 +543,7 @@ Mount the file system read-only.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRMounting and Unmounting a DVD Image Directly
+\fBExample 1\fR Mounting and Unmounting a DVD Image Directly
 .sp
 .LP
 The following commands mount and unmount a DVD image.
@@ -433,15 +560,20 @@ The following commands mount and unmount a DVD image.
 .SH USAGE
 .sp
 .LP
-See \fBlargefile\fR(5) for the description of the behavior of \fBmount\fR
-and \fBumount\fR when encountering files greater than or equal to 2 Gbyte (
+See
+.BR largefile (5)
+for the description of the behavior of
+.BR mount
+and
+.B umount
+when encountering files greater than or equal to 2 Gbyte (
 2^31 bytes).
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/mnttab\fR
+.B /etc/mnttab
 .ad
 .sp .6
 .RS 4n
@@ -457,16 +589,20 @@ Table of mounted file systems.
 .sp .6
 .RS 4n
 Default local file system type. Default values can be set for the following
-flags in \fB/etc/default/fs\fR. For example: \fBLOCAL=ufs\fR
+flags in
+.BR /etc/default/fs .
+For example: \fBLOCAL=ufs\fR
 .sp
 .ne 2
 .mk
 .na
-\fBLOCAL:\fR
+.B LOCAL:
 .ad
 .sp .6
 .RS 4n
-The default partition for a command if no \fIFSType\fR is specified.
+The default partition for a command if no
+.I FSType
+is specified.
 .RE
 
 .RE
@@ -485,7 +621,9 @@ List of default parameters for each file system.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -505,9 +643,15 @@ AvailabilitySUNWcsu
 \fBlofiadm\fR(1M), \fBmount_cachefs\fR(1M), \fBmount_hsfs\fR(1M),
 \fBmount_nfs\fR(1M), \fBmount_pcfs\fR(1M),  \fBmount_smbfs\fR(1M),
 \fBmount_tmpfs\fR(1M), \fBmount_udfs\fR(1M), \fBmount_ufs\fR(1M),
-\fBmountall\fR(1M), \fBumountall\fR(1M), \fBfcntl\fR(2), \fBmmap\fR(2),
-\fBmnttab\fR(4), \fBvfstab\fR(4), \fBattributes\fR( 5), \fBlargefile\fR(5),
-\fBprivileges\fR(5), \fBlofs\fR(7FS), \fBpcfs\fR(7FS)
+.BR mountall (1M),
+.BR umountall (1M),
+\fBfcntl\fR(2), \fBmmap\fR(2),
+.BR mnttab (4),
+\fBvfstab\fR(4),
+.BR attributes (
+5), \fBlargefile\fR(5),
+.BR privileges (5),
+\fBlofs\fR(7FS), \fBpcfs\fR(7FS)
 .SH NOTES
 .sp
 .LP
@@ -517,4 +661,6 @@ refers, rather than on top of the symbolic link itself.
 .SH BUGS
 .sp
 .LP
-The \fBmount\fR \fB-p\fR output is incorrect for \fBcachefs\fR.
+The
+.B "mount -p"
+output is incorrect for \fBcachefs\fR.

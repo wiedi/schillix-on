@@ -94,37 +94,69 @@ devices, independent of the device's physical connection or its logical
 device name or number.
 .sp
 .LP
-The \fBdevid_get()\fR function returns in \fIretdevid\fR the device
+The
+.B devid_get()
+function returns in
+.I retdevid
+the device
 \fBID\fR for the device associated with the open file descriptor \fIfd\fR,
 which refers to any device. It returns an error if the device does not have
-an associated device \fBID\fR. The caller must free the memory allocated for
+an associated device
+.BR ID .
+The caller must free the memory allocated for
 \fIretdevid\fR using the  \fBdevid_free()\fR function.
 .sp
 .LP
 The \fBdevid_free()\fR function frees the space that was allocated for the
-returned \fIdevid\fR by \fBdevid_get()\fR and \fBdevid_str_decode()\fR.
+returned
+.I devid
+by
+.B devid_get()
+and
+.BR devid_str_decode() .
 .sp
 .LP
-The \fBdevid_get_minor_name()\fR function returns the minor name, in
-\fIretminor_name\fR, for the device associated with the open file descriptor
+The
+.B devid_get_minor_name()
+function returns the minor name, in
+.IR retminor_name ,
+for the device associated with the open file descriptor
 \fIfd\fR. This name is specific to the particular minor number, but is
 "instance number" specific. The caller of this function must free the memory
-allocated for the returned \fIretminor_name\fR string using
+allocated for the returned
+.I retminor_name
+string using
 \fBdevid_str_free()\fR.
 .sp
 .LP
-The \fBdevid_deviceid_to_nmlist()\fR function returns an array of
+The
+.B devid_deviceid_to_nmlist()
+function returns an array of
 \fIdevid_nmlist\fR structures, where each entry matches the \fIdevid\fR and
 \fIminor_name\fR passed in. If the \fIminor_name\fR specified is one of the
 special values (\fBDEVID_MINOR_NAME_ALL\fR, \fBDEVID_MINOR_NAME_ALL_CHR\fR,
-or \fBDEVID_MINOR_NAME_ALL_BLK\fR) , then all minor names associated with
+or
+.BR DEVID_MINOR_NAME_ALL_BLK )
+, then all minor names associated with
 \fIdevid\fR which also meet the special \fIminor_name\fR filtering
-requirements are returned. The \fIdevid_nmlist\fR structure contains the
+requirements are returned. The
+.I devid_nmlist
+structure contains the
 device name and device number. The last entry of the array contains a null
-pointer for the \fIdevname\fR and  \fBNODEV\fR for the device number. This
-function traverses the file tree, starting at \fIsearch_path\fR. For each
-device with a matching device \fBID\fR and minor name tuple, a device name
-and device number are added to the \fIretlist\fR. If no matches are found,
+pointer for the
+.I devname
+and 
+.B NODEV
+for the device number. This
+function traverses the file tree, starting at
+.IR search_path .
+For each
+device with a matching device
+.B ID
+and minor name tuple, a device name
+and device number are added to the
+.IR retlist .
+If no matches are found,
 an error is returned. The caller of this function must free the memory
 allocated for the returned array with the \fBdevid_free_nmlist()\fR
 function. This function may take a long time to complete if called with the
@@ -135,50 +167,114 @@ The \fBdevid_free_nmlist()\fR function frees the memory allocated by the
 \fBdevid_deviceid_to_nmlist()\fR function.
 .sp
 .LP
-The \fBdevid_compare()\fR function compares two device \fBID\fRs and
+The
+.B devid_compare()
+function compares two device
+.BR ID "s and"
 determines both equality and sort order. The function returns an integer
-greater than 0 if the device \fBID\fR pointed to by \fIdevid1\fR is greater
-than the device \fBID\fR pointed to by \fIdevid2\fR. It returns 0 if the
-device \fBID\fR pointed to by  \fIdevid1\fR is equal to the device \fBID\fR
-pointed to by \fIdevid2\fR. It returns an integer less than 0 if the device
+greater than 0 if the device
+.B ID
+pointed to by
+.I devid1
+is greater
+than the device
+.B ID
+pointed to by
+.IR devid2 .
+It returns 0 if the
+device
+.B ID
+pointed to by 
+.I devid1
+is equal to the device
+.BR ID
+pointed to by
+.IR devid2 .
+It returns an integer less than 0 if the device
 \fBID\fR pointed to by  \fIdevid1\fR is less than the device \fBID\fR
-pointed to by \fIdevid2\fR. This function is the only valid mechanism to
+pointed to by
+.IR devid2 .
+This function is the only valid mechanism to
 determine the equality of two devids. This function may indicate equality
 for arguments which by simple inspection appear different.
 .sp
 .LP
-The \fBdevid_sizeof()\fR function returns the size of \fIdevid\fR in
+The \fBdevid_sizeof()\fR function returns the size of
+.I devid
+in
 bytes.
 .sp
 .LP
-The \fBdevid_valid()\fR function validates the format of a \fIdevid\fR. It
+The
+.B devid_valid()
+function validates the format of a
+.IR devid .
+It
 returns 1 if the format is valid, and 0 if invalid. This check may not be as
-complete as the corresponding kernel function \fBddi_devid_valid()\fR (see
-\fBddi_devid_compare\fR(9F)).
+complete as the corresponding kernel function
+.B ddi_devid_valid()
+(see
+.BR ddi_devid_compare (9F)).
 .sp
 .LP
-The \fBdevid_str_encode()\fR function encodes a \fIdevid\fR and
+The
+.B devid_str_encode()
+function encodes a
+.I devid
+and
 \fIminor_name\fR into a null-terminated ASCII string, returning a pointer to
-that string. To avoid shell conflicts, the \fIdevid\fR portion of the string
+that string. To avoid shell conflicts, the
+.I devid
+portion of the string
 is limited to uppercase and lowercase letters, digits, and the plus (+),
 minus (-), period (.), equals (=), underscore (_), tilde (~), and comma (,)
-characters. If there is an \fBASCII\fR quote character in the binary form of
-a \fIdevid\fR, the string representation will be in \fBhex_id\fR form, not
+characters. If there is an
+.B ASCII
+quote character in the binary form of
+a
+.IR devid ,
+the string representation will be in
+.B hex_id
+form, not
 \fBascii_id\fR form. The comma (,) character is added for "id1," at the head
-of the string \fIdevid\fR. If both a \fIdevid\fR and a \fIminor_name\fR are
-non-null, a slash (/)is used to separate the \fIdevid\fR from the
+of the string
+.IR devid .
+If both a
+.I devid
+and a
+.I minor_name
+are
+non-null, a slash (/)is used to separate the
+.I devid
+from the
 \fIminor_name\fR in the encoded string.  If \fIminor_name\fR is null, only
-the \fIdevid\fR is encoded. If the \fIdevid\fR is null then the special
+the
+.I devid
+is encoded. If the
+.I devid
+is null then the special
 string "id0" is returned. Note that you cannot compare the returned string
-against another string with \fBstrcmp\fR(3C) to determine devid equality.
+against another string with
+.BR strcmp "(3C) to determine devid equality."
 The string returned must be freed by calling \fBdevid_str_free()\fR.
 .sp
 .LP
-The \fBdevid_str_decode()\fR function takes a string previously produced by
-the \fBdevid_str_encode()\fR or \fBddi_devid_str_encode()\fR (see
-\fBddi_devid_compare\fR(9F)) function and decodes the contained device ID
+The
+.B devid_str_decode()
+function takes a string previously produced by
+the
+.B devid_str_encode()
+or
+.B ddi_devid_str_encode()
+(see
+.BR ddi_devid_compare (9F))
+function and decodes the contained device ID
 and minor name, allocating and returning pointers to the extracted parts via
-the \fIretdevid\fR and \fIretminor_name\fR arguments. If the special
+the
+.I retdevid
+and
+.I retminor_name
+arguments. If the special
 \fIdevidstr\fR "id0" was specified, the returned device ID and minor name
 will both be null. A non-null returned devid must be freed by the caller by
 the \fBdevid_free()\fR function. A non-null returned minor name must be
@@ -187,17 +283,23 @@ freed by calling \fBdevid_str_free()\fR.
 .LP
 The \fBdevid_str_free()\fR function frees the character string returned by
 \fBdevid_str_encode()\fR and the \fIretminor_name\fR argument returned by
-\fBdevid_str_decode()\fR.
+.BR devid_str_decode() .
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, the \fBdevid_get()\fR,
-\fBdevid_get_minor_name()\fR, \fBdevid_str_decode()\fR, and
-\fBdevid_deviceid_to_nmlist()\fR functions return \fB0\fR. Otherwise, they
+.BR devid_get_minor_name() ,
+.BR devid_str_decode() ,
+and
+\fBdevid_deviceid_to_nmlist()\fR functions return
+.BR 0 .
+Otherwise, they
 return \fB\(mi1\fR\&.
 .sp
 .LP
-The \fBdevid_compare()\fR function returns the following values:
+The
+.B devid_compare()
+function returns the following values:
 .sp
 .ne 2
 .mk
@@ -206,58 +308,90 @@ The \fBdevid_compare()\fR function returns the following values:
 .ad
 .RS 9n
 .rt
-The device ID pointed to by \fIdevid1\fR is less than the device ID pointed
-to by \fIdevid2\fR.
+The device ID pointed to by
+.I devid1
+is less than the device ID pointed
+to by
+.IR devid2 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 9n
 .rt
-The device ID pointed to by \fIdevid1\fR is equal to  the device ID pointed
-to by \fIdevid2\fR.
+The device ID pointed to by
+.I devid1
+is equal to  the device ID pointed
+to by
+.IR devid2 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB1\fR
+.B 1
 .ad
 .RS 9n
 .rt
-The device ID pointed to by \fIdevid1\fR is greater than the device ID
-pointed to by \fIdevid2\fR.
+The device ID pointed to by
+.I devid1
+is greater than the device ID
+pointed to by
+.IR devid2 .
 .RE
 
 .sp
 .LP
-The \fBdevid_sizeof()\fR function returns the size of \fIdevid\fR in bytes.
-If \fIdevid\fR is null, the number of bytes that must be allocated and
+The \fBdevid_sizeof()\fR function returns the size of
+.I devid
+in bytes.
+If
+.I devid
+is null, the number of bytes that must be allocated and
 initialized to determine the size of a complete device ID is returned.
 .sp
 .LP
-The \fBdevid_valid()\fR function returns 1 if the \fIdevid\fR is valid and
-0 if the \fIdevid\fR is invalid.
+The
+.B devid_valid()
+function returns 1 if the
+.I devid
+is valid and
+0 if the
+.I devid
+is invalid.
 .sp
 .LP
-The \fBdevid_str_encode()\fR function returns \fINULL\fR to indicate
+The
+.B devid_str_encode()
+function returns
+.I NULL
+to indicate
 failure. Failure may be caused by attempting to encode an invalid string.
 If the return value is non-null, the caller must free the returned string by
 using the \fBdevid_str_free()\fR function.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBdevid_get()\fR, \fBdevid_get_minor_name()\fR, and
-\fBdevid_str_encode()\fR
+\fBExample 1\fR Using
+.BR devid_get() ,
+.BR devid_get_minor_name() ,
+and
+.B devid_str_encode()
 .sp
 .LP
-The following example shows the proper use of  \fBdevid_get()\fR,
-\fBdevid_get_minor_name()\fR, and \fBdevid_str_encode()\fR to free the space
-allocated for \fIdevid\fR,  \fIminor_name\fR and encoded \fIdevid\fR.
+The following example shows the proper use of 
+.BR devid_get() ,
+.BR devid_get_minor_name() ,
+and
+.B devid_str_encode()
+to free the space
+allocated for
+.IR devid ,
+\fIminor_name\fR and encoded \fIdevid\fR.
 
 .sp
 .in +2
@@ -285,7 +419,7 @@ devid_str_free(minor_name);
 .in -2
 
 .LP
-\fBExample 2 \fRUsing \fBdevid_deviceid_to_nmlist()\fR and
+\fBExample 2\fR Using \fBdevid_deviceid_to_nmlist()\fR and
 \fBdevid_free_nmlist()\fR
 .sp
 .LP
@@ -308,7 +442,9 @@ devid_free_nmlist(list);
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for description of the following attributes:
+See
+.BR attributes (5)
+for description of the following attributes:
 .sp
 
 .sp
@@ -328,4 +464,4 @@ Interface StabilityStable
 .sp
 .LP
 \fBfree\fR(3C), \fBlibdevid\fR(3LIB), \fBattributes\fR(5),
-\fBddi_devid_compare\fR(9F)
+.BR ddi_devid_compare (9F)

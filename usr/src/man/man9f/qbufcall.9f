@@ -42,18 +42,20 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIq\fR
+.I q
 .ad
 .RS 8n
 .rt
-Pointer to \fBSTREAMS \fRqueue structure.
+Pointer to
+.B STREAMS
+queue structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIsize\fR
+.I size
 .ad
 .RS 8n
 .rt
@@ -64,11 +66,12 @@ Number of bytes required for the buffer.
 .ne 2
 .mk
 .na
-\fIpri\fR
+.I pri
 .ad
 .RS 8n
 .rt
-Priority of the \fBallocb\fR(9F) allocation request (not used).
+Priority of the
+.BR allocb "(9F) allocation request (not used)."
 .RE
 
 .sp
@@ -86,7 +89,7 @@ Function or driver routine to be called when a buffer becomes available.
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 8n
 .rt
@@ -99,29 +102,39 @@ Argument to the function to be called when a buffer becomes available.
 The \fBqbufcall()\fR function serves as a \fBqtimeout\fR(9F) call of
 indeterminate length. When a buffer allocation request fails,
 \fBqbufcall()\fR can be used to schedule the routine \fIfunc\fR to be called
-with the argument \fIarg\fR when a buffer becomes available. \fIfunc\fR may
-call \fBallocb()\fR or it may do something else.
+with the argument
+.I arg
+when a buffer becomes available. \fIfunc\fR may
+call
+.B allocb()
+or it may do something else.
 .sp
 .LP
 The \fBqbufcall()\fR function is tailored to be used with the enhanced
-\fBSTREAMS \fRframework interface, which is based on the concept of
+\fBSTREAMS\fR framework interface, which is based on the concept of
 perimeters. (See \fBmt-streams\fR(9F).) \fBqbufcall()\fR schedules the
 specified function to execute after entering the perimeters associated with
-the queue passed in as the first parameter to \fBqbufcall()\fR. All
+the queue passed in as the first parameter to
+.BR qbufcall() .
+All
 outstanding timeouts and bufcalls must be cancelled (using, respectively,
-\fBquntimeout\fR(9F) and \fBqunbufcall\fR(9F)) before a driver close routine
+.BR quntimeout (9F)
+and \fBqunbufcall\fR(9F)) before a driver close routine
 can block and before the close  routine calls \fBqprocsoff\fR(9F).
 .sp
 .LP
-\fBqprocson\fR(9F) must be called before calling either \fBqbufcall()\fR or
-\fBqtimeout\fR(9F).
+.BR qprocson (9F)
+must be called before calling either \fBqbufcall()\fR or
+.BR qtimeout (9F).
 .SH RETURN VALUES
 .sp
 .LP
 If successful, the \fBqbufcall()\fR function returns a \fBqbufcall\fR
 \fBID\fR that can be used in a call to \fBqunbufcall\fR(9F) to cancel the
 request. If the \fBqbufcall()\fR scheduling fails, \fIfunc\fR is never
-called and \fB0\fR is returned.
+called and
+.B 0
+is returned.
 .SH CONTEXT
 .sp
 .LP
@@ -130,17 +143,24 @@ context.
 .SH SEE ALSO
 .sp
 .LP
-\fBallocb\fR(9F), \fBmt-streams\fR(9F), \fBqprocson\fR(9F),
-\fBqtimeout\fR(9F), \fBqunbufcall\fR(9F), \fBquntimeout\fR(9F)
+.BR allocb (9F),
+.BR mt-streams (9F),
+.BR qprocson (9F),
+.BR qtimeout (9F),
+\fBqunbufcall\fR(9F), \fBquntimeout\fR(9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .SH WARNINGS
 .sp
 .LP
-Even when \fIfunc\fR is called by \fBqbufcall()\fR, \fBallocb\fR(9F) can
+Even when \fIfunc\fR is called by
+.BR qbufcall() ,
+.BR allocb (9F)
+can
 fail if another module or driver had allocated the memory before \fIfunc\fR
-was able to call \fBallocb\fR(9F).
+was able to call
+.BR allocb (9F).

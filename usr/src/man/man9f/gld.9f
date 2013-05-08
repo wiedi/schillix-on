@@ -86,7 +86,7 @@ Pointer to a \fBgld_mac_info\fR(9S) structure.
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 13n
 .rt
@@ -97,7 +97,7 @@ Pointer to \fBdev_info\fR structure.
 .ne 2
 .mk
 .na
-\fIname\fR
+.I name
 .ad
 .RS 13n
 .rt
@@ -108,7 +108,7 @@ Device interface name.
 .ne 2
 .mk
 .na
-\fImp\fR
+.I mp
 .ad
 .RS 13n
 .rt
@@ -119,7 +119,7 @@ Pointer to a message block containing a received packet.
 .ne 2
 .mk
 .na
-\fInewstate\fR
+.I newstate
 .ad
 .RS 13n
 .rt
@@ -131,7 +131,9 @@ Media link state.
 .LP
 \fBgld_mac_alloc\fR(\|) allocates a new \fBgld_mac_info\fR(9S) structure
 and returns a pointer to it. Some of the GLD-private elements of the
-structure may be initialized before \fBgld_mac_alloc\fR(\|) returns; all
+structure may be initialized before
+.BR gld_mac_alloc (\|)
+returns; all
 other elements are initialized to zero. The device driver must initialize
 some structure members, as described in \fBgld_mac_info\fR(9S), before
 passing the mac_info pointer to \fBgld_register\fR(\|).
@@ -143,11 +145,18 @@ allocated by \fBgld_mac_alloc\fR(\|).
 .LP
 \fBgld_register\fR(\|) is called from the device driver's \fBattach\fR(9E)
 routine, and is used to link the GLD-based device driver with the GLD
-framework. Before calling \fBgld_register\fR(\|) the device driver's
-\fBattach\fR(9E) routine must first use \fBgld_mac_alloc\fR(\|) to allocate
+framework. Before calling
+.BR gld_register (\|)
+the device driver's
+.BR attach (9E)
+routine must first use
+.BR gld_mac_alloc (\|)
+to allocate
 a \fBgld_mac_info\fR(9S) structure, and initialize several of its structure
 elements. See \fBgld_mac_info\fR(9S) for more information. A successful call
-to \fBgld_register\fR(\|) performs the following actions:
+to
+.BR gld_register (\|)
+performs the following actions:
 .RS +4
 .TP
 .ie t \(bu
@@ -159,7 +168,8 @@ links the device-specific driver with the GLD system;
 .ie t \(bu
 .el o
 sets the device-specific driver's private data pointer (using
-\fBddi_set_driver_private\fR(9F)) to point to the \fBmacinfo\fR structure;
+.BR ddi_set_driver_private (9F))
+to point to the \fBmacinfo\fR structure;
 .RE
 .RS +4
 .TP
@@ -169,15 +179,22 @@ creates the minor device node.
 .RE
 .sp
 .LP
-The device interface name passed to \fBgld_register\fR(\|) must exactly
+The device interface name passed to
+.BR gld_register (\|)
+must exactly
 match the name of the driver module as it exists in the filesystem.
 .sp
 .LP
 The driver's \fBattach\fR(9E) routine should return \fBDDI_SUCCESS\fR if
 \fBgld_register\fR(\|) succeeds. If \fBgld_register\fR(\|) returns
-\fBDDI_FAILURE\fR, the \fBattach\fR(9E) routine should deallocate any
-resources it allocated before calling \fBgld_register\fR(\|) and then also
-return \fBDDI_FAILURE\fR.
+.BR DDI_FAILURE ,
+the
+.BR attach "(9E) routine should deallocate any"
+resources it allocated before calling
+.BR gld_register (\|)
+and then also
+return
+.BR DDI_FAILURE .
 .sp
 .LP
 \fBgld_unregister\fR(\|) is called by the device driver's \fBdetach\fR(9E)
@@ -203,13 +220,24 @@ unlinks the device-specific driver from the GLD system.
 .RE
 .sp
 .LP
-If \fBgld_unregister\fR(\|) returns \fBDDI_SUCCESS\fR, the \fBdetach\fR(9E)
+If
+.BR gld_unregister (\|)
+returns
+.BR DDI_SUCCESS ,
+the
+.BR detach (9E)
 routine should deallocate any data structures allocated in the
-\fBattach\fR(9E) routine, using \fBgld_mac_free\fR(\|) to deallocate the
-\fBmacinfo\fR structure, and return \fBDDI_SUCCESS\fR. If
-\fBgld_unregister\fR(\|) returns \fBDDI_FAILURE\fR, the driver's
-\fBdetach\fR(9E) routine must leave the device operational and return
-\fBDDI_FAILURE\fR. 
+.BR attach (9E)
+routine, using \fBgld_mac_free\fR(\|) to deallocate the
+\fBmacinfo\fR structure, and return
+.BR DDI_SUCCESS .
+If
+\fBgld_unregister\fR(\|) returns
+.BR DDI_FAILURE ,
+the driver's
+.BR detach (9E)
+routine must leave the device operational and return
+.BR DDI_FAILURE .
 .sp
 .LP
 \fBgld_recv\fR(\|) is called by the driver's interrupt handler to pass a
@@ -222,39 +250,64 @@ message, if required, and passes the data up all appropriate streams.
 .LP
 The driver should avoid holding mutex or other locks during the call to
 \fBgld_recv\fR(\|). In particular, locks that could be taken by a transmit
-thread may not be held during a call to \fBgld_recv\fR(\|): the interrupt
-thread that calls \fBgld_recv\fR(\|) may in some cases carry out processing
+thread may not be held during a call to
+.BR gld_recv (\|):
+the interrupt
+thread that calls
+.BR gld_recv (\|)
+may in some cases carry out processing
 that includes sending an outgoing packet, resulting in a call to the
-driver's \fBgldm_send\fR(\|) routine. If the \fBgldm_send\fR(\|) routine
-were to try to acquire a mutex being held by the \fBgldm_intr\fR(\|) routine
-at the time it calls \fBgld_recv\fR(\|), this could result in a panic due to
+driver's
+.BR gldm_send (\|)
+routine. If the
+.BR gldm_send (\|)
+routine
+were to try to acquire a mutex being held by the
+.BR gldm_intr (\|)
+routine
+at the time it calls
+.BR gld_recv (\|),
+this could result in a panic due to
 recursive mutex entry.
 .sp
 .LP
 \fBgld_sched\fR(\|) is called by the device driver to reschedule stalled
-outbound packets. Whenever the driver's \fBgldm_send\fR(\|) routine has
-returned \fBGLD_NORESOURCES\fR, the driver must later call
+outbound packets. Whenever the driver's
+.BR gldm_send (\|)
+routine has
+returned
+.BR GLD_NORESOURCES ,
+the driver must later call
 \fBgld_sched\fR(\|) to inform the GLD framework that it should retry the
-packets that previously could not be sent. \fBgld_sched\fR(\|) should be
+packets that previously could not be sent.
+.BR gld_sched (\|)
+should be
 called as soon as possible after resources are again available, to ensure
 that GLD resumes passing outbound packets to the driver's
 \fBgldm_send\fR(\|) routine in a timely way. (If the driver's
 \fBgldm_stop\fR(\|) routine is called, the driver is absolved from this
-obligation until it later again returns \fBGLD_NORESOURCES\fR from its
+obligation until it later again returns
+.B GLD_NORESOURCES
+from its
 \fBgldm_send\fR(\|) routine; however, extra calls to \fBgld_sched\fR(\|)
 will not cause incorrect operation.)
 .sp
 .LP
 \fBgld_intr\fR(\|) is GLD's main interrupt handler. Normally it is
 specified as the interrupt routine in the device driver's call to
-\fBddi_add_intr\fR(9F). The argument to the interrupt handler (specified as
+.BR ddi_add_intr (9F).
+The argument to the interrupt handler (specified as
 \fIint_handler_arg\fR in the call to \fBddi_add_intr\fR(9F)) must be a
 pointer to the \fBgld_mac_info\fR(9S) structure. \fBgld_intr\fR(\|) will,
-when appropriate, call the device driver's \fBgldm_intr\fR(\|) function,
+when appropriate, call the device driver's
+.BR gldm_intr (\|)
+function,
 passing that pointer to the \fBgld_mac_info\fR(9S) structure. However, if
 the driver uses a high-level interrupt, it must provide its own high-level
 interrupt handler, and trigger a soft interrupt from within that. In this
-case, \fBgld_intr\fR(\|) may be specified as the soft interrupt handler in
+case,
+.BR gld_intr (\|)
+may be specified as the soft interrupt handler in
 the call to \fBddi_add_softintr\fR(\|).
 .sp
 .LP
@@ -265,7 +318,7 @@ of the following:
 .ne 2
 .mk
 .na
-\fBGLD_LINKSTATE_DOWN\fR
+.B GLD_LINKSTATE_DOWN
 .ad
 .RS 26n
 .rt
@@ -276,7 +329,7 @@ The media link is unavailable.
 .ne 2
 .mk
 .na
-\fBGLD_LINKSTATE_UP\fR
+.B GLD_LINKSTATE_UP
 .ad
 .RS 26n
 .rt
@@ -287,7 +340,7 @@ The media link is unavailable.
 .ne 2
 .mk
 .na
-\fBGLD_LINKSTATE_UNKNOWN\fR
+.B GLD_LINKSTATE_UNKNOWN
 .ad
 .RS 26n
 .rt
@@ -296,7 +349,9 @@ The status of the media link is unknown.
 
 .sp
 .LP
-If a driver calls \fBgld_linkstate()\fR, it must also set the
+If a driver calls
+.BR gld_linkstate() ,
+it must also set the
 GLD_CAP_LINKSTATE bit  in the  gldm_capabilties field of the
 \fBgld_mac_info\fR(9S) structure.
 .SH RETURN VALUES
@@ -311,7 +366,7 @@ structure.
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 16n
 .rt
@@ -322,7 +377,7 @@ on success.
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 16n
 .rt
@@ -335,8 +390,12 @@ on failure.
 .SH SEE ALSO
 .sp
 .LP
-\fBgld\fR(7D), \fBgld\fR(9E), \fBgld_mac_info\fR(9S), \fBgld_stats\fR(9S),
-\fBdlpi\fR(7P), \fBattach\fR(9E), \fBddi_add_intr\fR(9F).
+.BR gld (7D),
+.BR gld (9E),
+\fBgld_mac_info\fR(9S), \fBgld_stats\fR(9S),
+.BR dlpi (7P),
+.BR attach (9E),
+.BR ddi_add_intr (9F).
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

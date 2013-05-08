@@ -42,7 +42,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdhp\fR
+.I dhp
 .ad
 .RS 10n
 .rt
@@ -54,7 +54,7 @@ currently being created.
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 10n
 .rt
@@ -74,7 +74,7 @@ Flags indicating type of mapping. Possible values are:
 .ne 2
 .mk
 .na
-\fBMAP_PRIVATE\fR
+.B MAP_PRIVATE
 .ad
 .RS 16n
 .rt
@@ -85,7 +85,7 @@ Changes are private.
 .ne 2
 .mk
 .na
-\fBMAP_SHARED\fR
+.B MAP_SHARED
 .ad
 .RS 16n
 .rt
@@ -109,7 +109,7 @@ User offset within the logical device memory at which the mapping begins.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 10n
 .rt
@@ -120,7 +120,7 @@ Length (in bytes) of the memory to be mapped.
 .ne 2
 .mk
 .na
-\fIpvtp\fR
+.I pvtp
 .ad
 .RS 10n
 .rt
@@ -131,7 +131,9 @@ data.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdevmap_map()\fR entry point is an optional routine that allows
+The
+.B devmap_map()
+entry point is an optional routine that allows
 drivers to perform additional processing or to allocate private resources
 during the mapping setup time.  For example, in order for device drivers to
 support context switching, the drivers allocate private mapping data and
@@ -139,27 +141,48 @@ associate the private data with the mapping parameters in the
 \fBdevmap_map()\fR entry point.
 .sp
 .LP
-The system calls \fBdevmap_map()\fR after the user mapping to device
+The system calls
+.B devmap_map()
+after the user mapping to device
 physical memory has been established. (For example, after the
-\fBdevmap\fR(9E) entry point is called.)
+.BR devmap (9E)
+entry point is called.)
 .sp
 .LP
 \fBdevmap_map()\fR receives a pointer to the driver private data  for this
-mapping in \fIpvtp\fR. The system expects the driver to allocate its private
-data and set  \fI*pvtp\fR to the allocated data.  The driver must store
-\fIoff\fR and \fIlen\fR, which define the range of the mapping, in its
-private data.  Later, when the system calls \fBdevmap_unmap\fR(9E), the
-driver will use the \fIoff\fR and  \fIlen\fR stored in \fIpvtp\fR to check
+mapping in
+.IR pvtp .
+The system expects the driver to allocate its private
+data and set 
+.I *pvtp
+to the allocated data.  The driver must store
+\fIoff\fR and
+.IR len ,
+which define the range of the mapping, in its
+private data.  Later, when the system calls
+.BR devmap_unmap (9E),
+the
+driver will use the \fIoff\fR and 
+.I len
+stored in
+.I pvtp
+to check
 if the entire mapping, or just a part of it, is being unmapped. If only a
 part of the mapping is being unmapped, the driver must allocate  a new
 private data for the remaining mapping before freeing the old private data.
-The driver will receive \fI*pvtp\fR in subsequent event notification
+The driver will receive
+.I *pvtp
+in subsequent event notification
 callbacks.
 .sp
 .LP
 If the driver support context switching,  it should store the mapping
-handle \fIdhp\fR in its private data \fI*pvtp\fR for later use in
-\fBdevmap_unload\fR(9F). 
+handle
+.I dhp
+in its private data
+.I *pvtp
+for later use in
+.BR devmap_unload (9F).
 .sp
 .LP
 For a driver that supports context switching, \fIflags\fR indicates whether
@@ -174,7 +197,7 @@ if \fIflags\fR is set to  \fBMAP_PRIVATE\fR.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -185,7 +208,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fBNon-zero\fR
+.B Non-zero
 .ad
 .RS 12n
 .rt
@@ -194,10 +217,11 @@ An error occurred.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fR \fBdevmap_map()\fRimplementation
+\fBExample 1\fR  \fBdevmap_map()\fRimplementation
 .sp
 .LP
-The following shows an example implementation for \fBdevmap_map()\fR.
+The following shows an example implementation for
+.BR devmap_map() .
 
 .sp
 .in +2
@@ -228,8 +252,9 @@ xxdevmap_map(devmap_cookie_t dhp, dev_t dev, uint_t flags, \e
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap_unmap\fR(9E), \fBdevmap_unload\fR(9F),
-\fBdevmap_callback_ctl\fR(9S) 
+.BR devmap_unmap (9E),
+.BR devmap_unload (9F),
+.BR devmap_callback_ctl (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

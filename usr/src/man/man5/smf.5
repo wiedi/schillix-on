@@ -25,7 +25,9 @@ smf \- service management facility
 .sp
 .LP
 The Solaris service management facility defines a programming model for
-providing persistently running applications called \fIservices\fR. The
+providing persistently running applications called
+.IR services .
+The
 facility also provides the infrastructure in which to run services. A
 service can represent a running application, the software state of a device,
 or a set of other services. Services are represented in the framework by
@@ -33,13 +35,19 @@ or a set of other services. Services are represented in the framework by
 Instance objects can inherit or override the configuration of the parent
 service object, which allows multiple service instances to share
 configuration information. All service and instance objects are contained in
-a \fIscope\fR that represents a collection of configuration information. The
+a
+.I scope
+that represents a collection of configuration information. The
 configuration of the local Solaris instance is called the "localhost" scope,
 and is the only currently supported scope.
 .sp
 .LP
 Each service instance is named with a fault management resource identifier
-(FMRI) with the scheme \fBsvc:\fR. For example, the \fBsyslogd\fR(1M) daemon
+(FMRI) with the scheme
+.BR svc: .
+For example, the
+.BR syslogd (1M)
+daemon
 started at system startup is the default service instance named:
 .sp
 .in +2
@@ -52,27 +60,35 @@ system/system-log:default
 
 .sp
 .LP
-Many commands also allow FMRI abbreviations. See the \fBsvcs\fR(1) man page
+Many commands also allow FMRI abbreviations. See the
+.BR svcs (1)
+man page
 for one such example.
 .sp
 .LP
 In the above example, 'default' is the name of the instance and
 \&'system/system-log' is the service name. Service names can comprise
 multiple components separated by slashes (/). All components, except the
-last, compose the \fIcategory\fR of the service. Site-specific services
+last, compose the
+.I category
+of the service. Site-specific services
 should be named with a category beginning with 'site'.
 .sp
 .LP
 A service instance is either enabled or disabled. All services can be
-enabled or disabled with the \fBsvcadm\fR(1M) command.
+enabled or disabled with the
+.BR svcadm "(1M) command."
 .sp
 .LP
 The list of managed service instances on a system can be displayed with the
-\fBsvcs\fR(1) command.
+.BR svcs (1)
+command.
 .SS "Dependencies"
 .sp
 .LP
-Service instances can have dependencies on a set of \fBentities\fR which
+Service instances can have dependencies on a set of
+.B entities
+which
 can include services and files. Dependencies govern when the service is
 started and automatically stopped. When the dependencies of an enabled
 service are not satisfied, the service is kept in the offline state. When
@@ -80,12 +96,13 @@ its dependencies are satisfied, the service is started. If the start is
 successful, the service is transitioned to the online state.
 .sp
 .LP
-Whether a dependency is satisfied is determined by its \fBgrouping\fR:
+Whether a dependency is satisfied is determined by its
+.BR grouping :
 .sp
 .ne 2
 .mk
 .na
-\fBrequire_all\fR
+.B require_all
 .ad
 .RS 16n
 .rt
@@ -97,7 +114,7 @@ all indicated files are present.
 .ne 2
 .mk
 .na
-\fBrequire_any\fR
+.B require_any
 .ad
 .RS 16n
 .rt
@@ -109,7 +126,7 @@ or when at least one of the indicated files is present.
 .ne 2
 .mk
 .na
-\fBoptional_all\fR
+.B optional_all
 .ad
 .RS 16n
 .rt
@@ -123,7 +140,7 @@ action).
 .ne 2
 .mk
 .na
-\fBexclude_all\fR
+.B exclude_all
 .ad
 .RS 16n
 .rt
@@ -134,7 +151,11 @@ state, or when cited services or files are not present.
 .sp
 .LP
 Once running (online or degraded), if a service cited by a
-\fBrequire_all\fR, \fBrequire_any\fR, or \fBoptional_all\fR dependency is
+.BR require_all ,
+.BR require_any ,
+or
+.B optional_all
+dependency is
 stopped or refreshed, the SMF considers why the service was stopped and the
 \fBrestart_on\fR attribute of the dependency to decide whether to stop the
 service.
@@ -155,7 +176,10 @@ refresh            |  no    no    no      yes
 A service is considered to have stopped due to an error if the service has
 encountered a hardware error or a software error such as a core dump. For
 \fBexclude_all\fR dependencies, the service is stopped if the cited service
-is started and the \fBrestart_on\fR attribute is not \fBnone\fR.
+is started and the
+.B restart_on
+attribute is not
+.BR none .
 .sp
 .LP
 The dependencies on a service can be listed with \fBsvcs\fR(1)\ or
@@ -164,31 +188,41 @@ The dependencies on a service can be listed with \fBsvcs\fR(1)\ or
 .sp
 .LP
 Each service is managed by a restarter. The master restarter,
-\fBsvc.startd\fR(1M) manages states for the entire set of service instances
+.BR svc.startd (1M)
+manages states for the entire set of service instances
 and their dependencies. The master restarter acts on behalf of its services
 and on delegated restarters that can provide specific execution environments
-for certain application classes. For instance, \fBinetd\fR(1M) is a
+for certain application classes. For instance,
+.BR inetd (1M)
+is a
 delegated restarter that provides its service instances with an initial
 environment composed of a network connection as input and output file
-descriptors. Each instance delegated to \fBinetd\fR(1M) is in the online
+descriptors. Each instance delegated to
+.BR inetd (1M)
+is in the online
 state. While the daemon of a particular instance might not be running, the
 instance is available to run.
 .sp
 .LP
 As dependencies are satisfied when instances move to the online state,
-\fBsvc.startd\fR(1M) invokes start methods of other instances or directs the
+.BR svc.startd (1M)
+invokes start methods of other instances or directs the
 delegated restarter to do so. These operations might overlap.
 .sp
 .LP
 The current set of services and associated restarters can be examined using
-\fBsvcs\fR(1). A description of the common configuration used by all
+.BR svcs (1).
+A description of the common configuration used by all
 restarters is given in \fBsmf_restarter\fR(5).
 .SS "Methods"
 .sp
 .LP
 Each service or service instance must define a set of methods that start,
-stop, and, optionally, refresh the service. See \fBsmf_method\fR(5) for a
-more complete description of the method conventions for \fBsvc.startd\fR(1M)
+stop, and, optionally, refresh the service. See
+.BR smf_method (5)
+for a
+more complete description of the method conventions for
+.BR svc.startd (1M)
 and similar \fBfork\fR(2)-\fBexec\fR(2) restarters.
 .sp
 .LP
@@ -209,20 +243,21 @@ contracts events. The following states are defined:
 .ne 2
 .mk
 .na
-\fBUNINITIALIZED\fR
+.B UNINITIALIZED
 .ad
 .RS 17n
 .rt
 This is the initial state for all service instances. Instances are moved to
 maintenance, offline, or a disabled state upon evaluation by
-\fBsvc.startd\fR(1M) or the appropriate restarter.
+.BR svc.startd (1M)
+or the appropriate restarter.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBOFFLINE\fR
+.B OFFLINE
 .ad
 .RS 17n
 .rt
@@ -237,7 +272,7 @@ uninitialized state.
 .ne 2
 .mk
 .na
-\fBONLINE\fR
+.B ONLINE
 .ad
 .RS 17n
 .rt
@@ -254,7 +289,7 @@ offline or degraded states.
 .ne 2
 .mk
 .na
-\fBDEGRADED\fR
+.B DEGRADED
 .ad
 .RS 17n
 .rt
@@ -270,12 +305,14 @@ the online state.
 .ne 2
 .mk
 .na
-\fBMAINTENANCE\fR
+.B MAINTENANCE
 .ad
 .RS 17n
 .rt
 The instance is enabled, but not able to run. Administrative action
-(through \fBsvcadm clear\fR) is required to move the instance out of the
+(through
+.BR "svcadm clear" )
+is required to move the instance out of the
 maintenance state. The maintenance state might be a temporarily reached
 state if an administrative operation is underway.
 .RE
@@ -284,7 +321,7 @@ state if an administrative operation is underway.
 .ne 2
 .mk
 .na
-\fBDISABLED\fR
+.B DISABLED
 .ad
 .RS 17n
 .rt
@@ -297,7 +334,7 @@ satisfied.
 .ne 2
 .mk
 .na
-\fBLEGACY-RUN\fR
+.B LEGACY-RUN
 .ad
 .RS 17n
 .rt
@@ -321,7 +358,8 @@ number of property groups in which to store application data. Using property
 groups in this way allows the configuration of the application to derive the
 attributes that the repository provides for all data in the facility. The
 application can also use the appropriate subset of the
-\fBservice_bundle\fR(4) DTD to represent its configuration data within the
+.BR service_bundle (4)
+DTD to represent its configuration data within the
 framework.
 .sp
 .LP
@@ -339,13 +377,15 @@ Properties are protected from modification by unauthorized processes. See
 .SS "General Property Group"
 .sp
 .LP
-The \fBgeneral\fR property group applies to all service instances. It
+The
+.B general
+property group applies to all service instances. It
 includes the following properties:
 .sp
 .ne 2
 .mk
 .na
-\fBenabled (boolean)\fR
+.B enabled (boolean)
 .ad
 .RS 21n
 .rt
@@ -378,7 +418,7 @@ snapshot types might be available:
 .ne 2
 .mk
 .na
-\fBinitial\fR
+.B initial
 .ad
 .RS 15n
 .rt
@@ -390,7 +430,7 @@ produced during package installation.
 .ne 2
 .mk
 .na
-\fBlast_import\fR
+.B last_import
 .ad
 .RS 15n
 .rt
@@ -403,7 +443,7 @@ for determining property customization.
 .ne 2
 .mk
 .na
-\fBprevious\fR
+.B previous
 .ad
 .RS 15n
 .rt
@@ -415,7 +455,7 @@ performed.
 .ne 2
 .mk
 .na
-\fBrunning\fR
+.B running
 .ad
 .RS 15n
 .rt
@@ -426,7 +466,7 @@ The running configuration of the instance.
 .ne 2
 .mk
 .na
-\fBstart\fR
+.B start
 .ad
 .RS 15n
 .rt
@@ -485,7 +525,9 @@ specific set of services or service instances.
 .RS 13n
 .rt
 Files that contain a set of service instances and values for the enabled
-property (type \fBboolean\fR in the general property group) on each
+property (type
+.B boolean
+in the general property group) on each
 instance.
 .sp
 Profiles can also contain configuration values for properties in services
@@ -495,12 +537,16 @@ and instances. Template elements cannot be defined in a profile.
 .sp
 .LP
 Service bundles can be imported or exported from a repository using the
-\fBsvccfg\fR(1M) command. See \fBservice_bundle\fR(4) for a description of
+\fBsvccfg\fR(1M) command. See
+.BR service_bundle (4)
+for a description of
 the service bundle file format with guidelines for authoring service
 bundles.
 .sp
 .LP
-A \fIservice archive\fR is an XML file that contains the description and
+A
+.I "service archive"
+is an XML file that contains the description and
 persistent properties of every service in the repository, excluding
 transient properties such as service state. This service archive is
 basically a 'svccfg export' for every service which is not limited to named
@@ -511,18 +557,22 @@ services.
 An \fBsmf\fR milestone is a service that aggregates a multiple service
 dependencies. Usually, a milestone does nothing useful itself, but declares
 a specific state of system-readiness on which other services can depend. One
-example is the \fBname-services\fR milestone, which simply depends upon the
+example is the
+.B name-services
+milestone, which simply depends upon the
 currently enabled name services.
 .SS "Legacy Startup Scripts"
 .sp
 .LP
-Startup programs in the \fB/etc/rc?.d\fR directories are executed as part
+Startup programs in the
+.B /etc/rc?.d
+directories are executed as part
 of the corresponding run-level milestone:
 .sp
 .ne 2
 .mk
 .na
-\fB/etc/rcS.d\fR
+.B /etc/rcS.d
 .ad
 .RS 14n
 .rt
@@ -533,7 +583,7 @@ milestone/single-user:default
 .ne 2
 .mk
 .na
-\fB/etc/rc2.d\fR
+.B /etc/rc2.d
 .ad
 .RS 14n
 .rt
@@ -544,7 +594,7 @@ milestone/multi-user:default
 .ne 2
 .mk
 .na
-\fB/etc/rc3.d\fR
+.B /etc/rc3.d
 .ad
 .RS 14n
 .rt
@@ -558,15 +608,24 @@ instance named by the program's path. These instances are held in a special
 legacy-run state.
 .sp
 .LP
-These instances do not have an enabled property (type \fBboolean\fR in the
+These instances do not have an enabled property (type
+.B boolean
+in the
 general property group) and, generally, cannot be manipulated with the
-\fBsvcadm\fR(1M) command. No error diagnosis or restart is done for these
+.BR svcadm (1M)
+command. No error diagnosis or restart is done for these
 programs.
 .SH SEE ALSO
 .sp
 .LP
-\fBsvcs\fR(1), \fBinetd\fR(1M), \fBsvcadm\fR(1M), \fBsvccfg\fR(1M),
-\fBsvc.configd\fR(1M), \fBsvc.startd\fR(1M), \fBexec\fR(2), \fBfork\fR(2),
+.BR svcs (1),
+.BR inetd (1M),
+.BR svcadm (1M),
+\fBsvccfg\fR(1M),
+\fBsvc.configd\fR(1M), \fBsvc.startd\fR(1M),
+.BR exec (2),
+\fBfork\fR(2),
 \fBlibscf\fR(3LIB), \fBstrftime\fR(3C), \fBcontract\fR(4),
-\fBservice_bundle\fR(4), \fBsmf_bootstrap\fR(5), \fBsmf_method\fR(5),
+.BR service_bundle (4),
+\fBsmf_bootstrap\fR(5), \fBsmf_method\fR(5),
 \fBsmf_restarter\fR(5), \fBsmf_security\fR(5)

@@ -35,7 +35,9 @@ Solaris DDI specific (Solaris DDI)
 .SH DESCRIPTION
 .sp
 .LP
-The \fBddi_device_acc_attr\fR structure describes the data access
+The
+.B ddi_device_acc_attr
+structure describes the data access
 characteristics and requirements of the device.
 .SH STRUCTURE MEMBERS
 .sp
@@ -50,7 +52,9 @@ uchar_t      devacc_attr_access;
 
 .sp
 .LP
-The \fBdevacc_attr_version\fR member identifies the version number of  this
+The
+.B devacc_attr_version
+member identifies the version number of  this
 structure. The current version number is \fBDDI_DEVICE_ATTR_V0\fR.
 .sp
 .LP
@@ -60,7 +64,7 @@ characteristics of the device. Specify one of the following values:
 .ne 2
 .mk
 .na
-\fBDDI_NEVERSWAP_ACC\fR
+.B DDI_NEVERSWAP_ACC
 .ad
 .RS 24n
 .rt
@@ -71,7 +75,7 @@ Data access with no byte swapping
 .ne 2
 .mk
 .na
-\fBDDI_STRUCTURE_BE_ACC\fR
+.B DDI_STRUCTURE_BE_ACC
 .ad
 .RS 24n
 .rt
@@ -82,7 +86,7 @@ Structural data access in big-endian format
 .ne 2
 .mk
 .na
-\fBDDI_STRUCTURE_LE_ACC\fR
+.B DDI_STRUCTURE_LE_ACC
 .ad
 .RS 24n
 .rt
@@ -103,21 +107,27 @@ implementation can take advantage of hardware platform byte swapping
 capabilities.
 .sp
 .LP
-When you specify \fBDDI_NEVERSWAP_ACC\fR, byte swapping is not invoked in
+When you specify
+.BR DDI_NEVERSWAP_ACC ,
+byte swapping is not invoked in
 the data access functions.
 .sp
 .LP
-The \fBdevacc_attr_dataorder\fR member describes the order in which the
+The
+.B devacc_attr_dataorder
+member describes the order in which the
 \fBCPU\fR references data. Specify one of the following values.
 .sp
 .ne 2
 .mk
 .na
-\fBDDI_STRICTORDER_ACC\fR
+.B DDI_STRICTORDER_ACC
 .ad
 .RS 27n
 .rt
-Data references must be issued by a \fBCPU\fR in program order. Strict
+Data references must be issued by a
+.B CPU
+in program order. Strict
 ordering is the default behavior.
 .RE
 
@@ -125,11 +135,13 @@ ordering is the default behavior.
 .ne 2
 .mk
 .na
-\fBDDI_UNORDERED_OK_ACC\fR
+.B DDI_UNORDERED_OK_ACC
 .ad
 .RS 27n
 .rt
-The \fBCPU\fR can reorder the data references. This includes all kinds of
+The
+.B CPU
+can reorder the data references. This includes all kinds of
 reordering. For example, a load followed by a store might be replaced by a
 store followed by a load.
 .RE
@@ -138,12 +150,16 @@ store followed by a load.
 .ne 2
 .mk
 .na
-\fBDDI_MERGING_OK_ACC\fR
+.B DDI_MERGING_OK_ACC
 .ad
 .RS 27n
 .rt
-The \fBCPU\fR can merge individual stores to consecutive locations. For
-example, the \fBCPU\fR can turn two consecutive byte stores into one
+The
+.B CPU
+can merge individual stores to consecutive locations. For
+example, the
+.B CPU
+can turn two consecutive byte stores into one
 half-word store. It can also batch individual loads. For example, the
 \fBCPU\fR might turn two consecutive byte loads into one half-word load.
 \fBDDI_MERGING_OK_ACC\fR also implies reordering.
@@ -153,11 +169,13 @@ half-word store. It can also batch individual loads. For example, the
 .ne 2
 .mk
 .na
-\fBDDI_LOADCACHING_OK_ACC\fR
+.B DDI_LOADCACHING_OK_ACC
 .ad
 .RS 27n
 .rt
-The \fBCPU\fR can cache the data it fetches and reuse it until another
+The
+.B CPU
+can cache the data it fetches and reuse it until another
 store occurs. The default behavior is to fetch new data on every load.
 \fBDDI_LOADCACHING_OK_ACC\fR also implies merging and reordering.
 .RE
@@ -166,13 +184,17 @@ store occurs. The default behavior is to fetch new data on every load.
 .ne 2
 .mk
 .na
-\fBDDI_STORECACHING_OK_ACC\fR
+.B DDI_STORECACHING_OK_ACC
 .ad
 .RS 27n
 .rt
-The \fBCPU\fR can keep the data in the cache and push it to the device,
+The
+.B CPU
+can keep the data in the cache and push it to the device,
 perhaps with other data, at a later time. The default behavior is to push
-the data right away. \fBDDI_STORECACHING_OK_ACC\fR also implies load
+the data right away.
+.B DDI_STORECACHING_OK_ACC
+also implies load
 caching, merging, and reordering.
 .RE
 
@@ -183,16 +205,20 @@ without being merged, or cached, even though a driver requests unordered,
 merged, and cached together.
 .sp
 .LP
-The values defined for \fBdevacc_attr_access\fR are:
+The values defined for
+.B devacc_attr_access
+are:
 .sp
 .ne 2
 .mk
 .na
-\fBDDI_DEFAULT_ACC\fR
+.B DDI_DEFAULT_ACC
 .ad
 .RS 20n
 .rt
-If an \fBI/O\fR fault occurs, the system will take the default action,
+If an
+.B I/O
+fault occurs, the system will take the default action,
 which might be to panic.
 .RE
 
@@ -200,22 +226,30 @@ which might be to panic.
 .ne 2
 .mk
 .na
-\fBDDI_FLAGERR_ACC\fR
+.B DDI_FLAGERR_ACC
 .ad
 .RS 20n
 .rt
 Using this value indicates that the driver is hardened: able to cope with
-the incorrect results of \fBI/O\fR operations that might result from an
+the incorrect results of
+.B I/O
+operations that might result from an
 \fBI/O\fR fault. The value also indicates that the driver will use
 \fBddi_fm_acc_err_get\fR(9F) to check access handles for faults on a regular
 basis.
 .sp
-If possible, the system should not panic on such an \fBI/O\fR fault, but
-should instead mark the \fBI/O\fR handle through which the access was made
+If possible, the system should not panic on such an
+.B I/O
+fault, but
+should instead mark the
+.B I/O
+handle through which the access was made
 as having faulted.
 .sp
 This value is advisory: it tells the system that the driver can continue in
-the face of \fBI/O\fR faults. The value does not guarantee that the system
+the face of
+.B I/O
+faults. The value does not guarantee that the system
 will not panic, as that depends on the nature of the fault and the
 capabilities of the system. It is quite legitimate for an implementation to
 ignore this flag and panic anyway.
@@ -225,21 +259,29 @@ ignore this flag and panic anyway.
 .ne 2
 .mk
 .na
-\fBDDI_CAUTIOUS_ACC\fR
+.B DDI_CAUTIOUS_ACC
 .ad
 .RS 20n
 .rt
-This value indicates that an \fBI/O\fR fault is anticipated and should be
+This value indicates that an
+.B I/O
+fault is anticipated and should be
 handled as gracefully as possible. For example, the framework should not
 print a console message.
 .sp
 This value should be used when it is not certain that a device is
 physically present: for example, when probing. As such, it provides an
-alternative within the \fBDDI\fR access framework to the existing peek/poke
+alternative within the
+.B DDI
+access framework to the existing peek/poke
 functions, which don't use access handles and cannot be integrated easily
-into a more general \fBI/O\fR fault handling framework.
+into a more general
+.B I/O
+fault handling framework.
 .sp
-In order to guarantee safe recovery from an \fBI/O\fR fault, it might be
+In order to guarantee safe recovery from an
+.B I/O
+fault, it might be
 necessary to acquire exclusive access to the parent bus, for example, or to
 synchronize across processors on an \fBMP\fR machine. "Cautious" access can
 be quite expensive and is only recommended for initial probing and possibly
@@ -252,13 +294,15 @@ for additional fault-recovery code.
 The following examples illustrate the use of device register address
 mapping setup functions and different data access functions.
 .LP
-\fBExample 1 \fRUsing \fBddi_device_acc_attr()\fR in
+\fBExample 1\fR Using \fBddi_device_acc_attr()\fR in
 >\fBddi_regs_map_setup\fR(9F)
 .sp
 .LP
-This example demonstrates the use of the \fBddi_device_acc_attr()\fR
+This example demonstrates the use of the
+.BR ddi_device_acc_attr()
 structure in  \fBddi_regs_map_setup\fR(9F). It also shows the use of
-\fBddi_getw\fR(9F) and  \fBddi_putw\fR(9F) functions in accessing the
+.BR ddi_getw (9F)
+and  \fBddi_putw\fR(9F) functions in accessing the
 register contents.
 
 .sp
@@ -299,14 +343,18 @@ ddi_putw(handle, dev_addr, dev_command);
 .in -2
 
 .LP
-\fBExample 2 \fRAccessing a Device with Different Apertures
+\fBExample 2\fR Accessing a Device with Different Apertures
 .sp
 .LP
 The following example illustrates the steps used to access a device  with
 different apertures. Several apertures are assumed to be grouped under one
 single "reg" entry. For example, the sample device has four different
-apertures, each 32 Kbyte in size.  The apertures represent \fBYUV\fR
-little-endian, \fBYUV\fR big-endian, \fBRGB\fR little-endian, and \fBRGB\fR
+.RB "apertures, each 32 Kbyte in size.  The apertures represent" " YUV"
+little-endian,
+.B YUV
+big-endian,
+.B RGB
+.RB "little-endian, and" " RGB"
 big-endian. This sample device uses entry \fB1\fR of the "reg" property list
 for this purpose. The size of the address space is 128 Kbyte with each 32
 Kbyte range as a separate aperture. In the register mapping setup function,
@@ -348,7 +396,7 @@ ddi_rep_putl(handle, buf, dev_addr, 256, DDI_DEV_AUTOINCR);
 .in -2
 
 .LP
-\fBExample 3 \fRFunctions That Call Out the Data Word Size
+\fBExample 3\fR Functions That Call Out the Data Word Size
 .sp
 .LP
 The following example illustrates the use of the functions that explicitly
@@ -398,7 +446,9 @@ if (status & DATA_READY)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -415,8 +465,10 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_fm_acc_err_get\fR(9F), \fBddi_getw\fR(9F),
-\fBddi_putw\fR(9F), \fBddi_regs_map_setup\fR(9F)
+.BR attributes (5),
+\fBddi_fm_acc_err_get\fR(9F), \fBddi_getw\fR(9F),
+.BR ddi_putw (9F),
+.BR ddi_regs_map_setup (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

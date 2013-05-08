@@ -36,14 +36,17 @@ getinfo \- get device driver information
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris DDI specific (Solaris DDI). This entry point is \fBrequired\fR for
-drivers which export \fBcb_ops\fR(9S) entry points.
+Solaris DDI specific (Solaris DDI). This entry point is
+.B required
+for
+drivers which export
+.BR cb_ops "(9S) entry points."
 .SH ARGUMENTS
 .sp
 .ne 2
 .mk
 .na
-\fIdip\fR
+.I dip
 .ad
 .RS 11n
 .rt
@@ -54,19 +57,21 @@ Do not use.
 .ne 2
 .mk
 .na
-\fIcmd\fR
+.I cmd
 .ad
 .RS 11n
 .rt
-Command argument - valid command values are \fBDDI_INFO_DEVT2DEVINFO\fR and
-\fBDDI_INFO_DEVT2INSTANCE\fR. 
+Command argument - valid command values are
+.B DDI_INFO_DEVT2DEVINFO
+and
+.BR DDI_INFO_DEVT2INSTANCE .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIarg\fR
+.I arg
 .ad
 .RS 11n
 .rt
@@ -77,7 +82,7 @@ Command specific argument.
 .ne 2
 .mk
 .na
-\fIresultp\fR
+.I resultp
 .ad
 .RS 11n
 .rt
@@ -87,23 +92,39 @@ Pointer to where the requested information is stored.
 .SH DESCRIPTION
 .sp
 .LP
-When \fIcmd\fR is set to \fBDDI_INFO_DEVT2DEVINFO\fR, \fBgetinfo()\fR should
+When
+.I cmd
+is set to
+.BR DDI_INFO_DEVT2DEVINFO ,
+\fBgetinfo()\fR should
 return the \fBdev_info_t\fR pointer associated with the \fBdev_t\fR \fIarg\fR.
 The \fBdev_info_t\fR pointer should be returned in the field pointed to by
-\fIresultp\fR. 
+.IR resultp .
 .sp
 .LP
-When \fIcmd\fR is set to \fBDDI_INFO_DEVT2INSTANCE\fR, \fBgetinfo()\fR should
-return the instance number associated with the \fBdev_t\fR \fIarg\fR. The
-instance number should be returned in the field pointed to by \fIresultp\fR.
+When
+.I cmd
+is set to
+.BR DDI_INFO_DEVT2INSTANCE ,
+\fBgetinfo()\fR should
+return the instance number associated with the
+.BR dev_t
+.IR arg .
+The
+instance number should be returned in the field pointed to by
+.IR resultp .
 
 .sp
 .LP
-Drivers which do not export \fBcb_ops\fR(9S) entry points are not required to
-provide a \fBgetinfo()\fR entry point, and may use \fBnodev\fR(9F) in the
+Drivers which do not export
+.BR cb_ops "(9S) entry points are not required to"
+provide a \fBgetinfo()\fR entry point, and may use
+.BR nodev (9F)
+in the
 \fBdevo_getinfo\fR field of the \fBdev_ops\fR(9S) structure. A \fBSCSI HBA
 \fRdriver is an example of a driver which is not required to provide
-\fBcb_ops\fR(9S) entry points.
+.BR cb_ops (9S)
+entry points.
 .SH RETURN VALUES
 .sp
 .LP
@@ -112,7 +133,7 @@ provide a \fBgetinfo()\fR entry point, and may use \fBnodev\fR(9F) in the
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 15n
 .rt
@@ -123,7 +144,7 @@ on success.
 .ne 2
 .mk
 .na
-\fBDDI_FAILURE\fR
+.B DDI_FAILURE
 .ad
 .RS 15n
 .rt
@@ -175,17 +196,20 @@ void **resultp)
 
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
 Non-\fBgld\fR(7D)-based DLPI network streams drivers are encouraged to switch
-to \fBgld\fR(7D). Failing this, a driver that creates DLPI style-2   minor
+to
+.BR gld "(7D). Failing this, a driver that creates DLPI style-2   minor"
 nodes must specify CLONE_DEV for its style-2 \fBddi_create_minor_node\fR(9F)
-nodes and use \fBqassociate\fR(9F). A driver that supports both style-1 and
+nodes and use
+.BR qassociate "(9F). A driver that supports both style-1 and"
 style-2 minor nodes should return DDI_FAILURE for DDI_INFO_DEVT2INSTANCE and
 DDI_INFO_DEVT2DEVINFO \fBgetinfo()\fR calls to style-2 minor nodes. (The
-correct association is already established by \fBqassociate\fR(9F)). A driver
+correct association is already established by
+.BR qassociate "(9F)). A driver"
 that only supports style-2 minor nodes can use \fBddi_no_info\fR(9F) for its
 \fBgetinfo()\fR implementation. For drivers that do not follow these rules,
 the results of a \fBmodunload\fR(1M) of the driver or a \fBcfgadm\fR(1M)

@@ -86,91 +86,146 @@ can come from any of the sources for a project specified in the
 \fB/etc/nsswitch.conf\fR file (see \fBnsswitch.conf\fR(4)).
 .sp
 .LP
-The \fBsetprojent()\fR, \fBgetprojent()\fR, and \fBendprojent()\fR functions
+The
+.BR setprojent() ,
+.BR getprojent() ,
+and
+.B endprojent()
+functions
 are used to enumerate project entries from the database.
 .sp
 .LP
-The \fBsetprojent()\fR function effectively rewinds the project database to
+The
+.B setprojent()
+function effectively rewinds the project database to
 allow repeated searches. It sets (or resets) the enumeration to the beginning
 of the set of project entries. This function should be called before the
-first call to \fBgetprojent()\fR.
+first call to
+.BR getprojent() .
 .sp
 .LP
-The \fBgetprojent()\fR function returns a pointer to a structure containing
+The
+.B getprojent()
+function returns a pointer to a structure containing
 the broken-out fields of an entry in the project database. When first called,
 \fBgetprojent()\fR returns a pointer to a project structure containing the
 first project structure in the project database. Successive calls can be used
 to read the entire database.
 .sp
 .LP
-The \fBendprojent()\fR function closes the project database and deallocates
+The
+.B endprojent()
+function closes the project database and deallocates
 resources when processing is complete. It is permissible, though possibly
 less efficient, for the process to call more project functions after calling
-\fBendprojent()\fR.
+.BR endprojent() .
 .sp
 .LP
-The \fBgetprojbyname()\fR function searches the project database for an
-entry with the project name specified by the character string \fIname\fR.
+The
+.B getprojbyname()
+function searches the project database for an
+entry with the project name specified by the character string
+.IR name .
 .sp
 .LP
-The \fBgetprojbyid()\fR function searches the project database for an entry
-with the (numeric) project \fBID\fR specified by \fIprojid\fR.
+The
+.B getprojbyid()
+function searches the project database for an entry
+with the (numeric) project
+.B ID
+specified by
+.IR projid .
 .sp
 .LP
 The \fBgetdefaultproj()\fR function first looks up the project key word in
-the \fBuser_attr\fR database used to define user attributes in restricted
+the
+.B user_attr
+database used to define user attributes in restricted
 Solaris environments. If the database is available and the keyword is
-present, the function looks up the named project, returning \fINULL\fR if it
+present, the function looks up the named project, returning
+.I NULL
+if it
 cannot be found or if the user is not a member of the named project. If
 absent, the function looks for a match in the project database for the
 special project \fBuser\fR.\fIusername\fR. If no match is found, or if the
 user is excluded from project \fBuser\fR.\fIusername\fR, the function looks
-at the default group entry of the \fBpasswd\fR database for the user, and
+at the default group entry of the
+.B passwd
+database for the user, and
 looks for a match in the project database for the special name
 \fBgroup\fR.\fIgroupname\fR, where \fIgroupname\fR is the default group
-associated with the password entry corresponding to the given \fIusername\fR.
+associated with the password entry corresponding to the given
+.IR username .
 If no match is found, or if the user is excluded from project
 \fBgroup\fR.\fIgroupname\fR, the function returns \fINULL\fR. A special
 project entry called 'default' can be looked up and used as a last resort,
 unless the user is excluded from project 'default'. On successful lookup,
-this function returns a pointer to the valid \fBproject\fR structure. By
+this function returns a pointer to the valid
+.B project
+structure. By
 convention, the user must have a default project defined on a system to be
 able to log on to that system.
 .sp
 .LP
-The \fBinproj()\fR function checks if the user specified by \fIusername\fR
-is able to use the project specified by \fIprojname\fR. This function returns
+The
+.B inproj()
+function checks if the user specified by
+.IR username
+is able to use the project specified by
+.IR projname .
+This function returns
 1 if the user belongs to the list of project's users, if there is a project's
 group that contains the specified user, if project is a user's default
 project, or if project's user or group list contains "*"  wildcard. In all
 other cases it returns 0.
 .sp
 .LP
-The \fBgetprojidbyname()\fR function searches the project database for an
+The
+.B getprojidbyname()
+function searches the project database for an
 entry with the project name specified by the character string name. This
 function returns the project ID if the requested entry is found; otherwise it
 returns \(mi1.
 .sp
 .LP
 The \fBfgetprojent()\fR function, unlike the other functions described
-above, does not use \fBnsswitch.conf\fR; it reads and parses the next line
-from the stream \fIf\fR, which is assumed to have the format of the
-\fBproject\fR(4) file. This function returns the same values as
-\fBgetprojent()\fR.
+above, does not use
+.BR nsswitch.conf ;
+it reads and parses the next line
+from the stream
+.IR f ,
+which is assumed to have the format of the
+.BR project (4)
+file. This function returns the same values as
+.BR getprojent() .
 .sp
 .LP
-The \fBgetprojent()\fR, \fBgetprojbyname()\fR, \fBgetprojbyid()\fR,
+The
+.BR getprojent() ,
+.BR getprojbyname() ,
+.BR getprojbyid() ,
 \fBgetdefaultproj()\fR, and \fBinproj()\fR functions are reentrant interfaces
-for operations with the \fBproject\fR database. These functions use buffers
+for operations with the
+.B project
+database. These functions use buffers
 supplied by the caller to store returned results and are safe for use in both
 single-threaded and multithreaded applications.
 .sp
 .LP
-Reentrant interfaces require the additional arguments \fIproj\fR,
-\fIbuffer\fR, and \fIbufsize\fR. The \fIproj\fR argument must be a pointer to
-a \fBstruct project\fR structure allocated by the caller. On successful
+Reentrant interfaces require the additional arguments
+.IR proj ,
+\fIbuffer\fR, and
+.IR bufsize .
+The
+.I proj
+argument must be a pointer to
+a
+.B "struct project"
+structure allocated by the caller. On successful
 completion, the function returns the project entry in this structure. Storage
-referenced by the \fBproject\fR structure is allocated from the memory
+referenced by the
+.B project
+structure is allocated from the memory
 provided with the \fIbuffer\fR argument, which is \fIbufsize\fR bytes in
 size. The  content  of the memory buffer could be lost in cases when these
 functions return errors.
@@ -180,14 +235,21 @@ For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads. The
 \fBsetprojent()\fR function can be used in a multithreaded application but
 resets the enumeration position for all threads. If multiple threads
-interleave calls to \fBgetprojent()\fR, the threads will enumerate disjoint
-subsets of the project database. The \fBinproj()\fR, \fBgetprojbyname()\fR,
-\fBgetprojbyid()\fR, and \fBgetdefaultproj()\fR functions leave the
+interleave calls to
+.BR getprojent() ,
+the threads will enumerate disjoint
+subsets of the project database. The
+.BR inproj() ,
+.BR getprojbyname() ,
+.BR getprojbyid() ,
+and \fBgetdefaultproj()\fR functions leave the
 enumeration position in an indeterminate state.
 .SH RETURN VALUES
 .sp
 .LP
-Project entries are represented by the \fBstruct project\fR structure
+Project entries are represented by the
+.B "struct project"
+structure
 defined in <\fBproject.h\fR>.
 .sp
 .in +2
@@ -207,39 +269,63 @@ struct project {
 
 .sp
 .LP
-The \fBgetprojbyname()\fR and \fBgetprojbyid()\fR functions each return a
-pointer to a \fBstruct project\fR if they successfully locate the requested
+The
+.B getprojbyname()
+and
+.B getprojbyid()
+functions each return a
+pointer to a
+.B "struct project"
+if they successfully locate the requested
 entry; otherwise they return \fINULL\fR.
 .sp
 .LP
-The \fBgetprojent()\fR function returns a pointer to a \fBstruct project\fR
+The
+.B getprojent()
+function returns a pointer to a
+.BR "struct project"
 if it successfully enumerates an entry; otherwise it returns \fINULL\fR,
 indicating the end of the enumeration.
 .sp
 .LP
-The \fBgetprojidbyname()\fR function returns the project ID if the requsted
+The
+.B getprojidbyname()
+function returns the project ID if the requsted
 entry is found; otherwise it returns \(mi1 and sets errno to indicate the
 error.
 .sp
 .LP
-When the pointer returned by the reentrant functions \fBgetprojbyname()\fR,
-\fBgetprojbyid()\fR, and \fBgetprojent()\fR is non-null, it is always equal
-to the \fIproj\fR pointer that was supplied by the caller.
+When the pointer returned by the reentrant functions
+.BR getprojbyname() ,
+.BR getprojbyid() ,
+and
+.B getprojent()
+is non-null, it is always equal
+to the
+.I proj
+pointer that was supplied by the caller.
 .sp
 .LP
-Upon failure, \fBNULL\fR is returned and errno is set to indicate the
+Upon failure,
+.B NULL
+is returned and errno is set to indicate the
 error.
 .SH ERRORS
 .sp
 .LP
-The \fBgetprojent()\fR, \fBgetprojbyname()\fR, \fBgetprojbyid()\fR,
-\fBinproj()\fR, \fBgetprojidbyname()\fR, \fBfgetprojent()\fR, and
+The
+.BR getprojent() ,
+.BR getprojbyname() ,
+.BR getprojbyid() ,
+.BR inproj() ,
+.BR getprojidbyname() ,
+\fBfgetprojent()\fR, and
 \fBgetdefaultproj()\fR functions will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 10n
 .rt
@@ -250,7 +336,7 @@ A signal was caught during the operation.
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 10n
 .rt
@@ -261,11 +347,13 @@ An I/O error has occurred.
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 10n
 .rt
-There are \fBOPEN_MAX\fR file descriptors currently open in the calling
+There are
+.B OPEN_MAX
+file descriptors currently open in the calling
 process.
 .RE
 
@@ -273,7 +361,7 @@ process.
 .ne 2
 .mk
 .na
-\fBENFILE\fR
+.B ENFILE
 .ad
 .RS 10n
 .rt
@@ -284,19 +372,25 @@ The maximum allowable number of files is currently open in the system.
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
 Insufficient storage was supplied by \fIbuffer\fR and \fIbufsize\fR to
-contain the data to be referenced by the resulting \fBproject\fR structure.
+contain the data to be referenced by the resulting
+.B project
+structure.
 .RE
 
 .sp
 .LP
 These functions can also fail if the name service switch does not specify
-valid \fBproject\fR(4) name service sources. In the case of an incompletely
-configurated name service switch configuration, \fBgetprojbyid()\fR and other
+valid
+.BR project (4)
+name service sources. In the case of an incompletely
+configurated name service switch configuration,
+.B getprojbyid()
+and other
 functions can return error values other than those documented above. These
 conditions usually occur when the \fBnsswitch.conf\fR file indicates that one
 or more name services is providing entries for the project database when that
@@ -304,18 +398,24 @@ name service does not actually make a project table available.
 .SH USAGE
 .sp
 .LP
-When compiling multithreaded applications, see \fBIntro\fR(3), Notes On
+When compiling multithreaded applications, see
+.BR Intro (3),
+Notes On
 Multithreaded Applications.
 .sp
 .LP
-Use of the enumeration interface \fBgetprojent()\fR is discouraged.
+Use of the enumeration interface
+.B getprojent()
+is discouraged.
 Enumeration is supported for the project file, NIS, and LDAP but in general
 is not efficient. The semantics of enumeration are discussed further in
 \fBnsswitch.conf\fR(4).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -334,6 +434,10 @@ MT-LevelSee Description.
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(3), \fBlibproject\fR(3LIB), \fBproject_walk\fR(3PROJECT),
-\fBsysconf\fR(3C), \fBnsswitch.conf\fR(4), \fBproject\fR(4),
-\fBattributes\fR(5)
+.BR Intro (3),
+.BR libproject (3LIB),
+.BR project_walk (3PROJECT),
+\fBsysconf\fR(3C),
+.BR nsswitch.conf (4),
+.BR project (4),
+.BR attributes (5)

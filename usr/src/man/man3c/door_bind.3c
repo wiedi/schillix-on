@@ -39,69 +39,106 @@ server pool
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdoor_bind()\fR function associates the current thread with a door
+The
+.B door_bind()
+function associates the current thread with a door
 server pool. A door server pool is a private pool of server threads that is
-available to serve door invocations associated with the door \fIdid\fR.
+available to serve door invocations associated with the door
+.IR did .
 .sp
 .LP
-The \fBdoor_unbind()\fR function breaks the association of
+The
+.B door_unbind()
+function breaks the association of
 \fBdoor_bind()\fR by removing any private door pool binding that is
 associated with the current thread.
 .sp
 .LP
 Normally, door server threads are placed in a global pool of available
 threads that invocations on any door can use to dispatch a door invocation.
-A door that has been created with \fBDOOR_PRIVATE\fR only uses server
-threads that have been associated with the door by \fBdoor_bind()\fR. It is
+A door that has been created with
+.B DOOR_PRIVATE
+only uses server
+threads that have been associated with the door by
+.BR door_bind() .
+It is
 therefore necessary to bind at least one server thread  to doors created
-with \fBDOOR_PRIVATE\fR.
+with
+.BR DOOR_PRIVATE .
 .sp
 .LP
-The server thread create function, \fBdoor_server_create()\fR, is initially
-called by the system during a \fBdoor_create()\fR operation. See
-\fBdoor_server_create\fR(3C) and  \fBdoor_create\fR(3C).
+The server thread create function,
+.BR door_server_create() ,
+is initially
+called by the system during a
+.B door_create()
+operation. See
+.BR door_server_create (3C)
+and 
+.BR door_create (3C).
 .sp
 .LP
 The current thread is added to the private pool of server  threads
-associated with a door during the next \fBdoor_return()\fR (that has been
-issued by the current thread after an associated  \fBdoor_bind()\fR). See
-\fBdoor_return\fR(3C). A server thread performing a  \fBdoor_bind()\fR on a
+associated with a door during the next
+.B door_return()
+(that has been
+issued by the current thread after an associated
+.BR door_bind() ).
+See
+.BR door_return (3C).
+A server thread performing a 
+.B door_bind()
+on a
 door that is already bound to a different door performs an implicit
 \fBdoor_unbind()\fR of the previous door.
 .sp
 .LP
 If a process containing threads that have been bound to a door calls
 \fBfork\fR(2), the threads in the child process will be bound to an invalid
-door, and any calls to \fBdoor_return\fR(3C) will result in an error.
+door, and any calls to
+.BR door_return (3C)
+will result in an error.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a \fB0\fR is returned. Otherwise, \fB\(mi1\fR
-is returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion, a
+.B 0
+is returned. Otherwise, \fB\(mi1\fR
+is returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The  \fBdoor_bind()\fR and  \fBdoor_unbind()\fR functions fail if:
+The 
+.B door_bind()
+and 
+.B door_unbind()
+functions fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
-The \fIdid\fR argument is not a valid door.
+The
+.I did
+argument is not a valid door.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
-The \fBdoor_unbind()\fR function was called by a thread that is currently
+The
+.B door_unbind()
+function was called by a thread that is currently
 not bound.
 .RE
 
@@ -109,7 +146,7 @@ not bound.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -118,14 +155,22 @@ not bound.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUse \fBdoor_bind()\fR to create private server pools for
+\fBExample 1\fR Use \fBdoor_bind()\fR to create private server pools for
 two doors.
 .sp
 .LP
-The following example shows the use of \fBdoor_bind()\fR to create private
-server pools for two doors, \fBd1\fR and \fBd2\fR. Function
+The following example shows the use of
+.B door_bind()
+to create private
+server pools for two doors,
+.B d1
+and
+.BR d2 .
+Function
 \fBmy_create()\fR is called when a new server thread is needed; it creates a
-thread running function, \fBmy_server_create()\fR, which binds itself to one
+thread running function,
+.BR my_server_create() ,
+which binds itself to one
 of the two doors.
 
 .sp
@@ -199,7 +244,9 @@ main()
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -223,4 +270,5 @@ MT-LevelSafe
 .sp
 .LP
 \fBfork\fR(2),\fBdoor_create\fR(3C), \fBdoor_return\fR(3C),
-\fBdoor_server_create\fR(3C), \fBattributes\fR(5)
+.BR door_server_create (3C),
+.BR attributes (5)

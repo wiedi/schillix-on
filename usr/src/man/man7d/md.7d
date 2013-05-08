@@ -36,18 +36,26 @@ There is also a ``raw'' device which provides for direct transmission
 between the disk and the user's read or write buffer. A single read or write
 call usually results in one I/O operation; raw I/O is therefore considerably
 more efficient when many bytes are transmitted. The names of the block
-devices are found in \fB/dev/md/dsk\fR; the names of the raw devices are
-found in \fB/dev/md/rdsk\fR. Metadevices have the appearance of whole disks;
+devices are found in
+.BR /dev/md/dsk ;
+the names of the raw devices are
+found in
+.BR /dev/md/rdsk .
+Metadevices have the appearance of whole disks;
 there are no slices (partitions).
 .sp
 .LP
-I/O requests (such as \fBlseek\fR(2)) to the metadevices must have an
+I/O requests (such as
+.BR lseek (2))
+to the metadevices must have an
 offset that is a multiple of 512 bytes (DEV_BSIZE), or the driver returns an
 EINVAL error. If the transfer length is not a multiple of 512 bytes, the
 tranfer count is rounded up by the driver.
 .sp
 .LP
-The \fBmd\fR pseudo device drivers support all disk devices on all Solaris
+The
+.B md
+pseudo device drivers support all disk devices on all Solaris
 2.4 or later Solaris systems.
 .SH IOCTLS
 .sp
@@ -57,19 +65,27 @@ driver.
 .sp
 .LP
 The following ioctls are valid when issued to the raw metadevice, such as
-\fB/dev/md/rdsk/d0\fR. See \fBdkio\fR(7I) for additional information.
+.BR /dev/md/rdsk/d0 .
+See \fBdkio\fR(7I) for additional information.
 .sp
 .ne 2
 .mk
 .na
-\fBDKIOCGGEOM\fR
+.B DKIOCGGEOM
 .ad
 .RS 14n
 .rt
 This ioctl is used to get the disk geometry. The metadisk driver fills in
-the \fBdkg_nhead\fR, \fBdkg_nsect\fR, \fBdkg_rpm\fR,
+the
+.BR dkg_nhead ,
+.BR dkg_nsect ,
+.BR dkg_rpm ,
 \fBdkg_write_reinstruct\fR and \fBdkg_read_reinstruct\fR from the first
-component of the metadevice (at \fBmetainit\fR time). \fBdkg_ncyl\fR is
+component of the metadevice (at
+.B metainit
+time).
+.B dkg_ncyl
+is
 calculated using the size of the metadevice (reported by \fBmetastat\fR)
 divided by (dkg_nhead * dkg_nsect). The total size is always a multiple of
 (dkg_nhead * dkg_nsect). If the first component of a metadevice \fIdoes
@@ -84,13 +100,15 @@ then ENXIO is returned.
 .ne 2
 .mk
 .na
-\fBDKIOCINFO\fR
+.B DKIOCINFO
 .ad
 .RS 14n
 .rt
 When issued to the administrative device or metadevice, this ioctl sets
 \fBdki_unit\fR to the unit number of the metadevice, \fBdki_ctype\fR to a
-value of DKC_MD, and \fBdki_partition\fR to 0, because there are no
+value of DKC_MD, and
+.B dki_partition
+to 0, because there are no
 slices.
 .RE
 
@@ -98,23 +116,29 @@ slices.
 .ne 2
 .mk
 .na
-\fBDKIOCGVTOC\fR
+.B DKIOCGVTOC
 .ad
 .RS 14n
 .rt
 This ioctl returns the current vtoc. If one has not been written, then a
-default vtoc is returned. \fBv_nparts\fR is always 1.
+default vtoc is returned.
+.B v_nparts
+is always 1.
 \fBv_part[0].p_start\fR is 0 if the first component of the metadevice starts
-on cylinder 0. Otherwise, the \fBp_start\fR field is the starting sector of
-cylinder 1. \fBv_part[0].p_size\fR is the same as the total size reported by
-\fBmetastat\fR.
+on cylinder 0. Otherwise, the
+.B p_start
+field is the starting sector of
+cylinder 1.
+.B v_part[0].p_size
+is the same as the total size reported by
+.BR metastat .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDKIOCSVTOC\fR
+.B DKIOCSVTOC
 .ad
 .RS 14n
 .rt
@@ -158,7 +182,9 @@ md: Could not load misc /\fIdev\fR
 
 .sp
 .LP
-The named \fBmisc\fR module is not loadable. It is possibly missing, or
+The named
+.B misc
+module is not loadable. It is possibly missing, or
 something else has been copied over it.
 .sp
 .in +2
@@ -169,7 +195,9 @@ md: d\fInum\fR: no mem for property \fIdev\fR
 
 .sp
 .LP
-Memory could not be allocated in the \fBprop_op\fR entry point.
+Memory could not be allocated in the
+.B prop_op
+entry point.
 .sp
 .in +2
 .nf
@@ -182,7 +210,7 @@ md: db: Parsing error on '\fIdev\fR'
 .sp
 .LP
 Set command in \fB/kernel/drv/md.conf\fR for the \fBmddb.bootlist\fR
-\fI<number>\fR is not in the correct format. \fBmetadb\fR \fB-p\fR can be
+\fI<number>\fR is not in the correct format. \fBmetadb -p\fR can be
 run to put the correct set commands into the \fB/kernel/drv/md.conf\fR
 file.
 .sp
@@ -277,7 +305,9 @@ md: d\fInum\fR: Cannot load \fIdev\fR driver
 .sp
 .LP
 Underlying named driver module is not loadable (for example, \fBsd\fR,
-\fBid\fR, \fBxy\fR, or a third-party driver). This could indicate that the
+.BR id ,
+.BR xy ,
+or a third-party driver). This could indicate that the
 driver module has been removed.
 .sp
 .in +2
@@ -323,7 +353,9 @@ default 100 times.
 .ad
 .RS 30n
 .rt
-block device (where \fIn\fR is the device number)
+block device (where
+.I n
+is the device number)
 .RE
 
 .sp
@@ -334,7 +366,9 @@ block device (where \fIn\fR is the device number)
 .ad
 .RS 30n
 .rt
-raw device (where \fIn\fR is the device number)
+raw device (where
+.I n
+is the device number)
 .RE
 
 .sp
@@ -345,7 +379,11 @@ raw device (where \fIn\fR is the device number)
 .ad
 .RS 30n
 .rt
-block device (where \fIsetname\fR is the name of the diskset and \fIn\fR is
+block device (where
+.I setname
+is the name of the diskset and
+.I n
+is
 the device number)
 .RE
 
@@ -357,7 +395,11 @@ the device number)
 .ad
 .RS 30n
 .rt
-raw device (where \fIsetname\fR is the name of the diskset and \fIn\fR is
+raw device (where
+.I setname
+is the name of the diskset and
+.I n
+is
 the device number)
 .RE
 
@@ -365,7 +407,7 @@ the device number)
 .ne 2
 .mk
 .na
-\fB/dev/md/admin\fR
+.B /dev/md/admin
 .ad
 .RS 30n
 .rt
@@ -376,7 +418,7 @@ administrative device
 .ne 2
 .mk
 .na
-\fB/kernel/drv/md\fR
+.B /kernel/drv/md
 .ad
 .RS 30n
 .rt
@@ -398,7 +440,7 @@ driver configuration file
 .ne 2
 .mk
 .na
-\fB/kernel/misc/md_stripe\fR
+.B /kernel/misc/md_stripe
 .ad
 .RS 30n
 .rt
@@ -409,7 +451,7 @@ stripe driver misc module
 .ne 2
 .mk
 .na
-\fB/kernel/misc/md_mirror\fR
+.B /kernel/misc/md_mirror
 .ad
 .RS 30n
 .rt
@@ -420,7 +462,7 @@ mirror driver misc module
 .ne 2
 .mk
 .na
-\fB/kernel/misc/md_hotspares\fR
+.B /kernel/misc/md_hotspares
 .ad
 .RS 30n
 .rt
@@ -431,7 +473,7 @@ hotspares driver misc module
 .ne 2
 .mk
 .na
-\fB/kernel/misc/md_trans\fR
+.B /kernel/misc/md_trans
 .ad
 .RS 30n
 .rt
@@ -442,7 +484,7 @@ metatrans driver for UFS logging
 .ne 2
 .mk
 .na
-\fB/kernel/misc/md_raid\fR
+.B /kernel/misc/md_raid
 .ad
 .RS 30n
 .rt
@@ -452,19 +494,33 @@ RAID5 driver misc module
 .SH SEE ALSO
 .sp
 .LP
-\fBmdmonitord\fR(1M), \fBmetaclear\fR(1M), \fBmetadb\fR(1M),
-\fBmetadetach\fR(1M), \fBmetahs\fR(1M), \fBmetainit\fR(1M),
+.BR mdmonitord (1M),
+.BR metaclear (1M),
+.BR metadb (1M),
+.BR metadetach (1M),
+.BR metahs (1M),
+.BR metainit (1M),
 \fBmetaoffline\fR(1M), \fBmetaonline\fR(1M), \fBmetaparam\fR(1M),
-\fBmetarecover\fR(1M), \fBmetarename\fR(1M), \fBmetareplace\fR(1M),
-\fBmetaroot\fR(1M), \fBmetassist\fR(1M), \fBmetaset\fR(1M),
-\fBmetastat\fR(1M), \fBmetasync\fR(1M), \fBmetattach\fR(1M), \fBmd.cf\fR(4),
-\fBmd.tab\fR(4), \fBattributes\fR(5),
+.BR metarecover (1M),
+.BR metarename (1M),
+.BR metareplace (1M),
+.BR metaroot (1M),
+.BR metassist (1M),
+.BR metaset (1M),
+.BR metastat (1M),
+.BR metasync (1M),
+.BR metattach (1M),
+\fBmd.cf\fR(4),
+.BR md.tab (4),
+.BR attributes (5),
 .sp
 .LP
-\fISolaris Volume Manager Administration Guide\fR
+.I Solaris Volume Manager Administration Guide
 .SH NOTES
 .sp
 .LP
 Trans metadevices have been replaced by UFS logging. Existing trans devices
-are \fBnot\fR logging--they pass data directly through to the underlying
+are
+.B not
+logging--they pass data directly through to the underlying
 device. See \fBmount_ufs\fR(1M) for more information about UFS logging.

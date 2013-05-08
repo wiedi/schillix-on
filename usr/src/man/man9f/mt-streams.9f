@@ -35,21 +35,34 @@ Solaris DDI specific (Solaris DDI).
 .sp
 .LP
 STREAMS drivers configure the degree of concurrency using the \fBcb_flag\fR
-field in the \fBcb_ops\fR structure (see \fBcb_ops\fR(9S)). The
-corresponding field for \fBSTREAMS \fRmodules is the \fBf_flag\fR in the
+field in the
+.B cb_ops
+structure (see
+.BR cb_ops (9S)).
+The
+corresponding field for
+.B STREAMS
+modules is the \fBf_flag\fR in the
 \fBfmodsw\fR structure.
 .sp
 .LP
 For the purpose of restricting and controlling the concurrency in
-drivers/modules, we define the concepts of \fBinner\fR and \fBouter
+drivers/modules, we define the concepts of
+.B inner
+and \fBouter
 perimeters\fR. A driver/module can be configured either to have no
 perimeters, to have only an inner or an outer perimeter, or to have both an
 inner and an outer perimeter. Each perimeter acts as a readers-writers lock,
 that is, there can be multiple concurrent readers or a single writer. Thus,
 each perimeter can be entered in two modes: shared (reader) or exclusive
 (writer). The mode depends on the perimeter configuration and can be
-different for the different \fBSTREAMS \fRentry points ( \fBopen\fR(9E),
-\fBclose\fR(9E), \fBput\fR(9E), or \fBsrv\fR(9E)).
+different for the different
+.B STREAMS
+entry points ( \fBopen\fR(9E),
+.BR close (9E),
+.BR put (9E),
+or
+.BR srv (9E)).
 .sp
 .LP
 The concurrency for the different entry points is (unless specified
@@ -63,7 +76,9 @@ only have one scope), and flags that modify the default concurrency for the
 different entry points.
 .sp
 .LP
-All MT safe modules/drivers specify the \fBD_MP\fR flag.
+All MT safe modules/drivers specify the
+.B D_MP
+flag.
 .SS "Inner Perimeter Flags"
 .sp
 .LP
@@ -73,7 +88,7 @@ exclusive flags:
 .ne 2
 .mk
 .na
-\fBD_MTPERQ\fR
+.B D_MTPERQ
 .ad
 .RS 21n
 .rt
@@ -84,7 +99,7 @@ The module/driver has an inner perimeter around each queue.
 .ne 2
 .mk
 .na
-\fBD_MTQPAIR\fR
+.B D_MTQPAIR
 .ad
 .RS 21n
 .rt
@@ -96,7 +111,7 @@ queues.
 .ne 2
 .mk
 .na
-\fBD_MTPERMOD\fR
+.B D_MTPERMOD
 .ad
 .RS 21n
 .rt
@@ -123,19 +138,23 @@ The outer perimeter presence is configured using:
 .ne 2
 .mk
 .na
-\fBD_MTOUTPERIM\fR
+.B D_MTOUTPERIM
 .ad
 .RS 16n
 .rt
 In addition to any inner perimeter, the module/driver has an outer
 perimeter that encloses all the module's/driver's queues. This can be
-combined with all the inner perimeter options except \fBD_MTPERMOD.\fR
+combined with all the inner perimeter options except
+.BR D_MTPERMOD.
 .RE
 
 .sp
 .LP
 Note that acquiring exclusive access at the outer perimeter (that is, using
-\fBqwriter\fR(9F) with the \fBPERIM_OUTER\fR flag) can incur significant
+.BR qwriter (9F)
+with the
+.B PERIM_OUTER
+flag) can incur significant
 performance penalties, which grow linearly with the number of open instances
 of the module or driver in the system.
 .sp
@@ -145,11 +164,12 @@ The default concurrency can be modified using:
 .ne 2
 .mk
 .na
-\fBD_MTPUTSHARED\fR
+.B D_MTPUTSHARED
 .ad
 .RS 17n
 .rt
-This flag modifies the default behavior when \fBput\fR(9E) procedure are
+This flag modifies the default behavior when
+.BR put "(9E) procedure are"
 invoked so that the inner perimeter is entered shared instead of
 exclusively.
 .RE
@@ -158,45 +178,63 @@ exclusively.
 .ne 2
 .mk
 .na
-\fBD_MTOCEXCL\fR
+.B D_MTOCEXCL
 .ad
 .RS 17n
 .rt
-This flag modifies the default behavior when \fBopen\fR(9E) and
-\fBclose\fR(9E) procedures are invoked so the outer perimeter is entered
+This flag modifies the default behavior when
+.BR open "(9E) and"
+.BR close (9E)
+procedures are invoked so the outer perimeter is entered
 exclusively instead of shared.
 .sp
 Note that drivers and modules using this flag can cause significant system
 performance degradation during stream open or close when many instances of
 the driver or module are in use simultaneously. For this reason, use of this
-flag is discouraged. Instead, since \fBopen\fR(9E) and \fBclose\fR(9E) both
+flag is discouraged. Instead, since
+.BR open (9E)
+and
+.BR close (9E)
+both
 execute with user context, developers are encouraged to use traditional
-synchronization routines such as \fBcv_wait_sig\fR(9F) to coordinate with
+synchronization routines such as
+.BR cv_wait_sig "(9F) to coordinate with"
 other open instances of the module or driver.
 .RE
 
 .sp
 .LP
-The module/driver can use \fBqwait\fR(9F) or \fBqwait_sig()\fR in the
+The module/driver can use
+.BR qwait (9F)
+or
+.B qwait_sig()
+in the
 \fBopen\fR(9E) and \fBclose\fR(9E) procedures if it needs to wait "outside"
 the perimeters.
 .sp
 .LP
-The module/driver can use \fBqwriter\fR(9F) to upgrade the access at the
+The module/driver can use
+.BR qwriter (9F)
+to upgrade the access at the
 inner or outer perimeter from shared to exclusive.
 .sp
 .LP
-The use and semantics of \fBqprocson()\fR and \fBqprocsoff\fR(9F) is
+The use and semantics of
+.B qprocson()
+and \fBqprocsoff\fR(9F) is
 independent of the inner and outer perimeters.
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(9E), \fBopen\fR(9E), \fBput\fR(9E), \fBsrv\fR(9E),
+.BR close (9E),
+.BR open (9E),
+.BR put (9E),
+.BR srv (9E),
 \fBqprocsoff\fR(9F), \fBqprocson\fR(9F), \fBqwait\fR(9F), \fBqwriter\fR(9F),
-\fBcb_ops\fR(9S) 
+.BR cb_ops (9S)
 .sp
 .LP
-\fISTREAMS Programming Guide\fR
+.I STREAMS Programming Guide
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

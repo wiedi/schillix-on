@@ -43,12 +43,16 @@ a common abstraction called a pool. Processor sets and other entities can be
 configured, grouped, and labelled in a persistent fashion such that workload
 components can be associated with a subset of a system's total resources. The
 \fBlibpool\fR library provides a C language API for accessing this
-functionality, while \fBpooladm\fR(1M), \fBpoolbind\fR(1M), and
+functionality, while \fBpooladm\fR(1M),
+.BR poolbind (1M),
+and
 \fBpoolcfg\fR(1M) make this facility available through command invocations
 from a shell. Each of those manual pages describes aspects of the pools
 facility; this page describes the properties available to the various
 entities managed within the pools facility. These entities include the
-system, pools, and the \fBpset\fR resources for processor sets.
+system, pools, and the
+.B pset
+resources for processor sets.
 .sp
 .LP
 When the pools facility is enabled on a system, the behavior of the
@@ -76,8 +80,14 @@ Each active entity within the resource pools framework can have an arbitrary
 collection of named, typed properties associated with it. Properties
 supported by the pools framework are listed, with descriptions, under each
 entity below. In general, resource properties can be one of five types:
-boolean (\fBbool\fR), signed (\fBint64\fR) and unsigned (\fBuint64\fR)
-integers, floating point (\fBdouble\fR), and \fBstring\fR values.
+boolean
+.RB ( bool ),
+signed (\fBint64\fR) and unsigned (\fBuint64\fR)
+integers, floating point
+.RB ( double ),
+and
+.B string
+values.
 .sp
 .LP
 All entities and resources support a string property for commenting
@@ -85,7 +95,9 @@ purposes; this property is available for use by management applications to
 record descriptions and other administrator oriented data. The comment field
 is not used by the default pools commands, except when a configuration is
 initiated by the \fBpoolcfg\fR utility, in which case an informative message
-is placed in the \fBsystem.comment\fR property for that configuration.
+is placed in the
+.B system.comment
+property for that configuration.
 .SS "System"
 .sp
 
@@ -116,14 +128,25 @@ T}
 
 .sp
 .LP
-The \fBsystem.allocate-method\fR, \fBsystem.bind-default\fR,
-\fBsystem.comment\fR, \fBsystem.name\fR, \fBsystem.poold.log-level\fR,
-\fBsystem.poold.log-location\fR, \fBsystem.poold.history-file\fR,
-\fBsystem.poold.monitor-interval\fR, and \fBsystem.poold.objectives\fR
-properties are writable; the \fBsystem.version\fR property is not.
+The
+.BR system.allocate-method ,
+\fBsystem.bind-default\fR,
+.BR system.comment ,
+.BR system.name ,
+.BR system.poold.log-level ,
+.BR system.poold.log-location ,
+\fBsystem.poold.history-file\fR,
+.BR system.poold.monitor-interval ,
+and
+.BR system.poold.objectives
+properties are writable; the
+.B system.version
+property is not.
 .sp
 .LP
-The \fBsystem.allocate-method\fR property accepts only two values,
+The
+.B system.allocate-method
+property accepts only two values,
 "importance based" and "surplus to default". The default value for this
 property is "importance based". The property is optional and if it is not
 present the library will allocate resources as though it were present and had
@@ -143,9 +166,15 @@ receive any surplus.
 .sp
 .LP
 The \fBsystem.bind-default\fR property defaults to true. This property
-interacts with the \fBproject.pool\fR resource control to specify the binding
-behavior for processes associated with a project. If \fBproject.pool\fR is
-not specified, then this property has no effect. If \fBproject.pool\fR is
+interacts with the
+.B project.pool
+resource control to specify the binding
+behavior for processes associated with a project. If
+.B project.pool
+is
+not specified, then this property has no effect. If
+.B project.pool
+is
 specified and the specified pool exists, this property has no effect. If the
 specified pool does not exist, perhaps because of a reconfiguration, then
 this property controls the binding behavior for the project member. If
@@ -156,41 +185,70 @@ taken with the pools configuration if this property is set to false, so as to
 avoid denying users access to the system.
 .sp
 .LP
-The various \fBpoold\fR properties are used to configure the operation of
-\fBpoold\fR(1M).
+The various
+.B poold
+properties are used to configure the operation of
+.BR poold (1M).
 .sp
 .LP
-The \fBsystem.poold.log-level\fR property is used to specify the level of
-detail provided in log messages. Valid values are: \fBALERT\fR, \fBCRIT\fR,
-\fBERR\fR, \fBWARNING\fR, \fBNOTICE\fR, \fBINFO\fR, and \fBDEBUG\fR.
+The
+.B system.poold.log-level
+property is used to specify the level of
+detail provided in log messages. Valid values are:
+.BR ALERT ,
+.BR CRIT ,
+.BR ERR ,
+.BR WARNING ,
+.BR NOTICE ,
+.BR INFO ,
+and
+.BR DEBUG .
 .sp
 .LP
 \fBALERT\fR provides the least level of detail, \fBDEBUG\fR the greatest.
 See \fBsyslog\fR(3C) for more information about the meaning of these debug
-levels. If this property is not specified, the default value \fBNOTICE\fR is
+levels. If this property is not specified, the default value
+.B NOTICE
+is
 used.
 .sp
 .LP
-The \fBsystem.poold.log-location\fR property is used to specify the location
+The
+.B system.poold.log-location
+property is used to specify the location
 of the logfiles generated by \fBpoold\fR. The special value of "syslog"
-indicates that logged messages should be written to \fBsyslog()\fR. If this
-property is not specified, the default location \fB/var/log/pool\fR is
+indicates that logged messages should be written to
+.BR syslog() .
+If this
+property is not specified, the default location
+.B /var/log/pool
+is
 used.
 .sp
 .LP
 The \fBsystem.poold.history-file\fR specifies the location of the decision
-history file which is used by \fBpoold\fR to improve the quality of its
+history file which is used by
+.B poold
+to improve the quality of its
 decision making over time. If this property is not specified, the default
-location \fB/var/adm/pool\fR is used.
+location
+.B /var/adm/pool
+is used.
 .sp
 .LP
-The \fBsystem.poold.monitor-interval\fR property specifies the monitoring
-interval (in milliseconds) to be used by \fBpoold\fR when sampling
+The
+.B system.poold.monitor-interval
+property specifies the monitoring
+interval (in milliseconds) to be used by
+.B poold
+when sampling
 utilization statistics. If this property is not specified, the default value
 of 15 seconds is used.
 .sp
 .LP
-The \fBsystem.poold.objectives\fR property specifies any system wide
+The
+.B system.poold.objectives
+property specifies any system wide
 objectives. An objectives property has the following syntax:
 .sp
 .in +2
@@ -247,13 +305,19 @@ T}
 
 .sp
 .LP
-The \fBpool.default\fR, \fBpool.sys_id\fR, and \fBpool.temporary\fR
+The \fBpool.default\fR,
+.BR pool.sys_id ,
+and
+.BR pool.temporary
 properties are not writable; all other listed properties are writable.
 .sp
 .LP
 If pool.scheduler is specified, it must be set to the name of a valid
-scheduling class for the system. See the \fB-c\fR option for
-\fBpriocntl\fR(1) for a list of valid class names.
+scheduling class for the system. See the
+.B -c
+option for
+.BR priocntl (1)
+for a list of valid class names.
 .SS "Processor Sets"
 .sp
 
@@ -294,29 +358,50 @@ T}
 
 .sp
 .LP
-The \fBpset.comment\fR, \fBpset.max\fR, \fBpset.min\fR, \fBpset.name\fR, and
+The
+.BR pset.comment ,
+.BR pset.max ,
+.BR pset.min ,
+.BR pset.name ,
+and
 \fBpset.poold.objectives\fR properties are writable; the \fBpset.default\fR,
-\fBpset.load\fR, \fBpset.size\fR, \fBpset.sys_id\fR, \fBpset.temporary\fR,
-\fBpset.type\fR, and \fBpset.units\fR properties are not.
+.BR pset.load ,
+.BR pset.size ,
+.BR pset.sys_id ,
+.BR pset.temporary ,
+.BR pset.type ,
+and
+.B pset.units
+properties are not.
 .sp
 .LP
-The \fBpset.load\fR property represents the load on a processor set. The
-lowest value for this property is 0. The value of \fBpset.load\fR increases
+The
+.B pset.load
+property represents the load on a processor set. The
+lowest value for this property is 0. The value of
+.B pset.load
+increases
 in a linear fashion with the load on the set, as measured by the number of
 jobs in the system run queue.
 .sp
 .LP
-The \fBpset.poold.objectives\fR property specifies an objective which is
-specific to a particular \fBpset\fR. See the \fBsystem.poold.objectives\fR
+The
+.B pset.poold.objectives
+property specifies an objective which is
+specific to a particular
+.BR pset .
+See the
+.BR system.poold.objectives
 entry for the specification of this property's syntax.
 .sp
 .LP
-There are two types of objectives that can be set on a \fBpset\fR:
+There are two types of objectives that can be set on a
+.BR pset :
 .sp
 .ne 2
 .mk
 .na
-\fBlocality\fR
+.B locality
 .ad
 .RS 15n
 .rt
@@ -327,7 +412,7 @@ values:
 .ne 2
 .mk
 .na
-\fBtight\fR
+.B tight
 .ad
 .RS 9n
 .rt
@@ -338,7 +423,7 @@ If set, configurations that maximize resource locality are favored.
 .ne 2
 .mk
 .na
-\fBloose\fR
+.B loose
 .ad
 .RS 9n
 .rt
@@ -349,7 +434,7 @@ If set, configurations that minimize resource locality are favored.
 .ne 2
 .mk
 .na
-\fBnone\fR
+.B none
 .ad
 .RS 9n
 .rt
@@ -363,7 +448,7 @@ favorability is uninfluenced by resource locality.
 .ne 2
 .mk
 .na
-\fButilization\fR
+.B utilization
 .ad
 .RS 15n
 .rt
@@ -379,7 +464,7 @@ operators are
 .ne 2
 .mk
 .na
-\fB<\fR
+.B <
 .ad
 .RS 5n
 .rt
@@ -391,7 +476,7 @@ should be treated as a maximum target value.
 .ne 2
 .mk
 .na
-\fB>\fR
+.B >
 .ad
 .RS 5n
 .rt
@@ -403,7 +488,7 @@ should be treated as a minimum target value.
 .ne 2
 .mk
 .na
-\fB~\fR
+.B ~
 .ad
 .RS 5n
 .rt
@@ -415,7 +500,11 @@ be treated as a target value about which some fluctuation is acceptable.
 .LP
 Only one objective of each type of operator can be set. For example, if the
 \fB~\fR operator is set, the \fB<\fR and \fB>\fR operators cannot be set. It
-is possible to set a \fB<\fR and a \fB>\fR operator together; the values will
+is possible to set a
+.B <
+and a
+.B >
+operator together; the values will
 be validated to ensure that they do not overlap.
 .SS "Processors"
 .sp
@@ -438,11 +527,18 @@ T}
 
 .sp
 .LP
-The \fBcpu.comment\fR, \fBcpu.pinned\fR, and \fBcpu.status\fR properties are
+The
+.BR cpu.comment ,
+.BR cpu.pinned ,
+and
+.B cpu.status
+properties are
 writeable.
 .sp
 .LP
-The \fBcpu.status\fR property can be set only to the following values:
+The
+.B cpu.status
+property can be set only to the following values:
 .sp
 .ne 2
 .mk
@@ -458,7 +554,7 @@ Set the CPU offline.
 .ne 2
 .mk
 .na
-\fBon-line\fR
+.B on-line
 .ad
 .RS 12n
 .rt
@@ -469,7 +565,7 @@ Set the CPU online.
 .ne 2
 .mk
 .na
-\fBno-intr\fR
+.B no-intr
 .ad
 .RS 12n
 .rt
@@ -479,12 +575,19 @@ Disable interrupt processing on the CPU.
 .sp
 .LP
 These values are defined in <\fBsys/processor.h\fR> as the \fBPS_OFFLINE\fR,
-\fBPS_ONLINE\fR, and \fBPS_NOINTR\fR macros.
+.BR PS_ONLINE ,
+and
+.B PS_NOINTR
+macros.
 .SH INTERFACES
 .sp
 .LP
-The shared object \fBlibpool.so.1\fR provides the public interfaces defined
-below. See \fBIntro\fR(3) for additional information on shared object
+The shared object
+.B libpool.so.1
+provides the public interfaces defined
+below. See
+.BR Intro (3)
+for additional information on shared object
 interfaces.
 .sp
 
@@ -536,7 +639,7 @@ lw(2.72i) lw(2.78i)
 .ne 2
 .mk
 .na
-\fB/usr/lib/libpool.so.1\fR
+.B /usr/lib/libpool.so.1
 .ad
 .RS 28n
 .rt
@@ -547,7 +650,7 @@ shared object
 .ne 2
 .mk
 .na
-\fB/usr/lib/64/libpool.so.1\fR
+.B /usr/lib/64/libpool.so.1
 .ad
 .RS 28n
 .rt
@@ -557,7 +660,9 @@ shared object
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -582,23 +687,36 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBIntro\fR(3), \fBpool_component_info\fR(3POOL),
+.BR Intro (3),
+\fBpool_component_info\fR(3POOL),
 \fBpool_conf_open\fR(3POOL), \fBpool_conf_to_elem\fR(3POOL),
-\fBpool_create\fR(3POOL), \fBpool_error\fR(3POOL),
-\fBpool_get_binding\fR(3POOL), \fBpool_get_property\fR(3POOL),
-\fBpool_get_resource\fR(3POOL), \fBpool_resource_create\fR(3POOL),
-\fBpool_value_alloc\fR(3POOL), \fBpool_walk_pools\fR(3POOL),
-\fBattributes\fR(5), \fBsmf\fR(5)
+.BR pool_create (3POOL),
+.BR pool_error (3POOL),
+.BR pool_get_binding (3POOL),
+.BR pool_get_property (3POOL),
+.BR pool_get_resource (3POOL),
+.BR pool_resource_create (3POOL),
+.BR pool_value_alloc (3POOL),
+.BR pool_walk_pools (3POOL),
+.BR attributes (5),
+\fBsmf\fR(5)
 .SH NOTES
 .sp
 .LP
-Functions in \fBlibpool\fR can be used to manipulate static configurations
-even when the pools facility is not enabled. See \fBpooladm\fR(1M) and
-\fBpool_set_status\fR(3POOL) for more information about enabling the pools
+Functions in
+.B libpool
+can be used to manipulate static configurations
+even when the pools facility is not enabled. See
+.BR pooladm (1M)
+and
+.BR pool_set_status (3POOL)
+for more information about enabling the pools
 facility. The pools facility must be enabled, however, to modify the dynamic
 configuration.
 .sp
 .LP
-Since the Resource Pools facility is an \fBsmf\fR(5) service, it can also be
+Since the Resource Pools facility is an
+.BR smf (5)
+service, it can also be
 enabled and disabled using the standard Service Management Facility (SMF)
 interfaces.

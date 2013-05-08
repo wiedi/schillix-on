@@ -42,25 +42,29 @@ get_pktiopb, free_pktiopb \- allocate/free a SCSI packet in the iopb map
 .sp
 .LP
 These interfaces are obsolete. Use \fBscsi_alloc_consistent_buf\fR(9F)
-instead of \fBget_pktiopb()\fR. Use \fBscsi_free_consistent_buf\fR(9F)
+instead of
+.BR get_pktiopb() .
+Use \fBscsi_free_consistent_buf\fR(9F)
 instead of \fBfree_pktiopb()\fR.
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIap\fR
+.I ap
 .ad
 .RS 13n
 .rt
-Pointer to the target's \fBscsi_address\fR structure.
+Pointer to the target's
+.B scsi_address
+structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIdatap\fR
+.I datap
 .ad
 .RS 13n
 .rt
@@ -71,11 +75,13 @@ Pointer to the address of the packet, set by this function.
 .ne 2
 .mk
 .na
-\fIcdblen\fR
+.I cdblen
 .ad
 .RS 13n
 .rt
-Number of bytes required for the \fBSCSI \fRcommand descriptor block
+Number of bytes required for the
+.B SCSI
+command descriptor block
 (CDB).
 .RE
 
@@ -83,22 +89,26 @@ Number of bytes required for the \fBSCSI \fRcommand descriptor block
 .ne 2
 .mk
 .na
-\fIstatuslen\fR
+.I statuslen
 .ad
 .RS 13n
 .rt
-Number of bytes required for the \fBSCSI \fRstatus area.
+Number of bytes required for the
+.B SCSI
+status area.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIdatalen\fR
+.I datalen
 .ad
 .RS 13n
 .rt
-Number of bytes required for the data area of the \fBSCSI \fRcommand.
+Number of bytes required for the data area of the
+.B SCSI
+command.
 .RE
 
 .sp
@@ -109,40 +119,58 @@ Number of bytes required for the data area of the \fBSCSI \fRcommand.
 .ad
 .RS 13n
 .rt
-If non-zero, data will be transferred from the \fBSCSI \fRtarget.
+If non-zero, data will be transferred from the
+.B SCSI
+target.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIcallback\fR
+.I callback
 .ad
 .RS 13n
 .rt
-Pointer to a callback function, or \fBNULL_FUNC\fR or \fBSLEEP_FUNC\fR
+Pointer to a callback function, or
+.B NULL_FUNC
+or
+.BR SLEEP_FUNC
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpkt\fR
+.I pkt
 .ad
 .RS 13n
 .rt
-Pointer to a \fBscsi_pkt\fR(9S) structure.
+Pointer to a
+.BR scsi_pkt "(9S) structure."
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBget_pktiopb()\fR function allocates a \fBscsi_pkt\fR structure that
-has a small data area allocated. It is used by some \fBSCSI \fRcommands such
-as \fBREQUEST_SENSE\fR, which involve a small amount of data and require
+The
+.B get_pktiopb()
+function allocates a
+.B scsi_pkt
+structure that
+has a small data area allocated. It is used by some
+.B SCSI
+commands such
+as
+.BR REQUEST_SENSE ,
+which involve a small amount of data and require
 cache-consistent memory for proper operation. It uses
-\fBddi_iopb_alloc\fR(9F) for allocating the data area and
-\fBscsi_resalloc\fR(9F) to allocate the packet and \fBDMA\fR resources.
+.BR ddi_iopb_alloc (9F)
+for allocating the data area and
+.BR scsi_resalloc (9F)
+to allocate the packet and
+.B DMA
+resources.
 .sp
 .LP
 \fIcallback\fR indicates what \fBget_pktiopb()\fR should do when resources
@@ -151,18 +179,20 @@ are not available:
 .ne 2
 .mk
 .na
-\fBNULL_FUNC\fR
+.B NULL_FUNC
 .ad
 .RS 16n
 .rt
-Do not wait for resources. Return a \fINULL\fR pointer.
+Do not wait for resources. Return a
+.I NULL
+pointer.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBSLEEP_FUNC\fR
+.B SLEEP_FUNC
 .ad
 .RS 16n
 .rt
@@ -173,12 +203,14 @@ Wait indefinitely for resources.
 .ne 2
 .mk
 .na
-\fBOther Values\fR
+.B Other Values
 .ad
 .RS 16n
 .rt
 \fIcallback\fR points to a function which is called when resources may have
-become available. \fIcallback\fR \fBmust\fR return either \fB0\fR
+become available.
+.I callback
+\fBmust\fR return either \fB0\fR
 (indicating that it attempted to allocate resources but failed to do so
 again), in which case it is put back on a list to be called again later, or
 \fB1\fR indicating either success in allocating resources or indicating that
@@ -192,14 +224,22 @@ associated resources.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBget_pktiopb()\fR function returns a pointer to the newly allocated
+The
+.B get_pktiopb()
+function returns a pointer to the newly allocated
 \fBscsi_pkt\fR or a \fINULL\fR pointer.
 .SH CONTEXT
 .sp
 .LP
-If \fIcallback\fR is \fBSLEEP_FUNC\fR, then this routine can be called only
+If
+.I callback
+is
+.BR SLEEP_FUNC ,
+then this routine can be called only
 from user or kernel context. Otherwise, it can be called from user,
-interrupt, or kernel context. The \fIcallback\fR function should not block
+interrupt, or kernel context. The
+.I callback
+function should not block
 or call routines that block.
 .sp
 .LP
@@ -208,7 +248,9 @@ kernel context.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attributes:
+See
+.BR attributes (5)
+for a description of the following attributes:
 .sp
 
 .sp
@@ -225,20 +267,27 @@ Stability LevelObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_iopb_alloc\fR(9F),
+.BR attributes (5),
+.BR ddi_iopb_alloc (9F),
 \fBscsi_alloc_consistent_buf\fR(9F), \fBscsi_free_consistent_buf\fR(9F),
-\fBscsi_pktalloc\fR(9F), \fBscsi_resalloc\fR(9F), \fBscsi_pkt\fR(9S)
+.BR scsi_pktalloc (9F),
+.BR scsi_resalloc (9F),
+.BR scsi_pkt (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH NOTES
 .sp
 .LP
-The \fBget_pktiopb()\fR and \fBfree_pktiopb()\fR functions are obsolete and
+The
+.B get_pktiopb()
+and \fBfree_pktiopb()\fR functions are obsolete and
 will be discontinued in a future release. These functions have been replaced
 by, respectively, \fBscsi_alloc_consistent_buf\fR(9F) and
 \fBscsi_free_consistent_buf\fR(9F).
 .sp
 .LP
-The \fBget_pktiopb()\fR function uses scarce resources. For this reason and
+The
+.B get_pktiopb()
+function uses scarce resources. For this reason and
 its obsolescence (see above), its use is discouraged.

@@ -65,36 +65,72 @@ getcontext, setcontext \- get and set current user context
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgetcontext()\fR function initializes the structure pointed to by
+The
+.B getcontext()
+function initializes the structure pointed to by
 \fIucp\fR to the current user context of the calling process.  The
 \fBucontext_t\fR type that \fIucp\fR points to defines the user context and
 includes the contents of the calling process' machine registers, the signal
 mask, and the current execution stack.
 .sp
 .LP
-The \fBsetcontext()\fR function restores the user context pointed to by
-\fIucp\fR. A successful call to \fBsetcontext()\fR does not return; program
-execution resumes at the point specified by the \fIucp\fR argument passed to
-\fBsetcontext()\fR. The \fIucp\fR argument should be created either by a
-prior call to \fBgetcontext()\fR, or by being passed as an argument to a
-signal handler. If the \fIucp\fR argument was created with
-\fBgetcontext()\fR, program execution continues as if the corresponding call
-of \fBgetcontext()\fR had just returned.  If the \fIucp\fR argument was
-created with \fBmakecontext\fR(3C), program execution continues with the
+The
+.B setcontext()
+function restores the user context pointed to by
+.IR ucp .
+A successful call to
+.B setcontext()
+does not return; program
+execution resumes at the point specified by the
+.I ucp
+argument passed to
+.BR setcontext() .
+The
+.I ucp
+argument should be created either by a
+prior call to
+.BR getcontext() ,
+or by being passed as an argument to a
+signal handler. If the
+.I ucp
+argument was created with
+.BR getcontext() ,
+program execution continues as if the corresponding call
+of
+.B getcontext()
+had just returned.  If the
+.I ucp
+argument was
+created with
+.BR makecontext "(3C), program execution continues with the"
 function passed to \fBmakecontext\fR(3C). When that function returns, the
-process continues as if after a call to \fBsetcontext()\fR with the
+process continues as if after a call to
+.B setcontext()
+with the
 \fIucp\fR argument that was input to \fBmakecontext\fR(3C). If the \fIucp\fR
 argument was passed to a signal handler, program execution continues with
 the program instruction following the instruction interrupted by the signal.
-If the \fBuc_link\fR member of the \fBucontext_t\fR structure pointed to by
-the \fIucp\fR argument is equal to 0, then this context is the main context,
+If the
+.B uc_link
+member of the
+.B ucontext_t
+structure pointed to by
+the
+.I ucp
+argument is equal to 0, then this context is the main context,
 and the process will exit when this context returns.  The effects of passing
-a \fIucp\fR argument obtained from any other source are unspecified.
+a
+.I ucp
+argument obtained from any other source are unspecified.
 .SH RETURN VALUES
 .sp
 .LP
-On successful completion, \fBsetcontext()\fR does not return and
-\fBgetcontext()\fR returns \fB0\fR. Otherwise, \fB\(mi1\fR is returned.
+On successful completion,
+.B setcontext()
+does not return and
+\fBgetcontext()\fR returns
+.BR 0 .
+Otherwise, \fB\(mi1\fR is returned.
 .SH ERRORS
 .sp
 .LP
@@ -104,23 +140,36 @@ No errors are defined.
 .LP
 When a signal handler is executed, the current user context is saved and a
 new context is created.  If the thread leaves the signal handler via
-\fBlongjmp\fR(3UCB), then it is unspecified whether the context at the time
-of the corresponding \fBsetjmp\fR(3UCB) call is restored and thus whether
-future calls to \fBgetcontext()\fR will provide an accurate representation
+.BR longjmp (3UCB),
+then it is unspecified whether the context at the time
+of the corresponding
+.BR setjmp "(3UCB) call is restored and thus whether"
+future calls to
+.B getcontext()
+will provide an accurate representation
 of the current context, since the context restored by \fBlongjmp\fR(3UCB)
-may not contain all the information that \fBsetcontext()\fR requires.
-Signal handlers should use \fBsiglongjmp\fR(3C) instead.
+may not contain all the information that
+.B setcontext()
+requires.
+Signal handlers should use
+.BR siglongjmp "(3C) instead."
 .sp
 .LP
-Portable applications should not modify or access the \fBuc_mcontext\fR
-member of \fBucontext_t\fR.  A portable application cannot assume that
+Portable applications should not modify or access the
+.BR uc_mcontext
+member of
+.BR ucontext_t .
+A portable application cannot assume that
 context includes any process-wide static data, possibly including
-\fBerrno\fR. Users manipulating contexts should take care to handle these
+.BR errno .
+Users manipulating contexts should take care to handle these
 explicitly when required.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -137,7 +186,13 @@ Interface StabilityStandard
 .SH SEE ALSO
 .sp
 .LP
-\fBsigaction\fR(2), \fBsigaltstack\fR(2), \fBsigprocmask\fR(2),
-\fBbsd_signal\fR(3C), \fBmakecontext\fR(3C), \fBsetjmp\fR(3UCB),
-\fBsigsetjmp\fR(3C), \fBucontext.h\fR(3HEAD), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR sigaction (2),
+.BR sigaltstack (2),
+.BR sigprocmask (2),
+.BR bsd_signal (3C),
+.BR makecontext (3C),
+.BR setjmp (3UCB),
+.BR sigsetjmp (3C),
+.BR ucontext.h (3HEAD),
+.BR attributes (5),
+.BR standards (5)

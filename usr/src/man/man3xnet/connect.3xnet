@@ -62,13 +62,15 @@ connect \- connect a socket
 .SH DESCRIPTION
 .sp
 .LP
-The \fBconnect()\fR function requests a connection to be made on a socket.
+The
+.B connect()
+function requests a connection to be made on a socket.
 The function takes the following arguments:
 .sp
 .ne 2
 .mk
 .na
-\fIsocket\fR
+.I socket
 .ad
 .RS 15n
 .rt
@@ -79,11 +81,13 @@ Specifies the file descriptor associated with the socket.
 .ne 2
 .mk
 .na
-\fIaddress\fR
+.I address
 .ad
 .RS 15n
 .rt
-Points to a \fBsockaddr\fR structure containing the peer address.  The
+Points to a
+.B sockaddr
+structure containing the peer address.  The
 length and format of the address depend on the address family of the
 socket.
 .RE
@@ -92,11 +96,13 @@ socket.
 .ne 2
 .mk
 .na
-\fIaddress_len\fR
+.I address_len
 .ad
 .RS 15n
 .rt
-Specifies the length of the \fBsockaddr\fR structure pointed to by the
+Specifies the length of the
+.B sockaddr
+structure pointed to by the
 \fIaddress\fR argument.
 .RE
 
@@ -107,7 +113,9 @@ If the socket has not already been bound to a local address,
 address family  is AF_UNIX, is an unused local address.
 .sp
 .LP
-If the initiating socket is not connection-mode, then \fBconnect()\fR sets
+If the initiating socket is not connection-mode, then
+.B connect()
+sets
 the socket's peer address, but no connection is made.  For SOCK_DGRAM
 sockets, the peer address identifies where all datagrams are sent on
 subsequent \fBsend\fR(3XNET) calls, and limits the remote sender for
@@ -115,57 +123,87 @@ subsequent \fBrecv\fR(3XNET) calls. If \fIaddress\fR is a null address for
 the protocol, the socket's peer address will be reset.
 .sp
 .LP
-If the initiating socket is connection-mode, then \fBconnect()\fR attempts
-to establish a connection to the address specified by the \fIaddress\fR
+If the initiating socket is connection-mode, then
+.B connect()
+attempts
+to establish a connection to the address specified by the
+.IR address
 argument.
 .sp
 .LP
 If the connection cannot be established immediately and O_NONBLOCK is not
-set for the file descriptor for the socket, \fBconnect()\fR will block for
+set for the file descriptor for the socket,
+.B connect()
+will block for
 up to an unspecified timeout interval until the connection is established.
 If the timeout interval expires before the connection is established,
 \fBconnect()\fR will fail and the connection attempt will be aborted.  If
 \fBconnect()\fR is interrupted by a signal that is caught while blocked
-waiting to establish a connection, \fBconnect()\fR will fail and set
-\fBerrno\fR to \fBEINTR\fR, but the connection request will not be aborted,
+waiting to establish a connection,
+.B connect()
+will fail and set
+\fBerrno\fR to
+.BR EINTR ,
+but the connection request will not be aborted,
 and the connection will be established asynchronously.
 .sp
 .LP
 If the connection cannot be established immediately and O_NONBLOCK is set
-for the file descriptor for the socket, \fBconnect()\fR will fail and set
-\fBerrno\fR to \fBEINPROGRESS\fR, but the connection request will not be
+for the file descriptor for the socket,
+.B connect()
+will fail and set
+\fBerrno\fR to
+.BR EINPROGRESS ,
+but the connection request will not be
 aborted, and the connection will be established asynchronously. Subsequent
-calls to \fBconnect()\fR for the same socket, before the connection is
-established, will fail and set \fBerrno\fR to \fBEALREADY\fR.
+calls to
+.B connect()
+for the same socket, before the connection is
+established, will fail and set
+.B errno
+to
+.BR EALREADY .
 .sp
 .LP
 When the connection has been established asynchronously, \fBselect\fR(3C)
-and \fBpoll\fR(2) will indicate that the file descriptor for the socket is
+and
+.BR poll (2)
+will indicate that the file descriptor for the socket is
 ready for writing.
 .sp
 .LP
 The socket in use may require the process to have appropriate privileges to
-use the \fBconnect()\fR function.
+use the
+.B connect()
+function.
 .SH USAGE
 .sp
 .LP
-If \fBconnect()\fR fails, the state of the socket is unspecified.  Portable
+If
+.B connect()
+fails, the state of the socket is unspecified.  Portable
 applications should close the file descriptor and create a new socket before
 attempting to reconnect.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBconnect()\fR returns 0.  Otherwise, \(mi1 is
-returned and \fBerrno\fR is set to indicate the error.
+Upon successful completion,
+.B connect()
+returns 0.  Otherwise, \(mi1 is
+returned and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBconnect()\fR function will fail if:
+The
+.B connect()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEADDRNOTAVAIL\fR
+.B EADDRNOTAVAIL
 .ad
 .RS 17n
 .rt
@@ -176,7 +214,7 @@ The specified address is not available from the local machine.
 .ne 2
 .mk
 .na
-\fBEAFNOSUPPORT\fR
+.B EAFNOSUPPORT
 .ad
 .RS 17n
 .rt
@@ -188,7 +226,7 @@ specified socket.
 .ne 2
 .mk
 .na
-\fBEALREADY\fR
+.B EALREADY
 .ad
 .RS 17n
 .rt
@@ -199,18 +237,20 @@ A connection request is already in progress for the specified socket.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 17n
 .rt
-The \fIsocket\fR argument is not a valid file descriptor.
+The
+.I socket
+argument is not a valid file descriptor.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBECONNREFUSED\fR
+.B ECONNREFUSED
 .ad
 .RS 17n
 .rt
@@ -222,7 +262,7 @@ connection request.
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 17n
 .rt
@@ -233,7 +273,7 @@ The address parameter can not be accessed.
 .ne 2
 .mk
 .na
-\fBEINPROGRESS\fR
+.B EINPROGRESS
 .ad
 .RS 17n
 .rt
@@ -246,7 +286,7 @@ asynchronously.
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 17n
 .rt
@@ -258,7 +298,7 @@ signal that was caught; the connection will be established asynchronously.
 .ne 2
 .mk
 .na
-\fBEISCONN\fR
+.B EISCONN
 .ad
 .RS 17n
 .rt
@@ -269,7 +309,7 @@ The specified socket is connection-mode and is already connected.
 .ne 2
 .mk
 .na
-\fBENETUNREACH\fR
+.B ENETUNREACH
 .ad
 .RS 17n
 .rt
@@ -280,18 +320,20 @@ No route to the network is present.
 .ne 2
 .mk
 .na
-\fBENOTSOCK\fR
+.B ENOTSOCK
 .ad
 .RS 17n
 .rt
-The \fIsocket\fR argument does not refer to a socket.
+The
+.I socket
+argument does not refer to a socket.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPROTOTYPE\fR
+.B EPROTOTYPE
 .ad
 .RS 17n
 .rt
@@ -303,7 +345,7 @@ specified peer address.
 .ne 2
 .mk
 .na
-\fBETIMEDOUT\fR
+.B ETIMEDOUT
 .ad
 .RS 17n
 .rt
@@ -312,13 +354,15 @@ The attempt to connect timed out before a connection was made.
 
 .sp
 .LP
-If the address family of the socket is AF_UNIX, then \fBconnect()\fR will
+If the address family of the socket is AF_UNIX, then
+.B connect()
+will
 fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 16n
 .rt
@@ -329,31 +373,35 @@ An I/O error occurred while reading from or writing to the file system.
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
 Too many symbolic links were encountered in translating the pathname in
-\fIaddress\fR.
+.IR address .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-A component of a pathname exceeded \fINAME_MAX\fR characters, or an entire
-pathname exceeded \fIPATH_MAX\fR characters.
+A component of a pathname exceeded
+.I NAME_MAX
+characters, or an entire
+pathname exceeded
+.I PATH_MAX
+characters.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
@@ -365,22 +413,26 @@ is an empty string.
 .ne 2
 .mk
 .na
-\fBENOTDIR\fR
+.B ENOTDIR
 .ad
 .RS 16n
 .rt
-A component of the path prefix of the pathname in \fIaddress\fR is not a
+A component of the path prefix of the pathname in
+.I address
+is not a
 directory.
 .RE
 
 .sp
 .LP
-The \fBconnect()\fR function may fail if:
+The
+.B connect()
+function may fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
@@ -392,7 +444,7 @@ access to the named socket is denied.
 .ne 2
 .mk
 .na
-\fBEADDRINUSE\fR
+.B EADDRINUSE
 .ad
 .RS 16n
 .rt
@@ -404,7 +456,7 @@ use.
 .ne 2
 .mk
 .na
-\fBECONNRESET\fR
+.B ECONNRESET
 .ad
 .RS 16n
 .rt
@@ -415,7 +467,7 @@ Remote host reset the connection request.
 .ne 2
 .mk
 .na
-\fBEHOSTUNREACH\fR
+.B EHOSTUNREACH
 .ad
 .RS 16n
 .rt
@@ -427,11 +479,13 @@ or a remote router cannot reach it).
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
-The \fIaddress_len\fR argument is not a valid length for the address
+The
+.I address_len
+argument is not a valid length for the address
 family; or invalid address family in sockaddr structure.
 .RE
 
@@ -439,19 +493,20 @@ family; or invalid address family in sockaddr structure.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
 Pathname resolution of a symbolic link produced an intermediate result
-whose length exceeds \fIPATH_MAX\fR.
+whose length exceeds
+.IR PATH_MAX .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENETDOWN\fR
+.B ENETDOWN
 .ad
 .RS 16n
 .rt
@@ -462,7 +517,7 @@ The local interface used to reach the destination is down.
 .ne 2
 .mk
 .na
-\fBENOBUFS\fR
+.B ENOBUFS
 .ad
 .RS 16n
 .rt
@@ -473,7 +528,7 @@ No buffer space is available.
 .ne 2
 .mk
 .na
-\fBENOSR\fR
+.B ENOSR
 .ad
 .RS 16n
 .rt
@@ -485,7 +540,7 @@ operation.
 .ne 2
 .mk
 .na
-\fBEOPNOTSUPP\fR
+.B EOPNOTSUPP
 .ad
 .RS 16n
 .rt
@@ -495,7 +550,9 @@ The socket is listening and can not be connected.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -514,7 +571,14 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBclose\fR(2), \fBpoll\fR(2), \fBaccept\fR(3XNET), \fBbind\fR(3XNET),
-\fBgetsockname\fR(3XNET), \fBselect\fR(3C), \fBsend\fR(3XNET),
-\fBshutdown\fR(3XNET), \fBsocket\fR(3XNET), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR close (2),
+.BR poll (2),
+.BR accept (3XNET),
+.BR bind (3XNET),
+.BR getsockname (3XNET),
+.BR select (3C),
+.BR send (3XNET),
+.BR shutdown (3XNET),
+.BR socket (3XNET),
+.BR attributes (5),
+.BR standards (5)

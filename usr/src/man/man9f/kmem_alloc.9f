@@ -52,7 +52,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIsize\fR
+.I size
 .ad
 .RS 8n
 .rt
@@ -87,17 +87,33 @@ Pointer to allocated memory.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBkmem_alloc()\fR function allocates \fIsize\fR bytes of kernel memory
+The
+.B kmem_alloc()
+function allocates
+.I size
+bytes of kernel memory
 and returns a pointer to the allocated memory. The allocated memory is at
 least double-word aligned, so it can hold any C data structure. No greater
 alignment can be assumed. \fIflag\fR determines whether the caller can sleep
-for memory. \fBKM_SLEEP\fR allocations may sleep but are guaranteed to
-succeed. \fBKM_NOSLEEP\fR allocations are guaranteed not to sleep but may
-fail (return \fINULL\fR) if no memory is currently available. The initial
-contents of memory allocated using \fBkmem_alloc()\fR are random garbage.
+for memory.
+.B KM_SLEEP
+allocations may sleep but are guaranteed to
+succeed.
+.B KM_NOSLEEP
+allocations are guaranteed not to sleep but may
+fail (return
+.IR NULL )
+if no memory is currently available. The initial
+contents of memory allocated using
+.B kmem_alloc()
+are random garbage.
 .sp
 .LP
-The \fBkmem_zalloc()\fR function is like \fBkmem_alloc()\fR but returns
+The
+.B kmem_zalloc()
+function is like
+.B kmem_alloc()
+but returns
 zero-filled memory.
 .sp
 .LP
@@ -107,28 +123,49 @@ Memory cannot be returned piecemeal.
 .SH RETURN VALUES
 .sp
 .LP
-If successful, \fBkmem_alloc()\fR and \fBkmem_zalloc()\fR return a pointer
-to the allocated memory. If \fBKM_NOSLEEP\fR is set and memory cannot be
-allocated without sleeping, \fBkmem_alloc()\fR and \fBkmem_zalloc()\fR
-return \fINULL\fR.
+If successful,
+.B kmem_alloc()
+and
+.B kmem_zalloc()
+return a pointer
+to the allocated memory. If
+.B KM_NOSLEEP
+is set and memory cannot be
+allocated without sleeping,
+.B kmem_alloc()
+and
+.BR kmem_zalloc()
+return
+.IR NULL .
 .SH CONTEXT
 .sp
 .LP
-The \fBkmem_alloc()\fR and \fBkmem_zalloc()\fR functions can be called from
-interrupt context only if the \fBKM_NOSLEEP\fR flag is set. They can be
-called from user context with any valid \fIflag\fR. The \fBkmem_free()\fR
+The
+.B kmem_alloc()
+and
+.B kmem_zalloc()
+functions can be called from
+interrupt context only if the
+.B KM_NOSLEEP
+flag is set. They can be
+called from user context with any valid
+.IR flag .
+The \fBkmem_free()\fR
 function can be called from from user, interrupt, or kernel context.
 .SH SEE ALSO
 .sp
 .LP
-\fBcopyout\fR(9F), \fBfreerbuf\fR(9F), \fBgetrbuf\fR(9F)
+.BR copyout (9F),
+\fBfreerbuf\fR(9F), \fBgetrbuf\fR(9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-Memory allocated using \fBkmem_alloc()\fR is not paged. Available memory is
+Memory allocated using
+.B kmem_alloc()
+is not paged. Available memory is
 therefore limited by the total physical memory on the system. It is also
 limited by the available kernel virtual address space, which is often the
 more restrictive constraint on large-memory configurations.
@@ -145,12 +182,15 @@ a null or invalid pointer, will corrupt the kernel heap and may cause the
 system to corrupt data or panic.
 .sp
 .LP
-The initial contents of memory allocated using \fBkmem_alloc()\fR are
+The initial contents of memory allocated using
+.B kmem_alloc()
+are
 random garbage. This random garbage may include secure kernel data.
 Therefore, uninitialized kernel memory should be handled carefully. For
 example, never \fBcopyout\fR(9F) a potentially uninitialized buffer.
 .SH NOTES
 .sp
 .LP
-\fBkmem_alloc(0\fR, \fIflag\fB)\fR always returns \fINULL\fR.
+.BR kmem_alloc(0 ,
+\fIflag\fB)\fR always returns \fINULL\fR.
 \fBkmem_free(NULL, 0)\fR is legal.

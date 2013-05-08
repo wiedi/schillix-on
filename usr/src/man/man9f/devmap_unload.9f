@@ -48,7 +48,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdhp\fR
+.I dhp
 .ad
 .RS 8n
 .rt
@@ -71,7 +71,7 @@ unloading of the address translations begins.
 .ne 2
 .mk
 .na
-\fIlen\fR
+.I len
 .ad
 .RS 8n
 .rt
@@ -83,7 +83,7 @@ Length (in bytes) of the range being affected.
 .ne 2
 .mk
 .na
-\fItype\fR
+.I type
 .ad
 .RS 9n
 .rt
@@ -94,7 +94,7 @@ Type of access operation.
 .ne 2
 .mk
 .na
-\fIrw\fR
+.I rw
 .ad
 .RS 9n
 .rt
@@ -105,48 +105,83 @@ Direction of access.
 .sp
 .LP
 \fBdevmap_unload()\fR and \fBdevmap_load()\fR are used to control the
-validation of the memory mapping described by \fIdhp\fR in the specified
-range. \fBdevmap_unload()\fR invalidates the mapping translations and will
-generate calls to the \fBdevmap_access\fR(9E) entry point next time the
-mapping is accessed. The drivers use \fBdevmap_load()\fR to validate the
+validation of the memory mapping described by
+.I dhp
+in the specified
+range.
+.B devmap_unload()
+invalidates the mapping translations and will
+generate calls to the
+.BR devmap_access "(9E) entry point next time the"
+mapping is accessed. The drivers use
+.B devmap_load()
+to validate the
 mapping translations during memory access.
 .sp
 .LP
-A typical use of \fBdevmap_unload()\fR and \fBdevmap_load()\fR is in the
+A typical use of
+.B devmap_unload()
+and
+.B devmap_load()
+is in the
 driver's context management callback function, \fBdevmap_contextmgt\fR(9E).
-To manage a device context, a device driver calls \fBdevmap_unload()\fR on
+To manage a device context, a device driver calls
+.B devmap_unload()
+on
 the context about to be switched out. It switches contexts, and then calls
 \fBdevmap_load()\fR on the context switched in.   \fBdevmap_unload()\fR can
 be used to unload the mappings of other processes as well as the mappings of
-the calling process, but \fBdevmap_load()\fR can only be used to load the
+the calling process, but
+.B devmap_load()
+can only be used to load the
 mappings of the calling process. Attempting to load another process's
-mappings with \fBdevmap_load()\fR will result in a system panic.
+mappings with
+.B devmap_load()
+will result in a system panic.
 .sp
 .LP
 For both routines, the range to be affected is defined by the \fIoff\fR and
 \fIlen\fR arguments. Requests affect the entire page containing the
 \fIoff\fR and all pages up to and including the page containing the last
-byte as indicated by \fIoff + len\fR. The arguments \fItype\fR and \fIrw\fR
+byte as indicated by
+.IR "off + len" .
+The arguments
+.I type
+and
+.IR rw
 are provided by the system to the calling function (for example,
-\fBdevmap_contextmgt\fR(9E)) and should not be modified.
+.BR devmap_contextmgt (9E))
+and should not be modified.
 .sp
 .LP
-Supplying a value of  \fB0\fR for the \fIlen\fR argument affects all
+Supplying a value of 
+.B 0
+for the
+.I len
+argument affects all
 addresses from the \fIoff\fR to the end of the mapping.  Supplying a value
-of \fB0\fR for the \fIoff\fR argument and a value of \fB0\fR for \fIlen\fR
+of
+.B 0
+for the \fIoff\fR argument and a value of \fB0\fR for \fIlen\fR
 argument affect all addresses in the mapping.
 .sp
 .LP
-A non-zero return value from either \fBdevmap_unload()\fR or
+A non-zero return value from either
+.B devmap_unload()
+or
 \fBdevmap_load()\fR will cause the corresponding operation to fail. The
-failure may result in a \fBSIGSEGV\fR or \fBSIGBUS\fR signal being delivered
+failure may result in a
+.B SIGSEGV
+or
+.B SIGBUS
+signal being delivered
 to the process.
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -157,7 +192,7 @@ Successful completion.
 .ne 2
 .mk
 .na
-\fBNon-zero\fR
+.B Non-zero
 .ad
 .RS 12n
 .rt
@@ -170,7 +205,7 @@ An error occurred.
 These routines can be called from user or kernel context only.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRManaging a One-Page Device Context
+\fBExample 1\fR Managing a One-Page Device Context
 .sp
 .LP
 The following shows an example of managing a device context that is one
@@ -215,7 +250,8 @@ xxdevmap_contextmgt(devmap_cookie_t dhp, void *pvtp, offset_t off,
 .SH SEE ALSO
 .sp
 .LP
-\fBdevmap_access\fR(9E), \fBdevmap_contextmgt\fR(9E)
+.BR devmap_access (9E),
+.BR devmap_contextmgt (9E)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

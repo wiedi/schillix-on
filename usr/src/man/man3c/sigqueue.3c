@@ -61,32 +61,75 @@ sigqueue \- queue a signal to a process
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsigqueue()\fR function causes the signal specified by \fIsigno\fR to
-be sent with the value specified by \fIvalue\fR to the process specified by
-\fIpid\fR. If \fIsigno\fR is 0 (the null signal), error checking is
+The
+.B sigqueue()
+function causes the signal specified by
+.I signo
+to
+be sent with the value specified by
+.I value
+to the process specified by
+.IR pid .
+If
+.I signo
+is 0 (the null signal), error checking is
 performed but no signal is actually sent. The null signal can be used to
-check the validity of \fIpid\fR.
+check the validity of
+.IR pid .
 .sp
 .LP
 The conditions required for a process to have permission to queue a signal
-to another process are the same as for the \fBkill\fR(2) function.
+to another process are the same as for the
+.BR kill (2)
+function.
 .sp
 .LP
-The \fBsigqueue()\fR function returns immediately. If \fBSA_SIGINFO\fR is
-set for \fIsigno\fR and if the resources were available to queue the signal,
+The
+.B sigqueue()
+function returns immediately. If
+.B SA_SIGINFO
+is
+set for
+.I signo
+and if the resources were available to queue the signal,
 the signal is queued and sent to the receiving process. If \fBSA_SIGINFO\fR
-is not set for \fIsigno\fR, then \fIsigno\fR is sent at least once to the
-receiving process; it is unspecified whether \fIvalue\fR will be sent to the
+is not set for
+.IR signo ,
+then
+.I signo
+is sent at least once to the
+receiving process; it is unspecified whether
+.I value
+will be sent to the
 receiving process as a result of this call.
 .sp
 .LP
-If the value of \fIpid\fR causes \fIsigno\fR to be generated for the
-sending process, and if \fIsigno\fR is not blocked for the calling thread
-and if no other thread has \fIsigno\fR unblocked or is waiting in a
-\fBsigwait\fR(2) function for \fIsigno\fR, either \fIsigno\fR or at least
+If the value of
+.I pid
+causes
+.I signo
+to be generated for the
+sending process, and if
+.I signo
+is not blocked for the calling thread
+and if no other thread has
+.I signo
+unblocked or is waiting in a
+.BR sigwait (2)
+function for
+.IR signo ,
+either
+.I signo
+or at least
 the pending, unblocked signal will be delivered to the calling thread before
-the \fBsigqueue()\fR function returns. Should any of multiple pending
-signals in the range \fBSIGRTMIN\fR to \fBSIGRTMAX\fR be selected for
+the
+.B sigqueue()
+function returns. Should any of multiple pending
+signals in the range
+.B SIGRTMIN
+to
+.B SIGRTMAX
+be selected for
 delivery, it will be the lowest numbered one. The selection order between
 realtime and non-realtime signals, or between multiple pending non-realtime
 signals, is unspecified.
@@ -94,22 +137,32 @@ signals, is unspecified.
 .sp
 .LP
 Upon successful completion, the specified signal will have been queued, and
-the \fBsigqueue()\fR function returns  \fB0\fR. Otherwise, the function
-returns \fB\(mi1\fR and sets \fBerrno\fR to indicate the error.
+the
+.B sigqueue()
+function returns 
+.BR 0 .
+Otherwise, the function
+returns \fB\(mi1\fR and sets
+.B errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBsigqueue()\fR function will fail if:
+The
+.B sigqueue()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
 No resources are available to queue the signal. The process has already
-queued \fBSIGQUEUE_MAX\fR signals that are still pending at the receiver(s),
+queued
+.B SIGQUEUE_MAX
+signals that are still pending at the receiver(s),
 or a system wide resource limit has been exceeded.
 .RE
 
@@ -117,29 +170,33 @@ or a system wide resource limit has been exceeded.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
-The value of \fIsigno\fR is an invalid or unsupported signal number.
+The value of
+.I signo
+is an invalid or unsupported signal number.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOSYS\fR
+.B ENOSYS
 .ad
 .RS 11n
 .rt
-The \fBsigqueue()\fR function is not supported by the system.
+The
+.B sigqueue()
+function is not supported by the system.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEPERM\fR
+.B EPERM
 .ad
 .RS 11n
 .rt
@@ -151,17 +208,21 @@ the receiving process.
 .ne 2
 .mk
 .na
-\fBESRCH\fR
+.B ESRCH
 .ad
 .RS 11n
 .rt
-The process \fIpid\fR does not exist.
+The process
+.I pid
+does not exist.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -182,5 +243,8 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBkill\fR(2), \fBsiginfo.h\fR(3HEAD), \fBsignal.h\fR(3HEAD),
-\fBsigwaitinfo\fR(3C), \fBattributes\fR(5), \fBstandards\fR(5)
+.BR kill (2),
+\fBsiginfo.h\fR(3HEAD), \fBsignal.h\fR(3HEAD),
+\fBsigwaitinfo\fR(3C),
+.BR attributes (5),
+.BR standards (5)

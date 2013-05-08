@@ -30,19 +30,29 @@ etrn \- start mail queue run
 .SH DESCRIPTION
 .sp
 .LP
-SMTP's \fBETRN\fR command allows an SMTP client and server to interact,
+SMTP's
+.B ETRN
+command allows an SMTP client and server to interact,
 giving the server an opportunity to start the processing of its queues for
 messages to go to a given host. This is meant to be used in start-up
 conditions, as well as for mail nodes that have transient connections to
 their service providers.
 .sp
 .LP
-The \fBetrn\fR utility initiates an SMTP session with the host
+The
+.B etrn
+utility initiates an SMTP session with the host
 \fIserver-host\fR and sends one or more \fBETRN\fR commands as follows: If
-no \fIclient-hosts\fR are specified, \fBetrn\fR looks up every host name for
+no
+.I client-hosts
+are specified,
+.B etrn
+looks up every host name for
 which \fBsendmail\fR(1M) accepts email and, for each name, sends an
 \fBETRN\fR command with that name as the argument. If any \fIclient-hosts\fR
-are specified, \fBetrn\fR uses each of these as arguments for successive
+are specified,
+.B etrn
+uses each of these as arguments for successive
 \fBETRN\fR commands.
 .SH OPTIONS
 .sp
@@ -52,7 +62,7 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-b\fR
+.B -b
 .ad
 .RS 6n
 .rt
@@ -60,7 +70,10 @@ System boot special case. Make sure localhost is accepting SMTP connections
 before initiating the SMTP session with server-host.
 .sp
 This option is useful because it prevents race conditions between
-\fBsendmail\fR(1M) accepting connections and \fIserver-host\fR attempting to
+.BR sendmail (1M)
+accepting connections and
+.I server-host
+attempting to
 deliver queued mail. This check is performed automatically if no
 \fIclient-hosts\fR are specified.
 .RE
@@ -69,12 +82,18 @@ deliver queued mail. This check is performed automatically if no
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .RS 6n
 .rt
-The normal mode of operation for \fBetrn\fR is to do all of its work
-silently. The \fB-v\fR option makes it verbose, which causes \fBetrn\fR to
+The normal mode of operation for
+.B etrn
+is to do all of its work
+silently. The
+.B -v
+option makes it verbose, which causes
+.B etrn
+to
 display its conversations with the remote SMTP server.
 .RE
 
@@ -82,10 +101,16 @@ display its conversations with the remote SMTP server.
 .sp
 .LP
 No environment variables are used. However, at system start-up,
-\fBsvc:/network/smtp:sendmail\fR reads \fB/etc/default/sendmail\fR. In this
-file, if the variable \fBETRN_HOSTS\fR is set,
+\fBsvc:/network/smtp:sendmail\fR reads
+.BR /etc/default/sendmail .
+In this
+file, if the variable
+.B ETRN_HOSTS
+is set,
 \fBsvc:/network/smtp:sendmail\fR parses this variable and invokes \fBetrn\fR
-appropriately. \fBETRN_HOSTS\fR should be of the form:
+appropriately.
+.B ETRN_HOSTS
+should be of the form:
 .sp
 .in +2
 .nf
@@ -96,10 +121,16 @@ appropriately. \fBETRN_HOSTS\fR should be of the form:
 
 .sp
 .LP
-That is, white-space separated groups of \fIserver:client\fR where
+That is, white-space separated groups of
+.I server:client
+where
 \fIclient\fR can be one or more comma-separated names. The \fI:client\fR
-part is optional. \fIserver\fR is the name of the server to prod; a mail
-queue run is requested for each \fIclient\fR name. This is comparable to
+part is optional.
+.I server
+is the name of the server to prod; a mail
+queue run is requested for each
+.I client
+name. This is comparable to
 running:
 .sp
 .in +2
@@ -111,10 +142,11 @@ running:
 
 .sp
 .LP
-on the host \fIserver\fR.
+on the host
+.IR server .
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUsing \fBetrn\fR
+\fBExample 1\fR Using \fBetrn\fR
 .sp
 .LP
 Inserting the line:
@@ -130,8 +162,14 @@ ETRN_HOSTS="s1.domain.com:clnt.domain.com s2.domain.com:clnt.domain.com"
 .sp
 .LP
 in \fB/etc/default/sendmail\fR results in \fBsvc:/network/smtp:sendmail\fR
-invoking \fBetrn\fR such that \fBETRN\fR commands are sent to both
-\fBs1.domain.com\fR and \fBs2.domain.com\fR, with both having
+invoking
+.B etrn
+such that
+.B ETRN
+commands are sent to both
+\fBs1.domain.com\fR and
+.BR s2.domain.com ,
+with both having
 \fBclnt.domain.com\fR as the \fBETRN\fR argument.
 
 .sp
@@ -148,9 +186,14 @@ ETRN_HOSTS="server.domain.com:client1.domain.com,client2.domain.com"
 
 .sp
 .LP
-results in two \fBETRN\fR commands being sent to \fBserver.domain.com\fR,
-one with the argument \fBclient1.domain.com\fR, the other with the argument
-\fBclient2.domain.com\fR.
+results in two
+.B ETRN
+commands being sent to
+.BR server.domain.com ,
+one with the argument
+.BR client1.domain.com ,
+the other with the argument
+.BR client2.domain.com .
 
 .sp
 .LP
@@ -166,8 +209,12 @@ ETRN_HOSTS="server1.domain.com server2.domain.com"
 
 .sp
 .LP
-results in set of a \fBETRN\fR commands being sent to both
-\fBserver1.domain.com\fR and \fBserver2.domain.com\fR; each set contains one
+results in set of a
+.B ETRN
+commands being sent to both
+\fBserver1.domain.com\fR and
+.BR server2.domain.com ;
+each set contains one
 \fBETRN\fR command for each host name for which \fBsendmail\fR(1M) accepts
 email, with that host name as the argument.
 
@@ -191,13 +238,16 @@ email, with that host name as the argument.
 .ad
 .RS 25n
 .rt
-Variables used by \fBsvc:/network/smtp:sendmail\fR
+Variables used by
+.BR svc:/network/smtp:sendmail
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -216,11 +266,13 @@ Interface StabilityStable
 .SH SEE ALSO
 .sp
 .LP
-\fBsendmail\fR(1M), \fBattributes\fR(5)
+.BR sendmail (1M),
+.BR attributes (5)
 .sp
 .LP
 RFC 1985
 .SH NOTES
 .sp
 .LP
-Not all SMTP servers support \fBETRN\fR.
+Not all SMTP servers support
+.BR ETRN .

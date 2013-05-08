@@ -24,7 +24,9 @@ sysbus, isa \- device tree properties for ISA bus device drivers
 .SH DESCRIPTION
 .sp
 .LP
-Solaris for x86 supports  the \fBISA\fR bus as the system bus. Drivers for
+Solaris for x86 supports  the
+.B ISA
+bus as the system bus. Drivers for
 devices on this buse use the device tree built by the booting system to
 retrieve the necessary system resources used by the driver. These resources
 include device I/O port addresses, any interrupt capabilities  that the
@@ -32,19 +34,29 @@ device can have, any DMA channels it can require, and any memory-mapped
 addresses it can occupy.
 .sp
 .LP
-Configuration files for \fBISA\fR device drivers are only necessary to
+Configuration files for
+.B ISA
+device drivers are only necessary to
 describe properties used by a particular driver that are not part of the
-standard properties found in the device tree. See \fBdriver.conf\fR(4) for
+standard properties found in the device tree. See
+.BR driver.conf (4)
+for
 further details of configuration file syntax.
 .sp
 .LP
-The \fBISA\fR nexus drivers all belong to class \fBsysbus\fR. All bus
-drivers of class \fBsysbus\fR recognize the following properties:
+The
+.B ISA
+nexus drivers all belong to class
+.BR sysbus .
+All bus
+drivers of class
+.B sysbus
+recognize the following properties:
 .sp
 .ne 2
 .mk
 .na
-\fBinterrupts\fR
+.B interrupts
 .ad
 .RS 16n
 .rt
@@ -52,32 +64,48 @@ An arbitrary-length array where each element of the array represents a
 hardware interrupt (IRQ) that is used by the device.  In general, this array
 only has one entry unless a particular device uses more than one IRQ.
 .sp
-Solaris defaults all \fBISA\fR interrupts to IPL 5.  This interrupt
-priority can be overridden by placing an \fBinterrupt-priorities\fR property
+Solaris defaults all
+.B ISA
+interrupts to IPL 5.  This interrupt
+priority can be overridden by placing an
+.B interrupt-priorities
+property
 in a .conf file for the driver. Each entry in the array of integers for the
 \fBinterrupt-priorities\fR property is matched one-to-one with the elements
-in the \fBinterrupts\fR property to specify the \fBIPL\fR value that is used
+in the
+.B interrupts
+property to specify the
+.B IPL
+value that is used
 by the system for this interrupt in this driver. This is the priority that
 this device's interrupt handler receives relative to the interrupt handlers
-of other drivers.  The priority is an integer from  \fB1\fR to \fB16\fR.
-Generally, disks are assigned a priority of \fB5\fR, while mice and printers
+of other drivers.  The priority is an integer from 
+.B 1
+to
+.BR 16 .
+Generally, disks are assigned a priority of
+.BR 5 ,
+while mice and printers
 are lower, and serial communication devices are higher, typically \fB7\fR.
 \fB10\fR is reserved by the system and must not be used.  Priorities
 \fB11\fR and greater are high level priorities and are generally not
 recommended (see  \fBddi_intr_hilevel\fR(9F)).
 .sp
 The driver can refer to the elements of this array by index using
-\fBddi_add_intr\fR(9F). The index into the array is passed as the
+.BR ddi_add_intr (9F).
+The index into the array is passed as the
 \fIinumber\fR argument of \fBddi_add_intr()\fR.
 .sp
-Only devices that generate interrupts have an \fBinterrupts\fR property.
+Only devices that generate interrupts have an
+.B interrupts
+property.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBreg\fR
+.B reg
 .ad
 .RS 16n
 .rt
@@ -85,19 +113,34 @@ An arbitrary-length array where each element of the array consists of a
 3-tuple of integers.  Each array element describes a contiguous memory
 address range associated with the device on the bus.
 .sp
-The first integer of the tuple specifies the memory type, \fB0\fR specifies
-a memory range and \fB1\fR specifies an I/O range. The second integer
+The first integer of the tuple specifies the memory type,
+.B 0
+specifies
+a memory range and
+.B 1
+specifies an I/O range. The second integer
 specifies the base address of the memory range. The third integer of each
 3-tuple specifies  the size, in bytes, of the mappable region.
 .sp
 The driver can refer to the elements of this array by index, and construct
-kernel mappings to these addresses using \fBddi_map_regs\fR(9F). The index
-into the array is passed as the  \fIrnumber\fR argument of
-\fBddi_map_regs()\fR.
+kernel mappings to these addresses using
+.BR ddi_map_regs "(9F). The index"
+into the array is passed as the 
+.I rnumber
+argument of
+.BR ddi_map_regs() .
 .sp
-All  \fBsysbus\fR devices have \fBreg\fR properties.  The first tuple of
+All 
+.B sysbus
+devices have
+.B reg
+properties.  The first tuple of
 this property  is used to construct the address part of the device name
-under \fB/devices\fR. In the case of \fBPlug and Play ISA\fR devices, the
+under
+.BR /devices .
+In the case of
+.B "Plug and Play ISA"
+devices, the
 first tuple is a special tuple that does not denote a memory range, but is
 used by the system only to create the address part of the device name.  This
 special tuple can be recognized by determining if the top bit of the first
@@ -112,7 +155,11 @@ after installing the particular device.  The output of the \fBprtconf\fR
 command can be examined to determine the reg property for any installed
 device.
 .sp
-You can use the \fBddi_get*\fR and \fBddi_put*\fR family of functions to
+You can use the
+.B ddi_get*
+and
+.B ddi_put*
+family of functions to
 access register space from a high-level interrupt context.
 .RE
 
@@ -120,18 +167,22 @@ access register space from a high-level interrupt context.
 .ne 2
 .mk
 .na
-\fBdma-channels\fR
+.B dma-channels
 .ad
 .RS 16n
 .rt
 A list of integers that specifies the DMA channels used by this device.
-Only devices that use DMA channels have a \fBdma-channels\fR property.
+Only devices that use DMA channels have a
+.B dma-channels
+property.
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -148,9 +199,14 @@ Architecturex86
 .SH SEE ALSO
 .sp
 .LP
-\fBprtconf\fR(1M), \fBdriver.conf\fR(4), \fBscsi\fR(4),
-\fBattributes\fR(5), \fBddi_add_intr\fR(9F), \fBddi_intr_hilevel\fR(9F),
-\fBddi_map_regs\fR(9F), \fBddi_prop_op\fR(9F)
+\fBprtconf\fR(1M),
+.BR driver.conf (4),
+.BR scsi (4),
+.BR attributes (5),
+.BR ddi_add_intr (9F),
+.BR ddi_intr_hilevel (9F),
+.BR ddi_map_regs (9F),
+.BR ddi_prop_op (9F)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

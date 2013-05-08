@@ -56,15 +56,23 @@ cc [ \fIflag\fR.\|.\|. ] \fIfile\fR.\|.\|. \(milcpc [ \fIlibrary\fR.\|.\|. ]
 .SH DESCRIPTION
 .sp
 .LP
-The \fBcpc_shared_open()\fR function allows the caller to access the
+The
+.B cpc_shared_open()
+function allows the caller to access the
 hardware counters in such a way that the performance of the currently bound
 CPU can be measured. The function returns a file descriptor if successful.
 Only one such open can be active at a time on any CPU.
 .sp
 .LP
-The \fBcpc_shared_bind_event()\fR, \fBcpc_shared_take_sample()\fR, and
+The
+.BR cpc_shared_bind_event() ,
+.BR cpc_shared_take_sample() ,
+and
 \fBcpc_shared_rele()\fR functions are directly analogous to the
-corresponding \fBcpc_bind_event()\fR, \fBcpc_take_sample()\fR, and
+corresponding
+.BR cpc_bind_event() ,
+.BR cpc_take_sample() ,
+and
 \fBcpc_rele()\fR functions described on the \fBcpc_bind_event\fR(3CPC)manual
 page, except that they operate on the counters of a particular processor.
 .SH USAGE
@@ -73,7 +81,8 @@ page, except that they operate on the counters of a particular processor.
 If a thread wishes to access the counters using this interface, it
 \fBmust\fR do so using a thread bound to an lwp, (see the \fBTHR_BOUND\fR
 flag to \fBthr_create\fR(3C)), that has in turn bound itself to a processor
-using \fBprocessor_bind\fR(2).
+using
+.BR processor_bind (2).
 .sp
 .LP
 Unlike the \fBcpc_bind_event\fR(3CPC) family of functions, no counter
@@ -81,11 +90,18 @@ context is attached to those lwps, so the performance counter samples from
 the processors reflects the system-wide usage, instead of per-lwp usage.
 .sp
 .LP
-The first successful invocation of \fBcpc_shared_open()\fR will immediately
-\fBinvalidate\fR \fIall\fR existing performance counter context on the
-system, and \fBprevent\fR \fIall\fR subsequent attempts to bind counter
+The first successful invocation of
+.B cpc_shared_open()
+will immediately
+.B invalidate
+.I all
+existing performance counter context on the
+system, and
+.B prevent
+\fIall\fR subsequent attempts to bind counter
 context to lwps from succeeding anywhere on the system until the last caller
-invokes \fBcpc_shared_close()\fR.
+invokes
+.BR cpc_shared_close() .
 .sp
 .LP
 This is because it is impossible to simultaneously use the counters to
@@ -99,20 +115,28 @@ privilege is allowed to access the shared device. This control prevents use
 of the counters on a per-lwp basis to other users.
 .sp
 .LP
-The \fBCPC_BIND_LWP_INHERIT\fR and \fBCPC_BIND_EMT_OVF\fR flags are invalid
+The
+.B CPC_BIND_LWP_INHERIT
+and
+.B CPC_BIND_EMT_OVF
+flags are invalid
 for the shared interface.
 .SH RETURN VALUES
 .sp
 .LP
-On success, the functions (except for \fBcpc_shared_close()\fR) return 0.
-On failure, the functions return -1 and set \fBerrno\fR to indicate the
+On success, the functions (except for
+.BR cpc_shared_close() )
+return 0.
+On failure, the functions return -1 and set
+.B errno
+to indicate the
 reason.
 .SH ERRORS
 .sp
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 11n
 .rt
@@ -124,7 +148,7 @@ performance counters system-wide.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
@@ -137,33 +161,36 @@ events by some other caller.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 11n
 .rt
 Otherwise, this return value implies that the counters are not available
 because the thread has been unbound from the processor it was bound to at
 open time. Robust programs should be coded to expect this behavior, and
-should invoke \fBcpc_shared_close\fR(\|), before retrying the operation.
+should invoke
+.BR cpc_shared_close (\|),
+before retrying the operation.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 11n
 .rt
 The counters cannot be accessed on the current CPU because the calling
-thread is not bound to that CPU using \fBprocessor_bind\fR(2).
+thread is not bound to that CPU using
+.BR processor_bind (2).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOTSUP\fR
+.B ENOTSUP
 .ad
 .RS 11n
 .rt
@@ -175,7 +202,7 @@ the current platform.
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 11n
 .rt
@@ -186,7 +213,9 @@ configured to disallow access to them system-wide.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -205,17 +234,29 @@ Interface StabilityObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBprocessor_bind\fR(2), \fBcpc\fR(3CPC), \fBcpc_bind_cpu\fR(3CPC),
-\fBcpc_bind_event\fR(3CPC), \fBcpc_set_sample\fR(3CPC),
-\fBcpc_unbind\fR(3CPC), \fBlibcpc\fR(3LIB), \fBthr_create\fR(3C),
-\fBattributes\fR(5) 
+.BR processor_bind (2),
+.BR cpc (3CPC),
+.BR cpc_bind_cpu (3CPC),
+.BR cpc_bind_event (3CPC),
+.BR cpc_set_sample (3CPC),
+.BR cpc_unbind (3CPC),
+.BR libcpc (3LIB),
+.BR thr_create (3C),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
-The \fBcpc_shared_open()\fR, \fBcpc_shared_bind_event()\fR,
-\fBcpc_shared_take_sample()\fR, \fBcpc_shared_rele()\fR, and
+The
+.BR cpc_shared_open() ,
+.BR cpc_shared_bind_event() ,
+.BR cpc_shared_take_sample() ,
+.BR cpc_shared_rele() ,
+and
 \fBcpc_shared_close()\fR functions exist for binary compatibility only.
 Source containing these functions will not compile. These functions are
 obsolete and might be removed in a future release. Applications should use
-\fBcpc_bind_cpu\fR(3CPC), \fBcpc_set_sample\fR(3CPC), and
-\fBcpc_unbind\fR(3CPC) instead.
+.BR cpc_bind_cpu (3CPC),
+.BR cpc_set_sample (3CPC),
+and
+.BR cpc_unbind (3CPC)
+instead.

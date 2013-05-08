@@ -37,9 +37,12 @@ setflabel \- move file to zone with corresponding sensitivity label
 .SH DESCRIPTION
 .sp
 .LP
-The file that is named by \fIpath\fR is relabeled by moving it to a new
+The file that is named by
+.I path
+is relabeled by moving it to a new
 pathname relative to the root directory of the zone corresponding to
-\fIlabel_p\fR. If the source and destination file systems are loopback
+.IR label_p .
+If the source and destination file systems are loopback
 mounted from the same underlying file system, the file is renamed.
 Otherwise, the file is copied and removed from the source directory.
 .sp
@@ -49,7 +52,9 @@ The \fBsetflabel()\fR function enforces the following policy checks:
 .TP
 .ie t \(bu
 .el o
-If the sensitivity label of \fIlabel_p\fR equals the existing sensitivity
+If the sensitivity label of
+.I label_p
+equals the existing sensitivity
 label, then the file is not moved.
 .RE
 .RS +4
@@ -57,7 +62,9 @@ label, then the file is not moved.
 .ie t \(bu
 .el o
 If the corresponding directory does not exist in the destination zone, or
-if the directory exists, but has a different label than \fIlabel_p\fR, the
+if the directory exists, but has a different label than
+.IR label_p ,
+the
 file is not moved. Also, if the file already exists in the destination
 directory, the file is not moved.
 .RE
@@ -68,7 +75,10 @@ directory, the file is not moved.
 If the sensitivity label of the existing file is not equal to the calling
 process label and the caller is not in the global zone, then the file is not
 moved. If the caller is in the global zone, the existing file label must be
-in a labeled zone (not \fBADMIN_LOW\fR or \fBADMIN_HIGH\fR).
+in a labeled zone (not
+.B ADMIN_LOW
+or
+.BR ADMIN_HIGH ).
 .RE
 .RS +4
 .TP
@@ -82,7 +92,9 @@ destination directories, then the calling process must have
 .TP
 .ie t \(bu
 .el o
-If the sensitivity label of \fIlabel_p\fR provides read only access to the
+If the sensitivity label of
+.I label_p
+provides read only access to the
 existing sensitivity label (an upgrade), then the user must have the
 \fBsolaris.label.file.upgrade\fR authorization. In addition, if the current
 zone is a labeled zone, then it must have been assigned the privilege
@@ -92,18 +104,26 @@ zone is a labeled zone, then it must have been assigned the privilege
 .TP
 .ie t \(bu
 .el o
-If the sensitivity label of \fIlabel_p\fR does not provide access to the
+If the sensitivity label of
+.I label_p
+does not provide access to the
 existing sensitivity label (a downgrade), then the calling user must have
 the \fBsolaris.label.file.downgrade\fR authorization. In addition, if the
 current zone is a labeled zone, then it must have been assigned the
-privilege \fBPRIV_FILE_DOWNGRADE_SL\fR when the zone was configured.
+privilege
+.B PRIV_FILE_DOWNGRADE_SL
+when the zone was configured.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
 If the calling process is not in the global zone, and the user does not
-have the \fBsolaris.label.range\fR authorization, then \fIlabel_p\fR must be
+have the
+.B solaris.label.range
+authorization, then
+.I label_p
+must be
 within the user's label range and within the system accreditation range.
 .RE
 .RS +4
@@ -116,12 +136,16 @@ tranquility check does not cover race conditions nor remote file access.
 .sp
 .LP
 Additional policy constraints can be implemented by customizing the shell
-script \fB/etc/security/tsol/relabel\fR. See the comments in this file.
+script
+.BR /etc/security/tsol/relabel .
+See the comments in this file.
 .SH RETURN VALUES
 .sp
 .LP
 Upon successful completion, \fBsetflabel()\fR returns 0. Otherwise it
-returns -1 and sets \fIerrno\fR to indicate the error.
+returns -1 and sets
+.I errno
+to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -130,17 +154,19 @@ The \fBsetflabel()\fR function fails and the file is unchanged if:
 .ne 2
 .mk
 .na
-\fBEACCES\fR
+.B EACCES
 .ad
 .RS 16n
 .rt
 Search permission is denied for a component of the path prefix of
-\fIpath\fR.
+.IR path .
 .sp
 The calling process does not have mandatory write access to the final
 component of path because the sensitivity label of the final component of
 path does not dominate the sensitivity label of the calling  process and the
-calling process does not have \fBPRIV_FILE_MAC_WRITE\fR in its set of
+calling process does not have
+.B PRIV_FILE_MAC_WRITE
+in its set of
 effective privileges.
 .RE
 
@@ -148,19 +174,19 @@ effective privileges.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 16n
 .rt
 There is an open file descriptor reference to the final component of
-\fIpath\fR.
+.IR path .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBECONNREFUSED\fR
+.B ECONNREFUSED
 .ad
 .RS 16n
 .rt
@@ -171,7 +197,7 @@ A connection to the label daemon could not be established.
 .ne 2
 .mk
 .na
-\fBEEXIST\fR
+.B EEXIST
 .ad
 .RS 16n
 .rt
@@ -182,7 +208,7 @@ A file with the same name exists in the destination directory.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 16n
 .rt
@@ -193,7 +219,7 @@ Improper parameters were received by the label daemon.
 .ne 2
 .mk
 .na
-\fBEISDIR\fR
+.B EISDIR
 .ad
 .RS 16n
 .rt
@@ -204,18 +230,19 @@ The existing file is a directory.
 .ne 2
 .mk
 .na
-\fBELOOP\fR
+.B ELOOP
 .ad
 .RS 16n
 .rt
-Too many symbolic links were encountered in translating \fIpath\fR.
+Too many symbolic links were encountered in translating
+.IR path .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEMLINK\fR
+.B EMLINK
 .ad
 .RS 16n
 .rt
@@ -226,40 +253,47 @@ The existing file is hardlinked to another file.
 .ne 2
 .mk
 .na
-\fBENAMETOOLONG\fR
+.B ENAMETOOLONG
 .ad
 .RS 16n
 .rt
-The length of the path argument exceeds \fIPATH_MAX\fR.
+The length of the path argument exceeds
+.IR PATH_MAX .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBENOENT\fR
+.B ENOENT
 .ad
 .RS 16n
 .rt
-The file referred to by \fIpath\fR does not exist.
+The file referred to by
+.I path
+does not exist.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEROFS\fR
+.B EROFS
 .ad
 .RS 16n
 .rt
-The file system is read-only or its label is \fBADMIN_LOW\fR or
-\fBADMIN_HIGH\fR.
+The file system is read-only or its label is
+.B ADMIN_LOW
+or
+.BR ADMIN_HIGH .
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -278,7 +312,8 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibtsol\fR(3LIB), \fBattributes\fR(5)
+.BR libtsol (3LIB),
+.BR attributes (5)
 .sp
 .LP
 \fISetting a File Sensitivity Label\fR in \fISolaris Trusted Extensions

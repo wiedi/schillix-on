@@ -40,58 +40,84 @@ client
 .SH INTERFACE LEVEL
 .sp
 .LP
-Solaris \fBDDI \fRSpecific (Solaris \fBDDI\fR)
+Solaris
+.B DDI
+Specific (Solaris \fBDDI\fR)
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIch\fR
+.I ch
 .ad
 .RS 6n
 .rt
-Client handle returned from \fBcsx_RegisterClient\fR(9F).
+Client handle returned from
+.BR csx_RegisterClient (9F).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIir\fR
+.I ir
 .ad
 .RS 6n
 .rt
-Pointer to an \fBio_req_t\fR structure.
+Pointer to an
+.B io_req_t
+structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The functions \fBcsx_RequestIO()\fR and \fBcsx_ReleaseIO()\fR request or
-release, respectively, \fBI/O\fR resources for the client.
+The functions
+.B csx_RequestIO()
+and
+.B csx_ReleaseIO()
+request or
+release, respectively,
+.B I/O
+resources for the client.
 .sp
 .LP
-If a client requires \fBI/O\fR resources, \fBcsx_RequestIO()\fR must be
-called to request \fBI/O\fR resources from Card Services; then
+If a client requires
+.B I/O
+resources,
+.B csx_RequestIO()
+must be
+called to request
+.B I/O
+resources from Card Services; then
 \fBcsx_RequestConfiguration\fR(9F) must be used to establish the
-configuration. \fBcsx_RequestIO()\fR can be called multiple times until a
-successful set of \fBI/O\fR resources is found.
+configuration.
+.B csx_RequestIO()
+can be called multiple times until a
+successful set of
+.B I/O
+resources is found.
 \fBcsx_RequestConfiguration\fR(9F) only uses the last configuration
 specified.
 .sp
 .LP
 \fBcsx_RequestIO()\fR fails if it has already been called without a
-corresponding \fBcsx_ReleaseIO()\fR.
+corresponding
+.BR csx_ReleaseIO() .
 .sp
 .LP
 \fBcsx_ReleaseIO()\fR releases previously requested \fBI/O\fR resources.
 The Card Services window resource list is adjusted by this function.
-Depending on the adapter hardware, the \fBI/O\fR window might also be
+Depending on the adapter hardware, the
+.B I/O
+window might also be
 disabled.
 .SH STRUCTURE MEMBERS
 .sp
 .LP
-The structure members of \fBio_req_t\fR are:
+The structure members of
+.B io_req_t
+are:
 .sp
 .in +2
 .nf
@@ -121,7 +147,7 @@ The fields are defined as follows:
 .ne 2
 .mk
 .na
-\fBSocket\fR
+.B Socket
 .ad
 .RS 20n
 .rt
@@ -133,45 +159,88 @@ implementations, it should be set to the logical socket number.
 .ne 2
 .mk
 .na
-\fBBasePort1.base\fR
+.B BasePort1.base
 .ad
 .br
 .na
-\fBBasePort1.handle\fR
+.B BasePort1.handle
 .ad
 .br
 .na
-\fBBasePort2.base\fR
+.B BasePort2.base
 .ad
 .br
 .na
-\fBBasePort2.handle\fR
+.B BasePort2.handle
 .ad
 .RS 20n
 .rt
-Two \fBI/O\fR address ranges can be requested by \fBcsx_RequestIO()\fR.
-Each \fBI/O\fR address range is specified by the \fBBasePort\fR,
-\fBNumPorts\fR, and \fBAttributes\fR fields. If only a single \fBI/O\fR
-range is being requested, the \fBNumPorts2\fR field must be reset to
-\fB0\fR.
+Two
+.B I/O
+address ranges can be requested by
+.BR csx_RequestIO() .
+Each
+.B I/O
+address range is specified by the
+.BR BasePort ,
+.BR NumPorts ,
+and
+.B Attributes
+fields. If only a single \fBI/O\fR
+range is being requested, the
+.B NumPorts2
+field must be reset to
+.BR 0 .
 .sp
-When calling \fBcsx_RequestIO()\fR, the \fBBasePort.base\fR field specifies
+When calling
+.BR csx_RequestIO() ,
+the
+.B BasePort.base
+field specifies
 the first port address requested. Upon successful return from
-\fBcsx_RequestIO()\fR, the \fBBasePort.handle\fR field contains an access
-handle, corresponding to the first byte of the allocated \fBI/O\fR window,
-which the client must use when accessing the \fBPC\fR Card's \fBI/O\fR space
-via the common access functions. A client \fImust not\fR make any
-assumptions as to the format of the returned \fBBasePort.handle\fR field
+.BR csx_RequestIO() ,
+the
+.B BasePort.handle
+field contains an access
+handle, corresponding to the first byte of the allocated
+.B I/O
+window,
+which the client must use when accessing the
+.B PC
+Card's
+.B I/O
+space
+via the common access functions. A client
+.I "must not"
+make any
+assumptions as to the format of the returned
+.B BasePort.handle
+field
 value.
 .sp
-If the \fBBasePort.base\fR field is set to \fB0\fR, Card Services returns
-an \fBI/O\fR resource based on the available \fBI/O\fR resources and the
-number of contiguous ports requested. When \fBBasePort.base\fR is \fB0\fR,
-Card Services aligns the returned resource in the host system's \fBI/O\fR
+If the
+.B BasePort.base
+field is set to
+.BR 0 ,
+Card Services returns
+an
+.B I/O
+resource based on the available
+.B I/O
+resources and the
+number of contiguous ports requested. When
+.B BasePort.base
+is
+.BR 0 ,
+.RB "Card Services aligns the returned resource in the host system's" " I/O"
 address space on a boundary that is a multiple of the number of contiguous
 ports requested, rounded up to the nearest power of two. For example, if a
-client requests two \fBI/O\fR ports, the resource returned will be a
-multiple of two. If a client requests five contiguous \fBI/O\fR ports, the
+client requests two
+.B I/O
+ports, the resource returned will be a
+multiple of two. If a client requests five contiguous
+.B I/O
+ports, the
 resource returned will be a multiple of eight.
 .sp
 If multiple ranges are being requested, at least one of the
@@ -182,7 +251,7 @@ If multiple ranges are being requested, at least one of the
 .ne 2
 .mk
 .na
-\fBNumPorts\fR
+.B NumPorts
 .ad
 .RS 20n
 .rt
@@ -193,7 +262,7 @@ This field is the number of contiguous ports being requested.
 .ne 2
 .mk
 .na
-\fBAttributes\fR
+.B Attributes
 .ad
 .RS 20n
 .rt
@@ -202,7 +271,7 @@ This field is bit-mapped. The following bits are defined:
 .ne 2
 .mk
 .na
-\fBIO_DATA_WIDTH_8\fR
+.B IO_DATA_WIDTH_8
 .ad
 .RS 27n
 .rt
@@ -213,7 +282,7 @@ This field is bit-mapped. The following bits are defined:
 .ne 2
 .mk
 .na
-\fBIO_DATA_WIDTH_16\fR
+.B IO_DATA_WIDTH_16
 .ad
 .RS 27n
 .rt
@@ -224,7 +293,7 @@ This field is bit-mapped. The following bits are defined:
 .ne 2
 .mk
 .na
-\fBWIN_ACC_NEVER_SWAP\fR
+.B WIN_ACC_NEVER_SWAP
 .ad
 .RS 27n
 .rt
@@ -235,7 +304,7 @@ Host endian byte ordering.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_BIG_ENDIAN\fR
+.B WIN_ACC_BIG_ENDIAN
 .ad
 .RS 27n
 .rt
@@ -246,7 +315,7 @@ Big endian byte ordering
 .ne 2
 .mk
 .na
-\fBWIN_ACC_LITTLE_ENDIAN\fR
+.B WIN_ACC_LITTLE_ENDIAN
 .ad
 .RS 27n
 .rt
@@ -257,7 +326,7 @@ Little endian byte ordering.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_STRICT_ORDER\fR
+.B WIN_ACC_STRICT_ORDER
 .ad
 .RS 27n
 .rt
@@ -268,7 +337,7 @@ Program ordering references.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_UNORDERED_OK\fR
+.B WIN_ACC_UNORDERED_OK
 .ad
 .RS 27n
 .rt
@@ -279,7 +348,7 @@ May re-order references.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_MERGING_OK\fR
+.B WIN_ACC_MERGING_OK
 .ad
 .RS 27n
 .rt
@@ -290,7 +359,7 @@ Merge stores to consecutive locations.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_LOADCACHING_OK\fR
+.B WIN_ACC_LOADCACHING_OK
 .ad
 .RS 27n
 .rt
@@ -301,7 +370,7 @@ May cache load operations.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_STORECACHING_OK\fR
+.B WIN_ACC_STORECACHING_OK
 .ad
 .RS 27n
 .rt
@@ -309,34 +378,50 @@ May cache store operations.
 .RE
 
 For some combinations of host system busses and adapter hardware, the width
-of an \fBI/O\fR resource can not be set via \fBRequestIO()\fR; on those
-systems, the host bus cycle access type determines the \fBI/O\fR resource
+of an
+.B I/O
+resource can not be set via
+.BR RequestIO() ;
+on those
+systems, the host bus cycle access type determines the
+.B I/O
+resource
 data path width on a per-cycle basis.
 .sp
-\fBWIN_ACC_BIG_ENDIAN\fR and \fBWIN_ACC_LITTLE\fR \fBENDIAN\fR describe the
+\fBWIN_ACC_BIG_ENDIAN\fR and \fBWIN_ACC_LITTLE ENDIAN\fR describe the
 endian characteristics of the device as big endian or little endian,
 respectively. Even though most of the devices will have the same endian
 characteristics as their busses, there are examples of devices with an
 \fBI/O\fR processor that has opposite endian characteristics of the busses.
-When \fBWIN_ACC_BIG_ENDIAN\fR or \fBWIN_ACC_LITTLE\fR \fBENDIAN\fR is set,
+When
+.B WIN_ACC_BIG_ENDIAN
+or
+.B "WIN_ACC_LITTLE ENDIAN"
+is set,
 byte swapping will automatically be performed by the system if the host
 machine and the device data formats have opposite endian characteristics.
 The implementation may take advantage of hardware platform byte swapping
 capabilities.
 .sp
-When \fBWIN_ACC_NEVER_SWAP\fR is specified, byte swapping will not be
+When
+.B WIN_ACC_NEVER_SWAP
+is specified, byte swapping will not be
 invoked in the data access functions. The ability to specify the order in
-which the \fBCPU\fR will reference data is provided by the following
+which the
+.B CPU
+will reference data is provided by the following
 \fBAttributes\fR bits. Only one of the following bits may be specified:
 .sp
 .ne 2
 .mk
 .na
-\fBWIN_ACC_STRICT_ORDER\fR
+.B WIN_ACC_STRICT_ORDER
 .ad
 .sp .6
 .RS 4n
-The data references must be issued by a \fBCPU\fR in program order. Strict
+The data references must be issued by a
+.B CPU
+in program order. Strict
 ordering is the default behavior.
 .RE
 
@@ -344,11 +429,13 @@ ordering is the default behavior.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_UNORDERED_OK\fR
+.B WIN_ACC_UNORDERED_OK
 .ad
 .sp .6
 .RS 4n
-The \fBCPU\fR may re-order the data references. This includes all kinds of
+The
+.B CPU
+may re-order the data references. This includes all kinds of
 re-ordering (that is, a load followed by a store may be replaced by a store
 followed by a load).
 .RE
@@ -357,12 +444,16 @@ followed by a load).
 .ne 2
 .mk
 .na
-\fBWIN_ACC_MERGING_OK\fR
+.B WIN_ACC_MERGING_OK
 .ad
 .sp .6
 .RS 4n
-The \fBCPU\fR may merge individual stores to consecutive locations. For
-example, the \fBCPU\fR may turn two consecutive byte stores into one
+The
+.B CPU
+may merge individual stores to consecutive locations. For
+example, the
+.B CPU
+may turn two consecutive byte stores into one
 halfword store. It may also batch individual loads. For example, the
 \fBCPU\fR may turn two consecutive byte loads into one halfword load.
 \fBIO_MERGING_OK_ACC\fR also implies re-ordering.
@@ -372,11 +463,13 @@ halfword store. It may also batch individual loads. For example, the
 .ne 2
 .mk
 .na
-\fBWIN_ACC_LOADCACHING_OK\fR
+.B WIN_ACC_LOADCACHING_OK
 .ad
 .sp .6
 .RS 4n
-The \fBCPU\fR may cache the data it fetches and reuse it until another
+The
+.B CPU
+may cache the data it fetches and reuse it until another
 store occurs. The default behavior is to fetch new data on every load.
 \fBWIN_ACC_LOADCACHING_OK\fR also implies merging and re-ordering.
 .RE
@@ -385,47 +478,65 @@ store occurs. The default behavior is to fetch new data on every load.
 .ne 2
 .mk
 .na
-\fBWIN_ACC_STORECACHING_OK\fR
+.B WIN_ACC_STORECACHING_OK
 .ad
 .sp .6
 .RS 4n
-The \fBCPU\fR may keep the data in the cache and push it to the device
+The
+.B CPU
+may keep the data in the cache and push it to the device
 (perhaps with other data) at a later time. The default behavior is to push
-the data right away. \fBWIN_ACC_STORECACHING_OK\fR also implies load
+the data right away.
+.B WIN_ACC_STORECACHING_OK
+also implies load
 caching, merging, and re-ordering.
 .RE
 
 These values are advisory, not mandatory. For example, data can be ordered
 without being merged or cached, even though a driver requests unordered,
-merged and cached together. All other bits in the \fBAttributes\fR field
-must be set to \fB0\fR.
+merged and cached together. All other bits in the
+.B Attributes
+field
+must be set to
+.BR 0 .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBIOAddrLines\fR
+.B IOAddrLines
 .ad
 .RS 20n
 .rt
-This field is the number of \fBI/O\fR address lines decoded by the \fBPC\fR
+This field is the number of
+.B I/O
+address lines decoded by the
+.BR PC
 Card in the specified socket.
 .RE
 
 .sp
 .LP
-On some systems, multiple calls to \fBcsx_RequestIO()\fR with different
-\fBBasePort\fR, \fBNumPorts\fR, and/or \fBIOAddrLines\fR values will have to
+On some systems, multiple calls to
+.B csx_RequestIO()
+with different
+.BR BasePort ,
+.BR NumPorts ,
+and/or
+.B IOAddrLines
+values will have to
 be made to find an acceptable combination of parameters that can be used by
-Card Services to allocate \fBI/O\fR resources for the client. (See
-\fBNOTES\fR). 
+Card Services to allocate
+.B I/O
+resources for the client. (See
+.BR NOTES ).
 .SH RETURN VALUES
 .sp
 .ne 2
 .mk
 .na
-\fBCS_SUCCESS\fR
+.B CS_SUCCESS
 .ad
 .RS 27n
 .rt
@@ -436,18 +547,20 @@ Successful operation.
 .ne 2
 .mk
 .na
-\fBCS_BAD_ATTRIBUTE\fR
+.B CS_BAD_ATTRIBUTE
 .ad
 .RS 27n
 .rt
-Invalid \fBAttributes\fR specified.
+Invalid
+.B Attributes
+specified.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_BAD_BASE\fR
+.B CS_BAD_BASE
 .ad
 .RS 27n
 .rt
@@ -458,7 +571,7 @@ Invalid \fBAttributes\fR specified.
 .ne 2
 .mk
 .na
-\fBCS_BAD_HANDLE\fR
+.B CS_BAD_HANDLE
 .ad
 .RS 27n
 .rt
@@ -469,7 +582,7 @@ Client handle is invalid.
 .ne 2
 .mk
 .na
-\fBCS_CONFIGURATION_LOCKED\fR
+.B CS_CONFIGURATION_LOCKED
 .ad
 .RS 27n
 .rt
@@ -480,56 +593,64 @@ Client handle is invalid.
 .ne 2
 .mk
 .na
-\fBCS_IN_USE\fR
+.B CS_IN_USE
 .ad
 .RS 27n
 .rt
 \fBcsx_RequestIO()\fR has already been done without a corresponding
-\fBcsx_ReleaseIO()\fR. 
+.BR csx_ReleaseIO() .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_NO_CARD\fR
+.B CS_NO_CARD
 .ad
 .RS 27n
 .rt
-No \fBPC\fR Card in socket.
+No
+.B PC
+Card in socket.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_BAD_WINDOW\fR
+.B CS_BAD_WINDOW
 .ad
 .RS 27n
 .rt
-Unable to allocate \fBI/O\fR resources.
+Unable to allocate
+.B I/O
+resources.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_OUT_OF_RESOURCE\fR
+.B CS_OUT_OF_RESOURCE
 .ad
 .RS 27n
 .rt
-Unable to allocate \fBI/O\fR resources.
+Unable to allocate
+.B I/O
+resources.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBCS_UNSUPPORTED_FUNCTION\fR
+.B CS_UNSUPPORTED_FUNCTION
 .ad
 .RS 27n
 .rt
-No \fBPCMCIA\fR hardware installed.
+No
+.B PCMCIA
+hardware installed.
 .RE
 
 .SH CONTEXT
@@ -539,18 +660,28 @@ These functions may be called from user or kernel context.
 .SH SEE ALSO
 .sp
 .LP
-\fBcsx_RegisterClient\fR(9F), \fBcsx_RequestConfiguration\fR(9F)
+.BR csx_RegisterClient (9F),
+\fBcsx_RequestConfiguration\fR(9F)
 .sp
 .LP
-\fIPC Card 95 Standard\fR, PCMCIA/JEIDA
+.IR "PC Card 95 Standard" ,
+PCMCIA/JEIDA
 .SH NOTES
 .sp
 .LP
-It is important for clients to try to use the minimum amount of \fBI/O\fR
+It is important for clients to try to use the minimum amount of
+.BR I/O
 resources necessary. One way to do this is for the client to parse the
 \fBCIS\fR of the \fBPC\fR Card and call \fBcsx_RequestIO()\fR first with any
 \fBIOAddrLines\fR values that are \fB0\fR or that specify a minimum number
-of address lines necessary to decode the \fBI/O\fR space on the \fBPC\fR
+of address lines necessary to decode the
+.B I/O
+space on the
+.BR PC
 Card. Also, if no convenient minimum number of address lines can be used to
-decode the \fBI/O\fR space on the \fBPC\fR Card, it is important to try to
+decode the
+.B I/O
+space on the
+.B PC
+Card, it is important to try to
 avoid system conflicts with well-known architectural hardware features.

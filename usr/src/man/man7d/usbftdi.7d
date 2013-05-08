@@ -40,27 +40,44 @@ streams are built with appropriate modules that are pushed atop the
 .SS "Application Programming Interface"
 .sp
 .LP
-The \fBusbftdi\fR module supports the \fBtermio\fR(7I) device control
+The \fBusbftdi\fR module supports the
+.BR termio (7I)
+device control
 functions specified by flags in the \fBc_cflag\fR word of the \fBtermios\fR
-structure, and by the \fBIGNBRK, IGNPAR, PARMRK\fR, and \fBINPCK\fR flags in
-the \fBc_iflag\fR word of the \fBtermios\fR structure. All other
-\fBtermio\fR(7I) functions must be performed by STREAMS modules pushed atop
-the driver. When a device is opened, the , \fBldterm\fR(7M) and
-\fBttcompat\fR(7M) STREAMS modules are automatically pushed on top of the
+structure, and by the
+.BR "IGNBRK, IGNPAR, PARMRK" ,
+and
+.B INPCK
+flags in
+the \fBc_iflag\fR word of the
+.B termios
+structure. All other
+.BR termio (7I)
+functions must be performed by STREAMS modules pushed atop
+the driver. When a device is opened, the ,
+.BR ldterm (7M)
+and
+.BR ttcompat (7M)
+STREAMS modules are automatically pushed on top of the
 stream, providing the standard \fBtermio\fR(7I) interface.
 .sp
 .LP
-Use device logical names \fB/dev/term/[0-9]*\fR to access the serial ports
+Use device logical names
+.B /dev/term/[0-9]*
+to access the serial ports
 for a dial-in line that is used with a modem.
 .sp
 .LP
-Use device logical names \fB/dev/cua/[0-9]*\fR to access the serial ports
+Use device logical names
+.B /dev/cua/[0-9]*
+to access the serial ports
 for other applications. These names are also used to provide a logical
 access point for a dial-out line.
 .sp
 .LP
 Device hot-removal is functionally equivalent to a modem disconnect event,
-as defined in \fBtermio\fR(7I).
+as defined in
+.BR termio (7I).
 .sp
 .LP
 Input and output line speeds can be set to the following baud rates: 300,
@@ -80,62 +97,92 @@ Carrier Detect (electrical) signal, and the other modem control lines.
 .sp
 .LP
 The configuration file delivered with this driver, \fBusbftdi.conf\fR,
-acknowledges this by setting the driver property \fBignore-cd\fR to 1. This
-enables \fBsoft carrier\fR mode where the kernel does \fBnot\fR block opens
+acknowledges this by setting the driver property
+.B ignore-cd
+to 1. This
+enables \fBsoft carrier\fR mode where the kernel does
+.B not
+block opens
 waiting for DCD to be asserted.
 .sp
 .LP
-This behavior also matches the default \fBignore carrier detect\fR behavior
+This behavior also matches the default
+.B "ignore carrier detect"
+behavior
 of the onboard serial ports of machines that have them. See \fBeeprom\fR(1M)
 for further details.
 .sp
 .LP
-The \fBhardware carrier\fR behavior (the driver's internal default) can be
-selected by either unsetting (commenting out) the \fBignore-cd\fR property,
+The
+.B "hardware carrier"
+behavior (the driver's internal default) can be
+selected by either unsetting (commenting out) the
+.B ignore-cd
+property,
 or by setting the value of the property to zero.
 .sp
 .LP
 More sophisticated selection of which devicesl ignore or obey the DCD
-signal can be effected using \fBport-%d-ignore-cd\fR properties.
+signal can be effected using
+.B port-%d-ignore-cd
+properties.
 .SS "Dial-In and Dial-Out Support"
 .sp
 .LP
 A related feature is available for traditional usage that enables a single
 tty line to be connected to a modem and used for incoming and outgoing
-calls. By accessing through device logical name \fB/dev/cua/[0-9]*\fR, you
+calls. By accessing through device logical name
+.BR /dev/cua/[0-9]* ,
+you
 can open a port without the carrier detect signal being asserted, either
 through hardware or an equivalent software mechanism. These devices are
 commonly known as dial-out lines.
 .sp
 .LP
 A dial-in line can be opened only if the corresponding dial-out line is
-closed. A blocking \fB/dev/term\fR open waits until the \fB/dev/cua\fR line
+closed. A blocking
+.B /dev/term
+open waits until the
+.B /dev/cua
+line
 is closed, which drops Data Terminal Ready, after which Carrier Detect
 usually drops as well.  When the carrier is detected again with the
 \fB/dev/cua\fR device remaining closed, this indicates an incoming call and
 the blocking open seizes exclusive use of the line.
 .sp
 .LP
-A non-blocking \fB/dev/term\fR open returns an error if the \fB/dev/cua\fR
+A non-blocking
+.B /dev/term
+open returns an error if the
+.BR /dev/cua
 device is open.
 .sp
 .LP
-If the \fB/dev/term\fR line is opened successfully (usually only when
+If the
+.B /dev/term
+line is opened successfully (usually only when
 carrier is recognized on the modem, though see \fBSoft Carrier
 Capabilities\fR section of this manual page), the corresponding
 \fB/dev/cua\fR line can not be opened. This allows a modem and port to be
-used for dial-in (enabling the line for login in \fB/etc/inittab\fR) or
-dial-out (using \fBtip\fR(1) or \fBuucp\fR(1C)) when no-one is logged in on
+used for dial-in (enabling the line for login in
+.BR /etc/inittab )
+or
+dial-out (using
+.BR tip (1)
+or
+.BR uucp "(1C)) when no-one is logged in on"
 the line.
 .SH ERRORS
 .sp
 .LP
-An \fBopen()\fR fails under the following conditions:
+An
+.B open()
+fails under the following conditions:
 .sp
 .ne 2
 .mk
 .na
-\fBENXIO\fR
+.B ENXIO
 .ad
 .RS 9n
 .rt
@@ -146,11 +193,13 @@ The unit being opened does not exist.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 9n
 .rt
-The \fB/dev/cua\fR (dial-out) device is being opened while the
+The
+.B /dev/cua
+(dial-out) device is being opened while the
 \fB/dev/term\fR (dial-in device) is open, or the dial-in device is being
 opened with a no-delay open while the dial-out device is open.
 .RE
@@ -159,19 +208,19 @@ opened with a no-delay open while the dial-out device is open.
 .ne 2
 .mk
 .na
-\fBEBUSY\fR
+.B EBUSY
 .ad
 .RS 9n
 .rt
 The unit has been marked as exclusive-use by another process with a
-\fBTIOCEXCL\fR \fBioctl()\fR call.
+\fBTIOCEXCL ioctl()\fR call.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEIO\fR
+.B EIO
 .ad
 .RS 9n
 .rt
@@ -248,7 +297,9 @@ Dial-in tty lines
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attribute:
+See
+.BR attributes (5)
+for a description of the following attribute:
 .sp
 
 .sp
@@ -267,10 +318,20 @@ AvailabilitySUNWuftdi
 .SH SEE ALSO
 .sp
 .LP
-\fBstrconf\fR(1), \fBtip\fR(1), \fBuucp\fR(1C), \fBautopush\fR(1M),
-\fBeeprom\fR(1M), \fBioctl\fR(2), \fBopen\fR(2), \fBtermios\fR(3C),
-\fBusba\fR(7D), \fBtermio\fR(7I), \fBldterm\fR(7M), \fBttcompat\fR(7M),
-\fBeeprom\fR(1M), \fBattributes\fR(5),
+\fBstrconf\fR(1),
+.BR tip (1),
+.BR uucp (1C),
+.BR autopush (1M),
+.BR eeprom (1M),
+.BR ioctl (2),
+.BR open (2),
+.BR termios (3C),
+.BR usba (7D),
+.BR termio (7I),
+.BR ldterm (7M),
+.BR ttcompat (7M),
+.BR eeprom (1M),
+.BR attributes (5),
 .SH DIAGNOSTICS
 .sp
 .LP
@@ -288,7 +349,7 @@ Warning: \fIdevice_path\fR usbftdi\fIinstance num\fR): Error Message ...
 .ne 2
 .mk
 .na
-\fBDevice was disconnected while open. Data may have been lost.\fR
+.B "Device was disconnected while open. Data may have been lost.
 .ad
 .sp .6
 .RS 4n
@@ -314,7 +375,7 @@ reconnect the original device to the same port.
 .ne 2
 .mk
 .na
-\fBDevice has been reconnected, but data may have been lost.\fR
+.B "Device has been reconnected, but data may have been lost.
 .ad
 .sp .6
 .RS 4n
@@ -352,7 +413,7 @@ formatted in the following manner:
 .ne 2
 .mk
 .na
-\fBInput overrun.\fR
+.B Input overrun.
 .ad
 .RS 18n
 .rt

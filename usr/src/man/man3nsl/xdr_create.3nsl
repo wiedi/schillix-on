@@ -54,18 +54,26 @@ library routines for external data representation stream creation
 .SH DESCRIPTION
 .sp
 .LP
-The \fBXDR\fR library routines allow C programmers to describe arbitrary
+The
+.B XDR
+library routines allow C programmers to describe arbitrary
 data structures in a machine-independent fashion. Protocols such as remote
 procedure calls (RPC) use these routines to describe the format of the
 data.
 .sp
 .LP
-These routines deal with the creation of  \fBXDR\fR streams, which must be
-created before any data can be translated into \fBXDR\fR format.
+These routines deal with the creation of 
+.B XDR
+streams, which must be
+created before any data can be translated into
+.B XDR
+format.
 .SS "Routines"
 .sp
 .LP
-See \fBrpc\fR(3NSL) for the definition of the \fBXDR\fR \fBCLIENT\fR and
+See \fBrpc\fR(3NSL) for the definition of the
+.B "XDR CLIENT"
+and
 \fBSVCXPRT\fR data structures. Any buffers passed to the \fBXDR\fR routines
 must be properly aligned. Use \fBmalloc\fR(3C) to allocate these buffers or
 be sure that the buffer address is divisible evenly by four.
@@ -73,54 +81,103 @@ be sure that the buffer address is divisible evenly by four.
 .ne 2
 .mk
 .na
-\fBxdr_destroy()\fR
+.B xdr_destroy()
 .ad
 .RS 21n
 .rt
-A macro that invokes the destroy routine associated with the \fBXDR\fR
-stream, \fIxdrs\fR. Private data structures associated with the stream are
-freed. Using \fIxdrs\fR after \fBxdr_destroy()\fR is invoked is undefined.
+A macro that invokes the destroy routine associated with the
+.BR XDR
+stream,
+.IR xdrs .
+Private data structures associated with the stream are
+freed. Using
+.I xdrs
+after
+.B xdr_destroy()
+is invoked is undefined.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBxdrmem_create()\fR
+.B xdrmem_create()
 .ad
 .RS 21n
 .rt
-This routine initializes the \fBXDR\fR stream object pointed to by
-\fIxdrs\fR. The stream's data is written to or read from a chunk of memory at
-location \fIaddr\fR whose length is no less than \fIsize\fR bytes long.  The
+This routine initializes the
+.B XDR
+stream object pointed to by
+.IR xdrs .
+The stream's data is written to or read from a chunk of memory at
+location
+.I addr
+whose length is no less than
+.I size
+bytes long.  The
 \fIop\fR determines the direction of the \fBXDR\fR stream. The value of
-\fIop\fR can be either \fBXDR_ENCODE\fR, \fBXDR_DECODE\fR, or
-\fBXDR_FREE\fR.
+\fIop\fR can be either
+.BR XDR_ENCODE ,
+.BR XDR_DECODE ,
+or
+.BR XDR_FREE .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBxdrrec_create()\fR
+.B xdrrec_create()
 .ad
 .RS 21n
 .rt
-This routine initializes the read-oriented \fBXDR\fR stream object pointed
-to by \fIxdrs\fR. The stream's data is written to a buffer of size
-\fIsendsz\fR. A value of \fB0\fR indicates the system should use a suitable
-default. The stream's data is read from a buffer of size \fIrecvsz\fR. It too
-can be set to a suitable default by passing a \fB0\fR value.  When a stream's
-output buffer is full, \fIwriteit\fR is called.  Similarly, when a stream's
-input buffer is empty, \fBxdrrec_create()\fR calls \fIreadit\fR. The behavior
-of these two routines is similar to the system calls \fBread()\fR and
-\fBwrite()\fR, except that an appropriate handle, \fIread_handle\fR or
-\fIwrite_handle\fR, is passed to the former routines as the first parameter
-instead of a file descriptor. See \fBread\fR(2) and \fBwrite\fR(2),
-respectively. The \fBXDR\fR stream's \fIop\fR field must be set by the
+This routine initializes the read-oriented
+.B XDR
+stream object pointed
+to by
+.IR xdrs .
+The stream's data is written to a buffer of size
+.IR sendsz .
+A value of
+.B 0
+indicates the system should use a suitable
+default. The stream's data is read from a buffer of size
+.IR recvsz .
+It too
+can be set to a suitable default by passing a
+.B 0
+value.  When a stream's
+output buffer is full,
+.I writeit
+is called.  Similarly, when a stream's
+input buffer is empty,
+.B xdrrec_create()
+calls
+.IR readit .
+The behavior
+of these two routines is similar to the system calls
+.B read()
+and
+.BR write() ,
+except that an appropriate handle,
+.I read_handle
+or
+.IR write_handle ,
+is passed to the former routines as the first parameter
+instead of a file descriptor. See
+.BR read (2)
+and
+.BR write (2),
+respectively. The
+.B XDR
+stream's
+.I op
+field must be set by the
 caller.
 .sp
-This \fBXDR\fR stream implements an intermediate record stream. Therefore,
+This
+.B XDR
+stream implements an intermediate record stream. Therefore,
 additional bytes in the stream are provided for record boundary
 information.
 .RE
@@ -129,32 +186,62 @@ information.
 .ne 2
 .mk
 .na
-\fBxdrstdio_create()\fR
+.B xdrstdio_create()
 .ad
 .RS 21n
 .rt
-This routine initializes the \fBXDR\fR stream object pointed to by
-\fIxdrs\fR. The \fBXDR\fR stream data is written to or read from the standard
-\fBI/O\fR stream \fBfile\fR. The parameter \fIop\fR determines the direction
-of the \fBXDR\fR stream. The value of \fIop\fR can be either
-\fBXDR_ENCODE\fR, \fBXDR_DECODE\fR, or \fBXDR_FREE\fR.
+This routine initializes the
+.B XDR
+stream object pointed to by
+.IR xdrs .
+The
+.B XDR
+stream data is written to or read from the standard
+\fBI/O\fR stream
+.BR file .
+The parameter
+.I op
+determines the direction
+of the
+.B XDR
+stream. The value of
+.I op
+can be either
+.BR XDR_ENCODE ,
+.BR XDR_DECODE ,
+or
+.BR XDR_FREE .
 .sp
-The destroy routine associated with \fBXDR\fR streams calls \fBfflush()\fR
-on the \fIfile\fR stream, but never \fBfclose()\fR. See \fBfclose\fR(3C).
+The destroy routine associated with
+.B XDR
+streams calls \fBfflush()\fR
+on the \fIfile\fR stream, but never
+.BR fclose() .
+See \fBfclose\fR(3C).
 .RE
 
 .sp
 .LP
 A failure of any of these functions can be detected by first initializing
-the \fIx_ops\fR field in the \fBXDR\fR structure (\fIxdrs\fR-> \fIx_ops\fR)
-to \fINULL\fR before calling the  \fBxdr*_create()\fR function.  If the
+the
+.I x_ops
+field in the
+.B XDR
+structure (\fIxdrs\fR-> \fIx_ops\fR)
+to
+.I NULL
+before calling the 
+.B xdr*_create()
+function.  If the
 \fIx_ops\fR field is still  \fINULL,\fR after the return from the
 \fBxdr*_create()\fR function, the call has failed.  If the \fIx_ops\fR field
 contains some other value, assume that the call has succeeded.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -171,6 +258,11 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBread\fR(2), \fBwrite\fR(2), \fBfclose\fR(3C), \fBmalloc\fR(3C),
-\fBrpc\fR(3NSL), \fBxdr_admin\fR(3NSL), \fBxdr_complex\fR(3NSL),
-\fBxdr_simple\fR(3NSL), \fBattributes\fR(5)
+.BR read (2),
+.BR write (2),
+\fBfclose\fR(3C), \fBmalloc\fR(3C),
+.BR rpc (3NSL),
+.BR xdr_admin (3NSL),
+.BR xdr_complex (3NSL),
+.BR xdr_simple (3NSL),
+.BR attributes (5)

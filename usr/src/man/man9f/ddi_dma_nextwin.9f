@@ -36,89 +36,131 @@ ddi_dma_nextwin \- get next DMA window
 .SH INTERFACE LEVEL
 .sp
 .LP
-This interface is obsolete. \fBddi_dma_getwin\fR(9F) should be used
+This interface is obsolete.
+.BR ddi_dma_getwin (9F)
+should be used
 instead.
 .SH PARAMETERS
 .sp
 .ne 2
 .mk
 .na
-\fIhandle\fR
+.I handle
 .ad
 .RS 10n
 .rt
-A \fBDMA\fR handle.
+A
+.B DMA
+handle.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIwin\fR
+.I win
 .ad
 .RS 10n
 .rt
-The current \fBDMA\fR window or \fINULL\fR.
+The current
+.B DMA
+window or
+.IR NULL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fInwin\fR
+.I nwin
 .ad
 .RS 10n
 .rt
-A pointer to the next \fBDMA\fR window to be filled in. If \fIwin\fR is
-\fINULL\fR, a pointer to the first window within the object is returned.
+A pointer to the next
+.B DMA
+window to be filled in. If
+.I win
+is
+.IR NULL ,
+a pointer to the first window within the object is returned.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBddi_dma_nextwin()\fR function shifts the current \fBDMA\fR window
+The
+.B ddi_dma_nextwin()
+function shifts the current
+.B DMA
+window
 \fIwin\fR within the object referred to by \fIhandle\fR to the next
-\fBDMA\fR window \fInwin\fR. If the current window is \fINULL\fR, the first
-window within the object is returned. A \fBDMA\fR window is a portion of a
+\fBDMA\fR window
+.IR nwin .
+If the current window is
+.IR NULL ,
+the first
+window within the object is returned. A
+.B DMA
+window is a portion of a
 \fBDMA\fR object or might be the entire object. A \fBDMA\fR window has
 system resources allocated to it and is prepared to accept data transfers.
-Examples of system resources are \fBDVMA\fR mapping resources and
+Examples of system resources are
+.B DVMA
+mapping resources and
 intermediate transfer buffer resources.
 .sp
 .LP
-All \fBDMA\fR objects require a window. If the \fBDMA\fR window represents
-the whole \fBDMA\fR object it has system resources allocated for the entire
+All
+.B DMA
+objects require a window. If the
+.B DMA
+window represents
+the whole
+.B DMA
+object it has system resources allocated for the entire
 data transfer. However, if the system is unable to setup the entire
 \fBDMA\fR object due to system resource limitations, the driver writer may
 allow the system to allocate system resources for less than the entire
 \fBDMA\fR object. This can be accomplished by specifying the
 \fBDDI_DMA_PARTIAL\fR flag as a parameter to \fBddi_dma_buf_setup\fR(9F) or
-\fBddi_dma_addr_setup\fR(9F) or as part of a \fBddi_dma_req\fR(9S) structure
-in a call to \fBddi_dma_setup\fR(9F).
+.BR ddi_dma_addr_setup (9F)
+or as part of a
+.BR ddi_dma_req "(9S) structure"
+in a call to
+.BR ddi_dma_setup (9F).
 .sp
 .LP
 Only the window that has resources allocated is valid per object at any one
 time. The currently valid window is the one that was most recently returned
-from \fBddi_dma_nextwin()\fR. Furthermore, because a call to
+from
+.BR ddi_dma_nextwin() .
+Furthermore, because a call to
 \fBddi_dma_nextwin()\fR will reallocate system resources to the new window,
-the previous window will become invalid. It is a \fBsevere\fR error to call
+the previous window will become invalid. It is a
+.B severe
+error to call
 \fBddi_dma_nextwin()\fR before any transfers into the current window are
 complete.
 .sp
 .LP
-The \fBddi_dma_nextwin()\fR function takes care of underlying memory
+The
+.B ddi_dma_nextwin()
+function takes care of underlying memory
 synchronizations required to shift the window. However, if you want to
 access the data before or after moving the window, further synchronizations
-using \fBddi_dma_sync\fR(9F) are required.
+using
+.BR ddi_dma_sync "(9F) are required."
 .SH RETURN VALUES
 .sp
 .LP
-The \fBddi_dma_nextwin()\fR function returns:
+The
+.B ddi_dma_nextwin()
+function returns:
 .sp
 .ne 2
 .mk
 .na
-\fBDDI_SUCCESS\fR
+.B DDI_SUCCESS
 .ad
 .RS 17n
 .rt
@@ -129,7 +171,7 @@ Successfully filled in the next window pointer.
 .ne 2
 .mk
 .na
-\fBDDI_DMA_DONE\fR
+.B DDI_DMA_DONE
 .ad
 .RS 17n
 .rt
@@ -141,7 +183,7 @@ specified object.
 .ne 2
 .mk
 .na
-\fBDDI_DMA_STALE\fR
+.B DDI_DMA_STALE
 .ad
 .RS 17n
 .rt
@@ -151,16 +193,21 @@ specified object.
 .SH CONTEXT
 .sp
 .LP
-The \fBddi_dma_nextwin()\fR function can be called from user, interrupt, or
+The
+.B ddi_dma_nextwin()
+function can be called from user, interrupt, or
 kernel context.
 .SH EXAMPLES
 .sp
 .LP
-For an example see \fBddi_dma_segtocookie\fR(9F).
+For an example see
+.BR ddi_dma_segtocookie (9F).
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for a description of the following attributes:
+See
+.BR attributes (5)
+for a description of the following attributes:
 .sp
 
 .sp
@@ -177,10 +224,13 @@ Stability LevelObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBddi_dma_addr_setup\fR(9F),
+.BR attributes (5),
+.BR ddi_dma_addr_setup (9F),
 \fBddi_dma_buf_setup\fR(9F), \fBddi_dma_getwin\fR(9F),
-\fBddi_dma_nextseg\fR(9F), \fBddi_dma_segtocookie\fR(9F),
-\fBddi_dma_sync\fR(9F), \fBddi_dma_req\fR(9S)
+.BR ddi_dma_nextseg (9F),
+.BR ddi_dma_segtocookie (9F),
+.BR ddi_dma_sync (9F),
+.BR ddi_dma_req (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

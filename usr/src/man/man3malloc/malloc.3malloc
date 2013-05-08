@@ -71,66 +71,102 @@ memory allocator
 .SH DESCRIPTION
 .sp
 .LP
-The \fBmalloc()\fR and \fBfree()\fR functions provide a simple
+The
+.B malloc()
+and \fBfree()\fR functions provide a simple
 general-purpose memory allocation package.
 .sp
 .LP
-The \fBmalloc()\fR function returns a pointer to a block of at least
+The
+.B malloc()
+function returns a pointer to a block of at least
 \fIsize\fR bytes suitably aligned for any use.
 .sp
 .LP
 The argument to \fBfree()\fR is a pointer to a block previously allocated
-by \fBmalloc()\fR. After \fBfree()\fR is performed, this space is made
+by
+.BR malloc() .
+After \fBfree()\fR is performed, this space is made
 available for further allocation, and its contents have been destroyed. See
 \fBmallopt()\fR below for a way to change this behavior. If \fIptr\fR is a
 null pointer, no action occurs.
 .sp
 .LP
-Undefined results occur if the space assigned by \fBmalloc()\fR is overrun
+Undefined results occur if the space assigned by
+.B malloc()
+is overrun
 or if some random number is handed to \fBfree()\fR.
 .sp
 .LP
 The \fBfree()\fR function does not set \fBerrno\fR.
 .sp
 .LP
-The \fBmemalign()\fR function allocates \fIsize\fR bytes on a specified
+The
+.B memalign()
+function allocates
+.I size
+bytes on a specified
 alignment boundary and returns a pointer to the allocated block. The value
 of the returned address is guaranteed to be an even multiple of
-\fIalignment\fR. The value of \fIalignment\fR must be a power of two and
+.IR alignment .
+The value of
+.I alignment
+must be a power of two and
 must be greater than or equal to the size of a word.
 .sp
 .LP
-The \fBrealloc()\fR function changes the size of the block pointed to by
+The
+.B realloc()
+function changes the size of the block pointed to by
 \fIptr\fR to \fIsize\fR bytes and returns a pointer to the (possibly moved)
 block. The contents will be unchanged up to the lesser of the new and old
 sizes. If the new size of the block requires movement of the block, the
 space for the previous instantiation of the block is freed. If the new size
 is larger, the contents of the newly allocated portion of the block are
-unspecified. If \fIptr\fR is \fINULL\fR, \fBrealloc()\fR behaves like
+unspecified. If
+.I ptr
+is
+.IR NULL ,
+\fBrealloc()\fR behaves like
 \fBmalloc()\fR for the specified size. If \fIsize\fR is 0 and \fIptr\fR is
 not a null pointer, the space pointed to is freed.
 .sp
 .LP
-The \fBvalloc()\fR function has the same effect as \fBmalloc()\fR, except
+The
+.B valloc()
+function has the same effect as
+.BR malloc() ,
+except
 that the allocated memory will be aligned to a multiple of the value
 returned by \fBsysconf\fR(\fB_SC_PAGESIZE\fR).
 .sp
 .LP
-The \fBcalloc()\fR function allocates space for an array of \fInelem\fR
-elements of size \fIelsize\fR. The space is initialized to zeros.
+The
+.B calloc()
+function allocates space for an array of
+.IR nelem
+elements of size
+.IR elsize .
+The space is initialized to zeros.
 .sp
 .LP
-The \fBmallopt()\fR function provides for control over the allocation
-algorithm. The available values for \fIcmd\fR are:
+The
+.B mallopt()
+function provides for control over the allocation
+algorithm. The available values for
+.I cmd
+are:
 .sp
 .ne 2
 .mk
 .na
-\fBM_MXFAST\fR
+.B M_MXFAST
 .ad
 .RS 12n
 .rt
-Set \fImaxfast\fR to  \fIvalue\fR. The algorithm allocates all blocks below
+Set \fImaxfast\fR to
+.IR value .
+The algorithm allocates all blocks below
 the size of \fImaxfast\fR in large groups and then doles them out very
 quickly. The default value for \fImaxfast\fR is 24.
 .RE
@@ -139,26 +175,41 @@ quickly. The default value for \fImaxfast\fR is 24.
 .ne 2
 .mk
 .na
-\fBM_NLBLKS\fR
+.B M_NLBLKS
 .ad
 .RS 12n
 .rt
-Set \fInumlblks\fR to \fIvalue\fR. The above mentioned ``large groups''
-each contain \fInumlblks\fR blocks.   \fInumlblks\fR must be greater than 0.
-The default value for \fInumlblks\fR is 100.
+Set
+.I numlblks
+to
+.IR value .
+The above mentioned ``large groups''
+each contain
+.I numlblks
+blocks.  
+.I numlblks
+must be greater than 0.
+The default value for
+.I numlblks
+is 100.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBM_GRAIN\fR
+.B M_GRAIN
 .ad
 .RS 12n
 .rt
-Set \fIgrain\fR to  \fIvalue\fR. The sizes of all blocks smaller than
+Set
+.I grain
+to
+.IR value .
+The sizes of all blocks smaller than
 \fImaxfast\fR are considered to be rounded up to the nearest multiple of
-\fIgrain\fR. \fIgrain\fR must be greater than 0. The default value of
+.IR grain .
+\fIgrain\fR must be greater than 0. The default value of
 \fIgrain\fR is the smallest number of bytes that will allow alignment of any
 data type. Value will be rounded up to a multiple of the default when
 \fIgrain\fR is set.
@@ -168,22 +219,32 @@ data type. Value will be rounded up to a multiple of the default when
 .ne 2
 .mk
 .na
-\fBM_KEEP\fR
+.B M_KEEP
 .ad
 .RS 12n
 .rt
-Preserve data in a freed block until the next \fBmalloc()\fR,
-\fBrealloc()\fR, or \fBcalloc()\fR. This option is provided only for
-compatibility with the old version of \fBmalloc()\fR, and it is not
+Preserve data in a freed block until the next
+.BR malloc() ,
+.BR realloc() ,
+or
+.BR calloc() .
+This option is provided only for
+compatibility with the old version of
+.BR malloc() ,
+and it is not
 recommended.
 .RE
 
 .sp
 .LP
-These values are defined in the \fB<malloc.h>\fR header.
+These values are defined in the
+.B <malloc.h>
+header.
 .sp
 .LP
-The \fBmallopt()\fR function can be called repeatedly, but cannot be called
+The
+.B mallopt()
+function can be called repeatedly, but cannot be called
 after the first small block is allocated.
 .sp
 .LP
@@ -216,24 +277,50 @@ Each of the allocation routines returns a pointer to space suitably aligned
 .SH RETURN VALUES
 .sp
 .LP
-The \fBmalloc()\fR, \fBmemalign()\fR, \fBrealloc()\fR, \fBvalloc()\fR, and
+The
+.BR malloc() ,
+.BR memalign() ,
+.BR realloc() ,
+.BR valloc() ,
+and
 \fBcalloc()\fR functions return a null pointer if there is not enough
-available memory. When \fBrealloc()\fR returns \fINULL\fR, the block pointed
-to by \fIptr\fR is left intact. If \fIsize\fR, \fInelem\fR, or \fIelsize\fR
+available memory. When
+.B realloc()
+returns
+.IR NULL ,
+the block pointed
+to by
+.I ptr
+is left intact. If
+.IR size ,
+.IR nelem ,
+or
+.IR elsize
 is 0, either a null pointer or a unique pointer that can be passed to
 \fBfree()\fR is returned. If \fBmallopt()\fR is called after any allocation
-or if \fIcmd\fR or \fIvalue\fR are invalid, a non-zero value is returned.
+or if
+.I cmd
+or
+.I value
+are invalid, a non-zero value is returned.
 Otherwise, it returns 0.
 .SH ERRORS
 .sp
 .LP
-If \fBmalloc()\fR, \fBcalloc()\fR, or \fBrealloc()\fR returns
-unsuccessfully, \fBerrno\fR is set to indicate the error:
+If
+.BR malloc() ,
+.BR calloc() ,
+or
+.B realloc()
+returns
+unsuccessfully,
+.B errno
+is set to indicate the error:
 .sp
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -245,7 +332,7 @@ cannot be allocated.
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -257,25 +344,35 @@ There is not enough memory available at this point in time to allocate
 .sp
 .LP
 Unlike \fBmalloc\fR(3C), this package does not preserve the contents of a
-block when it is freed, unless  the \fBM_KEEP\fR option of \fBmallopt()\fR
+block when it is freed, unless  the
+.B M_KEEP
+option of
+.BR mallopt()
 is used.
 .sp
 .LP
-Undocumented features of  \fBmalloc\fR(3C) have not been duplicated.
+Undocumented features of 
+.BR malloc "(3C) have not been duplicated."
 .sp
 .LP
-Function prototypes for \fBmalloc()\fR, \fBrealloc()\fR, \fBcalloc()\fR,
+Function prototypes for
+.BR malloc() ,
+.BR realloc() ,
+.BR calloc() ,
 and \fBfree()\fR are also defined in the <\fBmalloc.h\fR> header for
 compatibility with old applications. New applications  should include
 <\fBstdlib.h\fR> to access the prototypes for these functions.
 .sp
 .LP
 Comparative features of the various allocation libraries can be found in
-the \fBumem_alloc\fR(3MALLOC) manual page.
+the
+.BR umem_alloc "(3MALLOC) manual page."
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -292,6 +389,12 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBbrk\fR(2), \fBbsdmalloc\fR(3MALLOC), \fBlibmtmalloc\fR(3LIB),
-\fBmalloc\fR(3C), \fBmapmalloc\fR(3MALLOC), \fBmtmalloc\fR(3MALLOC),
-\fBumem_alloc\fR(3MALLOC), \fBwatchmalloc\fR(3MALLOC), \fBattributes\fR(5)
+.BR brk (2),
+.BR bsdmalloc (3MALLOC),
+.BR libmtmalloc (3LIB),
+.BR malloc (3C),
+.BR mapmalloc (3MALLOC),
+.BR mtmalloc (3MALLOC),
+.BR umem_alloc (3MALLOC),
+.BR watchmalloc (3MALLOC),
+.BR attributes (5)

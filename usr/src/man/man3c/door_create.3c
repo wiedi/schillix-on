@@ -35,23 +35,48 @@ door_create \- create a door descriptor
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdoor_create()\fR function creates a door descriptor that describes
-the procedure specified by  the function \fIserver_procedure\fR. The data
-item, \fIcookie\fR, is associated with the door descriptor,  and is passed
-as an argument to the invoked function \fIserver_procedure\fR during
-\fBdoor_call\fR(3C) invocations.  Other arguments passed to
+The
+.B door_create()
+function creates a door descriptor that describes
+the procedure specified by  the function
+.IR server_procedure .
+The data
+item,
+.IR cookie ,
+is associated with the door descriptor,  and is passed
+as an argument to the invoked function
+.I server_procedure
+during
+.BR door_call (3C)
+invocations.  Other arguments passed to
 \fIserver_procedure\fR from an associated \fBdoor_call()\fR are placed on
-the stack and include \fIargp\fR and \fIdp\fR. The \fIargp\fR argument
-points to \fIarg_size\fR bytes of data and the \fIdp\fR argument points to
-\fIn_desc\fR \fBdoor_desc_t\fR structures. The \fIattributes\fR argument
+the stack and include
+.I argp
+and
+.IR dp .
+The
+.I argp
+argument
+points to
+.I arg_size
+bytes of data and the
+.I dp
+argument points to
+.I n_desc
+.B door_desc_t
+structures. The
+.I attributes
+argument
 specifies attributes  associated with the newly created door. Valid values
-for \fIattributes\fR are constructed by OR-ing one or more of the following
+for
+.I attributes
+are constructed by OR-ing one or more of the following
 values:
 .sp
 .ne 2
 .mk
 .na
-\fBDOOR_UNREF\fR
+.B DOOR_UNREF
 .ad
 .sp .6
 .RS 4n
@@ -59,9 +84,15 @@ Delivers a special invocation on the door when the number of descriptors
 that refer to  this door drops to one.  In order to trigger this condition,
 more than one descriptor must have referred to this door at some time.
 \fBDOOR_UNREF_DATA\fR designates an unreferenced invocation, as the
-\fIargp\fR argument passed to \fIserver_procedure\fR. In the case of an
-unreferenced invocation, the values for  \fIarg_size\fR, \fIdp\fR and
-\fIn_did\fR are \fB0\fR. Only one unreferenced invocation is delivered on
+\fIargp\fR argument passed to
+.IR server_procedure .
+In the case of an
+unreferenced invocation, the values for
+.IR arg_size ,
+\fIdp\fR and
+\fIn_did\fR are
+.BR 0 .
+Only one unreferenced invocation is delivered on
 behalf of a door.
 .RE
 
@@ -69,11 +100,13 @@ behalf of a door.
 .ne 2
 .mk
 .na
-\fBDOOR_UNREF_MULTI\fR
+.B DOOR_UNREF_MULTI
 .ad
 .sp .6
 .RS 4n
-Similar to \fBDOOR_UNREF\fR, except multiple unreferenced invocations can
+Similar to
+.BR DOOR_UNREF ,
+except multiple unreferenced invocations can
 be delivered on the same door if the number of descriptors referring to the
 door drops to one more than once.  Since an additional reference may have
 been passed by the time an unreferenced invocation arrives, the
@@ -85,26 +118,31 @@ be used to determine if the door is still unreferenced.
 .ne 2
 .mk
 .na
-\fBDOOR_PRIVATE\fR
+.B DOOR_PRIVATE
 .ad
 .sp .6
 .RS 4n
 Maintains a separate pool of server threads on behalf  of the door. Server
 threads are associated with a door's  private server pool using
-\fBdoor_bind\fR(3C).
+.BR door_bind (3C).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBDOOR_REFUSE_DESC\fR
+.B DOOR_REFUSE_DESC
 .ad
 .sp .6
 .RS 4n
-Any attempt to call \fBdoor_call\fR(3C) on this door with argument
-descriptors will fail with \fBENOTSUP\fR. When this flag is set, the door's
-server procedure will always be invoked with an \fIn_desc\fR argument of
+Any attempt to call
+.BR door_call "(3C) on this door with argument"
+descriptors will fail with
+.BR ENOTSUP .
+When this flag is set, the door's
+server procedure will always be invoked with an
+.I n_desc
+argument of
 0.
 .RE
 
@@ -112,23 +150,34 @@ server procedure will always be invoked with an \fIn_desc\fR argument of
 .ne 2
 .mk
 .na
-\fBDOOR_NO_CANCEL\fR
+.B DOOR_NO_CANCEL
 .ad
 .sp .6
 .RS 4n
-Clients which abort calls to \fBdoor_call()\fR on this door will not cause
+Clients which abort calls to
+.B door_call()
+on this door will not cause
 the cancellation of the server thread handling the request.  See
-\fBcancellation\fR(5).
+.BR cancellation (5).
 .RE
 
 .sp
 .LP
-The descriptor returned from \fBdoor_create()\fR will be marked as close on
-exec (\fBFD_CLOEXEC\fR). Information about a door is available for all
-clients of a door using \fBdoor_info()\fR. Applications concerned with
+The descriptor returned from
+.B door_create()
+will be marked as close on
+exec
+.RB ( FD_CLOEXEC ).
+Information about a door is available for all
+clients of a door using
+.BR door_info() .
+Applications concerned with
 security should not place secure information in door data that is accessible
-by \fBdoor_info()\fR. In particular, secure data should not be stored in the
-data item \fIcookie\fR.
+by
+.BR door_info() .
+In particular, secure data should not be stored in the
+data item
+.IR cookie .
 .sp
 .LP
 By default, additional threads are created as needed to handle concurrent
@@ -140,23 +189,31 @@ A process can advertise a door in the file system name space using
 \fBfattach\fR(3C).
 .sp
 .LP
-After creation, \fBdoor_setparam\fR(3C) can be used to set limits on the
+After creation,
+.BR door_setparam (3C)
+can be used to set limits on the
 amount of data and descriptors clients can send over the door.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBdoor_create()\fR returns a non-negative
-value. Otherwise, \fBdoor_create\fR returns \fB\(mi1\fR and sets \fBerrno\fR
+Upon successful completion,
+.B door_create()
+returns a non-negative
+value. Otherwise,
+.B door_create
+returns \fB\(mi1\fR and sets \fBerrno\fR
 to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBdoor_create()\fR function will fail if:
+The
+.B door_create()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -167,7 +224,7 @@ Invalid attributes are passed.
 .ne 2
 .mk
 .na
-\fBEMFILE\fR
+.B EMFILE
 .ad
 .RS 10n
 .rt
@@ -176,7 +233,7 @@ The process has too many open descriptors.
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCreate a door and use \fBfattach()\fR to advertise the door
+\fBExample 1\fR Create a door and use \fBfattach()\fR to advertise the door
 in the file system namespace.
 .sp
 .LP
@@ -231,7 +288,9 @@ main(int argc, char *argv[])
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -254,7 +313,12 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdoor_bind\fR(3C), \fBdoor_call\fR(3C), \fBdoor_info\fR(3C),
-\fBdoor_revoke\fR(3C), \fBdoor_setparam\fR(3C),
-\fBdoor_server_create\fR(3C), \fBfattach\fR(3C), \fBlibdoor\fR(3LIB),
-\fBattributes\fR(5), \fBcancellation\fR(5)
+.BR door_bind (3C),
+.BR door_call (3C),
+\fBdoor_info\fR(3C),
+.BR door_revoke (3C),
+.BR door_setparam (3C),
+.BR door_server_create (3C),
+\fBfattach\fR(3C), \fBlibdoor\fR(3LIB),
+.BR attributes (5),
+.BR cancellation (5)

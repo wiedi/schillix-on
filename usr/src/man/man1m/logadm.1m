@@ -36,26 +36,37 @@ logadm \- manage endlessly growing log files
 .sp
 .LP
 \fBlogadm\fR is a general log rotation tool that is suitable for running
-from \fBcron\fR(1M).
+from
+.BR cron (1M).
 .sp
 .LP
-Without arguments, \fBlogadm\fR reads the \fB/etc/logadm.conf\fR file, and
+Without arguments,
+.B logadm
+reads the \fB/etc/logadm.conf\fR file, and
 for every entry found in that file checks the corresponding log file to see
 if it should be rotated. Typically this check is done each morning by an
 entry in the root's \fBcrontab\fR.
 .sp
 .LP
-If the \fIlogname\fR argument is specified, \fBlogadm\fR renames the
+If the
+.I logname
+argument is specified,
+.B logadm
+renames the
 corresponding log file by adding a suffix so that the most recent log file
 ends with \fB\&.0\fR (that is, \fIlogfile\fB\&.0\fR), the next most
 recent ends with \fB\&.1\fR (that is, \fIlogfile\fB\&.1\fR), and so
 forth. By default, ten versions of old log files are kept (that is,
 \fIlogfile\fB\&.0\fR through \fIlogfile\fB\&.9\fR). At the point when
-what would be the eleventh file is logged, \fBlogadm\fR automatically
+what would be the eleventh file is logged,
+.B logadm
+automatically
 deletes the oldest version to keep the count of files at ten.
 .sp
 .LP
-\fBlogadm\fR takes a number of \fIoptions\fR. You can specify these options
+\fBlogadm\fR takes a number of
+.IR options .
+You can specify these options
 on the command line or in the \fB/etc/logadm.conf\fR file. The \fBlogadm\fR
 command searches \fB/etc/logadm.conf\fR for lines of the form \fIlogname\fR
 \fIoptions\fR 
@@ -63,11 +74,13 @@ command searches \fB/etc/logadm.conf\fR for lines of the form \fIlogname\fR
 .ne 2
 .mk
 .na
-\fIlogname\fR
+.I logname
 .ad
 .sp .6
 .RS 4n
-Identifies an entry in \fB/etc/logadm.conf\fR. This can be a name or the
+Identifies an entry in
+.BR /etc/logadm.conf .
+This can be a name or the
 pathname of the log file. If you specify a log file, rather than a name, for
 this field, it must be a fully qualified pathname.
 .RE
@@ -76,7 +89,7 @@ this field, it must be a fully qualified pathname.
 .ne 2
 .mk
 .na
-\fIoptions\fR
+.I options
 .ad
 .sp .6
 .RS 4n
@@ -84,19 +97,27 @@ Identifies command line options exactly as they would be entered on the
 command line. This allows commonly used log rotation policies to be stored
 in the \fB/etc/logadm.conf\fR file. See \fBEXAMPLES\fR.
 .sp
-If \fIoptions\fR are specified both in \fB/etc/logadm.conf\fR and on the
+If
+.I options
+are specified both in \fB/etc/logadm.conf\fR and on the
 command line, those in the \fB/etc/logadm.conf\fR file are applied first.
 Therefore, the command line options override those in
 \fB/etc/logadm.conf\fR. 
 .sp
 Log file names specified in \fB/etc/logadm.conf\fR may contain filename
-substitution characters such as \fB*\fR and \fB?\fR, that are supported by
-\fBcsh\fR(1).
+substitution characters such as
+.B *
+and
+.BR ? ,
+that are supported by
+.BR csh (1).
 .RE
 
 .sp
 .LP
-Two options control when a log file is rotated. They are: \fB-s\fR size
+Two options control when a log file is rotated. They are:
+.B -s
+size
 \fB-p\fR period.
 .sp
 .LP
@@ -106,30 +127,54 @@ the log is rotated.
 .sp
 .LP
 If neither of these two options are specified, the default conditions for
-rotating a log file are: \fB-s\fR \fB1b\fR \fB-p\fR \fB1w\fR, which
+rotating a log file are: \fB-s 1b\fR
+.BR "-p 1w" ,
+which
 means the log file is only rotated if the size is non-zero and if at least 1
 week has passed since the last time it was rotated.
 .sp
 .LP
-By specifying \fB-p\fR \fBnever\fR as a rotation condition, any other
-rotation conditions are ignored and \fBlogadm\fR moves on to the expiration
-of old log files. By specifying \fB-p\fR \fBnow\fR as a rotation
+By specifying
+.B "-p never"
+as a rotation condition, any other
+rotation conditions are ignored and
+.B logadm
+moves on to the expiration
+of old log files. By specifying
+.B "-p now"
+as a rotation
 condition, a log rotation is forced.
 .sp
 .LP
-Unless specified by the \fB-o\fR, \fB-g\fR, or \fB-m\fR options,
+Unless specified by the
+.BR -o ,
+.BR -g ,
+or
+.B -m
+options,
 \fBlogadm\fR replaces the log file (after renaming it) by creating an empty
 file whose owner, group ID, and permissions match the original file.
 .sp
 .LP
-Three options control when old log files are expired: \fB-A\fR age \fB-C\fR
-count \fB-S\fR size. These options expire the oldest log files until a
+Three options control when old log files are expired:
+.B -A
+age
+.BR -C
+count
+.B -S
+size. These options expire the oldest log files until a
 particular condition or conditions are met. For example, the combination
-\fB-C\fR \fB5\fR and the \fB-S\fR \fB10m\fR options expires old
-log files until there are no more than 5 of the \fBand\fR their combined
+\fB-C 5\fR and the \fB-S 10m\fR options expires old
+log files until there are no more than 5 of the
+.B and
+their combined
 disk usage is no more than 10 megabytes. If none of these options are
-specified, the default expiration is \fB-C\fR \fB10\fR which keeps ten
-old log files. If no files are to be expired, use \fB-C\fR \fB0\fR to
+specified, the default expiration is
+.B "-C 10"
+which keeps ten
+old log files. If no files are to be expired, use
+.B "-C 0"
+to
 prevent expiration by default.
 .SH OPTIONS
 .sp
@@ -143,14 +188,21 @@ The following options are supported:
 .ad
 .sp .6
 .RS 4n
-Execute the \fIpost_command\fR after renaming the log file.
-\fIpost_command\fR is passed to \fBsh\fR \fB-c\fR.
+Execute the
+.I post_command
+after renaming the log file.
+\fIpost_command\fR is passed to \fBsh -c\fR.
 .sp
-Specify \fIpost_command\fR as a valid shell command. Use quotes to protect
-spaces or shell metacharacters in \fIpost_command\fR.
+Specify
+.I post_command
+as a valid shell command. Use quotes to protect
+spaces or shell metacharacters in
+.IR post_command .
 .sp
 This option can be used to restart a daemon that is writing to the file.
-When rotating multiple logs with one \fBlogadm\fR command,
+When rotating multiple logs with one
+.B logadm
+command,
 \fIpost_command\fR is executed only once after all the logs are rotated, not
 once per rotated log.
 .RE
@@ -164,9 +216,14 @@ once per rotated log.
 .sp .6
 .RS 4n
 Delete any versions that have not been modified for the amount of time
-specified by \fIage\fR.
+specified by
+.IR age .
 .sp
-Specify \fIage\fR as a number followed by an \fBh\fR (hours), \fBd\fR
+Specify
+.I age
+as a number followed by an
+.B h
+.RB (hours), " d"
 (days), \fBw\fR(weeks), \fBm\fR (months), or \fBy\fR (years).
 .RE
 
@@ -178,14 +235,24 @@ Specify \fIage\fR as a number followed by an \fBh\fR (hours), \fBd\fR
 .ad
 .sp .6
 .RS 4n
-Execute \fIpre_command\fR before renaming the log file. \fIpre_command\fR
-is passed to \fBsh\fR \fB-c\fR.
+Execute
+.I pre_command
+before renaming the log file. \fIpre_command\fR
+is passed to
+.BR "sh -c" .
 .sp
-Specify \fIpre_command\fR as a valid shell command. Use quotes to protect
-spaces or shell metacharacters in the \fIpre_command\fR.
+Specify
+.I pre_command
+as a valid shell command. Use quotes to protect
+spaces or shell metacharacters in the
+.IR pre_command .
 .sp
 This option can be used to stop a daemon that is writing to the file. When
-rotating multiple logs with one \fBlogadm\fR command, \fIpre_command\fR is
+rotating multiple logs with one
+.B logadm
+command,
+.I pre_command
+is
 executed only once before all the logs are rotated, not once per rotated
 log.
 .RE
@@ -194,7 +261,7 @@ log.
 .ne 2
 .mk
 .na
-\fB-c\fR
+.B -c
 .ad
 .sp .6
 .RS 4n
@@ -210,12 +277,20 @@ zero length, rather than renaming the file.
 .ad
 .sp .6
 .RS 4n
-Delete the oldest versions until there are not more than \fIcount\fR files
+Delete the oldest versions until there are not more than
+.I count
+files
 left.
 .sp
-If no expire options (\fB-A\fR, \fB-C\fR, or \fB-S\fR) are specified,
-\fB-C\fR \fB10\fR is the default. To prevent the default expire rule
-from being added automatically, specify \fB-C\fR \fB0\fR .
+If no expire options (\fB-A\fR,
+.BR -C ,
+or
+.BR -S )
+are specified,
+\fB-C 10\fR is the default. To prevent the default expire rule
+from being added automatically, specify
+.B "-C 0"
+\&.
 .RE
 
 .sp
@@ -226,10 +301,17 @@ from being added automatically, specify \fB-C\fR \fB0\fR .
 .ad
 .sp .6
 .RS 4n
-Send error messages by email to \fImail_addr\fR.
+Send error messages by email to
+.IR mail_addr .
 .sp
-As \fBlogadm\fR is typically run from \fBcron\fR(1M), error messages are
-captured by \fBcron\fR and mailed to the owner of the \fBcrontab\fR.
+As
+.B logadm
+is typically run from
+.BR cron "(1M), error messages are"
+captured by
+.B cron
+and mailed to the owner of the
+.BR crontab .
 .sp
 This option is useful if you want the mail regarding error messages to go
 to another address instead. If no errors are encountered, no mail message is
@@ -244,12 +326,20 @@ generated.
 .ad
 .sp .6
 .RS 4n
-Execute \fIcmd\fR to expire the file, rather than deleting the old log file
+Execute
+.I cmd
+to expire the file, rather than deleting the old log file
 to expire it.
 .sp
-\fIcmd\fR is passed it to \fBsh\fR \fB-c\fR. The file is considered expired
-after \fIcmd\fR completes. If the old log file is not removed or renamed by
-the \fIcmd\fR, \fBlogadm\fR considers it for expiration the next time that
+\fIcmd\fR is passed it to
+.BR "sh -c" .
+The file is considered expired
+after
+.I cmd
+completes. If the old log file is not removed or renamed by
+the
+.IR cmd ,
+\fBlogadm\fR considers it for expiration the next time that
 it runs on the specified log file. If present, the keyword \fB$file\fR is
 expanded in the specified \fIcmd\fRto the name of the file being expired.
 .sp
@@ -267,7 +357,7 @@ administrators, or copying old log files to long term storage.
 .RS 4n
 Use \fIconf_file\fR instead of \fB/etc/logadm.conf\fR.
 .sp
-This option allows non-root users to keep their own \fBlogadm\fR
+.RB "This option allows non-root users to keep their own" " logadm"
 configuration files.
 .RE
 
@@ -279,38 +369,52 @@ configuration files.
 .ad
 .sp .6
 .RS 4n
-Create a new empty file with the \fBID\fR specified by \fIgroup\fR, instead
-of preserving the group \fBID\fR of the log file.
+Create a new empty file with the
+.B ID
+specified by
+.IR group ,
+instead
+of preserving the group
+.B ID
+of the log file.
 .sp
-Specify \fIgroup\fR by name or by numeric group \fBID\fR, as accepted by
-\fBchgrp\fR(1).
+Specify
+.I group
+by name or by numeric group
+.BR ID ,
+as accepted by
+.BR chgrp (1).
 .sp
 This option requires the ability to change file group ownership using the
-\fBchgrp\fR(1) command.
+.BR chgrp (1)
+command.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-h\fR
+.B -h
 .ad
 .sp .6
 .RS 4n
-Print a help message that describes \fBlogadm\fR's options.
+Print a help message that describes
+.BR logadm "'s options."
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-l\fR
+.B -l
 .ad
 .sp .6
 .RS 4n
 Use local time rather than the Coordinated Universal Time (UTC) when naming
 rotated log files (see the discussion of percent sequences in the templates
-supplied with the \fB-t\fR option).
+supplied with the
+.B -t
+option).
 .RE
 
 .sp
@@ -321,10 +425,15 @@ supplied with the \fB-t\fR option).
 .ad
 .sp .6
 .RS 4n
-Create a new empty file with the mode specified by \fImode\fR, instead of
+Create a new empty file with the mode specified by
+.IR mode ,
+instead of
 preserving the mode of the log file.
 .sp
-Specify \fImode\fR in any form that is accepted by the \fBchmod\fR(1)
+Specify
+.I mode
+in any form that is accepted by the
+.BR chmod (1)
 command.
 .RE
 
@@ -336,7 +445,9 @@ command.
 .ad
 .sp .6
 .RS 4n
-Use \fIcmd\fR to rename the log file. If the keyword \fB$file\fR is
+Use
+.I cmd
+to rename the log file. If the keyword \fB$file\fR is
 specified, it is expanded to the name of the log file. Similarly, the
 keyword \fB$nfile\fR is expanded to the new name of the log file. The
 \fB$nfile\fR keyword is only available with commands provided with the
@@ -349,21 +460,29 @@ the rotate file. The default \fIcmd\fR is "\fB/bin/mv\fR
 .ne 2
 .mk
 .na
-\fB-n\fR
+.B -n
 .ad
 .sp .6
 .RS 4n
-Print the actions that the \fBlogadm\fR command will perform without
+Print the actions that the
+.B logadm
+command will perform without
 actually performing them.
 .sp
 This option is useful for checking arguments before making any changes to
 the system.
 .sp
 It is important to remember, however, that since log rotating actions are
-only printed with this option, \fBlogadm\fR might not find files that need
-expiring, but if run without the \fB-n\fR \fBlogadm\fR might create a file
+only printed with this option,
+.B logadm
+might not find files that need
+expiring, but if run without the
+.B "-n logadm"
+might create a file
 that needs expiring by performing the log rotating actions. Therefore, if
-you see no files being expired with the \fB-n\fR option, files still might
+you see no files being expired with the
+.B -n
+option, files still might
 be expired without it.
 .RE
 
@@ -371,13 +490,16 @@ be expired without it.
 .ne 2
 .mk
 .na
-\fB-N\fR
+.B -N
 .ad
 .sp .6
 .RS 4n
 Prevent an error message if the specified logfile does not exist. Normally,
 \fBlogadm\fR produces an error message if the log file is not found. With
-\fB-N\fR, if the log file doesn't exist \fBlogadm\fR moves on to the expire
+.BR -N ,
+if the log file doesn't exist
+.B logadm
+moves on to the expire
 rules (if any) and then to the next log file (if any), without creating the
 empty replacement log file.
 .RE
@@ -390,10 +512,15 @@ empty replacement log file.
 .ad
 .sp .6
 .RS 4n
-Create the new empty file with \fIowner\fR, instead of preserving the owner
+Create the new empty file with
+.IR owner ,
+instead of preserving the owner
 of the log file.
 .sp
-Specify \fIowner\fR in any form that is accepted by the \fBchown\fR(1)
+Specify
+.I owner
+in any form that is accepted by the
+.BR chown (1)
 command.
 .RE
 
@@ -405,12 +532,28 @@ command.
 .ad
 .sp .6
 .RS 4n
-Rotate a log file after the specified time period (\fIperiod\fR).
+Rotate a log file after the specified time period
+.RI ( period ).
 .sp
-Specify \fIperiod\fR as a number followed by \fBd\fR for days, \fBh\fR for
-hours, \fBw\fR for weeks, \fBm\fR for months (30 days) or \fBy\fR for years.
-There are also two special values for period: \fBnow\fR and \fBnever\fR.
-"\fB-p\fR \fBnow\fR" forces log rotation. "\fB-p\fR \fBnever\fR"
+Specify
+.I period
+as a number followed by
+.B d
+for days,
+.B h
+for
+hours,
+.B w
+for weeks,
+.B m
+for months (30 days) or
+.B y
+for years.
+There are also two special values for period:
+.B now
+and
+.BR never .
+"\fB-p now\fR" forces log rotation. "\fB-p never\fR"
 forces no log rotation.
 .RE
 
@@ -422,12 +565,19 @@ forces no log rotation.
 .ad
 .sp .6
 .RS 4n
-Used by \fBlogadm\fR to record the last time the log was rotated in
+Used by
+.B logadm
+to record the last time the log was rotated in
 \fB/etc/logadm.conf\fR.
 .sp
-This option uses \fItimestamp\fR to determine if the log rotation period
-has passed. The format of \fItimestamp\fR matches the format generated by
-\fBctime\fR(3C), with quotes around it to protect embedded spaces.
+This option uses
+.I timestamp
+to determine if the log rotation period
+has passed. The format of
+.I timestamp
+matches the format generated by
+.BR ctime (3C),
+with quotes around it to protect embedded spaces.
 \fItimestamp\fR is always recorded in the Coordinated Universal Time (UTC)
 timezone.
 .RE
@@ -436,11 +586,13 @@ timezone.
 .ne 2
 .mk
 .na
-\fB-r\fR
+.B -r
 .ad
 .sp .6
 .RS 4n
-Remove any entries corresponding to the specified \fIlogname\fR from the
+Remove any entries corresponding to the specified
+.I logname
+from the
 \fB/etc/logadm.conf\fR. 
 .RE
 
@@ -452,16 +604,26 @@ Remove any entries corresponding to the specified \fIlogname\fR from the
 .ad
 .sp .6
 .RS 4n
-Run the \fIcmd\fR when an old log file is created by a log rotation. If the
+Run the
+.I cmd
+when an old log file is created by a log rotation. If the
 keyword \fB$file\fR is embedded in the specified command, it is expanded to
 the name of the old log file just created by log rotation.
 .sp
 This option is useful for processing log file contents after rotating the
-log. \fIcmd\fR is executed by passing it to \fBsh\fR \fB-c\fR. When rotating
-multiple logs with one logadm command, the command supplied with \fB-R\fR is
+log.
+.I cmd
+is executed by passing it to
+.BR "sh -c" .
+When rotating
+multiple logs with one logadm command, the command supplied with
+.B -R
+is
 executed once every time a log is rotated. This is useful for
 post-processing a log file (that is, sorting it, removing uninteresting
-lines, etc.). The \fB-a\fR option is a better choice for restarting daemons
+lines, etc.). The
+.B -a
+option is a better choice for restarting daemons
 after log rotation.
 .RE
 
@@ -474,9 +636,13 @@ after log rotation.
 .sp .6
 .RS 4n
 Rotate the log file only if its size is greater than or equal to
-\fIsize\fR. 
+.IR size .
 .sp
-Specify \fIsize\fR as a number followed by the letter \fBb\fR for bytes,
+Specify
+.I size
+as a number followed by the letter
+.B b
+for bytes,
 \fBk\fR for kilobytes, \fBm\fR for megabytes, or \fBg\fR for gigabytes.
 .RE
 
@@ -491,7 +657,11 @@ Specify \fIsize\fR as a number followed by the letter \fBb\fR for bytes,
 Delete the oldest versions until the total disk space used by the old log
 files is less than the specified size.
 .sp
-Specify \fIsize\fR as a number followed by the letter \fBb\fR for bytes,
+Specify
+.I size
+as a number followed by the letter
+.B b
+for bytes,
 \fBk\fR for kilobytes, \fBm\fR for megabytes, or \fBg\fR for gigabytes.
 .RE
 
@@ -505,8 +675,12 @@ Specify \fIsize\fR as a number followed by the letter \fBb\fR for bytes,
 .RS 4n
 Specify the template to use when renaming log files.
 .sp
-\fItemplate\fR can be a simple name, such as \fB/var/adm/oldfile\fR, or it
-can contain special keywords which are expanded by \fBlogadm\fR and are in
+\fItemplate\fR can be a simple name, such as
+.BR /var/adm/oldfile ,
+or it
+can contain special keywords which are expanded by
+.B logadm
+and are in
 the form \fB$\fIword\fR. Allowed sequences are:
 .sp
 .ne 2
@@ -538,7 +712,8 @@ The directory of the file to be rotated
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBdomainname\fR
+Expands to the output of
+.BR domainname
 .RE
 
 .sp
@@ -560,7 +735,8 @@ The full path name of the file to be rotated
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBuname\fR \fB-p\fR
+Expands to the output of
+.BR "uname -p"
 .RE
 
 .sp
@@ -571,7 +747,8 @@ Expands to the output of \fBuname\fR \fB-p\fR
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBuname\fR \fB-m\fR
+Expands to the output of
+.BR "uname -m"
 .RE
 
 .sp
@@ -582,7 +759,11 @@ Expands to the output of \fBuname\fR \fB-m\fR
 .ad
 .sp .6
 .RS 4n
-The version number, \fB0\fR is most recent, \fB1\fR is next most recent,
+The version number,
+.B 0
+is most recent,
+.B 1
+is next most recent,
 and so forth
 .RE
 
@@ -605,7 +786,8 @@ The same as $\fIn\fR, but starts at \fB1\fR instead of zero
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBuname\fR \fB-n\fR
+Expands to the output of
+.BR "uname -n"
 .RE
 
 .sp
@@ -616,7 +798,8 @@ Expands to the output of \fBuname\fR \fB-n\fR
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBuname\fR \fB-i\fR
+Expands to the output of
+.BR "uname -i"
 .RE
 
 .sp
@@ -627,7 +810,8 @@ Expands to the output of \fBuname\fR \fB-i\fR
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBuname\fR \fB-r\fR
+Expands to the output of
+.BR "uname -r"
 .RE
 
 .sp
@@ -638,7 +822,8 @@ Expands to the output of \fBuname\fR \fB-r\fR
 .ad
 .sp .6
 .RS 4n
-The number of seconds since \fB00:00:00 UTC, January 1,1970\fR
+The number of seconds since
+.BR "00:00:00 UTC, January 1,1970"
 .RE
 
 .sp
@@ -649,21 +834,34 @@ The number of seconds since \fB00:00:00 UTC, January 1,1970\fR
 .ad
 .sp .6
 .RS 4n
-Expands to the output of \fBzonename\fR(1).
+Expands to the output of
+.BR zonename (1).
 .RE
 
 To actually have the dollar sign character in the file name, use \fB$$\fR.
 Any percent sequences allowed by \fBstrftime\fR(3C) are also allowed, for
-example, \fB%d\fR expands to the day of the month. To actually have a
-percent sign character in the file name, use \fB%%\fR. Both dollar-sign
+example,
+.B %d
+expands to the day of the month. To actually have a
+percent sign character in the file name, use
+.BR %% .
+Both dollar-sign
 keywords and percent sequences can appear anywhere in the template. If the
 template results in a pathname with non-existent directories, they are
 created as necessary when rotating the log file.
 .sp
-If no \fB-t\fR option is specified, the default template is \fB$file.$n\fR.
-Actual \fBrotation\fR of log files, where each version is shifted up until
-it expires is done using the \fB$n\fR keyword. If the template does not
-contain the \fB$n\fR keyword, the log file is simply renamed to the new name
+If no
+.B -t
+option is specified, the default template is \fB$file.$n\fR.
+Actual
+.B rotation
+of log files, where each version is shifted up until
+it expires is done using the
+.B $n
+keyword. If the template does not
+contain the
+.B $n
+keyword, the log file is simply renamed to the new name
 and then the expire rules, if any, are applied.
 .RE
 
@@ -675,22 +873,35 @@ and then the expire rules, if any, are applied.
 .ad
 .sp .6
 .RS 4n
-Normally \fBlogadm\fR looks for a list of old log files by turning the
-template (specified with the \fB-t\fR option) into a pattern and finding
-existing files whose names match that pattern. The \fB-T\fR option causes
+Normally
+.B logadm
+looks for a list of old log files by turning the
+template (specified with the
+.B -t
+option) into a pattern and finding
+existing files whose names match that pattern. The
+.B -T
+option causes
 the given pattern to be used instead.
 .sp
 This option is useful if another program fiddles with the old log file
-names, like a \fBcron\fR job to compress them over time. The pattern is in
-the form of a pathname with special characters such as \fB*\fR and \fB?\fR
-as supported by \fBcsh\fR(1) filename substitution.
+names, like a
+.B cron
+job to compress them over time. The pattern is in
+the form of a pathname with special characters such as
+.B *
+and
+.BR ?
+as supported by
+.BR csh (1)
+filename substitution.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-v\fR
+.B -v
 .ad
 .sp .6
 .RS 4n
@@ -701,16 +912,20 @@ Print information about the actions being executed in verbose mode.
 .ne 2
 .mk
 .na
-\fB-V\fR
+.B -V
 .ad
 .sp .6
 .RS 4n
 Validate the configuration file.
 .sp
-This option validates that an entry for the specified \fIlogname\fR exists
+This option validates that an entry for the specified
+.I logname
+exists
 in the \fB/etc/logadm.conf\fR file and is syntactically correct. If
 \fIlogname\fR is not specified, all entries in the configuration file are
-validated. If a \fBlogname\fR argument is specified, the command validates
+validated. If a
+.B logname
+argument is specified, the command validates
 the syntax of that entry. If the entry is found, it is printed and the exit
 value of the command is true. Otherwise the exit value is false.
 .RE
@@ -723,16 +938,27 @@ value of the command is true. Otherwise the exit value is false.
 .ad
 .sp .6
 .RS 4n
-Write an entry into the config file (that is, \fB/etc/logadm.conf\fR) that
+Write an entry into the config file (that is,
+.BR /etc/logadm.conf )
+that
 corresponds to the current command line arguments. If an entry already
-existed for the specified \fIentryname\fR, it is removed first. This is the
-preferred method for updating \fB/etc/logadm.conf\fR, because it prevents
-syntax errors. The \fIentryname\fR is an argument to an invocation of
-\fBlogadm\fR. \fIentryname\fR might be chosen as something easy to remember
+existed for the specified
+.IR entryname ,
+it is removed first. This is the
+preferred method for updating
+.BR /etc/logadm.conf ,
+because it prevents
+syntax errors. The
+.I entryname
+is an argument to an invocation of
+.BR logadm .
+\fIentryname\fR might be chosen as something easy to remember
 or it can be the pathname of the log file. If a pathname, rather than a name
 is used, it must be a fully qualified pathname.
 .sp
-If no log file name is provided on a \fBlogadm\fR command line, the entry
+If no log file name is provided on a
+.B logadm
+command line, the entry
 name is assumed to be the same as the log file name. For example, the
 following two lines achieve the same thing, keeping two copies of rotated
 log files:
@@ -757,10 +983,14 @@ log files:
 .RS 4n
 Compress old log files after all other commands have been executed.
 \fIcount\fR of the most recent log files are left uncompressed, therefore
-making the \fIcount\fR most recent files easier to peruse. Use \fIcount\fR
+making the
+.I count
+most recent files easier to peruse. Use \fIcount\fR
 of zero to compress all old logs.
 .sp
-The compression is done with \fBgzip\fR(1) and the resulting log file has
+The compression is done with
+.BR gzip (1)
+and the resulting log file has
 the suffix of \fB\&.gz\fR.
 .RE
 
@@ -772,27 +1002,37 @@ The following operands are supported:
 .ne 2
 .mk
 .na
-\fIlogname\fR
+.I logname
 .ad
 .sp .6
 .RS 4n
-Identifies the name of the entry in \fB/etc/logadm.conf\fR. If the log file
-name is specified in the \fIlogname\fR field, it is assumed that
+Identifies the name of the entry in
+.BR /etc/logadm.conf .
+If the log file
+name is specified in the
+.I logname
+field, it is assumed that
 \fIlogname\fR is the same as the actual log file name.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRRotating a File and Keeping Previous Versions
+\fBExample 1\fR Rotating a File and Keeping Previous Versions
 .sp
 .LP
-The following example rotates the \fB/var/adm/exacct/proc\fR file, keeping
-ten previous versions in \fB/var/adm/exacct/proc.0\fR through
-\fB/var/adm/exacct/proc.9\fR.
+The following example rotates the
+.B /var/adm/exacct/proc
+file, keeping
+ten previous versions in
+.B /var/adm/exacct/proc.0
+through
+.BR /var/adm/exacct/proc.9 .
 
 .sp
 .LP
-Tell \fBlogadm\fR to copy the file and truncate it.
+Tell
+.B logadm
+to copy the file and truncate it.
 
 .sp
 .in +2
@@ -803,12 +1043,16 @@ Tell \fBlogadm\fR to copy the file and truncate it.
 .sp
 
 .LP
-\fBExample 2 \fRRotating syslog
+\fBExample 2\fR Rotating syslog
 .sp
 .LP
-The following example rotates \fBsyslog\fR and keeps eight log files. Old
-log files are put in the directory \fB/var/oldlogs\fR instead of
-\fB/var/log\fR:
+The following example rotates
+.B syslog
+and keeps eight log files. Old
+log files are put in the directory
+.B /var/oldlogs
+instead of
+.BR /var/log :
 
 .sp
 .in +2
@@ -819,7 +1063,7 @@ log files are put in the directory \fB/var/oldlogs\fR instead of
 .sp
 
 .LP
-\fBExample 3 \fRRotating /var/adm/sulog and Expiring Based on Age
+\fBExample 3\fR Rotating /var/adm/sulog and Expiring Based on Age
 .sp
 .LP
 The following entry in the \fB/etc/logadm.conf\fR file rotates the
@@ -834,7 +1078,7 @@ The following entry in the \fB/etc/logadm.conf\fR file rotates the
 .sp
 
 .LP
-\fBExample 4 \fRRotating Files and Expiring Based on Disk Usage
+\fBExample 4\fR Rotating Files and Expiring Based on Disk Usage
 .sp
 .LP
 The following entry in the \fB/etc/logadm.conf\fR file rotates the
@@ -850,11 +1094,14 @@ megabytes are used by the sum of all the rotated log files.
 .sp
 
 .LP
-\fBExample 5 \fRCreating an Entry that Stores the Logfile Name
+\fBExample 5\fR Creating an Entry that Stores the Logfile Name
 .sp
 .LP
 This example creates an entry storing the log file name and the fact that
-we want to keep 20 copies in \fB/etc/logadm.conf\fR, but the \fB-p\fR
+we want to keep 20 copies in
+.BR /etc/logadm.conf ,
+but the
+.BR -p
 \fBnever\fR means the entry is ignored by the normal \fBlogadm\fR run from
 root's crontab every morning.
 
@@ -868,7 +1115,8 @@ root's crontab every morning.
 
 .sp
 .LP
-Use the following entry on the command line to override the \fB-p\fR
+Use the following entry on the command line to override the
+.BR -p
 \fBnever\fR option:
 
 .sp
@@ -880,7 +1128,7 @@ Use the following entry on the command line to override the \fB-p\fR
 .sp
 
 .LP
-\fBExample 6 \fRRotating the apache Error and Access Logs
+\fBExample 6\fR Rotating the apache Error and Access Logs
 .sp
 .LP
 The following example rotates the apache error and access logs monthly to
@@ -889,7 +1137,9 @@ copies and tells apache to restart after renaming the logs.
 
 .sp
 .LP
-This command is run once, and since the \fB-w\fR option is specified, an
+This command is run once, and since the
+.B -w
+option is specified, an
 entry is made in \fB/etc/logadm.conf\fR so the apache logs are rotated from
 now on.
 
@@ -908,7 +1158,9 @@ now on.
 .LP
 This example also illustrates that the entry name supplied with the
 \fB-w\fR option doesn't have to match the log file name. In this example,
-the entry name is \fBapache\fR and once the line has been run, the entry in
+the entry name is
+.B apache
+and once the line has been run, the entry in
 \fB/etc/logadm.conf\fR can be forced to run by executing the following
 command: 
 
@@ -923,9 +1175,13 @@ command:
 .sp
 .LP
 Because the expression matching the apache log file names was enclosed in
-quotes, the expression is stored in \fB/etc/logadm.conf\fR, rather than the
+quotes, the expression is stored in
+.BR /etc/logadm.conf ,
+rather than the
 list of files that it expands to. This means that each time \fBlogadm\fR
-runs from \fBcron\fR it expands that expression and checks all the log files
+runs from
+.B cron
+it expands that expression and checks all the log files
 in the resulting list to see if they need rotating.
 
 .sp
@@ -952,13 +1208,17 @@ logadm -w apache /var/apache/logs/*_log
 .ad
 .sp .6
 .RS 4n
-configuration file for \fBlogadm\fR command
+configuration file for
+.B logadm
+command
 .RE
 
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -977,18 +1237,35 @@ Interface StabilityEvolving
 .SH SEE ALSO
 .sp
 .LP
-\fBchgrp\fR(1), \fBchmod\fR(1), \fBchown\fR(1), \fBcsh\fR(1),
-\fBgzip\fR(1), \fBcron\fR(1M), \fBctime\fR(3C), \fBstrftime\fR(3C),
+.BR chgrp (1),
+.BR chmod (1),
+.BR chown (1),
+.BR csh (1),
+.BR gzip (1),
+.BR cron (1M),
+.BR ctime (3C),
+\fBstrftime\fR(3C),
 \fBlogadm.conf\fR(4), \fBattributes\fR(5)
 .SH NOTES
 .sp
 .LP
-When \fBlogadm\fR applies expire conditions (supplied by the \fB-A\fR,
-\fB-C\fR, and \fB-S\fR options), it deletes files, the oldest first, until
+When
+.B logadm
+applies expire conditions (supplied by the \fB-A\fR,
+.BR -C ,
+and
+.B -S
+options), it deletes files, the oldest first, until
 the conditions are satisfied. If the template used for naming the old logs
-contained \fB$n\fR or \fB$N\fR, \fBlogadm\fR picks the highest value of
+contained
+.B $n
+or
+.BR $N ,
+\fBlogadm\fR picks the highest value of
 \fB$n\fR or \fB$N\fR found in the old log file names first. If the template
-used is something else, \fBlogadm\fR uses the modification time to determine
+used is something else,
+.B logadm
+uses the modification time to determine
 which files to expire first. This may not be the expected behavior if an old
 log file has been modified since it was rotated.
 .sp
@@ -997,7 +1274,13 @@ Depending on log file sizes and number of log files, log file rotations can
 be very time-consuming.
 .sp
 .LP
-By default, \fBlogadm\fR works in \fBGMT\fR. Therefore, all entries written
-to the \fB/etc/logadm.conf\fR file (see \fBlogadm.conf\fR(4)) will have a
+By default,
+.B logadm
+works in
+.BR GMT .
+Therefore, all entries written
+to the \fB/etc/logadm.conf\fR file (see
+.BR logadm.conf (4))
+will have a
 \fBGMT\fR timestamp. Users can use the \fB-l\fR option to set \fBlogadm\fR
 to local time.

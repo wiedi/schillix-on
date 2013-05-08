@@ -54,20 +54,30 @@ wide character strings.
 .LP
 The \fBm_wtransform_layout()\fR function transforms the input text in
 \fIInpBuf\fR according to the current layout values in \fIlayout_object\fR.
-Any layout value whose value type is \fBLayoutTextDescriptor\fR describes the
+Any layout value whose value type is
+.B LayoutTextDescriptor
+describes the
 attributes of the \fIInpBuf\fR and \fIOutBuf\fR arguments. If the attributes
-are the same for both \fIInpBuf\fR and \fIOutBuf\fR, a null transformation is
+are the same for both \fIInpBuf\fR and
+.IR OutBuf ,
+a null transformation is
 performed with respect to that specific layout value.
 .sp
 .LP
 The \fIInpBuf\fR argument specifies the source text to be processed. The
-\fIInpBuf\fR may not be \fINULL\fR, unless there is a need to reset the
+\fIInpBuf\fR may not be
+.IR NULL ,
+unless there is a need to reset the
 internal state.
 .sp
 .LP
-The \fIInpSize\fR argument is the number of bytes within \fIInpBuf\fR to be
+The
+.I InpSize
+argument is the number of bytes within \fIInpBuf\fR to be
 processed by the transformation. Its value will not change after return from
-the transformation. \fIInpSize\fR set to \(mi1 indicates that the text in
+the transformation.
+.I InpSize
+set to \(mi1 indicates that the text in
 \fIInpBuf\fR is delimited by a null code element. If \fIInpSize\fR is not set
 to \(mi1, it is possible to have some null elements in the input buffer. This
 might be used, for example, for a "one shot" transformation of several
@@ -84,15 +94,17 @@ setting of the arguments:
 .ad
 .RS 12n
 .rt
-Any transformed data is stored in \fIOutBuf\fR, converted to
-\fBShapeCharset\fR.
+Any transformed data is stored in
+.IR OutBuf ,
+converted to
+.BR ShapeCharset .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIOutsize\fR
+.I Outsize
 .ad
 .RS 12n
 .rt
@@ -103,7 +115,7 @@ The number of wide characters in \fIOutBuf\fR.
 .ne 2
 .mk
 .na
-\fIInpToOut\fR
+.I InpToOut
 .ad
 .RS 12n
 .rt
@@ -117,7 +129,7 @@ starting from the beginning of the \fIInpBuf\fR).
 .ne 2
 .mk
 .na
-\fIOutToInp\fR
+.I OutToInp
 .ad
 .RS 12n
 .rt
@@ -131,7 +143,7 @@ starting from the beginning of the \fIInpBuf\fR).
 .ne 2
 .mk
 .na
-\fIProperty\fR
+.I Property
 .ad
 .RS 12n
 .rt
@@ -140,22 +152,40 @@ properties with different connotations as explained below.  If this argument
 is not a  nullpointer, it represents an array of values with the same number
 of elements as the source substring text before the transformation. Each byte
 will contain relevant "property" information of the corresponding element in
-\fIInpBuf\fR starting from the element pointed by \fIInpBufIndex\fR. The four
+\fIInpBuf\fR starting from the element pointed by
+.IR InpBufIndex .
+The four
 rightmost bits of each "property" byte will contain information for
-bidirectional environments (when \fBActiveDirectional\fR is True) and they
+bidirectional environments (when
+.B ActiveDirectional
+is True) and they
 will mean "\fBNestingLevels\fR." The possible value from 0 to 15 represents
 the nesting level of the corresponding element in the \fIInpBuf\fR starting
-from the element pointed by \fIInpBufIndex\fR. If \fBActiveDirectional\fR is
-false the content of \fBNestingLevel\fR bits will be ignored. The leftmost
+from the element pointed by
+.IR InpBufIndex .
+If
+.B ActiveDirectional
+is
+false the content of
+.B NestingLevel
+bits will be ignored. The leftmost
 bit of each "property" byte will contain a "new cell indicator" for composed
 character environments, and will have a value of either 1 (for an element in
 \fIInpBuf\fR that is transformed to the beginning of a new cell) or 0 (for
 the "zero-length" composing character elements, when these are grouped into
 the same presentation cell with a non- composing character). Here again, each
 element of "property" pertains to the elements in the \fIInpBuf\fR starting
-from the element pointed by \fIInpBufIndex\fR. (Remember that this is not
-necessarily the beginning of \fIInpBuf\fR). If none of the transformation
-properties is required, the argument \fIProperty\fR can be \fINULL\fR.  The
+from the element pointed by
+.IR InpBufIndex .
+(Remember that this is not
+necessarily the beginning of
+.IR InpBuf ).
+If none of the transformation
+properties is required, the argument
+.I Property
+can be
+.IR NULL .
+The
 use of "property" can be enhanced in the future to pertain to other possible
 usage in other environments.
 .RE
@@ -166,11 +196,14 @@ The \fIInpBufIndex\fR argument is an offset value to the location of the
 transformed text. When \fBm_wtransform_layout()\fR is called,
 \fIInpBufIndex\fR contains the offset to the element in \fIInpBuf\fR that
 will be transformed first. (Note that this is not necessarily the first
-element in \fIInpBuf\fR). At the return from the transformation,
+element in
+.IR InpBuf ).
+At the return from the transformation,
 \fIInpBufIndex\fR contains the offset to the first element in the
 \fIInpBuf\fR that has not been transformed. If the entire substring has been
 transformed successfully, \fIInpBufIndex\fR will be incremented by the amount
-defined by \fIInpSize\fR.
+defined by
+.IR InpSize .
 .sp
 .LP
 Each of these output arguments may be null to specify that no output is
@@ -178,15 +211,28 @@ desired for the specific argument, but at least one of them should be set to
 a non-null value to perform any significant work.
 .sp
 .LP
-In addition to the possible outputs above, \fIlayout_object\fR maintains a
+In addition to the possible outputs above,
+.I layout_object
+maintains a
 directional state across calls to the transform functions. The directional
 state is reset to its initial state whenever any of the layout values
-\fBTypeOfText\fR, \fBOrientation\fR, or \fBImplicitAlg\fR is modified by
-means of a call to \fBm_setvalues_layout()\fR.
+\fBTypeOfText\fR,
+.BR Orientation ,
+or
+.B ImplicitAlg
+is modified by
+means of a call to
+.BR m_setvalues_layout() .
 .sp
 .LP
-The \fIlayout_object\fR argument specifies a \fBLayoutObject\fR returned by
-the \fBm_create_layout()\fR function.
+The
+.I layout_object
+argument specifies a
+.B LayoutObject
+returned by
+the
+.B m_create_layout()
+function.
 .sp
 .LP
 The \fIOutBuf\fRargument contains the transformed data. This argument can be
@@ -195,37 +241,59 @@ required.
 .sp
 .LP
 The encoding of the \fIOutBuf\fR argument depends on the \fBShapeCharset\fR
-layout value defined in \fIlayout_object\fR. If the \fBActiveShapeEditing\fR
+layout value defined in
+.IR layout_object .
+If the
+.BR ActiveShapeEditing
 layout value is not set (False), the encoding of \fIOutBuf\fR is guaranteed
 to be the same as the codeset of the locale associated with the
 \fBLayoutObject\fR defined by \fIlayout_object\fR.
 .sp
 .LP
-On input, the \fIOutSize\fR argument specifies the size of the output buffer
+On input, the
+.I OutSize
+argument specifies the size of the output buffer
 in number of wide characters. The output buffer should be large enough to
 contain the transformed result; otherwise, only a partial transformation is
-performed. If the \fBActiveShapeEditing\fR layout value is set (True) the
+performed. If the
+.B ActiveShapeEditing
+layout value is set (True) the
 \fIOutBuf\fR should be allocated to contain at least the \fIInpSize\fR
-multiplied by \fBShapeCharsetSize\fR.
+multiplied by
+.BR ShapeCharsetSize .
 .sp
 .LP
-On return, the \fIOutSize\fR argument is modified to the actual number of
+On return, the
+.I OutSize
+argument is modified to the actual number of
 code elements in \fIOutBuf\fR.
 .sp
 .LP
-When the \fIOutSize\fR argument is specified as zero, the function
+When the
+.I OutSize
+argument is specified as zero, the function
 calculates the size of an output buffer large enough to contain the
 transformed text, and the result is returned in this field. The content of
-the buffers specified by \fIInpBuf\fR and \fIOutBuf\fR, and the value of
-\fIInpBufIndex\fR, remain unchanged. If \fIOutSize\fR = \fINULL\fR, the
+the buffers specified by \fIInpBuf\fR and
+.IR OutBuf ,
+and the value of
+\fIInpBufIndex\fR, remain unchanged. If \fIOutSize\fR =
+.IR NULL ,
+the
 \fBEINVAL\fR error condition should be returned.
 .sp
 .LP
-If the \fIInpToOut\fR argument is not a null pointer, it points to an array
+If the
+.I InpToOut
+argument is not a null pointer, it points to an array
 of values with the same number of wide characters in \fIInpBuf\fR starting
 with the one pointed by \fIInpBufIndex\fR and up to the end of the substring
-in the buffer. On output, the nth value in \fIInpToOut\fR corresponds to the
-nth byte in \fIInpBuf\fR. This value is the index (in units of wide
+in the buffer. On output, the nth value in
+.I InpToOut
+corresponds to the
+nth byte in
+.IR InpBuf .
+This value is the index (in units of wide
 characters) in \fIOutBuf\fRthat identifies the transformed \fBShapeCharset\fR
 element of the nth byte in \fIInpBuf\fR.
 .sp
@@ -234,11 +302,19 @@ element of the nth byte in \fIInpBuf\fR.
 \fIInpBuf\fR to \fIOutBuf\fR is desired.
 .sp
 .LP
-If the \fIOutToInp\fR argument is not a null pointer, it points to an array
+If the
+.I OutToInp
+argument is not a null pointer, it points to an array
 of values with the same number of wide characters as contained in
 \fIOutBuf\fR. On output, the nth value in \fIOutToInp\fR corresponds to the
-nth byte in \fIOutBuf\fR. This value is the index in \fIInpBuf\fR, starting
-with wide character byte pointed to by \fIInpBufIndex\fR, that identifies the
+nth byte in
+.IR OutBuf .
+This value is the index in
+.IR InpBuf ,
+starting
+with wide character byte pointed to by
+.IR InpBufIndex ,
+that identifies the
 logical code element of the nth wide character in \fIOutBuf\fR.
 .sp
 .LP
@@ -253,12 +329,19 @@ To perform shaping of a text string without reordering of code elements, the
 .SH RETURN VALUES
 .sp
 .LP
-If successful, the \fBm_wtransform_layout()\fR function returns \fB0\fR. If
-unsuccessful, the returned value is \fB\(mi1\fR and the \fBerrno\fR is set to
+If successful, the \fBm_wtransform_layout()\fR function returns
+.BR 0 .
+If
+unsuccessful, the returned value is \fB\(mi1\fR and the
+.B errno
+is set to
 indicate the source of error. When the size of \fIOutBuf\fR is not large
 enough to contain the entire transformed text, the input text state at the
 end of the uncompleted transformation is saved internally and the error
-condition \fBE2BIG\fR is returned in \fBerrno\fR.
+condition
+.B E2BIG
+is returned in
+.BR errno .
 .SH ERRORS
 .sp
 .LP
@@ -267,7 +350,7 @@ The \fBm_wtransform_layout()\fR function may fail if:
 .ne 2
 .mk
 .na
-\fBE2BIG\fR
+.B E2BIG
 .ad
 .RS 10n
 .rt
@@ -278,7 +361,7 @@ The output buffer is full and the source text is not entirely processed.
 .ne 2
 .mk
 .na
-\fBEBADF\fR
+.B EBADF
 .ad
 .RS 10n
 .rt
@@ -290,17 +373,26 @@ is not valid.
 .ne 2
 .mk
 .na
-\fBEILSEQ\fR
+.B EILSEQ
 .ad
 .RS 10n
 .rt
 Transformation stopped due to an input code element that cannot be shaped or
 is invalid. The \fIInpBufIndex\fR argument is set to indicate the code
 element causing the error. The suspect code element is either a valid code
-element but cannot be shaped into the \fBShapeCharset\fR layout value, or is
+element but cannot be shaped into the
+.B ShapeCharset
+layout value, or is
 an invalid code element not defined by the codeset of the locale of
-\fIlayout_object\fR. The \fBmbtowc()\fR and \fBwctomb()\fR functions, when
-used in the same locale as the \fBLayoutObject\fR, can be used to determine
+.IR layout_object .
+The
+.B mbtowc()
+and
+.B wctomb()
+functions, when
+used in the same locale as the
+.BR LayoutObject ,
+can be used to determine
 if the code element is valid.
 .RE
 
@@ -308,19 +400,22 @@ if the code element is valid.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
 Transformation stopped due to an incomplete composite sequence at the end of
-the input buffer, or \fIOutSize\fR contains \fINULL\fR.
+the input buffer, or
+.I OutSize
+contains
+.IR NULL .
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBERANGE\fR
+.B ERANGE
 .ad
 .RS 10n
 .rt
@@ -338,21 +433,30 @@ composite sequence are found at the beginning of the next input buffer.
 .SH USAGE
 .sp
 .LP
-A \fBLayoutObject\fR will have a meaningful combination of default layout
+A
+.B LayoutObject
+will have a meaningful combination of default layout
 values. Whoever chooses to change the default layout values is responsible
 for making sure that the combination of layout values is meaningful.
 Otherwise, the result of \fBm_wtransform_layout()\fR might be unpredictable
-or implementation-specific with \fBerrno\fR set to \fBEBADF\fR.
+or implementation-specific with
+.B errno
+set to
+.BR EBADF .
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRShaping and reordering input string into output buffer
+\fBExample 1\fR Shaping and reordering input string into output buffer
 .sp
 .LP
 The following example illustrated what the different arguments of
 \fBm_wtransform_layout()\fR look like when a string in \fIInpBuf\fR is shaped
-and reordered into \fIOutBuf\fR. Upper-case letters in the example represent
+and reordered into
+.IR OutBuf .
+Upper-case letters in the example represent
 left-to-right letters while lower-case letters represent right-to-left
-letters. \fBxyz\fR represents the shapes of cde.
+letters.
+.B xyz
+represents the shapes of cde.
 
 .sp
 .in +2
@@ -374,9 +478,13 @@ Property.CelBdry:            1111111111
 
 .sp
 .LP
-The values (encoded in bianry) returned in the \fIProperty\fR argument
+The values (encoded in bianry) returned in the
+.I Property
+argument
 define the directionality of each code element in the source text as defined
-by the type of algorithm used within the \fIlayout_object\fR. Whlie the
+by the type of algorithm used within the
+.IR layout_object .
+Whlie the
 algorithm may be implementation dependent, the resulting values and levels
 are defined such as to allow a single method to be used in determining the
 directionality of the sourece text. The base rules are:
@@ -397,21 +505,33 @@ Even levels are always LTR.
 .TP
 .ie t \(bu
 .el o
-The \fBOrientation\fR layout value setting determines the initial level (0
+The
+.B Orientation
+layout value setting determines the initial level (0
 or 1) used.
 .RE
 .sp
 .LP
-Within a \fIProperty\fR array each increment in the level indicates the
+Within a
+.I Property
+array each increment in the level indicates the
 corresponding code elements should be presented in the opposite direction.
-Callers of this function should realize that the \fIProperty\fR values for
+Callers of this function should realize that the
+.I Property
+values for
 certain code elements is dependent on the context of the given character and
-the layout values: \fBOrientation\fR and \fBImplicitAlg\fR. Callers should
-not assume that a given code element always has the same \fIProperty\fR value
+the layout values:
+.B Orientation
+and
+.BR ImplicitAlg .
+Callers should
+not assume that a given code element always has the same
+.I Property
+value
 in all cases.
 
 .LP
-\fBExample 2 \fRAlgorithm to handle nesting
+\fBExample 2\fR Algorithm to handle nesting
 .sp
 .LP
 The following is an example of a standard presentation algorithm that
@@ -452,7 +572,9 @@ Property.CellBdry:  1111111111    1111111111    1111111111
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -471,4 +593,5 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR attributes (5),
+.BR standards (5)

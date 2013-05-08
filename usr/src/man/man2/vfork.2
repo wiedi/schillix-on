@@ -27,14 +27,22 @@ vfork, vforkx \- spawn new process in a virtual memory efficient way
 .LP
 The \fBvfork()\fR and \fBvforkx()\fR functions create a new process without
 fully copying the address space of the old process. These functions are
-useful in instances where the purpose of a \fBfork\fR(2) operation is to
-create a new system context for an \fBexecve()\fR operation (see
-\fBexec\fR(2)).
+useful in instances where the purpose of a
+.BR fork (2)
+operation is to
+create a new system context for an
+.B execve()
+operation (see
+.BR exec (2)).
 .sp
 .LP
 Unlike with the \fBfork()\fR function, the child process borrows the
-parent's memory and thread of control until a call to \fBexecve()\fR or an
-exit (either abnormally or by a call to \fB_exit()\fR (see \fBexit\fR(2)).
+parent's memory and thread of control until a call to
+.B execve()
+or an
+exit (either abnormally or by a call to
+.B _exit()
+(see \fBexit\fR(2)).
 Any modification made during this time to any part of memory in the child
 process is reflected in the parent process on return from \fBvfork()\fR or
 \fBvforkx()\fR. The parent process is suspended while the child is using its
@@ -51,27 +59,36 @@ indefinitely.
 .sp
 .LP
 The \fBvfork()\fR and \fBvforkx()\fR functions can normally be used the same
-way as \fBfork()\fR and \fBforkx()\fR, respectively. The calling procedure,
+way as \fBfork()\fR and
+.BR forkx() ,
+respectively. The calling procedure,
 however, should not return while running in the child's context, since the
 eventual return from \fBvfork()\fR or \fBvforkx()\fR in the parent would be
-to a stack frame that no longer exists. The \fB_exit()\fR function should be
+to a stack frame that no longer exists. The
+.B _exit()
+function should be
 used in favor of \fBexit\fR(3C) if unable to perform an \fBexecve()\fR
-operation, since \fBexit()\fR will invoke all functions registered by
-\fBatexit\fR(3C) and will flush and close standard I/O channels, thereby
+operation, since
+.B exit()
+will invoke all functions registered by
+.BR atexit (3C)
+and will flush and close standard I/O channels, thereby
 corrupting the parent process's standard I/O data structures. Care must be
 taken in the child process not to modify any global or local data that
 affects the behavior of the parent process on return from \fBvfork()\fR or
 \fBvforkx()\fR, unless such an effect is intentional.
 .sp
 .LP
-Unlike \fBfork()\fR and \fBforkx()\fR, fork handlers are not run when
+Unlike \fBfork()\fR and
+.BR forkx() ,
+fork handlers are not run when
 \fBvfork()\fR and \fBvforkx()\fR are called.
 .sp
 .LP
 The \fBvfork()\fR and \fBvforkx()\fR functions are deprecated. Their sole
 legitimate use as a prelude to an immediate call to a function from the
 \fBexec\fR family can be achieved safely by \fBposix_spawn\fR(3C) or
-\fBposix_spawnp\fR(3C).
+.BR posix_spawnp (3C).
 .SS "Fork Extensions"
 .sp
 .LP
@@ -80,15 +97,17 @@ bitwise inclusive-OR of zero or more of the following flags, which are
 defined in the header \fB<sys/fork.h>\fR:
 .br
 .in +2
-\fBFORK_NOSIGCHLD\fR
+.B FORK_NOSIGCHLD
 .in -2
 .br
 .in +2
-\fBFORK_WAITPID\fR
+.B FORK_WAITPID
 .in -2
 .sp
 .LP
-See \fBfork\fR(2) for descriptions of these flags. If the \fIflags\fR
+See
+.BR fork (2)
+for descriptions of these flags. If the \fIflags\fR
 argument is 0, \fBvforkx()\fR is identical to \fBvfork()\fR.
 .SH RETURN VALUES
 .sp
@@ -96,7 +115,9 @@ argument is 0, \fBvforkx()\fR is identical to \fBvfork()\fR.
 Upon successful completion, \fBvfork()\fR and \fBvforkx()\fR return  \fB0\fR
 to the child process and returns the process ID of the child process to the
 parent process. Otherwise, \fB\(mi1\fR is returned to the parent process, no
-child process is created, and \fBerrno\fR is set to indicate the error.
+child process is created, and
+.B errno
+is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
@@ -105,7 +126,7 @@ The \fBvfork()\fR and \fBvforkx()\fR functions will fail if:
 .ne 2
 .mk
 .na
-\fBEAGAIN\fR
+.B EAGAIN
 .ad
 .RS 10n
 .rt
@@ -118,7 +139,7 @@ determined when the system is generated.
 .ne 2
 .mk
 .na
-\fBENOMEM\fR
+.B ENOMEM
 .ad
 .RS 10n
 .rt
@@ -132,7 +153,7 @@ The \fBvforkx()\fR function will fail if:
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
@@ -142,7 +163,9 @@ The \fIflags\fR argument is invalid.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -161,31 +184,51 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBexec\fR(2), \fBexit\fR(2), \fBfork\fR(2), \fBioctl\fR(2),
-\fBatexit\fR(3C), \fBexit\fR(3C), \fBposix_spawn\fR(3C),
-\fBposix_spawnp\fR(3C), \fBsignal.h\fR(3HEAD), \fBwait\fR(3C),
-\fBattributes\fR(5), \fBstandards\fR(5)
+.BR exec (2),
+.BR exit (2),
+\fBfork\fR(2), \fBioctl\fR(2),
+.BR atexit (3C),
+.BR exit (3C),
+.BR posix_spawn (3C),
+.BR posix_spawnp (3C),
+.BR signal.h (3HEAD),
+.BR wait (3C),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
 To avoid a possible deadlock situation, processes that are children in the
-middle of a \fBvfork()\fR or \fBvforkx()\fR are never sent \fBSIGTTOU\fR or
+middle of a \fBvfork()\fR or \fBvforkx()\fR are never sent
+.B SIGTTOU
+or
 \fBSIGTTIN\fR signals; rather, output or ioctls are allowed and input
-attempts result in an \fBEOF\fR indication.
+attempts result in an
+.B EOF
+indication.
 .sp
 .LP
 To forestall parent memory corruption due to race conditions with signal
 handling, \fBvfork()\fR and \fBvforkx()\fR treat signal handlers in the child
-process in the same manner as the \fBexec\fR(2) functions: signals set to be
+process in the same manner as the
+.BR exec (2)
+functions: signals set to be
 caught by the parent process are set to the default action (\fBSIG_DFL\fR) in
-the child process (see \fBsignal.h\fR(3HEAD)). Any attempt to set a signal
-handler in the child before \fBexecve()\fR to anything other than
+the child process (see
+.BR signal.h (3HEAD)).
+Any attempt to set a signal
+handler in the child before
+.B execve()
+to anything other than
 \fBSIG_DFL\fR or \fBSIG_IGN\fR is disallowed and results in setting the
-handler to \fBSIG_DFL\fR.
+handler to
+.BR SIG_DFL .
 .sp
 .LP
 On some systems, the implementation of \fBvfork()\fR and \fBvforkx()\fR
 cause the parent to inherit register values from the child. This can create
-problems for certain optimizing compilers if \fB<unistd.h>\fR is not included
+problems for certain optimizing compilers if
+.B <unistd.h>
+is not included
 in the source calling \fBvfork()\fR or if \fB<sys/fork.h>\fR is not included
 in the source calling \fBvforkx()\fR.

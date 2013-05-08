@@ -66,7 +66,8 @@ properties specific to nodes
 .LP
 All device nodes have a set of common attributes, such as a node name, an
 instance number, and a driver binding name. Common device node attributes are
-accessed by calling interfaces listed on the \fBdi_binding_name\fR(3DEVINFO)
+accessed by calling interfaces listed on the
+.BR di_binding_name (3DEVINFO)
 manual page. Each device node also has a physical path, which is accessed by
 calling \fBdi_devfs_path\fR(3DEVINFO).
 .sp
@@ -74,13 +75,25 @@ calling \fBdi_devfs_path\fR(3DEVINFO).
 Properties provide device specific information for device configuration and
 usage. Properties can be defined by software (\fBdi_prop_t\fR) or by firmware
 (\fBdi_prom_prop_t\fR). One way to access each \fBdi_prop_t\fR is to make
-successive calls to \fBdi_prop_next\fR(3DEVINFO) until \fBDI_PROP_NIL\fR is
-returned. For each \fBdi_prop_t\fR, use interfaces on the
-\fBdi_prop_bytes\fR(3DEVINFO) manual page to obtain property names and values.
+successive calls to
+.BR di_prop_next "(3DEVINFO) until"
+.B DI_PROP_NIL
+is
+returned. For each
+.BR di_prop_t ,
+use interfaces on the
+.BR di_prop_bytes (3DEVINFO)
+manual page to obtain property names and values.
 Another way to access these properties is to call
-\fBdi_prop_lookup_bytes\fR(3DEVINFO) to find the value of a property with a given
-name. Accessing a \fBdi_prom_prop_t\fR is similar to accessing a \fBdi_prop_t\fR,
-except that the interface names start with \fBdi_prom_prop\fR and additional
+.BR di_prop_lookup_bytes (3DEVINFO)
+to find the value of a property with a given
+name. Accessing a
+.B di_prom_prop_t
+is similar to accessing a
+.BR di_prop_t ,
+except that the interface names start with
+.B di_prom_prop
+and additional
 calls to \fBdi_prom_init\fR(3DEVINFO) and \fBdi_prom_fini\fR(3DEVINFO) are
 required.
 .sp
@@ -88,14 +101,18 @@ required.
 Minor nodes contain information exported by the device for creating special
 files for the device. Each device node has 0 or more minor nodes associated with
 it. A list of minor nodes (\fBdi_minor_t\fR) can be obtained by making successive
-calls to \fBdi_minor_next\fR(3DEVINFO) until \fBDI_MINOR_NIL\fR is returned. For
+calls to
+.BR di_minor_next "(3DEVINFO) until"
+.B DI_MINOR_NIL
+is returned. For
 each minor node, \fBdi_minor_devt\fR(3DEVINFO) and related interfaces are called
 to get minor node data.
 .sp
 .LP
 In some configurations, multipath device access via a virtual host controller
 interface (vHCI) abstraction is possible. An example of a driver using this
-abstraction is \fBscsi_vhci\fR(7D). In such cases, devices are not directly
+abstraction is
+.BR scsi_vhci "(7D). In such cases, devices are not directly"
 represented as children of their physical host controller interface (pHCI) bus
 adapter. Instead, devices have an identity-oriented representation as a child of
 a vHCI. All paths leading to the same identity are represented by a common child
@@ -109,7 +126,8 @@ Each path node is associated with two device nodes: its pHCI device node, and
 its client device node. A list of paths associated with a specific pHCI device
 node can be obtained using \fBdi_path_phci_next_path\fR(3DEVINFO), and a list of
 paths associated with a specific client device node can be obtained using
-\fBdi_path_client_next_path\fR(3DEVINFO). These functions return
+.BR di_path_client_next_path (3DEVINFO).
+These functions return
 \fBDI_PATH_NIL\fR when the end of the list of path nodes is reached.
 .sp
 .LP
@@ -138,34 +156,55 @@ Destroying the snapshot of the device tree
 .RE
 .sp
 .LP
-A snapshot of the device tree is created by calling \fBdi_init\fR(3DEVINFO) and
+A snapshot of the device tree is created by calling
+.BR di_init "(3DEVINFO) and"
 destroyed by calling \fBdi_fini\fR(3DEVINFO). An application can specify the data
 to be included in the snapshot (full or partial tree, include or exclude
 properties and minor nodes) and get a handle to the root of the device tree. See
-\fBdi_init\fR(3DEVINFO) for details. The application then traverses the device
+.BR di_init (3DEVINFO)
+for details. The application then traverses the device
 tree in the snapshot to obtain device configuration data.
 .sp
 .LP
 The device tree is normally traversed through parent-child-sibling linkage. Each
 device node contains references to its parent, its next sibling, and the first of
-its children. Given the \fBdi_node_t\fR returned from \fBdi_init()\fR, one can
+its children. Given the
+.B di_node_t
+returned from
+.BR di_init() ,
+one can
 find all children by first calling \fBdi_child_node\fR(3DEVINFO), followed by
-successive calls to \fBdi_sibling_node\fR(3DEVINFO) until \fBDI_NODE_NIL\fR is
+successive calls to
+.BR di_sibling_node "(3DEVINFO) until"
+.B DI_NODE_NIL
+is
 returned. By following this procedure recursively, an application can visit all
 device nodes contained in the snapshot. Two interfaces,The
-\fBdi_walk_node\fR(3DEVINFO) and \fBdi_walk_minor\fR(3DEVINFO) functions are
-provided to facilitate device tree traversal. The \fBdi_walk_node()\fR function
+.BR di_walk_node (3DEVINFO)
+and \fBdi_walk_minor\fR(3DEVINFO) functions are
+provided to facilitate device tree traversal. The
+.B di_walk_node()
+function
 visits all device nodes and executes a user-supplied callback function for each
-node visited. The \fBdi_walk_minor()\fR function does the same for each minor
+node visited. The
+.B di_walk_minor()
+function does the same for each minor
 node in the device tree.
 .sp
 .LP
 An alternative way to traverse the device tree is through the per-driver device
 node linkage. Device nodes contain a reference to the next device node bound to
-the same driver. Given the \fBdi_node_t\fR returned from \fBdi_init()\fR, an
+the same driver. Given the
+.B di_node_t
+returned from
+.BR di_init() ,
+an
 application can find all device nodes bound to a driver by first calling
 \fBdi_drv_first_node\fR(3DEVINFO), followed by successive calls to
-\fBdi_drv_next_node\fR(3DEVINFO) until \fBDI_NODE_NIL\fR is returned. Traversing
+.BR di_drv_next_node (3DEVINFO)
+until
+.B DI_NODE_NIL
+is returned. Traversing
 the per-driver device node list works only when the snapshot includes all device
 nodes.
 .sp
@@ -177,7 +216,9 @@ configuration.
 .sp
 .LP
 The shared object \fBlibdevinfo.so.1\fR provides the public interfaces defined
-below. See \fBIntro\fR(3) for additional information on shared object
+below. See
+.BR Intro (3)
+for additional information on shared object
 interfaces.
 .sp
 
@@ -236,7 +277,7 @@ lw(2.75i) lw(2.75i)
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRInformation accessible through \fBlibdevinfo\fR interfaces
+\fBExample 1\fR Information accessible through \fBlibdevinfo\fR interfaces
 .sp
 .LP
 The following example illustrates the kind of information accessible through
@@ -293,7 +334,9 @@ shared object
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -315,16 +358,26 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBpvs\fR(1), \fBdevlinks\fR(1M), \fBprtconf\fR(1M), \fBIntro\fR(3),
-\fBdi_binding_name\fR(3DEVINFO), \fBdi_child_node\fR(3DEVINFO),
+.BR pvs (1),
+.BR devlinks (1M),
+\fBprtconf\fR(1M), \fBIntro\fR(3),
+.BR di_binding_name (3DEVINFO),
+.BR di_child_node (3DEVINFO),
 \fBdi_devfs_path\fR(3DEVINFO), \fBdi_init\fR(3DEVINFO),
-\fBdi_minor_devt\fR(3DEVINFO), \fBdi_minor_next\fR(3DEVINFO),
-\fBdi_path_bus_addr\fR(3DEVINFO), \fBdi_path_client_next_path\fR(3DEVINFO),
-\fBdi_path_prop_bytes\fR(3DEVINFO), \fBdi_path_prop_lookup_bytes\fR(3DEVINFO),
-\fBdi_path_prop_next\fR(3DEVINFO), \fBdi_prom_init\fR(3DEVINFO),
-\fBdi_prop_bytes\fR(3DEVINFO), \fBdi_prop_lookup_bytes\fR(3DEVINFO),
-\fBdi_prop_next\fR(3DEVINFO), \fBdi_walk_minor\fR(3DEVINFO),
-\fBdi_walk_node\fR(3DEVINFO), \fBattributes\fR(5)
+.BR di_minor_devt (3DEVINFO),
+.BR di_minor_next (3DEVINFO),
+.BR di_path_bus_addr (3DEVINFO),
+.BR di_path_client_next_path (3DEVINFO),
+.BR di_path_prop_bytes (3DEVINFO),
+.BR di_path_prop_lookup_bytes (3DEVINFO),
+.BR di_path_prop_next (3DEVINFO),
+.BR di_prom_init (3DEVINFO),
+.BR di_prop_bytes (3DEVINFO),
+.BR di_prop_lookup_bytes (3DEVINFO),
+.BR di_prop_next (3DEVINFO),
+.BR di_walk_minor (3DEVINFO),
+.BR di_walk_node (3DEVINFO),
+.BR attributes (5)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

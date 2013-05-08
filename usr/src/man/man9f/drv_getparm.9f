@@ -41,7 +41,7 @@ Architecture independent level 1 (DDI/DKI).
 .ne 2
 .mk
 .na
-\fIparm\fR
+.I parm
 .ad
 .RS 8n
 .rt
@@ -52,14 +52,18 @@ The kernel parameter to be obtained. Possible values are:
 .ne 2
 .mk
 .na
-\fBLBOLT\fR
+.B LBOLT
 .ad
 .RS 10n
 .rt
-Read the value of \fBlbolt\fR. \fBlbolt\fR is a \fBclock_t\fR that is
+Read the value of
+.BR lbolt .
+\fBlbolt\fR is a \fBclock_t\fR that is
 unconditionally incremented by one at each clock tick. No special treatment
 is applied when this value overflows the maximum value of the signed
-integral type \fBclock_t\fR. When this occurs, its value will be negative,
+integral type
+.BR clock_t .
+When this occurs, its value will be negative,
 and its magnitude will be decreasing until it again passes zero. It can
 therefore not be relied upon to provide an indication of the amount of time
 that passes since the last system reboot, nor should it be used to mark an
@@ -72,12 +76,16 @@ for timing purposes.
 .ne 2
 .mk
 .na
-\fBPPGRP\fR
+.B PPGRP
 .ad
 .RS 10n
 .rt
 Read the process group identification number. This number determines which
-processes should receive a \fBHANGUP\fR or \fBBREAK\fR signal when detected
+processes should receive a
+.B HANGUP
+or
+.B BREAK
+signal when detected
 by a driver.
 .RE
 
@@ -85,7 +93,7 @@ by a driver.
 .ne 2
 .mk
 .na
-\fBUPROCP\fR
+.B UPROCP
 .ad
 .RS 10n
 .rt
@@ -96,7 +104,7 @@ Read the process table token value.
 .ne 2
 .mk
 .na
-\fBPPID\fR
+.B PPID
 .ad
 .RS 10n
 .rt
@@ -107,7 +115,7 @@ Read process identification number.
 .ne 2
 .mk
 .na
-\fBPSID\fR
+.B PSID
 .ad
 .RS 10n
 .rt
@@ -118,7 +126,7 @@ Read process session identification number.
 .ne 2
 .mk
 .na
-\fBTIME\fR
+.B TIME
 .ad
 .RS 10n
 .rt
@@ -129,7 +137,7 @@ Read time in seconds.
 .ne 2
 .mk
 .na
-\fBUCRED\fR
+.B UCRED
 .ad
 .RS 10n
 .rt
@@ -140,7 +148,7 @@ Return a pointer to the caller's credential structure.
 .ne 2
 .mk
 .na
-\fIvalue_p\fR
+.I value_p
 .ad
 .RS 11n
 .rt
@@ -153,44 +161,86 @@ copied.
 .LP
 Since the release of the Solaris 2.6 operating environment, the
 \fBdrv_getparm()\fR function has been replaced by \fBddi_get_lbolt\fR(9F),
-\fBddi_get_time\fR(9F), and \fBddi_get_pid\fR(9F).
+.BR ddi_get_time (9F),
+and
+.BR ddi_get_pid (9F).
 .sp
 .LP
-The \fBdrv_getparm()\fR function verifies that \fIparm\fR corresponds to a
-kernel parameter that may be read. If the value of \fIparm\fR does not
+The
+.B drv_getparm()
+function verifies that
+.I parm
+corresponds to a
+kernel parameter that may be read. If the value of
+.I parm
+does not
 correspond to a parameter or corresponds to a parameter that may not be
-read, \fB-1\fR is returned. Otherwise, the value of the parameter is stored
-in the data space pointed to by \fIvalue_p\fR.
+read,
+.B -1
+is returned. Otherwise, the value of the parameter is stored
+in the data space pointed to by
+.IR value_p .
 .sp
 .LP
-The \fBdrv_getparm()\fR function does not explicitly check to see whether
+The
+.B drv_getparm()
+function does not explicitly check to see whether
 the device has the appropriate context when the function is called and the
 function does not check for correct alignment in the data space pointed to
-by \fIvalue_p\fR. It is the responsibility of the driver writer to use this
+by
+.IR value_p .
+It is the responsibility of the driver writer to use this
 function only when it is appropriate to do so and to correctly declare the
 data space needed by the driver.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBdrv_getparm()\fR function returns \fB0\fR to indicate success,
+The
+.B drv_getparm()
+function returns
+.B 0
+to indicate success,
 \fB-1\fR to indicate failure. The value stored in the space pointed to by
 \fIvalue_p\fR is the value of the parameter if \fB0\fR is returned, or
-undefined if \fB-1\fR is returned. \fB-1\fR is returned if you specify a
-value other than \fBLBOLT\fR, \fBPPGRP\fR, \fBPPID\fR, \fBPSID\fR,
-\fBTIME\fR, \fBUCRED\fR, or \fBUPROCP\fR. Always check the return code when
+undefined if
+.B -1
+is returned.
+.B -1
+is returned if you specify a
+value other than
+.BR LBOLT ,
+.BR PPGRP ,
+.BR PPID ,
+.BR PSID ,
+.BR TIME ,
+.BR UCRED ,
+or
+.BR UPROCP .
+Always check the return code when
 using this function.
 .SH CONTEXT
 .sp
 .LP
-The \fBdrv_getparm()\fR function can be called from user context only when
-using \fBPPGRP\fR, \fBPPID\fR, \fBPSID\fR, \fBUCRED\fR, or \fBUPROCP\fR. It
+The
+.B drv_getparm()
+function can be called from user context only when
+using
+.BR PPGRP ,
+.BR PPID ,
+.BR PSID ,
+.BR UCRED ,
+or
+.BR UPROCP .
+It
 can be called from user, interrupt, or kernel context when using the
 \fBLBOLT\fR or \fBTIME\fR argument.
 .SH SEE ALSO
 .sp
 .LP
-\fBddi_get_lbolt\fR(9F), \fBddi_get_pid\fR(9F), \fBddi_get_time\fR(9F),
+.BR ddi_get_lbolt (9F),
+.BR ddi_get_pid (9F),
+.BR ddi_get_time (9F),
 \fBbuf\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers

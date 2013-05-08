@@ -77,7 +77,9 @@ In the presence of wildcards, the returned list of filenames includes only
 the names of existing files which match the wildcards. Otherwise, the
 original filename is returned after expansion of tilde and dollar
 expressions, and the result is not checked against existing files. This
-mimics the file-globbing behavior of the UNIX \fBtcsh\fR shell.
+mimics the file-globbing behavior of the UNIX
+.B tcsh
+shell.
 .sp
 .LP
 The supported wildcards and their meanings are:
@@ -85,7 +87,7 @@ The supported wildcards and their meanings are:
 .ne 2
 .mk
 .na
-\fB*\fR
+.B *
 .ad
 .RS 12n
 .rt
@@ -96,7 +98,7 @@ Match any sequence of zero or more characters.
 .ne 2
 .mk
 .na
-\fB?\fR
+.B ?
 .ad
 .RS 12n
 .rt
@@ -111,7 +113,10 @@ Match any single character.
 .ad
 .RS 12n
 .rt
-Match any single character that appears in \fIchars\fR. If \fIchars\fR
+Match any single character that appears in
+.IR chars .
+If
+.IR chars
 contains an expression of the form a-b, then any character between a and b,
 including a and b, matches. The '-' character loses its special meaning as a
 range specifier when it appears at the start of the sequence of characters.
@@ -130,7 +135,8 @@ to be part of the range, the '-' should come first and the ']' second.
 .RS 12n
 .rt
 The same as [\fIchars\fR] except that it matches any single character that
-does not appear in \fIchars\fR.
+does not appear in
+.IR chars .
 .RE
 
 .sp
@@ -140,26 +146,40 @@ Note that wildcards never match the initial dot in filenames that start with
 again mimics the globbing behavior of most UNIX shells, and its rational is
 based in the fact that in UNIX, files with names that start with \&'.' are
 usually hidden configuration files, which are not listed by default by the
-\fBls\fR(1) command.
+.BR ls (1)
+command.
 .sp
 .LP
-The \fBnew_ExpandFile()\fR function creates the resources used by the
+The
+.B new_ExpandFile()
+function creates the resources used by the
 \fBef_expand_file()\fR function. In particular, it maintains the memory that
 is used to record the array of matching file names that is returned by
 \fBef_expand_file()\fR. This array is expanded as needed, so there is no
 builtin limit to the number of files that can be matched.
 .sp
 .LP
-The \fBdel_ExpandFile()\fR function deletes the resources that were returned
-by a previous call to \fBnew_ExpandFile()\fR. It always returns NULL (that
+The
+.B del_ExpandFile()
+function deletes the resources that were returned
+by a previous call to
+.BR new_ExpandFile() .
+It always returns NULL (that
 is, a deleted object). It does nothing if the \fIef\fR argument is NULL.
 .sp
 .LP
 The \fBef_expand_file()\fR function performs filename expansion. Its first
-argument is a resource object returned by \fBnew_ExpandFile()\fR. A pointer
-to the start of the filename to be matched is passed by the \fIpath\fR
+argument is a resource object returned by
+.BR new_ExpandFile() .
+A pointer
+to the start of the filename to be matched is passed by the
+.IR path
 argument. This must be a normal null-terminated string, but unless a length
-of -1 is passed in \fIpathlen\fR, only the first \fIpathlen\fR characters
+of -1 is passed in
+.IR pathlen ,
+only the first
+.I pathlen
+characters
 will be used in the filename expansion. If the length is specified as -1, the
 whole of the string will be expanded. A container of the following type is
 returned by \fBef_expand_file()\fR.
@@ -178,29 +198,43 @@ typedef struct {
 .LP
 The \fBef_expand_file()\fR function returns a pointer to a container whose
 contents are the results of the expansion. If there were no wildcards in the
-filename, the \fInfile\fR member will be 1, and the \fIexists\fR member
+filename, the \fInfile\fR member will be 1, and the
+.I exists
+member
 should be queried if it is important to know if the expanded file currently
 exists. If there were wild cards, then the contained \fIfiles\fR[] array will
 contain the names of the \fInfile\fR existing files that matched the
-wild-carded filename, and the \fIexists\fR member will have the value 1. Note
+wild-carded filename, and the
+.I exists
+member will have the value 1. Note
 that the returned container belongs to the specified ef object, and its
 contents will change on each call, so if you need to retain the results of
-more than one call to \fBef_expand_file()\fR, you should either make a
+more than one call to
+.BR ef_expand_file() ,
+you should either make a
 private copy of the returned results, or create multiple file-expansion
-resource objects with multiple calls to \fBnew_ExpandFile()\fR.
+resource objects with multiple calls to
+.BR new_ExpandFile() .
 .sp
 .LP
-On error, \fINULL\fR is returned, and an explanation of the error can be
+On error,
+.I NULL
+is returned, and an explanation of the error can be
 determined by calling \fBef_last_error\fR(\fIef\fR).
 .sp
 .LP
 The \fBef_last_error()\fR function returns the message which describes the
-error that occurred on the last call to \fBef_expand_file()\fR, for the given
+error that occurred on the last call to
+.BR ef_expand_file() ,
+for the given
 (\fBExpandFile *\fIef\fR) resource object.
 .sp
 .LP
 The \fBef_list_expansions()\fR function provides a convenient way to list
-the filename expansions returned by \fBef_expand_file()\fR. Like the \fBls\fR
+the filename expansions returned by
+.BR ef_expand_file() .
+Like the
+.BR ls
 utility, it arranges the filenames into equal width columns, each column
 having the width of the largest file. The number of columns used is thus
 determined by the length of the longest filename, and the specified terminal
@@ -212,13 +246,16 @@ stream specified by the \fIfp\fR argument.
 .sp
 .LP
 It is safe to use the facilities of this module in multiple threads,
-provided that each thread uses a separately allocated \fBExpandFile\fR
+provided that each thread uses a separately allocated
+.BR ExpandFile
 object. In other words, if two threads want to do file expansion, they should
-each call \fBnew_ExpandFile()\fR to allocate their own file-expansion
+each call
+.B new_ExpandFile()
+to allocate their own file-expansion
 objects.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRUse of file expansion function.
+\fBExample 1\fR Use of file expansion function.
 .sp
 .LP
 The following is a complete example of how to use the file expansion
@@ -261,7 +298,9 @@ int main(int argc, char *argv[])
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -280,5 +319,7 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBcpl_complete_word\fR(3TECLA), \fBgl_get_line\fR(3TECLA),
-\fBlibtecla\fR(3LIB), \fBpca_lookup_file\fR(3TECLA), \fBattributes\fR(5)
+.BR cpl_complete_word (3TECLA),
+.BR gl_get_line (3TECLA),
+.BR libtecla (3LIB),
+\fBpca_lookup_file\fR(3TECLA), \fBattributes\fR(5)

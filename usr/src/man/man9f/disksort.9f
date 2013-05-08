@@ -41,54 +41,76 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIdp\fR
+.I dp
 .ad
 .RS 6n
 .rt
-A pointer to a \fBdiskhd\fR structure. A \fBdiskhd\fR structure is
+A pointer to a
+.B diskhd
+structure. A
+.B diskhd
+structure is
 essentially identical to head of a buffer structure (see \fBbuf\fR(9S)). The
 only defined items of interest for this structure are the \fBav_forw\fR and
 \fBav_back\fR structure elements which are used to maintain the front and
-tail pointers of the forward linked \fBI/O\fR request queue.
+tail pointers of the forward linked
+.B I/O
+request queue.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIbp\fR
+.I bp
 .ad
 .RS 6n
 .rt
-A pointer to a buffer structure. Typically this is the \fBI/O\fR request
+A pointer to a buffer structure. Typically this is the
+.B I/O
+request
 that the driver receives in its strategy routine (see \fBstrategy\fR(9E)).
-The driver is responsible for initializing the \fBb_resid\fR structure
-element to a meaningful sort key value prior to calling \fBdisksort()\fR.
+The driver is responsible for initializing the
+.B b_resid
+structure
+element to a meaningful sort key value prior to calling
+.BR disksort() .
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-The function \fBdisksort()\fR sorts a pointer to a buffer into a single
+The function
+.B disksort()
+sorts a pointer to a buffer into a single
 forward linked list headed by the \fBav_forw\fR element of the argument
-\fI*dp\fR.
+.IR *dp .
 .sp
 .LP
 It uses a one-way elevator algorithm that sorts buffers into the queue in
 ascending order based upon a key value held in the argument buffer structure
-element \fBb_resid\fR.
+element
+.BR b_resid .
 .sp
 .LP
 This value can either be the driver calculated cylinder number for the
 \fBI/O\fR request described by the buffer argument, or simply the absolute
-logical block for the \fBI/O\fR request, depending on how fine grained the
+logical block for the
+.B I/O
+request, depending on how fine grained the
 sort is desired to be or how applicable either quantity is to the device in
 question.
 .sp
 .LP
 The head of the linked list is found by use of the \fBav_forw\fR structure
-element of the argument \fI*dp\fR. The tail of the linked list is found by
-use of the \fBav_back\fR structure element of the argument \fI*dp\fR. The
+element of the argument
+.IR *dp .
+The tail of the linked list is found by
+use of the
+.B av_back
+structure element of the argument
+.IR *dp .
+The
 \fBav_forw\fR element of the \fI*bp\fR argument is used by \fBdisksort()\fR
 to maintain the forward linkage. The value at the head of the list
 presumably indicates the currently active disk area.
@@ -99,12 +121,15 @@ This function can be called from user, interrupt, or kernel context.
 .SH SEE ALSO
 .sp
 .LP
-\fBstrategy\fR(9E), \fBbuf\fR(9S)
+.BR strategy (9E),
+\fBbuf\fR(9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-The \fBdisksort()\fR function does no locking. Therefore, any locking is
+The
+.B disksort()
+function does no locking. Therefore, any locking is
 completely the responsibility of the caller.

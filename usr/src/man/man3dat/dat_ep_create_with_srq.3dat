@@ -47,7 +47,7 @@ DAT_RETURN
 .ne 2
 .mk
 .na
-\fIia_handle\fR
+.I ia_handle
 .ad
 .RS 22n
 .rt
@@ -59,7 +59,7 @@ belongs.
 .ne 2
 .mk
 .na
-\fIpz_handle\fR
+.I pz_handle
 .ad
 .RS 22n
 .rt
@@ -70,12 +70,14 @@ Handle for an instance of the Protection Zone.
 .ne 2
 .mk
 .na
-\fIrecv_evd_handle\fR
+.I recv_evd_handle
 .ad
 .RS 22n
 .rt
 Handle for the Event Dispatcher where events for completions of incoming
-(receive) DTOs are reported. \fBDAT_HANDLE_NULL\fR specifies that the
+(receive) DTOs are reported.
+.B DAT_HANDLE_NULL
+specifies that the
 Consumer is not interested in events for completions of receives.
 .RE
 
@@ -83,7 +85,7 @@ Consumer is not interested in events for completions of receives.
 .ne 2
 .mk
 .na
-\fIrequest_evd_handle\fR
+.I request_evd_handle
 .ad
 .RS 22n
 .rt
@@ -97,7 +99,7 @@ events for completions of requests.
 .ne 2
 .mk
 .na
-\fIconnect_evd_handle\fR
+.I connect_evd_handle
 .ad
 .RS 22n
 .rt
@@ -110,7 +112,7 @@ connection events for now.
 .ne 2
 .mk
 .na
-\fIsrq_handle\fR
+.I srq_handle
 .ad
 .RS 22n
 .rt
@@ -121,7 +123,7 @@ Handle for an instance of the Shared Receive Queue.
 .ne 2
 .mk
 .na
-\fIep_attributes\fR
+.I ep_attributes
 .ad
 .RS 22n
 .rt
@@ -133,7 +135,7 @@ attributes. Cannot be \fINULL\fR.
 .ne 2
 .mk
 .na
-\fIep_handle\fR
+.I ep_handle
 .ad
 .RS 22n
 .rt
@@ -143,16 +145,23 @@ Handle for the created instance of an Endpoint.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBdat_ep_create_with_srq()\fR function creates an instance of an
+The
+.B dat_ep_create_with_srq()
+function creates an instance of an
 Endpoint that is using SRQ for Recv buffers is provided to the Consumer as
-\fIep_handle\fR. The value of \fIep_handle\fR is not defined if the
+.IR ep_handle .
+The value of
+.I ep_handle
+is not defined if the
 \fBDAT_RETURN\fR is not \fBDAT_SUCCESS\fR.
 .sp
 .LP
 The Endpoint is created in the Unconnected state.
 .sp
 .LP
-Protection Zone \fIpz_handle\fR allows Consumers to control what local
+Protection Zone
+.I pz_handle
+allows Consumers to control what local
 memory the Endpoint can access for DTOs except Recv and what memory remote
 RDMA operations can access over the connection of a created Endpoint. Only
 memory referred to by LMRs and RMRs that match the Endpoint Protection Zone
@@ -161,25 +170,36 @@ PZ. The SRQ PZ might or might not be the same as the EP one. Check Provider
 attribute for the support of different PZs between SRQ and its EPs.
 .sp
 .LP
-The \fIrecv_evd_handle\fR and \fIrequest_evd_handle\fR arguments are Event
+The
+.I recv_evd_handle
+and
+.I request_evd_handle
+arguments are Event
 Dispatcher instances where the Consumer collects completion notifications of
 DTOs. Completions of Receive DTOs are reported in \fIrecv_evd_handle\fR
 Event Dispatcher, and completions of Send, RDMA Read, and RDMA Write DTOs
-are reported in \fIrequest_evd_handle\fR Event Dispatcher. All completion
+are reported in
+.I request_evd_handle
+Event Dispatcher. All completion
 notifications of RMR bindings are reported to a Consumer in
 \fIrequest_evd_handle\fR Event Dispatcher.
 .sp
 .LP
 All Connection events for the connected Endpoint are reported to the
-Consumer through \fIconnect_evd_handle\fR Event Dispatcher.
+Consumer through
+.I connect_evd_handle
+Event Dispatcher.
 .sp
 .LP
-Shared Receive Queue \fIsrq_handle\fR specifies where the EP will dequeue
+Shared Receive Queue
+.I srq_handle
+specifies where the EP will dequeue
 Recv DTO buffers.
 .sp
 .LP
 The created EP can be reset. The relationship between SRQ and EP is not
-effected by \fBdat_ep_reset\fR(3DAT).
+effected by
+.BR dat_ep_reset (3DAT).
 .sp
 .LP
 SRQ can not be disassociated or replaced from created EP. The only way to
@@ -191,18 +211,33 @@ must be posted to the SRQ to be used for the created Endpoint.
 .sp
 .LP
 The ep_attributes parameter specifies the initial attributes of the created
-Endpoint. Consumer can not specify \fINULL\fR for \fIep_attributes\fR but
+Endpoint. Consumer can not specify
+.I NULL
+for
+.I ep_attributes
+but
 can specify values only for the parameters needed and default for the
 rest.
 .sp
 .LP
-For \fImax_request_dtos\fR and \fImax_request_iov\fR, the created Endpoint
+For
+.I max_request_dtos
+and
+.IR max_request_iov ,
+the created Endpoint
 will have at least the Consumer requested values but might have larger
 values. Consumer can query the created Endpoint to find out the actual
 values for these attributes. Created Endpoint has the exact Consumer
-requested values for \fImax_recv_dtos\fR, \fImax_message_size\fR,
-\fImax_rdma_size\fR, \fImax_ rdma_read_in\fR, and \fImax_rdma_read_out\fR.
-For all other attributes, except \fImax_recv_iov\fR that is ignored, the
+requested values for
+.IR max_recv_dtos ,
+.IR max_message_size ,
+.IR max_rdma_size ,
+.IR "max_ rdma_read_in" ,
+and
+.IR max_rdma_read_out .
+For all other attributes, except
+.I max_recv_iov
+that is ignored, the
 created Endpoint has the exact values requested by Consumer. If Provider
 cannot satisfy the Consumer requested attribute values the operation
 fails.
@@ -211,7 +246,7 @@ fails.
 .ne 2
 .mk
 .na
-\fBDAT_SUCCESS\fR
+.B DAT_SUCCESS
 .ad
 .RS 30n
 .rt
@@ -222,7 +257,7 @@ The operation was successful.
 .ne 2
 .mk
 .na
-\fBDAT_INSUFFICIENT_RESOURCES\fR
+.B DAT_INSUFFICIENT_RESOURCES
 .ad
 .RS 30n
 .rt
@@ -233,7 +268,7 @@ The operation failed due to resource limitations.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_HANDLE\fR
+.B DAT_INVALID_HANDLE
 .ad
 .RS 30n
 .rt
@@ -244,13 +279,15 @@ Invalid DAT handle.
 .ne 2
 .mk
 .na
-\fBDAT_INVALID_PARAMETER\fR
+.B DAT_INVALID_PARAMETER
 .ad
 .RS 30n
 .rt
 Invalid parameter. One of the requested EP parameters or attributes was
 invalid or a combination of attributes or parameters is invalid. For
-example, \fIpz_handle\fR specified does not match the one for SRQ or the
+example,
+.I pz_handle
+specified does not match the one for SRQ or the
 requested maximum RDMA Read IOV exceeds IA capabilities..
 .RE
 
@@ -258,7 +295,7 @@ requested maximum RDMA Read IOV exceeds IA capabilities..
 .ne 2
 .mk
 .na
-\fBDAT_MODEL_NOT_SUPPORTED\fR
+.B DAT_MODEL_NOT_SUPPORTED
 .ad
 .RS 30n
 .rt
@@ -274,8 +311,10 @@ Consumers can do the following:
 .RS +4
 .TP
 1.
-Request a connection on the Endpoint through \fBdat_ep_connect\fR(3DAT) or
-\fBdat_ep_dup_connect\fR(3DAT) for the active side of the connection
+Request a connection on the Endpoint through
+.BR dat_ep_connect "(3DAT) or"
+.BR dat_ep_dup_connect (3DAT)
+for the active side of the connection
 model.
 .RE
 .RS +4
@@ -295,35 +334,51 @@ the Endpoint associated with it.
 .RE
 .sp
 .LP
-The Consumer cannot specify a \fIrequest_evd_handle\fR
+The Consumer cannot specify a
+.IR request_evd_handle
 (\fIrecv_evd_handle\fR) with Request Completion Flags (Recv Completion
 Flags) that do not match the other Endpoint Completion Flags for the DTO/RMR
 completion streams that use the same EVD. If \fIrequest_evd_handle\fR
 (\fIrecv_evd_ handle\fR) is used for request (recv) completions of an
 Endpoint whose associated Request (Recv) Completion Flag attribute is
-\fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR, the Request Completion Flags and Recv
+.BR DAT_COMPLETION_UNSIGNALLED_FLAG ,
+the Request Completion Flags and Recv
 Completion Flags for all Endpoint completion streams that use the EVD must
 specify the same. By definition, completions of all Recv DTO posted to SRQ
-complete with Signal. Analogously, if \fIrecv_evd_handle\fR is used for recv
+complete with Signal. Analogously, if
+.I recv_evd_handle
+is used for recv
 completions of an Endpoint whose associated Recv Completion Flag attribute
-is \fBDAT_COMPLETION_SOLICITED_WAIT\fR, the Recv Completion Flags for all
+is
+.BR DAT_COMPLETION_SOLICITED_WAIT ,
+the Recv Completion Flags for all
 Endpoint Recv completion streams that use the same EVD must specify the same
 Recv Completion Flags attribute value and the EVD cannot be used for any
-other event stream types. If \fIrecv_evd_handle\fR is used for Recv
+other event stream types. If
+.I recv_evd_handle
+is used for Recv
 completions of an Endpoint that uses SRQ and whose Recv Completion Flag
-attribute is \fBDAT_COMPLETION_EVD_THRESHOLD\fR then all Endpoint DTO
+attribute is
+.B DAT_COMPLETION_EVD_THRESHOLD
+then all Endpoint DTO
 completion streams (request and/or recv completion streams) that use that
-\fIrecv_evd_handle\fR must specify \fBDAT_COMPLETION_EVD_THRESHOLD\fR. Other
+\fIrecv_evd_handle\fR must specify
+.BR DAT_COMPLETION_EVD_THRESHOLD .
+Other
 event stream types can also use the same EVD.
 .sp
 .LP
-Consumers might want to use \fBDAT_COMPLETION_UNSIGNALLED_FLAG\fR for
+Consumers might want to use
+.B DAT_COMPLETION_UNSIGNALLED_FLAG
+for
 Request and/or Recv completions when they control locally with posted
 DTO/RMR completion flag (not needed for Recv posted to SRQ) whether posted
 DTO/RMR completes with Signal or not. Consumers might want to use
 \fBDAT_COMPLETION_SOLICITED_WAIT\fR for Recv completions when the remote
 sender side control whether posted Recv competes with Signal or not or not.
-uDAPL Consumers might want to use \fBDAT_COMPLETION_EVD_THRESHOLD\fR for
+uDAPL Consumers might want to use
+.B DAT_COMPLETION_EVD_THRESHOLD
+for
 Request and/or Recv completions when they control waiter unblocking with the
 \fIthreshold\fR parameter of the \fBdat_evd_wait\fR(3DAT).
 .sp
@@ -374,8 +429,11 @@ Transport Endpoint that might not be feasible for all transports.
 The Provider allocates a Transport-specific Endpoint without worrying about
 impact on it from previous connections or connection establishment attempts.
 Hide the Transport-specific TimeWait state or CM timeout of the underlying
-transport Endpoint within \fBdat_ep_connect\fR(3DAT),
-\fBdat_ep_dup_connect\fR(3DAT), or \fBdat_cr_accept\fR(3DAT). On the Active
+transport Endpoint within
+.BR dat_ep_connect (3DAT),
+.BR dat_ep_dup_connect (3DAT),
+or
+.BR dat_cr_accept "(3DAT). On the Active"
 side of the connection establishment, if the remnants of a previous
 connection for Transport-specific Endpoint can be hidden within the Timeout
 parameter, do so. If not, generating \fBDAT_CONNECTION_
@@ -419,7 +477,9 @@ DTOs.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -438,6 +498,7 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBdat_ep_create\fR(3DAT), \fBdat_srq_create\fR(3DAT),
+.BR dat_ep_create (3DAT),
+.BR dat_srq_create (3DAT),
 \fBdat_srq_free\fR(3DAT), \fBdat_srq_query\fR(3DAT), \fBlibdat\fR(3LIB),
-\fBattributes\fR(5)
+.BR attributes (5)

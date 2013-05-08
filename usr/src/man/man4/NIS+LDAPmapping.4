@@ -30,10 +30,13 @@ NIS+LDAPmapping \- configuration file for mapping between NIS+ and LDAP
 .SH DESCRIPTION
 .sp
 .LP
-The \fB/var/nis/NIS+LDAPmapping\fR configuration file contains the mapping
+The
+.B /var/nis/NIS+LDAPmapping
+configuration file contains the mapping
 between NIS+ objects, particularly table entries, and LDAP entries and
 attributes. This information can come from LDAP, from this file, from the
-\fBrpc.nisd\fR(1M) command line, or from a combination of all three. The
+.BR rpc.nisd (1M)
+command line, or from a combination of all three. The
 values in this file supersede those obtained from the LDAP server, but
 values from the command line supersede those in the file.
 .sp
@@ -54,7 +57,9 @@ attribute value.
 .SS "Getting Started"
 .sp
 .LP
-The default \fBrpc.nisd\fR(4) configuration file at
+The default
+.BR rpc.nisd (4)
+configuration file at
 \fB/etc/default/rpc.nisd\fR and the template file at
 \fB/var/nis/NIS+LDAPmapping.template\fR are sufficient for the minimum NIS+
 installation. The following assumptions are made:
@@ -62,32 +67,42 @@ installation. The following assumptions are made:
 .TP
 1.
 The NIS+ standard directories, tables, and groups created by
-\fBnissetup\fR(1M) or \fBnisserver\fR(1M) should be mapped. However, the
+.BR nissetup (1M)
+or
+.BR nisserver "(1M) should be mapped. However, the"
 \fBtimezone.org_dir\fR and \fBclient_info.org_dir\fR tables should not be
 mapped.
 .RE
 .RS +4
 .TP
 2.
-The NIS+ objects for which the \fBrpc.nisd\fR is a master are mapped both
+The NIS+ objects for which the
+.B rpc.nisd
+is a master are mapped both
 to and from LDAP.
 .RE
 .RS +4
 .TP
 3.
-Those NIS+ objects for which the \fBrpc.nisd\fR is a replica are mapped
+Those NIS+ objects for which the
+.B rpc.nisd
+is a replica are mapped
 from LDAP.
 .RE
 .RS +4
 .TP
 4.
 The LDAP server is running on the local machine, and it can be reached at
-port 389 on the \fB127.0.0.1\fR IP address.
+port 389 on the
+.B 127.0.0.1
+IP address.
 .RE
 .RS +4
 .TP
 5.
-The authentication method is \fBnone\fR, meaning that all LDAP calls,
+The authentication method is
+.BR none ,
+meaning that all LDAP calls,
 whether for reading or writing, are unauthenticated. There is no transport
 layer security.
 .RE
@@ -100,30 +115,54 @@ are valid.
 .RS +4
 .TP
 7.
-The LDAP server supports \fIRFC 2307bis\fR. You want to use the \fIRFC
+The LDAP server supports
+.IR "RFC 2307bis" .
+You want to use the \fIRFC
 2307bis\fR object classes and attributes. See Notes
 .RE
 .RS +4
 .TP
 8.
-The \fBnisplusObject\fR attribute, the \fBnisplusObjectContainer\fR object
-class, and the \fBou=nisPlus\fR container have been created.
+The
+.B nisplusObject
+attribute, the
+.B nisplusObjectContainer
+object
+class, and the
+.B ou=nisPlus
+container have been created.
 .RE
 .RS +4
 .TP
 9.
 You do not need to store or retrieve table entry owner, group owner, entry
 access rights, or entry object TTL in or from LDAP. For more information on
-these pseudo-columns, see the discussion of \fBzo_owner\fR, and the like, in
-the description of the \fBnisplusLDAPcolumnFromAttribute\fR attribute.
+these pseudo-columns, see the discussion of
+.BR zo_owner ,
+and the like, in
+the description of the
+.B nisplusLDAPcolumnFromAttribute
+attribute.
 .RE
 .RS +4
 .TP
 10.
-NIS+ principal names and RPC netnames (the \fBcname\fR and \fBauth_name\fR
-columns, respectively, in the \fBcred.org_dir\fR table) should be derived
-from the owner of the \fBcred\fR table. For example, if the owner is
-\fBnpadm.my.dom.ain.\fR, the \fBcname\fR and \fBauth_name\fR values for
+NIS+ principal names and RPC netnames (the
+.B cname
+and
+.BR auth_name
+columns, respectively, in the
+.B cred.org_dir
+table) should be derived
+from the owner of the
+.B cred
+table. For example, if the owner is
+.BR npadm.my.dom.ain. ,
+the
+.B cname
+and
+.B auth_name
+values for
 entries created from LDAP data will be of the form:
 .sp
 .in +2
@@ -146,10 +185,14 @@ respectively.
 .LP
 If these assumptions are true, you can enable mapping by copying the
 \fB/var/nis/NIS+LDAPmapping.template\fR file to
-\fB/var/nis/NIS+LDAPmapping\fR and restart the \fBrpc.nisd\fR. If you want
+\fB/var/nis/NIS+LDAPmapping\fR and restart the
+.BR rpc.nisd .
+If you want
 to either upload NIS+ data to LDAP, or download LDAP data to NIS+, see the
-description of the \fBnisplusLDAPinitialUpdateAction\fR attribute on
-\fBrpc.nisd\fR(4).
+description of the
+.B nisplusLDAPinitialUpdateAction
+attribute on
+.BR rpc.nisd (4).
 .sp
 .LP
 If one or more of the assumptions are false, do the following:
@@ -158,21 +201,30 @@ If one or more of the assumptions are false, do the following:
 1.
 To remove mappings, identify the database id of the NIS+ object that should
 not be mapped, then delete or comment out the
-\fBnisplusLDAPdatabaseIdMapping\fR, \fBnisplusLDAPentryTtl\fR,
-\fBnisplusLDAPobjectDN\fR, \fBnisplusLDAPattributeFromColumn\fR, and
+.BR nisplusLDAPdatabaseIdMapping ,
+.BR nisplusLDAPentryTtl ,
+.BR nisplusLDAPobjectDN ,
+.BR nisplusLDAPattributeFromColumn ,
+and
 \fBnisplusLDAPcolumnFromAttribute\fR attributes for that database id.
 .sp
 To add mappings, find an existing mapping for a NIS+ object similar to the
 one you want to map, and then use that mapping as a template to create the
-\fBnisplusLDAPdatabaseIdMapping\fR, \fBnisplusLDAPentryTtl\fR,
-\fBnisplusLDAPobjectDN\fR, \fBnisplusLDAPattributeFromColumn\fR, and
+.BR nisplusLDAPdatabaseIdMapping ,
+.BR nisplusLDAPentryTtl ,
+.BR nisplusLDAPobjectDN ,
+.BR nisplusLDAPattributeFromColumn ,
+and
 nisplusLDAPcolumnFromAttribute\fR attributes for the new mapping. The new
 mapping must have a unique database id.
 .sp
-To enable mapping of the \fBtimezone\fR or \fBclient_info\fR tables,
+To enable mapping of the
+.B timezone
+or \fBclient_info\fR tables,
 consult your LDAP server documentation about how to create attributes and
 object classes, and set up the following. The following is LDIF data for
-\fBldapadd\fR(1). Attribute and object class OIDs are examples only.
+.BR ldapadd (1).
+Attribute and object class OIDs are examples only.
 .sp
 For \fBclient_info\fR:
 .sp
@@ -207,7 +259,8 @@ objectclasses:  ( 1.3.6.1.4.1.42.2.27.5.42.42.13.0 \e
 .in -2
 
 For the \fBou=ClientInfo\fR container, substitute your actual search base
-for \fIsearchBase\fR):
+for
+.IR searchBase ):
 .sp
 .in +2
 .nf
@@ -218,7 +271,8 @@ objectClass: organizationalUnit
 .fi
 .in -2
 
-For \fBtimezone\fR:
+For
+.BR timezone :
 .sp
 .in +2
 .nf
@@ -241,7 +295,9 @@ objectclasses:  ( 1.3.6.1.4.1.42.2.27.5.42.42.16.0 \e
 .fi
 .in -2
 
-For the \fBou=Timezone\fR container:
+For the
+.B ou=Timezone
+container:
 .sp
 .in +2
 .nf
@@ -252,19 +308,33 @@ objectClass: organizationalUnit
 .fi
 .in -2
 
-Uncomment the mapping attributes for \fBtimezone\fR and \fBclient_info\fR
-in the mapping file, and restart the \fBrpc.nisd\fR(1M) daemon.
+Uncomment the mapping attributes for
+.B timezone
+and \fBclient_info\fR
+in the mapping file, and restart the
+.BR rpc.nisd (1M)
+daemon.
 .RE
 .RS +4
 .TP
 2.
-To disable write mapping, edit the \fBnisplusLDAPobjectDN\fR value for the
-appropriate database id. Remove the \fBwriteObjectSpec\fR value, leaving
-only the \fBreadObjectSpec\fR value. Make sure there are no trailing
+To disable write mapping, edit the
+.B nisplusLDAPobjectDN
+value for the
+appropriate database id. Remove the
+.B writeObjectSpec
+value, leaving
+only the
+.B readObjectSpec
+value. Make sure there are no trailing
 colons.
 .sp
-To disable read mapping, remove the \fBreadObjectSpec\fR, leaving the
-database id, two colons, and the \fBwriteObjectSpec\fR value.
+To disable read mapping, remove the
+.BR readObjectSpec ,
+leaving the
+database id, two colons, and the
+.B writeObjectSpec
+value.
 .RE
 .RS +4
 .TP
@@ -282,10 +352,14 @@ edit the \fBnisplusLDAPpreferredServerList\fR value.
 .RS +4
 .TP
 5.
-Edit the \fBauthenticationMethod\fR attribute value to the authentication
+Edit the
+.B authenticationMethod
+attribute value to the authentication
 method that you want to use. If configuration data is retrieved from LDAP,
 edit the \fBnisplusLDAPconfigAuthenticationMethod\fR value. If the method is
-anything other than \fBnone\fR, you will need to specify one or more of the
+anything other than
+.BR none ,
+you will need to specify one or more of the
 following, depending upon the method.
 .sp
 .ne 2
@@ -295,7 +369,7 @@ following, depending upon the method.
 .ad
 .br
 .na
-\fBnisplusLDAPproxyUser\fR
+.B nisplusLDAPproxyUser
 .ad
 .sp .6
 .RS 4n
@@ -310,7 +384,7 @@ The bind-DN to use for authentication.
 .ad
 .br
 .na
-\fBnisplusLDAPproxyPassword\fR
+.B nisplusLDAPproxyPassword
 .ad
 .sp .6
 .RS 4n
@@ -320,7 +394,9 @@ users.
 .RE
 
 To use transport layer security, set \fBnisplusLDAPconfigTLS\fR or
-\fBnisplusLDAPTLS\fR to \fBssl\fR, and set
+\fBnisplusLDAPTLS\fR to
+.BR ssl ,
+and set
 \fBnisplusLDAPconfigTLSCertificateDBPath\fR or
 \fBnisplusLDAPTLSCertificateDBPath\fR to the file containing the certificate
 DB. In order to successfully use authentication and transport layer
@@ -371,8 +447,13 @@ objectclasses: ( 1.3.6.1.4.1.42.2.27.5.42.42.2.0 \e
 .in -2
 
 \fBou=nisPlus\fR is a container assumed to reside at the
-\fBdefaultSearchBase\fR. See \fBrpc.nisd\fR(4). The following LDIF input to
-\fBldapadd\fR(1) will create the \fBou=nisPlus container\fR. Replace
+\fBdefaultSearchBase\fR. See
+.BR rpc.nisd (4).
+The following LDIF input to
+.BR ldapadd (1)
+will create the
+.BR "ou=nisPlus container" .
+Replace
 \fBdc=some,dc=domain\fR with your actual base.
 .sp
 .in +2
@@ -384,21 +465,33 @@ objectClass: organizationalUnit
 .fi
 .in -2
 
-The \fBnisplusObjectContainer\fR, \fBnisplusObject\fR, and \fBou=nisPlus\fR
-labels are suggestions. If you change \fBnisplusObjectContainer\fR, or
+The
+.BR nisplusObjectContainer ,
+.BR nisplusObject ,
+and
+.BR ou=nisPlus
+labels are suggestions. If you change
+.BR nisplusObjectContainer ,
+or
 ou=nisPlus\fR, edit the mapping file to reflect this. To change
-\fBnisplusObject\fR, for example, to \fBmyObject\fR, add
+.BR nisplusObject ,
+for example, to
+.BR myObject ,
+add
 \fBnisplusObject=myObject\fR to the \fBfilterAttrValList\fR and
 \fBattrValList\fR portions of the \fBreadObjectSpec\fR and
 \fBwriteObjectSpec\fR of the \fBnisplusLDAPobjectDN\fR value for the
-mapping. See the description of \fBnisplusLDAPobjectDN\fR below.
+mapping. See the description of
+.B nisplusLDAPobjectDN
+below.
 .RE
 .RS +4
 .TP
 9.
 Refer to your LDAP server documentation for how to create attributes and
 object classes, and set up the following. The following is LDIF data for
-\fBldapadd\fR(1). Attribute and object class OIDs are examples only.
+.BR ldapadd (1).
+Attribute and object class OIDs are examples only.
 .sp
 .in +2
 .nf
@@ -435,13 +528,21 @@ objectclasses:  ( 1.3.6.1.4.1.42.2.27.5.42.42.5.0 \e
 
 Edit the mapping file to enable storing entry owner, group, access, and TTL
 in LDAP. The template mapping file \fB/var/nis/NIS+LDAPmapping.template\fR
-has commented-out sections for the \fBpasswd\fR and \fBcred\fR database ids
+has commented-out sections for the
+.B passwd
+and
+.B cred
+database ids
 that show how this can be done.
 .RE
 .RS +4
 .TP
 10.
-To preserve the \fBcname\fR and \fBauth_name\fR column data when
+To preserve the
+.B cname
+and
+.B auth_name
+column data when
 \fBcred.org_dir\fR entries are stored in NIS+, you can create the
 \fBnisplusPrincipalName\fR and \fBnisplusNetname\fR attributes. See your
 LDAP server documentation for how to create attributes and object classes,
@@ -473,13 +574,24 @@ objectclasses:  ( 1.3.6.1.4.1.42.2.27.5.42.42.10.0
 .fi
 .in -2
 
-Edit the mapping file to use the new \fBnisplusPrincipalName\fR and
-\fBnisplusNetname\fR. The template \fB/var/nis/NIS+LDAPmapping\fR file
-contains commented-out sections that support the \fBnisplusPrincipalName\fR
-and \fBnisplusNetname\fR attributes. See the \fBnisplusLDAPobjectDN\fR,
+Edit the mapping file to use the new
+.B nisplusPrincipalName
+and
+.BR nisplusNetname .
+The template
+.B /var/nis/NIS+LDAPmapping
+file
+.RB "contains commented-out sections that support the" " nisplusPrincipalName"
+and
+.B nisplusNetname
+attributes. See the \fBnisplusLDAPobjectDN\fR,
 \fBnisplusLDAPattributeFromColumn\fR and
 \fBnisplusLDAPcolumnFromAttribute\fR attribute values for the
-\fBcredlocal\fR, \fBcreduser\fR, and \fBcrednode\fR database ids .
+.BR credlocal ,
+.BR creduser ,
+and
+.B crednode
+database ids .
 .RE
 .SS "Attributes for Data Mapping"
 .sp
@@ -496,7 +608,7 @@ the following ways:
 .ne 2
 .mk
 .na
-\fBLDAP\fR
+.B LDAP
 .ad
 .RS 11n
 .rt
@@ -507,7 +619,7 @@ Multi-valued attributes, where each value corresponds to one database id.
 .ne 2
 .mk
 .na
-\fBFile\fR
+.B File
 .ad
 .RS 11n
 .rt
@@ -519,7 +631,7 @@ starts with the name of the attribute
 .ne 2
 .mk
 .na
-\fBCommand\fR
+.B Command
 .ad
 .RS 11n
 .rt
@@ -535,13 +647,15 @@ escaped if they are part of syntactic elements.
 .ne 2
 .mk
 .na
-\fBnisplusLDAPdatabaseIdMapping\fR
+.B nisplusLDAPdatabaseIdMapping
 .ad
 .sp .6
 .RS 4n
 Maps a database id to a NIS+ object. If the object name is not fully
 qualified, that is, it does not end in a dot, the
-\fBnisplusLDAPbaseDomain\fR is appended. See \fBrpc.nisd\fR(4). There is no
+\fBnisplusLDAPbaseDomain\fR is appended. See
+.BR rpc.nisd (4).
+There is no
 default value. The syntax of the value is:
 .sp
 .in +2
@@ -555,7 +669,7 @@ where
 .ne 2
 .mk
 .na
-\fBdatabaseId\fR
+.B databaseId
 .ad
 .RS 14n
 .rt
@@ -566,7 +680,7 @@ Label identifying a subset of a NIS+ object for mapping purposes.
 .ne 2
 .mk
 .na
-\fBobjectspec\fR
+.B objectspec
 .ad
 .RS 14n
 .rt
@@ -577,7 +691,7 @@ Label identifying a subset of a NIS+ object for mapping purposes.
 .ne 2
 .mk
 .na
-\fBobjectname\fR
+.B objectname
 .ad
 .RS 14n
 .rt
@@ -588,7 +702,7 @@ The name of a NIS+ object (including tables)
 .ne 2
 .mk
 .na
-\fBtablename\fR
+.B tablename
 .ad
 .RS 14n
 .rt
@@ -599,7 +713,7 @@ The name of a NIS+ table
 .ne 2
 .mk
 .na
-\fBindexlist\fR
+.B indexlist
 .ad
 .RS 14n
 .rt
@@ -610,7 +724,7 @@ The name of a NIS+ table
 .ne 2
 .mk
 .na
-\fBcolspec\fR
+.B colspec
 .ad
 .RS 14n
 .rt
@@ -621,7 +735,7 @@ The name of a NIS+ table
 .ne 2
 .mk
 .na
-\fBcolname\fR
+.B colname
 .ad
 .RS 14n
 .rt
@@ -632,31 +746,47 @@ The name of a column in the table
 .ne 2
 .mk
 .na
-\fBcolvalue\fR
+.B colvalue
 .ad
 .RS 14n
 .rt
 \fBcolvaluestring | \e" colvaluestring \e"\fR
 .RE
 
-The \fB[indexlist]tablename\fR form is intended for those cases where it is
+The
+.B [indexlist]tablename
+form is intended for those cases where it is
 necessary to select a subset of a NIS+ table. The subset are those NIS+
-entries that match the \fBindexlist\fR. If there are multiple indexed
+entries that match the
+.BR indexlist .
+If there are multiple indexed
 specifications for a particular NIS+ table, they are tried in the order
 retrieved until one matches. Note that retrieval order usually is
 unspecified for multi-valued LDAP attributes. Hence, if using indexed
-specifications when \fBnisplusLDAPdatabaseIdMapping\fR is retrieved from
+specifications when
+.B nisplusLDAPdatabaseIdMapping
+is retrieved from
 LDAP, make sure that the subset match is unambiguous.
 .sp
-If the \fBcolvaluestring\fR contains white space or commas, it must either
+If the
+.B colvaluestring
+contains white space or commas, it must either
 be surrounded by double quotes, or the special characters must be
-escaped.Wildcards are allowed in the \fBcolvaluestring\fR. If the
+escaped.Wildcards are allowed in the
+.BR colvaluestring .
+If the
 \fBobjectname\fR or \fBtablename\fR is not fully qualified, the
 \fBnisplusLDAPbaseDomain\fR value is appended. If the \fBobjectname\fR is
-empty the value of \fBnisplusLDAPbaseDomain\fR is substituted.
+empty the value of
+.B nisplusLDAPbaseDomain
+is substituted.
 .sp
-The following example shows how to associate the \fBpasswd\fR database id
-with the \fBpasswd.org_dir\fR table:
+The following example shows how to associate the
+.B passwd
+database id
+with the
+.B passwd.org_dir
+table:
 .sp
 .in +2
 .nf
@@ -673,10 +803,17 @@ credlocal:[auth_type=LOCAL]cred.org_dir
 .fi
 .in -2
 
-The following example shows how to use the \fBcreduser\fR database id for
-those entries in the \fBcred.org_dir\fR table that represent credentials
-(keys) for users. That is, they have a \fBnetname\fR (\fBauth_name\fR) of
-the type \fBunix.<numeric-id>@domain\fR.
+The following example shows how to use the
+.B creduser
+database id for
+those entries in the
+.B cred.org_dir
+table that represent credentials
+(keys) for users. That is, they have a
+.B netname
+(\fBauth_name\fR) of
+the type
+.BR unix.<numeric-id>@domain .
 .sp
 .in +2
 .nf
@@ -690,7 +827,7 @@ creduser:[auth_type="D*",auth_name="unix.[0-9]*"]cred.org_dir
 .ne 2
 .mk
 .na
-\fBnisplusLDAPentryTtl\fR
+.B nisplusLDAPentryTtl
 .ad
 .sp .6
 .RS 4n
@@ -707,16 +844,26 @@ databaseId ":" initialTTLlo ":" initialTTLhi ":" runningTTL
 .ne 2
 .mk
 .na
-\fBinitialTTLlo\fR
+.B initialTTLlo
 .ad
 .RS 16n
 .rt
 The lower limit for the initial TTL (in seconds) for data read from disk
-when the \fBrpc.nisd\fR starts, or from LDAP during an initial down-load.
-See \fBrpc.nisd\fR(4) for the description of the
+when the
+.B rpc.nisd
+starts, or from LDAP during an initial down-load.
+See
+.BR rpc.nisd (4)
+for the description of the
 \fBnisplusLDAPinitialUpdate\fR attribute. If \fBinitialTTLhi\fR also is
-specified, the actual \fBinitialTTL\fR will be randomly selected from the
-interval \fBinitialTTLlo\fR to \fBinitialTTLhi\fR, inclusive. If the field
+specified, the actual
+.B initialTTL
+will be randomly selected from the
+interval
+.B initialTTLlo
+to
+.BR initialTTLhi ,
+inclusive. If the field
 is left empty, it yields the default value of 1800 seconds.
 .RE
 
@@ -724,7 +871,7 @@ is left empty, it yields the default value of 1800 seconds.
 .ne 2
 .mk
 .na
-\fBinitialTTLhi\fR
+.B initialTTLhi
 .ad
 .RS 16n
 .rt
@@ -735,7 +882,7 @@ The upper limit for the initial TTL. If left empty, it defaults to 5400.
 .ne 2
 .mk
 .na
-\fBrunningTTL\fR
+.B runningTTL
 .ad
 .RS 16n
 .rt
@@ -744,16 +891,24 @@ is running. Leave the field empty to obtain the default value of 3600
 seconds.
 .RE
 
-If there is no specification of TTLs for a particular \fBdatabaseId\fR, the
-default values are used. If the \fBinitialTTLlo\fR and \fBinitialTTLhi\fR
+If there is no specification of TTLs for a particular
+.BR databaseId ,
+the
+default values are used. If the
+.B initialTTLlo
+and
+.BR initialTTLhi
 have the same value, the effect will be that all data known to the
 \fBrpc.nisd\fR at startup times out at the same time. Depending on NIS+ data
 lookup patterns, this could cause spikes in rpc.nisd-to-LDAP traffic. In
-order to avoid that, you can specify different \fBinitialTTLlo\fR and
+order to avoid that, you can specify different
+.B initialTTLlo
+and
 \fBinitialTTLhi\fR values and obtain a spread in initial TTLs. The NIS+
 object TTL is a separate and distinct entity used for other purposes,
 notably the TTL of NIS+ directory objects in the shared directory cache
-managed by the \fBnis_cachemgr\fR(1M). There is no connection between the
+managed by the
+.BR nis_cachemgr "(1M). There is no connection between the"
 \fBnisplusLDAPentryTtl\fR and object TTL values for a NIS+ object.
 .sp
 The following example shows how to specify that entries in the NIS+ hosts
@@ -773,11 +928,13 @@ hosts:7200:10800:14400
 .ne 2
 .mk
 .na
-\fBnisplusLDAPobjectDN\fR
+.B nisplusLDAPobjectDN
 .ad
 .sp .6
 .RS 4n
-Specifies the connection between a \fBdatabaseId\fR and the LDAP directory.
+Specifies the connection between a
+.B databaseId
+and the LDAP directory.
 The syntax of the value is:
 .sp
 .in +2
@@ -790,7 +947,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBobjectDN\fR
+.B objectDN
 .ad
 .RS 21n
 .rt
@@ -801,7 +958,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBreadObjectSpec\fR
+.B readObjectSpec
 .ad
 .RS 21n
 .rt
@@ -812,7 +969,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBwriteObjectSpec\fR
+.B writeObjectSpec
 .ad
 .RS 21n
 .rt
@@ -823,7 +980,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBbaseAndScope\fR
+.B baseAndScope
 .ad
 .RS 21n
 .rt
@@ -845,7 +1002,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBscope\fR
+.B scope
 .ad
 .RS 21n
 .rt
@@ -856,7 +1013,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBattrValList\fR
+.B attrValList
 .ad
 .RS 21n
 .rt
@@ -867,7 +1024,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBdeleteDisp\fR
+.B deleteDisp
 .ad
 .RS 21n
 .rt
@@ -878,7 +1035,7 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBperDbId\fR
+.B perDbId
 .ad
 .RS 21n
 .rt
@@ -889,22 +1046,35 @@ databaseId ":" objectDN *( ";" objectDN )
 .ne 2
 .mk
 .na
-\fBdelDatabaseId\fR
+.B delDatabaseId
 .ad
 .RS 21n
 .rt
-database id per \fBnisplusLDAPdatabaseIdMapping\fR above.
+database id per
+.B nisplusLDAPdatabaseIdMapping
+above.
 .RE
 
-The \fBbaseDN\fR defaults to the value of the \fBdefaultSearchBase\fR
-attribute. If the \fBbaseDN\fR ends in a comma, the \fBdefaultSearchBase\fR
+The
+.B baseDN
+defaults to the value of the \fBdefaultSearchBase\fR
+attribute. If the
+.B baseDN
+ends in a comma, the \fBdefaultSearchBase\fR
 is appended.
 .sp
-\fBscope\fR defaults to \fBone\fR. It has no meaning and is ignored in a
-\fBwriteObjectSpec\fR. The \fBfilter\fR is an LDAP search filter. There is
-no default value. The \fBattrValList\fR is a list of attribute and value
+\fBscope\fR defaults to
+.BR one .
+It has no meaning and is ignored in a
+.BR writeObjectSpec .
+The \fBfilter\fR is an LDAP search filter. There is
+no default value. The
+.B attrValList
+is a list of attribute and value
 pairs. There is no default value. As a convenience, if an \fBattrValList\fR
-is specified in a \fBreadObjectSpec\fR, it is converted to a search filter
+is specified in a
+.BR readObjectSpec ,
+it is converted to a search filter
 by ANDing together the attributes and values. For example, the attribute and
 value list:
 .sp
@@ -923,25 +1093,38 @@ is converted to the filter:
 .in -2
 
 Entry objects are mapped by means of the relevant table mapping rules in
-the \fBnisplusLDAPattributeFromColumn\fR and
+the
+.B nisplusLDAPattributeFromColumn
+and
 \fBnisplusLDAPcolumnFromAttribute\fR attributes. Entry objects do not have
-explicit \fBnisplusLDAPobjectDN\fR attributes.
+explicit
+.B nisplusLDAPobjectDN
+attributes.
 .sp
-If a \fBwriteObjectSpec\fR is omitted, and there is no trailing colon, the
+If a
+.B writeObjectSpec
+is omitted, and there is no trailing colon, the
 effect is to not attempt writes at all. If there is a trailing colon after
-the \fBreadObjectSpec\fR, it is implied that the \fBwriteObjectSpec\fR is
-the same as the \fBreadObjectSpec\fR.
+the
+.BR readObjectSpec ,
+it is implied that the
+.B writeObjectSpec
+is
+the same as the
+.BR readObjectSpec .
 .sp
 Note that writes only are attempted by a master server for the mapped NIS+
 object. Replicas silently ignore any \fBwriteObjectSpec:s\fR.
 .sp
-The \fBdeleteDisp\fR specifies how NIS+ object deletion should be reflected
+The
+.B deleteDisp
+specifies how NIS+ object deletion should be reflected
 in LDAP. The following values are recognized:
 .sp
 .ne 2
 .mk
 .na
-\fBalways\fR
+.B always
 .ad
 .RS 22n
 .rt
@@ -952,18 +1135,29 @@ Always attempt to remove the LDAP entry. This is the default.
 .ne 2
 .mk
 .na
-\fBdbid=delDatabaseId\fR
+.B dbid=delDatabaseId
 .ad
 .RS 22n
 .rt
 Set the mapped entries to values specified by the
 \fBnisplusLDAPattributeFromColumn\fR attribute values for
-\fBdelDatabaseId\fR. This only makes sense for the \fBdatabaseId:s\fR
+.BR delDatabaseId .
+This only makes sense for the
+.BR databaseId:s
 corresponding to NIS+ tables or subsets of tables. For other NIS+ objects,
-if \fBdbid=\fR is specified, the action will be \fBalways\fR. In the
-\fBdelDatabaseId\fR, deletion of individual attributes can be specified by
-leaving the RHS of the \fB=\fR in a mapping rule empty. The
-\fBdelDatabaseId\fR rule set should specify a \fBdn\fR. Otherwise, \fBthe
+if
+.B dbid=
+is specified, the action will be
+.BR always .
+In the
+.BR delDatabaseId ,
+deletion of individual attributes can be specified by
+leaving the RHS of the
+.B =
+in a mapping rule empty. The
+\fBdelDatabaseId\fR rule set should specify a
+.BR dn .
+Otherwise, \fBthe
 rpc.nisd\fR might try to derive a \fBdn\fR by performing an LDAP lookup on
 the attributes and values from the rule set, quite possibly with unexpected
 results.
@@ -973,17 +1167,22 @@ results.
 .ne 2
 .mk
 .na
-\fBnever\fR
+.B never
 .ad
 .RS 22n
 .rt
 Upon NIS+ object deletion, the corresponding LDAP data is left unchanged.
 If the NIS+ object is an entry, this means that the only effect of the
-deletion is to temporarily remove it from the \fBrpc.nisd\fR's cache.
+deletion is to temporarily remove it from the
+.BR rpc.nisd "'s cache."
 .RE
 
-The following is an example of how to get the \fBipnodes\fR table entries
-from the \fBou=Hosts\fR container under the default search base, and write
+The following is an example of how to get the
+.B ipnodes
+table entries
+from the
+.B ou=Hosts
+container under the default search base, and write
 to the same place.
 .sp
 .in +2
@@ -992,11 +1191,19 @@ ipnodes:ou=Hosts,?one?objectClass=ipHost:
 .fi
 .in -2
 
-The following example shows how to obtain the \fBpasswd\fR table entries
-from the \fBou=People\fR containers under the default search base, and also
-from \fBdc=another,dc=domain\fR. The latter is an example of the equivalent
+The following example shows how to obtain the
+.B passwd
+table entries
+from the
+.B ou=People
+containers under the default search base, and also
+from
+.BR dc=another,dc=domain .
+The latter is an example of the equivalent
 of and replacement for a NIS+ table path. Writes should only be attempted to
-the first \fBobjectDN\fR. NIS+ entry deletions for the first \fBobjectDN\fR
+the first
+.BR objectDN .
+NIS+ entry deletions for the first \fBobjectDN\fR
 are not reflected in LDAP:
 .sp
 .in +2
@@ -1009,9 +1216,15 @@ passwd:ou=People,?one?objectClass=shadowAccount,\e
 .fi
 .in -2
 
-The following example shows how to obtain the \fBpasswd\fR table entries
-from the \fBou=People\fR container under the default search base. Upon NIS+
-entry deletion, update the LDAP entry per the \fBpasswd_delete\fR database
+The following example shows how to obtain the
+.B passwd
+table entries
+from the
+.B ou=People
+container under the default search base. Upon NIS+
+entry deletion, update the LDAP entry per the
+.B passwd_delete
+database
 id:
 .sp
 .in +2
@@ -1022,7 +1235,11 @@ passwd:ou=People,?one?objectClass=shadowAccount,\e
 .fi
 .in -2
 
-where \fBnisplusLDAPattributeFromColumn\fR for \fBpasswd_delete\fR could
+where
+.B nisplusLDAPattributeFromColumn
+for
+.B passwd_delete
+could
 be:
 .sp
 .in +2
@@ -1051,7 +1268,7 @@ passwd_delete:\e
 .ne 2
 .mk
 .na
-\fBnisplusLDAPcolumnFromAttribute\fR
+.B nisplusLDAPcolumnFromAttribute
 .ad
 .sp .6
 .RS 4n
@@ -1063,11 +1280,17 @@ databaseId ":" colattrspec *("," colattrspec)
 .fi
 .in -2
 
-The format of \fBcolattrspec\fR is shown below in the discussion of the
+The format of
+.B colattrspec
+is shown below in the discussion of the
 column and attribute conversion syntax.
 .sp
 The following is an example of how to map by direct copy and assignment the
-value of the \fBipHostNumber\fR attribute to the \fBaddr\fR column:
+value of the
+.B ipHostNumber
+attribute to the
+.B addr
+column:
 .sp
 .in +2
 .nf
@@ -1084,7 +1307,7 @@ entry object data:
 .ne 2
 .mk
 .na
-\fBzo_owner\fR
+.B zo_owner
 .ad
 .RS 13n
 .rt
@@ -1096,7 +1319,7 @@ The NIS+ principal that owns the entry object. By default, the
 .ne 2
 .mk
 .na
-\fBzo_group\fR
+.B zo_group
 .ad
 .RS 13n
 .rt
@@ -1108,57 +1331,74 @@ value is inherited from the table.
 .ne 2
 .mk
 .na
-\fBzo_access\fR
+.B zo_access
 .ad
 .RS 13n
 .rt
 The NIS+ access rights to the entry. Table column rights are stored in the
-table. By default, the \fBzo_access\fR value is inherited from the table.
+table. By default, the
+.B zo_access
+value is inherited from the table.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBzo_ttl\fR
+.B zo_ttl
 .ad
 .RS 13n
 .rt
 The NIS+ TTL for the entry. This is not the TTL for the entry when cached
-by the \fBrpc.nisd\fR. By default, the \fBzo_ttl\fR value is inherited from
+by the
+.BR rpc.nisd .
+By default, the
+.B zo_ttl
+value is inherited from
 the table.
 .RE
 
-The default \fB/var/nis/NIS+LDAPmapping.template\fR assumes the existence
+The default
+.B /var/nis/NIS+LDAPmapping.template
+assumes the existence
 of the following corresponding LDAP attributes in the containers for the
 \fBpasswd\fR and \fBcred\fR tables:
 .br
 .in +2
-\fBnisplusEntryOwner\fR
+.B nisplusEntryOwner
 .in -2
 .br
 .in +2
-\fBnisplusEntryGroup\fR
+.B nisplusEntryGroup
 .in -2
 .br
 .in +2
-\fBnisplusEntryAccess\fR
+.B nisplusEntryAccess
 .in -2
 .br
 .in +2
-\fBnisplusEntryTtl\fR
+.B nisplusEntryTtl
 .in -2
-These attributes are not part of any schema specified in an \fIRFC\fR or
+These attributes are not part of any schema specified in an
+.I RFC
+or
 similar document. They must be created if they are to be used. They are
-assumed to belong to the as \fBnisplusEntryData\fR object class, and they
+assumed to belong to the as
+.B nisplusEntryData
+object class, and they
 contain a single string value. The format of this string is private, and
 subject to change without notice.
 .sp
 For most tables, the non-column entry data can be inherited from the
 containing table, and the pseudo-columns should be left unmapped. Notable
-exceptions are the \fBpasswd\fR and \fBcred\fR tables, if individual users
+exceptions are the
+.B passwd
+and
+.B cred
+tables, if individual users
 have access to modify their own passwd and cred entries. This would usually
-be the case if the site is not running the \fBrpc.nispasswdd\fR(1M)
+be the case if the site is not running the
+.BR rpc.nispasswdd (1M)
 daemon.
 .RE
 
@@ -1166,7 +1406,7 @@ daemon.
 .ne 2
 .mk
 .na
-\fBnisplusLDAPattributeFromColumn\fR
+.B nisplusLDAPattributeFromColumn
 .ad
 .sp .6
 .RS 4n
@@ -1179,15 +1419,22 @@ databaseId ":" colattrspec *("," colattrspec )
 .fi
 .in -2
 
-The format of \fBcolattrspec\fR is shown below in the discussion of the
+The format of
+.B colattrspec
+is shown below in the discussion of the
 column and attribute conversion syntax.
 .sp
-As a special case, if the \fBdn\fR attribute value derived from a
+As a special case, if the
+.B dn
+attribute value derived from a
 \fBcolattrspec\fR ends in a comma (','), the \fBbaseDN\fR from the
 \fBwriteObjectSpec\fR is appended.
 .sp
-The following is an example of how to map the value of the \fBaddr\fR
-column to the \fBipHostNumber\fR attribute by direct copy and assignment:
+The following is an example of how to map the value of the
+.BR addr
+column to the
+.B ipHostNumber
+attribute by direct copy and assignment:
 .sp
 .in +2
 .nf
@@ -1195,7 +1442,9 @@ ipHostNumber=addr
 .fi
 .in -2
 
-All relevant attributes, including the \fBdn\fR, must be specified.
+All relevant attributes, including the
+.BR dn ,
+must be specified.
 Non-column entry object data can be mapped as noted under the discussion of
 \fBnisplusLDAPcolumnFromAttribute\fR above.
 .RE
@@ -1203,7 +1452,9 @@ Non-column entry object data can be mapped as noted under the discussion of
 .SS "Column and Attribute Conversion Syntax"
 .sp
 .LP
-The general format of a \fBcolattrspec\fR is:
+The general format of a
+.B colattrspec
+is:
 .sp
 .in +2
 .nf
@@ -1216,13 +1467,19 @@ namespeclist    = namespec | "(" namespec *("," namespec) ")"
 
 .sp
 .LP
-The \fBlval\fR and \fBrval\fR syntax are defined below at Values. The
-format of a \fBnamespec\fR is:
+The
+.B lval
+and
+.B rval
+syntax are defined below at Values. The
+format of a
+.B namespec
+is:
 .sp
 .ne 2
 .mk
 .na
-\fBnamespec\fR
+.B namespec
 .ad
 .RS 16n
 .rt
@@ -1233,7 +1490,7 @@ format of a \fBnamespec\fR is:
 .ne 2
 .mk
 .na
-\fBcolspec\fR
+.B colspec
 .ad
 .RS 16n
 .rt
@@ -1244,7 +1501,7 @@ format of a \fBnamespec\fR is:
 .ne 2
 .mk
 .na
-\fBattrspec\fR
+.B attrspec
 .ad
 .RS 16n
 .rt
@@ -1255,7 +1512,7 @@ format of a \fBnamespec\fR is:
 .ne 2
 .mk
 .na
-\fBsearchTriple\fR
+.B searchTriple
 .ad
 .RS 16n
 .rt
@@ -1266,11 +1523,13 @@ format of a \fBnamespec\fR is:
 .ne 2
 .mk
 .na
-\fBbaseDN\fR
+.B baseDN
 .ad
 .RS 16n
 .rt
-Base \fBDN\fR for search
+Base
+.B DN
+for search
 .RE
 
 .sp
@@ -1288,7 +1547,7 @@ LDAP search filter
 .ne 2
 .mk
 .na
-\fBobjectspec\fR
+.B objectspec
 .ad
 .RS 16n
 .rt
@@ -1297,12 +1556,18 @@ LDAP search filter
 
 .sp
 .LP
-The repository specification in a \fBnamespec\fR defaults as follows:
+The repository specification in a
+.B namespec
+defaults as follows:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-For assignments to a column, \fBnis+:\fR on the LHS, \fBldap\fR: on the
+For assignments to a column,
+.B nis+:
+on the LHS,
+.BR ldap :
+on the
 RHS. NIS+ column values on the RHS are those that exist before the NIS+
 entry is modified.
 .RE
@@ -1310,7 +1575,11 @@ entry is modified.
 .TP
 .ie t \(bu
 .el o
-For assignments to an attribute, \fBldap:\fR on the LHS, \fBnis+:\fR on the
+For assignments to an attribute,
+.B ldap:
+on the LHS,
+.B nis+:
+on the
 RHS. LDAP attribute values on the RHS are those that exist before the LDAP
 entry is modified.
 .RE
@@ -1323,21 +1592,28 @@ the discussion at Values. This list specification is ignored when a
 \fBsearchTriple\fR or \fBobjectspec\fR is supplied.
 .sp
 .LP
-For columns, the \fB(colname)\fR syntax is used to map multiple attribute
+For columns, the
+.B (colname)
+syntax is used to map multiple attribute
 instances to multiple NIS+ entries.
 .sp
 .LP
-The \fBsearchTriple\fR can be used to specify an attribute from a location
+The
+.B searchTriple
+can be used to specify an attribute from a location
 other than the read or write target. The defaults are as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBbaseDN\fR
+.B baseDN
 .ad
 .RS 10n
 .rt
-If omitted, the default is the current \fBobjectDN\fR. If the \fBbaseDN\fR
+If omitted, the default is the current
+.BR objectDN .
+If the
+.BR baseDN
 ends in a comma, the value of the \fBdefaultSearchBase\fR attribute is
 appended.
 .RE
@@ -1346,11 +1622,11 @@ appended.
 .ne 2
 .mk
 .na
-\fBscope\fR
+.B scope
 .ad
 .RS 10n
 .rt
-\fBone\fR
+.B one
 .RE
 
 .sp
@@ -1366,22 +1642,39 @@ Empty
 
 .sp
 .LP
-Similarly, the \fBobjectspec\fR can be used to specify a column value from
+Similarly, the
+.B objectspec
+can be used to specify a column value from
 a NIS+ table other than the one implicitly indicated by the
-\fBdatabaseId\fR. If \fBsearchTriple\fR or \fBobjectspec\fR is explicitly
-specified in a \fBnamespec\fR, the retrieval or assignment, whether from or
+.BR databaseId .
+If
+.B searchTriple
+or
+.B objectspec
+is explicitly
+specified in a
+.BR namespec ,
+the retrieval or assignment, whether from or
 to LDAP or NIS+, is performed without checking if read and write are enabled
 for the LDAP container or NIS+ table.
 .sp
 .LP
-Omitting the \fBnamespec\fR in an \fBrhs\fR is only allowed if the
+Omitting the
+.B namespec
+in an
+.B rhs
+is only allowed if the
 \fBlhs\fR is one or more attributes. The effect is to delete the specified
-attribute(s). In all other situations, an omitted \fBnamespec\fR means that
+attribute(s). In all other situations, an omitted
+.B namespec
+means that
 the rule is ignored.
 .sp
 .LP
 The \fBfilter\fR can be a value. See Values. For example, to find the
-\fBipHostNumber\fR using the \fBcn\fR, you could specify the following in
+\fBipHostNumber\fR using the
+.BR cn ,
+you could specify the following in
 the \fBfilter\fR field:
 .sp
 .in +2
@@ -1405,7 +1698,11 @@ field.
 .sp
 .LP
 If the \fBfilter\fR is not specified, the \fBscope\fR will be \fBbase\fR,
-and the \fBbaseDN\fR is assumed to be the \fBDN\fR of the entry that
+and the
+.B baseDN
+is assumed to be the
+.B DN
+of the entry that
 contains the attribute to be retrieved or modified. To use previously
 existing column or attribute values in the mapping rules requires a lookup
 to find those values. Obviously, this will add to the time required to
@@ -1419,8 +1716,11 @@ When \fBcolattrspec\fRs are grouped into rule sets, in the value of a
 attribute, the evaluation of the \fBcolattrspec\fRs proceed in the listed
 order. However, evaluation may be done in parallel for multiple
 \fBcolattrspec\fRs. If there is an error when evaluating a certain
-\fBcolattrspec\fR, including retrieval or assignment of entry or column
-values, the extent to which the other \fBcolattrspec\fR rules are evaluated
+.BR colattrspec ,
+including retrieval or assignment of entry or column
+values, the extent to which the other
+.B colattrspec
+rules are evaluated
 is unspecified
 .SS "Wildcards"
 .sp
@@ -1430,7 +1730,7 @@ Where wildcard support is available, it is of the following limited form:
 .ne 2
 .mk
 .na
-\fB*\fR
+.B *
 .ad
 .RS 9n
 .rt
@@ -1445,7 +1745,8 @@ Matches any number of characters.
 .ad
 .RS 9n
 .rt
-Matches the character \fBx\fR.
+Matches the character
+.BR x .
 .RE
 
 .sp
@@ -1456,14 +1757,30 @@ Matches the character \fBx\fR.
 .ad
 .RS 9n
 .rt
-Matches any character in the range \fBx\fR to \fBy\fR, inclusive..
+Matches any character in the range
+.B x
+to
+.BR y ,
+inclusive..
 .RE
 
 .sp
 .LP
-Combinations such as \fB[a-cA-C0123]\fR are also allowed.This example would
-match any one of \fBa\fR, \fBb\fR, \fBc\fR, \fBA\fR, \fBB\fR, \fBC\fR,
-\fB0\fR, \fB1\fR, \fB2\fR, or \fB3\fR.
+Combinations such as
+.B [a-cA-C0123]
+are also allowed.This example would
+match any one of
+.BR a ,
+.BR b ,
+.BR c ,
+.BR A ,
+.BR B ,
+.BR C ,
+.BR 0 ,
+.BR 1 ,
+.BR 2 ,
+or
+.BR 3 .
 .SS "Substring Extraction"
 .sp
 .in +2
@@ -1476,21 +1793,34 @@ matchspec        = \" formatstring \"
 
 .sp
 .LP
-The \fBmatchspec\fR is a string like the \fBscanf\fR(3C) format string,
+The
+.B matchspec
+is a string like the \fBscanf\fR(3C) format string,
 except that there may be at most one format specifier, a single \fB%s\fR.
-The output value of the \fBsubstringextract\fR is the substring matching the
-location of the \fB%s\fR.
+The output value of the
+.B substringextract
+is the substring matching the
+location of the
+.BR %s .
 .sp
 .LP
-If there is no \fB%s\fR in the \fBformatstring\fR, it must instead be a
+If there is no
+.B %s
+in the
+.BR formatstring ,
+it must instead be a
 single character, which is assumed to be a field separator for the
-\fBnamespec\fR. The output values are the field values. Wild cards are
+.BR namespec .
+The output values are the field values. Wild cards are
 supported. If there is no match, the output value is the empty string,
 \fB""\fR.
 .sp
 .LP
-For example, if the column \fBcname\fR has the value
-\fBuser.some.domain.name.\fR, the value of the expression:
+For example, if the column
+.B cname
+has the value
+.BR user.some.domain.name. ,
+the value of the expression:
 .sp
 .in +2
 .nf
@@ -1500,12 +1830,16 @@ For example, if the column \fBcname\fR has the value
 
 .sp
 .LP
-is \fBuser\fR, which can be used to extract the user name from a NIS+
+is
+.BR user ,
+which can be used to extract the user name from a NIS+
 principal name.
 .sp
 .LP
 Similarly, use this expression to extract the third of the colon-separated
-fields of the \fBshadow\fR column:
+fields of the
+.B shadow
+column:
 .sp
 .in +2
 .nf
@@ -1515,7 +1849,9 @@ fields of the \fBshadow\fR column:
 
 .sp
 .LP
-This form can be used to extract all of the \fBshadow\fR fields. However, a
+This form can be used to extract all of the
+.B shadow
+fields. However, a
 simpler way to specify that special case is:
 .sp
 .in +2
@@ -1541,13 +1877,26 @@ singlechar     = Any character
 
 .sp
 .LP
-This syntax is used to produce \fBrval\fR values that incorporate column or
+This syntax is used to produce
+.B rval
+values that incorporate column or
 attribute values, in a manner like \fBprintf\fR(3C), or to perform
-assignments to \fBlval\fR like \fBscanf\fR(3C). One important restriction is
+assignments to
+.B lval
+like \fBscanf\fR(3C). One important restriction is
 that the format specifications,\fB%\fR plus a single character, use the
-designations from \fBber_encode\fR(3LDAP). Thus, while \fB%s\fR is used to
-extract a string value, \fB%i\fR causes BER conversion from an integer.
-Formats other than \fB%s\fR, for instance, \fB%i\fR, are only meaningfully
+designations from
+.BR ber_encode "(3LDAP). Thus, while"
+.B %s
+is used to
+extract a string value,
+.B %i
+causes BER conversion from an integer.
+Formats other than
+.BR %s ,
+for instance,
+.BR %i ,
+are only meaningfully
 defined in simple format strings without any other text.
 .sp
 .LP
@@ -1565,12 +1914,17 @@ If there are too few format specifiers, the format string may be repeated
 as needed.
 .sp
 .LP
-When used as an \fBlval\fR, there is a combination of pattern matching and
+When used as an
+.BR lval ,
+there is a combination of pattern matching and
 assignment, possibly to multiple columns or attributes.
 .sp
 .LP
 For example, in an assignment to an attribute, if the value of the
-\fBaddr\fR column is \fB1.2.3.4\fR, the \fBrval\fR:
+\fBaddr\fR column is
+.BR 1.2.3.4 ,
+the
+.BR rval :
 .sp
 .in +2
 .nf
@@ -1580,7 +1934,9 @@ For example, in an assignment to an attribute, if the value of the
 
 .sp
 .LP
-produces the value \fBipNetworkNumber=1.2.3.4,\fR, while:
+produces the value
+.BR ipNetworkNumber=1.2.3.4, ,
+while:
 .sp
 .in +2
 .nf
@@ -1615,10 +1971,13 @@ mgrprfc822mailmember=userc
 
 .sp
 .LP
-the value would be \fBusera,userb,userc\fR.
+the value would be
+.BR usera,userb,userc .
 .sp
 .LP
-If the NIS+ column \fBintval\fR is in binary format, that is, the \fBB\fR
+If the NIS+ column
+.B intval
+is in binary format, that is, the \fBB\fR
 column flag is set, and it is to be interpreted as an integer, the
 following:
 .sp
@@ -1633,10 +1992,16 @@ following:
 produces a value suitable for assignment to an integer-valued attribute.
 .sp
 .LP
-The \fBnisPublicKey\fR attribute encodes the algorithm type and number
-(equivalent to the \fBauth_type\fR column) and the public key as a single
+The
+.B nisPublicKey
+attribute encodes the algorithm type and number
+(equivalent to the
+.B auth_type
+column) and the public key as a single
 string such as \fB{dh192-0}xxxxxxxx\fR (public key truncated for clarity).
-The following will extract the corresponding  \fBauth_type\fR and
+The following will extract the corresponding 
+.B auth_type
+and
 \fBpublic_data\fR values:
 .sp
 .in +2
@@ -1658,7 +2023,9 @@ creates multiple entries and values. For example,
 
 .sp
 .LP
-creates one NIS+ entry for each \fBnisNetgroupTriple\fR value.
+creates one NIS+ entry for each
+.B nisNetgroupTriple
+value.
 .SS "Assignments"
 .sp
 .LP
@@ -1708,52 +2075,60 @@ to make many-to-many assignments. The expression:
 
 .sp
 .LP
-where there are multiple instances of \fBattrname\fR, creates one NIS+
-entry for each such instance, differentiated by their \fBcolname\fR values.
+where there are multiple instances of
+.BR attrname ,
+creates one NIS+
+entry for each such instance, differentiated by their
+.B colname
+values.
 The following combinations of lists are allowed, but they are not
 particularly useful:
 .sp
 .ne 2
 .mk
 .na
-\fB(attrname)=(colname)\fR
+.B (attrname)=(colname)
 .ad
 .RS 24n
 .rt
-Equivalent to \fBattrname=colname\fR
+Equivalent to
+.BR attrname=colname
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBattrname=(colname)\fR
+.B attrname=(colname)
 .ad
 .RS 24n
 .rt
-Equivalent to \fBattrname=colname\fR
+Equivalent to
+.BR attrname=colname
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB(colname)=attrname\fR
+.B (colname)=attrname
 .ad
 .RS 24n
 .rt
-Equivalent to \fBcolname=attrname\fR
+Equivalent to
+.BR colname=attrname
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBcolname=(attrname)\fR
+.B colname=(attrname)
 .ad
 .RS 24n
 .rt
-Equivalent to \fBcolname=attrname\fR
+Equivalent to
+.BR colname=attrname
 .RE
 
 .sp
@@ -1781,7 +2156,7 @@ first entity of the list, the second value to the second entity, and so on.
 Excess values or entities are silently ignored.
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRAssigning an Attribute Value to a Column
+\fBExample 1\fR Assigning an Attribute Value to a Column
 .sp
 .LP
 The following example illustrates how to assign the value of the
@@ -1795,7 +2170,7 @@ addr=ipHostNumber
 .in -2
 
 .LP
-\fBExample 2 \fRCreating Multiple NIS+ Entries from Multi-Valued LDAP
+\fBExample 2\fR Creating Multiple NIS+ Entries from Multi-Valued LDAP
 Attributes
 .sp
 .LP
@@ -1837,10 +2212,13 @@ cname=name1, name=name3
 .in -2
 
 .LP
-\fBExample 3 \fRAssigning String Constants
+\fBExample 3\fR Assigning String Constants
 .sp
 .LP
-The following expression sets the \fBauth_type\fR column to \fBLOCAL\fR:
+The following expression sets the
+.B auth_type
+column to
+.BR LOCAL :
 
 .sp
 .in +2
@@ -1850,10 +2228,12 @@ auth_type=("LOCAL")
 .in -2
 
 .LP
-\fBExample 4 \fRSplitting Column Values to Multi-Valued Attributes
+\fBExample 4\fR Splitting Column Values to Multi-Valued Attributes
 .sp
 .LP
-The \fBexpansion\fR column contains a comma-separated list of alias member
+The
+.B expansion
+column contains a comma-separated list of alias member
 names. In the following example, the expression assigns each such member
 name to an instance of \fBmgrprfc822mailmember\fR:
 
@@ -1865,12 +2245,17 @@ name to an instance of \fBmgrprfc822mailmember\fR:
 .in -2
 
 .LP
-\fBExample 5 \fRSplitting Column Values to Multiple Attributes
+\fBExample 5\fR Splitting Column Values to Multiple Attributes
 .sp
 .LP
-The \fBshadow\fR column contains a colon-separated list of fields. The
-following assigns the value of the first field to \fBshadowLastChange\fR,
-the value of the second field to \fBshadowMin\fR, and so forth.
+The
+.B shadow
+column contains a colon-separated list of fields. The
+following assigns the value of the first field to
+.BR shadowLastChange ,
+the value of the second field to
+.BR shadowMin ,
+and so forth.
 
 .sp
 .in +2
@@ -1885,18 +2270,19 @@ the value of the second field to \fBshadowMin\fR, and so forth.
 .ne 2
 .mk
 .na
-\fB/var/nis/NIS+LDAPmapping\fR
+.B /var/nis/NIS+LDAPmapping
 .ad
 .sp .6
 .RS 4n
-Default mapping file used by \fBrpc.nisd\fR(1M).
+Default mapping file used by
+.BR rpc.nisd (1M).
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/var/nis/NIS+LDAPmapping.template\fR
+.B /var/nis/NIS+LDAPmapping.template
 .ad
 .sp .6
 .RS 4n
@@ -1906,7 +2292,9 @@ Template file covering the standard NIS+ directories and tables.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -1925,9 +2313,13 @@ Interface StabilityObsolete
 .SH SEE ALSO
 .sp
 .LP
-\fBnisldapmaptest\fR(1M), \fBnisserver\fR(1M), \fBnissetup\fR(1M),
-\fBrpc.nisd\fR(1M), \fBber_encode\fR(3LDAP), \fBrpc.nisd\fR(4),
-\fBattributes\fR(5) 
+.BR nisldapmaptest (1M),
+.BR nisserver (1M),
+.BR nissetup (1M),
+.BR rpc.nisd (1M),
+.BR ber_encode (3LDAP),
+.BR rpc.nisd (4),
+.BR attributes (5)
 .sp
 .LP
 \fISystem Administration Guide: Naming and Directory Services (DNS, NIS,
@@ -1936,4 +2328,6 @@ and LDAP)\fR
 .sp
 .LP
 \fIRFC 2307bis\fR is an IETF informational document in draft stage that
-defines an approach for using \fBLDAP\fR as a naming service.
+defines an approach for using
+.B LDAP
+as a naming service.

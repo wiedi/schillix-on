@@ -50,7 +50,7 @@ Solaris DDI specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fIstrat\fR
+.I strat
 .ad
 .RS 11n
 .rt
@@ -61,12 +61,16 @@ Pointer to device strategy routine.
 .ne 2
 .mk
 .na
-\fIbp\fR
+.I bp
 .ad
 .RS 11n
 .rt
 Pointer to a \fBbuf\fR(9S) structure describing the transfer. If \fIbp\fR
-is set to \fINULL\fR then \fBphysio()\fR allocates one which is
+is set to
+.I NULL
+then
+.B physio()
+allocates one which is
 automatically released upon completion.
 .RE
 
@@ -74,7 +78,7 @@ automatically released upon completion.
 .ne 2
 .mk
 .na
-\fIdev\fR
+.I dev
 .ad
 .RS 11n
 .rt
@@ -85,19 +89,23 @@ The device number.
 .ne 2
 .mk
 .na
-\fIrw\fR
+.I rw
 .ad
 .RS 11n
 .rt
-Read/write flag. This is either \fBB_READ\fR when reading from the device,
-or \fBB_WRITE\fR when writing to the device.
+Read/write flag. This is either
+.B B_READ
+when reading from the device,
+or
+.B B_WRITE
+when writing to the device.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fImincnt\fR
+.I mincnt
 .ad
 .RS 11n
 .rt
@@ -108,11 +116,14 @@ Routine which bounds the maximum transfer unit size.
 .ne 2
 .mk
 .na
-\fIuio\fR
+.I uio
 .ad
 .RS 11n
 .rt
-Pointer to the \fBuio\fR structure which describes the user \fBI/O\fR
+Pointer to the
+.B uio
+structure which describes the user
+.BR I/O
 request.
 .RE
 
@@ -121,7 +132,7 @@ request.
 .ne 2
 .mk
 .na
-\fIbp\fR
+.I bp
 .ad
 .RS 7n
 .rt
@@ -135,21 +146,40 @@ Pointer to a \fBbuf\fR structure.
 \fIdev\fR and the address space described in the \fBuio\fR structure.
 .sp
 .LP
-Prior to the start of the transfer \fBphysio()\fR verifies the requested
+Prior to the start of the transfer
+.B physio()
+verifies the requested
 operation is valid by checking the protection of the address space specified
-in the \fBuio\fR structure. It then locks the pages involved in the
+in the
+.B uio
+structure. It then locks the pages involved in the
 \fBI/O\fR transfer so they can not be paged out. The device strategy
-routine, \fBstrat()\fR, is then called one or more times to perform the
-physical \fBI/O\fR operations. \fBphysio()\fR uses \fBbiowait\fR(9F) to
-block until \fBstrat()\fR has completed each transfer. Upon completion, or
-detection of an error, \fBphysio()\fR unlocks the pages and returns the
+routine,
+.BR strat() ,
+is then called one or more times to perform the
+physical
+.B I/O
+operations.
+.B physio()
+uses
+.BR biowait "(9F) to"
+block until
+.B strat()
+has completed each transfer. Upon completion, or
+detection of an error,
+.B physio()
+unlocks the pages and returns the
 error status.
 .sp
 .LP
 \fBphysio()\fR uses \fBmincnt()\fR to bound the maximum transfer unit size
-to the system, or device, maximum length. \fBminphys()\fR is the system
+to the system, or device, maximum length.
+.B minphys()
+is the system
 \fBmincnt()\fR routine for use with \fBphysio()\fR operations. Drivers which
-do not provide their own local \fBmincnt()\fR routines should call
+do not provide their own local
+.B mincnt()
+routines should call
 \fBphysio()\fR with \fBminphys()\fR.
 .sp
 .LP
@@ -165,7 +195,7 @@ not exceed the system limit.
 .ne 2
 .mk
 .na
-\fB0\fR
+.B 0
 .ad
 .RS 12n
 .rt
@@ -176,7 +206,7 @@ Upon success.
 .ne 2
 .mk
 .na
-\fBnon-zero\fR
+.B non-zero
 .ad
 .RS 12n
 .rt
@@ -190,14 +220,25 @@ Upon failure.
 .SH SEE ALSO
 .sp
 .LP
-\fBstrategy\fR(9E), \fBbiodone\fR(9F), \fBbiowait\fR(9F), \fBbuf\fR(9S),
-\fBuio\fR(9S) 
+.BR strategy (9E),
+.BR biodone (9F),
+.BR biowait (9F),
+\fBbuf\fR(9S),
+.BR uio (9S)
 .sp
 .LP
-\fIWriting Device Drivers\fR
+.I Writing Device Drivers
 .SH WARNINGS
 .sp
 .LP
-Since \fBphysio()\fR calls \fBbiowait()\fR to block until each buf transfer
-is complete, it is the drivers responsibility to call \fBbiodone\fR(9F) when
-the transfer is complete, or \fBphysio()\fR will block forever.
+Since
+.B physio()
+calls
+.B biowait()
+to block until each buf transfer
+is complete, it is the drivers responsibility to call
+.BR biodone (9F)
+when
+the transfer is complete, or
+.B physio()
+will block forever.

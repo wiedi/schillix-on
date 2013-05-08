@@ -61,55 +61,106 @@ curses screen initialization and manipulation routines
 .sp
 .LP
 \fBinitscr()\fR is almost always the first routine that should be called
-(the exceptions are \fBslk_init()\fR, \fBfilter()\fR, \fBripoffline()\fR,
+(the exceptions are
+.BR slk_init() ,
+\fBfilter()\fR, \fBripoffline()\fR,
 \fBuse_env()\fR and, for multiple-terminal applications, \fBnewterm()\fR.)
-This determines the terminal type and initializes all \fBcurses\fR data
-structures. \fBinitscr()\fR also causes the first call to \fBrefresh()\fR to
-clear the screen. If errors occur, \fBinitscr()\fR writes an appropriate
+This determines the terminal type and initializes all
+.B curses
+data
+structures.
+.B initscr()
+also causes the first call to \fBrefresh()\fR to
+clear the screen. If errors occur,
+.B initscr()
+writes an appropriate
 error message to standard error and exits; otherwise, a pointer is returned
-to \fBstdscr()\fR. If the program needs an indication of error conditions,
-\fBnewterm()\fR should be used instead of \fB initscr()\fR; \fBinitscr()\fR
+to
+.BR stdscr() .
+If the program needs an indication of error conditions,
+\fBnewterm()\fR should be used instead of
+.BR " initscr()" ;
+.B initscr()
 should only be called once per application.
 .sp
 .LP
 A program that outputs to more than one terminal should use the
-\fBnewterm()\fR routine for each terminal instead of \fBinitscr()\fR. A
+\fBnewterm()\fR routine for each terminal instead of
+.BR initscr() .
+A
 program that needs an indication of error conditions, so it can continue to
 run in a line-oriented mode if the terminal cannot support a screen-oriented
-program, would also use this routine. The routine  \fBnewterm()\fR should be
+program, would also use this routine. The routine 
+.B newterm()
+should be
 called once for each terminal. It returns a variable of type \fBSCREEN\fR
 \fB*\fR which should be saved as a reference to that terminal. The arguments
-are the \fItype\fR of the terminal to be used in place of $\fBTERM\fR, a
+are the
+.I type
+of the terminal to be used in place of $\fBTERM\fR, a
 file pointer for output to the terminal, and another file pointer for input
-from the terminal (if \fItype\fR is \fINULL\fR, $\fBTERM\fR will be used).
-The program must also call \fBendwin()\fR for each terminal being used
-before exiting from curses. If \fBnewterm()\fR is called more than once for
+from the terminal (if
+.I type
+is
+.IR NULL ,
+$\fBTERM\fR will be used).
+The program must also call
+.B endwin()
+for each terminal being used
+before exiting from curses. If
+.B newterm()
+is called more than once for
 the same terminal, the first terminal referred to must be the last one for
-which \fBendwin()\fR is called.
+which
+.B endwin()
+is called.
 .sp
 .LP
-A program should always call \fBendwin()\fR before exiting or escaping from
+A program should always call
+.B endwin()
+before exiting or escaping from
 \fBcurses\fR mode temporarily. This routine restores tty modes, moves the
 cursor to the lower left-hand corner of the screen and resets the terminal
 into the proper non-visual mode. Calling \fBrefresh()\fR or \fBdoupdate()\fR
 after a temporary escape causes the program to resume visual mode.
 .sp
 .LP
-The \fBisendwin()\fR routine returns \fBTRUE\fR if \fBendwin()\fR has been
-called without any subsequent calls to \fBwrefresh()\fR, and \fBFALSE\fR
+The
+.B isendwin()
+routine returns
+.B TRUE
+if
+.B endwin()
+has been
+called without any subsequent calls to
+.BR wrefresh() ,
+and
+.BR FALSE
 otherwise.
 .sp
 .LP
-The \fBset_term()\fR routine is used to switch between different terminals.
-The screen reference \fBnew\fR becomes the new current terminal. The
+The
+.B set_term()
+routine is used to switch between different terminals.
+The screen reference
+.B new
+becomes the new current terminal. The
 previous terminal is returned by the routine. This is the only routine which
-manipulates \fBSCREEN\fR pointers; all other routines affect only the
+manipulates
+.B SCREEN
+pointers; all other routines affect only the
 current terminal.
 .sp
 .LP
-The \fBdelscreen()\fR routine frees storage associated with the
+The
+.B delscreen()
+routine frees storage associated with the
 \fBSCREEN\fR data structure.  The \fBendwin()\fR routine does not do this,
-so \fBdelscreen()\fR should be called after \fBendwin()\fR if a particular
+so
+.B delscreen()
+should be called after
+.B endwin()
+if a particular
 \fBSCREEN\fR is no longer needed.
 .SH RETURN VALUES
 .sp
@@ -118,11 +169,15 @@ so \fBdelscreen()\fR should be called after \fBendwin()\fR if a particular
 successful completion.
 .sp
 .LP
-Routines that return pointers always return \fINULL\fR on error.
+Routines that return pointers always return
+.I NULL
+on error.
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -139,9 +194,12 @@ MT-LevelUnsafe
 .SH SEE ALSO
 .sp
 .LP
-\fBcurs_kernel\fR(3CURSES), \fBcurs_refresh\fR(3CURSES),
-\fBcurs_slk\fR(3CURSES), \fBcurs_util\fR(3CURSES), \fBcurses\fR(3CURSES),
-\fBattributes\fR(5)
+.BR curs_kernel (3CURSES),
+\fBcurs_refresh\fR(3CURSES),
+.BR curs_slk (3CURSES),
+.BR curs_util (3CURSES),
+.BR curses (3CURSES),
+.BR attributes (5)
 .SH NOTES
 .sp
 .LP
@@ -149,4 +207,8 @@ The header <\fBcurses.h\fR> automatically includes the headers
 <\fBstdio.h\fR> and <\fBunctrl.h\fR>.
 .sp
 .LP
-Note that \fBinitscr()\fR and \fBnewterm()\fR may be macros.
+Note that
+.B initscr()
+and
+.B newterm()
+may be macros.

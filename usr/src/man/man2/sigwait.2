@@ -41,61 +41,93 @@ cc [ \fIflag\fR .\|.\|. ] \fIfile\fR .\|.\|. \fB-D_POSIX_PTHREAD_SEMANTICS\fR [ 
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsigwait()\fR function selects a signal in \fIset\fR that is pending
-on the calling thread. If no signal in \fIset\fR is pending, \fBsigwait()\fR
-blocks until a signal in \fIset\fR becomes pending. The selected signal is
+The
+.B sigwait()
+function selects a signal in
+.I set
+that is pending
+on the calling thread. If no signal in
+.I set
+.RB "is pending," " sigwait()"
+blocks until a signal in
+.I set
+becomes pending. The selected signal is
 cleared from the set of signals pending on the calling thread and the number
 of the signal is returned, or in the standard-conforming version (see
-\fBstandards\fR(5)) placed in \fIsig\fR. The selection of a signal in
+.BR standards (5))
+placed in
+.IR sig .
+The selection of a signal in
 \fIset\fR is independent of the signal mask of the calling thread. This
 means a thread can synchronously wait for signals that are being blocked by
 the signal mask of the calling thread \&. To ensure that only the caller
-receives the signals defined in \fIset\fR, all threads should have signals
-in \fIset\fR masked including the calling thread.
+receives the signals defined in
+.IR set ,
+all threads should have signals
+in
+.I set
+masked including the calling thread.
 .sp
 .LP
-If more than one thread is using \fBsigwait()\fR to wait for the same
-signal, no more than one of these threads returns from \fBsigwait()\fR with
+If more than one thread is using
+.B sigwait()
+to wait for the same
+signal, no more than one of these threads returns from
+.B sigwait()
+with
 the signal number. If more than a single thread is blocked in
 \fBsigwait()\fR for a signal when that signal is generated for the process,
-it is unspecified which of the waiting threads returns from \fBsigwait()\fR.
+it is unspecified which of the waiting threads returns from
+.BR sigwait() .
 If the signal is generated for a specific thread, as by
-\fBpthread_kill\fR(3C), only that thread returns.
+.BR pthread_kill (3C),
+only that thread returns.
 .sp
 .LP
-Should any of the multiple pending signals in the range \fBSIGRTMIN\fR to
+Should any of the multiple pending signals in the range
+.B SIGRTMIN
+to
 \fBSIGRTMAX\fR be selected, it will be the lowest numbered one. The
 selection order between realtime and non-realtime signals, or between
 multiple pending non-realtime signals, is unspecified.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, the default version of \fBsigwait()\fR returns
-a signal number; the standard-conforming version returns \fB0\fR and stores
-the received signal number at the location pointed to by \fIsig\fR.
+Upon successful completion, the default version of
+.B sigwait()
+returns
+a signal number; the standard-conforming version returns
+.B 0
+and stores
+the received signal number at the location pointed to by
+.IR sig .
 Otherwise, the default version returns -1 and sets errno to indicate an
 error; the standard-conforming version returns an error number to indicate
 the error.
 .SH ERRORS
 .sp
 .LP
-The \fBsigwait()\fR function will fail if:
+The
+.B sigwait()
+function will fail if:
 .sp
 .ne 2
 .mk
 .na
-\fBEFAULT\fR
+.B EFAULT
 .ad
 .RS 10n
 .rt
-The \fIset\fR argument points to an invalid address.
+The
+.I set
+argument points to an invalid address.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEINTR\fR
+.B EINTR
 .ad
 .RS 10n
 .rt
@@ -106,21 +138,23 @@ The wait was interrupted by an unblocked, caught signal.
 .ne 2
 .mk
 .na
-\fBEINVAL\fR
+.B EINVAL
 .ad
 .RS 10n
 .rt
-The \fIset\fR argument contains an unsupported signal number.
+The
+.I set
+argument contains an unsupported signal number.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1 \fRCreating a thread to handle receipt of a signal
+\fBExample 1\fR Creating a thread to handle receipt of a signal
 .sp
 .LP
 The following sample C code creates a thread to handle the receipt of a
 signal. More specifically, it catches the asynchronously generated signal,
-\fBSIGINT\fR.
+.BR SIGINT .
 
 .sp
 .in +2
@@ -222,7 +256,9 @@ sigint(void *arg)
 .SH ATTRIBUTES
 .sp
 .LP
-See \fBattributes\fR(5) for descriptions of the following attributes:
+See
+.BR attributes (5)
+for descriptions of the following attributes:
 .sp
 
 .sp
@@ -243,19 +279,31 @@ StandardSee \fBstandards\fR(5).
 .SH SEE ALSO
 .sp
 .LP
-\fBsigaction\fR(2), \fBsigpending\fR(2), \fBsigprocmask\fR(2),
-\fBsigsuspend\fR(2), \fBpthread_create\fR(3C), \fBpthread_kill\fR(3C),
-\fBpthread_sigmask\fR(3C), \fBsignal.h\fR(3HEAD), \fBattributes\fR(5),
-\fBstandards\fR(5)
+.BR sigaction (2),
+.BR sigpending (2),
+.BR sigprocmask (2),
+.BR sigsuspend (2),
+.BR pthread_create (3C),
+.BR pthread_kill (3C),
+.BR pthread_sigmask (3C),
+.BR signal.h (3HEAD),
+.BR attributes (5),
+.BR standards (5)
 .SH NOTES
 .sp
 .LP
-The \fBsigwait()\fR function cannot be used to wait for signals that cannot
-be caught (see \fBsigaction\fR(2)). This restriction is silently imposed by
+The
+.B sigwait()
+function cannot be used to wait for signals that cannot
+be caught (see
+.BR sigaction (2)).
+This restriction is silently imposed by
 the system.
 .sp
 .LP
-Solaris 2.4 and earlier releases provided a \fBsigwait()\fR facility as
+Solaris 2.4 and earlier releases provided a
+.B sigwait()
+facility as
 specified in POSIX.1c Draft 6. The final POSIX.1c standard changed the
 interface as described above. Support for the Draft 6 interface is provided
 for compatibility only and may not be supported in future releases. New
