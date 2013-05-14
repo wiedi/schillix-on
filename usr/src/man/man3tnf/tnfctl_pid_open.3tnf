@@ -50,7 +50,8 @@ probe and process control for another process
 .LP
 The
 .BR tnfctl_pid_open() ,
-\fBtnfctl_exec_open()\fR, and
+.BR tnfctl_exec_open() ,
+and
 \fBtnfctl_continue()\fR functions create handles to control probes in another
 process (direct process probe control). Either \fBtnfctl_pid_open()\fR or
 \fBtnfctl_exec_open()\fR will return a handle in \fIret_val\fR that can be
@@ -93,11 +94,12 @@ variable is used to find the
 .IR pgm_name .
 \fIargv\fR is a null-terminated
 argument pointer, that is, it is a null-terminated array of pointers to
-null-terminated strings. These strings constitute the argument list  available
+null-terminated strings. These strings constitute the argument list available
 to the new process image. The
 .I argv
 argument must have at least one
-member, and it should point to a string that is the same as \fIpgm_name\fR.
+member, and it should point to a string that is the same as
+.IR pgm_name .
 See
 .BR execve (2).
 The \fIlibnfprobe_path\fR argument is an optional
@@ -141,8 +143,9 @@ is set, it overrides
 .IR ld_preload .
 In this case, it is the caller's responsibility to ensure
 that \fBlibtnfprobe.so.1\fR is loaded into the target program.  If \fIenvp\fR
-is not set, the new process image inherits the environment of the  calling
-process, except for \fBLD_PRELOAD\fR.
+is not set, the new process image inherits the environment of the calling
+process, except for
+.BR LD_PRELOAD .
 .sp
 .LP
 The
@@ -196,9 +199,10 @@ on the existing handle. If the client wants to control the \fBexec\fR'ed
 image, it should leave the old handle suspended, and use
 \fBtnfctl_pid_open()\fR to reattach to the same process.  This new handle can
 then be used to control the \fBexec\fR'ed image.  See \fBEXAMPLES\fR below for
-sample code.  If the target process did a 
+sample code.  If the target process did a
 .BR fork (2)
-or \fBfork1\fR(2),
+or
+.BR fork1 (2),
 and if control of the child process is not needed, then \fIchild_hndl\fR
 should be
 .IR NULL .
@@ -214,12 +218,14 @@ child process is stopped at the end of the  \fBfork()\fR system call. See
 .LP
 The
 .BR tnfctl_pid_open() ,
-\fBtnfctl_exec_open()\fR, and
+.BR tnfctl_exec_open() ,
+and
 \fBtnfctl_continue()\fR functions return \fBTNFCTL_ERR_NONE\fR upon success.
 .SH ERRORS
 .sp
 .LP
-The following error codes apply to \fBtnfctl_pid_open()\fR:
+The following error codes apply to
+.BR tnfctl_pid_open() :
 .sp
 .ne 2
 .mk
@@ -228,10 +234,11 @@ The following error codes apply to \fBtnfctl_pid_open()\fR:
 .ad
 .RS 28n
 .rt
-The 
+The
 .I pid
 specified is the same process.  Use
-\fBtnfctl_internal_open\fR(3TNF) instead.
+.BR tnfctl_internal_open (3TNF)
+instead.
 .RE
 
 .sp
@@ -242,7 +249,7 @@ specified is the same process.  Use
 .ad
 .RS 28n
 .rt
-Permission denied. No privilege to connect to a setuid  process.
+Permission denied. No privilege to connect to a setuid process.
 .RE
 
 .sp
@@ -264,7 +271,7 @@ A memory allocation failure occurred.
 .ad
 .RS 28n
 .rt
-Another client is already using 
+Another client is already using
 .B /proc
 to control this process or
 internal tracing is being used.
@@ -316,7 +323,8 @@ An internal error occurred.
 
 .sp
 .LP
-The following error codes apply to  \fBtnfctl_exec_open()\fR:
+The following error codes apply to
+.BR tnfctl_exec_open() :
 .sp
 .ne 2
 .mk
@@ -385,7 +393,8 @@ An internal error occurred.
 
 .sp
 .LP
-The following error codes apply to  \fBtnfctl_continue()\fR:
+The following error codes apply to
+.BR tnfctl_continue() :
 .sp
 .ne 2
 .mk
@@ -485,7 +494,8 @@ err = tnfctl_exec_open(pgm, argv, NULL, NULL,
 This example preloads an interposition library
 .BR libc_probe.so.1 ,
 and
-specifies a different location from which to preload \fBlibtnfprobe.so.1\fR.
+specifies a different location from which to preload
+.BR libtnfprobe.so.1 .
 
 .sp
 .in +2
@@ -501,7 +511,7 @@ err = tnfctl_exec_open(pgm, argv, NULL, "/opt/SUNWXXX/lib",
 .sp
 .LP
 To set up the environment explicitly for probe control to work, the target
-process must link 
+process must link
 .BR libtnfprobe.so.1 .
 If using
 .IR envp ,
@@ -521,7 +531,7 @@ err = tnfctl_exec_open(pgm, argv, envptr, NULL, NULL, &hndl);
 
 .sp
 .LP
-Use this example to resume a process that does an 
+Use this example to resume a process that does an
 .BR exec (2)
 without
 controlling it.
@@ -585,7 +595,8 @@ err = tnfctl_continue(hndl, &evt, NULL);
 The next example is how to control child processes that
 .BR fork (2)
 or
-\fBfork1\fR(2) create.
+.BR fork1 (2)
+create.
 
 .sp
 .in +2
