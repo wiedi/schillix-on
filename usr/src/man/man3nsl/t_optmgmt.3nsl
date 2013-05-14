@@ -73,7 +73,7 @@ When using a
 .B TLI
 routine that has the same name as an
 .BR XTI
-routine, the 
+routine, the
 .B tiuser.h
 header file must be used.  Refer to the
 \fBTLI COMPATIBILITY\fR section for a description of differences
@@ -131,7 +131,7 @@ options and flag values to the user through
 For
 .IR ret ,
 \fImaxlen\fR specifies the maximum size of the options buffer and \fIbuf\fR
-points to the buffer where the options are to be placed. If 
+points to the buffer where the options are to be placed. If
 .I maxlen
 in
 \fIret\fR is set to zero, no options values are returned. On return,
@@ -164,7 +164,7 @@ the length of the option header
 plus the length of the option
 value. If
 .B t_optmgmt()
-is called with the action 
+is called with the action
 .BR T_NEGOTIATE
 set, the
 .I status
@@ -247,7 +247,7 @@ If the error is
 detected, some options have possibly been successfully negotiated. The
 transport user can check the current status by calling
 .BR t_optmgmt()
-with the 
+with the
 .B T_CURRENT
 flag set.
 .sp
@@ -267,11 +267,12 @@ This action enables the transport user to negotiate option values.
 .sp
 The user specifies the options of interest and their values in the buffer
 specified by \fIreq\(->opt.buf\fR and \fIreq\(->opt.len\fR. The negotiated
-option values are returned in the buffer pointed to by \fIret->opt.buf\fR.
+option values are returned in the buffer pointed to by
+.IR ret->opt.buf .
 The
 .I status
 field of each returned option is set to indicate the result
-of the negotiation. The value is 
+of the negotiation. The value is
 .B T_SUCCESS
 if the proposed value was
 negotiated,
@@ -283,23 +284,24 @@ rules),
 if the transport provider does not support this
 option or illegally requests negotiation of a privileged option, and
 \fBT_READONLY\fR if modification of a read-only option was requested. If the
-status is 
+status is
 .B "T_SUCCESS, T_FAILURE,"
 \fBT_NOTSUPPORT\fR or
 \fBT_READONLY,\fR the returned option value is the same as the one requested
 on input.
 .sp
-The overall result of the negotiation is returned in \fIret\(->flags\fR.
+The overall result of the negotiation is returned in
+.IR ret\(->flags .
 .sp
 This field contains the worst single result, whereby the rating is done
-according to the order 
+according to the order
 .BR "T_NOTSUPPORT, T_READONLY,"
 .B "T_FAILURE, T_PARTSUCCESS,"
 .B T_SUCCESS.
 The value
 \fBT_NOTSUPPORT\fR is the worst result and  \fBT_SUCCESS\fR is the best.
 .sp
-For each level, the option 
+For each level, the option
 .B T_ALLOPT
 can be requested on input. No
 value is given with this option; only the
@@ -327,13 +329,13 @@ with no option value (it consists only of a
 structure), the
 option is returned with its
 .I status
-field set to 
+field set to
 .B T_SUCCESS
 if it
-is supported, 
+is supported,
 .B T_NOTSUPPORT
 if it is not or needs additional user
-privileges, and 
+privileges, and
 .B T_READONLY
 if it is read-only (in the current XTI
 state). No option value is returned.
@@ -342,7 +344,7 @@ If an option is specified with an option value, the
 .I status
 field of
 the returned option has the same value, as if the user had tried to
-negotiate this value with 
+negotiate this value with
 .B T_NEGOTIATE.
 If the status is
 .BR T_SUCCESS ,
@@ -350,9 +352,10 @@ If the status is
 \fBT_NOTSUPPORT\fR or  \fBT_READONLY\fR,
 the returned option value is the same as the one requested on input.
 .sp
-The overall result of the option checks is returned in \fIret\(->flags\fR.
+The overall result of the option checks is returned in
+.IR ret\(->flags .
 This field contains the worst single result of the option checks, whereby
-the rating is the same as for 
+the rating is the same as for
 .B T_NEGOTIATE
 \&.
 .sp
@@ -369,30 +372,32 @@ remain unchanged.
 .RS 29n
 .rt
 This action enables the transport user to retrieve the default option
-values. The user specifies the options of interest in \fIreq\(->opt.buf\fR.
+values. The user specifies the options of interest in
+.IR req\(->opt.buf .
 The option values are irrelevant and will be ignored; it is sufficient to
 specify the
 .B t_opthdr
 part of an option only. The default values are
-then returned in \fIret\(->opt.buf\fR.
+then returned in
+.IR ret\(->opt.buf .
 .sp
 The
 .I status
-field returned is 
+field returned is
 .B T_NOTSUPPORT
 if the protocol
 level does not support this option or the transport user illegally requested
-a privileged option, 
+a privileged option,
 .B T_READONLY
 if the option is read-only, and set
 to
 .B T_SUCCESS
 in all other cases. The overall result of the request is
 returned in \fIret\(->flags\fR. This field contains the worst single result,
-whereby the rating is the same as for 
+whereby the rating is the same as for
 .BR T_NEGOTIATE.
 .sp
-For each level, the option 
+For each level, the option
 .B T_ALLOPT
 can be requested on input. All
 supported options of this level with their default values are then returned.
@@ -415,34 +420,35 @@ option values. The user specifies the options of interest in
 it is sufficient to specifiy the
 .B t_opthdr
 part of an option only. The
-currently effective values are then returned in \fIreq\(->opt.buf\fR.
+currently effective values are then returned in
+.IR req\(->opt.buf .
 .sp
 The
 .I status
-field returned is 
+field returned is
 .B T_NOTSUPPORT
 if the protocol
 level does not support this option or the transport user illegally requested
 a privileged option, T_READONLY if the option is read-only, and set to
 \fBT_SUCCESS\fR in all other cases. The overall result of the request is
 returned in \fIret\(->flags\fR. This field contains the worst single result,
-whereby the rating is the same as for 
+whereby the rating is the same as for
 .BR T_NEGOTIATE.
 .sp
-For each level, the option 
+For each level, the option
 .B T_ALLOPT
 can be requested on input. All
 supported options of this level with their currently effective values are
 then returned.
 .sp
-The option 
+The option
 .B T_ALLOPT
 can only be used with
 .B t_optmgmt()
 and the
 actions
 .B "T_NEGOTIATE, T_DEFAULT"
-and 
+and
 .B T_CURRENT.
 It can be
 used with any supported level and addresses all supported options of this
@@ -463,7 +469,7 @@ once.
 Transport providers may not be able to provide an interface capable of
 supporting
 .B T_NEGOTIATE
-and/or 
+and/or
 .B T_CHECK
 functionalities. When
 this is the case, the error
@@ -485,7 +491,7 @@ done so far may remain valid. The behavior of the function is not changed if
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, a value of 
+Upon successful completion, a value of
 .B 0
 is returned. Otherwise, a
 value of \(mi1 is returned and
@@ -494,7 +500,8 @@ is set to indicate an error.
 .SH VALID STATES
 .sp
 .LP
-ALL - apart from \fBT_UNINIT\fR.
+ALL - apart from
+.BR T_UNINIT .
 .SH ERRORS
 .sp
 .LP
@@ -546,7 +553,7 @@ information.
 The number of bytes allowed for an incoming argument
 .I (maxlen)
 is
-greater than 
+greater than
 .B 0
 but not sufficient to store the value of that
 argument. The information to be returned in
