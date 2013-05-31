@@ -53,32 +53,44 @@ reason, the data for a section should be viewed as a list of buffers, each
 of which is available through a data descriptor.
 .sp
 .LP
-The \fBelf_getdata()\fR function lets a program step through a section's
+The
+.B elf_getdata()
+function lets a program step through a section's
 data list. If the incoming data descriptor,
 .IR data ,
 is null, the
 function returns the first buffer associated with the section. Otherwise,
-\fIdata\fR should be a data descriptor associated with
+.I data
+should be a data descriptor associated with
 .IR scn ,
 and the
 function gives the program access to the next data element for the section.
 If
 .I scn
-is null or an error occurs, \fBelf_getdata()\fR returns a null
+is null or an error occurs,
+.B elf_getdata()
+returns a null
 pointer.
 .sp
 .LP
-The \fBelf_getdata()\fR function translates the data from file
+The
+.B elf_getdata()
+function translates the data from file
 representations into memory representations (see \fBelf32_xlatetof\fR(3ELF))
 and presents objects with memory data types to the program, based on the
 file's
 .I class
 (see \fBelf\fR(3ELF)). The working library version (see
-\fBelf_version\fR(3ELF)) specifies what version of the memory structures the
-program wishes \fBelf_getdata()\fR to present.
+.BR elf_version (3ELF))
+specifies what version of the memory structures the
+program wishes
+.B elf_getdata()
+to present.
 .sp
 .LP
-The \fBelf_newdata()\fR function creates a new data descriptor for a
+The
+.B elf_newdata()
+function creates a new data descriptor for a
 section, appending it to any data elements already associated with the
 section. As described below, the new data descriptor appears empty,
 indicating the element holds no data. For convenience, the descriptor's type
@@ -91,7 +103,8 @@ function implicitly sets the
 .B ELF_F_DIRTY
 bit for the section's data
 (see \fBelf_flagdata\fR(3ELF)). If \fI scn\fR is null or an error occurs,
-\fBelf_newdata()\fR returns a null pointer.
+.B elf_newdata()
+returns a null pointer.
 .sp
 .LP
 The \fBelf_rawdata()\fR function differs from \fBelf_getdata()\fR by
@@ -100,20 +113,28 @@ function typically should be used only to retrieve a section image from a
 file being read, and then only when a program must avoid the automatic data
 translation described below. Moreover, a program may not close or disable
 (see \fBelf_cntl\fR(3ELF)) the file descriptor associated with \fIelf\fR
-before the initial raw operation, because \fBelf_rawdata()\fR might read the
+before the initial raw operation, because
+.B elf_rawdata()
+might read the
 data from the file to ensure it doesn't interfere with
 .BR elf_getdata() .
 See \fBelf_rawfile\fR(3ELF) for a related facility that applies to the
-entire file. When \fBelf_getdata()\fR provides the right translation, its
+entire file. When
+.B elf_getdata()
+provides the right translation, its
 use is recommended over
 .BR elf_rawdata() .
 If
 .I scn
 is null or an
-error occurs, \fBelf_rawdata()\fR returns a null pointer.
+error occurs,
+.B elf_rawdata()
+returns a null pointer.
 .sp
 .LP
-The \fBElf_Data\fR structure includes the following members:
+The
+.B Elf_Data
+structure includes the following members:
 .sp
 .in +2
 .nf
@@ -134,7 +155,7 @@ Descriptions appear below.
 .ne 2
 .mk
 .na
-\fBd_buf\fR
+.B d_buf
 .ad
 .RS 13n
 .rt
@@ -175,7 +196,7 @@ for more information.)
 .ne 2
 .mk
 .na
-\fBd_off\fR
+.B d_off
 .ad
 .RS 13n
 .rt
@@ -193,7 +214,9 @@ object's.
 .RS 13n
 .rt
 This member holds the buffer's required alignment, from the beginning of
-the section. That is, \fBd_off\fR will be a multiple of this member's value.
+the section. That is,
+.B d_off
+will be a multiple of this member's value.
 For example, if this member's value is
 .BR 4 ,
 the beginning of the buffer
@@ -224,12 +247,16 @@ constraints. Consequently, adjacent buffers sometimes will not abut, causing
 of dealing with these holes.
 .sp
 .LP
-First, the program can use \fBelf_fill()\fR to tell the library how to set
+First, the program can use
+.B elf_fill()
+to tell the library how to set
 the intervening bytes. When the library must generate gaps in the file, it
 uses the fill byte to initialize the data there. The library's initial fill
 value is
 .BR 0 ,
-and \fBelf_fill()\fR lets the application change that.
+and
+.B elf_fill()
+lets the application change that.
 .sp
 .LP
 Second, the application can generate its own data buffers to occupy the
@@ -242,9 +269,12 @@ eliminated them.
 .SS "Section and Memory Types"
 .sp
 .LP
-The \fBelf_getdata()\fR function interprets sections' data according to the
+The
+.B elf_getdata()
+function interprets sections' data according to the
 section type, as noted in the section header available through
-\fBelf32_getshdr()\fR. The following table shows the section types and how
+.BR elf32_getshdr() .
+The following table shows the section types and how
 the library represents them with memory data types for the 32-bit file
 class. Other classes would have similar tables. By implication, the memory
 data types control translation by \fBelf32_xlatetof\fR(3ELF)
@@ -284,7 +314,9 @@ Section TypeElf_Type32-bit Type
 
 .sp
 .LP
-The \fBelf_rawdata()\fR function creates a buffer with type
+The
+.B elf_rawdata()
+function creates a buffer with type
 .BR ELF_T_BYTE .
 .sp
 .LP
@@ -302,7 +334,10 @@ A section with a special type,
 .BR SHT_NOBITS ,
 occupies no space in an
 object file, even when the section header indicates a non-zero size.
-\fBelf_getdata()\fR and \fBelf_rawdata()\fR work on such a section, setting
+.B elf_getdata()
+and
+.B elf_rawdata()
+work on such a section, setting
 the
 .I data
 structure to have a null buffer pointer and the type
@@ -312,14 +347,20 @@ value is set
 to the size from the section header. When a program is creating a new
 section of type
 .BR SHT_NOBITS ,
-it should use \fBelf_newdata()\fR to add
+it should use
+.B elf_newdata()
+to add
 data buffers to the section. These empty data buffers should have the
-\fBd_size\fR members set to the desired size and the \fBd_buf\fR members set
+.B d_size
+members set to the desired size and the
+.B d_buf
+members set
 to
 .IR " NULL" .
 .SH EXAMPLES
 .LP
-\fBExample 1\fR A sample program of calling \fBelf_getdata()\fR.
+.B Example 1
+A sample program of calling \fBelf_getdata()\fR.
 .sp
 .LP
 The following fragment obtains the string table that holds section names
@@ -353,7 +394,9 @@ member in an
 header holds the section table
 index of the string table. The program gets a section descriptor for that
 section, verifies it is a string table, and then retrieves the data. When
-this fragment finishes, \fBdata->d_buf\fR points at the first byte of the
+this fragment finishes,
+.B data->d_buf
+points at the first byte of the
 string table, and
 .B data->d_size
 holds the string table's size in
@@ -383,10 +426,19 @@ MT-LevelMT-Safe
 .SH SEE ALSO
 .sp
 .LP
-\fBelf\fR(3ELF), \fBelf32_getehdr\fR(3ELF), \fBelf64_getehdr\fR(3ELF),
-\fBelf32_getshdr\fR(3ELF), \fBelf64_getshdr\fR(3ELF),
-\fBelf32_xlatetof\fR(3ELF), \fBelf64_xlatetof\fR(3ELF),
-\fBelf_cntl\fR(3ELF), \fBelf_fill\fR(3ELF), \fBelf_flagdata\fR(3ELF),
-\fBelf_getscn\fR(3ELF), \fBelf_rawfile\fR(3ELF), \fBelf_strptr\fR(3ELF),
-\fBelf_version\fR(3ELF), \fBlibelf\fR(3LIB),
+.BR elf (3ELF),
+.BR elf32_getehdr (3ELF),
+.BR elf64_getehdr (3ELF),
+.BR elf32_getshdr (3ELF),
+.BR elf64_getshdr (3ELF),
+.BR elf32_xlatetof (3ELF),
+.BR elf64_xlatetof (3ELF),
+.BR elf_cntl (3ELF),
+.BR elf_fill (3ELF),
+.BR elf_flagdata (3ELF),
+.BR elf_getscn (3ELF),
+.BR elf_rawfile (3ELF),
+.BR elf_strptr (3ELF),
+.BR elf_version (3ELF),
+.BR libelf (3LIB),
 .BR attributes (5)

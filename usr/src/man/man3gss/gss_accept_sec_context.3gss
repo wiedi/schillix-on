@@ -64,7 +64,8 @@ The status code returned by the underlying mechanism.
 .sp .6
 .RS 4n
 The context handle to return to the initiator. This should be set to
-\fBGSS_C_NO_CONTEXT\fR before the loop begins.
+.B GSS_C_NO_CONTEXT
+before the loop begins.
 .RE
 
 .sp
@@ -88,7 +89,7 @@ defined, the function returns
 .ne 2
 .mk
 .na
-\fIinput_token_buffer\fR
+.I input_token_buffer
 .ad
 .sp .6
 .RS 4n
@@ -105,7 +106,8 @@ Token received from the context initiative.
 .RS 4n
 Optional application-specified bindings. Allows application to securely
 bind channel identification information to the security context. Set to
-\fBGSS_C_NO_CHANNEL_BINDINGS\fR if you do not want to use channel
+.B GSS_C_NO_CHANNEL_BINDINGS
+if you do not want to use channel
 bindings.
 .RE
 
@@ -157,16 +159,19 @@ length is zero, no token need be sent.
 .ne 2
 .mk
 .na
-\fIret_flags\fR
+.I ret_flags
 .ad
 .sp .6
 .RS 4n
 Contains various independent flags, each of which indicates that the
 context supports a specific service option. If not needed, specify
 .BR NULL .
-Test the returned bit-mask \fIret_flags\fR value against its
+Test the returned bit-mask
+.I ret_flags
+value against its
 symbolic name to determine if the given option is supported by the context.
-\fIret_flags\fR may contain one of the following values:
+.I ret_flags
+may contain one of the following values:
 .sp
 .ne 2
 .mk
@@ -176,7 +181,8 @@ symbolic name to determine if the given option is supported by the context.
 .sp .6
 .RS 4n
 If true, delegated credentials are available by means of the
-\fIdelegated_cred_handle\fR parameter. If false, no credentials were
+.I delegated_cred_handle
+parameter. If false, no credentials were
 delegated.
 .RE
 
@@ -225,10 +231,12 @@ they will not be detected.
 .sp .6
 .RS 4n
 If true, confidentiality service may be invoked by calling the
-\fBgss_wrap()\fR routine. If false, no confidentiality service is available
+.B gss_wrap()
+routine. If false, no confidentiality service is available
 by means of
 .BR gss_wrap() .
-\fBgss_wrap()\fR will provide message
+.B gss_wrap()
+will provide message
 encapsulation, data-origin authentication and integrity services only.
 .RE
 
@@ -255,7 +263,8 @@ per-message integrity service is not available.
 .sp .6
 .RS 4n
 If true, the initiator does not wish to be authenticated. The
-\fIsrc_name\fR parameter, if requested, contains an anonymous internal name.
+.I src_name
+parameter, if requested, contains an anonymous internal name.
 If false, the initiator has been authenticated normally.
 .RE
 
@@ -268,7 +277,10 @@ If false, the initiator has been authenticated normally.
 .sp .6
 .RS 4n
 If true, the protection services specified by the states of
-\fBGSS_C_CONF_FLAG\fR and \fBGSS_C_INTEG_FLAG\fR are available if the
+.B GSS_C_CONF_FLAG
+and
+.B GSS_C_INTEG_FLAG
+are available if the
 accompanying major status return value is either
 .B GSS_S_COMPLETE
 or
@@ -302,7 +314,8 @@ false, the security context cannot be transferred.
 .sp .6
 .RS 4n
 The number of sections for which the context will remain value Specify
-\fBNULL\fR if not required.
+.B NULL
+if not required.
 .RE
 
 .sp
@@ -315,7 +328,9 @@ The number of sections for which the context will remain value Specify
 .RS 4n
 The credential value for credentials received from the context's initiator.
 It is valid only if the initiator has requested that the acceptor act as a
-proxy: that is, if the \fIret_flag\fR argument resolves to
+proxy: that is, if the
+.I ret_flag
+argument resolves to
 .BR GSS_C_DELEG_FLAG .
 .RE
 
@@ -352,7 +367,8 @@ called again when the reply token is received from the peer application,
 passing the token to
 .B gss_accept_sec_context()
 by means of the
-\fIinput_token\fR parameters.
+.I input_token
+parameters.
 .sp
 .LP
 Portable applications should be constructed to use the token length and
@@ -379,14 +395,17 @@ parameter is undefined.
 .TP
 .ie t \(bu
 .el o
-Unless the accompanying \fIret_flags\fR parameter contains the bit
+Unless the accompanying
+.I ret_flags
+parameter contains the bit
 .BR GSS_C_PROT_READY_FLAG ,
 which indicates that per-message services may
 be applied in advance of a successful completion status, the value returned
 by the
 .I mech_type
 parameter may be undefined until
-\fBgss_accept_sec_context()\fR returns a major status value of
+.B gss_accept_sec_context()
+returns a major status value of
 .BR GSS_S_COMPLETE .
 .RE
 .sp
@@ -397,8 +416,13 @@ The values of the
 .BR GSS_C_REPLAY_FLAG ,
 .BR GSS_C_SEQUENCE_FLAG ,
 .BR GSS_C_CONF_FLAG ,
-\fBGSS_C_INTEG_FLAG\fR and \fBGSS_C_ANON_FLAG\fR bits returned by means of
-the \fIret_flags\fR parameter are values that would be valid if context
+.B GSS_C_INTEG_FLAG
+and
+.B GSS_C_ANON_FLAG
+bits returned by means of
+the
+.I ret_flags
+parameter are values that would be valid if context
 establishment were to succeed.
 .sp
 .LP
@@ -406,26 +430,38 @@ The values of the
 .B GSS_C_PROT_READY_FLAG
 and
 .BR GSS_C_TRANS_FLAG
-bits within \fIret_flags\fR indicate the actual state at the time
-\fBgss_accept_sec_context()\fR returns, whether or not the context is fully
+bits within
+.I ret_flags
+indicate the actual state at the time
+.B gss_accept_sec_context()
+returns, whether or not the context is fully
 established. However, applications should not rely on this behavior, as
-\fBGSS_C_PROT_READY_FLAG\fR was not defined in Version 1 of the
+.B GSS_C_PROT_READY_FLAG
+was not defined in Version 1 of the
 .BR GSS-API .
 Instead, applications should be prepared to use per-message
 services after a successful context establishment, based upon the
-\fBGSS_C_INTEG_FLAG\fR and \fBGSS_C_CONF_FLAG\fR values.
+.B GSS_C_INTEG_FLAG
+and
+.B GSS_C_CONF_FLAG
+values.
 .sp
 .LP
-All other bits within the \fIret_flags\fR argument are set to zero.
+All other bits within the
+.I ret_flags
+argument are set to zero.
 .sp
 .LP
 While
 .B gss_accept_sec_context()
 returns
 .BR GSS_S_CONTINUE_NEEDED ,
-the values returned by means of the the \fIret_flags\fR argument indicate
+the values returned by means of the the
+.I ret_flags
+argument indicate
 the services available from the established context. If the initial call of
-\fBgss_accept_sec_context()\fR fails, no context object is created, and the
+.B gss_accept_sec_context()
+fails, no context object is created, and the
 value of the
 .I context_handle
 parameter is set to
@@ -437,8 +473,12 @@ parameter are left untouched
 for the application to delete using
 .BR gss_delete_sec_context (3GSS).
 During context establishment, the informational status bits
-\fBGSS_S_OLD_TOKEN\fR and \fBGSS_S_DUPLICATE_TOKEN\fR indicate fatal errors;
-\fBGSS-API\fR mechanisms always return them in association with a  routine
+.B GSS_S_OLD_TOKEN
+and
+.B GSS_S_DUPLICATE_TOKEN
+indicate fatal errors;
+.B GSS-API
+mechanisms always return them in association with a  routine
 error of
 .BR GSS_S_FAILURE .
 This pairing requirement did not exist in
@@ -449,7 +489,8 @@ run over version 1 implementations must special-case these codes.
 .SH ERRORS
 .sp
 .LP
-\fBgss_accept_sec_context()\fR may return the following status codes:
+.B gss_accept_sec_context()
+may return the following status codes:
 .sp
 .ne 2
 .mk
@@ -621,11 +662,15 @@ parameter details the error condition.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Invoking \fBgss_accept_sec_context()\fR Within a Loop
+.B Example 1
+Invoking
+.B gss_accept_sec_context()
+Within a Loop
 .sp
 .LP
 A typical portable caller should always invoke
-\fBgss_accept_sec_context()\fR within a loop:
+.B gss_accept_sec_context()
+within a loop:
 
 .sp
 .in +2
@@ -706,4 +751,4 @@ MT-LevelSafe
 .BR attributes (5)
 .sp
 .LP
-\fISolaris Security for Developers Guide\fR
+.I Solaris Security for Developers Guide

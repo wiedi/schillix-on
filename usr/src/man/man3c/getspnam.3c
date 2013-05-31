@@ -76,7 +76,8 @@ These functions are used to obtain shadow password entries.  An entry may
 come from any of the sources for
 .B shadow
 specified in the
-\fB/etc/nsswitch.conf\fR file (see \fBnsswitch.conf\fR(4)).
+.B /etc/nsswitch.conf
+file (see \fBnsswitch.conf\fR(4)).
 .sp
 .LP
 The
@@ -123,11 +124,16 @@ process to call more shadow password functions after calling
 .BR endspent() .
 .sp
 .LP
-The \fBfgetspent()\fR function, unlike the other functions above, does not
+The
+.B fgetspent()
+function, unlike the other functions above, does not
 use
 .BR nsswitch.conf ;
 it reads and parses the next line from the stream
-\fIfp\fR, which is assumed to have the format of the \fBshadow\fR file (see
+.IR fp ,
+which is assumed to have the format of the
+.B shadow
+file (see
 .BR shadow (4)).
 .SS "Reentrant Interfaces"
 .sp
@@ -135,7 +141,9 @@ it reads and parses the next line from the stream
 The
 .BR getspnam() ,
 .BR getspent() ,
-and \fBfgetspent()\fR functions
+and
+.B fgetspent()
+functions
 use thread-specific data storage that is reused in each call to one of these
 functions by the same thread, making them safe to use but not recommended
 for multithreaded applications.
@@ -159,25 +167,32 @@ applications.
 .LP
 Each reentrant interface takes the same argument as its non-reentrant
 counterpart, as well as the following additional arguments.  The
-\fIresult\fR argument must be a pointer to a \fBstruct spwd\fR structure
+.I result
+argument must be a pointer to a
+.B "struct spwd"
+structure
 allocated by the caller.  On successful completion, the function returns the
-shadow password entry in this structure. The  \fIbuffer\fR argument must be
+shadow password entry in this structure. The
+.I buffer
+argument must be
 a pointer to a buffer supplied by the caller.  This buffer is used as
 storage space for the shadow password data.  All of the pointers within the
 returned
 .B "struct spwd"
-\fIresult\fR point to data stored within this
+.I result
+point to data stored within this
 buffer (see
 .BR "RETURN VALUES" ).
 The buffer must be large enough to hold
 all of the data associated with the shadow password entry. The \fIbuflen\fR
 argument should give the size in bytes of the buffer indicated by
-\fIbuffer.\fR
+.I buffer.
 .sp
 .LP
 For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads. The
-\fBsetspent()\fR function may be used in a multithreaded application but
+.B setspent()
+function may be used in a multithreaded application but
 resets the enumeration position for all threads.  If multiple threads
 interleave calls to
 .BR getspent_r() ,
@@ -235,7 +250,10 @@ The
 .BR getspent_r() ,
 .BR fgetspent() ,
 and
-\fBfgetspent()\fR functions each return a pointer to a \fBstruct spwd\fR if
+.B fgetspent()
+functions each return a pointer to a
+.B "struct spwd"
+if
 they successfully enumerate an entry; otherwise they return
 .IR NULL ,
 indicating the end of the enumeration.
@@ -244,7 +262,9 @@ indicating the end of the enumeration.
 The
 .BR getspnam() ,
 .BR getspent() ,
-and \fBfgetspent()\fR functions
+and
+.B fgetspent()
+functions
 use thread-specific data storage, so returned data must be copied before a
 subsequent call to any of these functions if the data is to be saved.
 .sp
@@ -252,7 +272,9 @@ subsequent call to any of these functions if the data is to be saved.
 When the pointer returned by the reentrant functions
 .BR getspnam_r() ,
 .BR getspent_r() ,
-and \fBfgetspent_r()\fR is non-null, it is always equal
+and
+.B fgetspent_r()
+is non-null, it is always equal
 to the
 .I result
 pointer that was supplied by the caller.
@@ -263,8 +285,14 @@ The reentrant functions
 .BR getspnam_r() ,
 .BR getspent_r() ,
 and
-\fBfgetspent_r()\fR will return \fBNULL\fR and set \fBerrno\fR to
-\fBERANGE\fR if the length of the buffer supplied by caller is not large
+.B fgetspent_r()
+will return
+.B NULL
+and set
+.B errno
+to
+.B ERANGE
+if the length of the buffer supplied by caller is not large
 enough to store the result.  See
 .BR Intro (2)
 for the proper usage and
@@ -312,7 +340,8 @@ The reentrant interfaces
 .BR getspnam_r() ,
 .BR getspent_r() ,
 and
-\fBfgetspent_r()\fR are included in this release on an uncommitted basis
+.B fgetspent_r()
+are included in this release on an uncommitted basis
 only, and are subject to change or removal in future minor releases.
 .SH NOTES
 .sp
@@ -321,7 +350,8 @@ When compiling multithreaded applications, see
 .BR Intro (3),
 \fINotes On
 Multithreaded Applications\fR, for information about the use of the
-\fB_REENTRANT\fR flag.
+.B _REENTRANT
+flag.
 .sp
 .LP
 Use of the enumeration interfaces
@@ -338,13 +368,15 @@ all database sources.  The semantics of enumeration are discussed further in
 .LP
 Access to shadow password information may be restricted in a manner
 depending on the database source being used.  Access to the
-\fB/etc/shadow\fR file is generally restricted to processes running with the
+.B /etc/shadow
+file is generally restricted to processes running with the
 effective uid of the file owner or the {\fBPRIV_FILE_DAC_READ\fR} privilege.
 Other database sources may impose stronger or less stringent restrictions.
 .sp
 .LP
 Empty fields in the database source return -1 values for all fields except
-\fBsp_pwdp\fR and
+.B sp_pwdp
+and
 .BR sp_flag ,
 where the value returned is 0.
 .sp
@@ -361,7 +393,10 @@ fields
 of the
 .B "struct spwd"
 structure. Shadow password entries obtained from
-\fBNIS\fR will contain the value \fB-1\fR in the remainder of the fields.
+.B NIS
+will contain the value
+.B -1
+in the remainder of the fields.
 .sp
 .LP
 When

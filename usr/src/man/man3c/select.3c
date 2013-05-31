@@ -99,7 +99,8 @@ addresses are passed in the
 .IR readfds ,
 .IR writefds ,
 and
-\fIerrorfds\fR parameters to see if some of their descriptors are ready for
+.I errorfds
+parameters to see if some of their descriptors are ready for
 reading, are ready for writing, or have an exceptional condition pending,
 respectively.
 .sp
@@ -120,7 +121,8 @@ function, the timeout period is given in seconds and
 microseconds in an argument of type
 .BR "struct timeval" ,
 whereas for the
-\fBpselect()\fR function the timeout period is given in seconds and
+.B pselect()
+function the timeout period is given in seconds and
 nanoseconds in an argument of type
 .BR "struct timespec" .
 .RE
@@ -133,7 +135,10 @@ The
 function has no
 .I sigmask
 argument. It behaves as
-\fBpselect()\fR does when \fIsigmask\fR is a null pointer.
+.B pselect()
+does when
+.I sigmask
+is a null pointer.
 .RE
 .RS +4
 .TP
@@ -162,37 +167,57 @@ on file
 descriptors that refer to other types of file is unspecified.
 .sp
 .LP
-The \fInfds\fR argument specifies the range of file descriptors to be
-tested. The first \fInfds\fR descriptors are checked in each set; that is,
+The
+.I nfds
+argument specifies the range of file descriptors to be
+tested. The first
+.I nfds
+descriptors are checked in each set; that is,
 the descriptors from zero through \fInfds\fR-1 in the descriptor sets are
 examined.
 .sp
 .LP
-If the \fIreadfs\fR argument is not a null pointer, it points to an object
-of type \fBfd_set\fR that on input specifies the file descriptors to be
+If the
+.I readfs
+argument is not a null pointer, it points to an object
+of type
+.B fd_set
+that on input specifies the file descriptors to be
 checked for being ready to read, and on output indicates which file
 descriptors are ready to read.
 .sp
 .LP
-If the \fIwritefs\fR argument is not a null pointer, it points to an object
-of type \fBfd_set\fR that on input specifies the file descriptors to be
+If the
+.I writefs
+argument is not a null pointer, it points to an object
+of type
+.B fd_set
+that on input specifies the file descriptors to be
 checked for being ready to write, and on output indicates which file
 descriptors are ready to write.
 .sp
 .LP
-If the \fIerrorfds\fR argument is not a null pointer, it points to an
-object of type \fBfd_set\fR that on input specifies the file descriptors to
+If the
+.I errorfds
+argument is not a null pointer, it points to an
+object of type
+.B fd_set
+that on input specifies the file descriptors to
 be checked for error conditions pending, and on output indicates which file
 descriptors have error conditions pending.
 .sp
 .LP
 Upon successful completion, the objects pointed to by the
 .IR readfs ,
-\fIwritefs\fR, and \fIerrorfds\fR arguments are modified to indicate which
+.IR writefs ,
+and
+.I errorfds
+arguments are modified to indicate which
 file descriptors are ready for reading, ready for writing, or have an error
 condition pending, respectively, and return the total number of ready
 descriptors in all the output sets. For each file descriptor less than
-\fInfds\fR, the corresponding bit will be set on successful completion if it
+.IR nfds ,
+the corresponding bit will be set on successful completion if it
 was set on input and the associated condition is true for that file
 descriptor.
 .sp
@@ -207,8 +232,12 @@ the requested operations becomes ready, until the timeout occurs, or until
 interrupted by a signal. The
 .I timeout
 parameter controls how long the
-\fBselect()\fR or \fBpselect()\fR function takes before timing out. If the
-\fItimeout\fR parameter is not a null pointer, it specifies a maximum
+.B select()
+or
+.B pselect()
+function takes before timing out. If the
+.I timeout
+parameter is not a null pointer, it specifies a maximum
 interval to wait for the selection to complete. If the specified time
 interval expires without any requested operation becoming ready, the
 function returns. If the
@@ -220,7 +249,8 @@ or
 .B pselect()
 blocks indefinitely until at least
 one descriptor meets the specified criteria. To effect a poll, the
-\fItimeout\fR parameter should not be a null pointer, and should point to a
+.I timeout
+parameter should not be a null pointer, and should point to a
 zero-valued
 .B timespec
 structure.
@@ -241,7 +271,8 @@ is not a null pointer, then the
 .B pselect()
 function
 replaces the signal mask of the process by the set of signals pointed to by
-\fIsigmask\fR before examining the descriptors, and restores the signal mask
+.I sigmask
+before examining the descriptors, and restores the signal mask
 of the process before returning.
 .sp
 .LP
@@ -269,7 +300,8 @@ protocol-specific except as noted below. For other file types, if the
 operation is meaningless for a particular file type,
 .B select()
 or
-\fBpselect()\fR indicates that the descriptor is ready for read or write
+.B pselect()
+indicates that the descriptor is ready for read or write
 operations and indicates that the descriptor has no exceptional condition
 pending.
 .sp
@@ -351,16 +383,24 @@ completes successfully and returns 0.
 .LP
 If the
 .IR readfs ,
-\fIwritefs\fR, and \fIerrorfds\fR arguments are all
+.IR writefs ,
+and
+.I errorfds
+arguments are all
 null pointers and the
 .I timeout
 argument is not a null pointer,
-\fBselect()\fR or \fBpselect()\fR blocks for the time specified, or until
+.B select()
+or
+.B pselect()
+blocks for the time specified, or until
 interrupted by a signal. If the
 .IR readfs ,
 .IR writefs ,
 and
-\fIerrorfds\fR arguments are all null pointers and the \fItimeout\fR
+.I errorfds
+arguments are all null pointers and the
+.IR timeout
 argument is a null pointer,
 .B select()
 blocks until interrupted by a
@@ -375,16 +415,20 @@ On failure, the objects pointed to by the
 .IR readfs ,
 .IR writefs ,
 and
-\fIerrorfds\fR arguments are not modified.  If the timeout interval expires
+.I errorfds
+arguments are not modified.  If the timeout interval expires
 without the specified condition being true for any of the specified file
 descriptors, the objects pointed to by the
 .IR readfs ,
 .IR writefs ,
 and
-\fIerrorfds\fR arguments have all bits set to 0.
+.I errorfds
+arguments have all bits set to 0.
 .sp
 .LP
-File descriptor masks of type \fBfd_set\fR can be initialized and tested
+File descriptor masks of type
+.B fd_set
+can be initialized and tested
 with the macros
 .BR FD_CLR() ,
 .BR FD_ISSET() ,
@@ -399,7 +443,9 @@ and
 .ad
 .RS 24n
 .rt
-Clears the bit for the file descriptor \fIfd\fR in the file descriptor set
+Clears the bit for the file descriptor
+.I fd
+in the file descriptor set
 .IR fdset .
 .RE
 
@@ -411,7 +457,9 @@ Clears the bit for the file descriptor \fIfd\fR in the file descriptor set
 .ad
 .RS 24n
 .rt
-Returns a non-zero value if the bit for the file descriptor \fIfd\fR is set
+Returns a non-zero value if the bit for the file descriptor
+.I fd
+is set
 in the file descriptor set pointed to by
 .IR fdset ,
 and 0 otherwise.
@@ -425,7 +473,9 @@ and 0 otherwise.
 .ad
 .RS 24n
 .rt
-Sets the bit for the file descriptor \fIfd\fR in the file descriptor set
+Sets the bit for the file descriptor
+.I fd
+in the file descriptor set
 .IR fdset .
 .RE
 
@@ -437,16 +487,22 @@ Sets the bit for the file descriptor \fIfd\fR in the file descriptor set
 .ad
 .RS 24n
 .rt
-Initializes the file descriptor set \fIfdset\fR to have zero bits for all
+Initializes the file descriptor set
+.I fdset
+to have zero bits for all
 file descriptors.
 .RE
 
 .sp
 .LP
-The behavior of these macros is undefined if the \fIfd\fR argument is less
+The behavior of these macros is undefined if the
+.I fd
+argument is less
 than 0 or greater than or equal to
 .BR FD_SETSIZE ,
-or if \fIfd\fR is not a
+or if
+.I fd
+is not a
 valid file descriptor, or if any of the arguments are expressions with side
 effects.
 .SH RETURN VALUES
@@ -472,8 +528,13 @@ macros return no
 value. The
 .B FD_ISSET()
 macro returns a non-zero value if the bit for
-the file descriptor \fIfd\fR is set in the file descriptor set pointed to by
-\fIfdset\fR, and \fB0\fR otherwise.
+the file descriptor
+.I fd
+is set in the file descriptor set pointed to by
+.IR fdset ,
+and
+.B 0
+otherwise.
 .SH ERRORS
 .sp
 .LP
@@ -533,7 +594,9 @@ An invalid timeout interval was specified.
 .ad
 .RS 10n
 .rt
-The \fInfds\fR argument is less than 0 or greater than
+The
+.I nfds
+argument is less than 0 or greater than
 .BR FD_SETSIZE .
 .RE
 
@@ -558,7 +621,12 @@ that is linked (directly or indirectly) downstream from a multiplexer.
 .RS 10n
 .rt
 A component of the pointed-to time limit is outside the acceptable range:
-\fBt_sec\fR must be between \fB0\fR and 10^8, inclusive.   \fBt_usec\fR must
+.B t_sec
+must be between
+.B 0
+and 10^8, inclusive.
+.B t_usec
+must
 be greater than or equal to
 .BR 0 ,
 and less than 10^6.

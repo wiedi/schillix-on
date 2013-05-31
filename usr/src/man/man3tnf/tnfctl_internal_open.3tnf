@@ -35,10 +35,14 @@ tnfctl_internal_open \- create handle for internal process probe control
 .SH DESCRIPTION
 .sp
 .LP
-\fBtnfctl_internal_open()\fR returns in \fIret_val\fR a pointer to an
+.B tnfctl_internal_open()
+returns in
+.I ret_val
+a pointer to an
 opaque handle that can be used to control probes in the same process as the
 caller (internal process probe control). The process must have
-\fBlibtnfprobe.so.1\fR loaded. Probes in libraries that are brought in by
+.B libtnfprobe.so.1
+loaded. Probes in libraries that are brought in by
 .BR dlopen (3C)
 will be visible after the library has been opened. Probes
 in libraries closed by a \fBdlclose\fR(3C) will not be visible after the
@@ -49,7 +53,10 @@ details.
 .SH RETURN VALUES
 .sp
 .LP
-\fBtnfctl_internal_open()\fR returns \fBTNFCTL_ERR_NONE\fR upon success.
+.B tnfctl_internal_open()
+returns
+.B TNFCTL_ERR_NONE
+upon success.
 .SH ERRORS
 .sp
 .ne 2
@@ -82,7 +89,8 @@ externally).
 .ad
 .RS 28n
 .rt
-\fBlibtnfprobe.so.1\fR is not linked in the target process.
+.B libtnfprobe.so.1
+is not linked in the target process.
 .RE
 
 .sp
@@ -134,7 +142,11 @@ MT LevelMT-Safe
 .SH NOTES
 .sp
 .LP
-\fBlibtnfctl\fR interposes on \fBdlopen\fR(3C) and \fBdlclose\fR(3C) in
+.B libtnfctl
+interposes on
+.BR dlopen "(3C) and"
+.BR dlclose (3C)
+in
 order to be notified of libraries being dynamically opened and closed. This
 interposition is necessary for internal process probe control to update its
 list of probes. In these interposition functions, a lock is acquired to
@@ -146,15 +158,22 @@ opened by
 .sp
 .LP
 Since interposition does not work as expected when a library is opened
-dynamically, \fBtnfctl_internal_open()\fR should not be used if the client
-opened \fBlibtnfctl\fR through
+dynamically,
+.B tnfctl_internal_open()
+should not be used if the client
+opened
+.B libtnfctl
+through
 .BR dlopen (3C).
 In this case, the client
-program should be built with a static dependency on \fBlibtnfctl.\fR Also,
+program should be built with a static dependency on
+.B libtnfctl.
+Also,
 if the client program is explicitly linking in
 .BR -ldl ,
 it should link
-\fB-ltnfctl\fR before
+.B -ltnfctl
+before
 .BR -ldl .
 .sp
 .LP
@@ -164,5 +183,6 @@ will not be seen because the
 filtee (backing library) is loaded lazily on the first symbol reference and
 not at process startup or
 .BR dlopen "(3C) time. A workaround is to call"
-\fBtnfctl_check_libs\fR(3TNF) once the caller is sure that the filtee has
+.BR tnfctl_check_libs (3TNF)
+once the caller is sure that the filtee has
 been loaded.

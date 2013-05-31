@@ -87,7 +87,7 @@ Priority of the request (no longer used).
 .ne 2
 .mk
 .na
-\fIfr_rtnp\fR
+.I fr_rtnp
 .ad
 .RS 11n
 .rt
@@ -105,7 +105,10 @@ functions operate identically to
 .BR allocb (9F),
 except that the data buffer to associate with the message
 is specified by the caller. The allocated message will have both the
-\fBb_wptr\fR and \fBb_rptr\fR set to the supplied data buffer starting at
+.B b_wptr
+and
+.B b_rptr
+set to the supplied data buffer starting at
 .IR base .
 Only the buffer itself can be specified by the caller. The
 message block and data block header are allocated as if by
@@ -137,27 +140,39 @@ pointer to a structure if more than one argument is needed.
 .LP
 If
 .B esballoc()
-was used, then \fBfree_func\fR will be called
+was used, then
+.B free_func
+will be called
 asynchronously at some point after the message is no longer referenced. If
-\fBdesballoc()\fR was used, then \fBfree_func\fR will be called
+.B desballoc()
+was used, then
+.B free_func
+will be called
 synchronously by the thread releasing the final reference. See
 .BR freeb (9F).
 .sp
 .LP
-The \fBfree_func\fR routine must not sleep, and must not access any
+The
+.B free_func
+routine must not sleep, and must not access any
 dynamically allocated data structures that could be freed before or during
 its execution. In addition, because messages allocated with
-\fBdesballoc()\fR are freed in the context of the caller, \fBfree_func\fR
+.B desballoc()
+are freed in the context of the caller, \fBfree_func\fR
 must not call another module's
 .B put
 procedure, or attempt to acquire a
 private module lock which might be held by another thread across a call to a
 STREAMS utility routine that could free a message block. Finally,
-\fBfree_func\fR routines specified using \fBdesballoc\fR may run in
+.B free_func
+routines specified using
+.B desballoc
+may run in
 interrupt context and thus must only use synchronization primitives that
 include an interrupt priority returned from
 .BR ddi_intr_get_pri "(9F) or"
-\fBddi_intr_get_softint_pri\fR(9F). If any of these restrictions are not
+.BR ddi_intr_get_softint_pri (9F).
+If any of these restrictions are not
 followed, the possibility of lock recursion or deadlock exists.
 .SH RETURN VALUES
 .sp
@@ -199,7 +214,8 @@ Interface StabilityCommitted
 .LP
 .BR allocb (9F),
 .BR ddi_intr_get_pri (9F),
-\fBddi_intr_get_softint_pri\fR(9F), \fBfreeb\fR(9F),
+.BR ddi_intr_get_softint_pri (9F),
+.BR freeb (9F),
 .BR datab (9S),
 .BR free_rtn (9S)
 .sp

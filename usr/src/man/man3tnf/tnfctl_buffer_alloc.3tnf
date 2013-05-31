@@ -39,40 +39,57 @@ buffer for trace data
 .SH DESCRIPTION
 .sp
 .LP
-\fBtnfctl_buffer_alloc()\fR allocates a buffer to which trace events are
-logged. When tracing a process using a  \fBtnfctl\fR handle returned by
-\fBtnfctl_pid_open\fR(3TNF), \fBtnfctl_exec_open\fR(3TNF),
-\fBtnfctl_indirect_open\fR(3TNF), and \fBtnfctl_internal_open\fR(3TNF)),
-\fItrace_file_name\fR is the name of the trace file to which trace events
+.B tnfctl_buffer_alloc()
+allocates a buffer to which trace events are
+logged. When tracing a process using a
+.B tnfctl
+handle returned by
+.BR tnfctl_pid_open (3TNF),
+.BR tnfctl_exec_open (3TNF),
+.BR tnfctl_indirect_open (3TNF),
+and \fBtnfctl_internal_open\fR(3TNF)),
+.I trace_file_name
+is the name of the trace file to which trace events
 should be logged. It can be an absolute path specification or a relative
 path specification. If it is relative, the current working directory of the
-process that is calling  \fBtnfctl_buffer_alloc()\fR is prefixed to
-\fItrace_file_name\fR. If the named trace file already exists, it is
+process that is calling
+.B tnfctl_buffer_alloc()
+is prefixed to
+.IR trace_file_name .
+If the named trace file already exists, it is
 overwritten. For kernel tracing, that is, for a tnfctl handle returned by
-\fBtnfctl_kernel_open\fR(3TNF), trace events are logged to a trace buffer in
+.BR tnfctl_kernel_open (3TNF),
+trace events are logged to a trace buffer in
 memory; therefore, \fItrace_file_name\fR is ignored.  Use \fBtnfxtract\fR(1)
 to extract a kernel buffer into a file.
 .sp
 .LP
-\fItrace_buffer_size\fR is the size in bytes of the trace buffer that
+.I trace_buffer_size
+is the size in bytes of the trace buffer that
 should be allocated. An error is returned if an attempt is made to allocate
-a buffer when one already exists.   \fBtnfctl_buffer_alloc()\fR affects the
+a buffer when one already exists.
+.B tnfctl_buffer_alloc()
+affects the
 trace attributes; use  \fBtnfctl_trace_attrs_get\fR(3TNF) to get the latest
 trace attributes after a buffer is allocated.
 .sp
 .LP
-\fBtnfctl_buffer_dealloc()\fR is used to deallocate a kernel trace buffer
+.B tnfctl_buffer_dealloc()
+is used to deallocate a kernel trace buffer
 that is no longer needed.
 .I hndl
 must be a kernel handle, returned by
-\fBtnfctl_kernel_open\fR(3TNF). A process's trace file cannot be deallocated
+.BR tnfctl_kernel_open (3TNF).
+A process's trace file cannot be deallocated
 using
 .BR tnfctl_buffer_dealloc() .
 Instead, once the trace file is no
 longer needed for analysis and after  the process being traced exits, use
 .BR rm (1)
 to remove the trace file. Do not remove the trace file while the
-process being traced is still alive. \fBtnfctl_buffer_dealloc()\fR affects
+process being traced is still alive.
+.B tnfctl_buffer_dealloc()
+affects
 the trace attributes; use  \fBtnfctl_trace_attrs_get\fR(3TNF) to get the
 latest trace attributes after a buffer is deallocated.
 .sp
@@ -84,8 +101,12 @@ see
 .SH RETURN VALUES
 .sp
 .LP
-\fBtnfctl_buffer_alloc()\fR and \fBtnfctl_buffer_dealloc()\fR return
-\fBTNFCTL_ERR_NONE\fR upon success.
+.B tnfctl_buffer_alloc()
+and
+.B tnfctl_buffer_dealloc()
+return
+.B TNFCTL_ERR_NONE
+upon success.
 .SH ERRORS
 .sp
 .LP
@@ -121,11 +142,14 @@ Permission denied; could not create a trace file.
 .ad
 .RS 27n
 .rt
-The  \fItrace_buffer_size\fR requested is smaller than the minimum trace
+The
+.I trace_buffer_size
+requested is smaller than the minimum trace
 buffer size needed. Use
 .B trace_min_size
 of trace attributes in
-\fBtnfctl_trace_attrs_get\fR(3TNF) to determine the minimum size of the
+.BR tnfctl_trace_attrs_get (3TNF)
+to determine the minimum size of the
 buffer.
 .RE
 
@@ -148,7 +172,10 @@ The requested trace file size is too big.
 .ad
 .RS 27n
 .rt
-\fItrace_file_name\fR is  \fINULL\fR or the absolute path name is longer
+.I trace_file_name
+is
+.I NULL
+or the absolute path name is longer
 than
 .BR MAXPATHLEN.
 .RE
@@ -187,7 +214,8 @@ The following error codes apply to
 .ad
 .RS 25n
 .rt
-\fIhndl\fR is not a kernel handle.
+.I hndl
+is not a kernel handle.
 .RE
 
 .sp
@@ -210,7 +238,8 @@ No buffer exists to deallocate.
 .RS 25n
 .rt
 Cannot deallocate a trace buffer unless tracing is stopped. Use
-\fBtnfctl_trace_state_set\fR(3TNF) to stop tracing.
+.BR tnfctl_trace_state_set (3TNF)
+to stop tracing.
 .RE
 
 .sp
@@ -252,9 +281,12 @@ MT LevelMT-Safe
 .BR rm (1),
 .BR tnfxtract (1),
 .BR TNF_PROBE (3TNF),
-\fBlibtnfctl\fR(3TNF), \fBtnfctl_exec_open\fR(3TNF),
-\fBtnfctl_indirect_open\fR(3TNF), \fBtnfctl_internal_open\fR(3TNF),
-\fBtnfctl_kernel_open\fR(3TNF), \fBtnfctl_pid_open\fR(3TNF),
+.BR libtnfctl (3TNF),
+.BR tnfctl_exec_open (3TNF),
+.BR tnfctl_indirect_open (3TNF),
+.BR tnfctl_internal_open (3TNF),
+.BR tnfctl_kernel_open (3TNF),
+.BR tnfctl_pid_open (3TNF),
 .BR tnfctl_trace_attrs_get (3TNF),
 .BR tracing (3TNF),
 .BR attributes (5)

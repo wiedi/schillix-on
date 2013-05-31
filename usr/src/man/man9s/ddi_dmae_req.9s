@@ -81,7 +81,8 @@ void*procparms;              /* parameter for nextcookie call */
 Specifies what
 .B DMA
 operation is to be performed. The value
-\fBDMAE_CMD_WRITE\fR signifies that data is to be transferred from memory to
+.B DMAE_CMD_WRITE
+signifies that data is to be transferred from memory to
 the
 .B I/O
 device. The value
@@ -98,12 +99,17 @@ set by the driver before calling
 .ne 2
 .mk
 .na
-\fBder_bufprocess\fR
+.B der_bufprocess
 .ad
 .RS 18n
 .rt
-On some bus types, a driver can set \fBder_bufprocess\fR to the value
-\fBDMAE_BUF_CHAIN\fR to specify that multiple \fBDMA\fR cookies will be
+On some bus types, a driver can set
+.B der_bufprocess
+to the value
+.B DMAE_BUF_CHAIN
+to specify that multiple
+.B DMA
+cookies will be
 given to the
 .B DMA
 engine for a single
@@ -121,7 +127,9 @@ structure member must be set to the address of a driver
 .BR nextcookie
 routine. This routine takes one argument, specified by the \fBprocparms\fR
 structure member, and returns a pointer to a structure of type
-\fBddi_dma_cookie_t\fR that specifies the next cookie for the \fBI/O\fR
+.B ddi_dma_cookie_t
+that specifies the next cookie for the
+.BR I/O
 transfer. When the
 .B DMA
 engine is ready to receive an additional
@@ -136,7 +144,12 @@ cookie from the driver. The driver's
 routine must then
 return the address of the next cookie (in static storage) to the bus nexus
 routine that called it. If there are no more segments in the current
-\fBDMA\fR window, then \fB(*proc)()\fR must return the \fBNULL\fR pointer.
+.B DMA
+window, then
+.B (*proc)()
+must return the
+.B NULL
+pointer.
 .sp
 A driver can specify the
 .B DMAE_BUF_CHAIN
@@ -144,11 +157,17 @@ flag only if the particular
 bus architecture supports the use of multiple
 .B DMA
 cookies in a single
-\fBI/O\fR transfer. A bus \fBDMA\fR engine can support this feature either
+.B I/O
+transfer. A bus
+.B DMA
+engine can support this feature either
 with a fixed-length scatter/gather list, or by an interrupt chaining
 feature. A driver must determine whether its parent bus nexus supports this
 feature by examining the scatter/gather list size returned in the
-\fBdlim_sgllen\fR member of the \fBDMA\fR limit structure returned by the
+.B dlim_sgllen
+member of the
+.B DMA
+limit structure returned by the
 driver's call to
 .BR ddi_dmae_getlim() .
 (See
@@ -157,7 +176,8 @@ If the size of the scatter/gather list is 1, then no chaining is available.
 The driver must not specify the
 .B DMAE_BUF_CHAIN
 flag in the
-\fBddi_dmae_req\fR structure it passes to
+.B ddi_dmae_req
+structure it passes to
 .BR ddi_dmae_prog() ,
 and the
 driver need not provide a
@@ -186,7 +206,9 @@ flag in the
 structure. Before calling
 .BR ddi_dmae_prog() ,
 the driver must
-\fIprefetch\fR cookies by repeatedly calling \fBddi_dma_nextseg\fR(9F) and
+.I prefetch
+cookies by repeatedly calling
+.BR ddi_dma_nextseg "(9F) and"
 .BR ddi_dma_segtocookie (9F)
 until either (1) the end of the DMA window is
 reached (\fBddi_dma_nextseg\fR(9F) returns
@@ -202,13 +224,19 @@ call to the
 .B nextcookie
 routine, until the list of prefetched cookies
 is exhausted. After the end of the list of cookies is reached, the
-\fBnextcookie\fR routine must return the \fBNULL\fR pointer.
+.B nextcookie
+routine must return the
+.B NULL
+pointer.
 .sp
 The size of the scatter/gather list determines how many discontiguous
 segments of physical memory can participate in a single
 .B DMA
 transfer.
-\fBISA\fR bus \fBDMA\fR engines have no scatter/gather capability, so their
+.B ISA
+bus
+.B DMA
+engines have no scatter/gather capability, so their
 scatter/gather list sizes are 1. Other finite scatter/gather list sizes
 would also be possible. For performance reasons, drivers should use the
 chaining capability if it is available on their parent bus.
@@ -216,7 +244,8 @@ chaining capability if it is available on their parent bus.
 As described above, a driver making use of
 .B DMA
 chaining must prefetch
-\fBDMA\fR cookies before calling
+.B DMA
+cookies before calling
 .BR ddi_dmae_prog() .
 The reasons for this
 are:
@@ -267,7 +296,10 @@ can be called from a high-level interrupt routine. If the cookies were not
 prefetched, the
 .B nextcookie
 routine would have to call
-\fBddi_dma_nextseg()\fR and \fBddi_dma_segtocookie()\fR from a high-level
+.B ddi_dma_nextseg()
+and
+.B ddi_dma_segtocookie()
+from a high-level
 interrupt routine, which is not recommended.
 .RE
 When breaking a
@@ -336,7 +368,8 @@ compatible timing.
 Drivers using this mode must also specify
 .B DMAE_TRANS_SNGL
 in the
-\fBder_trans\fR structure member.
+.B der_trans
+structure member.
 .RE
 
 .sp

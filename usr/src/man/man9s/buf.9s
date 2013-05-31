@@ -53,13 +53,15 @@ driver, even when the buffer header is in one of the driver's work lists.
 .sp
 .LP
 Buffer headers are also used by the system for unbuffered or physical
-\fBI/O\fR for block drivers. In this case, the buffer describes a portion of
+.B I/O
+for block drivers. In this case, the buffer describes a portion of
 user data space that is locked into memory.
 .sp
 .LP
 Block drivers often chain block requests so that overall throughput for the
 device is maximized. The \fBav_forw\fR and the \fBav_back\fR members of the
-\fBbuf\fR structure can serve as link pointers for chaining block
+.B buf
+structure can serve as link pointers for chaining block
 requests.
 .SH STRUCTURE MEMBERS
 .sp
@@ -91,14 +93,18 @@ The members of the buffer header available to test or set by a driver are
 as follows:
 .sp
 .LP
-\fBb_flags\fR stores the buffer status and indicates to the driver whether
+.B b_flags
+stores the buffer status and indicates to the driver whether
 to read or write to the device. The driver must never clear the
-\fBb_flags\fR member. If this is done, unpredictable results can occur
+.B b_flags
+member. If this is done, unpredictable results can occur
 including loss of disk sanity and the possible failure of other kernel
 processes.
 .sp
 .LP
-All \fBb_flags\fR bit values not otherwise specified above are reserved by
+All
+.B b_flags
+bit values not otherwise specified above are reserved by
 the kernel and may not be used.
 .sp
 .LP
@@ -140,7 +146,8 @@ Indicates the data transfer has completed. This flag is read-only.
 Indicates an
 .B I/O
 transfer error. It is set in conjunction with the
-\fBb_error\fR field. \fBbioerror\fR(9F) should be used in preference to
+.B b_error
+field. \fBbioerror\fR(9F) should be used in preference to
 setting the
 .B B_ERROR
 bit.
@@ -208,20 +215,32 @@ tested; it is only detected as the NOT form of
 
 .sp
 .LP
-\fBav_forw\fR and \fBav_back\fR can be used by the driver to link the
+.B av_forw
+and
+.B av_back
+can be used by the driver to link the
 buffer into driver work lists.
 .sp
 .LP
-\fBb_bcount\fR specifies the number of bytes to be transferred in both a
+.B b_bcount
+specifies the number of bytes to be transferred in both a
 paged and a non-paged
 .B I/O
 request.
 .sp
 .LP
-\fBb_un.b_addr\fR is the virtual address of the \fBI/O\fR request, unless
-\fBB_PAGEIO\fR is set. The address is a kernel virtual address, unless
-\fBB_PHYS\fR is set, in which case it is a user virtual address. If
-\fBB_PAGEIO\fR is set, \fBb_un.b_addr\fR contains kernel private data. Note
+.B b_un.b_addr
+is the virtual address of the
+.B I/O
+request, unless
+.B B_PAGEIO
+is set. The address is a kernel virtual address, unless
+.B B_PHYS
+is set, in which case it is a user virtual address. If
+.B B_PAGEIO
+is set,
+.B b_un.b_addr
+contains kernel private data. Note
 that either one of
 .B B_PHYS
 and
@@ -230,43 +249,55 @@ or neither, can be set,
 but not both.
 .sp
 .LP
-\fBb_blkno\fR identifies which logical block on the device (the device is
+.B b_blkno
+identifies which logical block on the device (the device is
 defined by the device number) is to be accessed. The driver might have to
 convert this logical block number to a physical location such as a cylinder,
 track, and sector of a disk. This is a 32-bit value. The driver should use
-\fBb_blkno\fR or
+.B b_blkno
+or
 .BR b_lblkno ,
 but not both.
 .sp
 .LP
-\fBb_lblkno\fR identifies which logical block on the device (the device is
+.B b_lblkno
+identifies which logical block on the device (the device is
 defined by the device number) is to be accessed. The driver might have to
 convert this logical block number to a physical location such as a cylinder,
 track, and sector of a disk. This is a 64-bit value. The driver should use
-\fBb_lblkno\fR or
+.B b_lblkno
+or
 .BR b_blkno ,
 but not both.
 .sp
 .LP
-\fBb_resid\fR should be set to the number of bytes not transferred because
+.B b_resid
+should be set to the number of bytes not transferred because
 of an error.
 .sp
 .LP
-\fBb_bufsize\fR contains the size of the allocated buffer.
+.B b_bufsize
+contains the size of the allocated buffer.
 .sp
 .LP
-\fBb_iodone\fR identifies a specific \fBbiodone\fR routine to be called by
+.B b_iodone
+identifies a specific
+.B biodone
+routine to be called by
 the driver when the
 .B I/O
 is complete.
 .sp
 .LP
-\fBb_error\fR can hold an error code that should be passed as a return code
+.B b_error
+can hold an error code that should be passed as a return code
 from the driver.
 .B b_error
 is set in conjunction with the
 .BR B_ERROR
-bit set in the \fBb_flags\fR member.
+bit set in the
+.B b_flags
+member.
 .BR bioerror (9F)
 should be used in
 preference to setting the
@@ -274,10 +305,12 @@ preference to setting the
 field.
 .sp
 .LP
-\fBb_private\fR is for the private use of the device driver.
+.B b_private
+is for the private use of the device driver.
 .sp
 .LP
-\fBb_edev\fR contains the major and minor device numbers of the device
+.B b_edev
+contains the major and minor device numbers of the device
 accessed.
 .SH SEE ALSO
 .sp
@@ -301,5 +334,7 @@ accessed.
 .LP
 Buffers are a shared resource within the kernel. Drivers should read or
 write only the members listed in this section. Drivers that attempt to use
-undocumented members of the \fBbuf\fR structure risk corrupting data in the
+undocumented members of the
+.B buf
+structure risk corrupting data in the
 kernel or on the device.

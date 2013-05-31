@@ -46,13 +46,16 @@ The
 .B update_drv
 command informs the system about attribute changes to
 an installed device driver. It can be used to re-read the
-\fBdriver.conf\fR(4) file, or to add, modify, or delete a driver's minor
+.BR driver.conf (4)
+file, or to add, modify, or delete a driver's minor
 node permissions or aliases.
 .sp
 .LP
 Without options,
 .B update_drv
-reloads the \fBdriver.conf\fR file.
+reloads the
+.B driver.conf
+file.
 .sp
 .LP
 Upon successfully updating the aliases, the driver binding takes effect
@@ -77,7 +80,9 @@ The following options are supported:
 Add a
 .IR permission ,
 .IR aliases ,
-\fIprivilege\fR or \fIpolicy\fR
+.I privilege
+or
+.IR policy
 entry.
 .sp
 With the
@@ -89,7 +94,8 @@ option), a device
 privilege (using the
 .B -P
 option) or a a device policy (using the
-\fB-p\fR option), can be added or updated. If a matching minor node
+.B -p
+option), can be added or updated. If a matching minor node
 permissions entry is encountered (having the same driver name and the minor
 node), it is replaced. If a matching aliases entry is encountered (having a
 different driver name and the same alias), an error is reported.
@@ -105,7 +111,8 @@ options are mutually exclusive.
 .ne 2
 .mk
 .na
-\fB-b\fR \fIbasedir\fR
+.B -b
+.I basedir
 .ad
 .sp .6
 .RS 4n
@@ -137,7 +144,9 @@ non-global zone's file system. See
 Delete a
 .IR permission ,
 .IR aliases ,
-\fIprivilege\fR or \fIpolicy\fR
+.I privilege
+or
+.IR policy
 entry.
 .sp
 The
@@ -146,7 +155,11 @@ The
 .B -i
 .IR identify-name ,
 .B -P
-\fIprivilege\fR or the \fB-p\fR \fIpolicy\fR option needs to be specified
+.I privilege
+or the
+.B -p
+.I policy
+option needs to be specified
 with the
 .B -d
 option.
@@ -166,21 +179,27 @@ returns an error.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .sp .6
 .RS 4n
-Force the system to reread the \fBdriver.conf\fR file even if the driver
+Force the system to reread the
+.B driver.conf
+file even if the driver
 module cannot be unloaded. See
 .B NOTES
 section for details.
 .sp
-\fBWithout\fR this option, when removing an alias for a driver,
-\fBupdate_drv\fR updates the binding files for the next boot, but returns an
+.B Without
+this option, when removing an alias for a driver,
+.B update_drv
+updates the binding files for the next boot, but returns an
 error if one or more devices that reference the driver-alias binding
 remains.
 .B With
-the \fB-f\fR option,
+the
+.B -f
+option,
 .B update_drv
 does not return an
 error if such devices remain.
@@ -197,8 +216,10 @@ error if such devices remain.
 A white-space separated list of aliases for the driver. If
 .B -a
 or
-\fB-d\fR option is not specified then this option is ignored. The
-\fIidentify-name\fR string is mandatory. If all aliases need to be removed,
+.B -d
+option is not specified then this option is ignored. The
+.I identify-name
+string is mandatory. If all aliases need to be removed,
 .BR rem_drv (1M)
 is recommended.
 .RE
@@ -271,7 +292,8 @@ driver privileges. For the
 .B -d
 option, privilege is a single privilege.
 The privileges are added to or removed from the
-\fB/etc/security/extra_privs\fR file.
+.B /etc/security/extra_privs
+file.
 .RE
 
 .sp
@@ -287,7 +309,8 @@ Verbose.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Adding or Modifying an Existing Minor Permissions Entry
+.B Example 1
+Adding or Modifying an Existing Minor Permissions Entry
 .sp
 .LP
 The following command adds or modifies the exisitng minor permissions entry
@@ -304,11 +327,13 @@ example# update_drv -a -m 'llc1 777 joe staff' clone
 .sp
 
 .LP
-\fBExample 2\fR Removing All Minor Permissions Entries
+.B Example 2
+Removing All Minor Permissions Entries
 .sp
 .LP
 The following command removes all minor permission entries of the
-\fBusbprn\fR driver, the USB printer driver:
+.B usbprn
+driver, the USB printer driver:
 
 .sp
 .in +2
@@ -319,7 +344,8 @@ example# update_drv -d -m '* 0666 root sys' usbprn
 .sp
 
 .LP
-\fBExample 3\fR Adding a Driver Aliases Entry
+.B Example 3
+Adding a Driver Aliases Entry
 .sp
 .LP
 The following command adds a driver aliases entry of the
@@ -337,7 +363,8 @@ example# update_drv -a -i '"usb459,20"' ugen
 .sp
 
 .LP
-\fBExample 4\fR Re-reading the \fBdriver.conf\fR File For the \fBohci\fR
+.B Example 4
+Re-reading the \fBdriver.conf\fR File For the \fBohci\fR
 Driver
 .sp
 .LP
@@ -354,7 +381,8 @@ file.
 .sp
 
 .LP
-\fBExample 5\fR Requiring a Self-defined Privilege to Open a tcp Socket
+.B Example 5
+Requiring a Self-defined Privilege to Open a tcp Socket
 .sp
 .LP
 The following command requires a self-defined privilege to open a tcp
@@ -370,7 +398,8 @@ example#   update_drv -a -P net_tcp -p \e
 .sp
 
 .LP
-\fBExample 6\fR Establishing a Path-oriented Alias
+.B Example 6
+Establishing a Path-oriented Alias
 .sp
 .LP
 The following command establishes a path-oriented alias to force a specific
@@ -450,22 +479,30 @@ or
 options are specified,
 .B update_drv
 does not
-reread the \fBdriver.conf\fR file.
+reread the
+.B driver.conf
+file.
 .sp
 .LP
 A forced update of the \fBdriver.conf\fR file reloads the \fBdriver.conf\fR
 file without reloading the driver binary module. In this case, devices which
 cannot be detached reference driver global properties from the old
-\fBdriver.conf\fR file, while the remaining driver instances reference
-global properties in the new \fBdriver.conf\fR file.
+.B driver.conf
+file, while the remaining driver instances reference
+global properties in the new
+.B driver.conf
+file.
 .sp
 .LP
 It is possible to add an alias , which changes the driver binding of a
 device already being managed by a different driver. A force update with the
-\fB-a\fR option tries to bind to the new driver and report error if it
+.B -a
+option tries to bind to the new driver and report error if it
 cannot. If you specify more than one of the
 .BR -m ,
 .BR -i ,
-\fB-P\fR or
-\fB-p\fR options, a force flag tries to modify aliases or permissions. This
+.B -P
+or
+.B -p
+options, a force flag tries to modify aliases or permissions. This
 is done even if the other operation fails and vice-versa.

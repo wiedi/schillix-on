@@ -104,7 +104,9 @@ representing one or more
 records. It returns the size of the
 buffer required to contain the packed buffer representing the object
 hierarchy. To obtain the correct size of the required buffer, the \fIbuf\fR
-and \fIbufsize\fR parameters can be set to
+and
+.I bufsize
+parameters can be set to
 .I NULL
 and 0 respectively,
 and the required buffer size will be returned. The resulting packed record
@@ -122,7 +124,8 @@ function reverses the packing process
 performed by
 .BR ea_pack_object() .
 A packed buffer passed to
-\fBea_unpack_object()\fR is unpacked into the original hierarchy of objects.
+.B ea_unpack_object()
+is unpacked into the original hierarchy of objects.
 If the unpack operation fails (for example, due to a corrupted or incomplete
 buffer), it returns
 .BR EO_ERROR ;
@@ -130,7 +133,9 @@ otherwise, the object type of the first
 object in the hierarchy is returned.  If
 .B ea_unpack_object()
 is invoked
-with \fIflag\fR equal to
+with
+.I flag
+equal to
 .BR EUP_ALLOC ,
 it allocates memory for the
 variable-length data in the included objects.  Otherwise, with \fIflag\fR
@@ -138,12 +143,17 @@ equal to
 .BR EUP_NOALLOC ,
 it sets the variable length data pointers within
 the unpacked object structures to point within the buffer indicated by
-\fIbuf\fR. In both cases, \fBea_unpack_object()\fR allocates all the
+.IR buf .
+In both cases,
+.B ea_unpack_object()
+allocates all the
 necessary
 .B exacct
 objects to represent the unpacked record. The
 resulting object hierarchy can be freed using \fBea_free_object\fR(3EXACCT)
-with the same \fIflag\fR value.
+with the same
+.I flag
+value.
 .sp
 .LP
 The
@@ -152,7 +162,8 @@ function returns a pointer to a string
 representing the recorded creator of the
 .B exacct
 file. The
-\fBea_get_hostname()\fR function returns a pointer to a string representing
+.B ea_get_hostname()
+function returns a pointer to a string representing
 the recorded hostname on which the
 .B exacct
 file was created.  These
@@ -170,9 +181,17 @@ function reads the basic fields
 into the
 .B ea_object_t
 indicated by
-\fIobj\fR from the \fBexacct\fR file referred to by \fIef\fR and rewinds to
+.I obj
+from the
+.B exacct
+file referred to by
+.I ef
+and rewinds to
 the head of the record.  If the read object is corrupted,
-\fBea_next_object()\fR returns \fBEO_ERROR\fR and records the extended
+.B ea_next_object()
+returns
+.B EO_ERROR
+and records the extended
 accounting error code, accessible with \fBea_error\fR(3EXACCT). If
 end-of-file is reached,
 .B EO_ERROR
@@ -190,7 +209,10 @@ into the
 indicated
 .BR ea_object_t .
 If the read object is corrupted,
-\fBea_previous_object()\fR returns \fBEO_ERROR\fR and records the extended
+.B ea_previous_object()
+returns
+.B EO_ERROR
+and records the extended
 accounting error code, accessible with \fBea_error\fR(3EXACCT). If
 end-of-file is reached,
 .B EO_ERROR
@@ -202,14 +224,18 @@ accounting error code is set to
 The
 .B ea_get_object()
 function reads the value fields into the
-\fBea_object_t\fR indicated by
+.B ea_object_t
+indicated by
 .IR obj ,
 allocating memory as necessary,
 and advances to the head of the next record. Once a record group object is
 retrieved using
 .BR ea_get_object() ,
 subsequent calls to
-\fBea_get_object()\fR and \fBea_next_object()\fR will track through the
+.B ea_get_object()
+and
+.B ea_next_object()
+will track through the
 objects within the record group, and on reaching the end of the group, will
 return the next object at the same level as the group from the file. If the
 read object is corrupted,
@@ -229,8 +255,12 @@ returned and the extended accounting error code is set to
 The
 .B ea_write_object()
 function appends the given object to the open
-\fBexacct\fR file indicated by \fIef\fR and returns 0. If the write fails,
-\fBea_write_object()\fR returns \(mi1 and sets the extended accounting error
+.B exacct
+file indicated by
+.I ef
+and returns 0. If the write fails,
+.B ea_write_object()
+returns \(mi1 and sets the extended accounting error
 code to indicate the error, accessible with
 .BR ea_error (3EXACCT).
 .sp
@@ -263,7 +293,8 @@ All elements in the
 list are copied, and
 any group objects are recursively copied. The returned object can be
 completely freed with \fBea_free_object\fR(3EXACCT) by specifying the
-\fBEUP_ALLOC\fR flag.
+.B EUP_ALLOC
+flag.
 .sp
 .LP
 The
@@ -282,7 +313,9 @@ of the group, whereas
 .B ea_get_object_tree()
 reads the group and all its
 member items, recursing into sub-records if necessary. The returned object
-data structure can be completely freed with \fBea_free_object()\fR by
+data structure can be completely freed with
+.B ea_free_object()
+by
 specifying the
 .B EUP_ALLOC
 flag.
@@ -308,7 +341,8 @@ function returns the
 .B ea_object_type
 of the
 object if the object was retrieved successfully. Otherwise, it returns
-\fBEO_ERROR\fR and sets the extended accounting error code to indicate the
+.B EO_ERROR
+and sets the extended accounting error code to indicate the
 error.
 .sp
 .LP
@@ -322,7 +356,8 @@ next
 object in the file.  It returns
 .B EO_ERROR
 if the
-\fBexacct\fR file is corrupted sets the extended accounting error code to
+.B exacct
+file is corrupted sets the extended accounting error code to
 indicate the error.
 .sp
 .LP
@@ -334,7 +369,8 @@ of
 the first
 .B exacct
 object unpacked from the buffer. It returns
-\fBEO_ERROR\fR if the exacct file is corrupted, and sets the extended
+.B EO_ERROR
+if the exacct file is corrupted, and sets the extended
 accounting error code to indicate the error.
 .sp
 .LP
@@ -403,7 +439,8 @@ is not a valid
 .B exacct
 file, or is
 unparsable, and therefore appears corrupted. This error is also used by
-\fBea_unpack_buffer()\fR to indicate a corrupted buffer.
+.B ea_unpack_buffer()
+to indicate a corrupted buffer.
 .RE
 
 .sp
@@ -432,7 +469,10 @@ file header, application writers can develop their own format suited to the
 needs of their application.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Open and close \fBexacct\fR file.
+.B Example 1
+Open and close
+.B exacct
+file.
 .sp
 .LP
 The following example opens the extended accounting data file for
@@ -471,7 +511,10 @@ ea_close(&ef);
 .in -2
 
 .LP
-\fBExample 2\fR Construct an \fBexacct\fR file consisting of a single
+.B Example 2
+Construct an
+.B exacct
+file consisting of a single
 object containing the current process ID.
 .sp
 .in +2

@@ -35,21 +35,29 @@ bufmod \- STREAMS Buffer Module
 .SH DESCRIPTION
 .sp
 .LP
-\fBbufmod\fR is a \fBSTREAMS\fR module that buffers incoming messages,
+.B bufmod
+is a
+.B STREAMS
+module that buffers incoming messages,
 reducing the number of system calls and the associated overhead required to
-read and process them. Although \fBbufmod\fR was originally designed to be
+read and process them. Although
+.B bufmod
+was originally designed to be
 used in conjunction with
 .B STREAMS-based
 networking device drivers, the
 version described here is general purpose so that it can be used anywhere
-\fBSTREAMS\fR input buffering is required.
+.B STREAMS
+input buffering is required.
 .SS "Read-side Behavior"
 .sp
 .LP
-The behavior of \fBbufmod\fR depends on various parameters and flags that
+The behavior of
+.B bufmod
+depends on various parameters and flags that
 can be set and queried as described below under
 .BR IOCTLS .
-\fBbufmod\fR
+.B bufmod
 collects incoming
 .B M_DATA
 messages into chunks, passing each chunk
@@ -62,26 +70,33 @@ and adds them to
 chunks as well. It also optionally adds to each message a header containing
 a timestamp, and a cumulative count of  messages dropped on the stream read
 side due to resource exhaustion or flow control. Thedefault settings of
-\fBbufmod\fR allow it to drop messages when flow control sets in or
+.B bufmod
+allow it to drop messages when flow control sets in or
 resources are exhausted; disabling headers and explicitly requesting no
 drops makes \fBbufmod\fR pass all messages through. Finally, \fBbufmod\fR is
 capable of truncating upstream messages to a fixed, programmable length.
 .sp
 .LP
-When a message arrives, \fBbufmod\fR processes it in several steps. The
+When a message arrives,
+.B bufmod
+processes it in several steps. The
 following paragraphs discuss each step in turn.
 .sp
 .LP
 Upon receiving a message from below, if the
 .B SB_NO_HEADER
 flag is not
-set, \fBbufmod\fR immediately timestamps it and saves the current time value
+set,
+.B bufmod
+immediately timestamps it and saves the current time value
 for later insertion in the header described below.
 .sp
 .LP
 Next, if
 .B SB_NO_PROTO_CVT
-is not set, \fBbufmod\fR converts all
+is not set,
+.B bufmod
+converts all
 leading
 .B M_PROTO
 blocks in the message to
@@ -100,7 +115,9 @@ described below.
 .LP
 Afterwards, if
 .B SB_NO_HEADER
-is not set, \fBbufmod\fR prepends a
+is not set,
+.B bufmod
+prepends a
 header to the converted message. This header is defined as follows.
 .sp
 .in +2
@@ -134,8 +151,11 @@ distance in bytes from the start of the truncated message in the current
 chunk (described below) to the start of the next message in the chunk; the
 value reflects any padding necessary to insure correct data alignment for
 the host machine and includes the length of the header itself.
-\fBsbh_drops\fR reports the cumulative number of input messages that this
-instance of \fBbufmod\fR has dropped due to flow control or resource
+.B sbh_drops
+reports the cumulative number of input messages that this
+instance of
+.B bufmod
+has dropped due to flow control or resource
 exhaustion. In the current implementation message dropping due to flow
 control can occur only if the
 .B SB_NO_DROPS
@@ -144,15 +164,21 @@ accounts only for events occurring within
 .BR bufmod ,
 and does not count
 messages dropped by downstream or by upstream modules.) The
-\fBsbh_timestamp\fR field contains the message arrival time expressed as a
+.B sbh_timestamp
+field contains the message arrival time expressed as a
 .BR "struct timeval" .
 .sp
 .LP
-After preparing a message, \fBbufmod\fR attempts to add it to the end of
+After preparing a message,
+.B bufmod
+attempts to add it to the end of
 the current chunk, using the chunk size and timeout values to govern the
 addition. The chunk size and timeout values are set and inspected using the
-\fBioctl()\fR calls described below. If adding the new message would make
-the current chunk grow larger than the chunk size, \fBbufmod\fR closes off
+.B ioctl()
+calls described below. If adding the new message would make
+the current chunk grow larger than the chunk size,
+.B bufmod
+closes off
 the current chunk, passing it up to the next module in line, and starts a
 new chunk. If adding the message would still make the new chunk overflow,
 the module passes it upward in an over-size chunk of its own. Otherwise, the
@@ -160,7 +186,8 @@ module concatenates the message to the end of the current chunk.
 .sp
 .LP
 To ensure that messages do not languish forever in an accumulating chunk,
-\fBbufmod\fR maintains a read timeout. Whenever this timeout expires, the
+.B bufmod
+maintains a read timeout. Whenever this timeout expires, the
 module closes off the current chunk and passes it upward. The module
 restarts the timeout period when it receives a read side data message and a
 timeout is not currently active. These two rules insure that \fBbufmod\fR
@@ -169,12 +196,15 @@ activity and that it periodically disposes of all messages during slack
 intervals, but avoids any timeout overhead when there is no activity.
 .sp
 .LP
-\fBbufmod\fR handles other message types as follows. Upon receiving an
-\fBM_FLUSH\fR message specifying that the read queue be flushed, the module
+.B bufmod
+handles other message types as follows. Upon receiving an
+.B M_FLUSH
+message specifying that the read queue be flushed, the module
 clears the currently accumulating chunk and passes the message on to the
 module or driver above. (Note: \fBbufmod\fR uses zero length \fBM_CTL\fR
 messages for internal synchronization and does not pass them through.)
-\fBbufmod\fR passes all other messages through unaltered to its upper
+.B bufmod
+passes all other messages through unaltered to its upper
 neighbor, maintaining message order for non high priority messages by
 passing up any accumulated chunk first.
 .sp
@@ -187,13 +217,22 @@ second message is received within the timeout window.
 .LP
 If the
 .B SB_SEND_ON_WRITE
-flag is set, \fBbufmod\fR passes up the read
+flag is set,
+.B bufmod
+passes up the read
 side any buffered data when a message is received on the write side.
-\fBSB_SEND_ON_WRITE\fR and \fBSB_DEFER_CHUNK\fR are often used together.
+.B SB_SEND_ON_WRITE
+and
+.B SB_DEFER_CHUNK
+are often used together.
 .SS "Write-side Behavior"
 .sp
 .LP
-\fBbufmod\fR intercepts \fBM_IOCTL\fR messages for the \fBioctl\fRs
+.B bufmod
+intercepts
+.B M_IOCTL
+messages for the
+.BR ioctl s
 described below. The module passes all other messages through unaltered to
 its lower neighbor. If
 .B SB_SEND_ON_WRITE
@@ -202,7 +241,9 @@ writer side suffices to close and transmit the current read side chunk.
 .SH IOCTLS
 .sp
 .LP
-\fBbufmod\fR responds to the following \fBioctl\fRs.
+.B bufmod
+responds to the following
+.BR ioctl s.
 .sp
 .ne 2
 .mk
@@ -405,7 +446,9 @@ pointed to by the
 .SH NOTES
 .sp
 .LP
-Older versions of \fBbufmod\fR did not support the behavioral flexibility
+Older versions of
+.B bufmod
+did not support the behavioral flexibility
 controlled by the
 .BR "SBIOCSFLAGS ioctl" .
 Applications that wish to
@@ -413,13 +456,16 @@ take advantage of this flexibility can guard themselves against old versions
 of the module by invoking the
 .B SBIOCGFLAGS
 ioctl and checking for an
-\fBEINVAL\fR error return.
+.B EINVAL
+error return.
 .sp
 .LP
 When buffering is enabled by issuing an
 .B SBIOCSCHUNK
 ioctl to set the
-chunk size to a non zero value,  \fBbufmod\fR sends a
+chunk size to a non zero value,
+.B bufmod
+sends a
 .B SETOPTS
 message
 to adjust the stream head high and low water marks to accommodate the
@@ -433,7 +479,8 @@ new values appropriate for the smaller truncated message sizes.
 .SH BUGS
 .sp
 .LP
-\fBbufmod\fR does not defend itself against allocation failures, so that it
+.B bufmod
+does not defend itself against allocation failures, so that it
 is possible, although very unlikely, for the stream head to use
 inappropriate high and low water marks after the chunk size or snapshot
 length have changed.

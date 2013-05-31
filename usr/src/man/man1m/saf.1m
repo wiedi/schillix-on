@@ -52,11 +52,16 @@ consists of a controlling process, the service access controller (SAC), and
 two administrative levels corresponding to two levels in the supporting
 directory structure. The top administrative level is concerned with port
 monitor administration, the lower level with service administration. The
-\fBSAC\fR is documented in the \fBsac\fR(1M) man page. The administrative
+.B SAC
+is documented in the
+.BR sac "(1M) man page. The administrative"
 levels and associated utilities are documented in the \fISystem
 Administration Guide - Volume II\fR. The requirements for writing port
 monitors and the functions a port monitor must perform to run under the
-\fBSAF\fR and the \fBSAC\fR are documented here.
+.B SAF
+and the
+.B SAC
+are documented here.
 .SS "Port Monitors"
 .sp
 .LP
@@ -164,7 +169,9 @@ Port monitors are responsible for creating
 .B utmpx
 entries with the
 type field set to USER_PROCESS for services they start. If this action has
-been specified, by using the \fB-fu\fR option in the
+been specified, by using the
+.B -fu
+option in the
 .B pmadm
 command
 line that added the service, these
@@ -185,7 +192,8 @@ must be set to DEAD_PROCESS.
 .sp .6
 .RS 4n
 When a port monitor starts, it writes its process id into a file named
-\fB_pid\fR in the current directory and places an advisory lock on the
+.B _pid
+in the current directory and places an advisory lock on the
 file.
 .RE
 
@@ -197,7 +205,8 @@ file.
 .ad
 .sp .6
 .RS 4n
-\fBdoconfig\fR(3NSL) Before invoking the service designated in the port
+.BR doconfig (3NSL)
+Before invoking the service designated in the port
 monitor administrative file,
 .BR _pmtab ,
 a port monitor must arrange for
@@ -218,7 +227,8 @@ person who defines the port monitor.
 .sp .6
 .RS 4n
 A port monitor must terminate itself gracefully on receipt of the signal
-\fBSIGTERM.\fR The termination sequence is the following:
+.B SIGTERM.
+The termination sequence is the following:
 .RS +4
 .TP
 1.
@@ -261,7 +271,10 @@ This section briefly covers the files used by the
 .RS 4n
 A port monitor's current directory contains an administrative file named
 .BR _pmtab ;
-\fB_pmtab\fR is maintained by the \fBpmadm\fR command in
+.B _pmtab
+is maintained by the
+.B pmadm
+command in
 conjunction with a port monitor-specific administrative command.
 .sp
 The port monitor administrative command for a listen port monitor is
@@ -277,7 +290,7 @@ functions.
 .ne 2
 .mk
 .na
-\fBPer-Service Configuration Files\fR
+.B Per-Service Configuration Files
 .ad
 .sp .6
 .RS 4n
@@ -327,9 +340,11 @@ disabled state respectively.
 The
 .B SAC
 performs a periodic sanity poll of the port monitors. The
-\fBSAC\fR communicates with port monitors through FIFOs. A port monitor
+.B SAC
+communicates with port monitors through FIFOs. A port monitor
 should open _pmpipe, in the current directory, to receive messages from the
-\fBSAC\fR and \fB\&../_sacpipe\fR to send return messages to the
+.B SAC
+and \fB\&../_sacpipe\fR to send return messages to the
 .B SAC.
 .SS "Message Formats"
 .sp
@@ -338,7 +353,8 @@ This section describes the messages that may be sent from the
 .B SAC
 to
 a port monitor (\fBsac\fR messages), and from a port monitor to the
-\fBSAC\fR (port monitor messages). These messages are sent through FIFOs and
+.B SAC
+(port monitor messages). These messages are sent through FIFOs and
 are in the form of C structures.
 .sp
 .ne 2
@@ -538,7 +554,8 @@ stopping
 .sp
 .LP
 The current state reflects any changes caused by the last message from the
-\fBSAC.\fR The status message is the normal return message. The negative
+.B SAC.
+The status message is the normal return message. The negative
 acknowledgment should be sent only when the message received is not
 understood.
 .B pm_size
@@ -555,7 +572,8 @@ may only respond to messages that they receive.
 .sp
 .LP
 The concept of message class has been included to accommodate possible
-\fBSAF\fR extensions. The messages described above are all class 1 messages.
+.B SAF
+extensions. The messages described above are all class 1 messages.
 None of these messages contains a variable data portion; all pertinent
 information is contained in the message header. If new messages are added to
 the protocol, they will be defined as new message classes (for example,
@@ -579,7 +597,8 @@ monitor from a class with a larger number than the value of
 .BR pm_maxclass .
 Requests that require messages of a higher class than the
 port monitor can understand will fail. For Solaris, always set
-\fBpm_maxclass\fR to 1.
+.B pm_maxclass
+to 1.
 .sp
 .LP
 For any given port monitor, messages of class
@@ -601,7 +620,10 @@ can
 generate.
 .B pm_size
 (an element of the pmmsg structure) and
-\fBsc_size\fR (an element of the \fBsacmsg\fR structure) indicate the size
+.B sc_size
+(an element of the
+.B sacmsg
+structure) indicate the size
 of the optional data part of the message. The format of this part of the
 message is undefined. Its definition is inherent in the type of message. For
 Solaris, always set both
@@ -792,11 +814,13 @@ svctag:flgs:id:reserved:reserved:reserved:pmspecific# comment
 
 .sp
 .LP
-\fBSVCTAG\fR is a unique tag that identifies a service. This tag is unique
+.B SVCTAG
+is a unique tag that identifies a service. This tag is unique
 only for the port monitor through which the service is available. Other port
 monitors may offer the same or other services with the same tag. A service
 requires both a port monitor tag and a service tag to identify it uniquely.
-\fBSVCTAG\fR may consist of up to 14 alphanumeric characters. The service
+.B SVCTAG
+may consist of up to 14 alphanumeric characters. The service
 entries are defined as:
 .sp
 .ne 2
@@ -869,7 +893,8 @@ of port monitor.
 .RS 14n
 .rt
 A comment associated with the service entry. Port monitors may ignore the
-\fIu\fR flag if creating a utmpx entry for the service is not appropriate to
+.I u
+flag if creating a utmpx entry for the service is not appropriate to
 the manner in which the service is to be invoked. Some services may not
 start properly unless utmpx entries have been created for them (for example,
 login). Each port monitor administrative file must contain one special
@@ -897,7 +922,8 @@ of the service entries in the port monitor's
 .B _pmtab
 file. When a new
 port monitor is added, the version number must be known so that the
-\fB_pmtab\fR file can be correctly initialized. When a new service is added,
+.B _pmtab
+file can be correctly initialized. When a new service is added,
 the port monitor part of the
 .B _pmtab
 entry must be formatted correctly.
@@ -1046,7 +1072,7 @@ monitor.
 .ne 2
 .mk
 .na
-\fB_config\fR
+.B _config
 .ad
 .RS 17n
 .rt
@@ -1192,7 +1218,8 @@ if it exists, by calling the \fBdoconfig\fR(3NSL) library routine
 The library routine \fBdoconfig\fR(3NSL), defined in
 .BR libnsl.so ,
 interprets the configuration scripts contained in the files
-\fB/etc/saf/_sysconfig\fR (the per-system configuration file), and
+.B /etc/saf/_sysconfig
+(the per-system configuration file), and
 \fB/etc/saf/\fIpmtag\fB/_config\fR (per-port monitor configuration
 files); and in \fB/etc/saf/\fIpmtag\fB/svctag\fR (per-service
 configuration files). Its syntax is:
@@ -1207,15 +1234,33 @@ configuration files). Its syntax is:
 
 .sp
 .LP
-\fBscript\fR is the name of the configuration script; \fIfd\fR is a file
+.B script
+is the name of the configuration script;
+.I fd
+is a file
 descriptor that designates the stream to which stream manipulation
-operations are to be applied; \fIrflag\fR is a bitmask that indicates the
-mode in which script is to be interpreted. \fIrflag\fR may take two values,
-\fBNORUN\fR and \fBNOASSIGN,\fR which may be or'd. If \fIrflag\fR is zero,
+operations are to be applied;
+.I rflag
+is a bitmask that indicates the
+mode in which script is to be interpreted.
+.I rflag
+may take two values,
+.B NORUN
+and
+.B NOASSIGN,
+which may be or'd. If
+.I rflag
+is zero,
 all commands in the configuration script are eligible to be interpreted. If
-\fIrflag\fR has the \fBNOASSIGN\fR bit set, the assign command is considered
-illegal and will generate an error return. If \fIrflag\fR has the
-\fBNORUN\fR bit set, the run and runwait commands are considered illegal and
+.I rflag
+has the
+.B NOASSIGN
+bit set, the assign command is considered
+illegal and will generate an error return. If
+.I rflag
+has the
+.B NORUN
+bit set, the run and runwait commands are considered illegal and
 will generate error returns. If a command in the script fails, the
 interpretation of the script ceases at that point and a positive integer is
 returned; this number indicates which line in the script failed. If a system
@@ -1238,7 +1283,7 @@ configuration script.
 .ne 2
 .mk
 .na
-\fBThe Per-System Configuration File\fR
+.B The Per-System Configuration File
 .ad
 .sp .6
 .RS 4n
@@ -1261,7 +1306,7 @@ enters multiuser mode.
 .ne 2
 .mk
 .na
-\fBPer-Port Monitor Configuration Files\fR
+.B Per-Port Monitor Configuration Files
 .ad
 .sp .6
 .RS 4n
@@ -1278,7 +1323,8 @@ after the
 .B SAC
 has itself been
 started and after it has run its own configuration script,
-\fB/etc/saf/_sysconfig\fR. The per-port monitor configuration script may
+.BR /etc/saf/_sysconfig .
+The per-port monitor configuration script may
 override defaults provided by the per-system configuration script.
 .RE
 
@@ -1286,7 +1332,7 @@ override defaults provided by the per-system configuration script.
 .ne 2
 .mk
 .na
-\fBPer-Service Configuration Files\fR
+.B Per-Service Configuration Files
 .ad
 .sp .6
 .RS 4n
@@ -1350,7 +1396,10 @@ specification is invalid.
 .RS 4n
 Used to push STREAMS modules onto the stream designated by
 .BR fd ;
-\fImodule1\fR is the name of the first module to be pushed, \fImodule2\fR is
+.I module1
+is the name of the first module to be pushed,
+.I module2
+is
 the name of the second module to be pushed, and so on. The command will fail
 if any of the named modules cannot be pushed. If a module cannot be pushed,
 the subsequent modules on the same command line will be ignored and modules
@@ -1372,7 +1421,8 @@ invoked with no arguments, the top module on the stream is popped. If an
 argument is given, modules will be popped one at a time until the named
 module is at the top of the stream. If the named module is not on the
 designated stream, the stream is left as it was and the command fails. If
-\fImodule\fR is the special keyword
+.I module
+is the special keyword
 .BR ALL ,
 then all modules on the
 stream will be popped. Only modules above the topmost driver are affected.
@@ -1389,7 +1439,8 @@ stream will be popped. Only modules above the topmost driver are affected.
 The
 .B runwait
 command runs a command and waits for it to complete;
-\fBcommand\fR is the path name of the command to be run. The command is run
+.B command
+is the path name of the command to be run. The command is run
 with
 .B "/bin/sh -c"
 prepended to it; shell scripts may thus be
@@ -1425,9 +1476,12 @@ process to execute the command. Although they are syntactically
 indistinguishable, some of the commands available to
 .B run
 and
-\fBrunwait\fR are interpreter built-in commands. Interpreter built-ins are
+.B runwait
+are interpreter built-in commands. Interpreter built-ins are
 used when it is necessary to alter the state of a process within the context
-of that process. The \fBdoconfig\fR interpreter built-in commands are
+of that process. The
+.B doconfig
+interpreter built-in commands are
 similar to the shell special commands and, like these, they do not spawn
 another process for execution. See the
 .BR sh (1)
@@ -1727,7 +1781,7 @@ files and directories.
 .ne 2
 .mk
 .na
-\fB/etc/saf/_sysconfig\fR
+.B /etc/saf/_sysconfig
 .ad
 .RS 28n
 .rt
@@ -1738,7 +1792,7 @@ The per-system configuration script.
 .ne 2
 .mk
 .na
-\fB/etc/saf/_sactab\fR
+.B /etc/saf/_sactab
 .ad
 .RS 28n
 .rt
@@ -1794,7 +1848,8 @@ is responsible.
 .RS 28n
 .rt
 The file in which the per-service configuration script for service
-\fIsvctag\fR (available through port monitor
+.I svctag
+(available through port monitor
 .BR pmtag )
 is placed.
 .RE
@@ -1815,7 +1870,8 @@ directory and places an advisory lock on the file.
 .ne 2
 .mk
 .na
-\fB/etc/saf/ pmtag\fR \fB/_pmpipe\fR
+.B /etc/saf/ pmtag
+.B /_pmpipe
 .ad
 .RS 28n
 .rt
@@ -1829,7 +1885,7 @@ and
 .ne 2
 .mk
 .na
-\fB/var/saf/_log\fR
+.B /var/saf/_log
 .ad
 .RS 28n
 .rt
@@ -1909,5 +1965,6 @@ AvailabilitySUNWcsr
 .BR sac (1M),
 .BR sacadm (1M),
 .BR ttyadm (1M),
-\fBfork\fR(2), \fBdoconfig\fR(3NSL),
+.BR fork (2),
+.BR doconfig (3NSL),
 .BR attributes (5)

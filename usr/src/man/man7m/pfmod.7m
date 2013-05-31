@@ -35,7 +35,10 @@ ioctl(\fIfd\fR, IPUSH, "pfmod");
 .SH DESCRIPTION
 .sp
 .LP
-\fBpfmod\fR is a \fBSTREAMS\fR module that subjects messages arriving on
+.B pfmod
+is a
+.B STREAMS
+module that subjects messages arriving on
 its read queue to a packet filter and passes only those messages that the
 filter accepts on to its upstream neighbor. Such filtering can be very
 useful for user-level protocol implementations and for networking monitoring
@@ -43,12 +46,18 @@ programs that wish to view only specific types of events.
 .SS "Read-side Behavior"
 .sp
 .LP
-\fBpfmod\fR applies the current packet filter to all \fBM_DATA\fR and
-\fBM_PROTO\fR messages arriving on its read queue. The module prepares these
+.B pfmod
+applies the current packet filter to all
+.B M_DATA
+and
+.B M_PROTO
+messages arriving on its read queue. The module prepares these
 messages for examination by first skipping over all leading
 .BR M_PROTO
 message blocks to arrive at the beginning of the message's data portion. If
-there is no data portion, \fBpfmod\fR accepts the message and passes it
+there is no data portion,
+.B pfmod
+accepts the message and passes it
 along to its upstream neighbor. Otherwise, the module ensures that the part
 of the message's data that the packet filter might examine lies in
 contiguous memory, calling the \fBpullupmsg\fR(9F) utility routine if
@@ -67,18 +76,25 @@ filter with an instance of
 .BR pfmod .
 .sp
 .LP
-\fBpfmod\fR passes all other messages through unaltered to its upper
+.B pfmod
+passes all other messages through unaltered to its upper
 neighbor.
 .SS "Write-side Behavior"
 .sp
 .LP
-\fBpfmod\fR intercepts \fBM_IOCTL\fR messages for the \fIioctl\fR described
+.B pfmod
+intercepts
+.B M_IOCTL
+messages for the
+.I ioctl
+described
 below. The module passes all other messages through unaltered to its lower
 neighbor.
 .SH IOCTLS
 .sp
 .LP
-\fBpfmod\fR responds to the following
+.B pfmod
+responds to the following
 .IR ioctl .
 .sp
 .ne 2
@@ -91,9 +107,12 @@ neighbor.
 This
 .I ioctl
 directs the module to replace its current packet filter,
-if any, with the filter specified by the \fBstruct packetfilt\fR pointer
+if any, with the filter specified by the
+.B "struct packetfilt"
+pointer
 named by its final argument. This structure is defined in
-\fB<sys/pfmod.h>\fR as:
+.B <sys/pfmod.h>
+as:
 .RE
 
 .sp
@@ -109,10 +128,16 @@ struct packetfilt {
 
 .sp
 .LP
-The \fBPf_Priority\fR field is included only for compatibility with other
+The
+.B Pf_Priority
+field is included only for compatibility with other
 packet filter implementations and is otherwise ignored. The packet filter
-itself is specified in the \fBPf_Filter\fR array as a sequence of two-byte
-commands, with the \fBPf_FilterLen\fR field giving the number of commands in
+itself is specified in the
+.B Pf_Filter
+array as a sequence of two-byte
+commands, with the
+.B Pf_FilterLen
+field giving the number of commands in
 the sequence. This implementation restricts the maximum number of commands
 in a filter (\fBENMAXFILTERS\fR) to 255. The next section describes the
 available commands and their semantics.
@@ -169,7 +194,10 @@ The binary operator can also be from the set {\fBENF_COR\fR,
 operators, in that they terminate the execution of the filter immediately if
 the condition they are checking for is found, and continue otherwise. All
 pop two elements from the stack and compare them for equality;
-\fBENF_CAND\fR returns false if the result is false; \fBENF_COR\fR returns
+.B ENF_CAND
+returns false if the result is false;
+.B ENF_COR
+returns
 true if the result is true;
 .B ENF_CNAND
 returns true if the result is
@@ -186,7 +214,8 @@ arrange the order of the tests so that the filter will succeed or fail as
 soon as possible; for example, checking the
 .B IP
 destination field of a
-\fBUDP\fR packet is more likely to indicate failure than the packet type
+.B UDP
+packet is more likely to indicate failure than the packet type
 field.
 .sp
 .LP

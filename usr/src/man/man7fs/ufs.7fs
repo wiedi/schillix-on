@@ -46,7 +46,8 @@ ufs \- UFS file system
 .SH DESCRIPTION
 .sp
 .LP
-\fBUFS\fR is the default disk-based file system for the Solaris
+.B UFS
+is the default disk-based file system for the Solaris
 environment. The UFS file system is hierarchical, starting with its root
 directory (\fB/\fR) and continuing downward through a number of directories.
 The root of a UFS file system is
@@ -61,9 +62,13 @@ systems.
 .sp
 .LP
 UFS uses state flags to identify the state of the file system.
-\fBfs_state\fR is \fBFSOKAY\fR -
+.B fs_state
+is
+.B FSOKAY
+-
 .BR fs_time .
-\fBfs_time\fR is the
+.B fs_time
+is the
 timestamp that indicates when the last system write occurred. \fBfs_state\fR
 is updated whenever \fBfs_clean\fR changes. Some \fBfs_clean\fR values
 are:
@@ -139,7 +144,9 @@ or
 
 .sp
 .LP
-It is not necessary to run the \fBfsck\fR command on unmounted file systems
+It is not necessary to run the
+.B fsck
+command on unmounted file systems
 with a state of
 .BR FSCLEAN ,
 .BR FSSTABLE ,
@@ -149,16 +156,28 @@ or
 returns
 .B ENOSPC
 if an attempt is made to mount a
-\fBUFS\fR file system with a state of \fBFSACTIVE\fR for read/write access.
+.B UFS
+file system with a state of
+.B FSACTIVE
+for read/write access.
 
 .sp
 .LP
-As an additional safeguard, \fBfs_clean\fR should be trusted only if
-\fBfs_state\fR contains a value equal to \fBFSOKAY\fR -
+As an additional safeguard,
+.B fs_clean
+should be trusted only if
+.B fs_state
+contains a value equal to
+.B FSOKAY
+-
 .BR fs_time ,
 where
-\fBFSOKAY\fR is a constant integer defined in the
-\fB/usr/include/sys/fs/ufs_fs.h\fR file.  Otherwise, \fBfs_clean\fR is
+.B FSOKAY
+is a constant integer defined in the
+.B /usr/include/sys/fs/ufs_fs.h
+file.  Otherwise,
+.B fs_clean
+is
 treated as though it contains the value of
 .BR FSACTIVE .
 .SS "Extended Fundamental Types  (\fBEFT\fR)"
@@ -201,13 +220,16 @@ The magic number in the superblock changes from
 to
 .BR MTB_UFS_MAGIC .
 For more information, see the
-\fB/usr/include/sys/fs/ufs_fs\fR file.
+.B /usr/include/sys/fs/ufs_fs
+file.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-The \fBfs_logbno\fR unit is a sector for UFS that is less than 1 terabyte
+The
+.B fs_logbno
+unit is a sector for UFS that is less than 1 terabyte
 in size and fragments for a multiterabyte UFS file system.
 .RE
 .SS "UFS Logging"
@@ -223,7 +245,9 @@ UFS logging provides two advantages:
 .TP
 1.
 A file system that is consistent with the transaction log eliminates the
-need to run \fBfsck\fR after a system crash or an unclean shutdown.
+need to run
+.B fsck
+after a system crash or an unclean shutdown.
 .RE
 .RS +4
 .TP
@@ -264,7 +288,9 @@ from the command line:
 .RS +4
 .TP
 2.
-Include an entry in the \fB/etc/vfstab\fR file to mount the file system at
+Include an entry in the
+.B /etc/vfstab
+file to mount the file system at
 boot time:
 .sp
 .in +2
@@ -301,9 +327,16 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBdf\fR(1M), \fBfsck\fR(1M), \fBfsck_ufs\fR(1M), \fBfstyp\fR(1M),
-\fBlockfs\fR(1M), \fBmkfs_ufs\fR(1M), \fBnewfs\fR(1M), \fBufsdump\fR(1M),
-\fBufsrestore\fR(1M), \fBtunefs\fR(1M),
+.BR df (1M),
+.BR fsck (1M),
+.BR fsck_ufs (1M),
+.BR fstyp (1M),
+.BR lockfs (1M),
+.BR mkfs_ufs (1M),
+.BR newfs (1M),
+.BR ufsdump (1M),
+.BR ufsrestore (1M),
+.BR tunefs (1M),
 .BR mount (2),
 .BR attributes (5)
 
@@ -314,22 +347,30 @@ Interface StabilityUncommitted
 .sp
 .LP
 For information about internal UFS structures, see \fBnewfs\fR(1M) and
-\fBmkfs_ufs\fR(1M). For information about the \fBufsdump\fR and
-\fBufsrestore\fR commands, see \fBufsdump\fR(1M), \fBufsrestore\fR(1M), and
+.BR mkfs_ufs (1M).
+For information about the
+.B ufsdump
+and
+.B ufsrestore
+commands, see \fBufsdump\fR(1M), \fBufsrestore\fR(1M), and
 .BR /usr/include/protocols/dumprestore.h .
 .sp
 .LP
 If you experience difficulty in allocating space on the ufs filesystem, it
 may be due to framentation. Fragmentation can occur when you do not have
 sufficient free blocks to satisfy an allocation request even though
-\fBdf\fR(1M) indicates that enough free space is available. (This may occur
+.BR df (1M)
+indicates that enough free space is available. (This may occur
 because df only uses the available fragment count to calculate available
 space, but the file system requires contiguous sets of fragments for most
 allocations). If you suspect that you have exhausted contiguous fragments
 on your file system, you can use the \fBfstyp\fR(1M) utility with the -v
 option. In the \fBfstyp\fR output,  look at the  \fInbfree\fR (number  of
-blocks free) and \fInffree\fR (number of fragments free) fields. On
+blocks free) and
+.I nffree
+(number of fragments free) fields. On
 unmounted filesystems, you can use \fBfsck\fR(1M) and observe  the last
 line of output, which reports, among other items, the number of fragments
 and the degree of fragmentation. To correct a fragmentation problem, run
-\fBufsdump\fR(1M) and \fBufsrestore\fR(1M) on the ufs filesystem.
+.BR ufsdump (1M)
+and \fBufsrestore\fR(1M) on the ufs filesystem.

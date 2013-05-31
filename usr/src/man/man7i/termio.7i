@@ -66,7 +66,8 @@ special role in handling quit and interrupt signals, as discussed below. The
 controlling terminal is inherited by a child process during a
 .BR fork (2).
 A process can break this association by changing its session using
-\fBsetsid()\fR (see
+.B setsid()
+(see
 .BR setsid (2)).
 .sp
 .LP
@@ -75,7 +76,8 @@ full-duplex mode. Characters may be typed at any time, even while output is
 occurring, and are only lost when the character input buffers of the system
 become completely full, which is rare. For example, the number of characters
 in the line discipline buffer may exceed {\fBMAX_CANON\fR}  and
-\fBIMAXBEL\fR (see below) is not set, or the user may accumulate {
+.B IMAXBEL
+(see below) is not set, or the user may accumulate {
 \fBMAX_INPUT\fR} number of input characters that have not yet been read by
 some program. When the input limit is reached, all the characters saved in
 the buffer up to that point are thrown away without notice.
@@ -126,7 +128,9 @@ signal is sent.
 If a member of a background process group attempts to write its controlling
 terminal and the
 .B TOSTOP
-bit is set in the \fBc_lflag\fR field, its
+bit is set in the
+.B c_lflag
+field, its
 process group is sent a
 .B SIGTTOU
 signal, which will normally cause the
@@ -160,7 +164,8 @@ terminal parameters (for example,
 or
 .BR TIOCSPGRP) ,
 its process group will be sent a
-\fBSIGTTOU\fR signal, which will normally cause the members of that process
+.B SIGTTOU
+signal, which will normally cause the members of that process
 group to stop. If, however, the process is ignoring or holding
 .BR SIGTTOU ,
 the ioctl will succeed. If the process is not ignoring or
@@ -236,11 +241,13 @@ In non-canonical mode input processing, input characters are not assembled
 into lines, and erase and kill processing does not occur. The
 .B MIN
 and
-\fBTIME\fR values are used to determine how to process the characters
+.B TIME
+values are used to determine how to process the characters
 received.
 .sp
 .LP
-\fBMIN\fR represents the minimum number of characters that should be
+.B MIN
+represents the minimum number of characters that should be
 received when the read is satisfied (that is, when the characters are
 returned to the user).
 .B TIME
@@ -308,7 +315,8 @@ is significant.  A pending read is not satisfied
 until
 .B MIN
 characters are received (the pending read sleeps until
-\fBMIN\fR characters are received). A program that uses this case to read
+.B MIN
+characters are received). A program that uses this case to read
 record based terminal
 .B I/O
 may block indefinitely in the read
@@ -370,8 +378,14 @@ and
 In the following explanations, note that the interactions of
 .B MIN
 and
-\fBTIME\fR are not symmetric.  For example, when  \fBMIN\fR > 0 and
-\fBTIME\fR = 0,  \fBTIME\fR has no effect. However, in the opposite case,
+.B TIME
+are not symmetric.  For example, when
+.B MIN
+> 0 and
+.B TIME
+= 0,
+.B TIME
+has no effect. However, in the opposite case,
 where
 .B MIN
 = 0 and
@@ -390,7 +404,10 @@ Also note that in case A (\fBMIN\fR > 0, \fBTIME\fR > 0), \fBTIME\fR
 represents an intercharacter timer,  whereas in case C (
 .B MIN
 = 0,
-\fBTIME\fR > 0),  \fBTIME\fR represents a read timer.
+.B TIME
+> 0),
+.B TIME
+represents a read timer.
 .RE
 .sp
 .LP
@@ -449,7 +466,8 @@ their default character values are summarized as follows:
 generates a
 .B SIGINT
 signal.
-\fBSIGINT\fR is sent to all foreground processes associated with the
+.B SIGINT
+is sent to all foreground processes associated with the
 controlling terminal. Normally, each such process is forced to terminate,
 but arrangements may be made either to ignore the signal or to receive a
 trap to an agreed upon location. (See
@@ -559,11 +577,19 @@ newline, that have not been read.
 may be used to generate an end-of-file from
 a terminal. When received, all the characters waiting to be read are
 immediately passed to the program, without waiting for a newline, and the
-\fBEOF\fR is discarded.  Thus, if no characters are waiting (that is, the
-\fBEOF\fR occurred at the beginning of a line) zero characters are passed
+.B EOF
+is discarded.  Thus, if no characters are waiting (that is, the
+.B EOF
+occurred at the beginning of a line) zero characters are passed
 back, which is the standard end-of-file indication. Unless escaped, the
-\fBEOF\fR character is not echoed. Because \fBEOT\fR is the default
-\fBEOF\fR character, this prevents terminals that respond to \fBEOT\fR from
+.B EOF
+character is not echoed. Because
+.B EOT
+is the default
+.B EOF
+character, this prevents terminals that respond to
+.B EOT
+from
 hanging up.
 .RE
 
@@ -631,7 +657,8 @@ no special action on matching SWTCH (except to discard the character).
 generates a
 .B SIGTSTP
 signal.
-\fBSIGTSTP\fR stops all processes in the foreground process group for that
+.B SIGTSTP
+stops all processes in the foreground process group for that
 terminal.
 .RE
 
@@ -648,7 +675,8 @@ terminal.
 It generates a
 .B SIGTSTP
 signal as
-\fBSUSP\fR does, but the signal is sent when a process in the foreground
+.B SUSP
+does, but the signal is sent when a process in the foreground
 process group attempts to read the
 .B DSUSP
 character, rather than when
@@ -689,7 +717,8 @@ is used to resume output. Output has been
 suspended by a
 .B STOP
 character.  While output is not suspended,
-\fBSTART\fR characters are ignored and not read.
+.B START
+characters are ignored and not read.
 .RE
 
 .sp
@@ -788,7 +817,8 @@ controlling terminal after modem disconnect while the terminal is still
 allocated to the session will receive appropriate
 .B SIGTTOU
 and
-\fBSIGTTIN\fR signals. Unless other arrangements have  been made, this
+.B SIGTTIN
+signals. Unless other arrangements have  been made, this
 signal causes the processes to stop.
 .sp
 .LP
@@ -882,7 +912,9 @@ _
 .SS "Input Modes"
 .sp
 .LP
-The \fBc_iflag\fR field describes the basic terminal input control:
+The
+.B c_iflag
+field describes the basic terminal input control:
 .sp
 .ne 2
 .mk
@@ -1048,7 +1080,8 @@ data all zeros) detected on input is ignored, that is, not put on the input
 queue and therefore not read by any process. If
 .B IGNBRK
 is not set and
-\fBBRKINT\fR is set, the break condition shall flush the input and output
+.B BRKINT
+is set, the break condition shall flush the input and output
 queues and if the terminal is the controlling terminal of a foreground
 process group, the break condition generates a single
 .B SIGINT
@@ -1116,11 +1149,19 @@ If
 is set, a received
 .B NL
 character is translated into a
-\fBCR\fR character.  If  \fBIGNCR\fR is set, a received \fBCR\fR character
+.B CR
+character.  If
+.B IGNCR
+is set, a received
+.B CR
+character
 is ignored (not read).  Otherwise, if
 .B ICRNL
 is set, a received
-\fBCR\fR character is translated into a \fBNL\fR character.
+.B CR
+character is translated into a
+.B NL
+character.
 .sp
 .LP
 If
@@ -1132,7 +1173,10 @@ translated into the corresponding lower case character.
 If
 .B IXON
 is set, start/stop output control is enabled. A received
-\fBSTOP\fR character suspends output and a received \fBSTART\fR character
+.B STOP
+character suspends output and a received
+.B START
+character
 restarts output. The
 .B STOP
 and
@@ -1171,7 +1215,9 @@ is discarded if the input stream overflows.
 .SS "Output Modes"
 .sp
 .LP
-The  \fBc_oflag\fR field specifies the  system treatment of output:
+The
+.B c_oflag
+field specifies the  system treatment of output:
 .sp
 .ne 2
 .mk
@@ -1237,7 +1283,10 @@ output at column 0.
 .ad
 .RS 10n
 .rt
-\fBNL\fR performs \fBCR\fR function.
+.B NL
+performs
+.B CR
+function.
 .RE
 
 .sp
@@ -1455,14 +1504,23 @@ If
 is set, the
 .B NL
 character is transmitted as the
-\fBCR-NL\fR character pair.  If  \fBOCRNL\fR is set, the \fBCR\fR character
+.B CR-NL
+character pair.  If
+.B OCRNL
+is set, the
+.B CR
+character
 is transmitted as the
 .B NL
 character.  If
 .B ONOCR
 is set, no
-\fBCR\fR character is transmitted when at column 0 (first position). If
-\fBONRET\fR is set, the \fBNL\fR character is assumed to do the
+.B CR
+character is transmitted when at column 0 (first position). If
+.B ONRET
+is set, the
+.B NL
+character is assumed to do the
 carriage-return function; the column pointer is set to 0 and the delays
 specified for
 .B CR
@@ -1483,7 +1541,10 @@ cases, a value of 0 indicates no delay. If
 is set, fill
 characters are transmitted for delay instead of a timed delay. This is
 useful for high baud rate terminals that need only a minimal delay.  If
-\fBOFDEL\fR is set, the fill character is \fBDEL\fR ; otherwise it is
+.B OFDEL
+is set, the fill character is
+.B DEL
+; otherwise it is
 .IR NULL .
 .sp
 .LP
@@ -1495,12 +1556,14 @@ Newline delay lasts about 0.10 seconds. If
 .B ONLRET
 is set, the
 carriage-return delays are used instead of the newline delays. If
-\fBOFILL\fR is set, two fill characters are transmitted.
+.B OFILL
+is set, two fill characters are transmitted.
 .sp
 .LP
 Carriage-return delay type 1 is dependent on the current column position,
 type 2 is about 0.10 seconds, and type 3 is about 0.15 seconds. If
-\fBOFILL\fR is set, delay type 1 transmits two fill characters, and type 2
+.B OFILL
+is set, delay type 1 transmits two fill characters, and type 2
 transmits four fill characters.
 .sp
 .LP
@@ -1522,7 +1585,9 @@ The actual delays depend on line speed and system load.
 .SS "Control Modes"
 .sp
 .LP
-The \fBc_cflag\fR field describes the hardware control of the terminal:
+The
+.B c_cflag
+field describes the hardware control of the terminal:
 .sp
 .ne 2
 .mk
@@ -2021,7 +2086,8 @@ else
 .sp
 .LP
 To store the output speed in the termios structure pointed to by
-\fBtermios_p\fR see the following code segment.
+.B termios_p
+see the following code segment.
 .sp
 .in +2
 .nf
@@ -2059,7 +2125,10 @@ specified by the
 and
 .B CBAUD
 bits.  The values for the
-\fBCIBAUD\fR bits are the same as the values for the \fBCBAUD\fR bits,
+.B CIBAUD
+bits are the same as the values for the
+.B CBAUD
+bits,
 shifted left
 .B IBSHIFT
 bits. For any particular hardware, impossible
@@ -2084,7 +2153,8 @@ else
 To store the input speed in the
 .B termios
 structure pointed to by
-\fBtermios_p\fR see the following code segment.
+.B termios_p
+see the following code segment.
 .sp
 .in +2
 .nf
@@ -2121,7 +2191,8 @@ If
 .B PARENB
 is set, parity generation and detection is enabled, and a
 parity bit is added to each character. If parity is enabled, the
-\fBPARODD\fR flag specifies odd parity if set; otherwise, even parity is
+.B PARODD
+flag specifies odd parity if set; otherwise, even parity is
 used.
 .sp
 .LP
@@ -2157,7 +2228,8 @@ is set, outbound hardware flow control is enabled.
 The four possible combinations for the state of
 .B CRTSCTS
 and
-\fBCRTSXOFF\fR bits and their interactions are described below.
+.B CRTSXOFF
+bits and their interactions are described below.
 .sp
 .ne 2
 .mk
@@ -2166,7 +2238,10 @@ and
 .ad
 .RS 11n
 .rt
-\fBCRTSCTS\fR off, \fBCRTSXOFF\fR off. In this case the hardware flow
+.B CRTSCTS
+off,
+.B CRTSXOFF
+off. In this case the hardware flow
 control is disabled.
 .RE
 
@@ -2178,7 +2253,10 @@ control is disabled.
 .ad
 .RS 11n
 .rt
-\fBCRTSCTS\fR on, \fBCRTSXOFF\fR off. In this case only outbound hardware
+.B CRTSCTS
+on,
+.B CRTSXOFF
+off. In this case only outbound hardware
 flow control is enabled. The state of CTS signal is used to do outbound flow
 control. It is expected that output will be suspended if CTS is low and
 resumed when CTS is high.
@@ -2192,7 +2270,10 @@ resumed when CTS is high.
 .ad
 .RS 11n
 .rt
-\fBCRTSCTS\fR off, \fBCRTSXOFF\fR on. In this case only inbound hardware
+.B CRTSCTS
+off,
+.B CRTSXOFF
+on. In this case only inbound hardware
 flow control is enabled. The state of RTS signal is used to do inbound flow
 control. It is expected that input will be suspended if RTS is low and
 resumed when RTS is high.
@@ -2206,7 +2287,10 @@ resumed when RTS is high.
 .ad
 .RS 11n
 .rt
-\fBCRTSCTS\fR on, \fBCRTSXOFF\fR on. In this case both inbound and outbound
+.B CRTSCTS
+on,
+.B CRTSXOFF
+on. In this case both inbound and outbound
 hardware flow control are enabled. Uses the state of CTS signal to do
 outbound flow control and RTS signal to do inbound flow control.
 .RE
@@ -2214,7 +2298,9 @@ outbound flow control and RTS signal to do inbound flow control.
 .SS "Local Modes"
 .sp
 .LP
-The \fBc_lflag\fR field of the argument structure is used by the line
+The
+.B c_lflag
+field of the argument structure is used by the line
 discipline to control terminal functions. The basic line discipline provides
 the following:
 .sp
@@ -2356,7 +2442,8 @@ Echo erase character as character erased.
 .ad
 .RS 11n
 .rt
-\fBBS-SP-BS\fR erase entire line on line kill.
+.B BS-SP-BS
+erase entire line on line kill.
 .RE
 
 .sp
@@ -2422,7 +2509,8 @@ lines delimited by
 and
 .B EOL
 \&. If
-\fBICANON\fR is not set, read requests are satisfied directly from the input
+.B ICANON
+is not set, read requests are satisfied directly from the input
 queue. A read is not satisfied until at least
 .B MIN
 characters have been
@@ -2492,7 +2580,10 @@ and
 are set, and
 .B ECHOPRT
 is not set,  the
-\fBERASE\fR and \fBWERASE\fR characters are echoed as one or more ASCII BS
+.B ERASE
+and
+.B WERASE
+characters are echoed as one or more ASCII BS
 SP BS, which clears the last character(s) from a
 .B CRT
 screen.
@@ -2507,7 +2598,10 @@ If
 and
 .B IEXTEN
 are set, the first
-\fBERASE\fR and \fBWERASE\fR character in a sequence echoes as a backslash
+.B ERASE
+and
+.B WERASE
+character in a sequence echoes as a backslash
 .RB ( \e ),
 followed by the characters being erased.  Subsequent \fBERASE\fR
 and
@@ -2561,7 +2655,8 @@ If
 is set, the
 .B NL
 character is echoed even if
-\fBECHO\fR is not set.  This is useful for terminals set to local echo (so
+.B ECHO
+is not set.  This is useful for terminals set to local echo (so
 called half-duplex).
 .RE
 .sp
@@ -2619,7 +2714,8 @@ sent to a process that tries to write to its controlling terminal if it is
 not in the foreground process group for that terminal. This signal normally
 stops the process. Otherwise, the output generated by that process is output
 to the current output stream. Processes that are blocking or ignoring
-\fBSIGTTOU\fR signals are excepted and allowed to produce output, if any.
+.B SIGTTOU
+signals are excepted and allowed to produce output, if any.
 .sp
 .LP
 If
@@ -2676,7 +2772,10 @@ values were described previously, in the
 subsection,
 .BR "Non-canonical Mode Input Processing" .
 The initial value of
-\fBMIN\fR is 1, and the initial value of \fBTIME\fR is 0.
+.B MIN
+is 1, and the initial value of
+.B TIME
+is 0.
 .SS "Terminal Size"
 .sp
 .LP
@@ -2771,9 +2870,16 @@ array; the
 value is stored in the
 .B VTIME
 element of the
-\fBc_cc\fR array. The  \fBVMIN\fR element is the same element as the
-\fBVEOF\fR element; the \fBVTIME\fR element is the same element as the
-\fBVEOL\fR element.
+.B c_cc
+array. The
+.B VMIN
+element is the same element as the
+.B VEOF
+element; the
+.B VTIME
+element is the same element as the
+.B VEOL
+element.
 .sp
 .LP
 The calls that use the
@@ -2892,7 +2998,8 @@ data set ready
 
 .sp
 .LP
-\fBTIOCM_CD\fR is a synonym for
+.B TIOCM_CD
+is a synonym for
 .BR TIOCM_CAR ,
 and
 .B TIOCM_RI
@@ -2910,7 +3017,8 @@ off, the line pays attention to the hardware carrier detect (DCD) signal.
 The
 .B tty
 device associated with the line cannot be opened until
-\fBDCD\fR is asserted. If the software carrier flag is on, the line behaves
+.B DCD
+is asserted. If the software carrier flag is on, the line behaves
 as if
 .B DCD
 is always asserted.
@@ -2924,7 +3032,11 @@ To be able to issue the
 .B TIOCGSOFTCAR
 and
 .BR TIOCSSOFTCAR
-\fBioctl\fR calls, the \fBtty\fR line should be opened with \fBO_NDELAY\fR
+.B ioctl
+calls, the
+.B tty
+line should be opened with
+.BR O_NDELAY
 so that the
 .BR open (2)
 will not wait for the carrier.
@@ -2935,7 +3047,8 @@ The initial
 .B termios
 values upon driver open is configurable. This is
 accomplished by setting the "ttymodes" property in the file
-\fB/kernel/drv/options.conf\fR. Since this property is assigned during
+.BR /kernel/drv/options.conf .
+Since this property is assigned during
 system initialization,  any change to the "ttymodes" property will not take
 effect until the next reboot.  The string value assigned to this property
 should be in the same format as the output of the
@@ -3054,7 +3167,8 @@ The argument is a pointer to a
 .B termio
 structure. The current terminal
 parameters are fetched, and those parameters that can be stored in a
-\fBtermio\fR structure are stored into that structure.
+.B termio
+structure are stored into that structure.
 .RE
 
 .sp
@@ -3182,7 +3296,10 @@ input and output queues.
 The argument is a pointer to a
 .BR pid_t .
 Set the value of that
-\fBpid_t\fR to the process group \fBID\fR of the foreground process group
+.B pid_t
+to the process group
+.B ID
+of the foreground process group
 associated with the terminal. See  \fBtermios\fR(3C) for a description of
 .BR TCGETPGRP .
 .RE
@@ -3253,7 +3370,8 @@ The argument is a pointer to a
 structure. The terminal
 driver's notion of the terminal size is set from the values specified in
 that structure. If the new sizes are different from the old sizes, a
-\fBSIGWINCH\fR signal is set to the process group of the terminal.
+.B SIGWINCH
+signal is set to the process group of the terminal.
 .RE
 
 .sp

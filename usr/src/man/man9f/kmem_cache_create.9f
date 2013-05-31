@@ -103,7 +103,7 @@ Names longer than 31 characters are truncated.
 .ne 2
 .mk
 .na
-\fIbufsize\fR
+.I bufsize
 .ad
 .RS 15n
 .rt
@@ -182,7 +182,7 @@ Drivers should pass
 .ne 2
 .mk
 .na
-\fIcflags\fR
+.I cflags
 .ad
 .RS 15n
 .rt
@@ -193,7 +193,7 @@ Drivers must pass 0.
 .ne 2
 .mk
 .na
-\fIkmflag\fR
+.I kmflag
 .ad
 .RS 15n
 .rt
@@ -294,7 +294,9 @@ is typically a pointer to the soft-state structure.
 .ad
 .RS 18n
 .rt
-Propagated \fIkmflag\fR values.
+Propagated
+.I kmflag
+values.
 .RE
 
 .sp
@@ -377,7 +379,9 @@ Size of the object to be moved.
 The private parameter from the call to
 .BR kmem_cache_create() ;
 it is
-typically a pointer to the \fBsoft-state\fR structure.
+typically a pointer to the
+.B soft-state
+structure.
 .RE
 
 .SH DESCRIPTION
@@ -429,13 +433,20 @@ hard-to-find bugs.
 A driver should call
 .B kmem_cache_create()
 at the time of
-\fB_fini\fR(9E) or \fBattach\fR(9E), and call the corresponding
-\fBkmem_cache_destroy()\fR at the time of \fB_fini\fR(9E) or
+.BR _fini (9E)
+or
+.BR attach "(9E), and call the corresponding"
+.B kmem_cache_destroy()
+at the time of \fB_fini\fR(9E) or
 .BR detach (9E).
 .sp
 .LP
-\fBkmem_cache_create()\fR creates a cache of objects, each of size
-\fIbufsize\fR bytes, aligned on an \fIalign\fR boundary. Drivers not
+.B kmem_cache_create()
+creates a cache of objects, each of size
+.I bufsize
+bytes, aligned on an
+.I align
+boundary. Drivers not
 requiring a specific alignment can pass 0.
 .I name
 identifies the cache
@@ -464,11 +475,15 @@ It
 returns an opaque pointer to the object cache.
 .sp
 .LP
-\fBkmem_cache_alloc()\fR gets an object from the cache. The object will be
-in its constructed state. \fIkmflag\fR has either
+.B kmem_cache_alloc()
+gets an object from the cache. The object will be
+in its constructed state.
+.I kmflag
+has either
 .B KM_SLEEP
 or
-\fBKM_NOSLEEP\fR set, indicating whether it is acceptable to wait for memory
+.B KM_NOSLEEP
+set, indicating whether it is acceptable to wait for memory
 if none is currently available.
 .sp
 .LP
@@ -482,25 +497,31 @@ pool on an allocation. This flag can be used by drivers that implement
 on memory allocations associated with a single I/O
 operation. The driver guarantees that the I/O operation will complete (or
 timeout) and, on completion, that the memory will be returned. The
-\fBKM_PUSHPAGE\fR flag should be used only in \fBkmem_cache_alloc()\fR
+.B KM_PUSHPAGE
+flag should be used only in
+.BR kmem_cache_alloc()
 calls. All allocations from a given cache should be consistent in their use
 of the flag. A driver that adheres to these restrictions can guarantee
 progress in a low memory situation without resorting to complex private
 allocation and queuing schemes. If
 .B KM_PUSHPAGE
 is specified,
-\fBKM_SLEEP\fR can also be used without causing deadlock.
+.B KM_SLEEP
+can also be used without causing deadlock.
 .sp
 .LP
-\fBkmem_cache_free()\fR returns an object to the cache. The object must be
+.B kmem_cache_free()
+returns an object to the cache. The object must be
 in its constructed state.
 .sp
 .LP
-\fBkmem_cache_destroy()\fR destroys the cache and releases all associated
+.B kmem_cache_destroy()
+destroys the cache and releases all associated
 resources. All allocated objects must have been previously freed.
 .sp
 .LP
-\fBkmem_cache_set_move()\fR registers a function that the allocator may
+.B kmem_cache_set_move()
+registers a function that the allocator may
 call to move objects from sparsely allocated pages of memory so that the
 system can reclaim pages that are tied up by the client. Since caching
 objects of the same size and type already makes severe memory fragmentation
@@ -519,7 +540,9 @@ callback supplies the client with two addresses: the
 allocated object that the allocator wants to move and a buffer selected by
 the allocator for the client to use as the copy destination. The new
 parameter is an allocated, constructed object ready to receive the contents
-of the old parameter. The \fIbufsize\fR parameter supplies the size of the
+of the old parameter. The
+.I bufsize
+parameter supplies the size of the
 object, in case a single move function handles multiple caches whose objects
 differ only in size. Finally, the private parameter passed to the
 constructor and destructor is also passed to the
@@ -549,7 +572,8 @@ typedef enum kmem_cbrc {
 .sp
 .LP
 The client must not explicitly free either of the objects passed to the
-\fBmove()\fR callback, since the allocator wants to free them directly to
+.B move()
+callback, since the allocator wants to free them directly to
 the slab layer (bypassing the per-CPU magazine layer). The response tells
 the allocator which of the two object parameters to free:
 .sp
@@ -585,7 +609,10 @@ parameter (the unused copy destination).
 .rt
 The client is using the object and cannot move it now; the allocator frees
 the new parameter (the unused copy destination). The client should use
-\fBKMEM_CBRC_LATER\fR instead of \fBKMEM_CBRC_NO\fR if the object is likely
+.B KMEM_CBRC_LATER
+instead of
+.B KMEM_CBRC_NO
+if the object is likely
 to become movable soon.
 .RE
 
@@ -667,7 +694,8 @@ or
 which may not be 8-byte aligned on all platforms) are
 available to the client for marking cached objects that the client is about
 to free. This way, the client can recognize known objects in the
-\fBmove()\fR callback by the unmarked (valid) pointer value.
+.B move()
+callback by the unmarked (valid) pointer value.
 .sp
 .LP
 If the client refuses to move an object with either
@@ -697,7 +725,9 @@ the allocator less likely to call back again for that object.
 
 .sp
 .LP
-The parameters for the \fBnotification\fR function are as follows:
+The parameters for the
+.B notification
+function are as follows:
 .sp
 .ne 2
 .mk
@@ -737,23 +767,30 @@ allocator may also call the constructor and destructor on objects still
 under its control without client involvement.
 .sp
 .LP
-\fBkmem_cache_create()\fR and \fBkmem_cache_destroy()\fR must not be called
+.B kmem_cache_create()
+and
+.B kmem_cache_destroy()
+must not be called
 from interrupt context.
 .B kmem_cache_create()
 can also block for
 available memory.
 .sp
 .LP
-\fBkmem_cache_alloc()\fR can be called from interrupt context only if the
-\fBKM_NOSLEEP\fR flag is set. It can be called from user or kernel context
+.B kmem_cache_alloc()
+can be called from interrupt context only if the
+.B KM_NOSLEEP
+flag is set. It can be called from user or kernel context
 with any valid flag.
 .sp
 .LP
-\fBkmem_cache_free()\fR can be called from user, kernel, or interrupt
+.B kmem_cache_free()
+can be called from user, kernel, or interrupt
 context.
 .sp
 .LP
-\fBkmem_cache_set_move()\fR is called from the same context as
+.B kmem_cache_set_move()
+is called from the same context as
 .BR kmem_cache_create() ,
 immediately after
 .B kmem_cache_create()
@@ -773,7 +810,8 @@ can be assumed to know the object's whereabouts at the time of the
 callback.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Object Caching
+.B Example 1
+Object Caching
 .sp
 .LP
 Consider the following data structure:
@@ -792,9 +830,12 @@ struct foo {
 
 .sp
 .LP
-Assume that a \fBfoo\fR structure cannot be freed until there are no
+Assume that a
+.B foo
+structure cannot be freed until there are no
 outstanding references to it (\fBfoo_refcnt == 0\fR) and all of its pending
-\fBbar\fR events (whatever they are) have completed (\fBfoo_barlist ==
+.B bar
+events (whatever they are) have completed (\fBfoo_barlist ==
 NULL\fR). The life cycle of a dynamically allocated \fBfoo\fR would be
 something like this:
 
@@ -817,9 +858,13 @@ kmem_free(foo);
 
 .sp
 .LP
-Notice that between each use of a \fBfoo\fR object we perform a sequence of
+Notice that between each use of a
+.B foo
+object we perform a sequence of
 operations that constitutes nothing but expensive overhead. All of this
-overhead (that is, everything other than \fBuse foo\fR above) can be
+overhead (that is, everything other than
+.B "use foo"
+above) can be
 eliminated by object caching.
 
 .sp
@@ -858,7 +903,9 @@ foo_cache = kmem_cache_create(buf,
 
 .sp
 .LP
-To allocate, use, and free a \fBfoo\fR object:
+To allocate, use, and free a
+.B foo
+object:
 
 .sp
 .in +2
@@ -871,13 +918,21 @@ kmem_cache_free(foo_cache, foo);
 
 .sp
 .LP
-This makes \fBfoo\fR allocation fast, because the allocator will usually do
-nothing more than fetch an already-constructed \fBfoo\fR from the cache.
-\fBfoo_constructor\fR and \fBfoo_destructor\fR will be invoked only to
+This makes
+.B foo
+allocation fast, because the allocator will usually do
+nothing more than fetch an already-constructed
+.B foo
+from the cache.
+.B foo_constructor
+and
+.B foo_destructor
+will be invoked only to
 populate and drain the cache, respectively.
 
 .LP
-\fBExample 2\fR Registering a Move Callback
+.B Example 2
+Registering a Move Callback
 .sp
 .LP
 To register a
@@ -902,7 +957,8 @@ is set and memory cannot be allocated without sleeping, the constructor must
 return -\fB1\fR.
 .sp
 .LP
-\fBkmem_cache_create()\fR returns a pointer to the allocated cache.
+.B kmem_cache_create()
+returns a pointer to the allocated cache.
 .sp
 .LP
 If successful,
@@ -961,7 +1017,9 @@ allocator may call the constructor and destructor on objects still under its
 control at any time without client involvement.
 .sp
 .LP
-The constructor must respect the \fIkmflags\fR argument by forwarding it to
+The constructor must respect the
+.I kmflags
+argument by forwarding it to
 allocations made inside the
 .IR constructor ,
 and must not ASSERT anything

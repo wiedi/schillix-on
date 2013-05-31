@@ -78,7 +78,9 @@ The
 function attempts to write
 .I nbyte
 bytes from the
-buffer pointed to by \fIbuf\fR to the file associated with the open file
+buffer pointed to by
+.I buf
+to the file associated with the open file
 descriptor,
 .IR fildes .
 .sp
@@ -109,7 +111,9 @@ descriptor complete as defined by synchronized I/O file integrity
 completion.
 .sp
 .LP
-If \fIfildes\fR refers to a socket,
+If
+.I fildes
+refers to a socket,
 .B write()
 is equivalent to
 .BR send (3SOCKET)
@@ -187,7 +191,8 @@ be written. For example, suppose there is space for 20 bytes more in a file
 before reaching a limit. A
 .B write()
 of 512-bytes returns 20. The next
-\fBwrite()\fR of a non-zero number of bytes gives a failure return (except
+.B write()
+of a non-zero number of bytes gives a failure return (except
 as noted for pipes and FIFO below).
 .sp
 .LP
@@ -258,7 +263,10 @@ interleaved with data from other processes doing writes on the same pipe.
 Writes of greater than
 .BR {PIPE_BUF} " bytes may have data interleaved, on"
 arbitrary boundaries, with writes by other processes, whether or not the
-\fBO_NONBLOCK\fR or \fBO_NDELAY\fR flags are set.
+.B O_NONBLOCK
+or
+.B O_NDELAY
+flags are set.
 .RE
 .RS +4
 .TP
@@ -293,18 +301,30 @@ bytes succeeds completely
 returns
 .IR nbyte .
 Otherwise, if
-\fBO_NONBLOCK\fR is set, it returns \fB\(mi1\fR and sets \fBerrno\fR to
-\fBEAGAIN\fR or if \fBO_NDELAY\fR is set, it returns
+.B O_NONBLOCK
+is set, it returns \fB\(mi1\fR and sets
+.B errno
+to
+.B EAGAIN
+or if
+.B O_NDELAY
+is set, it returns
 .BR 0 .
 A
-\fBwrite()\fR request for greater than \fB{PIPE_BUF}\fR bytes  transfers
+.B write()
+request for greater than
+.B {PIPE_BUF}
+bytes  transfers
 what it can and returns the number of bytes written or it transfers no data
 and, if
 .B O_NONBLOCK
 is set, returns \fB\(mi1\fR with
 .B errno
 set to
-\fBEAGAIN\fR or if \fBO_NDELAY\fR is set, it returns
+.B EAGAIN
+or if
+.B O_NDELAY
+is set, it returns
 .BR 0 .
 Finally, if a
 request is greater than
@@ -346,11 +366,17 @@ is set,
 .B write()
 does not block
 the process. If some data can be written without blocking the process,
-\fBwrite()\fR writes what it can and returns the number of bytes written.
+.B write()
+writes what it can and returns the number of bytes written.
 Otherwise, if
 .B O_NONBLOCK
 is set, it returns \fB\(mi1\fR  and sets
-\fBerrno\fR to \fBEAGAIN\fR or if \fBO_NDELAY\fR is set,  it returns
+.B errno
+to
+.B EAGAIN
+or if
+.B O_NDELAY
+is set,  it returns
 .BR 0 .
 .RE
 .sp
@@ -358,11 +384,16 @@ is set, it returns \fB\(mi1\fR  and sets
 Upon successful completion, where
 .I nbyte
 is greater than 0,
-\fBwrite()\fR will mark for update the \fBst_ctime\fR and \fBst_mtime\fR
+.B write()
+will mark for update the
+.B st_ctime
+and
+.BR st_mtime
 fields of the file, and if the file is a regular file, the
 .B S_ISUID
 and
-\fBS_ISGID\fR bits of the file mode may be cleared.
+.B S_ISGID
+bits of the file mode may be cleared.
 .sp
 .LP
 For streams files (see
@@ -377,14 +408,20 @@ values are contained in the topmost stream module, and can not be set or
 tested from user level. If
 .I nbyte
 falls within the packet size range,
-\fInbyte\fR bytes are written. If \fInbyte\fR does not fall within the range
+.I nbyte
+bytes are written. If
+.I nbyte
+does not fall within the range
 and the minimum packet size value  is zero,
 .B write()
 breaks the buffer
 into maximum packet size segments prior  to sending the data downstream (the
 last segment may be smaller than the maximum  packet size). If \fInbyte\fR
 does not fall within the range and the minimum value is non-zero,
-\fBwrite()\fR fails and sets \fBerrno\fR to
+.B write()
+fails and sets
+.B errno
+to
 .BR ERANGE .
 Writing a
 zero-length buffer (\fInbyte\fR is zero) to a streams device sends  a zero
@@ -460,7 +497,8 @@ value of
 does not reflect the result of
 .B write()
 or
-\fBwritev()\fR but reflects the prior error.
+.B writev()
+but reflects the prior error.
 .SS "\fBpwrite()\fR"
 .sp
 .LP
@@ -473,10 +511,13 @@ writes into a given position and does not change the file offset (regardless
 of whether
 .B O_APPEND
 is set). The first three arguments to
-\fBpwrite()\fR are the same as
+.B pwrite()
+are the same as
 .BR write() ,
 with the addition of a fourth
-argument \fIoffset\fR for the desired position inside the file.
+argument
+.I offset
+for the desired position inside the file.
 .SS "\fBwritev()\fR"
 .sp
 .LP
@@ -605,7 +646,9 @@ of free space is available.
 .ad
 .RS 11n
 .rt
-The \fIfildes\fR argument is not a valid file descriptor open for
+The
+.I fildes
+argument is not a valid file descriptor open for
 writing.
 .RE
 
@@ -717,7 +760,9 @@ removed.
 .ad
 .RS 11n
 .rt
-The \fIfildes\fR argument is on a remote machine and the link to that
+The
+.I fildes
+argument is on a remote machine and the link to that
 machine is no longer active.
 .RE
 
@@ -804,7 +849,9 @@ functions will fail if:
 .ad
 .RS 10n
 .rt
-The \fIbuf\fR argument points to an illegal address.
+The
+.I buf
+argument points to an illegal address.
 .RE
 
 .sp
@@ -835,7 +882,9 @@ if:
 .ad
 .RS 10n
 .rt
-The \fIfildes\fR argument is associated with a pipe or FIFO.
+The
+.I fildes
+argument is associated with a pipe or FIFO.
 .RE
 
 .sp
@@ -853,7 +902,9 @@ functions may fail if:
 .ad
 .RS 10n
 .rt
-The stream or multiplexer referenced by \fIfildes\fR is linked (directly or
+The stream or multiplexer referenced by
+.I fildes
+is linked (directly or
 indirectly) downstream from a multiplexer.
 .RE
 

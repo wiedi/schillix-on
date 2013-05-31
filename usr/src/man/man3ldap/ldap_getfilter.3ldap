@@ -77,48 +77,76 @@ These functions are used to generate filters to be used in
 .BR ldap_search (3LDAP)
 or
 .BR ldap_search_s "(3LDAP). Either"
-\fBldap_init_getfilter\fR or \fBldap_init_getfilter_buf\fR must be called
+.B ldap_init_getfilter
+or
+.B ldap_init_getfilter_buf
+must be called
 prior to calling any of the other functions except
 .BR ldap_build_filter .
 
 .sp
 .LP
-\fBldap_init_getfilter()\fR takes a file name as its only argument.  The
+.B ldap_init_getfilter()
+takes a file name as its only argument.  The
 contents of the file must be a valid LDAP filter configuration file (see
-\fBldapfilter.conf\fR(4)). If the file is successfully read, a pointer to an
-\fBLDAPFiltDesc\fR is returned.  This is an opaque object that is passed in
+.BR ldapfilter.conf (4)).
+If the file is successfully read, a pointer to an
+.B LDAPFiltDesc
+is returned.  This is an opaque object that is passed in
 subsequent get filter calls.
 .sp
 .LP
-\fBldap_init_getfilter_buf()\fR reads from
+.B ldap_init_getfilter_buf()
+reads from
 .IR buf ,
 whose length is
-\fIbuflen\fR, the LDAP filter configuration information. \fIbuf\fR must
+.IR buflen ,
+the LDAP filter configuration information.
+.I buf
+must
 point to the contents of a valid LDAP filter configuration file. See
-\fBldapfilter.conf\fR(4). If the filter configuration information is
+.BR ldapfilter.conf (4).
+If the filter configuration information is
 successfully read, a pointer to an
 .B LDAPFiltDesc
 is returned.  This is
 an opaque object that is passed in subsequent get filter calls.
 .sp
 .LP
-\fBldap_getfilter_free()\fR deallocates the memory consumed by
-\fBldap_init_getfilter\fR. Once it is called, the  \fBLDAPFiltDesc\fR is no
+.B ldap_getfilter_free()
+deallocates the memory consumed by
+.BR ldap_init_getfilter .
+Once it is called, the
+.B LDAPFiltDesc
+is no
 longer valid and cannot be used again.
 .sp
 .LP
-\fBldap_getfirstfilter()\fR retrieves the first filter that is appropriate
+.B ldap_getfirstfilter()
+retrieves the first filter that is appropriate
 for
 .I value.
 Only filter sets that have tags that match the regular
 expession
 .I tagpat
-are considered. \fBldap_getfirstfilter\fR returns a
-pointer to an \fBLDAPFiltInfo\fR structure, which contains a filter with
-\fIvalue\fR inserted as appropriate in  \fBlfi_filter,\fR a text match
-description in \fBlfi_desc, lfi_scope\fR set to indicate the search
-scope, and  \fBlfi_isexact\fR set to indicate the type of filter.
-\fINULL\fR is returned if no matching filters are found.   \fBlfi_scope\fR
+are considered.
+.B ldap_getfirstfilter
+returns a
+pointer to an
+.B LDAPFiltInfo
+structure, which contains a filter with
+.I value
+inserted as appropriate in
+.B lfi_filter,
+a text match
+description in
+.B "lfi_desc, lfi_scope"
+set to indicate the search
+scope, and
+.B lfi_isexact
+set to indicate the type of filter.
+.I NULL
+is returned if no matching filters are found.   \fBlfi_scope\fR
 will be one of
 .BR LDAP_SCOPE_BASE ,
 .BR LDAP_SCOPE_ONELEVEL ,
@@ -127,44 +155,65 @@ or
 filter has any '~' or '*' characters in it and non-zero otherwise.
 .sp
 .LP
-\fBldap_getnextfilter()\fR retrieves the next appropriate filter in the
-filter set that was determined when  \fBldap_getfirstfilter\fR was called.
+.B ldap_getnextfilter()
+retrieves the next appropriate filter in the
+filter set that was determined when
+.B ldap_getfirstfilter
+was called.
 It returns
 .I NULL
 when the list has been exhausted.
 .sp
 .LP
-\fBldap_setfilteraffixes()\fR sets a \fIprefix\fR to be prepended and a
-\fIsuffix\fR to be appended to all filters returned in the future.
+.B ldap_setfilteraffixes()
+sets a
+.I prefix
+to be prepended and a
+.I suffix
+to be appended to all filters returned in the future.
 .sp
 .LP
-\fBldap_build_filter()\fR constructs an LDAP search filter in \fIbuf.\fR
-\fIbuflen\fR is the size, in bytes, of the largest filter \fIbuf\fR can
+.B ldap_build_filter()
+constructs an LDAP search filter in \fIbuf.\fR
+.I buflen
+is the size, in bytes, of the largest filter
+.I buf
+can
 hold. A pattern for the desired filter is passed in
 .I pattern.
 Where the
 .RI "string %a appears in the pattern it is replaced with" " attr."
-\fIprefix\fR is pre-pended to the resulting filter, and \fIsuffix\fR is
+.I prefix
+is pre-pended to the resulting filter, and
+.I suffix
+is
 .RI "appended. Either can be NULL , in which case they are not used." " value"
 and
 .I valwords
 are used when the string %v appears in
 .I pattern.
 See
-\fBldapfilter.conf\fR(4) for a description of how %v is handled.
+.BR ldapfilter.conf (4)
+for a description of how %v is handled.
 .SH ERRORS
 .sp
 .LP
-\fINULL\fR is returned by  \fBldap_init_getfilter\fR if there is an error
+.I NULL
+is returned by
+.B ldap_init_getfilter
+if there is an error
 reading \fIfile. NULL\fR \fBis returned\fR \fBby\fR
-\fBldap_getfirstfilter\fR and \fBldap_getnextfilter\fR when there are no
+.B ldap_getfirstfilter
+and
+.B ldap_getnextfilter
+when there are no
 more appropriate filters to return.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fBETCDIR/ldapfilter.conf\fR
+.B ETCDIR/ldapfilter.conf
 .ad
 .RS 26n
 .rt

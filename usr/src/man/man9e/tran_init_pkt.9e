@@ -134,7 +134,7 @@ target driver.
 .ne 2
 .mk
 .na
-\fIflags\fR
+.I flags
 .ad
 .RS 13n
 .rt
@@ -175,7 +175,8 @@ The
 and
 .B tran_destroy_pkt()
 vectors in the
-\fBscsi_hba_tran\fR structure must be initialized during the \fBHBA
+.B scsi_hba_tran
+structure must be initialized during the \fBHBA
 \fRdriver's \fBattach\fR(9E) to point to \fBHBA\fR entry points to be called
 when a target driver calls
 .BR scsi_init_pkt "(9F) and"
@@ -183,7 +184,10 @@ when a target driver calls
 .SS "\fBtran_init_pkt()\fR"
 .sp
 .LP
-\fBtran_init_pkt()\fR is the entry point into the \fBHBA\fR which is used
+.B tran_init_pkt()
+is the entry point into the
+.B HBA
+which is used
 to allocate and initialize a
 .B scsi_pkt
 structure on behalf of a \fBSCSI
@@ -213,7 +217,10 @@ bit is set in
 .IR flags ,
 the buffer was
 allocated by \fBscsi_alloc_consistent_buf\fR(9F). For packets marked with
-\fBPKT_CONSISTENT,\fR the \fBHBA\fR driver must synchronize any cached data
+.B PKT_CONSISTENT,
+the
+.B HBA
+driver must synchronize any cached data
 transfers before calling the target driver's command completion callback.
 .sp
 .LP
@@ -223,8 +230,12 @@ bit is set in
 .IR flags ,
 the \fBHBA
 \fRdriver should set up partial data transfers, such as setting the
-\fBDDI_DMA_PARTIAL\fR bit in the \fIflags\fR argument if interfaces such as
-\fBddi_dma_buf_setup\fR(9F) or \fBddi_dma_buf_bind_handle\fR(9F) are used.
+.B DDI_DMA_PARTIAL
+bit in the
+.I flags
+argument if interfaces such as
+.BR ddi_dma_buf_setup (9F)
+or \fBddi_dma_buf_bind_handle\fR(9F) are used.
 .sp
 .LP
 If only partial
@@ -235,7 +246,8 @@ must return in the
 field of
 .I pkt
 the number of bytes of
-\fBDMA\fR resources not allocated.
+.B DMA
+resources not allocated.
 .sp
 .LP
 If both
@@ -243,13 +255,17 @@ If both
 and
 .I bp
 are  non-\fINULL\fR, if the
-\fBPKT_DMA_PARTIAL\fR bit is set in
+.B PKT_DMA_PARTIAL
+bit is set in
 .IR flags ,
 and if
 .B DMA
 resources
 have already been allocated for the  pkt with a previous call to
-\fBtran_init_pkt()\fR that returned a non-zero \fBpkt_resid\fR field, this
+.B tran_init_pkt()
+that returned a non-zero
+.B pkt_resid
+field, this
 request is to move the
 .B DMA
 resources for the subsequent piece of the
@@ -267,15 +283,23 @@ field of the
 .BR scsi_hba_pkt_alloc (9F).
 .sp
 .LP
-\fItgtlen\fR is the length of the packet private area in the \fBscsi_pkt\fR
+.I tgtlen
+is the length of the packet private area in the
+.BR scsi_pkt
 structure to be allocated on behalf of the
 .B SCSI
 target driver.
 .sp
 .LP
-\fIstatuslen\fR is the required length for the \fBSCSI\fR status completion
+.I statuslen
+is the required length for the
+.B SCSI
+status completion
 block. If the requested status length is greater than or equal to
-\fBsizeof(struct scsi_arq_status)\fR  and the  \fBauto_rqsense\fR capability
+.B sizeof(struct scsi_arq_status)
+and the
+.B auto_rqsense
+capability
 has been set, automatic request sense (\fBARS\fR) is enabled for this
 packet. If the status length is less than \fBsizeof(struct
 scsi_arq_status)\fR, automatic request sense must be disabled for this
@@ -294,7 +318,8 @@ is called with a
 that is less than
 .BR "sizeof(struct scsi_arq_status)" ,
 the driver's
-\fBtran_init_pkt\fR routine should  allocate at least \fBsizeof(struct
+.B tran_init_pkt
+routine should  allocate at least \fBsizeof(struct
 scsi_arq_status)\fR. If an \fBARS\fR is needed, upon successful \fBARS\fR
 done by the
 .B HBA
@@ -305,7 +330,10 @@ in
 .BR pkt_state .
 .sp
 .LP
-\fIcmdlen\fR is the required length for the \fBSCSI\fR command descriptor
+.I cmdlen
+is the required length for the
+.B SCSI
+command descriptor
 block.
 .sp
 .LP
@@ -319,11 +347,13 @@ the
 .B HBA
 driver allocates the
 .BR scsi_pkt "(9S), in other words, when"
-\fIpkt\fR is
+.I pkt
+is
 .IR NULL .
 .sp
 .LP
-\fIcallback\fR indicates what the allocator routines should do when
+.I callback
+indicates what the allocator routines should do when
 resources are not available:
 .sp
 .ne 2
@@ -352,7 +382,10 @@ Wait indefinitely for resources.
 .SS "tran_destroy_pkt()"
 .sp
 .LP
-\fBtran_destroy_pkt()\fR is the entry point into the \fBHBA\fR that must
+.B tran_destroy_pkt()
+is the entry point into the
+.B HBA
+that must
 free all of the resources that were allocated to the
 .BR scsi_pkt (9S)
 structure during
@@ -360,7 +393,8 @@ structure during
 .SH RETURN VALUES
 .sp
 .LP
-\fBtran_init_pkt()\fR must return a pointer to a
+.B tran_init_pkt()
+must return a pointer to a
 .BR scsi_pkt (9S)
 structure on success, or
 .I NULL
@@ -376,7 +410,8 @@ on entry, and
 allocated a
 packet through\fBscsi_hba_pkt_alloc\fR(9F) but was unable to allocate \fBDMA
 \fRresources, \fBtran_init_pkt()\fR must free the packet through
-\fBscsi_hba_pkt_free\fR(9F) before returning
+.BR scsi_hba_pkt_free (9F)
+before returning
 .IR NULL .
 .SH SEE ALSO
 .sp
@@ -393,7 +428,9 @@ packet through\fBscsi_hba_pkt_alloc\fR(9F) but was unable to allocate \fBDMA
 .BR scsi_destroy_pkt (9F),
 .BR scsi_hba_attach (9F),
 .BR scsi_hba_pkt_alloc (9F),
-\fBscsi_hba_pkt_free\fR(9F), \fBscsi_init_pkt\fR(9F), \fBbuf\fR(9S),
+.BR scsi_hba_pkt_free (9F),
+.BR scsi_init_pkt (9F),
+.BR buf (9S),
 .BR scsi_address (9S),
 .BR scsi_hba_tran (9S),
 .BR scsi_pkt (9S)

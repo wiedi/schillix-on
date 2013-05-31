@@ -73,7 +73,7 @@ Pointer to interrupt transfer request.
 .ne 2
 .mk
 .na
-\fIflags\fR
+.I flags
 .ad
 .RS 15n
 .rt
@@ -101,7 +101,7 @@ Interrupt pipe handle on which to stop polling for data.
 .ne 2
 .mk
 .na
-\fIflags\fR
+.I flags
 .ad
 .RS 15n
 .rt
@@ -111,7 +111,9 @@ USB_FLAGS_SLEEP is the only flag recognized. Wait for polling to stop.
 .SH DESCRIPTION
 .sp
 .LP
-The \fBusb_pipe_intr_xfer()\fR function requests the USBA framework to
+The
+.B usb_pipe_intr_xfer()
+function requests the USBA framework to
 perform a transfer through a USB interrupt pipe. The request is passed to
 the host controller driver (HCD), which performs the necessary transactions
 to complete the request.
@@ -133,19 +135,25 @@ Periodic interrupt-IN transfers are always asynchronous. Client driver
 notification of new data is always via a callback. The USB_FLAGS_SLEEP flag
 is only to wait for resources to become available. Callbacks must always be
 in place to receive transfer completion notification. Please see
-\fBusb_callback_flags\fR(9S) for details on USB callbacks.
+.BR usb_callback_flags (9S)
+for details on USB callbacks.
 .sp
 .LP
-Calls made to \fBusb_pipe_intr_xfer()\fR for starting input polling need
+Calls made to
+.B usb_pipe_intr_xfer()
+for starting input polling need
 allocate only one request. The USBA framework allocates a new request each
 time polling has new data to return.  (Note that each request returned must
 be freed via \fBusb_free_intr_req\fR(9F). Specify a zero length when calling
-\fBusb_alloc_intr_req()\fR to allocate the original request, since it will
+.B usb_alloc_intr_req()
+to allocate the original request, since it will
 not be used to return data.  Set the intr_len in the request to specify how
 much data can be returned per polling interval.
 .sp
 .LP
-The original request passed to \fBusb_pipe_intr_xfer()\fR is used to return
+The original request passed to
+.B usb_pipe_intr_xfer()
+is used to return
 status when polling is terminated, or on an error condition when the
 USB_ATTRS_AUTOCLEARING attribute is set for the request. If autoclearing is
 not set, the current (non-original) request is returned on error. Call
@@ -219,7 +227,8 @@ to an original request:
 .LP
 The callback handler also checks the request's intr_data field to mark
 original polling requests, when the requests are created with a zero
-\fIlen\fR argument. In this case, a NULL intr_data field distinguishes a
+.I len
+argument. In this case, a NULL intr_data field distinguishes a
 returned original request from a request allocated by the framework during
 polling.
 .sp

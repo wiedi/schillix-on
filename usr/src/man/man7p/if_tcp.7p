@@ -50,7 +50,8 @@ This may be initiated by the kernel at boot time or by a user program after the
 system is running. Each interface must be assigned an
 .B IP
 address with the
-\fBSIOCSLIFADDR ioctl()\fR before it can be used. On interfaces where the
+.B SIOCSLIFADDR ioctl()
+before it can be used. On interfaces where the
 network-to-link layer address mapping is static, only the network number is
 taken from the
 .B ioctl()
@@ -199,24 +200,34 @@ Get interface flags.
 .ad
 .RS 19n
 .rt
-Get interface configuration list. This request takes a \fBlifconf\fR structure
-(see below) as a value-result parameter. The \fBlifc_family\fR field can  be
+Get interface configuration list. This request takes a
+.B lifconf
+structure
+(see below) as a value-result parameter. The
+.B lifc_family
+field can  be
 set to
 .B AF_UNSPEC
 to retrieve both
 .B AF_INET
 and
 .BR AF_INET6
-interfaces. The \fBlifc_len\fR field should be set to the size of the buffer
+interfaces. The
+.B lifc_len
+field should be set to the size of the buffer
 pointed to by
 .BR lifc_buf .
 .sp
-The \fBlifc_flags\fR field should usually be set to zero, but callers that
+The
+.B lifc_flags
+field should usually be set to zero, but callers that
 need low-level knowledge of the  underlying IP interfaces that comprise an IPMP
 group can set it  to
 .B LIFC_UNDER_IPMP
 to request that those interfaces be
-included in the result. Upon success, \fBlifc_len\fR contains the length, in
+included in the result. Upon success,
+.B lifc_len
+contains the length, in
 bytes, of the array  of \fBlifreq\fR structures pointed to  by \fBlifc_req\fR.
 For each \fBlifreq\fR structure, the \fBlifr_name\fR and \fBlifr_addr\fR fields
 are valid.
@@ -232,21 +243,29 @@ are valid.
 .rt
 Get number of interfaces. This request returns an integer which is the number
 of interface descriptions (\fBstruct lifreq\fR) returned by the
-\fBSIOCGLIFCONF\fR ioctl (in other words, indicates how large \fBlifc_len\fR
+.B SIOCGLIFCONF
+ioctl (in other words, indicates how large \fBlifc_len\fR
 must be).
 .sp
-This  request  takes a \fBstruct  lifnum\fR (see below) as a value-result
-parameter. The \fBlifn_family\fR field can  be set to
+This  request  takes a
+.B "struct  lifnum"
+(see below) as a value-result
+parameter. The
+.B lifn_family
+field can  be set to
 .B AF_UNSPEC
 to count
 both
 .B AF_INET
 and
 .B AF_INET6
-interfaces. The \fBlifn_flags\fR field
+interfaces. The
+.B lifn_flags
+field
 should usually be set to zero, but callers that need low-level knowledge of the
 underlying IP interfaces that comprise an  IPMP group can set it to
-\fBLIFC_UNDER_IPMP\fR to request that those interfaces be included in the
+.B LIFC_UNDER_IPMP
+to request that those interfaces be included in the
 count.
 .RE
 
@@ -259,10 +278,13 @@ count.
 .RS 19n
 .rt
 Set the maximum transmission unit (MTU) size for interface. Place the request
-in the \fBlifru_mtu\fR field. The
+in the
+.B lifru_mtu
+field. The
 .B MTU
 can not exceed the physical
-\fBMTU\fR limitation  (which is reported in the  \fBDLPI DL_INFO_ACK\fR
+.B MTU
+limitation  (which is reported in the  \fBDLPI DL_INFO_ACK\fR
 message).
 .RE
 
@@ -516,7 +538,9 @@ field has the interface index corresponding to the interface whose address is
 to be used as the source address for packets going out on the interface whose
 name is provided by
 .BR lifr_name .
-If the \fBlifr_index\fR field is set to
+If the
+.B lifr_index
+field is set to
 zero, the previous setting is cleared.  See \fBifconfig\fR(1M) for examples of
 the
 .B usesrc
@@ -533,8 +557,13 @@ option.
 .rt
 Get the interface index of the interface whose address is used as the source
 address for packets going out on the interface provided by \fBlifr_name\fR
-field. The value is retrieved in the \fBlifr_index\fR field. See
-\fBifconfig\fR(1M) for examples of the \fBusesrc\fR option.
+field. The value is retrieved in the
+.B lifr_index
+field. See
+.BR ifconfig (1M)
+for examples of the
+.B usesrc
+option.
 .RE
 
 .sp
@@ -549,14 +578,24 @@ Get the interface configuration list for interfaces that use an address hosted
 on the interface provided by the \fBlifs_ifindex\fR field in the \fBlifsrcof\fR
 struct (see below), as a source address. The application sets \fBlifs_maxlen\fR
 to the size (in bytes) of the buffer it has allocated for the data. On return,
-the kernel sets \fBlifs_len\fR to the actual size required. Note, the
-application could set \fBlifs_maxlen\fR to zero to query the kernel of the
+the kernel sets
+.B lifs_len
+to the actual size required. Note, the
+application could set
+.B lifs_maxlen
+to zero to query the kernel of the
 required buffer size instead of estimating a buffer size. The application tests
-\fBlifs_len\fR <= \fBlifs_maxlen\fR -- if that's true,  the buffer was big
+.B lifs_len
+<=
+.B lifs_maxlen
+-- if that's true,  the buffer was big
 enough and the application has an accurate list.  If it is false, it needs to
-allocate a bigger buffer and try again, and \fBlifs_len\fR provides a hint of
+allocate a bigger buffer and try again, and
+.B lifs_len
+provides a hint of
 how big to make the next trial. See \fBifconfig\fR(1M) for examples of the
-\fBusesrc\fR option.
+.B usesrc
+option.
 .RE
 
 .sp
@@ -587,8 +626,10 @@ non-zero value if the address is onlink.
 .RS 19n
 .rt
 Test if the address is assigned to this node. This request takes an
-\fBsioc_addrreq\fR structure (see below) as a value-result parameter. The
-\fBsa_addr\fR field should be set to the address to test. The \fBsa_res\fR
+.B sioc_addrreq
+structure (see below) as a value-result parameter. The
+.B sa_addr
+field should be set to the address to test. The \fBsa_res\fR
 field will contain a non-zero value if the address is assigned to this node.
 .RE
 
@@ -604,7 +645,8 @@ Test if the address is part of the same site as this node. This request takes
 an
 .B sioc_addrreq
 structure (see below) as a value-result parameter. The
-\fBsa_addr\fR field should be set to the address to test. The \fBsa_res\fR
+.B sa_addr
+field should be set to the address to test. The \fBsa_res\fR
 field will contain a non-zero value if the address is in the same site.
 .RE
 
@@ -652,8 +694,10 @@ struct lifnum {
 .LP
 The structure used by
 .BR SIOCTONLINK ,
-\fBSIOCTMYADDR\fR and
-\fBSIOCTMYSITE\fR has the form:
+.B SIOCTMYADDR
+and
+.B SIOCTMYSITE
+has the form:
 .sp
 .in +2
 .nf
@@ -694,7 +738,8 @@ The following
 calls are maintained for compatibility but only
 apply to IPv4 network interfaces, since the data structures are too small to
 hold an IPv6 address. Unless specified otherwise, the request takes an
-\fBifreq\fR structure as its parameter. This structure has the form:
+.B ifreq
+structure as its parameter. This structure has the form:
 .sp
 .in +2
 .nf
@@ -796,16 +841,26 @@ Get interface flags.
 .ad
 .RS 18n
 .rt
-Get interface configuration list. This request takes an \fBifconf\fR structure
-(see below) as a value-result parameter. The \fBifc_len\fR field should be set
+Get interface configuration list. This request takes an
+.B ifconf
+structure
+(see below) as a value-result parameter. The
+.B ifc_len
+field should be set
 to the size of the buffer pointed to by
 .BR ifc_buf .
 Upon success,
-\fBifc_len\fR will contain the length, in bytes, of the array of \fBifreq\fR
+.B ifc_len
+will contain the length, in bytes, of the array of \fBifreq\fR
 structures pointed to by
 .BR ifc_req .
-For each \fBifreq\fR structure, the
-\fBifr_name\fR and \fBifr_addr\fR fields are valid.  Though IPMP IP interfaces
+For each
+.B ifreq
+structure, the
+.B ifr_name
+and
+.B ifr_addr
+fields are valid.  Though IPMP IP interfaces
 are included in the array, underlying IP interfaces that comprise those IPMP
 groups are not.
 .RE
@@ -820,7 +875,10 @@ groups are not.
 .rt
 Get number of interfaces. This request returns an integer which is the number
 of interface descriptions (\fBstruct ifreq\fR) returned by the
-\fBSIOCGIFCONF\fR ioctl (in other words, indicates how large \fBifc_len\fR must
+.B SIOCGIFCONF
+ioctl (in other words, indicates how large
+.B ifc_len
+must
 be). Though IPMP IP interfaces are included  in the array, underlying IP
 interfaces that comprise those IPMP groups are not.
 .RE
@@ -834,13 +892,16 @@ interfaces that comprise those IPMP groups are not.
 .RS 18n
 .rt
 Set the maximum transmission unit (\fBMTU\fR) size for interface. Place the
-request in the \fBifr_metric\fR field. The
+request in the
+.B ifr_metric
+field. The
 .B MTU
 has to be smaller than
 physical
 .B MTU
 .RB "limitation (which is reported in the" " DLPI"
-\fBDL_INFO_ACK\fR message).
+.B DL_INFO_ACK
+message).
 .RE
 
 .sp
@@ -852,7 +913,9 @@ physical
 .RS 18n
 .rt
 Get the maximum transmission unit size for interface. Upon success, the
-request is placed in the \fBifr_metric\fR field.
+request is placed in the
+.B ifr_metric
+field.
 .RE
 
 .sp
@@ -933,7 +996,9 @@ Set the interface index associated with the interface.
 
 .sp
 .LP
-The \fBifconf\fR structure has the form:
+The
+.B ifconf
+structure has the form:
 .sp
 .in +2
 .nf
@@ -955,7 +1020,8 @@ struct ifconf {
 .LP
 You can use the \fBifconfig\fR(1M) command to display the \fBIFF\fR_ flags
 listed below (with the leading \fBIFF\fR_ prefix removed). See the
-\fBifconfig\fR(1M) manpage for a definition of each flag.
+.BR ifconfig (1M)
+manpage for a definition of each flag.
 .sp
 .in +2
 .nf
@@ -1040,7 +1106,9 @@ structure contains an invalid value.
 .sp
 For
 .BR SIOCSLIFUSESRC ,
-this error is returned if the \fBlifr_index\fR is
+this error is returned if the
+.B lifr_index
+is
 set to an invalid value.
 .RE
 
@@ -1070,7 +1138,12 @@ this error is returned when the requested
 size is invalid. This error indicates the
 .B MTU
 size is greater than the
-\fBMTU\fR size supported by the \fBDLPI\fR provider or less than \fB68\fR (for
+.B MTU
+size supported by the
+.B DLPI
+provider or less than
+.B 68
+(for
 IPv4) or less than
 .B 1280
 (for IPv6).
@@ -1078,7 +1151,10 @@ IPv4) or less than
 For
 .BR SIOCSLIFUSESRC ,
 this error is returned if either the
-\fBlifr_index\fR or \fBlifr_name\fR identify interfaces that are already part
+.B lifr_index
+or
+.B lifr_name
+identify interfaces that are already part
 of an existing IPMP group.
 .RE
 
@@ -1092,9 +1168,15 @@ of an existing IPMP group.
 .rt
 For
 .BR SIOCLIFADDIF ,
-this error is returned if the \fBlifr_name\fR member
-in the \fBlifreq\fR structure corresponds to an interface that already has the
-PPA specified by \fBlifr_ppa\fR plumbed.
+this error is returned if the
+.B lifr_name
+member
+in the
+.B lifreq
+structure corresponds to an interface that already has the
+PPA specified by
+.B lifr_ppa
+plumbed.
 .RE
 
 .SH SEE ALSO

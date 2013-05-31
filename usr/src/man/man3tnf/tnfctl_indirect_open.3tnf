@@ -42,7 +42,8 @@ process where caller provides /proc functionality
 .LP
 The interfaces  \fBtnfctl_indirect_open()\fR and \fBtnfctl_check_libs()\fR
 are used to control probes in another process where the
-\fBlibtnfctl\fR(3TNF) client has already opened
+.BR libtnfctl (3TNF)
+client has already opened
 .BR proc (4)
 on the target
 process. An example of this is when the client is a debugger. Since these
@@ -53,8 +54,12 @@ use
 .B /proc
 directly.  Therefore, these clients must provide callback
 functions that can be used to inspect and to update the target process.
-The target process must load \fBlibtnfprobe.so.1\fR (defined in
-\fB<tnf/tnfctl.h>\fR as macro \fBTNFCTL_LIBTNFPROBE).\fR
+The target process must load
+.B libtnfprobe.so.1
+(defined in
+.B <tnf/tnfctl.h>
+as macro
+.BR TNFCTL_LIBTNFPROBE).
 .sp
 .LP
 The first argument
@@ -91,8 +96,14 @@ struct tnfctl_ind_config {
 The first field
 .I p_read
 is the address of a function that can read
-\fBsize\fR bytes at address \fIaddr\fR in the target image into the buffer
-\fIbuf\fR. The function should return  \fB0\fR upon success.. The second
+.B size
+bytes at address
+.I addr
+in the target image into the buffer
+.IR buf .
+The function should return
+.B 0
+upon success.. The second
 field
 .I p_write
 is the address of a function that can write
@@ -104,18 +115,28 @@ in the target image from the buffer
 The function should return
 .B 0
 upon success. The third field
-\fIp_getpid\fR is the address of a function that should return the process
+.I p_getpid
+is the address of a function that should return the process
 id of the target process
 .RI ( prochandle ).
 The fourth field
-\fIp_obj_iter\fR is the address of a function that iterates over all load
-objects and the executable by calling the callback function  \fIfunc\fR with
+.I p_obj_iter
+is the address of a function that iterates over all load
+objects and the executable by calling the callback function
+.I func
+with
 .IR client_data .
-If \fIfunc\fR returns
+If
+.I func
+returns
 .BR 0 ,
-\fIp_obj_iter\fR should
-continue processing link objects.  If \fIfunc\fR returns any other value,
-\fIp_obj_iter\fR should stop calling the callback function and return that
+.I p_obj_iter
+should
+continue processing link objects.  If
+.I func
+returns any other value,
+.I p_obj_iter
+should stop calling the callback function and return that
 value.
 .I p_obj_iter
 should return
@@ -133,7 +154,9 @@ by the \fBlibtnfctl\fR
 interface that called it.
 .sp
 .LP
-The definition of  \fBtnfctl_ind_obj_f\fR is:
+The definition of
+.B tnfctl_ind_obj_f
+is:
 .sp
 .in +2
 .nf
@@ -152,13 +175,20 @@ typedef struct tnfctl_ind_obj_info {
 
 .sp
 .LP
-\fIobjfd\fR should be the file descriptor of the load object or executable.
+.I objfd
+should be the file descriptor of the load object or executable.
 If it is \fB\(mi1\fR, then
 .I objname
 should be an absolute pathname to
-the load object or executable. If \fIobjfd\fR is not closed by
-\fBlibtnfctl\fR, it should be closed by the load object iterator function.
-\fItext_base\fR and \fIdata_base\fR are the addresses where the text and
+the load object or executable. If
+.I objfd
+is not closed by
+.BR libtnfctl ,
+it should be closed by the load object iterator function.
+.I text_base
+and
+.I data_base
+are the addresses where the text and
 data segments of the load object are mapped in the target process.
 .sp
 .LP
@@ -167,15 +197,24 @@ available probes may change.   See
 .BR dlopen (3C)
 and
 .BR dlclose (3C).
-In indirect mode, call \fBtnfctl_check_libs()\fR when such events occur to
-make \fBlibtnfctl\fR aware of any changes.  In other modes this is
+In indirect mode, call
+.B tnfctl_check_libs()
+when such events occur to
+make
+.B libtnfctl
+aware of any changes.  In other modes this is
 unnecessary but harmless. It is also harmless to call
-\fBtnfctl_check_libs()\fR when no such events have occurred.
+.B tnfctl_check_libs()
+when no such events have occurred.
 .SH RETURN VALUES
 .sp
 .LP
-\fBtnfctl_indirect_open()\fR and \fBtnfctl_check_libs()\fR return
-\fBTNFCTL_ERR_NONE\fR upon success.
+.B tnfctl_indirect_open()
+and
+.B tnfctl_check_libs()
+return
+.B TNFCTL_ERR_NONE
+upon success.
 .SH ERRORS
 .sp
 .LP
@@ -211,7 +250,8 @@ Internal tracing is being used.
 .ad
 .RS 28n
 .rt
-\fBlibtnfprobe.so.1\fR is not loaded in the target process.
+.B libtnfprobe.so.1
+is not loaded in the target process.
 .RE
 
 .sp
@@ -279,7 +319,8 @@ MT LevelMT-Safe
 .BR TNF_PROBE (3TNF),
 .BR dlclose (3C),
 .BR dlopen (3C),
-\fBlibtnfctl\fR(3TNF), \fBtnfctl_probe_enable\fR(3TNF),
+.BR libtnfctl (3TNF),
+.BR tnfctl_probe_enable (3TNF),
 .BR tnfctl_probe_trace (3TNF),
 .BR tracing (3TNF),
 .BR proc (4),
@@ -290,10 +331,14 @@ MT LevelMT-Safe
 .SH NOTES
 .sp
 .LP
-\fBtnfctl_indirect_open()\fR should only be called after the dynamic linker
+.B tnfctl_indirect_open()
+should only be called after the dynamic linker
 has mapped in all the libraries (rtld sync point) and called only after the
 process is stopped. Indirect process probe control assumes the target
-process is stopped whenever any \fBlibtnfctl\fR interface is used on it.
+process is stopped whenever any
+.B libtnfctl
+interface is used on it.
 For example, when used for indirect process probe control,
-\fBtnfctl_probe_enable\fR(3TNF) and \fBtnfctl_probe_trace\fR(3TNF) should be
+.BR tnfctl_probe_enable (3TNF)
+and \fBtnfctl_probe_trace\fR(3TNF) should be
 called only for a process that is stopped.

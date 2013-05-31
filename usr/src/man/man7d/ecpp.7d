@@ -47,9 +47,15 @@ compliant devices as well as a forward single-directional interface to
 .RB "Centronics devices. In addition to the Centronics protocol, the" " ecpp"
 driver supports the
 .IR "IEEE 1284" "Compatibility, Nibble, and ECP protocols."
-\fBECPP_COMPAT_MODE\fR and \fBECPP_CENTRONICS\fR modes of operation have
+.B ECPP_COMPAT_MODE
+and
+.B ECPP_CENTRONICS
+modes of operation have
 logically identical handshaking protocols, however devices that support
-\fBECPP_COMPAT_MODE\fR are \fIIEEE 1284\fR compliant devices. \fIIEEE 1284\fR
+.B ECPP_COMPAT_MODE
+are
+.I "IEEE 1284"
+compliant devices. \fIIEEE 1284\fR
 compliant devices support at least
 .B ECPP_COMPAT_MODE
 and
@@ -70,7 +76,8 @@ microseconds. Forward transfers for these devices are managed through PIO. The
 default characteristics for both
 .B ECPP_COMPAT_MODE
 and
-\fBECPP_CENTRONICS\fR devices may be changed through tunable variables defined
+.B ECPP_CENTRONICS
+devices may be changed through tunable variables defined
 in
 .BR ecpp.conf .
 .sp
@@ -89,7 +96,8 @@ Each time the
 .B ecpp
 .RB "device is opened, the device is marked as" " EBUSY"
 and the configuration variables are set to their default values. The
-\fBwrite_timeout\fR period is set to 90 seconds.
+.B write_timeout
+period is set to 90 seconds.
 .sp
 .LP
 The driver sets the mode variable according to the following algorithm: The
@@ -98,15 +106,19 @@ driver initially attempts to negotiate the link into
 during
 .BR open (2).
 If it fails, the driver tries to negotiate into
-\fBECPP_NIBBLE_MODE\fR mode. If that fails, the driver operates in
-\fBECPP_CENTRONICS\fR mode. Upon successfully opening the device, \fIIEEE
+.B ECPP_NIBBLE_MODE
+mode. If that fails, the driver operates in
+.B ECPP_CENTRONICS
+mode. Upon successfully opening the device, \fIIEEE
 1284\fR compliant devices will be left idle in either reverse idle phase of
-\fBECPP_ECP_MODE\fR or in
+.B ECPP_ECP_MODE
+or in
 .BR ECPP_NIBBLE_MODE .
 Subsequent calls to
 .BR write (2)
 invokes the driver to move the link into either
-\fBECPP_COMPAT_MODE\fR or the forward phase of
+.B ECPP_COMPAT_MODE
+or the forward phase of
 .BR ECPP_ECP_MODE .
 After the
 transfer completes, the link returns to idle state.
@@ -176,10 +188,19 @@ port that has no data currently available,
 returns
 .B 0
 if
-\fBO_NDELAY\fR is set. If \fBO_NONBLOCK\fR is set,
+.B O_NDELAY
+is set. If
+.B O_NONBLOCK
+is set,
 .BR read (2)
 returns
-\fB-1\fR and sets errno to \fBEAGAIN.\fR If \fBO_NDELAY\fR and \fBO_NONBLOCK\fR
+.B -1
+and sets errno to
+.B EAGAIN.
+If
+.B O_NDELAY
+and
+.BR O_NONBLOCK
 are clear,
 .BR read (2)
 blocks until data become available.
@@ -189,7 +210,8 @@ blocks until data become available.
 The
 .BR ioctl (2)
 calls described below are supported. Note that when
-\fBecpp\fR is transferring data, the driver waits until the data has been sent
+.B ecpp
+is transferring data, the driver waits until the data has been sent
 to the device before processing the
 .BR ioctl (2)
 call.
@@ -222,7 +244,8 @@ and are not recommended for new applications:
 .RS 20n
 .rt
 Get current transfer parameters. The argument is a pointer to a struct
-\fBecpp_transfer_parms\fR. See below for a description of the elements of this
+.BR ecpp_transfer_parms .
+See below for a description of the elements of this
 structure. If no parameters have been configured since the device was opened,
 the structure will be set to its default configuration. See Default Operation
 above for more information.
@@ -237,10 +260,15 @@ above for more information.
 .RS 20n
 .rt
 Set transfer parameters. The argument is a pointer to a struct
-\fBecpp_transfer_parms\fR. If a parameter is out of range, \fBEINVAL\fR is
+.BR ecpp_transfer_parms .
+If a parameter is out of range,
+.B EINVAL
+is
 returned. If the peripheral or host device cannot support the requested mode,
-\fBEPROTONOSUPPORT\fR is returned. See below for a description of
-\fBecpp_transfer_parms\fR and its valid parameters.
+.B EPROTONOSUPPORT
+is returned. See below for a description of
+.B ecpp_transfer_parms
+and its valid parameters.
 .sp
 The Transfer Parameters Structure is defined in <\fBsys/ecppio.h\fR>.
 .sp
@@ -256,12 +284,17 @@ struct ecpp_transfer_parms {
 The
 .B write_timeout
 field is set to the value of
-\fBecpp-transfer-timeout\fR specified in the
+.B ecpp-transfer-timeout
+specified in the
 .BR ecpp.conf .
 The
-\fBwrite_timeout\fR field specifies how long the driver will wait for the
+.B write_timeout
+field specifies how long the driver will wait for the
 peripheral to respond to a transfer request. The value must be greater than
-\fB0\fR and less than \fBECPP_MAX_TIMEOUT.\fR All other values are out of
+.B 0
+and less than
+.B ECPP_MAX_TIMEOUT.
+All other values are out of
 range.
 .sp
 The mode field reflects the
@@ -323,9 +356,11 @@ mode,
 .B EPROTONOSUPPORT
 is returned. Applications should set mode to
 .BR ECPP_NIBBLE_MODE .
-\fBlen\fR is the length of the buffer pointed to by
+.B len
+is the length of the buffer pointed to by
 .BR addr .
-\fBrlen\fR is the actual length of the device ID string returned
+.B rlen
+is the actual length of the device ID string returned
 from the peripheral. If the returned
 .B rlen
 is greater than
@@ -361,20 +396,29 @@ mode.
 Tests the forward transfer readiness of a peripheral operating in Centronics
 or Compatibility mode.
 .sp
-\fBTESTIO\fR determines if the peripheral is ready to receive data by checking
+.B TESTIO
+determines if the peripheral is ready to receive data by checking
 the open flags and the Centronics status signals. If the current mode of the
 device is
 .BR ECPP_NIBBLE_MODE ,
 the driver negotiates the link into
 .BR ECPP_COMPAT_MODE ,
 check the status signals and then return the link to
-\fBECPP_NIBBLE_MODE\fR mode. If the current mode is \fBECPP_CENTRONICS\fR or
+.B ECPP_NIBBLE_MODE
+mode. If the current mode is
+.B ECPP_CENTRONICS
+or
 .BR ECPP_COMPAT_MODE ,
-\fBTESTIO\fR examines the Centronics status signals in
+.B TESTIO
+examines the Centronics status signals in
 the current mode. To receive data, the device must have the
 .B nErr
 and
-\fBSelect\fR signals asserted and must not have the \fBPE\fR and \fBBusy\fR
+.B Select
+signals asserted and must not have the
+.B PE
+and
+.BR Busy
 signals asserted. If
 .B ecpp
 is transferring data,
@@ -401,9 +445,15 @@ and the state of the status pins is captured. The captured
 status can be retrieved using the
 .BR "BPPIOC_GETERR ioctl" (2)
 call. The
-\fBtimeout_occurred\fR and \fBbus_error\fR fields will never be set by this
+.B timeout_occurred
+and
+.B bus_error
+fields will never be set by this
 .BR ioctl (2).
-\fBBPPIOC_TESTIO\fR and \fBBPPIOC_GETERR\fR are compatible to
+.B BPPIOC_TESTIO
+and
+.B BPPIOC_GETERR
+are compatible to
 the ioctls specified in
 .BR bpp (7D).
 .RE
@@ -446,8 +496,10 @@ call, or the
 status of the bits at the most recent
 .BR "BPPIOC_TESTIO ioctl" (2)call.
 .sp
-\fBpin_status\fR indicates possible error conditions under
-\fBECPP_CENTRONICS\fR or
+.B pin_status
+indicates possible error conditions under
+.B ECPP_CENTRONICS
+or
 .BR ECPP_COMPAT_MODE .
 Under these modes, the state
 of the status pins will indicate the state of the device. For instance, many
@@ -461,14 +513,16 @@ The
 .B timeout_occurred
 value is set when a timeout occurs during
 .BR write (2).
-\fBbus_error\fR is not used in this interface.
+.B bus_error
+is not used in this interface.
 .RE
 
 .sp
 .LP
 The following ioctls are used to directly read and write the parallel port
 status and control signals. If the current mode of the device is
-\fBECPP_ECP_MODE\fR or
+.B ECPP_ECP_MODE
+or
 .BR ECPP_NIBBLE_MODE ,
 the driver negotiates the link
 into
@@ -610,7 +664,7 @@ namespaces.
 .ne 2
 .mk
 .na
-\fBkernel/drv/ecpp.conf\fR
+.B kernel/drv/ecpp.conf
 .ad
 .sp .6
 .RS 4n
@@ -621,7 +675,7 @@ driver configuration file
 .ne 2
 .mk
 .na
-\fBkernel/drv/sparcv9/ecpp.conf\fR
+.B kernel/drv/sparcv9/ecpp.conf
 .ad
 .sp .6
 .RS 4n
@@ -632,7 +686,7 @@ driver configuration file for 64-bit SPARC
 .ne 2
 .mk
 .na
-\fBkernel/drv/amd64/ecpp.conf\fR
+.B kernel/drv/amd64/ecpp.conf
 .ad
 .sp .6
 .RS 4n
@@ -676,7 +730,9 @@ A
 .B "ECPPIOC_SETPARMS ioctl()"
 is attempted with an out-of-range value
 in the \fBecpp_transfer_parms\fR structure. A \fBECPPIOC_SETREGS\fR
-\fBioctl()\fR is attempted with an invalid value in the \fBecpp_regs\fR
+.B ioctl()
+is attempted with an invalid value in the
+.BR ecpp_regs
 structure. An
 .B ioctl()
 is attempted with an invalid value in the command

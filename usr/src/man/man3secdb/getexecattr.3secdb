@@ -81,7 +81,8 @@ file.
 Successive calls to
 .B getexecattr()
 return either successive
-\fBexec_attr\fR entries or
+.B exec_attr
+entries or
 .IR NULL .
 Because
 .B getexecattr()
@@ -98,7 +99,8 @@ structure points to
 The internal representation of an
 .B exec_attr
 entry is an
-\fBexecattr_t\fR structure defined in  <\fBexec_attr.h\fR> with the
+.B execattr_t
+structure defined in  <\fBexec_attr.h\fR> with the
 following members:
 .sp
 .in +2
@@ -117,8 +119,13 @@ struct execattr_s *next;   /* optional pointer to next profile */
 
 .sp
 .LP
-The \fBfree_execattr()\fR function releases memory. It follows the
-\fBnext\fR pointers in the \fBexecattr_t\fR structure so that the entire
+The
+.B free_execattr()
+function releases memory. It follows the
+.B next
+pointers in the
+.B execattr_t
+structure so that the entire
 linked list is released.
 .sp
 .LP
@@ -129,15 +136,18 @@ entries. Calls to
 .B getexecuser()
 can
 leave the enumeration in an indeterminate state. Therefore,
-\fBsetexecattr()\fR should be called before the first call to
+.B setexecattr()
+should be called before the first call to
 .BR getexecattr() .
 .sp
 .LP
 The
 .B endexecattr()
 function can be called to indicate that
-\fBexec_attr\fR processing is complete; the library can then close any open
-\fBexec_attr\fR file, deallocate any internal storage, and so forth.
+.B exec_attr
+processing is complete; the library can then close any open
+.B exec_attr
+file, deallocate any internal storage, and so forth.
 .sp
 .LP
 The
@@ -153,7 +163,9 @@ assigned to the user specified by
 as described in
 .BR passwd (4).
 Profiles for the user are obtained from the list of default
-profiles in \fB/etc/security/policy.conf\fR (see
+profiles in
+.B /etc/security/policy.conf
+(see
 .BR policy.conf (4))
 and
 the
@@ -164,13 +176,17 @@ which the corresponding profile entry is found in the
 database are returned.
 .sp
 .LP
-The \fBgetexecprof()\fR function returns a linked list of entries that
+The
+.B getexecprof()
+function returns a linked list of entries that
 match the
 .I type
 and
 .I id
 arguments and have the profile specified
-by the \fIprofname\fR argument. Only entries in the name service scope for
+by the
+.I profname
+argument. Only entries in the name service scope for
 which the corresponding profile entry is found in the \fBprof_attr\fR
 database are returned.
 .sp
@@ -189,7 +205,8 @@ matching all of the arguments are returned. Wildcard matching applies if
 there is no exact match for an
 .BR ID .
 Any argument can be assigned the
-\fINULL\fR value to indicate that it is not used as part of the matching
+.I NULL
+value to indicate that it is not used as part of the matching
 criteria. The\fR  search_flag controls whether the function returns the
 first match
 .RB ( GET_ONE ),
@@ -210,7 +227,10 @@ a linked list of all entries that meet the search criteria. See
 Once a list of entries is returned by
 .B getexecuser()
 or
-\fBgetexecprof()\fR, the convenience function \fBmatch_execattr()\fR can be
+.BR getexecprof() ,
+the convenience function
+.B match_execattr()
+can be
 used to identify an individual entry. It returns a pointer to the individual
 element with the same profile name (
 .IR profname ),
@@ -232,7 +252,8 @@ Those functions returning data only return data related to the active
 policy. The
 .B getexecattr()
 function returns a pointer to a
-\fBexecattr_t\fR if it successfully enumerates an entry; otherwise it
+.B execattr_t
+if it successfully enumerates an entry; otherwise it
 returns
 .IR NULL ,
 indicating the end of the enumeration.
@@ -244,7 +265,9 @@ The
 .BR getexecuser() ,
 and \fBgetexecprof()\fR
 functions all allocate memory for the pointers they return. This memory
-should be deallocated with the \fBfree_execattr()\fR call. The
+should be deallocated with the
+.B free_execattr()
+call. The
 .BR match_execattr() (
 function does not allocate any memory. Therefore,
 pointers returned by this function should not be deallocated.
@@ -256,7 +279,10 @@ structure by
 calling the \fBkva_match\fR(3SECDB) function.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Find all profiles that have the  \fBping\fR command.
+.B Example 1
+Find all profiles that have the
+.B ping
+command.
 .sp
 .in +2
 .nf
@@ -268,7 +294,10 @@ if ((execprof=getexecprof(NULL, KV_COMMAND, "/usr/sbin/ping",
 .in -2
 
 .LP
-\fBExample 2\fR Find the entry for the \fBping\fR command in the Network
+.B Example 2
+Find the entry for the
+.B ping
+command in the Network
 Administration Profile.
 .sp
 .in +2
@@ -281,7 +310,8 @@ if ((execprof=getexecprof("Network Administration", KV_COMMAND,
 .in -2
 
 .LP
-\fBExample 3\fR Tell everything that can be done in the Filesystem Security
+.B Example 3
+Tell everything that can be done in the Filesystem Security
 profile.
 .sp
 .in +2
@@ -294,7 +324,10 @@ if ((execprof=getexecprof("Filesystem Security", KV_NULL, NULL,
 .in -2
 
 .LP
-\fBExample 4\fR Tell if the \fBtar\fR utility is in a profile assigned to
+.B Example 4
+Tell if the
+.B tar
+utility is in a profile assigned to
 user wetmore. If there is no exact profile entry, the wildcard (*), if
 defined, is returned.
 .sp
@@ -320,7 +353,7 @@ if ((execprof=getexecuser("wetmore", KV_COMMAND, "/usr/bin/tar",
 .ne 2
 .mk
 .na
-\fB/etc/nsswitch.conf\fR
+.B /etc/nsswitch.conf
 .ad
 .RS 29n
 .rt
@@ -353,7 +386,7 @@ execution profiles
 .ne 2
 .mk
 .na
-\fB/etc/security/policy.conf\fR
+.B /etc/security/policy.conf
 .ad
 .RS 29n
 .rt

@@ -41,7 +41,8 @@ within the class. The dispatcher always selects for execution the process
 with the highest global scheduling priority in the system. The priority
 queues associated with a given class are viewed by that class as a
 contiguous set of priority levels numbered from 0 (lowest priority) to
-\fIn\fR (highest priority\(ema configuration-dependent value). The set of
+.I n
+(highest priority\(ema configuration-dependent value). The set of
 global scheduling priorities that the queues for a given class are mapped
 into might not start at zero and might not be contiguous, depending on the
 configuration.
@@ -60,19 +61,22 @@ are specified by the
 .sp
 .LP
 A parameter structure consists of the following members. These are also
-described in the \fB/usr/include/sys/fx.h\fR header.
+described in the
+.B /usr/include/sys/fx.h
+header.
 .sp
 .ne 2
 .mk
 .na
-\fBfx_globpri\fR
+.B fx_globpri
 .ad
 .RS 14n
 .rt
 The global scheduling priority associated with this priority level. The
 mapping between fixed-priority priority levels and global scheduling
 priorities is determined at boot time by the system configuration.
-\fBfx_globpri\fR can not be changed with
+.B fx_globpri
+can not be changed with
 .BR dispadmin (1M).
 .RE
 
@@ -80,7 +84,7 @@ priorities is determined at boot time by the system configuration.
 .ne 2
 .mk
 .na
-\fBfx_quantum\fR
+.B fx_quantum
 .ad
 .RS 14n
 .rt
@@ -117,7 +121,9 @@ by using
 .SS "fx_dptbl Loadable Module"
 .sp
 .LP
-The \fBfx_dptbl\fR can be reconfigured with a loadable module that contains
+The
+.B fx_dptbl
+can be reconfigured with a loadable module that contains
 a new fixed priority dispatch table. The module containing the dispatch
 table is separate from the
 .B FX
@@ -133,8 +139,11 @@ Module below.
 The \fBfx_quantum\fR values in the \fBfx_dptbl\fR can be examined and
 modified on a running system using the
 .BR dispadmin "(1M) command. Invoking"
-\fBdispadmin\fR for the fixed-priority class allows the administrator to
-retrieve the current \fBfx_dptbl\fR configuration from the kernel's in-core
+.B dispadmin
+for the fixed-priority class allows the administrator to
+retrieve the current
+.B fx_dptbl
+configuration from the kernel's in-core
 table or overwrite the in-core table with values from a configuration file.
 The configuration file used for input to
 .B dispadmin
@@ -183,7 +192,8 @@ values for each of the fixed-priority priority levels. The first line
 specifies the quantum for fixed-priority level 0, the second line specifies
 the quantum for fixed-priority level 1, and so forth. There must be exactly
 one line for each configured fixed priority priority level. Each
-\fBfx_quantum\fR entry must be a positive integer specifying the desired
+.B fx_quantum
+entry must be a positive integer specifying the desired
 time quantum in the resolution given by
 .IR res .
 .RE
@@ -202,7 +212,8 @@ existing module before using the following procedure.
 .TP
 1.
 Place the dispatch table code shown below in a file called
-\fBfx_dptbl.c\fR. See EXAMPLES, below, for an example of this file.
+.BR fx_dptbl.c .
+See EXAMPLES, below, for an example of this file.
 .RE
 .RS +4
 .TP
@@ -243,7 +254,8 @@ file to reflect the changes to the
 sizes of the tables. See
 .BR system (4).
 The variables affected is
-\fBfx_maxupri\fR. The syntax for setting this is as follows:
+.BR fx_maxupri .
+The syntax for setting this is as follows:
 .sp
 .in +2
 .nf
@@ -264,7 +276,8 @@ Exercise great care in using the preceding method to replace the dispatch
 table. A mistake can result in panics, thus making the system unusable.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Configuration File Excerpt
+.B Example 1
+Configuration File Excerpt
 .sp
 .LP
 The following excerpt from a
@@ -275,7 +288,8 @@ there is a comment indicating the corresponding priority level. These level
 numbers indicate priority within the fixed priority class; the mapping
 between these fixed-priority priorities and the corresponding global
 scheduling priorities is determined by the configuration specified in the
-\fBFX_DPTBL\fR loadable module. The level numbers are strictly for the
+.B FX_DPTBL
+loadable module. The level numbers are strictly for the
 convenience of the administrator reading the file and, as with any comment,
 they are ignored by
 .BR dispadmin .
@@ -317,11 +331,14 @@ RES=1000
 .sp
 
 .LP
-\fBExample 2 fx_dptbl.c\fR File Used for Building the New
-\fBfx_dptbl\fR
+.B Example 2 fx_dptbl.c
+File Used for Building the New
+.B fx_dptbl
 .sp
 .LP
-The following is an example of a \fBfx_dptbl.c\fR file used for building
+The following is an example of a
+.B fx_dptbl.c
+file used for building
 the new
 .BR fx_dptbl .
 
@@ -475,14 +492,22 @@ fx_getmaxumdpri()
 .BR system (4)
 .sp
 .LP
-\fISystem Administration Guide, Volume 1, System Interface Guide\fR
+.I "System Administration Guide, Volume 1, System Interface Guide
 .SH NOTES
 .sp
 .LP
 In order to improve performance under heavy system load, both the
-\fBnfsd\fR daemon and the \fBlockd\fR daemon utilize the maximum priority in
+.B nfsd
+daemon and the
+.B lockd
+daemon utilize the maximum priority in
 the
 .B FX
-class. Unusual \fBfx_dptbl\fR configurations may have
-significant negative impact on the performance of the \fBnfsd\fR and
-\fBlockd\fR daemons.
+class. Unusual
+.B fx_dptbl
+configurations may have
+significant negative impact on the performance of the
+.B nfsd
+and
+.B lockd
+daemons.

@@ -330,13 +330,23 @@ void handler(int ex, fex_info_t *info);
 On entry,
 .I ex
 is the value (of the first twelve listed above)
-corresponding to the exception that occurred, \fBinfo->op\fR indicates the
+corresponding to the exception that occurred,
+.B info->op
+indicates the
 operation that caused the exception, \fBinfo->op1\fR and \fBinfo->op2\fR
-contain the values of the operands, \fBinfo->res\fR contains the default
-untrapped result value, and \fBinfo->flags\fR reflects the exception flags
+contain the values of the operands,
+.B info->res
+contains the default
+untrapped result value, and
+.B info->flags
+reflects the exception flags
 that the operation would have set had it not been trapped.  If the handler
-returns, the value contained in \fBinfo->res\fR on exit is substituted for
-the result of the operation, the flags indicated by \fBinfo->flags\fR are
+returns, the value contained in
+.B info->res
+on exit is substituted for
+the result of the operation, the flags indicated by
+.B info->flags
+are
 set, and execution resumes at the point where the exception occurred.  The
 handler might modify \fBinfo->res\fR and \fBinfo->flags\fR to supply any
 desired result value and flags.  Alternatively, if the exception is
@@ -347,8 +357,11 @@ info->res.type = fex_nodata;
 .sp
 .LP
 which causes the exponent-adjusted result specified by IEEE 754 to be
-substituted. If the handler does not modify \fBinfo->res\fR or
-\fBinfo->flags\fR, the effect is the same as if the exception had not been
+substituted. If the handler does not modify
+.B info->res
+or
+.BR info->flags ,
+the effect is the same as if the exception had not been
 trapped.
 .sp
 .LP
@@ -357,9 +370,14 @@ available to a
 .B FEX_CUSTOM
 handler, in some cases, one or both operands
 may not be.  In these cases, the handler may be invoked with
-\fBinfo->op1.type == fex_nodata\fR or \fBinfo->op2.type == fex_nodata\fR to
+.B info->op1.type == fex_nodata
+or
+.B "info->op2.type == fex_nodata"
+to
 indicate that the respective data structures do not contain valid data.
-(For example, \fBinfo->op2.type == fex_nodata\fR if the exceptional
+(For example,
+.B "info->op2.type == fex_nodata"
+if the exceptional
 operation is a unary operation.)  Before accessing the operand values, a
 custom handler should always examine the
 .B type
@@ -368,24 +386,32 @@ data structures to ensure that they contain valid data in the appropriate
 format.
 .sp
 .LP
-The \fBfex_get_handling()\fR function returns the current handling mode for
+The
+.B fex_get_handling()
+function returns the current handling mode for
 the exception specified by
 .IR ex ,
 which must be one of the first twelve
 exceptions listed above.
 .sp
 .LP
-The \fBfex_getexcepthandler()\fR function saves the current handling modes
+The
+.B fex_getexcepthandler()
+function saves the current handling modes
 and associated data for the exceptions specified by
 .I ex
 in the data
 structure pointed to by
 .IR buf .
-The type \fBfex_handler_t\fR is defined
+The type
+.B fex_handler_t
+is defined
 in <\fBfenv.h\fR>.
 .sp
 .LP
-The \fBfex_setexcepthandler()\fR function restores the handling modes and
+The
+.B fex_setexcepthandler()
+function restores the handling modes and
 associated data for the exceptions specified by
 .I ex
 from the data
@@ -399,7 +425,9 @@ the indicated modes is undefined.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBfex_set_handling()\fR function returns a non-zero value if the
+The
+.B fex_set_handling()
+function returns a non-zero value if the
 requested exception handling mode is established. Otherwise, it returns 0.
 .SH EXAMPLES
 .sp
@@ -471,7 +499,9 @@ Evaluating f(x) = (k*x)/sin(x)
 .LP
 When
 .I x
-= 0, \fIf(x)\fR is computed as 0/0 and an invalid operation
+= 0,
+.I f(x)
+is computed as 0/0 and an invalid operation
 exception occurs.  In this example, the value 2.0 is substituted for the
 result.
 .SH ATTRIBUTES
@@ -497,7 +527,9 @@ MT-LevelMT-Safe (see Notes)
 .SH SEE ALSO
 .sp
 .LP
-\fBsigfpe\fR(3C), \fBfeclearexcept\fR(3M), \fBfegetenv\fR(3M),
+.BR sigfpe (3C),
+.BR feclearexcept (3M),
+.BR fegetenv (3M),
 .BR fex_set_log (3M),
 .BR attributes (5)
 .sp
@@ -511,7 +543,8 @@ handling modes only for the calling thread.
 .sp
 .LP
 The functions described on this page automatically install and deinstall
-\fBSIGFPE\fR handlers and set and clear the trap enable mode bits in the
+.B SIGFPE
+handlers and set and clear the trap enable mode bits in the
 floating point status register as needed.  If a program uses these functions
 and attempts to install a
 .B SIGFPE
@@ -527,7 +560,8 @@ is invoked.  When the
 signal is blocked, as it is when such a
 handler is invoked, the floating point environment, exception flags, and
 retrospective diagnostic functions described in \fBfeclearexcept\fR(3M),
-\fBfegetenv\fR(3M), and \fBfex_set_log\fR(3M) do not re-enable traps.  Thus,
+.BR fegetenv (3M),
+and \fBfex_set_log\fR(3M) do not re-enable traps.  Thus,
 the handler itself always runs in
 .B FEX_NONSTOP
 mode with logging of

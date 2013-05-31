@@ -86,7 +86,10 @@ that specific
 By default, the system binds the set to the current
 .B LWP
 only. If the
-\fBCPC_BIND_LWP_INHERIT\fR flag is present in the \fIflags\fR argument,
+.B CPC_BIND_LWP_INHERIT
+flag is present in the
+.I flags
+argument,
 however, any subsequent \fBLWP\fRs created by the current
 .B LWP
 will
@@ -119,7 +122,8 @@ This
 initialization condition can be detected using
 .BR cpc_set_sample (3CPC)
 and looking at the counter value for any requests with
-\fBCPC_OVF_NOTIFY_EMT\fR set. The value of any such counters will be
+.B CPC_OVF_NOTIFY_EMT
+set. The value of any such counters will be
 .BR UINT64_MAX .
 .sp
 .LP
@@ -141,7 +145,9 @@ associated with the specified
 and the system virtualizes the
 hardware counters to that specific
 .BR LWP .
-The \fIflags\fR argument is
+The
+.I flags
+argument is
 reserved for future use and must always be
 .BR 0 .
 .sp
@@ -157,10 +163,12 @@ As long as any application has bound a set to a CPU, per-\fBLWP\fR counters
 are unavailable and any attempt to use either
 .B cpc_bind_curlwp()
 or
-\fBcpc_bind_pctx()\fR returns
+.B cpc_bind_pctx()
+returns
 .BR EAGAIN .
 The first invocation of
-\fBcpc_bind_cpu()\fR invalidates all currently bound per-\fBLWP\fR counter
+.B cpc_bind_cpu()
+invalidates all currently bound per-\fBLWP\fR counter
 sets, and any attempt to sample an invalidated set returns
 .BR EAGAIN .
 To
@@ -173,7 +181,8 @@ The application must not change its processor
 binding until after it has unbound the set with
 .BR cpc_unbind() .
 The
-\fIflags\fR argument is reserved for future use and must always be
+.I flags
+argument is reserved for future use and must always be
 .BR 0 .
 .sp
 .LP
@@ -182,12 +191,14 @@ The
 function updates the preset and current
 value stored in the indexed request within the currently bound set, thereby
 changing the starting value for the specified request for the calling
-\fBLWP\fR only, which takes effect at the next call to
+.B LWP
+only, which takes effect at the next call to
 .BR cpc_set_restart() .
 .sp
 .LP
 When a performance counter counting on behalf of a request with the
-\fBCPC_OVF_NOTIFY_EMT\fR flag set overflows, the performance counters are
+.B CPC_OVF_NOTIFY_EMT
+flag set overflows, the performance counters are
 frozen and the
 .B LWP
 to which the set is bound receives a
@@ -195,7 +206,8 @@ to which the set is bound receives a
 signal. The
 .B cpc_set_restart()
 function can be called from a
-\fBSIGEMT\fR signal handler function to quickly restart the hardware
+.B SIGEMT
+signal handler function to quickly restart the hardware
 counters. Counting begins from each request's original preset (see
 .BR cpc_set_add_request (3CPC)),
 or from the preset specified in a prior
@@ -329,7 +341,8 @@ For
 and
 .BR cpc_set_restart() ,
 the calling
-\fBLWP\fR does not have a bound set.
+.B LWP
+does not have a bound set.
 .RE
 
 .sp
@@ -356,7 +369,8 @@ the specified processor is not online.
 The
 .B cpc_bind_curlwp()
 function was called with the
-\fBCPC_OVF_NOTIFY_EMT\fR flag, but the underlying processor is not capable
+.B CPC_OVF_NOTIFY_EMT
+flag, but the underlying processor is not capable
 of detecting counter overflow.
 .RE
 
@@ -378,7 +392,8 @@ does not exist.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Use hardware performance counters to measure events in a
+.B Example 1
+Use hardware performance counters to measure events in a
 process.
 .sp
 .LP
@@ -399,7 +414,8 @@ utilities), other events can be counted. The
 .B error()
 routine is
 assumed to be a user-provided routine analogous to the familiar
-\fBprintf\fR(3C) function from the C library that also performs an
+.BR printf (3C)
+function from the C library that also performs an
 .BR exit (2)
 after printing the message.
 
@@ -482,7 +498,8 @@ return (0);
 .in -2
 
 .LP
-\fBExample 2\fR Write a signal handler to catch overflow signals.
+.B Example 2
+Write a signal handler to catch overflow signals.
 .sp
 .LP
 The following example builds on Example 1 and demonstrates how to write the
@@ -615,7 +632,8 @@ MT-LevelSafe
 When a set is bound, the system assigns a physical hardware counter to
 count on behalf of each request in the set. If such an assignment is not
 possible for all requests in the set, the bind function returns -1 and sets
-\fBerrno\fR to
+.B errno
+to
 .BR EINVAL .
 The assignment of requests to counters depends
 on the capabilities of the available counters. Some processors (such as
@@ -679,7 +697,8 @@ flag set. If the capability is not present on the processor, the system
 sends a
 .B SIGEMT
 signal to the process if any of its requests have the
-\fBCPC_OVF_NOTIFY_EMT\fR flag set and any counter in its set overflows.
+.B CPC_OVF_NOTIFY_EMT
+flag set and any counter in its set overflows.
 .sp
 .LP
 Different processors have different counter ranges available, though all
@@ -712,7 +731,8 @@ Pentium 4 processors with HyperThreading Technology have only one set of
 hardware counters per physical processor. To use
 .B cpc_bind_curlwp()
 or
-\fBcpc_bind_pctx()\fR to measure per-\fBLWP\fR events on a system with
+.B cpc_bind_pctx()
+to measure per-\fBLWP\fR events on a system with
 Pentium 4 HT processors, a system administrator must first take processors
 in the system offline until each physical processor has only one hardware
 thread online (See the
@@ -760,5 +780,6 @@ measure this event. To measure
 .I branch_retired
 events simultaneously on
 more than one counter, use counters such that one counter uses
-\fBCRU_ESCR2\fR and the other counter uses CRU_ESCR3. See the processor
+.B CRU_ESCR2
+and the other counter uses CRU_ESCR3. See the processor
 documentation for details.

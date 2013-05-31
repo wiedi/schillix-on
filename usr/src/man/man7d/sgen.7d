@@ -53,7 +53,8 @@ processor devices.
 .LP
 Typically, drivers which export the \fBuscsi\fR(7I) interface
 unconditionally require that the user present superuser credentials. The
-\fBsgen\fR driver does not, and relies on the filesystem permissions on its
+.B sgen
+driver does not, and relies on the filesystem permissions on its
 device special file to govern who may access that device. By default, access
 is restricted and device nodes created by the
 .B sgen
@@ -88,7 +89,8 @@ instruct a target device to gather data from another target device on the
 same bus. It may also be possible for malicious users to install new
 firmware onto a device to which they are granted access. In environments
 where security is a concern but user access to devices controlled by the
-\fBsgen\fR driver is nontheless desired, it is recommended that the devices
+.B sgen
+driver is nontheless desired, it is recommended that the devices
 be separated onto a dedicated
 .B SCSI
 bus to mitigate the risk of data
@@ -98,39 +100,53 @@ corruption and security violations.
 .LP
 The
 .B sgen
-driver is configurable via the \fBsgen.conf\fR file. In
+driver is configurable via the
+.B sgen.conf
+file. In
 addition to standard
 .B SCSI
 device configuration directives (see
 .BR scsi (4)),
 administrators can set several additional properties for the
-\fBsgen\fR driver.
+.B sgen
+driver.
 .sp
 .LP
 By default, the
 .B sgen
 driver will not claim or bind to any devices on
 the system. To do so, it must be configured by the administrator using the
-\fBinquiry-config-list\fR and/or the \fBdevice-type-config-list\fR
+.B inquiry-config-list
+and/or the \fBdevice-type-config-list\fR
 properties.
 .sp
 .LP
 As with other
 .B SCSI
-drivers, the \fBsgen.conf\fR configuration file
+drivers, the
+.B sgen.conf
+configuration file
 enumerates the targets
 .B sgen
 should use. See
 .BR scsi (4)
 for more
-details. For each target enumerated in the \fBsgen.conf\fR file,  the
-\fBsgen\fR driver sends a \fBSCSI INQUIRY\fR command to gather information
+details. For each target enumerated in the
+.B sgen.conf
+file,  the
+.B sgen
+driver sends a
+.B "SCSI INQUIRY"
+command to gather information
 about the device present at that target. The \fBinquiry-config-list\fR
 property specifies that the
 .B sgen
 driver should bind to a particular
 device returning a particular set of inquiry data. The
-\fBdevice-type-config-list\fR specifies that the \fBsgen\fR driver should
+.B device-type-config-list
+specifies that the
+.B sgen
+driver should
 bind to every device that is of a particular
 .B SCSI
 device type. When
@@ -156,12 +172,16 @@ for more information about how these files are named.
 .sp
 .LP
 It is important for the administrator to ensure that devices claimed by the
-\fBsgen\fR driver do not conflict with existing target drivers on the
+.B sgen
+driver do not conflict with existing target drivers on the
 system. For example, if the
 .B sgen
 driver is configured to bind to a
-direct access device, the standard \fBsd.conf\fR file will usually cause
-\fBsd\fR to claim the device as well. This can cause unpredictable results.
+direct access device, the standard
+.B sd.conf
+file will usually cause
+.B sd
+to claim the device as well. This can cause unpredictable results.
 In general, the \fBuscsi\fR(7I) interface exported by
 .BR sd (7D)
 or
@@ -172,15 +192,22 @@ devices.
 .LP
 The
 .B sgen
-driver is disabled by default. The \fBsgen.conf\fR file is
+driver is disabled by default. The
+.B sgen.conf
+file is
 shipped with all of the '\fBname="sgen" class="scsi" target=.\|.\|.\fR' entries
 commented out to shorten boot time and to prevent the driver from consuming
 kernel resources. To use the
 .B sgen
 driver effectively on desktop
 systems, simply uncomment all of the name="\fBsgen\fR" lines in
-\fBsgen.conf\fR file. On larger systems with many \fBSCSI\fR controllers,
-carefully edit the \fBsgen.conf\fR file so that
+.B sgen.conf
+file. On larger systems with many
+.B SCSI
+controllers,
+carefully edit the
+.B sgen.conf
+file so that
 .B sgen
 binds only where
 needed. Refer to
@@ -191,11 +218,13 @@ for further details.
 .ne 2
 .mk
 .na
-\fBinquiry-config-list\fR
+.B inquiry-config-list
 .ad
 .RS 23n
 .rt
-The \fBinquiry-config-list\fR property is a list of pairs of strings that
+The
+.B inquiry-config-list
+property is a list of pairs of strings that
 enumerates a list of specific devices to which the
 .B sgen
 driver will
@@ -238,7 +267,8 @@ is matched against the product ID reported by the device in a case-insensitive m
 .sp
 .LP
 For example, to match some fictitious devices from ACME corp, the
-\fBinquiry-config-list\fR can be configured as follows:
+.B inquiry-config-list
+can be configured as follows:
 .sp
 
 .sp
@@ -255,7 +285,8 @@ lw(2.01i) lw(1.06i) lw(2.43i)
 .sp
 .LP
 To match "UltraToast 4000" devices, regardless of vendor,
-\fBinquiry-config-list\fR is modified as follows:
+.B inquiry-config-list
+is modified as follows:
 .sp
 
 .sp
@@ -299,11 +330,13 @@ in the product ID to be significant.
 .ne 2
 .mk
 .na
-\fBdevice-type-config-list\fR
+.B device-type-config-list
 .ad
 .RS 27n
 .rt
-The \fBdevice-type-config-list\fR property is a list of strings that
+The
+.B device-type-config-list
+property is a list of strings that
 enumerate a list of device types to which the
 .B sgen
 driver will bind.
@@ -422,13 +455,14 @@ the contents of each CDB passed to the driver.
 .LP
 In ascending order, each level includes the diagnostics that the previous
 level reports. See the IOCTLS section for more infomation on the
-\fBSGEN_IOC_DIAG\fR ioctl.
+.B SGEN_IOC_DIAG
+ioctl.
 .SH FILES
 .sp
 .ne 2
 .mk
 .na
-\fBsgen.conf\fR
+.B sgen.conf
 .ad
 .RS 30n
 .rt
@@ -463,7 +497,8 @@ and the controller numbers correspond to the same controller numbers which
 are used for naming disks. For example,
 .B /dev/dsk/c0t0d0s0
 and
-\fB/dev/scsi/scanner/c0t5d0\fR are both connected to controller
+.B /dev/scsi/scanner/c0t5d0
+are both connected to controller
 .BR c0 .
 .RE
 
@@ -529,7 +564,8 @@ or the device is       currently open and O_EXCL is being requested.
 .RS 10n
 .rt
 .RB "During opening, the device did not respond to a" " TEST UNIT READY"
-\fBSCSI\fR command.
+.B SCSI
+command.
 .RE
 
 .sp
@@ -567,12 +603,14 @@ corresponds. In this example, the scanner is at target 4.
 If it is expected that the scanner will be moved from target to target over
 time, or that more scanners might be added in the future, it is recommended
 that all of the \fBname="sgen".\|.\|.\fR lines be uncommented, so that
-\fBsgen\fR checks all of the targets on the bus.
+.B sgen
+checks all of the targets on the bus.
 .sp
 .LP
 For large systems where boot times are a concern, it is recommended that
 the \fBparent=""\fR property be used to specify which \fBSCSI\fR bus
-\fBsgen\fR should examine.
+.B sgen
+should examine.
 .SH SEE ALSO
 .sp
 .LP
@@ -586,7 +624,7 @@ the \fBparent=""\fR property be used to specify which \fBSCSI\fR bus
 .I Writing Device Drivers
 .sp
 .LP
-\fIANSI Small Computer System Interface-2 (SCSI-2)\fR
+.I "ANSI Small Computer System Interface-2 (SCSI-2)
 .sp
 .LP
-\fISCSI-3 SPC Draft Standard, Rev. 11a\fR
+.I "SCSI-3 SPC Draft Standard, Rev. 11a

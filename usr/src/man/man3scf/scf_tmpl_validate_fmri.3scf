@@ -103,7 +103,8 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.
 .LP
 The template validation functions offer a way to validate the configuration
 data of an service instance against the appropriate template data. The
-\fBscf_tmpl_validate_fmri()\fR function returns the full set of errors for the
+.B scf_tmpl_validate_fmri()
+function returns the full set of errors for the
 specified instance, and those errors can be printed or explored directly.
 .sp
 .LP
@@ -113,45 +114,66 @@ specifying a valid snapshot name rather than
 .I NULL
 for the
 .IR snapshot
-argument. If \fIflags\fR includes
+argument. If
+.I flags
+includes
 .BR SCF_TMPL_VALIDATE_FLAG_CURRENT ,
 the
-\fIsnapshot\fR argument is ignored and the current configuration is used.
+.I snapshot
+argument is ignored and the current configuration is used.
 .sp
 .LP
 By default, these functions also explore template data defined by the service
 or instance itself, the service's restarter, and global template data. See
-\fBsmf_template\fR(5) for more information about this composition.
+.BR smf_template (5)
+for more information about this composition.
 .sp
 .LP
 An instance FMRI is required, and FMRIs that specify other entities (for
 example, services) are explicitly rejected.
 .sp
 .LP
-The \fBscf_tmpl_validate_fmri()\fR function validates an instance FMRI against
+The
+.B scf_tmpl_validate_fmri()
+function validates an instance FMRI against
 the template data in the repository. As described above, when the
-\fIsnapshot\fR argument is
+.I snapshot
+argument is
 .IR NULL ,
 the default running snapshot is used. If
-\fBscf_tmpl_errors_t **\fR is non-null, the structure is allocated and returned
+.B scf_tmpl_errors_t **
+is non-null, the structure is allocated and returned
 to the caller for further perusal or printing of the errors.
 .sp
 .LP
-The \fBscf_tmpl_errors_destroy()\fR function destroys and frees the
-\fBscf_tmpl_errors_t\fR and all of the \fBscf_tmpl_error_t\fR structures to
+The
+.B scf_tmpl_errors_destroy()
+function destroys and frees the
+.B scf_tmpl_errors_t
+and all of the
+.B scf_tmpl_error_t
+structures to
 which it refers.
 .sp
 .LP
-The \fBscf_tmpl_next_error()\fR function takes a pointer to a
-\fBscf_tmpl_errors_t\fR structure previously returned by
-\fBscf_tmpl_validate_fmri()\fR. On the first call, it returns a pointer to the
-first \fBscf_tmpl_error_t\fR found during validation. On subsequent calls, the
+The
+.B scf_tmpl_next_error()
+function takes a pointer to a
+.B scf_tmpl_errors_t
+structure previously returned by
+.BR scf_tmpl_validate_fmri() .
+On the first call, it returns a pointer to the
+first
+.B scf_tmpl_error_t
+found during validation. On subsequent calls, the
 next error is returned. To resume processing from the first error, the caller
 can use
 .BR scf_tmpl_reset_errors() .
 .sp
 .LP
-The contents of an \fBscf_tmpl_error_t\fR are determined by its type. Types
+The contents of an
+.B scf_tmpl_error_t
+are determined by its type. Types
 added as additional validation checks are introduced. Based on the error type,
 a set of fields can be retrieved from the error.
 .sp
@@ -447,20 +469,28 @@ value
 .LP
 The
 .BR SCF_TERR_PROP_TYPE_MISMATCH ,
-\fBSCF_TERR_VALUE_OUT_OF_RANGE\fR and
-\fBSCF_TERR_INVALID_VALUE\fR types are only set from calls to
+.B SCF_TERR_VALUE_OUT_OF_RANGE
+and
+.B SCF_TERR_INVALID_VALUE
+types are only set from calls to
 .BR scf_tmpl_value_in_constraint (3SCF).
 .sp
 .LP
-The \fBscf_tmpl_error_type()\fR function retrieves the error type.
+The
+.B scf_tmpl_error_type()
+function retrieves the error type.
 .sp
 .LP
-The \fBscf_tmpl_error_source_fmri()\fR function retrieves a string with the
+The
+.B scf_tmpl_error_source_fmri()
+function retrieves a string with the
 FMRI of the source of the template that was violated. This string is freed by
 .BR scf_tmpl_errors_destroy() .
 .sp
 .LP
-The \fBscf_tmpl_error_pg_tmpl()\fR function retrieves strings with the name
+The
+.B scf_tmpl_error_pg_tmpl()
+function retrieves strings with the name
 and type of the property group template that was violated. If the property
 group name or type was implicitly wildcarded (see
 .BR smf_template (5))
@@ -469,12 +499,16 @@ template, this function returns a string containing \fBSCF_TMPL_WILDCARD\fR
 ("*"). These strings are freed by \fBscf_tmpl_errors_destroy()\fR.
 .sp
 .LP
-The \fBscf_tmpl_error_pg()\fR function retrieves strings with the name and
+The
+.B scf_tmpl_error_pg()
+function retrieves strings with the name and
 type of the property group that was violated. These strings are freed by
 .BR scf_tmpl_errors_destroy() .
 .sp
 .LP
-The \fBscf_tmpl_error_prop_tmpl()\fR function retrieves strings with the name
+The
+.B scf_tmpl_error_prop_tmpl()
+function retrieves strings with the name
 and type of the property template that was violated. If the property type was
 implicitly wildcarded (see
 .BR smf_template (5))
@@ -484,12 +518,16 @@ strings are freed by
 .BR scf_tmpl_errors_destroy() .
 .sp
 .LP
-The \fBscf_tmpl_error_prop()\fR function retrieves strings with the name and
+The
+.B scf_tmpl_error_prop()
+function retrieves strings with the name and
 type of the property that was violated. These strings are freed by
 .BR scf_tmpl_errors_destroy() .
 .sp
 .LP
-The \fBscf_tmpl_error_value()\fR function retrieves a string with the value
+The
+.B scf_tmpl_error_value()
+function retrieves a string with the value
 containing the error in
 .IR val .
 This string are freed by
@@ -497,12 +535,15 @@ This string are freed by
 .sp
 .LP
 The \fBscf_tmpl_strerror()\fR function takes an \fBscf_tmpl_error_t\fR
-previously returned by \fBscf_tmpl_next_error()\fR and returns in
+previously returned by
+.B scf_tmpl_next_error()
+and returns in
 .IR s .
 If
 flags includes
 .BR SCF_TMPL_STRERROR_HUMAN ,
-\fIs\fR is a human-readable,
+.I s
+is a human-readable,
 localized description of the error. Otherwise,
 .I s
 is a one-line string
@@ -510,32 +551,43 @@ suitable for logfile output.
 .SH RETURN VALUES
 .sp
 .LP
-The \fBscf_tmpl_validate_fmri()\fR function returns 0 on successful completion
+The
+.B scf_tmpl_validate_fmri()
+function returns 0 on successful completion
 with no validation failures. It returns 1 if there are validation failures. It
 returns -1 if there is an error validating the instance.
 .sp
 .LP
-The \fBscf_tmpl_next_error()\fR function returns a pointer to the next
-\fBscf_tmpl_error_t\fR. When none remain, it returns
+The
+.B scf_tmpl_next_error()
+function returns a pointer to the next
+.BR scf_tmpl_error_t .
+When none remain, it returns
 .IR NULL .
 .sp
 .LP
 The
 .BR scf_tmpl_error_type() ,
 .BR scf_tmpl_error_source_fmri() ,
-\fBscf_tmpl_error_pg_tmpl()\fR, \fBscf_tmpl_error_pg()\fR,
+.BR scf_tmpl_error_pg_tmpl() ,
+.BR scf_tmpl_error_pg() ,
 .BR scf_tmpl_error_prop_tmpl() ,
 .BR scf_tmpl_error_prop() ,
 and
-\fBscf_tmpl_error_value()\fR functions return 0 on success and -1 on failure.
+.B scf_tmpl_error_value()
+functions return 0 on success and -1 on failure.
 .sp
 .LP
-The \fBscf_tmpl_strerror()\fR function returns the number of bytes that would
+The
+.B scf_tmpl_strerror()
+function returns the number of bytes that would
 have been written to s if n had been sufficiently large.
 .SH ERRORS
 .sp
 .LP
-The \fBscf_tmpl_validate_fmri()\fR function will fail if:
+The
+.B scf_tmpl_validate_fmri()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -675,9 +727,14 @@ The template data is invalid.
 The
 .BR scf_tmpl_strerror() ,
 .BR scf_tmpl_error_type() ,
-\fBscf_tmpl_error_source_fmri()\fR, \fBscf_tmpl_error_pg_tmpl()\fR,
-\fBscf_tmpl_error_pg()\fR, \fBscf_tmpl_error_prop_tmpl()\fR,
-\fBscf_tmpl_error_prop()\fR, and \fBscf_tmpl_error_value()\fR functions will
+.BR scf_tmpl_error_source_fmri() ,
+.BR scf_tmpl_error_pg_tmpl() ,
+.BR scf_tmpl_error_pg() ,
+.BR scf_tmpl_error_prop_tmpl() ,
+.BR scf_tmpl_error_prop() ,
+and
+.B scf_tmpl_error_value()
+functions will
 fail if:
 .sp
 .ne 2
@@ -687,7 +744,9 @@ fail if:
 .ad
 .RS 30n
 .rt
-The \fBscf_tmpl_errors_t\fR argument is invalid.
+The
+.B scf_tmpl_errors_t
+argument is invalid.
 .RE
 
 .sp
@@ -695,11 +754,13 @@ The \fBscf_tmpl_errors_t\fR argument is invalid.
 The
 .BR scf_tmpl_error_type() ,
 .BR scf_tmpl_error_source_fmri() ,
-\fBscf_tmpl_error_pg_tmpl()\fR, \fBscf_tmpl_error_pg()\fR,
+.BR scf_tmpl_error_pg_tmpl() ,
+.BR scf_tmpl_error_pg() ,
 .BR scf_tmpl_error_prop_tmpl() ,
 .BR scf_tmpl_error_prop() ,
 and
-\fBscf_tmpl_error_value()\fR functions will fail if:
+.B scf_tmpl_error_value()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -708,7 +769,9 @@ and
 .ad
 .RS 23n
 .rt
-The data requested is not available for the \fBscf_tmpl_error_t\fR argument
+The data requested is not available for the
+.B scf_tmpl_error_t
+argument
 supplied.
 .RE
 
@@ -736,6 +799,7 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBsvc.configd\fR(1M), \fBscf_tmpl_value_in_constraint\fR(3SCF),
+.BR svc.configd (1M),
+.BR scf_tmpl_value_in_constraint (3SCF),
 .BR attributes (5),
 .BR smf_template (5)

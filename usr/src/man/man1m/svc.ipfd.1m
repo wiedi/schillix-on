@@ -22,7 +22,9 @@ svc.ipfd \- IP Filter firewall monitoring daemon
 .SH DESCRIPTION
 .sp
 .LP
-The \fBsvc.ipfd\fR daemon monitors actions on services that use firewall
+The
+.B svc.ipfd
+daemon monitors actions on services that use firewall
 configuration and initiates update services' IP Filter configuration. The
 daemon allows the system to react to changes in system's firewall
 configuration in an incremental fashion, at a per-service level.
@@ -30,15 +32,21 @@ configuration in an incremental fashion, at a per-service level.
 .LP
 A service's firewall policy is activated when it is enabled, deactivated
 when it is disabled, and updated when its configuration property group is
-modified. \fBsvc.ipfd\fR monitors the services management facility (SMF)
+modified.
+.B svc.ipfd
+monitors the services management facility (SMF)
 repository for these actions and invokes the IP Filter rule-generation
 process to carry out the service's firewall policy.
 .sp
 .LP
-This daemon is started by the \fBnetwork/ipfilter\fR service either through
+This daemon is started by the
+.B network/ipfilter
+service either through
 the
 .B start
-or \fBrefresh\fR method. Thus, the daemon inherits the
+or
+.B refresh
+method. Thus, the daemon inherits the
 environment variables and credentials from the method and runs as root with
 all zone privileges.
 .SS "Firewall Static Configuration"
@@ -46,7 +54,8 @@ all zone privileges.
 .LP
 A static definition describes a service's network resource configuration
 that is used to generate service-specific IPF rules. The per-service
-\fBfirewall_context\fR property group contains a service's static
+.B firewall_context
+property group contains a service's static
 definition, similar to the
 .B inetd
 property group in
@@ -57,19 +66,20 @@ services. This property group supports:
 .ne 2
 .mk
 .na
-\fBfirewall_context/name\fR
+.B firewall_context/name
 .ad
 .sp .6
 .RS 4n
 For non-\fBinetd\fR services. The IANA name or RPC name, equivalent to the
-\fBinetd/name\fR property.
+.B inetd/name
+property.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBfirewall_context/isrpc\fR
+.B firewall_context/isrpc
 .ad
 .sp .6
 .RS 4n
@@ -79,7 +89,9 @@ value
 indicates an RPC service, equivalent to the
 .B inetd/isrpc
 property. For
-RPC services, the value of \fBfirewall_context/name\fR is not an IANA name
+RPC services, the value of
+.B firewall_context/name
+is not an IANA name
 but is either an RPC program number or name. See
 .BR rpc (4).
 .RE
@@ -95,7 +107,7 @@ mechanism to allow such custom rule generation:
 .ne 2
 .mk
 .na
-\fBfirewall_context/ipf_method\fR
+.B firewall_context/ipf_method
 .ad
 .sp .6
 .RS 4n
@@ -107,17 +119,25 @@ own rules.
 
 .sp
 .LP
-A service's \fBipf_method\fR specifies a command that takes an additional
+A service's
+.B ipf_method
+specifies a command that takes an additional
 argument, its own fault management resource identifier (FMRI), and generates
 the service's firewall rules and outputs those rules to stdout. To generate
-rules for a service with the \fBipf_method\fR property, the framework execs
+rules for a service with the
+.B ipf_method
+property, the framework execs
 the command specified in
 .BR ipf_method ,
 passing the service FMRI as the
 additional argument, and stores the rules for that service by redirecting
 the command output, the rules, to the service's rule file. Because an
-\fBipf_method\fR is \fBexec\fR'ed from the context of either the
-\fBnetwork/ipfilter start\fR or \fBrefresh\fR method process, it
+.B ipf_method
+is \fBexec\fR'ed from the context of either the
+.B network/ipfilter start
+or
+.B refresh
+method process, it
 inherits the execution context and runs as root.
 .sp
 .LP
@@ -130,13 +150,18 @@ upon installation of an updated service definition.
 A per-service property group,
 .BR firewall_config ,
 stores the services'
-firewall policy configuration. Because \fBnetwork/ipfilter:default\fR is
+firewall policy configuration. Because
+.B network/ipfilter:default
+is
 responsible for two firewall policies, the Global Default and Global
 Override system-wide policies (as explained in
 .BR ipfilter (5)),
 it has
-two property groups, \fBfirewall_config_default\fR and
-\fBfirewall_config_override\fR, to store the respective system-wide
+two property groups,
+.B firewall_config_default
+and
+.BR firewall_config_override ,
+to store the respective system-wide
 policies.
 .sp
 .LP
@@ -157,7 +182,8 @@ has the following modes:
 .ne 2
 .mk
 .na
-\fBnone\fR policy mode\fR
+.B none
+policy mode\fR
 .ad
 .sp .6
 .RS 4n
@@ -170,7 +196,8 @@ service.
 .ne 2
 .mk
 .na
-\fBdeny\fR policy mode\fR
+.B deny
+policy mode\fR
 .ad
 .sp .6
 .RS 4n
@@ -186,7 +213,8 @@ property.
 .ne 2
 .mk
 .na
-\fBallow\fR policy mode\fR
+.B allow
+policy mode\fR
 .ad
 .sp .6
 .RS 4n
@@ -238,7 +266,10 @@ interface:      if:\fIinterface_name\fR       "if:e1000g0"
 .sp .6
 .RS 4n
 A multi-value property listing network entities to be excluded from the
-\fBapply_to\fR list. For example, when \fBdeny\fR policy is applied to a
+.B apply_to
+list. For example, when
+.B deny
+policy is applied to a
 subnet, exceptions can be made to some hosts in that subnet by specifying
 them in the
 .B exceptions
@@ -255,14 +286,15 @@ For individual network services only:
 .ne 2
 .mk
 .na
-\fBfirewall_config/policy\fR
+.B firewall_config/policy
 .ad
 .sp .6
 .RS 4n
 A service's policy can also be set to
 .BR use_global .
 Services with
-\fBuse_global\fR policy mode inherits the Global Default firewall policy.
+.B use_global
+policy mode inherits the Global Default firewall policy.
 .RE
 
 .sp
@@ -272,12 +304,15 @@ For the Global Default only:
 .ne 2
 .mk
 .na
-\fBfirewall_config_default/policy\fR
+.B firewall_config_default/policy
 .ad
 .sp .6
 .RS 4n
-Global Default policy, \fBfirewall_config\fR property group in
-\fBsvc:/network/ipfilter:default\fR, can also be set to
+Global Default policy,
+.B firewall_config
+property group in
+.BR svc:/network/ipfilter:default ,
+can also be set to
 .BR custom .
 Users
 can set
@@ -301,7 +336,7 @@ rules from configured firewall policies.
 .ne 2
 .mk
 .na
-\fBfirewall_config_default/custom_policy_file\fR
+.B firewall_config_default/custom_policy_file
 .ad
 .sp .6
 .RS 4n
@@ -309,7 +344,8 @@ A file path to be used when Global Default policy is set to
 .BR custom .
 The file contains a set of IPF rules that provide the desired IP Filter
 configuration. For example, users with existing IPF rules in
-\fB/etc/ipf/ipf.conf\fR can execute the following commands to use the
+.B /etc/ipf/ipf.conf
+can execute the following commands to use the
 existing rules:
 .RS +4
 .TP
@@ -359,7 +395,7 @@ Refresh configuration:
 .ne 2
 .mk
 .na
-\fBfirewall_config_default/open_ports\fR
+.B firewall_config_default/open_ports
 .ad
 .sp .6
 .RS 4n
@@ -384,7 +420,8 @@ and network
 services' policies are set to
 .BR use_global .
 Enabling
-\fBnetwork/ipfilter\fR activates the firewall with an empty set of IP Filter
+.B network/ipfilter
+activates the firewall with an empty set of IP Filter
 rules, since system-wide policy is
 .B none
 and all services inherit that
@@ -393,8 +430,10 @@ modify network services and system-wide policies.
 .sp
 .LP
 A user configures firewall policy by modifying the service's
-\fBfirewall_config\fR property group. A new authorization,
-\fBsolaris.smf.value.firewall.config\fR, is created to allow delegation of
+.B firewall_config
+property group. A new authorization,
+.BR solaris.smf.value.firewall.config ,
+is created to allow delegation of
 the firewall administration privilege to users. Users with Service Operator
 privileges will need this new authorization to be able to configure firewall
 policy.
@@ -408,7 +447,8 @@ enabling, and refreshing may cause a brief service vulnerability during
 which the service runs while its firewall is being configured.
 .sp
 .LP
-\fBsvc.ipfd\fR monitors a service's start and stop events and configures or
+.B svc.ipfd
+monitors a service's start and stop events and configures or
 unconfigures a service's firewall at the same time that SMF is starting or
 stopping the service. Because the two operations are simultaneous, there is
 a possible window of exposure (less than a second) if the service is started
@@ -434,8 +474,11 @@ script is required, there are existing scripts that can be used as
 examples.
 .sp
 .LP
-The additional property groups, \fBfirewall_config\fR and
-\fBfirewall_context\fR, stores firewall policy configuration and provides
+The additional property groups,
+.B firewall_config
+and
+.BR firewall_context ,
+stores firewall policy configuration and provides
 static firewall definition, respectively. Below is a summary of new property
 groups and properties and their appropriate default values.
 .sp
@@ -445,7 +488,7 @@ Firewall policy configuration:
 .ne 2
 .mk
 .na
-\fBfirewall_config\fR
+.B firewall_config
 .ad
 .sp .6
 .RS 4n
@@ -465,7 +508,8 @@ value='solaris.smf.value.firewall.config' />
 
 A third party should follow the service symbol namespace convention to
 generate a user-defined type. Sun-delivered services can use
-\fBcom.sun,fw_configuration\fR as the property type.
+.B com.sun,fw_configuration
+as the property type.
 .sp
 See "Firewall Policy Configuration," above, for more information.
 .RE
@@ -474,7 +518,7 @@ See "Firewall Policy Configuration," above, for more information.
 .ne 2
 .mk
 .na
-\fBfirewall_config/policy\fR
+.B firewall_config/policy
 .ad
 .sp .6
 .RS 4n
@@ -488,7 +532,7 @@ default, inherit the Global Default firewall policy.
 .ne 2
 .mk
 .na
-\fBfirewall_config/apply_to\fR
+.B firewall_config/apply_to
 .ad
 .sp .6
 .RS 4n
@@ -499,7 +543,7 @@ An empty property, this property has no initial value.
 .ne 2
 .mk
 .na
-\fBfirewall_config/exceptions\fR
+.B firewall_config/exceptions
 .ad
 .sp .6
 .RS 4n
@@ -513,13 +557,14 @@ Firewall static definition:
 .ne 2
 .mk
 .na
-\fBfirewall_context\fR
+.B firewall_context
 .ad
 .sp .6
 .RS 4n
 A third party should follow service symbol namespace convention to generate
 a user-defined type, Sun delivered services can use
-\fBcom.sun,fw_definition\fR as the property type.
+.B com.sun,fw_definition
+as the property type.
 .sp
 See "Firewall Static Configuration," above, for more information.
 .RE
@@ -528,7 +573,7 @@ See "Firewall Static Configuration," above, for more information.
 .ne 2
 .mk
 .na
-\fBfirewall_context/name\fR
+.B firewall_context/name
 .ad
 .sp .6
 .RS 4n
@@ -543,7 +588,7 @@ property.
 .ne 2
 .mk
 .na
-\fBfirewall_context/isrpc\fR
+.B firewall_context/isrpc
 .ad
 .sp .6
 .RS 4n
@@ -555,16 +600,20 @@ For RPC services, this property should be created with its value set to
 .ne 2
 .mk
 .na
-\fBfirewall_context/ipf_method\fR
+.B firewall_context/ipf_method
 .ad
 .sp .6
 .RS 4n
 In general, the specified firewall policy is used to generate IP Filter
 rules to the service's communication port, derived from the
-\fBfirewall_context/name\fR property. Services that do not have IANA-defined
+.B firewall_context/name
+property. Services that do not have IANA-defined
 ports and are not RPC services will need to generate their own IP Filter
 rules. Services that generate their own rules may choose not to have
-\fBfirewall_context/name\fR and \fBfirewall_context/isrpc\fR properties. See
+.B firewall_context/name
+and
+.B firewall_context/isrpc
+properties. See
 the following services:
 .sp
 .in +2
@@ -611,4 +660,5 @@ Interface StabilityCommitted
 .BR getservbyname (3SOCKET),
 .BR rpc (4),
 .BR attributes (5),
-\fBipfilter\fR(5), \fBsmf\fR(5)
+.BR ipfilter (5),
+.BR smf (5)

@@ -77,7 +77,8 @@ the dump. See \fBswap\fR(1M). For systems with a ZFS root file system,
 dedicated ZFS volumes are used for swap and dump areas. For further
 information about setting up a dump area with ZFS,  see the \fIZFS
 Administration Guide\fR. To view the current dump  configuration, use the
-\fBdumpadm\fR command with no arguments:
+.B dumpadm
+command with no arguments:
 .sp
 .in +2
 .nf
@@ -101,7 +102,10 @@ is set to kernel memory pages only, the dump device is a swap disk
 partition, the directory for
 .B savecore
 files is set to
-\fB/var/crash/hostname,\fR and \fBsavecore\fR is set to run
+.B /var/crash/hostname,
+and
+.B savecore
+is set to run
 automatically on reboot.
 .sp
 .LP
@@ -121,7 +125,8 @@ The following options are supported:
 .ne 2
 .mk
 .na
-\fB-c\fR \fIcontent-type\fR
+.B -c
+.I content-type
 .ad
 .sp .6
 .RS 4n
@@ -169,7 +174,8 @@ process, only kernel pages will be dumped.
 .ne 2
 .mk
 .na
-\fB-d\fR \fIdump-device\fR
+.B -d
+.I dump-device
 .ad
 .sp .6
 .RS 4n
@@ -201,7 +207,8 @@ when the system is running a ZFS root file system.
 If the special token
 .B swap
 is specified as the dump device,
-\fBdumpadm\fR examines the  active swap entries and selects the most
+.B dumpadm
+examines the  active swap entries and selects the most
 appropriate entry to configure as the dump device. See \fBswap\fR(1M). Refer
 to the
 .B NOTES
@@ -226,12 +233,15 @@ both the swap area and the dump device.
 .ad
 .sp .6
 .RS 4n
-Create a \fBminfree\fR file in the current savecore directory indicating
+Create a
+.B minfree
+file in the current savecore directory indicating
 that
 .B savecore
 should maintain at least the specified amount of free
 space in the file system where the savecore directory is located. The
-\fBmin\fR argument can be one of the following:
+.B min
+argument can be one of the following:
 .sp
 .ne 2
 .mk
@@ -266,16 +276,22 @@ specifying megabytes.
 .ad
 .sp .6
 .RS 4n
-A % symbol, indicating that the \fBminfree\fR value should be computed as
+A % symbol, indicating that the
+.B minfree
+value should be computed as
 the specified percentage of the total current size of the file system
 containing the savecore directory.
 .RE
 
 The
 .B savecore
-command will consult the \fBminfree\fR file, if present,
+command will consult the
+.B minfree
+file, if present,
 prior to writing the dump files. If the size of these files would decrease
-the amount of free disk space below the \fBminfree\fR threshold, no dump
+the amount of free disk space below the
+.B minfree
+threshold, no dump
 files are written and an error message is logged. The administrator should
 immediately clean up the savecore directory to provide adequate free space,
 and re-execute the
@@ -309,7 +325,8 @@ retrieval may not be possible.
 .ne 2
 .mk
 .na
-\fB-r\fR \fIroot-dir\fR
+.B -r
+.I root-dir
 .ad
 .sp .6
 .RS 4n
@@ -328,7 +345,8 @@ is used.
 .ne 2
 .mk
 .na
-\fB-s\fR \fIsavecore-dir\fR
+.B -s
+.I savecore-dir
 .ad
 .sp .6
 .RS 4n
@@ -344,7 +362,8 @@ See the
 section below for a discussion of security issues relating to access to the
 savecore directory. The default savecore directory is
 \fB/var/crash/\fIhostname\fR where \fIhostname\fR is the output of the
-\fB-n\fR option to the
+.B -n
+option to the
 .BR uname (1)
 command.
 .RE
@@ -358,7 +377,8 @@ command.
 .sp .6
 .RS 4n
 Forcibly update the kernel dump configuration based on the contents of
-\fB/etc/dumpadm.conf\fR. Normally this option is used only on reboot when
+.BR /etc/dumpadm.conf .
+Normally this option is used only on reboot when
 starting
 .BR svc:/system/dumpadm:default ,
 when the
@@ -387,7 +407,8 @@ reboot. This is the default for this dump setting.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Reconfiguring The Dump Device To A Dedicated Dump Device:
+.B Example 1
+Reconfiguring The Dump Device To A Dedicated Dump Device:
 .sp
 .LP
 The following command reconfigures the dump device to a dedicated dump
@@ -461,7 +482,7 @@ Dump device.
 .ne 2
 .mk
 .na
-\fB/etc/dumpadm.conf\fR
+.B /etc/dumpadm.conf
 .ad
 .sp .6
 .RS 4n
@@ -544,7 +565,8 @@ command.
 When the special
 .B swap
 token is specified as the argument to
-\fBdumpadm -d\fR the utility will attempt to configure the most
+.B dumpadm -d
+the utility will attempt to configure the most
 appropriate swap device as the dump device.
 .B dumpadm
 configures the
@@ -563,7 +585,8 @@ command, the
 .B swap
 command will automatically invoke
 .BR dumpadm
-\fB-d swap\fR in order to attempt to configure another appropriate
+.B -d swap
+in order to attempt to configure another appropriate
 swap device as the dump device. If no swap devices remain or none can be
 configured as the dump device, the crash dump will be disabled and a warning
 message will be displayed. Similarly, if the crash dump is disabled and the
@@ -578,24 +601,30 @@ dump using the new swap device.
 .LP
 Once
 .B "dumpadm -d"
-\fBswap\fR has been issued, the new dump device
+.B swap
+has been issued, the new dump device
 is stored in the configuration file for subsequent reboots. If a larger or
 more appropriate swap device is added by the administrator, the dump device
 .RB "is not changed; the administrator must re-execute" " dumpadm -d"
-\fBswap\fR to reselect the most appropriate device fom the new list of swap
+.B swap
+to reselect the most appropriate device fom the new list of swap
 devices.
 .SS "Minimum Free Space"
 .sp
 .LP
 If the
 .B "dumpadm -m"
-option is used to create a \fBminfree\fR file
+option is used to create a
+.B minfree
+file
 based on a percentage of the total size of the file system containing the
 savecore directory, this value is not automatically recomputed if the file
 system subsequently changes size.  In this case, the administrator must
 re-execute
 .B "dumpadm -m"
-to recompute the \fBminfree\fR value. If
+to recompute the
+.B minfree
+value. If
 no such file exists in the savecore directory,
 .B savecore
 will default

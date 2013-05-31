@@ -52,30 +52,48 @@ The
 .BR tnfctl_pid_open() ,
 .BR tnfctl_exec_open() ,
 and
-\fBtnfctl_continue()\fR functions create handles to control probes in another
-process (direct process probe control). Either \fBtnfctl_pid_open()\fR or
-\fBtnfctl_exec_open()\fR will return a handle in \fIret_val\fR that can be
+.B tnfctl_continue()
+functions create handles to control probes in another
+process (direct process probe control). Either
+.B tnfctl_pid_open()
+or
+.B tnfctl_exec_open()
+will return a handle in
+.I ret_val
+that can be
 used for probe control. On return of these calls, the process is stopped.
-\fBtnfctl_continue()\fR allows the process specified by \fIhndl\fR to continue
+.B tnfctl_continue()
+allows the process specified by
+.I hndl
+to continue
 execution.
 .sp
 .LP
-The \fBtnfctl_pid_open()\fR function attaches to a running process with
+The
+.B tnfctl_pid_open()
+function attaches to a running process with
 process id of
 .IR pid .
 The process is stopped on return of this call.  The
-\fBtnfctl_pid_open()\fR function returns an error message if \fIpid\fR is the
+.B tnfctl_pid_open()
+function returns an error message if
+.I pid
+is the
 same as the calling process. See \fBtnfctl_internal_open\fR(3TNF) for
 information on internal process probe control. A pointer to an opaque handle
 is returned in
 .IR ret_val ,
 which can be used to control the process and
 the probes in the process. The target process must have
-\fBlibtnfprobe.so.1\fR (defined in <\fBtnf/tnfctl.h\fR> as macro
-\fBTNFCTL_LIBTNFPROBE)\fR linked in for probe control to work.
+.B libtnfprobe.so.1
+(defined in <\fBtnf/tnfctl.h\fR> as macro
+.B TNFCTL_LIBTNFPROBE)
+linked in for probe control to work.
 .sp
 .LP
-The \fBtnfctl_exec_open()\fR function is used to
+The
+.B tnfctl_exec_open()
+function is used to
 .BR exec (2)
 a program and
 obtain a probe control handle. For probe control to work, the process image to
@@ -89,10 +107,14 @@ time. The
 argument is the command to
 .BR exec .
 If
-\fIpgm_name\fR is not an absolute path, then the  \fB$PATH\fR environment
+.I pgm_name
+is not an absolute path, then the
+.B $PATH
+environment
 variable is used to find the
 .IR pgm_name .
-\fIargv\fR is a null-terminated
+.I argv
+is a null-terminated
 argument pointer, that is, it is a null-terminated array of pointers to
 null-terminated strings. These strings constitute the argument list available
 to the new process image. The
@@ -102,12 +124,17 @@ member, and it should point to a string that is the same as
 .IR pgm_name .
 See
 .BR execve (2).
-The \fIlibnfprobe_path\fR argument is an optional
+The
+.I libnfprobe_path
+argument is an optional
 argument, and if set, it should be the path to the directory that contains
 \fBlibtnfprobe.so.1\fR. There is no need for a trailing "/" in this argument.
-This argument is  useful if  \fBlibtnfprobe.so.1\fR is not installed in
+This argument is  useful if
+.B libtnfprobe.so.1
+is not installed in
 .BR /usr/lib .
-\fIld_preload\fR is a space-separated list of libraries to
+.I ld_preload
+is a space-separated list of libraries to
 preload into the target program. This string should follow the syntax
 guidelines of the
 .B LD_PRELOAD
@@ -132,7 +159,8 @@ This option is useful for preloading interposition libraries that have probes
 in them.
 .sp
 .LP
-\fIenvp\fR is an optional argument, and if set, it is used for the
+.I envp
+is an optional argument, and if set, it is used for the
 environment of the target program.  It is a null-terminated array of pointers
 to null-terminated strings. These strings constitute the environment of the
 new process image. See
@@ -156,7 +184,9 @@ stopped before any user code, including \fB\&.init\fR sections, has been
 executed.
 .sp
 .LP
-The \fBtnfctl_continue()\fR function is a blocking call and lets the target
+The
+.B tnfctl_continue()
+function is a blocking call and lets the target
 process referenced by
 .I hndl
 continue running.  It can only be used on
@@ -166,17 +196,21 @@ that the  process stopped  is returned in
 .IR evt .
 This call is
 interruptible by signals.  If it is interrupted, the process is stopped, and
-\fBTNFCTL_EVENT_EINTR\fR is returned in
+.B TNFCTL_EVENT_EINTR
+is returned in
 .IR evt .
 The client of this library
 will have to decide which signal implies a  stop to the target and catch that
 signal. Since a signal interrupts
 .BR tnfctl_continue() ,
 it will return, and
-the caller can decide whether or not to call \fBtnfctl_continue()\fR again.
+the caller can decide whether or not to call
+.B tnfctl_continue()
+again.
 .sp
 .LP
-\fBtnfctl_continue()\fR returns with an event of
+.B tnfctl_continue()
+returns with an event of
 .BR TNFCTL_EVENT_DLOPEN ,
 .BR TNFCTL_EVENT_DLCLOSE ,
 .BR TNFCTL_EVENT_EXEC ,
@@ -187,7 +221,8 @@ or
 respectively, when
 the target program calls \fBdlopen\fR(3C), \fBdlclose\fR(3C), any flavor of
 .BR exec (2),
-\fBfork\fR(2) (or \fBfork1\fR(2)),
+.BR fork (2)
+(or \fBfork1\fR(2)),
 .BR exit (2),
 or terminates
 unexpectedly. If the target program called
@@ -195,10 +230,14 @@ unexpectedly. If the target program called
 the client then
 needs to call \fBtnfctl_close\fR(3TNF) on the current handle leaving the
 target resumed, suspended, or killed (second argument to
-\fBtnfctl_close\fR(3TNF)). No other \fBlibtnfctl\fR interface call can be used
+.BR tnfctl_close (3TNF)).
+No other
+.B libtnfctl
+interface call can be used
 on the existing handle. If the client wants to control the \fBexec\fR'ed
 image, it should leave the old handle suspended, and use
-\fBtnfctl_pid_open()\fR to reattach to the same process.  This new handle can
+.B tnfctl_pid_open()
+to reattach to the same process.  This new handle can
 then be used to control the \fBexec\fR'ed image.  See \fBEXAMPLES\fR below for
 sample code.  If the target process did a
 .BR fork (2)
@@ -208,12 +247,16 @@ and if control of the child process is not needed, then \fIchild_hndl\fR
 should be
 .IR NULL .
 If control of the child process is needed, then
-\fIchild_hndl\fR should be set.  If it is set, a pointer to a handle that can
+.I child_hndl
+should be set.  If it is set, a pointer to a handle that can
 be used to control the child process is returned in
 .IR child_hndl .
 The
-child process is stopped at the end of the  \fBfork()\fR system call. See
-\fBEXAMPLES\fR for an example of this event.
+child process is stopped at the end of the
+.B fork()
+system call. See
+.B EXAMPLES
+for an example of this event.
 .SH RETURN VALUES
 .sp
 .LP
@@ -221,7 +264,10 @@ The
 .BR tnfctl_pid_open() ,
 .BR tnfctl_exec_open() ,
 and
-\fBtnfctl_continue()\fR functions return \fBTNFCTL_ERR_NONE\fR upon success.
+.B tnfctl_continue()
+functions return
+.B TNFCTL_ERR_NONE
+upon success.
 .SH ERRORS
 .sp
 .LP
@@ -308,7 +354,8 @@ No such target process exists.
 .ad
 .RS 28n
 .rt
-\fBlibtnfprobe.so.1\fR is not linked in the target process.
+.B libtnfprobe.so.1
+is not linked in the target process.
 .RE
 
 .sp
@@ -367,7 +414,8 @@ The target is not a dynamic executable.
 .ad
 .RS 28n
 .rt
-\fBlibtnfprobe.so.1\fR is not linked in the target process.
+.B libtnfprobe.so.1
+is not linked in the target process.
 .RE
 
 .sp
@@ -434,7 +482,8 @@ No such target process exists.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Using \fBtnfctl_pid_open()\fR
+.B Example 1
+Using \fBtnfctl_pid_open()\fR
 .sp
 .LP
 These examples do not include any error-handling code.  Only the initial
@@ -443,7 +492,9 @@ examples.
 
 .sp
 .LP
-The following example shows how to preload  \fBlibtnfprobe.so.1\fR from the
+The following example shows how to preload
+.B libtnfprobe.so.1
+from the
 normal location and inherit the parent's environment.
 
 .sp
@@ -468,7 +519,8 @@ err = tnfctl_exec_open(pgm, argv, NULL, NULL, NULL, &hndl);
 .sp
 .LP
 This example shows how to preload two user-supplied libraries
-\fBlibc_probe.so.1\fR and
+.B libc_probe.so.1
+and
 .BR libthread_probe.so.1 .
 They interpose on the
 corresponding
@@ -476,7 +528,9 @@ corresponding
 and
 .B libthread.so
 interfaces and have probes
-for function entry and exit. \fBlibtnfprobe.so.1\fR is preloaded from the
+for function entry and exit.
+.B libtnfprobe.so.1
+is preloaded from the
 normal location and the parent's environment is inherited.
 
 .sp
@@ -646,7 +700,8 @@ MT LevelMT-Safe
 .BR TNF_PROBE (3TNF),
 .BR dlclose (3C),
 .BR dlopen (3C),
-\fBlibtnfctl\fR(3TNF), \fBtnfctl_close\fR(3TNF),
+.BR libtnfctl (3TNF),
+.BR tnfctl_close (3TNF),
 .BR tnfctl_internal_open (3TNF),
 .BR tracing (3TNF)
 .BR attributes (5)
@@ -656,7 +711,12 @@ MT LevelMT-Safe
 .SH NOTES
 .sp
 .LP
-After a call to \fBtnfctl_continue()\fR returns, a client should use
-\fBtnfctl_trace_attrs_get\fR(3TNF) to check the \fBtrace_buf_state\fR member
+After a call to
+.B tnfctl_continue()
+returns, a client should use
+.BR tnfctl_trace_attrs_get (3TNF)
+to check the
+.B trace_buf_state
+member
 of the trace attributes and make sure that there is no internal error in the
 target.

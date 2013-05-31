@@ -160,7 +160,8 @@ two extra
 bytes of memory are allocated at the end that contain NEWLINE and
 .IR null ,
 respectively, but these two bytes are not reflected in
-\fIoutkeylen\fR or
+.I outkeylen
+or
 .IR outvallen .
 The
 .I indomain
@@ -225,7 +226,8 @@ the same domain use that same descriptor. The
 function is
 available at the client interface for processes that explicitly manage their
 socket descriptors while accessing multiple domains. The call to
-\fByp_unbind()\fR makes the domain
+.B yp_unbind()
+makes the domain
 .IR unbound ,
 and frees all per-process
 and per-node resources used to bind it.
@@ -293,21 +295,29 @@ process returns any answer (success or failure).
 .ne 2
 .mk
 .na
-\fByp_get_default_domain()\fR
+.B yp_get_default_domain()
 .ad
 .RS 27n
 .rt
-\fBNIS\fR lookup calls require a map name and a domain name, at minimum.
+.B NIS
+lookup calls require a map name and a domain name, at minimum.
 The client process should know the name of the map of interest. Client
 processes fetch the node's default domain by calling
-\fByp_get_default_domain()\fR and use the returned \fIoutdomain\fR as the
-\fIindomain\fR parameter to successive \fBNIS\fR name service calls. The
+.B yp_get_default_domain()
+and use the returned
+.I outdomain
+as the
+.I indomain
+parameter to successive
+.B NIS
+name service calls. The
 domain returned is the same as that returned using the
 .BR SI_SRPC_DOMAIN
 command to the
 .BR sysinfo (2)
 system call. The value returned in
-\fIoutdomain\fR should not be freed.
+.I outdomain
+should not be freed.
 .RE
 
 .sp
@@ -322,7 +332,8 @@ The
 .B yp_match()
 function returns the value associated with a passed
 key. This key must be exact because no pattern matching is available.
-\fByp_match()\fR requires a full YP map name, such as
+.B yp_match()
+requires a full YP map name, such as
 .BR hosts.byname ,
 instead of the nickname
 .BR hosts .
@@ -332,11 +343,13 @@ instead of the nickname
 .ne 2
 .mk
 .na
-\fByp_first()\fR
+.B yp_first()
 .ad
 .RS 27n
 .rt
-The \fByp_first()\fR function returns the first key-value pair from the
+The
+.B yp_first()
+function returns the first key-value pair from the
 named map in the named domain.
 .RE
 
@@ -356,7 +369,9 @@ map. The
 parameter must be the
 .I outkey
 returned from an
-initial call to \fByp_first()\fR (to get the second key-value pair) or the
+initial call to
+.B yp_first()
+(to get the second key-value pair) or the
 one returned from the
 .IR n "th call to"
 .B yp_next()
@@ -364,14 +379,19 @@ one returned from the
 \fIn\fRth + second key-value pair). Similarly, the \fIinkeylen\fR parameter
 must be the
 .I outkeylen
-returned from the earlier \fByp_first()\fR or
-\fByp_next()\fR call.
+returned from the earlier
+.B yp_first()
+or
+.B yp_next()
+call.
 .sp
 The concept of first and next is particular to the structure of the NIS map
 being processed. Retrieval order is not related to either the lexical order
 within any original (non-NIS name service) data base, or to any obvious
 numerical sorting order on the keys, values, or key-value pairs. The only
-ordering guarantee is that if the \fByp_first()\fR function is called on a
+ordering guarantee is that if the
+.B yp_first()
+function is called on a
 particular map, and then the
 .B yp_next()
 function is repeatedly called
@@ -411,7 +431,9 @@ just like any other NIS name service procedure to identify the map in the
 normal manner and to supply the name of a function that will be called to
 .RB "process each key-value pair within the map. The call to" " yp_all()"
 returns only when the transaction is completed (successfully or
-unsuccessfully), or the \fBforeach()\fR function decides that it does not
+unsuccessfully), or the
+.B foreach()
+function decides that it does not
 want to see any more key-value pairs.
 .sp
 The third parameter to
@@ -427,7 +449,9 @@ struct ypall_callback *incallback {
 .fi
 .in -2
 
-The function \fBforeach()\fR is called:
+The function
+.B foreach()
+is called:
 .sp
 .in +2
 .nf
@@ -453,11 +477,15 @@ The key and value parameters are somewhat different than defined in the
 synopsis section above. First, the memory pointed to by the
 .I inkey
 and
-\fIinval\fR parameters is private to the \fByp_all()\fR function, and is
+.I inval
+parameters is private to the
+.B yp_all()
+function, and is
 overwritten with the arrival of each new key-value pair. The \fBforeach()\fR
 function must do something useful with the contents of that memory, but it
 does not own the memory itself. Key and value objects presented to the
-\fBforeach()\fR function look exactly as they do in the server's map. If
+.B foreach()
+function look exactly as they do in the server's map. If
 they were not NEWLINE-terminated or null-terminated in the map, they would
 not be here either.
 .sp
@@ -465,15 +493,20 @@ The
 .I indata
 parameter is the contents of the
 \fIincallback\fR->\fIdata\fR element passed to \fByp_all()\fR. The
-\fBdata\fR element of the callback structure can be used to share state
-information between the \fBforeach()\fR function and the mainline code. Its
+.B data
+element of the callback structure can be used to share state
+information between the
+.B foreach()
+function and the mainline code. Its
 use is optional, and no part of the NIS client package inspects its
 contents; cast it to something useful, or ignore it. The \fBforeach()\fR
 function is Boolean. It should return
 .B 0
 to indicate that it wants to
 be called again for further received key-value pairs, or non-zero to stop
-the flow of key-value pairs. If \fBforeach()\fR returns a non-zero value, it
+the flow of key-value pairs. If
+.B foreach()
+returns a non-zero value, it
 is not called again. The functional value of
 .B yp_all()
 is then
@@ -682,7 +715,8 @@ Resource allocation failure.
 .ad
 .RS 17n
 .rt
-\fBRPC\fR failure; domain has been unbound.
+.B RPC
+failure; domain has been unbound.
 .RE
 
 .sp
@@ -730,7 +764,8 @@ Cannot communicate with
 .ad
 .RS 17n
 .rt
-\fBYP\fR version mismatch.
+.B YP
+version mismatch.
 .RE
 
 .SH FILES

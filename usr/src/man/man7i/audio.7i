@@ -239,8 +239,12 @@ if either the
 or
 .B O_NONBLOCK
 flags are set in the
-\fBopen()\fR \fIoflag\fR argument, then -1 is immediately returned, with
-\fIerrno\fR set to \fBEBUSY.\fR
+.B open()
+.I oflag
+argument, then -1 is immediately returned, with
+.I errno
+set to
+.BR EBUSY.
 .RE
 .RS +4
 .TP
@@ -251,7 +255,8 @@ if neither the
 nor the
 .B O_NONBLOCK
 flag are set, then
-\fBopen()\fR hangs until the device is available or a signal is delivered to
+.B open()
+hangs until the device is available or a signal is delivered to
 the process, in which case a -1 is returned with
 .I errno
 set to
@@ -279,7 +284,8 @@ filled. The
 (see \fBstreamio\fR(7I)) may be used
 to determine the amount of data that may be read without blocking. The
 device may alternatively be set to a non-blocking mode, in which case
-\fBread()\fR completes immediately, but may return fewer bytes than
+.B read()
+completes immediately, but may return fewer bytes than
 requested. Refer to the
 .BR read (2)
 manual page for a complete description
@@ -299,7 +305,8 @@ buffers may be paused (or
 resumed) by using the
 .B "AUDIO_SETINFO ioctl"
 to set (or clear) the
-\fIrecord.pause\fR flag in the audio information structure (see below). All
+.I record.pause
+flag in the audio information structure (see below). All
 unread input data in the
 .B STREAMS
 queue may be discarded by using the
@@ -354,11 +361,14 @@ Although
 .B write()
 returns when the data is successfully queued, the
 actual completion of audio output may take considerably longer. The
-\fBAUDIO_DRAIN ioctl\fR may be issued to allow an application to block
+.B AUDIO_DRAIN ioctl
+may be issued to allow an application to block
 until all of the queued output data has been played. Alternatively, a
 process may request asynchronous notification of output completion by
 writing a zero-length buffer (end-of-file record) to the output stream. When
-such a buffer has been processed, the \fIplay.eof\fR flag in the audio
+such a buffer has been processed, the
+.I play.eof
+flag in the audio
 information structure is incremented.
 .sp
 .LP
@@ -373,7 +383,10 @@ audio output is flushed and the device is closed immediately.
 .sp
 .LP
 The consumption of output data may be paused (or resumed) by using the
-\fBAUDIO_SETINFO ioctl\fR to set (or clear) the \fIplay.pause\fR flag
+.B AUDIO_SETINFO ioctl
+to set (or clear) the
+.I play.pause
+flag
 in the audio information structure. Queued output data may be discarded by
 using the
 .BR "I_FLUSH STREAMS"
@@ -399,15 +412,20 @@ thrown away. Additional writes are allowed.
 .LP
 The
 .B "I_SETSIG STREAMS"
-\fBioctl\fR enables asynchronous
+.B ioctl
+enables asynchronous
 notification, through the
 .B SIGPOLL
 signal, of input and output ready
 condition changes. The
 .B O_NONBLOCK
 flag may be set using the
-\fBF_SETFL fcntl\fR(2) to enable non-blocking \fBread()\fR and
-\fBwrite()\fR requests. This is normally sufficient for applications to
+.BR "F_SETFL fcntl" (2)
+to enable non-blocking
+.B read()
+and
+.B write()
+requests. This is normally sufficient for applications to
 maintain an audio stream in the background.
 .SS "Audio Control Pseudo-Device"
 .sp
@@ -423,13 +441,19 @@ pseudo-device is provided for this purpose. Any
 number of processes may open
 .B /dev/audioctl
 simultaneously. However,
-\fBread()\fR and \fBwrite()\fR system calls are ignored by
+.B read()
+and
+.B write()
+system calls are ignored by
 .BR /dev/audioctl .
 The
 .B AUDIO_GETINFO
 and
 .BR AUDIO_SETINFO
-\fBioctl\fR commands may be issued to \fB/dev/audioctl\fR to determine the
+.B ioctl
+commands may be issued to
+.B /dev/audioctl
+to determine the
 status or alter the behavior of
 .BR /dev/audio .
 Note: In general, the
@@ -494,8 +518,13 @@ device state.
 .sp
 .LP
 The state of the audio device may be polled or modified using the
-\fBAUDIO_GETINFO\fR and \fBAUDIO_SETINFO ioctl\fR commands. These
-commands operate on the \fBaudio_info\fR structure as defined, in
+.B AUDIO_GETINFO
+and
+.B "AUDIO_SETINFO ioctl"
+commands. These
+commands operate on the
+.B audio_info
+structure as defined, in
 .BR <sys/audio.h> ,
 as follows:
 .sp
@@ -689,7 +718,8 @@ flags indicate that
 data underflow or overflow has occurred. The
 .I play.active
 and
-\fIrecord.active\fR flags indicate  that data transfer is currently active
+.I record.active
+flags indicate  that data transfer is currently active
 in the corresponding direction.
 .sp
 .LP
@@ -699,7 +729,10 @@ and
 .I record.open
 flags indicate that the device is
 currently open with the corresponding access permission. The
-\fIplay.waiting\fR and \fIrecord.waiting\fR flags provide an indication that
+.I play.waiting
+and
+.I record.waiting
+flags provide an indication that
 a process may be waiting to access the device. These flags are set
 automatically when a process blocks on
 .BR open() ,
@@ -715,17 +748,22 @@ The
 and
 .I record.samples
 fields are zeroed at
-\fBopen()\fR and are incremented each time a data sample is copied to or
+.B open()
+and are incremented each time a data sample is copied to or
 from the associated STREAMS queue. Some audio drivers may be limited to
 counting buffers of samples, instead of single samples for their samples
 accounting. For this reason, applications should not assume that the samples
-fields contain a perfectly accurate count. The \fIplay.eof\fR field
+fields contain a perfectly accurate count. The
+.I play.eof
+field
 increments whenever a zero-length output buffer is synchronously processed.
 Applications may use this field to detect  the completion of particular
 segments of audio output.
 .sp
 .LP
-The \fIrecord.buffer_size\fR field controls the amount of input data that
+The
+.I record.buffer_size
+field controls the amount of input data that
 is buffered in the device driver during record operations. Applications that
 have particular requirements for low latency should set the value
 appropriately. Note however that smaller input buffer sizes may result in
@@ -734,24 +772,33 @@ drivers will constrain it to be a multiple of the current sample frame size.
 Some drivers may place other requirements on the value of this field. Refer
 to the audio   device-specific manual page for more details. If an
 application changes the format of the audio device and does not modify the
-\fIrecord.buffer_size\fR field, the device driver may use a default value to
+.I record.buffer_size
+field, the device driver may use a default value to
 compensate for the new data rate. Therefore, if an application is going to
 modify this field, it should modify it during or after the format change
-itself, not before. When changing the \fIrecord.buffer_size\fR parameters,
+itself, not before. When changing the
+.I record.buffer_size
+parameters,
 the input stream should be paused and flushed before the change, and resumed
 afterward. Otherwise,  subsequent reads may return samples in the old format
 followed by samples in the new format. This is particularly important when
 new parameters result in a changed sample size. If you change the
-\fIrecord.buffer_size\fR for the first packet, this protocol must be
+.I record.buffer_size
+for the first packet, this protocol must be
 followed or the first buffer will be the default buffer size for the device,
 followed by packets of the requested change size.
 .sp
 .LP
-The \fIrecord.buffer_size\fR field may be modified only on the
-\fB/dev/audio\fR device by processes that have it opened for reading.
+The
+.I record.buffer_size
+field may be modified only on the
+.B /dev/audio
+device by processes that have it opened for reading.
 .sp
 .LP
-The \fIplay.buffer_size\fR field is currently not supported.
+The
+.I play.buffer_size
+field is currently not supported.
 .sp
 .LP
 The audio data format is indicated by the \fIsample_rate, channels,
@@ -777,19 +824,27 @@ all be accommodated,
 returns with
 .B errno
 set to
-\fBEINVAL\fR and no changes are made to the device state.
+.B EINVAL
+and no changes are made to the device state.
 .SS "Streamio IOCTLS"
 .sp
 .LP
 All of the \fBstreamio\fR(7I) \fBioctl\fR commands may be issued for the
-\fB/dev/audio\fR device. Because the \fB/dev/audioctl\fR device has its own
-\fBSTREAMS\fR queues, most of these commands neither modify nor report the
+.B /dev/audio
+device. Because the
+.B /dev/audioctl
+device has its own
+.B STREAMS
+queues, most of these commands neither modify nor report the
 state of
 .B /dev/audio
 if issued for the
 .B /dev/audioctl
 device. The
-\fBI_SETSIG ioctl\fR may be issued for \fB/dev/audioctl\fR to enable
+.B I_SETSIG ioctl
+may be issued for
+.B /dev/audioctl
+to enable
 the notification of audio status changes, as described above.
 .SS "Audio IOCTLS"
 .sp
@@ -838,7 +893,9 @@ The returned value in the name field will be a string that will identify the
 current
 .B /dev/audio
 hardware device, the value in version will be a
-string indicating the current version of the hardware, and \fBconfig\fR will
+string indicating the current version of the hardware, and
+.B config
+will
 be a device-specific string identifying the properties of the audio stream
 associated with that file descriptor. Refer to the audio device-specific
 manual pages to determine the actual strings returned by the device
@@ -853,7 +910,9 @@ driver.
 .ad
 .RS 17n
 .rt
-The argument is a pointer to an \fBaudio_info_t\fR structure. This command
+The argument is a pointer to an
+.B audio_info_t
+structure. This command
 may be issued for either
 .B /dev/audio
 or
@@ -876,7 +935,9 @@ device itself.
 .ad
 .RS 17n
 .rt
-The argument is a pointer to an \fBaudio_info_t\fR structure. This command
+The argument is a pointer to an
+.B audio_info_t
+structure. This command
 may be issued for either the
 .B /dev/audio
 or the
@@ -889,7 +950,8 @@ with the new state of the device. Note: The
 .IR play.error ,
 .IR record.error ,
 and
-\fIplay.eof\fR fields are modified to reflect the state of the device when
+.I play.eof
+fields are modified to reflect the state of the device when
 the
 .B AUDIO_SETINFO
 is issued. This allows programs to automatically
@@ -924,7 +986,8 @@ can be guaranteed that the existing audio format will stay in place until
 they relinquish the audio device.
 .B AUDIO_SETINFO
 will return
-\fBEINVAL\fR when the desired configuration is not possible, or \fBEBUSY\fR
+.B EINVAL
+when the desired configuration is not possible, or \fBEBUSY\fR
 when another process has control of the audio device.
 .sp
 .LP
@@ -934,8 +997,11 @@ of
 is closed.
 .sp
 .LP
-The \fBaudio_info_t\fR structure may be initialized through the use of the
-\fBAUDIO_INITINFO\fR macro. This macro sets all fields in the structure to
+The
+.B audio_info_t
+structure may be initialized through the use of the
+.B AUDIO_INITINFO
+macro. This macro sets all fields in the structure to
 values that are ignored by the
 .B AUDIO_SETINFO
 command. For instance,
@@ -955,7 +1021,8 @@ err = ioctl(audio_fd, AUDIO_SETINFO, );
 .sp
 .LP
 This technique eliminates problems associated with using a sequence of
-\fBAUDIO_GETINFO\fR followed by
+.B AUDIO_GETINFO
+followed by
 .BR AUDIO_SETINFO .
 .SH ERRORS
 .sp
@@ -989,7 +1056,8 @@ request.
 .RS 9n
 .rt
 The requested play or record access is busy and a signal interrupted the
-\fBopen()\fR request.
+.B open()
+request.
 .RE
 
 .sp

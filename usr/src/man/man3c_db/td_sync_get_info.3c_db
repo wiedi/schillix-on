@@ -76,14 +76,17 @@ calling the function
 .B td_ta_sync_iter()
 to obtain handles for all
 synchronization objects of the target process that are known to the
-\fBlibc_db\fR library of interfaces, or by mapping the address of a
+.B libc_db
+library of interfaces, or by mapping the address of a
 synchronization object in the address space of the target process to a
 handle by calling
 .BR td_ta_map_addr2sync (3C_DB).
 .sp
 .LP
 Not all synchronization objects that a process uses can be known to the
-\fBlibc_db\fR library and returned by \fBtd_ta_sync_iter\fR(3C_DB). A
+.B libc_db
+library and returned by
+.BR td_ta_sync_iter "(3C_DB). A"
 synchronization object is known to
 .B libc_db
 only if it has been the
@@ -91,7 +94,8 @@ target of a synchronization primitive in the process (such as
 .BR mutex_lock() ,
 described on the \fBmutex_init\fR(3C) manual page) after
 \fBtd_ta_new\fR(3C_DB) has been called to attach to the process and
-\fBtd_ta_sync_tracking_enable()\fR has been called to enable synchronization
+.B td_ta_sync_tracking_enable()
+has been called to enable synchronization
 object tracking.
 .sp
 .LP
@@ -100,14 +104,18 @@ The
 function turns synchronization
 object tracking on or off for the process identified by
 .IR ta_p ,
-depending on whether \fIon_off\fR is 0 (off) or non-zero (on).
+depending on whether
+.I on_off
+is 0 (off) or non-zero (on).
 .sp
 .LP
 The \fBtd_sync_get_info()\fR function fills in the \fBtd_syncinfo_t\fR
 structure \fB*\fIsi_p\fR with values for the synchronization object
 identified by
 .BR sh_p .
-The \fBtd_syncinfo_t\fR structure contains the
+The
+.B td_syncinfo_t
+structure contains the
 following fields:
 .sp
 .ne 2
@@ -128,7 +136,8 @@ process's "view" of the synchronization object.
 .ne 2
 .mk
 .na
-\fBpsaddr_t\fR \fIsi_sv_addr\fR
+.B psaddr_t
+.I si_sv_addr
 .ad
 .RS 29n
 .rt
@@ -140,7 +149,8 @@ space.
 .ne 2
 .mk
 .na
-\fBtd_sync_type_e\fR \fIsi_type\fR
+.B td_sync_type_e
+.I si_type
 .ad
 .RS 29n
 .rt
@@ -152,7 +162,8 @@ semaphore, or readers-writer lock.
 .ne 2
 .mk
 .na
-\fBint\fR \fIsi_shared_type\fR
+.B int
+.I si_shared_type
 .ad
 .RS 29n
 .rt
@@ -166,7 +177,8 @@ process-shared, otherwise it is process-private.
 .ne 2
 .mk
 .na
-\fBtd_sync_flags_t\fR \fIsi_flags\fR
+.B td_sync_flags_t
+.I si_flags
 .ad
 .RS 29n
 .rt
@@ -177,7 +189,8 @@ Flags dependent on the type of the synchronization object.
 .ne 2
 .mk
 .na
-\fBint\fR \fIsi_state.sema_count\fR
+.B int
+.I si_state.sema_count
 .ad
 .RS 29n
 .rt
@@ -188,7 +201,8 @@ Semaphores only.  The current value of the semaphore
 .ne 2
 .mk
 .na
-\fBint\fR \fIsi_state.nreaders\fR
+.B int
+.I si_state.nreaders
 .ad
 .RS 29n
 .rt
@@ -202,7 +216,8 @@ if a writer is currently holding the lock.
 .ne 2
 .mk
 .na
-\fBint\fR \fIsi_state.mutex_locked\fR
+.B int
+.I si_state.mutex_locked
 .ad
 .RS 29n
 .rt
@@ -213,7 +228,8 @@ For mutexes only. Non-zero if and only if the mutex is currently locked.
 .ne 2
 .mk
 .na
-\fBint\fR \fIsi_size\fR
+.B int
+.I si_size
 .ad
 .RS 29n
 .rt
@@ -224,7 +240,8 @@ The size of the synchronization object.
 .ne 2
 .mk
 .na
-\fBuint8_t\fR \fIsi_has_waiters\fR
+.B uint8_t
+.I si_has_waiters
 .ad
 .RS 29n
 .rt
@@ -236,7 +253,8 @@ synchronization object.
 .ne 2
 .mk
 .na
-\fBuint8_t\fR \fIsi_is_wlocked\fR
+.B uint8_t
+.I si_is_wlocked
 .ad
 .RS 29n
 .rt
@@ -248,11 +266,13 @@ lock is  held by a writer.
 .ne 2
 .mk
 .na
-\fBuint8_t\fR \fIsi_rcount\fR
+.B uint8_t
+.I si_rcount
 .ad
 .RS 29n
 .rt
-\fBPTHREAD_MUTEX_RECURSIVE\fR mutexes only. If the mutex is held, the
+.B PTHREAD_MUTEX_RECURSIVE
+mutexes only. If the mutex is held, the
 recursion count.
 .RE
 
@@ -260,31 +280,36 @@ recursion count.
 .ne 2
 .mk
 .na
-\fBuint8_t\fR \fIsi_prioceiling\fR
+.B uint8_t
+.I si_prioceiling
 .ad
 .RS 29n
 .rt
-\fBPTHREAD_PRIO_PROTECT\fR protocol mutexes only. The priority ceiling.
+.B PTHREAD_PRIO_PROTECT
+protocol mutexes only. The priority ceiling.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBtd_thrhandle_t\fR \fIsi_owner\fR
+.B td_thrhandle_t
+.I si_owner
 .ad
 .RS 29n
 .rt
 Mutexes and readers-writer locks only. This is the thread holding the
 mutex, or the write lock, if this is a reader-writer lock. The value is
-\fINULL\fR if no one holds the mutex or write-lock.
+.I NULL
+if no one holds the mutex or write-lock.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBpid_t\fR \fIsi_ownerpid\fR
+.B pid_t
+.I si_ownerpid
 .ad
 .RS 29n
 .rt
@@ -304,9 +329,12 @@ by
 The
 .B td_syncstats_t
 structure contains an embedded
-\fBtd_syncinfo_t\fR structure that is filled in as described above for
-\fBtd_sync_get_info()\fR. In addition, usage statistics gathered since
-\fBtd_ta_sync_tracking_enable()\fR was called to enable synchronization
+.B td_syncinfo_t
+structure that is filled in as described above for
+.BR td_sync_get_info() .
+In addition, usage statistics gathered since
+.B td_ta_sync_tracking_enable()
+was called to enable synchronization
 object tracking are returned in the
 .BR ss_un.mutex ,
 .BR ss_un.cond ,

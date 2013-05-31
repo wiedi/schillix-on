@@ -193,7 +193,10 @@ The following cancellation points are  defined by the system
 .BR write (2),
 .BR writev (2),
 and
-\fBfcntl\fR(2), when specifying \fBF_SETLKW\fR as the command.
+.BR fcntl (2),
+when specifying
+.B F_SETLKW
+as the command.
 .sp
 .LP
 When cancellation is asynchronous, cancellation can occur at any time
@@ -215,7 +218,8 @@ your application and of cancellation mechanics.
 Typically, any call that might require a long wait should be a cancellation
 point. Operations need to check for pending cancellation requests when the
 operation is about to block indefinitely. This includes threads waiting in
-\fBpthread_cond_wait()\fR and
+.B pthread_cond_wait()
+and
 .BR pthread_cond_timedwait() ,
 threads
 waiting for the termination of another thread in
@@ -267,7 +271,8 @@ and
 functions
 can be implemented as macros. The application must ensure that they appear
 as statements, and in pairs within the same lexical scope (that is, the
-\fBpthread_cleanup_push()\fR macro can be thought to expand to a token list
+.B pthread_cleanup_push()
+macro can be thought to expand to a token list
 whose first token is '{' with
 .B pthread_cleanup_pop()
 expanding to a
@@ -279,8 +284,12 @@ The effect of the use of
 .BR break ,
 .BR continue ,
 and
-\fBgoto\fR to prematurely leave a code block described by a pair of
-\fBpthread_cleanup_push()\fR and \fBpthread_cleanup_pop()\fR function calls
+.B goto
+to prematurely leave a code block described by a pair of
+.B pthread_cleanup_push()
+and
+.B pthread_cleanup_pop()
+function calls
 is undefined.
 .SS "Cancellation State"
 .sp
@@ -312,7 +321,9 @@ requests to it are held pending.
 .LP
 You might want to disable cancellation before a call to a cancel-unsafe
 library, restoring the old cancel state when the call returns from the
-library. See  \fBCancel-Safe\fR for explanations of cancel safety.
+library. See
+.B Cancel-Safe
+for explanations of cancel safety.
 .SS "Cancellation Type"
 .sp
 .LP
@@ -400,13 +411,16 @@ POSIX threads, only (the Solaris threads interfaces do not provide
 cancellation functions).
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Cancellation example
+.B Example 1
+Cancellation example
 .sp
 .LP
 The following short C++ example shows the pushing/popping of cancellation
 handlers, the disabling/enabling of cancellation, the use of
 .BR pthread_testcancel() ,
-and so on. The \fBfree_res()\fR cancellation
+and so on. The
+.B free_res()
+cancellation
 handler in this example is a dummy function that simply prints a message,
 but that would free resources in a real application. The function \fBf2()\fR
 is called from the main thread, and goes deep into its call stack by calling
@@ -414,9 +428,12 @@ itself recursively.
 
 .sp
 .LP
-Before \fBf2()\fR starts running, the newly created thread has probably
+Before
+.B f2()
+starts running, the newly created thread has probably
 posted a cancellation on the main thread since the main thread calls
-\fBthr_yield()\fR right after creating thread2.  Because cancellation was
+.B thr_yield()
+right after creating thread2.  Because cancellation was
 initially disabled in the main thread, through a call to
 .BR pthread_setcancelstate() ,
 the call to \fBf2()\fR from  \fBmain()\fR
@@ -426,7 +443,8 @@ thread has a pending cancellation.
 .sp
 .LP
 When \fBf2()\fR is called for the fifty-first time (when \fB"i == 50"\fR),
-\fBf2()\fR enables cancellation by calling
+.B f2()
+enables cancellation by calling
 .BR pthread_setcancelstate() .
 It then establishes a cancellation point for itself by calling
 .BR pthread_testcancel() .
@@ -444,7 +462,9 @@ After the
 .B main()
 thread is canceled at the fifty-first iteration, all
 the cleanup handlers that were pushed are called in sequence; this is
-indicated by the calls to  \fBfree_res()\fR and the calls to the destructor
+indicated by the calls to
+.B free_res()
+and the calls to the destructor
 for
 .IR X .
 At each level, the C++ runtime calls the destructor for \fIX\fR

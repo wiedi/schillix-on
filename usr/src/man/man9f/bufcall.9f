@@ -66,7 +66,7 @@ Priority of the
 .ne 2
 .mk
 .na
-\fIfunc\fR
+.I func
 .ad
 .RS 8n
 .rt
@@ -89,12 +89,15 @@ Argument to the function to be called when a buffer becomes available.
 .LP
 The \fBbufcall()\fR function serves as a \fBtimeout\fR(9F) call of
 indeterminate length. When a buffer allocation request fails,
-\fBbufcall()\fR can be used to schedule the routine
+.B bufcall()
+can be used to schedule the routine
 .IR func ,
 to be called
 with the argument
 .I arg
-when a buffer becomes available. \fIfunc\fR may
+when a buffer becomes available.
+.I func
+may
 call
 .B allocb()
 or it may do something else.
@@ -102,22 +105,33 @@ or it may do something else.
 .sp
 .LP
 If successful, \fBbufcall()\fR returns a \fBbufcall ID\fR that can be
-used in a call to \fBunbufcall()\fR to cancel the request. If the
-\fBbufcall()\fR scheduling fails, \fIfunc\fR is never called and \fB0\fR is
+used in a call to
+.B unbufcall()
+to cancel the request. If the
+.B bufcall()
+scheduling fails,
+.I func
+is never called and
+.B 0
+is
 returned.
 .SH CONTEXT
 .sp
 .LP
-The \fBbufcall()\fR function can be called from user, interrupt, or kernel
+The
+.B bufcall()
+function can be called from user, interrupt, or kernel
 context.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Calling a function when a buffer becomes available:
+.B Example 1
+Calling a function when a buffer becomes available:
 .sp
 .LP
 The purpose of this
 .BR srv "(9E) service routine is to add a header to all"
-\fBM_DATA\fR messages. Service routines must process all messages on their
+.B M_DATA
+messages. Service routines must process all messages on their
 queues before returning, or arrange to be rescheduled
 
 .sp
@@ -137,7 +151,9 @@ For
 messages, try to allocate a buffer large enough to hold
 the header (line 18). If no such buffer is available, the service routine
 must be rescheduled for a time when a buffer is available. The original
-message is put back on the queue (line 20) and \fBbufcall\fR (line 21) is
+message is put back on the queue (line 20) and
+.B bufcall
+(line 21) is
 used to attempt the rescheduling. It will succeed if the rescheduling
 succeeds, indicating that qenable will be called subsequently with the
 argument
@@ -145,7 +161,10 @@ argument
 once a buffer of the specified size (\fBsizeof (struct
 hdr)\fR) becomes available. If it does, \fBqenable\fR(9F) will put \fIq\fR
 on the list of queues to have their service routines called. If
-\fBbufcall()\fR fails, \fBtimeout\fR(9F) (line 22) is used to try again in
+.B bufcall()
+fails,
+.BR timeout (9F)
+(line 22) is used to try again in
 about a half second.
 
 .sp
@@ -159,7 +178,8 @@ message to it (line 30), and pass it on (line 31).
 .sp
 .LP
 Note that this example ignores the bookkeeping needed to handle
-\fBbufcall()\fR and \fBtimeout\fR(9F) cancellation for ones that are still
+.B bufcall()
+and \fBtimeout\fR(9F) cancellation for ones that are still
 outstanding at close time.
 
 .sp
@@ -231,7 +251,9 @@ outstanding at close time.
 .SH WARNINGS
 .sp
 .LP
-Even when \fIfunc\fR is called by
+Even when
+.I func
+is called by
 .BR bufcall() ,
 .BR allocb (9F)
 can

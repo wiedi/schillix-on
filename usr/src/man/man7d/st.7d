@@ -33,7 +33,8 @@ st \- driver for SCSI tape devices
 The
 .B st
 device driver provides a standard interface to various
-\fBSCSI\fR tape devices. See \fBmtio\fR(7I) for details.
+.B SCSI
+tape devices. See \fBmtio\fR(7I) for details.
 .sp
 .LP
 To determine if the
@@ -164,9 +165,11 @@ driver tries to read the configuration from the tape drive
 through optional SCSI-3 commands. To support the addition of third party
 tape devices which are not in the  built-in configuration table or not able
 to report their configuration, device information can be supplied in
-\fBst.conf\fR as global properties that apply to each node, or as properties
+.B st.conf
+as global properties that apply to each node, or as properties
 that are applicable to one node only. By supplying the information in
-\fBst.conf\fR, the built-in configuration is overridden and the \fBst\fR
+.BR st.conf ,
+the built-in configuration is overridden and the \fBst\fR
 driver will not query the configuration from tape drives. The \fBst\fR
 driver looks for the property called
 .BR tape-config-list .
@@ -242,22 +245,26 @@ for more
 information.)
 .sp
 .LP
-\fB<vid+pid>\fR is the string that is returned by the tape device on a
-\fBSCSI\fR inquiry command. This string may contain any character in the
+.B <vid+pid>
+is the string that is returned by the tape device on a
+.B SCSI
+inquiry command. This string may contain any character in the
 range \fB0x20-0x7e\fR. Characters such as " " " (double quote) or " ' "
 (single quote), which are not permitted in property value strings, are
 represented by their octal equivalent (for example, \fB\042\fR and
 \fB\047\fR). Trailing spaces may be truncated.
 .sp
 .LP
-\fB<pretty print>\fR is used to report the device on the console. This
+.B <pretty print>
+is used to report the device on the console. This
 string may have zero length, in which case the
 .B <vid+pid>
 will be used
 to report the device.
 .sp
 .LP
-\fB<data-property-name>\fR is the name of the property which contains all
+.B <data-property-name>
+is the name of the property which contains all
 the tape configuration values (such as
 .BR <type> ,
 .BR <bsize> ,
@@ -265,12 +272,15 @@ etc.)
 corresponding for the tape drive for the specified \fB<vid+pid>\fR\&.
 .sp
 .LP
-\fB<version>\fR is a version number and should be 1 or 2. In the future,
+.B <version>
+is a version number and should be 1 or 2. In the future,
 higher version numbers may be used to allow for changes in the syntax of the
-\fB<data-property-name>\fR value list.
+.B <data-property-name>
+value list.
 .sp
 .LP
-\fB<type>\fR is a type field. Valid types are defined in
+.B <type>
+is a type field. Valid types are defined in
 .BR /usr/include/sys/mtio.h .
 For third party tape configuration, the
 following generic types are recommended:
@@ -296,17 +306,23 @@ lw(2.75i) lw(2.75i)
 
 .sp
 .LP
-\fB<bsize>\fR is the preferred block size of the tape device. The value
+.B <bsize>
+is the preferred block size of the tape device. The value
 should be
 .B 0
 for variable block size devices.
 .sp
 .LP
-\fB<options>\fR is a bit pattern representing the devices, as defined in
-\fB/usr/include/sys/scsi/targets/stdef.h\fR. Valid flags for tape
+.B <options>
+is a bit pattern representing the devices, as defined in
+.BR /usr/include/sys/scsi/targets/stdef.h .
+Valid flags for tape
 configuration are shown in the following table. Note that this table does
-not list flags that are non-configurable in \fBst.conf\fR (including
-\fBST_KNOWS_MEDIA\fR which uses the media type reported from the mode select
+not list flags that are non-configurable in
+.B st.conf
+(including
+.B ST_KNOWS_MEDIA
+which uses the media type reported from the mode select
 data to select the correct  density code).
 .sp
 
@@ -486,7 +502,8 @@ That is, the driver will return the correct inquiry string.
 .RS 4n
 The flag indicates the tape device will perform a "request sense" or "log
 sense" command when the device is closed. Currently, only Exabyte and
-\fBDAT\fR drives support this feature.
+.B DAT
+drives support this feature.
 .RE
 
 .sp
@@ -566,8 +583,10 @@ flag disables the use of reserve on open
 and release on close. If an attempt to use a ioctl of
 .B MTRESERVE
 or
-\fBMTRELEASE\fR on a drive with this flag set, it will return an error of
-\fBENOTTY\fR (inappropriate ioctl for device).
+.B MTRELEASE
+on a drive with this flag set, it will return an error of
+.B ENOTTY
+(inappropriate ioctl for device).
 .RE
 
 .sp
@@ -703,7 +722,8 @@ WORM media in the device.
 
 .sp
 .LP
-\fB<number of densities>\fR is the number of densities specified. Each tape
+.B <number of densities>
+is the number of densities specified. Each tape
 drive can support up to four densities. The value entered should therefore
 be between
 .B 1
@@ -716,47 +736,58 @@ densities will be assigned a value of
 .BR 0x0 .
 .sp
 .LP
-\fB<density>\fR is a single-byte hexadecimal number. It can either be found
+.B <density>
+is a single-byte hexadecimal number. It can either be found
 in the device specification manual or be obtained from the device vendor.
 .sp
 .LP
-\fB<default-density>\fR has a value between \fB0\fR and (<number of
+.B <default-density>
+has a value between
+.B 0
+and (<number of
 densities> -
 .BR 1 ).
 .sp
 .LP
-\fB<non-motion time-out>\fR Time in seconds that the drive should be able
+.B <non-motion time-out>
+Time in seconds that the drive should be able
 to perform any SCSI command that doesn't require tape to be moved. This
 includes mode sense, mode select, reserve, release, read block limits, and
 test unit ready.
 .sp
 .LP
-\fB<I/O time-out>\fR Time in seconds to perform data transfer I/O to or
+.B <I/O time-out>
+Time in seconds to perform data transfer I/O to or
 from tape including worst case error recovery.
 .sp
 .LP
-\fB<rewind time-out>\fR Time in seconds to rewind from anywhere on tape to
+.B <rewind time-out>
+Time in seconds to rewind from anywhere on tape to
 BOT including worst case recovery forcing buffered write data to tape.
 .sp
 .LP
-\fB<space time-out>\fR Time in seconds to space to any file, block or end
+.B <space time-out>
+Time in seconds to space to any file, block or end
 of data on tape. Including worst case when any form of cataloging is
 invalid.
 .sp
 .LP
-\fB<load time-out>\fR Time in seconds to load tape and be ready to transfer
+.B <load time-out>
+Time in seconds to load tape and be ready to transfer
 first block. This should include worst case recovery reading tape catalog or
 drive specific operations done at load.
 .sp
 .LP
-\fB<unload time-out>\fR Time in seconds to unload tape. Should include
+.B <unload time-out>
+Time in seconds to unload tape. Should include
 worst case time to write to catalog, unthread, and tape cartridge unloading.
 Also should include worst case time for any drive specific operations that
 are preformed at unload. Should not include rewind time as the driver
 rewinds tape before issuing the unload.
 .sp
 .LP
-\fB<erase time-out>\fR Time in seconds to preform a full (BOT to EOT) erase
+.B <erase time-out>
+Time in seconds to preform a full (BOT to EOT) erase
 of longest medium with worst case error recovery.
 .SS "Device Statistics Support"
 .sp
@@ -914,10 +945,13 @@ requested size during read operation.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Global tape-config list property
+.B Example 1
+Global tape-config list property
 .sp
 .LP
-The following is an example of a global \fBtape-config-list\fR property:
+The following is an example of a global
+.B tape-config-list
+property:
 
 .sp
 .in +2
@@ -946,7 +980,8 @@ name="st" class="scsi"
 .in -2
 
 .LP
-\fBExample 2\fR Tape-config-list property applicable to target 2 only
+.B Example 2
+Tape-config-list property applicable to target 2 only
 .sp
 .LP
 The following is an example of a tape-config-list property applicable to
@@ -998,7 +1033,8 @@ drives.
 If this flag is set, the
 .B st
 .RB "driver issues a SCSI-2" " READ"
-\fBBLOCK LIMITS\fR command to the device to determine the maximum
+.B BLOCK LIMITS
+command to the device to determine the maximum
 record size allowed by it. If the command fails,
 .B st
 continues to use
@@ -1010,7 +1046,8 @@ If the command succeeds,
 .B st
 restricts the maximum transfer size of a
 variable-length device to the minimum of that record size and the maximum
-\fBDMA\fR size that the host adapter can handle. Fixed-length devices are
+.B DMA
+size that the host adapter can handle. Fixed-length devices are
 bound by the maximum
 .B DMA
 size allocated by the machine. Note that
@@ -1053,7 +1090,8 @@ After a zero count is returned, the next write
 returns a full count or short count. A following write returns \fB0\fR
 again. It is important that the number and size of trailer records be kept
 as small as possible to prevent data loss. Therefore, writing after
-\fBEOT\fR is not recommended.
+.B EOT
+is not recommended.
 .sp
 .LP
 Reading past
@@ -1067,7 +1105,7 @@ recorded media.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/st.conf\fR
+.B /kernel/drv/st.conf
 .ad
 .sp .6
 .RS 4n
@@ -1089,7 +1127,7 @@ structures and definitions for mag tape io control commands
 .ne 2
 .mk
 .na
-\fB/usr/include/sys/scsi/targets/stdef.h\fR
+.B /usr/include/sys/scsi/targets/stdef.h
 .ad
 .sp .6
 .RS 4n
@@ -1116,7 +1154,8 @@ the optional BSD behavior (see
 and
 .B n
 the optional no rewind behavior. For example,
-\fB/dev/rmt/0lbn\fR specifies unit 0, low density, BSD behavior, and no
+.B /dev/rmt/0lbn
+specifies unit 0, low density, BSD behavior, and no
 rewind.
 .sp
 For 1/2" reel tape devices (HP-88780), the densities are:
@@ -1223,12 +1262,18 @@ file.
 .LP
 Each diagnostic is dependent on the value of the system variable
 .BR st_error_level .
-\fBst_error_level\fR may be set in the
-\fB/etc/system\fR file. The default setting for \fBst_error_level\fR is 4
+.B st_error_level
+may be set in the
+.B /etc/system
+file. The default setting for
+.B st_error_level
+is 4
 (SCSI_ERR_RETRYABLE) which is suitable for most configurations since only
 actual fault diagnostics are printed. Settings range from values 0
 (SCSI_ERR_ALL) which is most verbose, to 6 (SCSI_ERR_NONE) which is least
-verbose. See \fBstdef.h\fR for the full list of error-levels. SCSI_ERR_ALL
+verbose. See
+.B stdef.h
+for the full list of error-levels. SCSI_ERR_ALL
 level the amount of diagnostic information is likely to be excessive and
 unnecessary.
 .sp
@@ -1259,7 +1304,9 @@ the target in response to a request sense command. See SCSI protocol
 documentation for description of Sense Key, ASC, ASCQ, FRU.
 .sp
 .LP
-The st driver attempts to validate entries in the \fBst.conf\fR file. Each
+The st driver attempts to validate entries in the
+.B st.conf
+file. Each
 field in the entry is checked for upper and lower limits and invalid bits
 set. The fields are named as follows in config string order:
 .sp
@@ -1283,7 +1330,9 @@ set. The fields are named as follows in config string order:
 
 .sp
 .LP
-The \fBst.conf\fR diagnostics are described below:
+The
+.B st.conf
+diagnostics are described below:
 
 .sp
 .in +2
@@ -1586,7 +1635,8 @@ property settings. The
 driver is in the process of setting the
 property/parameter values for the tape drive using information from either
 the built-in table within the driver or from uncommented entries in the
-\fBst.conf\fR file. The effect on the system may be that the tape drive may
+.B st.conf
+file. The effect on the system may be that the tape drive may
 be set with default or generic driver settings which may not be appropriate
 for the actual type of tape drive being used.
 .sp
@@ -1658,7 +1708,9 @@ Command will be retried
 .sp
 .LP
 These diagnostics are only seen with tape drives with the
-ST_RETRY_ON_RECOVERED_DEFERRED_ERROR bit set. See \fBstdef.h\fR for
+ST_RETRY_ON_RECOVERED_DEFERRED_ERROR bit set. See
+.B stdef.h
+for
 explanation of the specific usage of this setting.
 .SH WARNINGS
 .sp

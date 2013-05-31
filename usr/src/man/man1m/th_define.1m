@@ -58,12 +58,17 @@ th_define \- create fault injection test harness error specifications
 .sp
 .LP
 The \fBth_define\fR utility provides an interface to the \fBbus_ops\fR fault
-injection \fBbofi\fR device driver for defining error injection
+injection
+.B bofi
+device driver for defining error injection
 specifications (referred to as errdefs). An errdef corresponds to a
 specification of how to corrupt a device driver's accesses to its hardware.
 The command line arguments determine the precise nature of the fault to be
 injected. If the supplied arguments define a consistent errdef, the
-\fBth_define\fR process will store the errdef with the \fBbofi\fR driver and
+.B th_define
+process will store the errdef with the
+.B bofi
+driver and
 suspend itself until the criteria given by the errdef become satisfied (in
 practice, this will occur when the access counts go to zero).
 .sp
@@ -75,7 +80,10 @@ option to
 activate the resulting errdef. The effect of
 .B th_manage
 with the
-\fBstart\fR option is that the \fBbofi\fR driver acts upon the errdef by
+.B start
+option is that the
+.B bofi
+driver acts upon the errdef by
 matching the number of hardware accesses\(emspecified in
 .IR count ,
 that
@@ -90,21 +98,26 @@ instance specified by
 to the register set (or DMA handle)
 specified by
 .IR reg_number ,
-that lie within the range \fIoffset\fR to
-\fIoffset\fR +\fI length\fR from the beginning of the register set or DMA
+that lie within the range
+.I offset
+to
+.I offset
++\fI length\fR from the beginning of the register set or DMA
 handle. It then applies
 .I operator
 and
 .I operand
 to the next
-\fIfailcount\fR matching accesses.
+.I failcount
+matching accesses.
 .sp
 .LP
 If
 .I acc_types
 includes
 .BR log ,
-\fBth_define\fR runs in automatic
+.B th_define
+runs in automatic
 test script generation mode, and a set of test scripts (written in the Korn
 shell) is created and placed in a sub-directory of the current directory with
 the name \fI<driver>\fR\&.test.\fI<id>\fR (for example,
@@ -132,7 +145,8 @@ and from areas mapped for both reading and writing. You can constrain logging
 by specifying additional
 .IR acc_types ,
 .IR reg_number ,
-\fIoffset\fR and
+.I offset
+and
 .IR length .
 Logging will continue for
 .I count
@@ -161,7 +175,8 @@ The following options are available:
 .ne 2
 .mk
 .na
-\fB-n\fR \fIname\fR
+.B -n
+.I name
 .ad
 .sp .6
 .RS 4n
@@ -195,7 +210,8 @@ Specify the full device path of the driver to test. (String)
 .ne 2
 .mk
 .na
-\fB-r\fR \fIreg_number\fR
+.B -r
+.I reg_number
 .ad
 .sp .6
 .RS 4n
@@ -212,14 +228,16 @@ and DMA handles). (Numeric)
 .sp .6
 .RS 4n
 Only the specified access types will be matched. Valid values for the
-\fIacc_types\fR argument are
+.I acc_types
+argument are
 .BR log ,
 .BR pio ,
 .BR pio_r ,
 .BR pio_w ,
 .BR dma ,
 .BR dma_r ,
-\fBdma_w\fR and
+.B dma_w
+and
 .BR intr .
 Multiple access types,
 separated by spaces, can be specified. The default is to match all hardware
@@ -260,15 +278,26 @@ both reading and writing.
 .ad
 .sp .6
 .RS 4n
-Constrain the range of qualifying accesses. The \fIoffset\fR and
-\fIlength\fR arguments indicate that any access of the type specified with
+Constrain the range of qualifying accesses. The
+.I offset
+and
+.I length
+arguments indicate that any access of the type specified with
 the
 .B -a
 option, to the register set or DMA handle specified with the
-\fB-r\fR option, lie at least \fIoffset\fR bytes into the register set or DMA
+.B -r
+option, lie at least
+.I offset
+bytes into the register set or DMA
 handle and at most \fIoffset\fR + \fIlength\fR bytes into it. The default for
-\fIoffset\fR is 0. The default for \fIlength\fR is the maximum value that can
-be placed in an \fBoffset_t\fR C data type (see
+.I offset
+is 0. The default for
+.I length
+is the maximum value that can
+be placed in an
+.B offset_t
+C data type (see
 .BR types.h ).
 Negative
 values are converted into unsigned quantities. Thus, \fBth_define\fB -l\fR 0
@@ -289,34 +318,47 @@ Wait for
 number of matching accesses, then apply an operator and
 operand (see the
 .B -o
-option) to the next \fIfailcount\fR number of
+option) to the next
+.I failcount
+number of
 matching accesses. If the access type (see the
 .B -a
 option) includes
 logging, the number of logged accesses is given by
 .I count
 +
-\fIfailcount\fR - 1. The -1 is required because the last access coincides
+.I failcount
+- 1. The -1 is required because the last access coincides
 with the first faulting access.
 .sp
 Note that access logging may be combined with error injection if
-\fIfailcount\fR and \fIoperator\fR are nonzero and if the access type
+.I failcount
+and
+.I operator
+are nonzero and if the access type
 includes logging and any of the other access types (\fBpio\fR,
 .B dma
 and
 .BR intr )
 See the description of access types in the definition of the
-\fB-a\fR option, above.
+.B -a
+option, above.
 .sp
 When the
 .I count
-and \fIfailcount\fR fields reach zero, the status of
+and
+.I failcount
+fields reach zero, the status of
 the errdef is reported to standard output. When all active errdefs created by
 the \fBth_define\fR process complete, the process exits. If \fIacc_types\fR
 includes
 .BR log ,
-\fIcount\fR determines how many accesses to log. If
-\fIcount\fR is not specified, a default value is used. If \fIfailcount\fR is
+.I count
+determines how many accesses to log. If
+.I count
+is not specified, a default value is used. If
+.I failcount
+is
 set in this mode, it will simply increase the number of accesses logged by a
 further
 .IR failcount " - 1."
@@ -341,7 +383,8 @@ to the hardware is corrupted according to the value of
 .ad
 .RS 7n
 .rt
-\fIoperand\fR is returned to the driver.
+.I operand
+is returned to the driver.
 .RE
 
 .sp
@@ -352,7 +395,8 @@ to the hardware is corrupted according to the value of
 .ad
 .RS 7n
 .rt
-\fIoperand\fR is bitwise ORed with the real value.
+.I operand
+is bitwise ORed with the real value.
 .RE
 
 .sp
@@ -363,7 +407,8 @@ to the hardware is corrupted according to the value of
 .ad
 .RS 7n
 .rt
-\fIoperand\fR is bitwise ANDed with the real value.
+.I operand
+is bitwise ANDed with the real value.
 .RE
 
 .sp
@@ -374,7 +419,8 @@ to the hardware is corrupted according to the value of
 .ad
 .RS 7n
 .rt
-\fIoperand\fR is bitwise XORed with the real value.
+.I operand
+is bitwise XORed with the real value.
 .RE
 
 For PIO write accesses, the following operator is allowed:
@@ -435,7 +481,8 @@ microseconds.
 After
 .I count
 number of interrupts, fail to deliver the next
-\fIfailcount\fR number of real interrupts to the driver.
+.I failcount
+number of real interrupts to the driver.
 .RE
 
 .sp
@@ -449,7 +496,9 @@ number of interrupts, fail to deliver the next
 After
 .I count
 number of interrupts, start delivering \fIoperand\fR
-number of extra interrupts for the next \fIfailcount\fR number of real
+number of extra interrupts for the next
+.I failcount
+number of real
 interrupts.
 .RE
 
@@ -465,7 +514,8 @@ data access by flipping each bit (XOR with -1).
 .ne 2
 .mk
 .na
-\fB-f\fR \fIacc_chk\fR
+.B -f
+.I acc_chk
 .ad
 .sp .6
 .RS 4n
@@ -485,7 +535,8 @@ parameter is set to 2 or
 then the driver's calls to
 .BR ddi_check_dma_handle (9F)
 return
-\fBDDI_FAILURE\fR when the access count goes to 1.
+.B DDI_FAILURE
+when the access count goes to 1.
 .RE
 
 .sp
@@ -501,7 +552,8 @@ option applies only to non-logging errdefs. If an error definition remains
 active for
 .I max_wait_period
 seconds, the test will be aborted. If
-\fIreport_interval\fR is set to a nonzero value, the current status of the
+.I report_interval
+is set to a nonzero value, the current status of the
 error definition is reported to standard output every
 .IR report_interval
 seconds. The default value is zero. The status of the errdef is reported in
@@ -515,7 +567,7 @@ which are defined as follows:
 .ne 2
 .mk
 .na
-\fIft\fR
+.I ft
 .ad
 .RS 13n
 .rt
@@ -548,7 +600,7 @@ The number of remaining non-faulting accesses.
 .ne 2
 .mk
 .na
-\fIfc\fR
+.I fc
 .ad
 .RS 13n
 .rt
@@ -619,7 +671,8 @@ Display the command usage string.
 .ne 2
 .mk
 .na
-\fB-s\fR \fIcollect_time\fR
+.B -s
+.I collect_time
 .ad
 .sp .6
 .RS 4n
@@ -634,7 +687,9 @@ the errdef will log accesses for
 seconds (the default is
 to log until the log becomes full). Note that, if the errdef specification
 matches multiple driver handles, multiple logging errdefs are registered with
-the \fBbofi\fR driver and logging terminates when all logs become full or
+the
+.B bofi
+driver and logging terminates when all logs become full or
 when
 .I collect_time
 expires or when the associated errdefs are cleared.
@@ -646,7 +701,9 @@ parameter. A log can be terminated by
 running \fBth_manage\fR(1M) with the \fBclear_errdefs\fR option or by sending
 a
 .B SIGALRM
-signal to the \fBth_define\fR process. See
+signal to the
+.B th_define
+process. See
 .BR alarm (2)
 for
 the semantics of
@@ -657,7 +714,8 @@ the semantics of
 .ne 2
 .mk
 .na
-\fB-p\fR \fIpolicy\fR
+.B -p
+.I policy
 .ad
 .sp .6
 .RS 4n
@@ -725,9 +783,14 @@ to create unbiased error definitions.
 Use
 .BR onebyte ,
 .BR twobyte ,
-\fBfourbyte\fR, or \fBeightbyte\fR to
+.BR fourbyte ,
+or
+.B eightbyte
+to
 select errdefs corresponding to 1, 2, 4 or 8 byte accesses (if chosen, the
-\fB-xr\fR option is enforced in order to ensure that \fBddi_rep_*()\fR
+.B -xr
+option is enforced in order to ensure that
+.BR ddi_rep_*()
 calls are decomposed into
 .BR "multiple single accesses" ).
 .RE
@@ -751,7 +814,8 @@ section for further information.
 .ne 2
 .mk
 .na
-\fB-x\fR \fIflags\fR
+.B -x
+.I flags
 .ad
 .sp .6
 .RS 4n
@@ -760,7 +824,10 @@ Applicable when the
 option includes
 .BR log .
 The
-\fIflags\fR parameter modifies the way in which the \fBbofi\fR driver logs
+.I flags
+parameter modifies the way in which the
+.B bofi
+driver logs
 accesses. It is specified as a string containing any combination of the
 following letters:
 .sp
@@ -798,7 +865,8 @@ Log repeated I/O as individual accesses (for example, a
 call which has a repcount of
 .I N
 is logged
-\fIN\fR times with each transaction logged as size 2 bytes. Without this
+.I N
+times with each transaction logged as size 2 bytes. Without this
 option, the default logging behavior is to log this access once only, with a
 transaction size of twice the
 .IR repcount ).
@@ -810,7 +878,8 @@ transaction size of twice the
 .ne 2
 .mk
 .na
-\fB-C\fR \fIcomment_string\fR
+.B -C
+.I comment_string
 .ad
 .sp .6
 .RS 4n
@@ -840,7 +909,9 @@ a logging errdefs is to generate a test script for each driver access handle.
 Use this option to embed a command in the resulting script before the errors
 are injected. The generated test scripts will take an instance offline and
 bring it back online before injecting errors in order to bring the instance
-into a known fault-free state. The executable \fIfixup_script\fR will be
+into a known fault-free state. The executable
+.I fixup_script
+will be
 called twice with the set of optional \fIargs\fR\(em once just before the
 instance is taken offline and again after the instance has been brought
 online. The following variables are passed into the environment of the called
@@ -933,16 +1004,18 @@ and then re-attach the device instance under test.
 .SS "Examples of Error Definitions"
 .sp
 .LP
-\fBth_define -n foo -i 1 -a log\fR
+.B "th_define -n foo -i 1 -a log
 .sp
 .LP
-Logs all accesses to all handles used by instance 1 of the \fBfoo\fR driver
+Logs all accesses to all handles used by instance 1 of the
+.B foo
+driver
 while running the default workload (attaching and detaching the instance).
 Then generates a set of test scripts to inject appropriate errdefs while
 running that default workload.
 .sp
 .LP
-\fBth_define -n foo -i 1 -a log pio\fR
+.B "th_define -n foo -i 1 -a log pio
 .sp
 .LP
 Logs PIO accesses to each PIO handle used by instance 1 of the \fBfoo\fR
@@ -951,11 +1024,15 @@ instance). Then generates a set of test scripts to inject appropriate errdefs
 while running that default workload.
 .sp
 .LP
-\fBth_define -n foo -i 1 -p onebyte median -e fixup arg -now\fR
+.B "th_define -n foo -i 1 -p onebyte median -e fixup arg -now
 .sp
 .LP
-Logs all accesses to all handles used by instance 1 of the \fBfoo\fR driver
-while running the workload defined in the fixup script \fBfixup\fR with
+Logs all accesses to all handles used by instance 1 of the
+.B foo
+driver
+while running the workload defined in the fixup script
+.B fixup
+with
 arguments
 .B arg
 and
@@ -969,7 +1046,7 @@ number of times with respect to frequency of
 access to I/O addresses.
 .sp
 .LP
-\fBth_define -n se -l 0x20 1 -a pio_r -o OR 0x4 -c 10 1000\fR
+.B "th_define -n se -l 0x20 1 -a pio_r -o OR 0x4 -c 10 1000
 .sp
 .LP
 Simulates a stuck serial chip command by forcing 1000 consecutive read
@@ -979,31 +1056,37 @@ driver to its command status
 register, thereby returning status busy.
 .sp
 .LP
-\fBth_define -n foo -i 3 -r 1 -a pio_r -c 0 1 -f 1 -o OR 0x100\fR
+.B "th_define -n foo -i 3 -r 1 -a pio_r -c 0 1 -f 1 -o OR 0x100
 .sp
 .LP
 Causes 0x100 to be ORed into the next physical I/O read access from any
-register in register set 1 of instance 3 of the \fBfoo\fR driver. Subsequent
+register in register set 1 of instance 3 of the
+.B foo
+driver. Subsequent
 calls in the driver to
 .B ddi_check_acc_handle()
 return
 .BR DDI_FAILURE .
 .sp
 .LP
-\fBth_define -n foo -i 3 -r 1 -a pio_r -c 0 1 -o OR 0x0\fR
+.B "th_define -n foo -i 3 -r 1 -a pio_r -c 0 1 -o OR 0x0
 .sp
 .LP
 Causes 0x0 to be ORed into the next physical I/O read access from any
-register in register set 1 of instance 3 of the \fBfoo\fR driver. This is of
+register in register set 1 of instance 3 of the
+.B foo
+driver. This is of
 course a no-op.
 .sp
 .LP
-\fBth_define -n foo -i 3 -r 1 -l 0x8100 1 -a pio_r -c 0 10 -o EQ 0x70003\fR
+.B "th_define -n foo -i 3 -r 1 -l 0x8100 1 -a pio_r -c 0 10 -o EQ 0x70003
 
 .sp
 .LP
 Causes the next ten next physical I/O reads from the register at offset
-0x8100 in register set 1 of instance 3 of the \fBfoo\fR driver to return
+0x8100 in register set 1 of instance 3 of the
+.B foo
+driver to return
 0x70003.
 .sp
 .LP
@@ -1012,7 +1095,9 @@ Causes the next ten next physical I/O reads from the register at offset
 .sp
 .LP
 The next 100 physical I/O writes to the register at offset 0x8100 in
-register set 1 of instance 3 of the \fBfoo\fR driver take place as normal.
+register set 1 of instance 3 of the
+.B foo
+driver take place as normal.
 However, on each of the three subsequent accesses, the 0x1000 bit will be
 cleared.
 .sp
@@ -1023,21 +1108,25 @@ cleared.
 .LP
 Causes the bottom three bits to have their values toggled for the next
 physical I/O read access to registers with offsets in the range 0x8100 to
-0x8110 in register set 1 of instance 3 of the \fBfoo\fR driver. Subsequent
+0x8110 in register set 1 of instance 3 of the
+.B foo
+driver. Subsequent
 calls in the driver to
 .B ddi_check_acc_handle()
 return
 .BR DDI_FAILURE .
 .sp
 .LP
-\fBth_define -n foo -i 3 -a pio_w -c 0 1 -o NO 0\fR
+.B "th_define -n foo -i 3 -a pio_w -c 0 1 -o NO 0
 .sp
 .LP
 Prevents the next physical I/O write access to any register in any register
-set of instance 3 of the \fBfoo\fR driver from going out on the bus.
+set of instance 3 of the
+.B foo
+driver from going out on the bus.
 .sp
 .LP
-\fBth_define -n foo -i 3 -l 0 8192 -a dma_r -c 0 1 -o OR 7\fR
+.B "th_define -n foo -i 3 -l 0 8192 -a dma_r -c 0 1 -o OR 7
 .sp
 .LP
 Causes 0x7 to be ORed into each
@@ -1055,18 +1144,23 @@ Causes 0x70 to be ORed into each byte of the first
 .B "long long"
 of the
 next DMA read, using the DMA handle with sequential allocation number 2 for
-instance 3 of the \fBfoo\fR driver.
+instance 3 of the
+.B foo
+driver.
 .sp
 .LP
-\fBth_define -n foo -i 3 -l 256 256 -a dma_w -c 0 1 -f 2 -o OR 7\fR
+.B "th_define -n foo -i 3 -l 256 256 -a dma_w -c 0 1 -f 2 -o OR 7
 .sp
 .LP
 Causes 0x7 to be ORed into each
 .B "long long"
 in the range from offset 256
 to offset 512 of the next DMA write, using any DMA handle for instance 3 of
-the \fBfoo\fR driver. Subsequent calls in the driver to
-\fBddi_check_dma_handle()\fR return
+the
+.B foo
+driver. Subsequent calls in the driver to
+.B ddi_check_dma_handle()
+return
 .BR DDI_FAILURE .
 .sp
 .LP
@@ -1075,36 +1169,44 @@ the \fBfoo\fR driver. Subsequent calls in the driver to
 .sp
 .LP
 The next 100 DMA writes using the DMA handle with sequential allocation
-number 0 for instance 3 of the \fBfoo\fR driver take place as normal.
+number 0 for instance 3 of the
+.B foo
+driver take place as normal.
 However, on each of the three subsequent accesses, the 0x1000 bit will be
 cleared in the first
 .B "long long"
 of the transfer.
 .sp
 .LP
-\fBth_define -n foo -i 3 -a intr -c 0 6 -o LOSE 0\fR
+.B "th_define -n foo -i 3 -a intr -c 0 6 -o LOSE 0
 .sp
 .LP
-Causes the next six interrupts for instance 3 of the \fBfoo\fR driver to be
+Causes the next six interrupts for instance 3 of the
+.B foo
+driver to be
 lost.
 .sp
 .LP
-\fBth_define -n foo -i 3 -a intr -c 30 1 -o EXTRA 10\fR
+.B "th_define -n foo -i 3 -a intr -c 30 1 -o EXTRA 10
 .sp
 .LP
 When the thirty-first subsequent interrupt for instance 3 of the \fBfoo\fR
 driver occurs, a further ten interrupts are also generated.
 .sp
 .LP
-\fBth_define -n foo -i 3 -a intr -c 0 1 -o DELAY 1024\fR
+.B "th_define -n foo -i 3 -a intr -c 0 1 -o DELAY 1024
 .sp
 .LP
-Causes the next interrupt for instance 3 of the \fBfoo\fR driver to be
+Causes the next interrupt for instance 3 of the
+.B foo
+driver to be
 delayed by 1024 microseconds.
 .SH NOTES
 .sp
 .LP
-The policy option in the \fBth_define -p\fR syntax determines how a
+The policy option in the
+.B "th_define -p"
+syntax determines how a
 set of logged accesses will be converted into the set of error definitions.
 Each logged access will be matched against the chosen policies to determine
 whether an error definition should be created based on the access.
@@ -1145,7 +1247,7 @@ Create errdefs for two byte accesses (\fBddi_get16()\fR)
 .ne 2
 .mk
 .na
-\fBfourbyte\fR
+.B fourbyte
 .ad
 .RS 13n
 .rt

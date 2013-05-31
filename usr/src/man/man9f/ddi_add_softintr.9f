@@ -64,7 +64,7 @@ Drivers\fR for more information.
 .SH PARAMETERS
 .sp
 .LP
-\fBddi_get_soft_iblock_cookie()\fR
+.B ddi_get_soft_iblock_cookie()
 .sp
 .ne 2
 .mk
@@ -73,14 +73,16 @@ Drivers\fR for more information.
 .ad
 .RS 18n
 .rt
-Pointer to a \fBdev_info\fR structure.
+Pointer to a
+.B dev_info
+structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpreference\fR
+.I preference
 .ad
 .RS 18n
 .rt
@@ -100,7 +102,7 @@ Pointer to a location to store the interrupt block cookie.
 
 .sp
 .LP
-\fBddi_add_softintr()\fR
+.B ddi_add_softintr()
 .sp
 .ne 2
 .mk
@@ -109,14 +111,16 @@ Pointer to a location to store the interrupt block cookie.
 .ad
 .RS 19n
 .rt
-Pointer to \fBdev_info\fR structure.
+Pointer to
+.B dev_info
+structure.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIpreference\fR
+.I preference
 .ad
 .RS 19n
 .rt
@@ -183,7 +187,7 @@ Argument for interrupt handler.
 
 .sp
 .LP
-\fBddi_remove_softintr()\fR
+.B ddi_remove_softintr()
 .sp
 .ne 2
 .mk
@@ -197,7 +201,7 @@ The identifier specifying which soft interrupt handler to remove.
 
 .sp
 .LP
-\fBddi_trigger_softintr()\fR
+.B ddi_trigger_softintr()
 .sp
 .ne 2
 .mk
@@ -217,14 +221,19 @@ For
 .BR ddi_get_soft_iblock_cookie() :
 .sp
 .LP
-\fBddi_get_soft_iblock_cookie()\fR retrieves the interrupt block cookie
+.B ddi_get_soft_iblock_cookie()
+retrieves the interrupt block cookie
 associated with a particular soft interrupt preference level. This routine should
-be called before \fBddi_add_softintr()\fR to retrieve the interrupt block cookie
+be called before
+.B ddi_add_softintr()
+to retrieve the interrupt block cookie
 needed to initialize locks (
 .BR mutex (9F),
 .BR rwlock (9F))
 used by the
-software interrupt routine. \fIpreference\fR determines which type of soft
+software interrupt routine.
+.I preference
+determines which type of soft
 interrupt to retrieve the cookie for. The possible values for \fIpreference\fR
 are:
 .sp
@@ -269,10 +278,13 @@ initializing locks associated with this soft interrupt (see
 .BR mutex_init (9F)
 and
 .BR rw_init "(9F)). The driver can then initialize mutexes acquired by the"
-interrupt routine before calling \fBddi_add_softintr()\fR which prevents a
+interrupt routine before calling
+.B ddi_add_softintr()
+which prevents a
 possible race condition where the driver's soft interrupt handler is called
 immediately \fBafter\fR the driver has called \fBddi_add_softintr()\fR but
-\fBbefore\fR the driver has initialized the mutexes. This can happen when a soft
+.B before
+the driver has initialized the mutexes. This can happen when a soft
 interrupt for a different device occurs on the same soft interrupt priority
 level. If the soft interrupt routine acquires the mutex before it has been
 initialized, undefined behavior may result.
@@ -282,19 +294,29 @@ For
 .BR ddi_add_softintr() :
 .sp
 .LP
-\fBddi_add_softintr()\fR adds a soft interrupt to the system. The user specified
-hint \fIpreference\fR identifies three suggested levels for the system to attempt
-to allocate the soft interrupt priority at. The value for \fIpreference\fR should
+.B ddi_add_softintr()
+adds a soft interrupt to the system. The user specified
+hint
+.I preference
+identifies three suggested levels for the system to attempt
+to allocate the soft interrupt priority at. The value for
+.I preference
+should
 be the same as that used in the corresponding call to
-\fBddi_get_soft_iblock_cookie()\fR. Refer to the description of
-\fBddi_get_soft_iblock_cookie()\fR above.
+.BR ddi_get_soft_iblock_cookie() .
+Refer to the description of
+.B ddi_get_soft_iblock_cookie()
+above.
 .sp
 .LP
 The value returned in the location pointed at by
 .I idp
 is the soft interrupt
-identifier. This value is used in later calls to \fBddi_remove_softintr()\fR and
-\fBddi_trigger_softintr()\fR to identify the soft interrupt and the soft
+identifier. This value is used in later calls to
+.B ddi_remove_softintr()
+and
+.B ddi_trigger_softintr()
+to identify the soft interrupt and the soft
 interrupt handler.
 .sp
 .LP
@@ -307,15 +329,20 @@ associated with this soft interrupt (see
 and
 .BR rw_init (9F)).
 Note that the interrupt block cookie is normally obtained
-using \fBddi_get_soft_iblock_cookie()\fR to avoid the race conditions described
-above (refer to the description of \fBddi_get_soft_iblock_cookie()\fR above). For
+using
+.B ddi_get_soft_iblock_cookie()
+to avoid the race conditions described
+above (refer to the description of
+.B ddi_get_soft_iblock_cookie()
+above). For
 this reason,
 .I iblock_cookiep
 is no longer useful and should be set to
 .IR NULL .
 .sp
 .LP
-\fIidevice_cookiep\fR is not used and should be set to
+.I idevice_cookiep
+is not used and should be set to
 .IR NULL .
 .sp
 .LP
@@ -345,7 +372,9 @@ claimed,
 otherwise.
 .sp
 .LP
-If successful, \fBddi_add_softintr()\fR will return
+If successful,
+.B ddi_add_softintr()
+will return
 .BR DDI_SUCCESS ;
 if the
 interrupt information cannot be found, it will return
@@ -356,11 +385,13 @@ For
 .BR ddi_remove_softintr() :
 .sp
 .LP
-\fBddi_remove_softintr()\fR removes a soft interrupt from the system. The soft
+.B ddi_remove_softintr()
+removes a soft interrupt from the system. The soft
 interrupt identifier
 .IR id ,
 which was returned from a call to
-\fBddi_add_softintr()\fR, is used to determine which soft interrupt and which
+.BR ddi_add_softintr() ,
+is used to determine which soft interrupt and which
 soft interrupt handler to remove. Drivers must remove any soft interrupt handlers
 before allowing the system to unload the driver.
 .sp
@@ -369,7 +400,8 @@ For
 .BR ddi_trigger_softintr() :
 .sp
 .LP
-\fBddi_trigger_softintr()\fR triggers a soft interrupt. The soft interrupt
+.B ddi_trigger_softintr()
+triggers a soft interrupt. The soft interrupt
 identifier
 .I id
 is used to determine which soft interrupt to trigger. This
@@ -379,7 +411,10 @@ which has been set up using
 .SH RETURN VALUES
 .sp
 .LP
-\fBddi_add_softintr()\fR and \fBddi_get_soft_iblock_cookie()\fR return:
+.B ddi_add_softintr()
+and
+.B ddi_get_soft_iblock_cookie()
+return:
 .sp
 .ne 2
 .mk
@@ -406,11 +441,13 @@ on failure
 .sp
 .LP
 These functions can be called from user or kernel context.
-\fBddi_trigger_softintr()\fR may be called from high-level interrupt context as
+.B ddi_trigger_softintr()
+may be called from high-level interrupt context as
 well.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR device using high-level interrupts
+.B Example 1
+device using high-level interrupts
 .sp
 .LP
 In the following example, the device uses high-level interrupts. High-level
@@ -458,7 +495,10 @@ static uint_t xxhighintr(caddr_t);
 .in -2
 
 .LP
-\fBExample 2\fR sample \fBattach()\fR routine
+.B Example 2
+sample
+.B attach()
+routine
 .sp
 .LP
 The following code fragment would usually appear in the driver's
@@ -466,7 +506,9 @@ The following code fragment would usually appear in the driver's
 routine.
 .BR ddi_add_intr (9F)
 is used to add the high-level
-interrupt handler and \fBddi_add_softintr()\fR is used to add the low-level
+interrupt handler and
+.B ddi_add_softintr()
+is used to add the low-level
 interrupt routine.
 
 .sp
@@ -519,13 +561,16 @@ xxattach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 .in -2
 
 .LP
-\fBExample 3\fR High-level interrupt routine
+.B Example 3
+High-level interrupt routine
 .sp
 .LP
 The next code fragment represents the high-level interrupt routine. The
 high-level interrupt routine minimally services the device, and enqueues the data
 for later processing by the soft interrupt routine. If the soft interrupt routine
-is not already running, \fBddi_trigger_softintr()\fR is called to start the
+is not already running,
+.B ddi_trigger_softintr()
+is called to start the
 routine. The soft interrupt routine will run until there is no more data on the
 queue.
 
@@ -631,9 +676,11 @@ Interface StabilityObsolete
 .SH NOTES
 .sp
 .LP
-\fBddi_add_softintr()\fR may not be used to add the same software interrupt
+.B ddi_add_softintr()
+may not be used to add the same software interrupt
 handler more than once. This is true even if a different value is used for
-\fIint_handler_arg\fR in each of the calls to
+.I int_handler_arg
+in each of the calls to
 .BR ddi_add_softintr() .
 Instead,
 the argument passed to the interrupt handler should indicate what service(s) the

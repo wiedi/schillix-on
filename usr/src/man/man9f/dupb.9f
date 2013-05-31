@@ -40,15 +40,25 @@ Architecture independent level 1 (DDI/DKI).
 .SH DESCRIPTION
 .sp
 .LP
-\fBdupb()\fR creates a new  \fBmblk_t\fR structure (see \fBmsgb\fR(9S)) to
+.B dupb()
+creates a new
+.B mblk_t
+structure (see
+.BR msgb (9S))
+to
 reference the message block pointed to by
 .IR bp .
 .sp
 .LP
 Unlike  \fBcopyb\fR(9F), \fBdupb()\fR does not copy the information in the
-\fBdblk_t\fR structure (see \fBdatab\fR(9S)), but creates a new
-\fBmblk_t\fR structure to point to it. The reference count in the
-\fBdblk_t\fR structure (\fBdb_ref\fR) is incremented.  The new \fBmblk_t\fR
+.B dblk_t
+structure (see
+.BR datab (9S)),
+but creates a new
+.B mblk_t
+structure to point to it. The reference count in the
+.B dblk_t
+structure (\fBdb_ref\fR) is incremented.  The new \fBmblk_t\fR
 structure contains the same information as the original.  Note that
 \fBb_rptr\fRand \fBb_wptr\fR are copied from the
 .IR bp .
@@ -78,8 +88,13 @@ of the
 If successful,
 .B dupb()
 returns a pointer to the new message block. A
-\fINULL\fR pointer is returned if  \fBdupb()\fR cannot allocate a new
-message block descriptor or if the \fBdb_ref\fR field of the data block
+.I NULL
+pointer is returned if
+.B dupb()
+cannot allocate a new
+message block descriptor or if the
+.B db_ref
+field of the data block
 structure (see
 .BR datab (9S))
 has reached a maximum value
@@ -87,10 +102,13 @@ has reached a maximum value
 .SH CONTEXT
 .sp
 .LP
-\fBdupb()\fR can be called from user, kernel, or interrupt context.
+.B dupb()
+can be called from user, kernel, or interrupt context.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Using \fBdupb()\fR
+.B Example 1
+Using
+.BR dupb()
 .sp
 .LP
 This  \fBsrv\fR(9E) (service) routine adds a header to  all  \fBM_DATA\fR
@@ -104,7 +122,8 @@ because the contents of the header block are not changed.
 .LP
 For each message on the queue, if it is a priority message, pass it along
 immediately (lines 10-11). Otherwise, if it is anything other than an
-\fBM_DATA\fR message (line 12), and if it can be sent along (line 13), then
+.B M_DATA
+message (line 12), and if it can be sent along (line 13), then
 do so (line 14). Otherwise, put the message back on the queue and return
 (lines 16-17). For all
 .B M_DATA
@@ -115,7 +134,8 @@ duplicated (line 21).
 
 .sp
 .LP
-\fBdupb()\fR can fail either due to lack of resources or because the
+.B dupb()
+can fail either due to lack of resources or because the
 message block has already been duplicated 255 times.  In order to handle the
 latter case, the example calls \fBcopyb\fR(9F) (line 22).  If
 .BR copyb (9F)
@@ -128,7 +148,8 @@ is not already pending (lines 26-27).
 The callback function,
 .BR xxxcallback() ,
 clears the recorded
-\fBqbufcall\fR(9F) callback id and schedules the service procedure (lines
+.BR qbufcall (9F)
+callback id and schedules the service procedure (lines
 49-50). Note  that the close routine,
 .BR xxxclose() ,
 must cancel any

@@ -129,7 +129,8 @@ These functions are used to obtain password entries. Entries can come from
 any of the sources for
 .B passwd
 specified in the
-\fB/etc/nsswitch.conf\fR file (see \fBnsswitch.conf\fR(4)).
+.B /etc/nsswitch.conf
+file (see \fBnsswitch.conf\fR(4)).
 .sp
 .LP
 The
@@ -165,7 +166,8 @@ and
 .B getpwuid()
 leave the
 enumeration position in an indeterminate state. Successive calls to
-\fBgetpwent()\fR return either successive entries or a null pointer,
+.B getpwent()
+return either successive entries or a null pointer,
 indicating the end of the enumeration.
 .sp
 .LP
@@ -179,9 +181,16 @@ more password functions after calling
 .BR endpwent() .
 .sp
 .LP
-The \fBfgetpwent()\fR function, unlike the other functions above, does not
-use \fBnsswitch.conf\fR but reads and parses the next line from the stream
-\fIf\fR, which is assumed to have the format of the \fBpasswd\fR file.  See
+The
+.B fgetpwent()
+function, unlike the other functions above, does not
+use
+.B nsswitch.conf
+but reads and parses the next line from the stream
+.IR f ,
+which is assumed to have the format of the
+.B passwd
+file.  See
 .BR passwd (4).
 .SS "Reentrant Interfaces"
 .sp
@@ -191,7 +200,8 @@ The
 .BR getpwuid() ,
 .BR getpwent() ,
 and
-\fBfgetpwent()\fR functions use thread-specific data storage that is reused
+.B fgetpwent()
+functions use thread-specific data storage that is reused
 in each call to one of these functions by the same thread, making them safe
 to use but not recommended for multithreaded applications.
 .sp
@@ -200,7 +210,9 @@ The parallel functions
 .BR getpwnam_r() ,
 .BR getpwuid_r() ,
 .BR getpwent_r() ,
-and \fBfgetpwent_r()\fR provide reentrant interfaces for
+and
+.B fgetpwent_r()
+provide reentrant interfaces for
 these operations.
 .sp
 .LP
@@ -218,11 +230,14 @@ parameter must be a pointer to a
 .B "struct passwd"
 structure allocated by
 the caller. On successful completion, the function returns the password
-entry in this structure. The parameter \fIbuffer\fR is a pointer to a buffer
+entry in this structure. The parameter
+.I buffer
+is a pointer to a buffer
 supplied by the caller, used as storage space for the password data. All
 pointers within the returned
 .B "struct passwd"
-\fIpwd\fR point to data
+.I pwd
+point to data
 stored within this buffer; see
 .B "passwd Structure"
 below. The buffer must
@@ -231,19 +246,22 @@ parameter \fIbuflen\fR (or \fIbufsize\fR for the standard-conforming
 versions; see
 .BR standards (5))
 should give the size in bytes of
-\fIbuffer\fR. The maximum size needed for this buffer can be determined with
+.IR buffer .
+The maximum size needed for this buffer can be determined with
 the {\fB_SC_GETPW_R_SIZE_MAX\fR} \fBsysconf\fR(3C) parameter. The
 standard-conforming versions place a pointer to the modified \fIpwd\fR
 structure in the
 .I result
 parameter, instead of returning a pointer to
 this structure. A null pointer is returned at the location pointed to by
-\fIresult\fR on error or if the requested entry is not found.
+.I result
+on error or if the requested entry is not found.
 .sp
 .LP
 For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads. The
-\fBsetpwent()\fR function can be used in a multithreaded application but
+.B setpwent()
+function can be used in a multithreaded application but
 resets the enumeration position for all threads.  If multiple threads
 interleave calls to
 .BR getpwent_r() ,
@@ -254,7 +272,8 @@ subsets of the password database.
 Like their non-reentrant counterparts,
 .B getpwnam_r()
 and
-\fBgetpwuid_r()\fR leave the enumeration position in an indeterminate
+.B getpwuid_r()
+leave the enumeration position in an indeterminate
 state.
 .SS "passwd Structure"
 .sp
@@ -299,10 +318,13 @@ The
 .BR getpwnam_r() ,
 .BR getpwuid() ,
 and
-\fBgetpwuid_r()\fR functions each return a pointer to a \fBstruct passwd\fR
+.B getpwuid_r()
+functions each return a pointer to a
+.BR "struct passwd"
 if they successfully locate the requested entry. A null pointer is returned
 if the requested entry is not found, or an error occurs. On error,
-\fBerrno\fR is set to indicate the error.
+.B errno
+is set to indicate the error.
 .sp
 .LP
 Applications wishing to check for error situations should set
@@ -342,7 +364,9 @@ The
 .BR getpwent_r() ,
 .BR fgetpwent() ,
 and
-\fBfgetpwent_r()\fR functions each return a pointer to a \fBstruct passwd\fR
+.B fgetpwent_r()
+functions each return a pointer to a
+.BR "struct passwd"
 if they successfully enumerate an entry; otherwise they return a null
 pointer on end-of-file or error. On error,
 .B errno
@@ -362,7 +386,8 @@ The
 .BR getpwuid() ,
 .BR getpwent() ,
 and
-\fBfgetpwent()\fR functions use thread-specific data storage, so returned
+.B fgetpwent()
+functions use thread-specific data storage, so returned
 data must be copied before a subsequent call to any of these functions if
 the data is to be saved.
 .sp
@@ -371,7 +396,9 @@ When the pointer returned by the reentrant functions
 .BR getpwnam_r() ,
 .BR getpwuid_r() ,
 .BR getpwent_r() ,
-and \fBfgetpwent_r()\fR is non-null,
+and
+.B fgetpwent_r()
+is non-null,
 it is always equal to the
 .I pwd
 pointer that was supplied by the
@@ -381,7 +408,8 @@ caller.
 .LP
 The
 .BR getpwent_r() ,
-\fBfgetpwent()\fR, and \fBfgetpwent_r()\fR
+.BR fgetpwent() ,
+and \fBfgetpwent_r()\fR
 functions will fail if:
 .sp
 .ne 2
@@ -501,7 +529,8 @@ The
 .BR getpwnam_r() ,
 .BR getpwuid() ,
 and
-\fBgetpwuid_r()\fR functions may fail if:
+.B getpwuid_r()
+functions may fail if:
 .sp
 .ne 2
 .mk
@@ -612,14 +641,20 @@ and
 is discouraged; enumeration is supported for the
 .B passwd
 file,
-\fBNIS,\fR and \fBNIS+,\fR but in general is not efficient and might not be
+.B NIS,
+and
+.B NIS+,
+but in general is not efficient and might not be
 supported for all database sources.  The semantics of enumeration are
 discussed further in
 .BR nsswitch.conf (4).
 .sp
 .LP
 Previous releases allowed the use of `+' and `-' entries in
-\fB/etc/passwd\fR to selectively include and exclude \fBNIS\fR entries. The
+.B /etc/passwd
+to selectively include and exclude
+.B NIS
+entries. The
 primary usage of these `+/-' entries is superseded by the name service
 switch, so the `+/-' form might not be supported in future releases.
 .sp
@@ -662,10 +697,12 @@ and shadow databases.
 If a password entry from any of the sources contains an empty
 .I uid
 or
-\fIgid\fR field, that entry will be ignored by the files,
+.I gid
+field, that entry will be ignored by the files,
 .BR NIS ,
 and
-\fBNIS+\fR name service switch backends, causing the user to appear unknown
+.B NIS+
+name service switch backends, causing the user to appear unknown
 to the system.
 .sp
 .LP
@@ -673,7 +710,12 @@ If a password entry contains an empty
 .IR gecos ,
 .IR "home directory" ,
 or
-\fIshell\fR field, \fBgetpwnam()\fR and \fBgetpwnam_r()\fR return a pointer
+.I shell
+field,
+.B getpwnam()
+and
+.B getpwnam_r()
+return a pointer
 to a null string in the respective field of the
 .B passwd
 structure.
@@ -687,7 +729,10 @@ default shell.  See
 .sp
 .LP
 Solaris 2.4 and earlier releases provided definitions of the
-\fBgetpwnam_r()\fR and \fBgetpwuid_r()\fR functions as specified in POSIX.1c
+.B getpwnam_r()
+and
+.B getpwuid_r()
+functions as specified in POSIX.1c
 Draft 6. The final POSIX.1c standard changed the interface for these
 functions. Support for the Draft 6 interface is provided for compatibility
 only and might not be supported in future releases. New applications and
@@ -698,4 +743,5 @@ For POSIX.1c-conforming applications, the \fB_POSIX_PTHREAD_SEMANTICS\fR
 and
 .B _REENTRANT
 flags are automatically turned on by defining the
-\fB_POSIX_C_SOURCE\fR flag with a value \(>=199506L.
+.B _POSIX_C_SOURCE
+flag with a value \(>=199506L.

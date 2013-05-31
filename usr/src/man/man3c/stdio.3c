@@ -57,15 +57,22 @@ handle characters quickly. The macros
 .BR getchar (3C)
 and
 .BR putchar "(3C), and the higher-level routines"
-\fBfgetc\fR(3C), \fBfgets\fR(3C), \fBfprintf\fR(3C), \fBfputc\fR(3C),
-\fBfputs\fR(3C), \fBfread\fR(3C), \fBfscanf\fR(3C), \fBfwrite\fR(3C),
+.BR fgetc (3C),
+.BR fgets (3C),
+.BR fprintf (3C),
+.BR fputc (3C),
+.BR fputs (3C),
+.BR fread (3C),
+.BR fscanf (3C),
+.BR fwrite (3C),
 .BR gets (3C),
 .BR getw (3C),
 .BR printf (3C),
 .BR puts (3C),
 .BR putw (3C),
 and \fBscanf\fR(3C) all use or act as if they use
-\fBgetc()\fR and
+.B getc()
+and
 .BR putc() ;
 they can be freely intermixed.
 .sp
@@ -121,7 +128,10 @@ standard error file
 The following symbolic values in <\fBunistd.h\fR> define the file
 descriptors that will be associated with the C-language
 .BR stdin ,
-\fBstdout\fR and \fBstderr\fR when the application is started:
+.B stdout
+and
+.B stderr
+when the application is started:
 .sp
 
 .sp
@@ -181,7 +191,8 @@ constants and the following "functions" are implemented as macros
 .BR getchar() ,
 .BR putc() ,
 .BR putchar() ,
-\fBferror\fR(3C), \fBfeof\fR(3C),
+.BR ferror (3C),
+.BR feof (3C),
 .BR clearerr (3C),
 and \fBfileno\fR(3C). There are also function versions
 of
@@ -189,7 +200,8 @@ of
 .BR getchar() ,
 .BR putc() ,
 .BR putchar() ,
-\fBferror()\fR, \fBfeof()\fR,
+.BR ferror() ,
+.BR feof() ,
 .BR clearerr() ,
 and
 .BR fileno() .
@@ -208,8 +220,11 @@ the destination file or terminal as soon as written; when it is buffered,
 many characters are saved up and written as a block. When it is
 line-buffered, each line of output is queued for writing on the destination
 terminal as soon as the line is completed (that is, as soon as a new-line
-character is written or terminal input is requested). The \fBsetbuf()\fR or
-\fBsetvbuf()\fR functions (both described on the \fBsetbuf\fR(3C) manual
+character is written or terminal input is requested). The
+.B setbuf()
+or
+.B setvbuf()
+functions (both described on the \fBsetbuf\fR(3C) manual
 page) may be used to change the stream's buffering strategy.
 .SS "Interactions of Other FILE-Type C Functions"
 .sp
@@ -226,12 +241,16 @@ Handles can be created or destroyed by user action without affecting the
 underlying open file description.  Some of the ways to create them include
 .BR fcntl (2),
 .BR dup (2),
-\fBfdopen\fR(3C), \fBfileno\fR(3C) and
-\fBfork\fR(2) (which duplicates existing ones into new processes). They can
+.BR fdopen (3C),
+.BR fileno (3C)
+and
+.BR fork (2)
+(which duplicates existing ones into new processes). They can
 be destroyed by at least \fBfclose\fR(3C) and
 .BR close (2),
 and by the
-\fBexec\fR functions (see
+.B exec
+functions (see
 .BR exec (2)),
 which close some file descriptors
 and destroy streams.
@@ -251,12 +270,18 @@ or
 .BR fork() ,
 for
 example). This exception does include the file descriptor underlying a
-stream, whether created with  \fBfopen()\fR or
+stream, whether created with
+.B fopen()
+or
 .BR fdopen() ,
 as long as it
 is not used directly by the application to affect the file offset.  (The
-\fBread()\fR and \fBwrite()\fR functions implicitly affect the file offset;
-\fBlseek()\fR explicitly affects it.)
+.B read()
+and
+.B write()
+functions implicitly affect the file offset;
+.B lseek()
+explicitly affects it.)
 .sp
 .LP
 If two or more handles are used, and any one of them is a stream, their
@@ -265,8 +290,10 @@ result is undefined.
 .sp
 .LP
 A handle that is a stream is considered to be closed when either an
-\fBfclose()\fR or \fBfreopen\fR(3C) is executed on it (the result of
-\fBfreopen()\fR is a new stream for this discussion, which cannot be a
+.B fclose()
+or \fBfreopen\fR(3C) is executed on it (the result of
+.B freopen()
+is a new stream for this discussion, which cannot be a
 handle on the same open file description as its previous value) or when the
 process owning that stream terminates the
 .BR exit (2)
@@ -274,7 +301,8 @@ or
 .BR abort (3C).
 A file descriptor is closed by
 .BR close() ,
-\fB_exit()\fR (see
+.B _exit()
+(see
 .BR exit (2)),
 or by one of the
 .B exec
@@ -300,7 +328,9 @@ that after a
 two handles exist where one existed before.  The
 application shall assure that, if both handles will ever be accessed, that
 they will both be in a state where the other could become the active handle
-first. The application shall prepare for a \fBfork()\fR exactly as if it
+first. The application shall prepare for a
+.B fork()
+exactly as if it
 were a change of active handle.  (If the only action performed by one of the
 processes is one of the
 .B exec
@@ -348,14 +378,17 @@ closed.
 .TP
 f.
 If the stream is open for reading and it is at the end of the file (
-\fBfeof\fR(3C) is true), no action need be taken.
+.BR feof (3C)
+is true), no action need be taken.
 .RE
 .RS +4
 .TP
 g.
 If the stream is open with a mode that allows reading and the underlying
 open file description refers to a device that is capable of seeking, either
-an \fBfflush()\fR shall occur or the stream shall be closed.
+an
+.B fflush()
+shall occur or the stream shall be closed.
 .RE
 .RS +4
 .TP
@@ -371,7 +404,8 @@ that explicitly changed the file offset, except as required above for the
 first handle, the application shall perform an
 .B lseek()
 or an
-\fBfseek\fR(3C) (as appropriate to the type of the handle) to an appropriate
+.BR fseek (3C)
+(as appropriate to the type of the handle) to an appropriate
 location.
 .RE
 .RS +4
@@ -379,7 +413,9 @@ location.
 3.
 If the active handle ceases to be accessible before the requirements on the
 first handle above have been met, the state of the open file description
-becomes undefined.  This might occur, for example, during a  \fBfork()\fR or
+becomes undefined.  This might occur, for example, during a
+.B fork()
+or
 an
 .BR _exit() .
 .RE
@@ -469,14 +505,21 @@ error conditions.
 .BR write (2),
 .BR ctermid (3C),
 .BR cuserid (3C),
-\fBfclose\fR(3C), \fBferror\fR(3C), \fBfopen\fR(3C), \fBfread\fR(3C),
-\fBfseek\fR(3C), \fBflockfile\fR(3C),
+.BR fclose (3C),
+.BR ferror (3C),
+.BR fopen (3C),
+.BR fread (3C),
+.BR fseek (3C),
+.BR flockfile (3C),
 .BR getc (3C),
 .BR gets (3C),
 .BR popen (3C),
 .BR printf (3C),
 .BR putc (3C),
 .BR puts (3C),
-\fBscanf\fR(3C), \fBsetbuf\fR(3C), \fBsystem\fR(3C), \fBtmpfile\fR(3C),
+.BR scanf (3C),
+.BR setbuf (3C),
+.BR system (3C),
+.BR tmpfile (3C),
 .BR tmpnam (3C),
 .BR ungetc (3C)

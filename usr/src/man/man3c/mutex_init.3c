@@ -92,7 +92,8 @@ Mutual exclusion locks (mutexes) prevent multiple threads from
 simultaneously executing critical sections of code that access shared data
 (that is, mutexes are used to serialize the execution of threads). All
 mutexes must be global. A successful call for a mutex lock by way of
-\fBmutex_lock()\fR will cause another thread that is also trying to lock the
+.B mutex_lock()
+will cause another thread that is also trying to lock the
 same mutex to block until the owner thread unlocks it by way of
 .BR mutex_unlock() .
 Threads within the same process or within other
@@ -125,7 +126,8 @@ allocated dynamically,  the mutex needs to be explicitly initialized using
 The
 .B mutex_init()
 function initializes the mutex referenced by
-\fImp\fR with the type specified by
+.I mp
+with the type specified by
 .IR type .
 Upon successful
 initialization the state of the mutex becomes initialized and unlocked. Only
@@ -191,11 +193,13 @@ or process. The next owner of the mutex will acquire it with an error return
 of
 .BR EOWNERDEAD .
 The application must always check the return value from
-\fBmutex_lock()\fR for a mutex of this type. The new owner of this mutex
+.B mutex_lock()
+for a mutex of this type. The new owner of this mutex
 should then attempt to make the state protected by the mutex consistent,
 since this state could have been left inconsistent when the last owner died.
 If the new owner is able to make the state consistent, it should call
-\fBmutex_consistent()\fR to restore the state of the mutex and then unlock
+.B mutex_consistent()
+to restore the state of the mutex and then unlock
 the mutex. All subsequent calls to \fBmutex_lock()\fRwill then behave
 normally. Only the new owner can make the mutex consistent. If for any
 reason the new owner is not able to make the state consistent, it should not
@@ -203,10 +207,12 @@ call
 .B mutex_consistent()
 but should simply unlock the mutex. All
 waiting processes will be awakened and all subsequent calls to
-\fBmutex_lock()\fR will fail in acquiring the mutex with an error value of
+.B mutex_lock()
+will fail in acquiring the mutex with an error value of
 .BR ENOTRECOVERABLE .
 If the thread or process that acquired the lock with
-\fBEOWNERDEAD\fR terminates without unlocking the mutex, the next owner will
+.B EOWNERDEAD
+terminates without unlocking the mutex, the next owner will
 acquire the lock with an error value of
 .BR EOWNERDEAD .
 .sp
@@ -283,7 +289,8 @@ attribute.
 .sp .6
 .RS 4n
 When a thread owns one or more mutexes initialized with the
-\fBLOCK_PRIO_PROTECT\fR attribute, it executes at the higher of its priority
+.B LOCK_PRIO_PROTECT
+attribute, it executes at the higher of its priority
 or the highest of the priority ceilings of all the mutexes owned by this
 thread and initialized with this attribute, regardless of whether other
 threads are blocked on any of these mutexes.  When this attribute is
@@ -301,14 +308,18 @@ See \fBpthread_mutexattr_getrobust\fR(3C) for more information about robust
 mutexes. The
 .B LOCK_ROBUST
 attribute is the same as the POSIX
-\fBPTHREAD_MUTEX_ROBUST\fR attribute.
+.B PTHREAD_MUTEX_ROBUST
+attribute.
 .sp
 .LP
 See \fBpthread_mutexattr_settype\fR(3C) for more information on recursive
 and error checking mutex types. The combination (\fBLOCK_RECURSIVE\fR |
 .BR LOCK_ERRORCHECK )
 is the same as the POSIX
-\fBPTHREAD_MUTEX_RECURSIVE\fR type. By itself, \fBLOCK_ERRORCHECK\fR is the
+.B PTHREAD_MUTEX_RECURSIVE
+type. By itself,
+.B LOCK_ERRORCHECK
+is the
 same as the
 .B "POSIX PTHREAD_MUTEX_ERRORCHECK"
 type.
@@ -317,14 +328,20 @@ type.
 The
 .B LOCK_PRIO_INHERIT
 attribute is the same as the POSIX
-\fBPTHREAD_PRIO_INHERIT\fR attribute. The \fBLOCK_PRIO_PROTECT\fR attribute
+.B PTHREAD_PRIO_INHERIT
+attribute. The
+.B LOCK_PRIO_PROTECT
+attribute
 is the same as the POSIX
 .B PTHREAD_PRIO_PROTECT
 attribute. See
 .BR pthread_mutexattr_getprotocol (3C),
 .BR pthread_mutexattr_getprioceiling (3C),
 and \fBpthread_mutex_getprioceiling\fR(3C) for a full discussion. The
-\fBLOCK_PRIO_INHERIT\fR and \fBLOCK_PRIO_PROTECT\fR attributes are mutually
+.B LOCK_PRIO_INHERIT
+and
+.B LOCK_PRIO_PROTECT
+attributes are mutually
 exclusive. Specifying both of these attributes causes
 .B mutex_init()
 to
@@ -358,7 +375,8 @@ These rules do not apply to
 .B LOCK_ROBUST
 mutexes. See the description
 for \fBLOCK_ROBUST\fRabove. If default mutex attributes are used, the macro
-\fBDEFAULTMUTEX\fR can be used to initialize mutexes that are statically
+.B DEFAULTMUTEX
+can be used to initialize mutexes that are statically
 allocated.
 .sp
 .LP
@@ -404,7 +422,8 @@ mutex_init(&mp, USYNC_PROCESS | LOCK_ROBUST, NULL);
 .sp
 .LP
 Statically allocated mutexes can also be initialized with macros specifying
-\fBLOCK_RECURSIVE\fR and/or
+.B LOCK_RECURSIVE
+and/or
 .BR LOCK_ERRORCHECK :
 .sp
 .ne 2
@@ -504,7 +523,10 @@ the calling thread must be the one that last locked the mutex (the owner).
 If there are threads blocked on the mutex object referenced by
 .I mp
 when
-\fBmutex_unlock()\fR is called, the \fImp\fR is freed, and the scheduling
+.B mutex_unlock()
+is called, the
+.I mp
+is freed, and the scheduling
 policy will determine which thread gets the mutex. If the calling thread is
 not the owner of the lock, no error status is returned, and the behavior of
 the program is undefined.
@@ -542,7 +564,10 @@ function will fail if:
 The value specified by
 .I type
 is invalid, or the
-\fBLOCK_PRIO_INHERIT\fR and \fBLOCK_PRIO_PROTECT\fR attributes are both
+.B LOCK_PRIO_INHERIT
+and
+.B LOCK_PRIO_PROTECT
+attributes are both
 specified.
 .RE
 
@@ -607,7 +632,8 @@ The
 and
 .B mutex_trylock()
 functions will fail for a
-\fBLOCK_RECURSIVE\fR mutex if:
+.B LOCK_RECURSIVE
+mutex if:
 .sp
 .ne 2
 .mk
@@ -681,7 +707,8 @@ The
 or
 .B mutex_trylock()
 functions will fail for
-\fBLOCK_ROBUST\fR type mutex if:
+.B LOCK_ROBUST
+type mutex if:
 .sp
 .ne 2
 .mk
@@ -699,7 +726,8 @@ and unlock the mutex. Subsequent calls to
 .B mutex_lock()
 will behave
 normally, as before. If the caller is not able to clean up the state,
-\fBmutex_consistent()\fR should not be called but the mutex should be
+.B mutex_consistent()
+should not be called but the mutex should be
 unlocked. Subsequent calls to
 .B mutex_lock()
 will fail to acquire the
@@ -991,7 +1019,8 @@ concurrently or not) and share mutex-protected data.
 The following example shows how to use a
 .B USYNC_PROCESS
 |
-\fBLOCK_ROBUST\fR type mutex.
+.B LOCK_ROBUST
+type mutex.
 .sp
 .in +2
 .nf
@@ -1237,7 +1266,8 @@ in these circumstances, but only if the mutex was
 initialized with the
 .B USYNC_PROCESS_ROBUST
 type. Otherwise,
-\fBEOWNERDEAD\fR is returned in these circumstances.
+.B EOWNERDEAD
+is returned in these circumstances.
 .sp
 .LP
 The

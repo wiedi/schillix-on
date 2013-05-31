@@ -74,12 +74,15 @@ of a probe
 .SH DESCRIPTION
 .sp
 .LP
-\fBtnfctl_probe_state_get()\fR returns the state of the probe specified by
-\fIprobe_hndl\fR in the process or kernel specified by
+.B tnfctl_probe_state_get()
+returns the state of the probe specified by
+.I probe_hndl
+in the process or kernel specified by
 .IR hndl .
 The user
 will pass these in to an apply iterator. The caller must also allocate
-\fIstate\fR and pass in a pointer to it.  The semantics of the individual
+.I state
+and pass in a pointer to it.  The semantics of the individual
 members of
 .I state
 are:
@@ -114,16 +117,22 @@ A string that consists of
 .I "attribute value"
 pairs separated by
 semicolons. For the syntax of this string, see the  syntax of the
-\fBdetail\fR argument of the \fBTNF_PROBE\fR(3TNF) macro. The attributes
+.B detail
+argument of the
+.BR TNF_PROBE "(3TNF) macro. The attributes"
 .IR name ,
 .IR slots ,
 .IR keys ,
-\fBfile\fR, and \fBline\fR are defined
+.BR file ,
+and
+.B line
+are defined
 for every probe. Additional user-defined attributes can be added by using
 the
 .I detail
 argument of the \fBTNF_PROBE\fR(3TNF) macro.  An example of
-\fIattr_string\fR follows:
+.I attr_string
+follows:
 .sp
 .in +2
 .nf
@@ -142,9 +151,15 @@ keys vm pageio io;file vm.c;line 25;"
 .ad
 .RS 26n
 .rt
-\fBB_TRUE\fR if the probe is enabled, or  \fBB_FALSE\fR if the probe is
-disabled. Probes are disabled by default. Use \fBtnfctl_probe_enable()\fR or
-\fBtnfctl_probe_disable()\fR to change this state.
+.B B_TRUE
+if the probe is enabled, or
+.B B_FALSE
+if the probe is
+disabled. Probes are disabled by default. Use
+.B tnfctl_probe_enable()
+or
+.B tnfctl_probe_disable()
+to change this state.
 .RE
 
 .sp
@@ -155,10 +170,16 @@ disabled. Probes are disabled by default. Use \fBtnfctl_probe_enable()\fR or
 .ad
 .RS 26n
 .rt
-\fBB_TRUE\fR if the probe is traced, or \fBB_FALSE\fR if the probe is not
+.B B_TRUE
+if the probe is traced, or
+.B B_FALSE
+if the probe is not
 traced. Probes in user processes are traced by default.  Kernel probes are
-untraced by default.  Use \fBtnfctl_probe_trace()\fR or
-\fBtnfctl_probe_untrace()\fR to change this state.
+untraced by default.  Use
+.B tnfctl_probe_trace()
+or
+.B tnfctl_probe_untrace()
+to change this state.
 .RE
 
 .sp
@@ -169,7 +190,8 @@ untraced by default.  Use \fBtnfctl_probe_trace()\fR or
 .ad
 .RS 26n
 .rt
-\fBB_TRUE\fR if this is a new probe brought in since the last change in
+.B B_TRUE
+if this is a new probe brought in since the last change in
 libraries. See
 .BR dlopen (3C)
 or
@@ -193,7 +215,9 @@ kernel probe control.
 .rt
 The name of the shared object or executable in which the probe is located.
 This string can be freed, so the client should make a copy of the string if
-it needs to be saved for use by other  \fBlibtnfctl\fR interfaces.  In
+it needs to be saved for use by other
+.B libtnfctl
+interfaces.  In
 .RI "kernel mode, this string is always " " NULL."
 .RE
 
@@ -201,7 +225,7 @@ it needs to be saved for use by other  \fBlibtnfctl\fR interfaces.  In
 .ne 2
 .mk
 .na
-\fBfunc_names\fR
+.B func_names
 .ad
 .RS 26n
 .rt
@@ -209,7 +233,10 @@ A null-terminated array of pointers to strings that contain the names of
 functions connected to this probe.  Whenever an enabled probe is encountered
 at runtime, these functions are executed. This array also will be freed by
 the library when the state of the probe changes.  Use
-\fBtnfctl_probe_connect()\fR or \fBtnfctl_probe_disconnect_all()\fR to
+.B tnfctl_probe_connect()
+or
+.B tnfctl_probe_disconnect_all()
+to
 change this state.
 .RE
 
@@ -217,7 +244,7 @@ change this state.
 .ne 2
 .mk
 .na
-\fBfunc_addrs\fR
+.B func_addrs
 .ad
 .RS 26n
 .rt
@@ -242,38 +269,48 @@ function in \fBtnfctl_register_funcs\fR(3TNF).
 .LP
 \fBtnfctl_probe_enable(\|),\fR \fBtnfctl_probe_disable(\|),\fR
 \fBtnfctl_probe_trace(\|),\fR \fBtnfctl_probe_untrace(\|),\fR and
-\fBtnfctl_probe_disconnect_all()\fR ignore the last argument. This
+.B tnfctl_probe_disconnect_all()
+ignore the last argument. This
 convenient feature permits these functions to be used in the
 .IR probe_op
 field of \fBtnfctl_probe_apply\fR(3TNF) and
-\fBtnfctl_probe_apply_ids\fR(3TNF). \fBtnfctl_probe_enable()\fR enables the
+.BR tnfctl_probe_apply_ids (3TNF).
+.B tnfctl_probe_enable()
+enables the
 probe specified by
 .IR probe_hndl .
 This is the master switch on a probe.
 A probe does not perform any action until it is enabled.
 .sp
 .LP
-\fBtnfctl_probe_disable()\fR disables the probe specified by
+.B tnfctl_probe_disable()
+disables the probe specified by
 .IR probe_hndl .
 .sp
 .LP
-\fBtnfctl_probe_trace()\fR turns on tracing for the probe specified by
+.B tnfctl_probe_trace()
+turns on tracing for the probe specified by
 .IR probe_hndl .
 Probes emit a trace record only if the probe is traced.
 .sp
 .LP
-\fBtnfctl_probe_untrace()\fR turns off tracing for the probe specified by
+.B tnfctl_probe_untrace()
+turns off tracing for the probe specified by
 .IR probe_hndl .
 This is useful if you want to connect probe functions to a
 probe without tracing it.
 .sp
 .LP
-\fBtnfctl_probe_connect()\fR connects the function \fIfunc_name\fR which
+.B tnfctl_probe_connect()
+connects the function
+.I func_name
+which
 exists in the library
 .IR lib_base_name ,
 to the probe specified by
 .IR probe_hndl .
-\fBtnfctl_probe_connect()\fR returns an error code if used
+.B tnfctl_probe_connect()
+returns an error code if used
 on a kernel tnfctl handle.
 .I lib_base_name
 is the base name (not a path)
@@ -288,23 +325,29 @@ space and is written to a certain specification.  The specification is not
 currently published.
 .sp
 .LP
-\fBtnf_probe_debug()\fR is one function exported by \fBlibtnfprobe.so.1\fR
+.B tnf_probe_debug()
+is one function exported by \fBlibtnfprobe.so.1\fR
 and is the debug function that
 .BR prex (1)
 uses.  When the debug function
 is executed, it prints out the probe arguments and the value of the
-\fBsunw%debug\fR attribute of the probe to
+.B sunw%debug
+attribute of the probe to
 .BR stderr .
 .sp
 .LP
-\fBtnfctl_probe_disconnect_all()\fR disconnects all probe functions from
+.B tnfctl_probe_disconnect_all()
+disconnects all probe functions from
 the probe specified by
 .IR probe_hndl .
 .sp
 .LP
-Note that no  \fBlibtnfctl\fR call returns a probe handle
+Note that no
+.B libtnfctl
+call returns a probe handle
 (\fBtnfctl_probe_t\fR), yet each of the routines described here takes a
-\fIprobe_hndl\fR as an argument. These routines may be used by passing them
+.I probe_hndl
+as an argument. These routines may be used by passing them
 to one of the \fBtnfctl_probe_apply\fR(3TNF) iterators as the "op" argument.
 Alternatively, probe handles may be obtained and saved by a user's "op"
 function, and they can be passed later as the
@@ -317,7 +360,10 @@ using any of the functions described here.
 \fBtnfctl_probe_state_get(\|),\fR \fBtnfctl_probe_enable(\|),\fR
 \fBtnfctl_probe_disable(\|),\fR \fBtnfctl_probe_trace(\|),\fR
 \fBtnfctl_probe_untrace(\|),\fR \fBtnfctl_probe_disconnect_all()\fR and
-\fBtnfctl_probe_connect()\fR return \fBTNFCTL_ERR_NONE\fR upon success.
+.B tnfctl_probe_connect()
+return
+.B TNFCTL_ERR_NONE
+upon success.
 .SH ERRORS
 .sp
 .LP
@@ -331,7 +377,8 @@ The following error codes apply to
 .ad
 .RS 27n
 .rt
-\fIprobe_hndl\fR is no longer valid. The library that the probe was in
+.I probe_hndl
+is no longer valid. The library that the probe was in
 could have been dynamically closed by
 .BR dlclose (3C).
 .RE
@@ -340,8 +387,10 @@ could have been dynamically closed by
 .LP
 The following error codes apply to
 .BR tnfctl_probe_enable() ,
-\fBtnfctl_probe_disable()\fR, \fBtnfctl_probe_trace()\fR,
-\fBtnfctl_probe_untrace()\fR, and \fBtnfctl_probe_disconnect_all()\fR
+.BR tnfctl_probe_disable() ,
+.BR tnfctl_probe_trace() ,
+.BR tnfctl_probe_untrace() ,
+and \fBtnfctl_probe_disconnect_all()\fR
 .sp
 .ne 2
 .mk
@@ -350,7 +399,8 @@ The following error codes apply to
 .ad
 .RS 27n
 .rt
-\fIprobe_hndl\fR is no longer valid. The library that the probe was in
+.I probe_hndl
+is no longer valid. The library that the probe was in
 could have been dynamically closed by
 .BR dlclose (3C).
 .RE
@@ -375,7 +425,8 @@ Cannot do probe operations because tracing is broken in the target.
 .RS 27n
 .rt
 Cannot do probe operations until a buffer is allocated. See
-\fBtnfctl_buffer_alloc\fR(3TNF). This error code  does not apply to kernel
+.BR tnfctl_buffer_alloc (3TNF).
+This error code  does not apply to kernel
 probe control.
 .RE
 
@@ -391,7 +442,8 @@ The following error codes apply to
 .ad
 .RS 27n
 .rt
-\fIprobe_hndl\fR is no longer valid. The library that the probe was in
+.I probe_hndl
+is no longer valid. The library that the probe was in
 could have been dynamically closed by
 .BR dlclose (3C).
 .RE
@@ -404,7 +456,9 @@ could have been dynamically closed by
 .ad
 .RS 27n
 .rt
-The handle is a kernel handle, or  \fIfunc_name\fR could not be found.
+The handle is a kernel handle, or
+.I func_name
+could not be found.
 .RE
 
 .sp
@@ -457,8 +511,10 @@ MT LevelMT-Safe
 .BR prex (1),
 .BR TNF_PROBE (3TNF),
 .BR libtnfctl (3TNF),
-\fBtnfctl_check_libs\fR(3TNF), \fBtnfctl_continue\fR(3TNF),
-\fBtnfctl_probe_apply\fR(3TNF), \fBtnfctl_probe_apply_ids\fR(3TNF),
+.BR tnfctl_check_libs (3TNF),
+.BR tnfctl_continue (3TNF),
+.BR tnfctl_probe_apply (3TNF),
+.BR tnfctl_probe_apply_ids (3TNF),
 .BR tracing (3TNF),
 .BR tnf_kernel_probes (4),
 .BR attributes (5)

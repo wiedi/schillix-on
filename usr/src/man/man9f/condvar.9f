@@ -147,7 +147,8 @@ A type-specific argument, drivers should pass arg as
 A time, in absolute ticks since boot, when
 .B cv_timedwait()
 or
-\fBcv_timedwait_sig()\fR should return.
+.B cv_timedwait_sig()
+should return.
 .RE
 
 .SH DESCRIPTION
@@ -179,16 +180,21 @@ or
 and then release the mutex.
 .sp
 .LP
-\fBcv_wait()\fR suspends the calling thread and exits the mutex atomically
+.B cv_wait()
+suspends the calling thread and exits the mutex atomically
 so that another thread which holds the mutex cannot signal on the condition
 variable until the blocking thread is blocked. Before returning, the mutex
 is reacquired.
 .sp
 .LP
-\fBcv_signal()\fR signals the condition and wakes one blocked thread. All
+.B cv_signal()
+signals the condition and wakes one blocked thread. All
 blocked threads can be unblocked by calling
 .BR cv_broadcast() .
-\fBcv_signal()\fR and \fBcv_broadcast()\fR can be called by a thread even if
+.B cv_signal()
+and
+.B cv_broadcast()
+can be called by a thread even if
 it does not hold the mutex passed into
 .BR cv_wait() ,
 though holding the
@@ -200,7 +206,8 @@ The function
 is similar to
 .B cv_wait()
 but returns
-\fB0\fR if a signal (for example, by
+.B 0
+if a signal (for example, by
 .BR kill (2))
 is sent to the thread.
 In any case, the mutex is reacquired before returning.
@@ -283,7 +290,9 @@ timeout time was reached.
 .rt
 For
 .BR cv_wait_sig() ,
-\fBcv_timedwait()\fR or \fBcv_timedwait_sig()\fR
+.B cv_timedwait()
+or
+.BR cv_timedwait_sig()
 indicates that the condition was met and the function returned due to a call
 to
 .B cv_signal()
@@ -313,7 +322,8 @@ If
 .BR cv_timedwait() ,
 .BR cv_wait_sig() ,
 or
-\fBcv_timedwait_sig()\fR are used from interrupt context, lower-priority
+.B cv_timedwait_sig()
+are used from interrupt context, lower-priority
 interrupts will not be serviced during the wait. This means that if the
 thread that will eventually perform the wakeup becomes blocked on anything
 that requires the lower-priority interrupt, the system will hang.
@@ -321,13 +331,15 @@ that requires the lower-priority interrupt, the system will hang.
 .LP
 For example, the thread that will perform the wakeup may need to first
 allocate memory. This memory allocation may require waiting for paging
-\fBI/O\fR to complete, which may require a lower-priority disk or network
+.B I/O
+to complete, which may require a lower-priority disk or network
 interrupt to be serviced. In general, situations like this are hard to
 predict, so it is advisable to avoid waiting on condition variables or
 semaphores in an interrupt context.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Waiting for a Flag Value in a Driver's Unit
+.B Example 1
+Waiting for a Flag Value in a Driver's Unit
 .sp
 .LP
 Here the condition being waited for is a flag value in a driver's unit
@@ -346,7 +358,8 @@ flag word is protected by a mutex in the unit structure.
 .in -2
 
 .LP
-\fBExample 2\fR Unblocking Threads Blocked by the Code in Example 1
+.B Example 2
+Unblocking Threads Blocked by the Code in Example 1
 .sp
 .LP
 At some later point in time, another thread would execute the following to
@@ -380,7 +393,8 @@ or
 This occurs most commonly in the case of
 .B cv_wait_sig()
 and
-\fBcv_timedwait_sig()\fR when the thread is stopped and restarted by job
+.B cv_timedwait_sig()
+when the thread is stopped and restarted by job
 control signals or by a debugger, but can happen in other cases as well,
 even for
 .BR cv_wait() .
@@ -394,7 +408,9 @@ constraints, use
 .B cv_timedwait()
 rather than
 .BR delay "(9F). The"
-\fBdelay()\fR function calls \fBtimeout\fR(9F), which can be subject to
+.B delay()
+function calls
+.BR timeout "(9F), which can be subject to"
 priority inversions.
 .sp
 .LP
@@ -403,7 +419,8 @@ where such reception is impossible (such as during execution of
 .BR close (9E)
 due to
 .BR exit (2)),
-\fBcv_wait_sig()\fR behaves as
+.B cv_wait_sig()
+behaves as
 .BR cv_wait() ,
 and
 .B cv_timedwait_sig()

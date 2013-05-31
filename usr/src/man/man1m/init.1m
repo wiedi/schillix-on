@@ -36,7 +36,8 @@ init, telinit \- process control initialization
 .SH DESCRIPTION
 .sp
 .LP
-\fBinit\fR is the default primordial user process. (Options given to the
+.B init
+is the default primordial user process. (Options given to the
 kernel during boot may result in the invocation of an alternative primordial
 user process, as described on
 .BR kernel (1M)).
@@ -73,7 +74,8 @@ processes exists. Processes spawned by
 for each of these run
 levels are defined in
 .BR /etc/inittab .
-\fBinit\fR can be in one of eight
+.B init
+can be in one of eight
 run levels, \fB0\(mi6\fR and \fBS\fR or \fBs\fR (\fBS\fR and
 .B s
 are
@@ -85,7 +87,9 @@ identical). The run level changes when a privileged user runs
 When the system is booted,
 .B init
 is invoked and the following occurs.
-First, it reads \fB/etc/default/init\fR to set environment variables. This
+First, it reads
+.B /etc/default/init
+to set environment variables. This
 is typically where
 .B TZ
 (time zone) and locale-related environments such
@@ -99,7 +103,8 @@ of this page.)
 then looks in
 .B /etc/inittab
 for the
-\fBinitdefault\fR entry (see
+.B initdefault
+entry (see
 .BR inittab (4)).
 If the \fBinitdefault\fR
 entry:
@@ -111,7 +116,8 @@ entry:
 .ad
 .sp .6
 .RS 4n
-\fBinit\fR usually uses the run level specified in that entry as the
+.B init
+usually uses the run level specified in that entry as the
 initial run level to enter only if the options/milestone property has not
 been specified for
 .BR svc.startd (1M).
@@ -134,7 +140,9 @@ options/milestone property.
 
 .sp
 .LP
-The \fBinitdefault\fR entry in
+The
+.B initdefault
+entry in
 .B /etc/inittab
 corresponds to the
 following run levels:
@@ -142,16 +150,22 @@ following run levels:
 .ne 2
 .mk
 .na
-\fBS\fR or \fBs\fR
+.B S
+or
+.BR s
 .ad
 .sp .6
 .RS 4n
-\fBinit\fR goes to the single-user state. In this state, the system console
+.B init
+goes to the single-user state. In this state, the system console
 device (\fB/dev/console\fR) is opened for reading and writing and the
 command
 .BR /sbin/su ,
 (see \fBsu\fR(1M)), is invoked. Use either
-\fBinit\fR or \fBtelinit\fR to change the run level of the system. Note that
+.B init
+or
+.B telinit
+to change the run level of the system. Note that
 if the shell is terminated (using an end-of-file),
 .B init
 only
@@ -169,7 +183,8 @@ exist.
 .ad
 .sp .6
 .RS 4n
-\fBinit\fR enters the corresponding run level. Run levels
+.B init
+enters the corresponding run level. Run levels
 .BR 0 ,
 .BR 5 ,
 and
@@ -191,7 +206,12 @@ has entered a run
 level other than single-user state,
 .B init
 first scans
-\fB/etc/inittab\fR for \fBboot\fR and \fBbootwait\fR entries (see
+.B /etc/inittab
+for
+.B boot
+and
+.B bootwait
+entries (see
 .BR inittab (4)).
 These entries are performed before any other processing
 of
@@ -209,12 +229,18 @@ executes all other entries that are to be processed for that run level.
 .LP
 To spawn each process in
 .BR /etc/inittab ,
-\fBinit\fR reads each entry
+.B init
+reads each entry
 and for each entry that should be respawned, it forks a child process. After
 it has spawned all of the processes specified by
 .BR /etc/inittab ,
-\fBinit\fR waits for one of its descendant processes to die, a
-\fBpowerfail\fR signal, or a signal from another \fBinit\fR or \fBtelinit\fR
+.B init
+waits for one of its descendant processes to die, a
+.B powerfail
+signal, or a signal from another
+.B init
+or
+.BR telinit
 process to change the system's run level. When one of these conditions
 occurs,
 .B init
@@ -226,7 +252,8 @@ re-examines
 New entries can be added to
 .B /etc/inittab
 at any time; however,
-\fBinit\fR still waits for one of the above three conditions to occur before
+.B init
+still waits for one of the above three conditions to occur before
 re-examining
 .BR /etc/inittab .
 To get around this,
@@ -245,7 +272,8 @@ sets the
 .BR ioctl (2)
 states of the console to those modes saved in the file
 .BR /etc/ioctl.syscon .
-\fBinit\fR writes this file whenever the
+.B init
+writes this file whenever the
 single-user state is entered.
 .SS "Run Level Changes"
 .sp
@@ -255,7 +283,8 @@ When a run level change request is made,
 or a designate sends
 the warning signal (\fBSIGTERM\fR) to all processes that are undefined in
 the target run level. A minimum interval of five seconds is observed before
-\fBinit\fR or its designate forcibly terminates these processes by sending a
+.B init
+or its designate forcibly terminates these processes by sending a
 kill signal
 .RB ( SIGKILL ).
 Additionally, init informs
@@ -273,7 +302,8 @@ receives a signal telling it that a process it spawned has
 died, it records the fact and the reason it died in
 .B /var/adm/utmpx
 and
-\fB/var/adm/wtmpx\fR if it exists (see
+.B /var/adm/wtmpx
+if it exists (see
 .BR who (1)).
 A history of the
 processes spawned is kept in
@@ -283,7 +313,10 @@ processes spawned is kept in
 If
 .B init
 receives a \fBpowerfail\fR signal (\fBSIGPWR\fR) it scans
-\fB/etc/inittab\fR for special entries of the type \fBpowerfail\fR and
+.B /etc/inittab
+for special entries of the type
+.B powerfail
+and
 .BR powerwait .
 These entries are invoked (if the run levels permit) before
 any further processing takes place. In this way
@@ -309,18 +342,23 @@ is used to direct the
 actions of
 .BR init .
 It takes a one-character argument and signals
-\fBinit\fR to take the appropriate action.
+.B init
+to take the appropriate action.
 .SH SECURITY
 .sp
 .LP
-\fBinit\fR uses \fBpam\fR(3PAM) for session management. The \fBPAM\fR
+.B init
+uses \fBpam\fR(3PAM) for session management. The \fBPAM\fR
 configuration policy, listed through
 .BR /etc/pam.conf ,
 specifies the
 session management module to be used for
 .BR init .
 Here is a partial
-\fBpam.conf\fR file with entries for \fBinit\fR using the UNIX session
+.B pam.conf
+file with entries for
+.B init
+using the UNIX session
 management module.
 .sp
 .in +2
@@ -436,13 +474,19 @@ machine remove power, if possible.
 .sp .6
 .RS 4n
 Stop the operating system and reboot to the state defined by the
-\fBinitdefault\fR entry in
+.B initdefault
+entry in
 .BR /etc/inittab .
 .sp
-On x86 systems, service \fBsvc:/system/boot-config:default\fR is enabled by
-default. When the \fBconfig/fastreboot_default\fR property is set to
+On x86 systems, service
+.B svc:/system/boot-config:default
+is enabled by
+default. When the
+.B config/fastreboot_default
+property is set to
 .BR true ,
-\fBinit 6\fR will bypass the firmware.
+.B init 6
+will bypass the firmware.
 .RE
 
 .sp
@@ -504,7 +548,8 @@ or
 .B init.d
 scripts that should only be
 running in multi-user mode are killed. In addition, any process that has a
-\fButmpx\fR entry will be killed. This last condition insures that all port
+.B utmpx
+entry will be killed. This last condition insures that all port
 monitors started by the
 .B SAC
 are killed and all services started by
@@ -534,7 +579,7 @@ System console device.
 .ne 2
 .mk
 .na
-\fB/etc/default/init\fR
+.B /etc/default/init
 .ad
 .sp .6
 .RS 4n
@@ -585,7 +630,8 @@ uses the mask
 it inherits from the kernel. Note that
 .B init
 always attempts to apply a
-\fBumask\fR of 022 before creating a file, regardless of the setting of
+.B umask
+of 022 before creating a file, regardless of the setting of
 .B CMASK
 .RE
 
@@ -712,7 +758,8 @@ is entered.
 .ad
 .sp .6
 .RS 4n
-\fBinit\fR state necessary to recover from failure.
+.B init
+state necessary to recover from failure.
 .RE
 
 .sp
@@ -806,7 +853,10 @@ console. It then refuses to respawn this entry until either five minutes has
 elapsed or it receives a signal from a user-spawned
 .B init
 or
-\fBtelinit\fR command. This prevents \fBinit\fR from eating up system
+.B telinit
+command. This prevents
+.B init
+from eating up system
 resources when someone makes a typographical error in the
 .BR inittab
 file, or a program is removed that is referenced in
@@ -814,7 +864,10 @@ file, or a program is removed that is referenced in
 .SH NOTES
 .sp
 .LP
-\fBinit\fR and \fBtelinit\fR can be run only by a privileged user.
+.B init
+and
+.B telinit
+can be run only by a privileged user.
 .sp
 .LP
 The
@@ -828,7 +881,9 @@ this state to any line other than
 .BR initdefault .
 .sp
 .LP
-If a default state is not specified in the \fBinitdefault\fR entry in
+If a default state is not specified in the
+.B initdefault
+entry in
 .BR /etc/inittab ,
 state
 .B 6
@@ -840,10 +895,12 @@ If the
 .B utmpx
 file cannot be created when booting the system, the
 system will boot to state "\fBs\fR" regardless of the state specified in the
-\fBinitdefault\fR entry in
+.B initdefault
+entry in
 .BR /etc/inittab .
 This can occur if the
-\fB/var\fR file system is not accessible.
+.B /var
+file system is not accessible.
 .sp
 .LP
 When a system transitions down to the
@@ -851,13 +908,15 @@ When a system transitions down to the
 or
 .B s
 state, the
-\fB/etc/nologin\fR file (see
+.B /etc/nologin
+file (see
 .BR nologin (4))
 is created. Upon subsequent
 transition to run level 2, this file is removed.
 .sp
 .LP
-\fBinit\fR uses
+.B init
+uses
 .BR /var/run/initpipe ,
 a named pipe, for internal
 communication.

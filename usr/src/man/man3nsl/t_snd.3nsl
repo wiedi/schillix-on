@@ -65,7 +65,10 @@ t_snd \- send data or expedited data over a connection
 This routine is part of the
 .B XTI
 interfaces which evolved from the
-\fBTLI\fR interfaces. \fBXTI\fR represents the future evolution of these
+.B TLI
+interfaces.
+.B XTI
+represents the future evolution of these
 interfaces. However,
 .B TLI
 interfaces are supported for compatibility.
@@ -76,14 +79,18 @@ routine that has the same name as an
 routine, the
 .B tiuser.h
 header file must be used.  Refer to the
-\fBTLI COMPATIBILITY\fR section for a description of differences
+.B TLI COMPATIBILITY
+section for a description of differences
 between the two interfaces.
 .sp
 .LP
 This function is used to send either normal or expedited data. The argument
-\fIfd\fR identifies the local transport endpoint over which data should be
+.I fd
+identifies the local transport endpoint over which data should be
 sent, \fIbuf\fR points to the user data, \fInbytes\fR specifies the number
-of bytes of user data to be sent, and \fIflags\fR specifies any optional
+of bytes of user data to be sent, and
+.I flags
+specifies any optional
 flags described below:
 .sp
 .ne 2
@@ -114,8 +121,12 @@ transport service data unit (TSDU) (or expedited transport service data unit
 - ETSDU) is being sent through multiple
 .B t_snd()
 calls.  Each
-\fBt_snd()\fR with the  \fBT_MORE\fR flag set indicates that another
-\fBt_snd()\fR will follow with more data for the current TSDU (or ETSDU).
+.B t_snd()
+with the
+.B T_MORE
+flag set indicates that another
+.B t_snd()
+will follow with more data for the current TSDU (or ETSDU).
 .sp
 The end of the TSDU (or ETSDU) is identified by a
 .B t_snd()
@@ -129,13 +140,19 @@ up large logical data units without losing the boundaries of those units at
 the other end of the connection. The flag implies nothing about how the data
 is packaged for transfer below the transport interface. If the transport
 provider does not support the concept of a TSDU as indicated in the
-\fIinfo\fR argument on return from \fBt_open\fR(3NSL) or
-\fBt_getinfo\fR(3NSL), the  \fBT_MORE\fR flag is not meaningful and will be
+.I info
+argument on return from
+.BR t_open "(3NSL) or"
+.BR t_getinfo (3NSL),
+the
+.B T_MORE
+flag is not meaningful and will be
 ignored if set.
 .sp
 The sending of a zero-length fragment of a TSDU or ETSDU is only permitted
 where this is used to indicate the end of a TSDU or ETSDU; that is, when the
-\fBT_MORE\fR flag is not set. Some transport providers also forbid
+.B T_MORE
+flag is not set. Some transport providers also forbid
 zero-length TSDUs and ETSDUs.
 .RE
 
@@ -168,8 +185,10 @@ By default,
 operates in synchronous mode and may wait if flow
 control restrictions prevent the data from being accepted by the local
 transport provider at the time the call is made.  However, if
-\fBO_NONBLOCK\fR is set by means of  \fBt_open\fR(3NSL) or \fBfcntl\fR(2),
-\fBt_snd()\fR will execute in asynchronous mode, and will fail immediately
+.B O_NONBLOCK
+is set by means of  \fBt_open\fR(3NSL) or \fBfcntl\fR(2),
+.B t_snd()
+will execute in asynchronous mode, and will fail immediately
 if there are flow control restrictions. The process can arrange to be
 informed when the flow control restrictions are cleared by means of either
 .BR t_look (3NSL)
@@ -206,7 +225,8 @@ If nbytes is zero and sending of zero bytes is not supported by the
 underlying communications service,
 .B t_snd()
 returns \(mi1 with
-\fBt_errno\fR set to
+.B t_errno
+set to
 .BR TBADDATA .
 .sp
 .LP
@@ -234,7 +254,8 @@ is set to indicate the error.
 .LP
 Note that if the number of bytes accepted by the communications provider is
 less than the number of bytes requested, this may either indicate that
-\fBO_NONBLOCK\fR is set and the communications provider is blocked due to
+.B O_NONBLOCK
+is set and the communications provider is blocked due to
 flow control, or that
 .B O_NONBLOCK
 is clear and the function was
@@ -260,7 +281,9 @@ Illegal amount of data:
 .el o
 A single send was attempted specifying a TSDU (ETSDU) or fragment TSDU
 (ETSDU) greater than that specified by the current values of the TSDU or
-ETSDU fields in the \fIinfo\fR argument.
+ETSDU fields in the
+.I info
+argument.
 .RE
 .RS +4
 .TP
@@ -312,7 +335,8 @@ An invalid flag was specified.
 .ad
 .RS 15n
 .rt
-\fBO_NONBLOCK\fR was set, but the flow control mechanism prevented the
+.B O_NONBLOCK
+was set, but the flow control mechanism prevented the
 transport provider from accepting any data at this time.
 .RE
 
@@ -346,7 +370,9 @@ This function is not supported by the underlying transport provider.
 .ad
 .RS 15n
 .rt
-The communications endpoint referenced by  \fIfd\fR is not in one of the
+The communications endpoint referenced by
+.I fd
+is not in one of the
 states in which a call to this function is valid.
 .RE
 
@@ -474,7 +500,8 @@ MT LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBfcntl\fR(2), \fBt_getinfo\fR(3NSL),
+.BR fcntl (2),
+.BR t_getinfo (3NSL),
 .BR t_look (3NSL),
 .BR t_open (3NSL),
 .BR t_rcv (3NSL),
@@ -495,7 +522,10 @@ result, generated by the transport provider, perhaps on a subsequent XTI
 call. This error may take the form of a connection abort, a
 .BR TSYSERR ,
 a
-\fBTBADDATA\fR or a \fBTPROTO\fR error.
+.B TBADDATA
+or a
+.B TPROTO
+error.
 .sp
 .LP
 If multiple sends which exceed the maximum TSDU or ETSDU size are detected
