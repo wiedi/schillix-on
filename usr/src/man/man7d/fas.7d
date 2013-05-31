@@ -31,7 +31,9 @@ fas@\fIsbus-slot\fR,0x8800000
 .SH DESCRIPTION
 .sp
 .LP
-The \fBfas\fR Host Bus Adapter driver is a
+The
+.B fas
+Host Bus Adapter driver is a
 .B SCSA
 compliant nexus driver
 that supports the Qlogic FAS366
@@ -39,8 +41,11 @@ that supports the Qlogic FAS366
 chip.
 .sp
 .LP
-The  \fBfas\fR driver supports the standard functions provided by the
-\fBSCSA\fR interface. The driver supports tagged and untagged queuing, wide
+The
+.B fas
+driver supports the standard functions provided by the
+.B SCSA
+interface. The driver supports tagged and untagged queuing, wide
 and fast
 .B SCSI,
 almost unlimited transfer size (using a moving \fBDVMA\fR
@@ -49,8 +54,13 @@ commands.
 .SS "Driver Configuration"
 .sp
 .LP
-The  \fBfas\fR driver can be configured by defining properties in
-\fBfas.conf\fR which override the global \fBSCSI\fR settings. Supported
+The
+.B fas
+driver can be configured by defining properties in
+.B fas.conf
+which override the global
+.B SCSI
+settings. Supported
 properties are: \fBscsi-options\fR, \fBtarget<\fIn\fR>-scsi-options\fR,
 .BR scsi-reset-delay ,
 .BR scsi-watchdog-tick ,
@@ -74,11 +84,16 @@ and
 .LP
 After periodic interval
 .BR scsi-watchdog-tick ,
-the \fBfas\fR driver
+the
+.B fas
+driver
 searches all current and disconnected commands for timeouts.
 .sp
 .LP
-\fBscsi-tag-age-limit\fR is the number of times  that the \fBfas\fR driver
+.B scsi-tag-age-limit
+is the number of times  that the
+.B fas
+driver
 attempts to allocate a particular tag ID that is currently in use after going
 through all tag IDs in a circular fashion.  After finding the same tag ID in
 use
@@ -90,10 +105,13 @@ target until all outstanding commands complete or timeout.
 Refer to \fBscsi_hba_attach\fR(9F) for details.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR A sample of fas configuration file
+.B Example 1
+A sample of fas configuration file
 .sp
 .LP
-Create a file called \fB/kernel/drv/fas.conf\fR and add this line:
+Create a file called
+.B /kernel/drv/fas.conf
+and add this line:
 
 .sp
 .LP
@@ -104,8 +122,10 @@ Create a file called \fB/kernel/drv/fas.conf\fR and add this line:
 This disables tagged queuing, Fast
 .B SCSI,
 and Wide mode for all
-\fBfas\fR instances. The following example disables an option for one specific
-\fBfas\fR (refer to
+.B fas
+instances. The following example disables an option for one specific
+.B fas
+(refer to
 .BR driver.conf (4)
 for more details):
 
@@ -140,7 +160,8 @@ bus to
 .sp
 .LP
 The physical pathname of the parent can be determined using the
-\fB/devices\fR tree or following the link of the logical device name:
+.B /devices
+tree or following the link of the logical device name:
 
 .sp
 .in +2
@@ -156,7 +177,10 @@ The physical pathname of the parent can be determined using the
 .sp
 .LP
 Determine the register property values using the output from
-\fBprtconf\fR(1M) (with the \fB-v\fR option):
+.BR prtconf (1M)
+(with the
+.B -v
+option):
 
 .sp
 .in +2
@@ -171,12 +195,14 @@ SUNW,fas, instance #0
 
 .sp
 .LP
-\fBscsi-options\fR can also be specified per device type using the device
+.B scsi-options
+can also be specified per device type using the device
 inquiry string. All the devices with the same inquiry string will have the
 same
 .B scsi-options
 set. This can be used to disable some
-\fBscsi-options\fR on all the devices of the same type.
+.B scsi-options
+on all the devices of the same type.
 
 .sp
 .in +2
@@ -197,7 +223,10 @@ to
 To get the  inquiry string, run the
 .B probe-scsi
 or
-\fBprobe-scsi-all\fR command at the \fBok\fR prompt before booting the
+.B probe-scsi-all
+command at the
+.B ok
+prompt before booting the
 system.
 
 .sp
@@ -226,7 +255,9 @@ for target 1 to
 and for all
 other targets on this
 .B SCSI
-bus to \fB0x3f8\fR except for one specific
+bus to
+.B 0x3f8
+except for one specific
 disk type which will have
 .B scsi-options
 set to
@@ -234,7 +265,8 @@ set to
 
 .sp
 .LP
-\fBscsi-options\fR specified per target ID have the highest precedence,
+.B scsi-options
+specified per target ID have the highest precedence,
 followed by
 .B scsi-options
 per device type. Global \fBfas scsi-options\fR
@@ -250,7 +282,9 @@ effect.
 .SS "Driver Capabilities"
 .sp
 .LP
-The target driver needs to set capabilities in the \fBfas\fR driver in order
+The target driver needs to set capabilities in the
+.B fas
+driver in order
 to enable some driver features. The target driver can  query and modify these
 capabilities:
 .BR synchronous ,
@@ -271,11 +305,17 @@ capabilities are disabled, while
 .BR disconnect ,
 .BR synchronous ,
 and
-\fBuntagged-qing\fR are enabled. These capabilities can only have binary
+.B untagged-qing
+are enabled. These capabilities can only have binary
 values (\fB0\fR or
 .BR 1 ).
-The default value for \fBqfull-retries\fR is
-\fB10\fR and the default value for \fBqfull-retry-interval\fR is
+The default value for
+.B qfull-retries
+is
+.B 10
+and the default value for
+.B qfull-retry-interval
+is
 .BR 100 .
 The \fBqfull-retries\fR capability is a \fBuchar_t\fR (\fB0\fR to
 .BR 255 )
@@ -289,8 +329,11 @@ and \fBwide-xfer\fR
 explicitly. The
 .B untagged-qing
 capability is always enabled and its value
-cannot be modified, because \fBfas\fR can queue commands even when
-\fBtagged-qing\fR is disabled.
+cannot be modified, because
+.B fas
+can queue commands even when
+.B tagged-qing
+is disabled.
 .sp
 .LP
 Whenever there is a conflict between the value of
@@ -308,18 +351,19 @@ Refer to \fBscsi_ifsetcap\fR(9F) and  \fBscsi_ifgetcap\fR(9F) for details.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/fas\fR
+.B /kernel/drv/fas
 .ad
 .RS 24n
 .rt
-\fBELF\fR Kernel Module
+.B ELF
+Kernel Module
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB/kernel/drv/fas.conf\fR
+.B /kernel/drv/fas.conf
 .ad
 .RS 24n
 .rt
@@ -356,7 +400,7 @@ T}
 .BR scsi_abort (9F),
 .BR scsi_hba_attach (9F),
 .BR scsi_ifgetcap (9F),
-\fBscsi_ifsetcap\fR(9F),
+.BR scsi_ifsetcap (9F),
 .BR scsi_reset (9F),
 .BR scsi_sync_pkt (9F),
 .BR scsi_transport (9F),
@@ -369,7 +413,7 @@ T}
 .I Writing Device Drivers
 .sp
 .LP
-\fIANSI Small Computer System Interface-2 (SCSI-2)\fR
+.I "ANSI Small Computer System Interface-2 (SCSI-2)
 .sp
 .LP
 QLogic Corporation,
@@ -381,10 +425,16 @@ The messages described below are some that may appear on the system console,
 as well as being logged.
 .sp
 .LP
-The first five messages may be displayed while the  \fBfas\fR driver is
-trying to attach; these messages mean that the  \fBfas\fR driver was unable to
+The first five messages may be displayed while the
+.B fas
+driver is
+trying to attach; these messages mean that the
+.B fas
+driver was unable to
 attach. All of these messages are preceded by "fas%d", where "%d" is the
-instance number of the  \fBfas\fR controller.
+instance number of the
+.B fas
+controller.
 .sp
 .ne 2
 .mk
@@ -406,7 +456,9 @@ accessible; move to non-slave-only SBus slot.
 .sp .6
 .RS 4n
 The device was configured with an interrupt level that cannot be used with
-this \fBfas\fR driver. Check the SBus device.
+this
+.B fas
+driver. Check the SBus device.
 .RE
 
 .sp
@@ -533,7 +585,7 @@ Tagged queuing was disabled because disconnects were disabled in
 .ne 2
 .mk
 .na
-\fBBad clock frequency\fR
+.B Bad clock frequency
 .ad
 .sp .6
 .RS 4n
@@ -544,7 +596,7 @@ Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBSync of pkt (<address>) failed\fR
+.B Sync of pkt (<address>) failed
 .ad
 .sp .6
 .RS 4n
@@ -633,7 +685,7 @@ The FAS366 hardware reported a bad sequence step. Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBUndetermined selection failure\fR
+.B Undetermined selection failure
 .ad
 .sp .6
 .RS 4n
@@ -644,7 +696,7 @@ The selection of a target failed unexpectedly. Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (bad reselect bytes)\fR
+.B "Target <n>: failed reselection (bad reselect bytes)
 .ad
 .sp .6
 .RS 4n
@@ -656,7 +708,7 @@ bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (bad identify message)\fR
+.B "Target <n>: failed reselection (bad identify message)
 .ad
 .sp .6
 .RS 4n
@@ -668,7 +720,7 @@ Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (not in msgin phase)\fR
+.B "Target <n>: failed reselection (not in msgin phase)
 .ad
 .sp .6
 .RS 4n
@@ -681,7 +733,7 @@ bus phase after reconnection. Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (unexpected bus free)\fR
+.B "Target <n>: failed reselection (unexpected bus free)
 .ad
 .sp .6
 .RS 4n
@@ -694,7 +746,7 @@ bus phase after reconnection.  Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (timeout on receiving tag msg)\fR
+.B "Target <n>: failed reselection (timeout on receiving tag msg)
 .ad
 .sp .6
 .RS 4n
@@ -706,7 +758,7 @@ hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (botched tag)\fR
+.B "Target <n>: failed reselection (botched tag)
 .ad
 .sp .6
 .RS 4n
@@ -718,7 +770,7 @@ hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (invalid tag)\fR
+.B "Target <n>: failed reselection (invalid tag)
 .ad
 .sp .6
 .RS 4n
@@ -730,7 +782,7 @@ hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (Parity error in reconnect msg's)\fR
+.B "Target <n>: failed reselection (Parity error in reconnect msg's)
 .ad
 .sp .6
 .RS 4n
@@ -741,7 +793,7 @@ A reconnect failed; parity error detected.  Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n>: failed reselection (no command)\fR
+.B "Target <n>: failed reselection (no command)
 .ad
 .sp .6
 .RS 4n
@@ -757,7 +809,7 @@ tries to reconnect. Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBUnexpected bus free\fR
+.B Unexpected bus free
 .ad
 .sp .6
 .RS 4n
@@ -768,7 +820,7 @@ Target disconnected from the bus without notice. Check for bad hardware.
 .ne 2
 .mk
 .na
-\fBTarget <n> didn't disconnect after sending <message>\fR
+.B "Target <n> didn't disconnect after sending <message>
 .ad
 .sp .6
 .RS 4n
@@ -803,7 +855,7 @@ An attempt was made to cross a boundary that the driver could not handle.
 .ne 2
 .mk
 .na
-\fBUnwanted data xfer direction for Target <n>\fR
+.B "Unwanted data xfer direction for Target <n>
 .ad
 .sp .6
 .RS 4n
@@ -867,7 +919,7 @@ bus.
 .ne 2
 .mk
 .na
-\fBPremature end of extended message\fR
+.B Premature end of extended message
 .ad
 .sp .6
 .RS 4n
@@ -881,7 +933,7 @@ firmware problem.
 .ne 2
 .mk
 .na
-\fBPremature end of input message\fR
+.B Premature end of input message
 .ad
 .sp .6
 .RS 4n
@@ -914,7 +966,7 @@ The extended message sent by the target is longer than expected.
 .ne 2
 .mk
 .na
-\fB<name> message <n> from Target <m> garbled\fR
+.B "<name> message <n> from Target <m> garbled
 .ad
 .sp .6
 .RS 4n
@@ -937,7 +989,7 @@ Target \fB<\fIn\fB>\fR rejected a message sent by the driver.
 .ne 2
 .mk
 .na
-\fBRejecting message <name> from Target <n>\fR
+.B "Rejecting message <name> from Target <n>
 .ad
 .sp .6
 .RS 4n
@@ -959,7 +1011,7 @@ The driver was unable to send out command bytes.
 .ne 2
 .mk
 .na
-\fBTarget <n> refused message resend\fR
+.B Target <n> refused message resend
 .ad
 .sp .6
 .RS 4n
@@ -992,7 +1044,7 @@ The driver does not accept this two byte message.
 .ne 2
 .mk
 .na
-\fBGross error in fas status <stat>\fR
+.B "Gross error in fas status <stat>
 .ad
 .sp .6
 .RS 4n
@@ -1003,7 +1055,7 @@ The \fBfas\fR chip has indicated a gross error like \fBFIFO\fR overflow.
 .ne 2
 .mk
 .na
-\fBPolled cmd failed (target busy)\fR
+.B Polled cmd failed (target busy)
 .ad
 .sp .6
 .RS 4n
@@ -1015,7 +1067,7 @@ commands within a reasonable time.
 .ne 2
 .mk
 .na
-\fBPolled cmd failed\fR
+.B Polled cmd failed
 .ad
 .sp .6
 .RS 4n
@@ -1026,7 +1078,7 @@ A polled command failed because of timeouts or bus errors.
 .ne 2
 .mk
 .na
-\fBAuto request sense failed\fR
+.B Auto request sense failed
 .ad
 .sp .6
 .RS 4n
@@ -1037,7 +1089,7 @@ Driver is unable to get request sense from the target.
 .ne 2
 .mk
 .na
-\fBDisconnected command timeout for Target <id>.<lun>\fR
+.B "Disconnected command timeout for Target <id>.<lun>
 .ad
 .sp .6
 .RS 4n
@@ -1051,7 +1103,7 @@ detected.
 .ne 2
 .mk
 .na
-\fBDisconnected tagged cmds (<n>) timeout for Target <id>.<lun>\fR
+.B "Disconnected tagged cmds (<n>) timeout for Target <id>.<lun>
 .ad
 .sp .6
 .RS 4n
@@ -1065,7 +1117,7 @@ detected.
 .ne 2
 .mk
 .na
-\fBConnected command timeout for Target <id>.<lun>\fR
+.B "Connected command timeout for Target <id>.<lun>
 .ad
 .sp .6
 .RS 4n
@@ -1090,7 +1142,7 @@ problem by reducing the data transfer rate.
 .ne 2
 .mk
 .na
-\fBTarget <id>.<lun> reducing sync. transfer rate\fR
+.B "Target <id>.<lun> reducing sync. transfer rate
 .ad
 .sp .6
 .RS 4n
@@ -1114,7 +1166,7 @@ problem by reducing the data transfer rate.
 .ne 2
 .mk
 .na
-\fBTarget <id> reducing sync. transfer rate\fR
+.B "Target <id> reducing sync. transfer rate
 .ad
 .sp .6
 .RS 4n
@@ -1152,7 +1204,7 @@ mode of operation to avoid further problems.
 .ne 2
 .mk
 .na
-\fBReset SCSI bus failed\fR
+.B Reset SCSI bus failed
 .ad
 .sp .6
 .RS 4n
@@ -1177,7 +1229,9 @@ bus.
 .SH WARNINGS
 .sp
 .LP
-The  \fBfas\fR hardware (FAS366) supports both Wide and Fast
+The
+.B fas
+hardware (FAS366) supports both Wide and Fast
 .B SCSI
 mode,
 but fast20 is not supported. The maximum
@@ -1187,7 +1241,9 @@ Initiator mode block sequence (IBS) is not supported.
 .SH NOTES
 .sp
 .LP
-The \fBfas\fR driver exports properties indicating per target the negotiated
+The
+.B fas
+driver exports properties indicating per target the negotiated
 transfer speed
 .RB ( target<n>-sync-speed ),
 whether wide bus is supported

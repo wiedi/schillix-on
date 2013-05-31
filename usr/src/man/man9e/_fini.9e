@@ -52,17 +52,20 @@ must write them.
 .ne 2
 .mk
 .na
-\fImodinfop\fR
+.I modinfop
 .ad
 .RS 13n
 .rt
-A pointer to an opaque \fBmodinfo\fR structure.
+A pointer to an opaque
+.B modinfo
+structure.
 .RE
 
 .SH DESCRIPTION
 .sp
 .LP
-\fB_init()\fR initializes a loadable module. It is called before any other
+.B _init()
+initializes a loadable module. It is called before any other
 routine in a loadable module.
 .B _init()
 returns the value returned by
@@ -75,42 +78,57 @@ should be prepared to undo that setup if
 error.
 .sp
 .LP
-\fB_info()\fR returns information about a loadable module. \fB_info()\fR
+.B _info()
+returns information about a loadable module. \fB_info()\fR
 returns the value returned by \fBmod_info\fR(9F).
 .sp
 .LP
-\fB_fini()\fR prepares a loadable module for unloading. It is called when
+.B _fini()
+prepares a loadable module for unloading. It is called when
 the system wants to unload a module. If the module determines that it can be
-unloaded, then \fB_fini()\fR returns the value returned by
+unloaded, then
+.B _fini()
+returns the value returned by
 .BR mod_remove (9F).
-Upon successful return from \fB_fini()\fR no other
+Upon successful return from
+.B _fini()
+no other
 routine in the module will be called before
 .B _init()
 is called.
 .SH RETURN VALUES
 .sp
 .LP
-\fB_init()\fR should return the appropriate error number if there is an
+.B _init()
+should return the appropriate error number if there is an
 error, otherwise it should return the return value from
 .BR mod_install (9F).
 .sp
 .LP
-\fB_info()\fR should return the return value from \fBmod_info\fR(9F)
+.B _info()
+should return the return value from \fBmod_info\fR(9F)
 .sp
 .LP
-\fB_fini()\fR should return the return value from
+.B _fini()
+should return the return value from
 .BR mod_remove (9F).
-\fB_fini()\fR is permitted to return \fBEBUSY\fR prior to calling
+.B _fini()
+is permitted to return
+.B EBUSY
+prior to calling
 .BR mod_remove (9F)
 if the driver should not be unloaded. Driver global
 resources, such as mutexes and calls to \fBddi_soft_state_fini\fR(9F),
-should only be destroyed in \fB_fini()\fR after
+should only be destroyed in
+.B _fini()
+after
 .B mod_remove()
 returns
 successfully.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Initializing and Freeing a Mutex
+.B Example 1
+Initializing and Freeing a Mutex
 .sp
 .LP
 The following example demonstrates how to initialize and free a
@@ -216,12 +234,16 @@ them.
 .LP
 Even though the identifiers
 .BR _fini() ,
-\fB_info()\fR, and \fB_init()\fR
+.BR _info() ,
+and
+.BR _init()
 appear to be declared as globals, their scope is restricted by the kernel to
 the module that they are defined in.
 .SH BUGS
 .sp
 .LP
-On some implementations \fB_info()\fR may be called before
+On some implementations
+.B _info()
+may be called before
 .BR _init() .
 

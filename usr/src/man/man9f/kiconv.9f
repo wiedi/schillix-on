@@ -60,12 +60,14 @@ state.
 .ne 2
 .mk
 .na
-\fIinbuf\fR
+.I inbuf
 .ad
 .RS 16n
 .rt
 Points to an address of a buffer containing a sequence of character bytes
-in \fBfromcode\fR codeset to be converted. After the conversion, the
+in
+.B fromcode
+codeset to be converted. After the conversion, the
 variable is updated to point to the byte following the last byte that was
 successfully used in the conversion.
 .RE
@@ -74,13 +76,15 @@ successfully used in the conversion.
 .ne 2
 .mk
 .na
-\fIinbytesleft\fR
+.I inbytesleft
 .ad
 .RS 16n
 .rt
 As an input parameter, the number of bytes to be converted in
 .IR inbuf .
-As an output parameter, the number of bytes in \fIinbuf\fR still not
+As an output parameter, the number of bytes in
+.I inbuf
+still not
 converted after the conversion.
 .RE
 
@@ -88,12 +92,13 @@ converted after the conversion.
 .ne 2
 .mk
 .na
-\fIoutbuf\fR
+.I outbuf
 .ad
 .RS 16n
 .rt
 Points to an address of a buffer where converted character bytes in
-\fBtocode\fR codeset can be saved. After the conversion, the variable is
+.B tocode
+codeset can be saved. After the conversion, the variable is
 updated to point to the byte following the last byte of converted output
 data.
 .RE
@@ -102,13 +107,17 @@ data.
 .ne 2
 .mk
 .na
-\fIoutbytesleft\fR
+.I outbytesleft
 .ad
 .RS 16n
 .rt
-As an input parameter, the number of available bytes at \fIoutbuf\fR where
+As an input parameter, the number of available bytes at
+.I outbuf
+where
 converted character bytes can be saved. As an output parameter, the number
-of bytes still available at \fIoutbuf\fR after the conversion.
+of bytes still available at
+.I outbuf
+after the conversion.
 .RE
 
 .sp
@@ -186,33 +195,57 @@ into a sequence of
 corresponding characters in another
 .BR codeset ,
 in the array specified by
-\fIoutbuf\fR. The \fBcodesets\fR are those specified in the
-\fBkiconv_open()\fR call that returned the code conversion descriptor,
+.IR outbuf .
+The
+.B codesets
+are those specified in the
+.B kiconv_open()
+call that returned the code conversion descriptor,
 .IR cd .
-The \fIinbuf\fR parameter points to a variable that points to the
-first character in the input buffer and \fIinbytesleft\fR indicates the
+The
+.I inbuf
+parameter points to a variable that points to the
+first character in the input buffer and
+.I inbytesleft
+indicates the
 number of bytes to the end of the buffer to be converted. The \fIoutbuf\fR
 parameter points to a variable that points to the first available byte in
-the output buffer and \fIoutbytesleft\fR indicates the number of the
+the output buffer and
+.I outbytesleft
+indicates the number of the
 available bytes to the end of the buffer.
 .sp
 .LP
 For state-dependent encodings, the conversion descriptor
 .I cd
 is placed
-into its initial shift state by a call for which \fIinbuf\fR is a null
-pointer, or for which \fIinbuf\fR points to a null pointer. When
-\fBkiconv()\fR is called in this way, and if \fIoutbuf\fR is not a null
-pointer or a pointer to a null pointer, and \fIoutbytesleft\fR points to a
+into its initial shift state by a call for which
+.I inbuf
+is a null
+pointer, or for which
+.I inbuf
+points to a null pointer. When
+.B kiconv()
+is called in this way, and if
+.I outbuf
+is not a null
+pointer or a pointer to a null pointer, and
+.I outbytesleft
+points to a
 positive value,
 .B kiconv()
 places, if any, into the output buffer, the
 byte sequence to change the output buffer to its initial shift state. If the
 output buffer is not large enough to hold the entire reset sequence,
-\fBkiconv()\fR fails and sets \fIerrno\fR to
+.B kiconv()
+fails and sets
+.I errno
+to
 .BR E2BIG .
 Subsequent calls
-with \fIinbuf\fR as other than a null pointer or a pointer to a null pointer
+with
+.I inbuf
+as other than a null pointer or a pointer to a null pointer
 cause the conversion to take place from the current state of the conversion
 descriptor.
 .sp
@@ -228,10 +261,15 @@ converted input, conversion stops just prior to the input bytes that would
 cause the output buffer to overflow. The variable pointed to by \fIinbuf\fR
 is updated to point to the byte following the last byte that was
 successfully used in the conversion. The value pointed to by
-\fIinbytesleft\fR is decremented to reflect the number of bytes still not
-converted in the input buffer. The variable pointed to by \fIoutbuf\fR is
+.I inbytesleft
+is decremented to reflect the number of bytes still not
+converted in the input buffer. The variable pointed to by
+.I outbuf
+is
 updated to point to the byte following the last byte of converted output
-data. The value pointed to by \fIoutbytesleft\fR is decremented to reflect
+data. The value pointed to by
+.I outbytesleft
+is decremented to reflect
 the number of bytes still available in the output buffer. For
 state-dependent encodings, the conversion descriptor is updated to reflect
 the shift state in effect at the end of the last successfully converted byte
@@ -243,7 +281,8 @@ If
 encounters a character in the input buffer that is legal,
 but for which an identical character does not exist in the target
 .BR codeset ,
-\fBkiconv()\fR performs an implementation-defined conversion
+.B kiconv()
+performs an implementation-defined conversion
 (that is, a non-identical conversion) on this character.
 .SH RETURN VALUES
 .sp
@@ -253,9 +292,13 @@ The
 function updates the variables pointed to by the
 parameters to reflect the extent of the conversion and returns the number of
 non-identical conversions performed. If the entire string in the input
-buffer is converted, the value pointed to by \fIinbytesleft\fR is 0. If the
+buffer is converted, the value pointed to by
+.I inbytesleft
+is 0. If the
 input conversion is stopped due to any conditions mentioned above, the value
-pointed to by \fIinbytesleft\fR is non-zero and
+pointed to by
+.I inbytesleft
+is non-zero and
 .I errno
 is set to
 indicate the condition. If such and other error occurs, \fBkiconv()\fR
@@ -265,14 +308,17 @@ to indicate the error.
 .SH CONTEXT
 .sp
 .LP
-\fBkiconv()\fR can be called from user or interrupt context.
+.B kiconv()
+can be called from user or interrupt context.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Performing a Simple Conversion
+.B Example 1
+Performing a Simple Conversion
 .sp
 .LP
 The following example shows how to perform a simple conversion using
-\fBkiconv()\fR with a limited size of output buffer:
+.B kiconv()
+with a limited size of output buffer:
 
 .sp
 .in +2

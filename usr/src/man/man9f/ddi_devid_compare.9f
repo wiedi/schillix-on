@@ -141,7 +141,9 @@ The second of two device id addresses to be compared calling
 .ad
 .RS 14n
 .rt
-A \fBdev_info\fR pointer, which identifies the device.
+A
+.B dev_info
+pointer, which identifies the device.
 .RE
 
 .sp
@@ -268,25 +270,31 @@ identify and locate devices, independent of the device's physical connection
 or its logical device name or number.
 .sp
 .LP
-\fBddi_devid_compare()\fR compares two device \fBID\fRs byte-by-byte and
+.B ddi_devid_compare()
+compares two device
+.BR ID "s byte-by-byte and"
 determines both equality and sort order.
 .sp
 .LP
-\fBddi_devid_sizeof()\fR returns the number of bytes allocated for the
+.B ddi_devid_sizeof()
+returns the number of bytes allocated for the
 passed in device
 .BR ID
 .RI ( devid ).
 .sp
 .LP
-\fBddi_devid_init()\fR allocates memory and initializes the opaque device
-\fBID\fR structure. This function does not store the
+.B ddi_devid_init()
+allocates memory and initializes the opaque device
+.B ID
+structure. This function does not store the
 .IR devid .
 If the
 device id is not derived from the device's firmware, it is the driver's
 responsibility to store the
 .I devid
 on some reliable store. When a
-\fIdevid_type\fR of either
+.I devid_type
+of either
 .BR "DEVID_SCSI3_WWN, DEVID_SCSI_SERIAL" ,
 or
 .B DEVID_ENCAP
@@ -297,7 +305,8 @@ passed in
 .LP
 When the
 .I devid_type
-\fBDEVID_FAB\fR is used, the array of bytes
+.B DEVID_FAB
+is used, the array of bytes
 (\fIid\fR) must be \fBNULL\fR and the length (\fInbytes\fR) must be zero.
 The fabricated device ids,
 .B DEVID_FAB
@@ -306,25 +315,39 @@ machine's host id and a timestamp.
 .sp
 .LP
 Drivers must free the memory allocated by this function, using the
-\fBddi_devid_free()\fR function.
+.B ddi_devid_free()
+function.
 .sp
 .LP
-\fBddi_devid_free()\fR frees the memory allocated for the returned
-\fIdevid\fR by the \fBddi_devid_init()\fR and \fBdevid_str_decode()\fR
+.B ddi_devid_free()
+frees the memory allocated for the returned
+.I devid
+by the
+.B ddi_devid_init()
+and
+.BR devid_str_decode()
 functions.
 .sp
 .LP
-\fBddi_devid_register()\fR registers the device \fBID\fR address
+.B ddi_devid_register()
+registers the device
+.B ID
+address
 (\fIdevid\fR) with the \fBDDI\fR framework, associating it with the
-\fBdev_info\fR passed in
+.B dev_info
+passed in
 .RI ( dip ).
 The drivers must register device
 \fBID\fRs at attach time. See
 .BR attach (9E).
 .sp
 .LP
-\fBddi_devid_unregister()\fR removes the device \fBID\fR address from the
-\fBdev_info\fR passed in
+.B ddi_devid_unregister()
+removes the device
+.B ID
+address from the
+.B dev_info
+passed in
 .RI ( dip ).
 Drivers must use this function to
 unregister the device
@@ -336,13 +359,18 @@ The
 driver must free the space allocated for the device
 .BR ID ,
 using the
-\fBddi_devid_free()\fR function. See
+.B ddi_devid_free()
+function. See
 .BR detach (9E).
 .sp
 .LP
-\fBddi_devid_valid()\fR validates the device \fBID\fR (\fIdevid\fR) passed
+.B ddi_devid_valid()
+validates the device
+.B ID
+(\fIdevid\fR) passed
 in. The driver must use this function to validate any fabricated device
-\fBID\fR that has been stored on a device.
+.B ID
+that has been stored on a device.
 .sp
 .LP
 The
@@ -351,8 +379,12 @@ function returns a pointer to the device ID
 structure through
 .I retdevid
 if there is already a registered device ID
-associated with the \fBdev_info\fR node. A driver can use this interface to
-check and get the device ID associated with the \fBdev_info\fR node. It
+associated with the
+.B dev_info
+node. A driver can use this interface to
+check and get the device ID associated with the
+.B dev_info
+node. It
 returns
 .B DDI_FAILURE
 if no device ID is registered for the node.
@@ -363,7 +395,9 @@ The
 function allocates memory for the opaque device
 ID structure and initializes it with the associated device ID and returns
 the pointer to it. The driver must free the memory allocated by this
-function using the \fBddi_devid_free()\fR function.
+function using the
+.B ddi_devid_free()
+function.
 .sp
 .LP
 The
@@ -378,7 +412,10 @@ and a
 .I minor_name
 are non-null, then a
 slash (\fB/\fR) is used to separate the \fIdevid\fR from the
-\fIminor_name\fR in the encoded string. If \fIminor_name\fR is null, then
+.I minor_name
+in the encoded string. If
+.I minor_name
+is null, then
 only the
 .I devid
 is encoded. If the
@@ -390,7 +427,8 @@ is returned. Note that you cannot compare the
 returned string against another string with
 .B strcmp()
 to determine
-\fIdevid\fR equality. The returned string must be freed by calling
+.I devid
+equality. The returned string must be freed by calling
 .BR devid_str_free() .
 .sp
 .LP
@@ -399,7 +437,8 @@ The
 function takes a string previously
 produced by the
 .BR devid_str_encode "(3DEVID) or"
-\fBddi_devid_str_encode()\fR function and decodes the contained device ID
+.B ddi_devid_str_encode()
+function and decodes the contained device ID
 and minor_name, allocating and returning pointers to the extracted parts
 through the
 .I retdevid
@@ -412,12 +451,16 @@ was specified then the returned device ID and minor
 name will both be null. A non-null returned
 .I devid
 must be freed by the
-caller through the \fBddi_devid_free()\fR function. A non-null returned
+caller through the
+.B ddi_devid_free()
+function. A non-null returned
 minor name must be freed by calling
 .BR ddi_devid_str_free() .
 .sp
 .LP
-The \fBddi_devid_str_free()\fR function is used to free all strings
+The
+.B ddi_devid_str_free()
+function is used to free all strings
 returned by the
 .B ddi_devid
 functions (the \fBddi_devid_str_encode()\fR
@@ -427,7 +470,8 @@ argument).
 .SH RETURN VALUES
 .sp
 .LP
-\fBddi_devid_init()\fR returns the following values:
+.B ddi_devid_init()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -464,7 +508,8 @@ was passed in.
 
 .sp
 .LP
-\fBddi_devid_valid()\fR returns the following values:
+.B ddi_devid_valid()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -501,7 +546,8 @@ Invalid device
 
 .sp
 .LP
-\fBddi_devid_register()\fR returns the following values:
+.B ddi_devid_register()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -540,7 +586,8 @@ is invalid.
 
 .sp
 .LP
-\fBddi_devid_valid()\fR returns the following values:
+.B ddi_devid_valid()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -577,7 +624,8 @@ Invalid device
 
 .sp
 .LP
-\fBddi_devid_get()\fR returns the following values:
+.B ddi_devid_get()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -610,14 +658,17 @@ is present and a pointer to it is returned in
 .rt
 No device
 .B ID
-is defined for this \fBdev_info\fR node.
+is defined for this
+.B dev_info
+node.
 .RE
 
 .RE
 
 .sp
 .LP
-\fBddi_devid_compare()\fR returns the following values:
+.B ddi_devid_compare()
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -663,20 +714,27 @@ The first device ID is greater than the second device ID.
 
 .sp
 .LP
-\fBddi_devid_sizeof()\fR returns the size of the \fIdevid\fR in bytes. If
+.B ddi_devid_sizeof()
+returns the size of the
+.I devid
+in bytes. If
 called with a null, then the number of bytes that must be allocated and
 initialized to determine the size of a complete device ID is returned.
 .sp
 .LP
-\fBddi_devid_str_encode()\fR returns a value of null to indicate failure.
+.B ddi_devid_str_encode()
+returns a value of null to indicate failure.
 Failure can be caused by attempting to encode an invalid
 .IR devid .
 If the
 return value is non-null then the caller must free the returned string by
-using the \fBdevid_str_free()\fR function.
+using the
+.B devid_str_free()
+function.
 .sp
 .LP
-\fBddi_devid_str_decode()\fR returns the following values:
+.B ddi_devid_str_decode()
+returns the following values:
 .sp
 .ne 2
 .mk

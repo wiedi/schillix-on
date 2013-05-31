@@ -35,7 +35,8 @@ log \- interface to STREAMS error logging and event tracing
 .SH DESCRIPTION
 .sp
 .LP
-\fBlog\fR is a STREAMS software device driver that provides an interface
+.B log
+is a STREAMS software device driver that provides an interface
 for console logging and for the STREAMS error logging and event tracing
 processes (see
 .BR strerr (1M),
@@ -56,7 +57,8 @@ messages.
 .SS "Kernel Interface"
 .sp
 .LP
-\fBlog\fR messages are generated within the kernel by calls to the function
+.B log
+messages are generated within the kernel by calls to the function
 .BR strlog() :
 .sp
 .in +2
@@ -78,25 +80,34 @@ Required definitions are contained in
 .BR <sys/log.h> ,
 and
 .BR <sys/syslog.h> \&.
-\fImid\fR is the STREAMS
+.I mid
+is the STREAMS
 module id number for the module or driver submitting the
 .B log
 message.
-\fIsid\fR is an internal sub-id number usually used to identify a particular
+.I sid
+is an internal sub-id number usually used to identify a particular
 minor device of a driver.
 .I level
 is a tracing level that allows for
 selective screening out of low  priority messages from the tracer.
-\fIflags\fR are any combination of  \fBSL_ERROR\fR (the message is for the
+.I flags
+are any combination of
+.B SL_ERROR
+(the message is for the
 error logger),
 .B SL_TRACE
 (the message is for the tracer),
-\fBSL_CONSOLE\fR (the message is for the console logger), \fBSL_FATAL\fR
+.B SL_CONSOLE
+(the message is for the console logger), \fBSL_FATAL\fR
 (advisory notification of a fatal error), and
 .B SL_NOTIFY
 (request that
-a copy of the message be mailed to the system administrator). \fIfmt\fR is a
-\fBprintf\fR(3C) style format string, except that
+a copy of the message be mailed to the system administrator).
+.I fmt
+is a
+.BR printf (3C)
+style format string, except that
 .BR %s ,
 .BR %e ,
 .BR %E ,
@@ -111,7 +122,8 @@ arguments can be provided.
 .SS "User Interface"
 .sp
 .LP
-\fBlog\fR is implemented as a cloneable device, it clones itself without
+.B log
+is implemented as a cloneable device, it clones itself without
 intervention from the system clone device. Each open of \fB/dev/log\fR
 obtains a separate stream to
 .BR log .
@@ -124,7 +136,8 @@ whether it is an error
 call (see below). For the console logger, the
 .B "I_STR ioctl"
 has an
-\fBic_cmd\fR field of
+.B ic_cmd
+field of
 .BR I_CONSLOG ,
 with no accompanying data. For the
 error logger, the
@@ -134,11 +147,15 @@ has an
 field of
 .BR I_ERRLOG ,
 with no accompanying data. For the trace logger, the
-\fBioctl\fR has an  \fBic_cmd\fR field of
+.B ioctl
+has an
+.B ic_cmd
+field of
 .BR I_TRCLOG ,
 and must be
 accompanied by a data buffer containing an array of one or more struct
-\fBtrace_ids\fR elements.
+.B trace_ids
+elements.
 .sp
 .in +2
 .nf
@@ -158,13 +175,17 @@ structure specifies a
 .IR mid ,
 .IR sid ,
 and
-\fIlevel\fR from which messages will be accepted. \fBstrlog\fR(9F) will
+.I level
+from which messages will be accepted.
+.BR strlog (9F)
+will
 accept messages whose
 .I mid
 and
 .I sid
 exactly match those in the
-\fBtrace_ids\fR structure, and whose level is less than or equal to the
+.B trace_ids
+structure, and whose level is less than or equal to the
 level given in the
 .B trace_ids
 structure. A value of \(mi1 in any of the
@@ -177,7 +198,8 @@ accepted for that field.
 Once the logger process has identified itself using the
 .B ioctl
 call,
-\fBlog\fR will begin sending up messages subject to the restrictions noted
+.B log
+will begin sending up messages subject to the restrictions noted
 above. These messages are obtained using the
 .BR getmsg (2)
 function. The
@@ -188,7 +210,8 @@ specifies the
 .IR mid ,
 .IR sid ,
 .IR level ,
-\fIflags\fR, time in ticks
+.IR flags ,
+time in ticks
 since boot that the message was submitted, the corresponding time in seconds
 since Jan. 1, 1970, a sequence number, and a priority. The time in seconds
 since 1970 is provided so that the date and time of the message can be
@@ -277,7 +300,10 @@ even
 if it is not an error or trace logger. The only fields of the \fBlog_ctl\fR
 structure in the control part of the message that are accepted are the
 .IR level ,
-\fIflags\fR, and \fIpri\fR fields; all other fields are filled
+.IR flags ,
+and
+.I pri
+fields; all other fields are filled
 in by
 .B log
 before being forwarded to the appropriate logger. The data
@@ -288,8 +314,14 @@ must be packed, 32-bits each,  on the next 32-bit
 boundary following the end of the format string.
 .sp
 .LP
-\fBENXIO\fR is returned for  \fBI_TRCLOG\fR ioctls without any
-\fBtrace_ids\fR structures, or for any unrecognized \fBioctl\fR calls. The
+.B ENXIO
+is returned for
+.B I_TRCLOG
+ioctls without any
+.B trace_ids
+structures, or for any unrecognized
+.B ioctl
+calls. The
 driver silently ignores incorrectly formatted
 .B log
 messages sent to the
@@ -307,7 +339,8 @@ or
 .sp
 .LP
 The following driver configuration properties may be defined in the
-\fBlog.conf\fR file.
+.B log.conf
+file.
 .sp
 .ne 2
 .mk
@@ -338,7 +371,8 @@ message IDs will not be generated. This property is unstable and may be removed 
 
 .SH EXAMPLES
 .LP
-\fBExample 1 I_ERRLOG\fR registration.
+.B Example 1 I_ERRLOG
+registration.
 .sp
 .in +2
 .nf
@@ -352,7 +386,8 @@ ioctl(log, I_STR, &ioc);
 .in -2
 
 .LP
-\fBExample 2 I_TRCLOG\fR registration.
+.B Example 2 I_TRCLOG
+registration.
 .sp
 .in +2
 .nf
@@ -421,7 +456,7 @@ Write only instance of the log driver, for console logging.
 .ne 2
 .mk
 .na
-\fB/kernel/drv/log.conf\fR
+.B /kernel/drv/log.conf
 .ad
 .RS 24n
 .rt

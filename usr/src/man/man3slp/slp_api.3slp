@@ -36,7 +36,10 @@ The
 is a C  language  binding  that  maps directly into the
 Service Location Protocol ("\fBSLP\fR") defined  by  \fIRFC 2614\fR. This
 implementation requires minimal overhead. With  the exception  of the
-\fBSLPDereg()\fR and \fBSLPDelAttrs()\fR functions,  which  map into
+.B SLPDereg()
+and
+.B SLPDelAttrs()
+functions,  which  map into
 different uses  of the
 .B SLP
 deregister  request, there is one C
@@ -47,14 +50,16 @@ incoming parameters into memory allocated by the client code. Any memory
 returned directly from the
 .B API
 functions is deallocated using the
-\fBSLPFree()\fR function.
+.B SLPFree()
+function.
 .sp
 .LP
 To conform with standard C practice, all character strings passed to and
 returned through the
 .B API
 are null-terminated, even though the
-\fBSLP\fR protocol does not use null-terminated strings.  Strings passed as
+.B SLP
+protocol does not use null-terminated strings.  Strings passed as
 parameters are
 .B UTF-8
 but they may still be passed as a C string (a
@@ -97,7 +102,10 @@ output, clients are required  to unescape strings and convert escaped
 string-encoded opaques to binary. The
 .B SLPEscape()
 and
-\fBSLPUnescape()\fR functions can be used for escaping \fBSLP\fR reserved
+.B SLPUnescape()
+functions can be used for escaping
+.B SLP
+reserved
 characters, but they perform no opaque processing.
 .sp
 .LP
@@ -119,7 +127,10 @@ the configuration
 file, are accessible through the
 .B SLPGetProperty()
 and
-\fBSLPSetProperty()\fR functions. The \fBSLPSetProperty()\fR function
+.B SLPSetProperty()
+functions. The
+.B SLPSetProperty()
+function
 modifies properties only in the running process, not in the configuration
 file. Errors are checked when the property is used and, as with parsing the
 configuration file, are logged at the
@@ -201,7 +212,8 @@ on the same
 If an attempt is made to call into the
 .BR API ,
 the
-\fBAPI\fR function returns
+.B API
+function returns
 .BR SLP_HANDLE_IN_USE .
 Prohibiting recursive
 callbacks on the same handle simplifies implementation of thread safe code,
@@ -210,7 +222,8 @@ on the handle.
 .sp
 .LP
 The total number of results received can be controlled by setting the
-\fBnet.slp.maxResults\fR parameter.
+.B net.slp.maxResults
+parameter.
 .sp
 .LP
 On the last call to a callback, whether asynchronous or synchronous, the
@@ -288,7 +301,9 @@ environment variable. If you do not
 set this variable, or the file it refers to is invalid, the
 .B API
 will
-use the default configuration file at \fB/etc/inet/slp.conf\fR instead.
+use the default configuration file at
+.B /etc/inet/slp.conf
+instead.
 .SS "Data Structures"
 .sp
 .LP
@@ -315,7 +330,9 @@ is 3 hours,
 while
 .B SLP_LIFETIME_MAXIMUM
 is  18 hours, which corresponds to the
-maximum size of the \fBlifetime\fR field in
+maximum size of the
+.B lifetime
+field in
 .B SLP
 messages. Note that on
 registration
@@ -412,7 +429,8 @@ transport is
 A pointer to a character string containing the network address family
 identifier. Possible values are "\fBipx\fR" for the \fBIPX\fR family,
 "\fBat\fR" for the Appletalk family, and \fB""\fR, the empty string, for the
-\fBIP\fR address family.
+.B IP
+address family.
 .RE
 
 .sp
@@ -460,11 +478,15 @@ opaque.
 .sp
 .LP
 Include a function pointer to a callback function specific to a particular
-\fBAPI\fR operation in the parameter list when the \fBAPI\fR function is
+.B API
+operation in the parameter list when the
+.B API
+function is
 invoked. The callback function is called with the results of the operation
 in both the synchronous and asynchronous cases.  When the callback function
 is invoked, the memory included in the callback parameters is owned by the
-\fBAPI\fR library, and the client code in the callback must copy out the
+.B API
+library, and the client code in the callback must copy out the
 contents if it wants to maintain the information longer than the duration of
 the current callback call.
 .sp
@@ -479,7 +501,8 @@ function to pass information down to the callback without using global
 variables. The callback returns an
 .B SLPBoolean
 to indicate whether the
-\fBAPI\fR library should continue processing the operation. If the value
+.B API
+library should continue processing the operation. If the value
 returned from the callback is
 .BR SLP_TRUE ,
 asynchronous operations are
@@ -497,13 +520,15 @@ typedef void SLPRegReport(SLPHandle hSLP,
 
 .sp
 .LP
-\fBSLPRegReport()\fR is the callback function to the
+.B SLPRegReport()
+is the callback function to the
 .BR SLPReg() ,
 .BR SLPDereg() ,
 and
 .B SLPDelAttrs()
 functions. The
-\fBSLPRegReport()\fR callback has the following parameters:
+.B SLPRegReport()
+callback has the following parameters:
 .sp
 .ne 2
 .mk
@@ -645,7 +670,8 @@ function. The results are collated,
 regardless of whether the
 .I hSLP
 was opened collated or uncollated. The
-\fBSLPSrvURLCallback()\fR callback has the following parameters:
+.B SLPSrvURLCallback()
+callback has the following parameters:
 .sp
 .ne 2
 .mk
@@ -675,7 +701,7 @@ A character buffer containing the returned service
 .ne 2
 .mk
 .na
-\fIusLifetime\fR
+.I usLifetime
 .ad
 .RS 14n
 .rt
@@ -772,7 +798,8 @@ parameter is set to the
 collated result.
 .sp
 .LP
-\fBSLPAttrCallback()\fR callback has the following parameters:
+.B SLPAttrCallback()
+callback has the following parameters:
 .sp
 .ne 2
 .mk
@@ -850,7 +877,8 @@ following values.
 The
 .B SLP_LAST_CALL
 code is passed to callback functions when the
-\fBAPI\fR library has no more data for them and therefore no further calls
+.B API
+library has no more data for them and therefore no further calls
 will be made to the callback on the currently outstanding operation. The
 callback uses this to signal the main body of the client code that no more
 data will be forthcoming on the operation, so that the main body of the
@@ -915,7 +943,8 @@ The
 message was rejected by a remote
 .B SLP
 agent. The
-\fBAPI\fR returns this error only when no information was retrieved, and at
+.B API
+returns this error only when no information was retrieved, and at
 least one
 .B SA
 or
@@ -1256,7 +1285,7 @@ return service attributes
 .ne 2
 .mk
 .na
-\fBSLPGetRefreshInterval()\fR
+.B SLPGetRefreshInterval()
 .ad
 .RS 27n
 .rt

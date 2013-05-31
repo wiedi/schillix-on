@@ -57,7 +57,7 @@ Device whose memory is to be mapped.
 .ne 2
 .mk
 .na
-\fIoff\fR
+.I off
 .ad
 .RS 9n
 .rt
@@ -158,13 +158,17 @@ entry point is called as a result of an
 system call, and also as a result of a page fault.
 .B mmap()
 is called to
-translate the offset \fIoff\fR in device memory to the corresponding
+translate the offset
+.I off
+in device memory to the corresponding
 physical page frame number.
 .sp
 .LP
 The
 .B mmap()
-entry point checks if the offset \fIoff\fR is within the
+entry point checks if the offset
+.I off
+is within the
 range of pages exported by the device. For example, a device that has 512
 bytes of memory that can be mapped into user space should not support
 offsets greater than 512. If the offset does not exist, then
@@ -178,7 +182,8 @@ the offset
 .IR off .
 .sp
 .LP
-\fBhat_getkpfnum\fR(9F) accepts a kernel virtual address as an argument. A
+.BR hat_getkpfnum (9F)
+accepts a kernel virtual address as an argument. A
 kernel virtual address can be obtained by calling
 .BR ddi_regs_map_setup (9F)
 in the driver's
@@ -190,7 +195,8 @@ routine. Refer to the example below \fImmap Entry Point\fR
 for more information.
 .sp
 .LP
-\fBmmap()\fR should only be supported for memory-mapped devices. See
+.B mmap()
+should only be supported for memory-mapped devices. See
 .BR segmap (9E)
 for further information on memory-mapped device drivers.
 .sp
@@ -204,7 +210,8 @@ thread and the kernel and take necessary action.
 .BR ddi_mmap_get_model (9F)
 can be use to get the C Language Type Model
 which the current thread expects. In combination with
-\fBddi_model_convert_from\fR(9F) the driver can determine whether there is a
+.BR ddi_model_convert_from (9F)
+the driver can determine whether there is a
 data model mismatch between the current thread and the device driver. The
 device driver might have to adjust the shape of data structures before
 exporting them to a user thread which supports a different data model. See
@@ -215,16 +222,21 @@ for an example.
 .LP
 If the protection and offset are valid for the device, the driver should
 return the value returned by \fBhat_getkpfnum\fR(9F), for the page at offset
-\fIoff\fR in the device's memory. If not, \fB-1\fR should be returned.
+.I off
+in the device's memory. If not,
+.B -1
+should be returned.
 .SH EXAMPLES
 .LP
-\fBExample 1 mmap()\fR Entry Point
+.B Example 1 mmap()
+Entry Point
 .sp
 .LP
 The following is an example of the
 .B mmap()
 entry point. If offset
-\fIoff\fR is valid, \fBhat_getkpfnum\fR(9F) is called to obtain the page
+.I off
+is valid, \fBhat_getkpfnum\fR(9F) is called to obtain the page
 frame number corresponding to this offset in the device's memory. In this
 example, \fBxsp\(->regp\(->csr\fR is a kernel virtual address which maps to
 device memory.
@@ -239,8 +251,10 @@ routine. The resulting kernel virtual address is
 stored in the
 .B xxstate
 structure, which is accessible from the driver's
-\fBmmap()\fR entry point. See \fBddi_soft_state\fR(9F). The corresponding
-\fBddi_regs_map_free\fR(9F) call can be made in the driver's
+.B mmap()
+entry point. See \fBddi_soft_state\fR(9F). The corresponding
+.BR ddi_regs_map_free (9F)
+call can be made in the driver's
 .BR detach (9E)
 routine.
 
@@ -314,7 +328,8 @@ Stability LevelObsolete
 .BR ddi_btop (9F),
 .BR ddi_get_soft_state (9F),
 .BR ddi_mmap_get_model (9F),
-\fBddi_model_convert_from\fR(9F), \fBddi_regs_map_free\fR(9F),
+.BR ddi_model_convert_from (9F),
+.BR ddi_regs_map_free (9F),
 .BR ddi_regs_map_setup (9F),
 .BR ddi_soft_state (9F),
 .BR devmap_setup (9F),
@@ -340,7 +355,9 @@ memory in \fBattach\fR(9E). If the device memory is contiguous, a kernel
 page frame number may be obtained by calling \fBhat_getkpfnum\fR(9F) with
 the kernel virtual address of the first page of device memory and adding the
 desired page offset to the result. The page offset may be obtained by
-converting the byte offset \fIoff\fR to pages. See
+converting the byte offset
+.I off
+to pages. See
 .BR ddi_btop (9F).
 .sp
 .LP

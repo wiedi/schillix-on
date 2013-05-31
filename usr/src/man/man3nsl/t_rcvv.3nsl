@@ -65,7 +65,8 @@ data into one or more non-contiguous buffers
 .sp
 .LP
 This function receives either normal or expedited data.  The argument
-\fIfd\fR identifies the local transport endpoint through which data will
+.I fd
+identifies the local transport endpoint through which data will
 arrive,
 .I iov
 points to an array of buffer address/buffer size pairs
@@ -100,7 +101,8 @@ of data that can be sent or received using scatter/gather functions.
 .sp
 .LP
 The argument iovcount contains the number of buffers which is limited to
-\fBT_IOV_MAX,\fR which is an implementation-defined value  of at least 16.
+.B T_IOV_MAX,
+which is an implementation-defined value  of at least 16.
 If the limit is exceeded, the function will fail with
 .BR TBADDATA .
 .sp
@@ -120,7 +122,8 @@ is set by means of
 .BR fcntl (2),
 .B t_rcvv()
 will execute in asynchronous mode and will fail if no data is available. See
-\fBTNODATA\fR below.
+.B TNODATA
+below.
 .sp
 .LP
 On return from the call, if
@@ -133,12 +136,19 @@ multiple
 or
 .BR t_rcv "(3NSL) calls.  In the asynchronous"
 mode, or under unusual conditions (for example, the arrival of a signal or
-\fBT_EXDATA\fR event), the  \fBT_MORE\fR flag may be set on return from the
-\fBt_rcvv()\fR call even when the number of bytes received is less than the
+.B T_EXDATA
+event), the
+.B T_MORE
+flag may be set on return from the
+.B t_rcvv()
+call even when the number of bytes received is less than the
 total size of all the receive buffers.  Each
 .B t_rcvv()
 with the
-\fBT_MORE\fR flag set indicates that another  \fBt_rcvv()\fR must follow to
+.B T_MORE
+flag set indicates that another
+.B t_rcvv()
+must follow to
 get more data for the current TSDU.  The end of the TSDU is identified by
 the return of a
 .B t_rcvv()
@@ -146,10 +156,15 @@ call with the
 .B T_MORE
 flag not set.
 If the transport provider does not support the concept of a TSDU as
-indicated in the  \fIinfo\fR argument on return from
+indicated in the
+.I info
+argument on return from
 .BR t_open (3NSL)
 or
-\fBt_getinfo\fR(3NSL), the  \fBT_MORE\fR flag is not meaningful and should
+.BR t_getinfo (3NSL),
+the
+.B T_MORE
+flag is not meaningful and should
 be ignored.  If the amount of buffer space passed in
 .I iov
 is greater
@@ -158,21 +173,29 @@ than zero on the call to
 then
 .B t_rcvv()
 will return
-\fB0\fR only if the end of a TSDU is being returned to the user.
+.B 0
+only if the end of a TSDU is being returned to the user.
 .sp
 .LP
 On return, the data is expedited if
 .B T_EXPEDITED
 is set in flags.  If
-\fBT_MORE\fR is also set, it indicates that the number of expedited bytes
+.B T_MORE
+is also set, it indicates that the number of expedited bytes
 exceeded nbytes, a signal has interrupted the  call, or that an entire ETSDU
 was not available (only for transport protocols that support fragmentation
 of ETSDUs).  The rest of the ETSDU will be returned by subsequent calls to
-\fBt_rcvv()\fR which will return with  \fBT_EXPEDITED\fR set in flags. The
+.B t_rcvv()
+which will return with
+.B T_EXPEDITED
+set in flags. The
 end of the ETSDU is identified by the return of a
 .B t_rcvv()
 call with
-\fBT_EXPEDITED\fR set and  \fBT_MORE\fR cleared.  If the entire ETSDU is not
+.B T_EXPEDITED
+set and
+.B T_MORE
+cleared.  If the entire ETSDU is not
 available it is possible for normal data fragments to be returned between
 the initial and final fragments of an ETSDU.
 .sp
@@ -195,14 +218,16 @@ If some
 data is available,
 .B t_rcvv()
 returns the number of bytes received and
-\fBT_MORE\fR is set in flags.
+.B T_MORE
+is set in flags.
 .sp
 .LP
 In synchronous mode, the only way for the user to be notified of the
 arrival of normal or expedited data is to issue this function or check for
 the
 .B "T_DATA or"
-\fBT_EXDATA\fR events using the
+.B T_EXDATA
+events using the
 .BR t_look (3NSL)
 function.  Additionally, the process can arrange to be
 notified via the EM interface.
@@ -235,7 +260,9 @@ is set to one of the following:
 .ad
 .RS 15n
 .rt
-\fIiovcount\fR is greater than  \fBT_IOV_MAX.\fR
+.I iovcount
+is greater than
+.BR T_IOV_MAX.
 .RE
 
 .sp
@@ -269,7 +296,8 @@ immediate attention.
 .ad
 .RS 15n
 .rt
-\fBO_NONBLOCK\fR was set, but no data is currently available from the
+.B O_NONBLOCK
+was set, but no data is currently available from the
 transport provider.
 .RE
 
@@ -292,7 +320,9 @@ This function is not supported by the underlying transport provider.
 .ad
 .RS 15n
 .rt
-The communications endpoint referenced by \fIfd\fR is not in one of the
+The communications endpoint referenced by
+.I fd
+is not in one of the
 states in which a call to this function is valid.
 .RE
 
@@ -350,7 +380,8 @@ MT LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBfcntl\fR(2), \fBt_getinfo\fR(3NSL),
+.BR fcntl (2),
+.BR t_getinfo (3NSL),
 .BR t_look (3NSL),
 .BR t_open (3NSL),
 .BR t_rcv (3NSL),

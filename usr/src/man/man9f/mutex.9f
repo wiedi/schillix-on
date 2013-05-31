@@ -121,14 +121,16 @@ that mutexes should be exited in the opposite order they were entered, and
 cannot be reentered before exiting.
 .sp
 .LP
-\fBmutex_init()\fR initializes a mutex. It is an error to initialize a
+.B mutex_init()
+initializes a mutex. It is an error to initialize a
 mutex more than once. The
 .I type
 argument should be set to
 .BR MUTEX_DRIVER .
 .sp
 .LP
-\fIarg\fR provides type-specific information for a given variant type of
+.I arg
+provides type-specific information for a given variant type of
 mutex. When
 .B mutex_init()
 is called for driver mutexes, if the mutex is
@@ -137,7 +139,10 @@ used by the interrupt handler, the
 should be the interrupt
 priority returned from
 .BR ddi_intr_get_pri "(9F) or"
-\fBddi_intr_get_softint_pri\fR(9F). Note that \fIarg\fR should be the value
+.BR ddi_intr_get_softint_pri (9F).
+Note that
+.I arg
+should be the value
 of the interrupt priority cast by calling the
 .B DDI_INTR_PRI
 macro. If
@@ -145,13 +150,17 @@ the mutex is never used inside an interrupt handler, the argument should be
 .IR NULL .
 .sp
 .LP
-\fBmutex_enter()\fR is used to acquire a mutex. If the mutex is already
+.B mutex_enter()
+is used to acquire a mutex. If the mutex is already
 held, then the caller blocks. After returning, the calling thread is the
 owner of the mutex. If the mutex is already held by the calling thread, a
 panic ensues.
 .sp
 .LP
-\fBmutex_owned()\fR should only be used in \fBASSERT()\fR and may be
+.B mutex_owned()
+should only be used in
+.B ASSERT()
+and may be
 enforced by not being defined unless the preprocessor symbol
 .B DEBUG
 is
@@ -160,31 +169,39 @@ cannot be determined, at least some thread) holds the mutex pointed to by
 .IR mp .
 .sp
 .LP
-\fBmutex_tryenter()\fR is very similar to \fBmutex_enter()\fR except that
+.B mutex_tryenter()
+is very similar to
+.B mutex_enter()
+except that
 .RB "it doesn't block when the mutex is already held." " mutex_tryenter()"
 returns non-zero when it acquired the mutex and 0 when the mutex is already
 held.
 .sp
 .LP
-\fBmutex_exit()\fR releases a mutex and will unblock another thread if any
+.B mutex_exit()
+releases a mutex and will unblock another thread if any
 are blocked on the mutex.
 .sp
 .LP
-\fBmutex_destroy()\fR releases any resources that might have been allocated
+.B mutex_destroy()
+releases any resources that might have been allocated
 by
 .BR mutex_init() .
-\fBmutex_destroy()\fR must be called before freeing
+.B mutex_destroy()
+must be called before freeing
 the memory containing the mutex, and should be called with the mutex unheld
 (not owned by any thread). The caller must be sure that no other thread
 attempts to use the mutex.
 .SH RETURN VALUES
 .sp
 .LP
-\fBmutex_tryenter()\fR returns a non-zero value on success and zero on
+.B mutex_tryenter()
+returns a non-zero value on success and zero on
 failure.
 .sp
 .LP
-\fBmutex_owned()\fR returns a non-zero value if the calling thread
+.B mutex_owned()
+returns a non-zero value if the calling thread
 currently holds the mutex pointed to by
 .IR mp ,
 or when that cannot be
@@ -202,7 +219,8 @@ which can
 be called from user or kernel context only.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Initializing a Mutex
+.B Example 1
+Initializing a Mutex
 .sp
 .LP
 A driver might do this to initialize a mutex that is part of its unit
@@ -218,7 +236,8 @@ ddi_intr_add_handler(hdlp, xxintr, (caddr_t)un, NULL);
 .in -2
 
 .LP
-\fBExample 2\fR Calling a Routine with a Lock
+.B Example 2
+Calling a Routine with a Lock
 .sp
 .LP
 A routine that expects to be called with a certain lock held might have the

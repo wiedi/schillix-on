@@ -89,7 +89,8 @@ instead of
 Device number associated with property or
 .B DDI_DEV_T_ANY
 as the
-\fIwildcard\fR device number.
+.I wildcard
+device number.
 .RE
 
 .sp
@@ -118,7 +119,7 @@ Property operator.
 .ne 2
 .mk
 .na
-\fIflags\fR
+.I flags
 .ad
 .RS 12n
 .rt
@@ -206,9 +207,13 @@ On exit,
 will contain the property length. If
 .I prop_op
 is
-\fBPROP_LEN_AND_VAL_BUF\fR then before calling
+.B PROP_LEN_AND_VAL_BUF
+then before calling
 .BR ddi_prop_op() ,
-\fIlengthp\fR should point to an \fBint\fR that contains the length of callers
+.I lengthp
+should point to an
+.B int
+that contains the length of callers
 buffer.
 .RE
 
@@ -216,7 +221,7 @@ buffer.
 .ne 2
 .mk
 .na
-\fIdefvalue\fR
+.I defvalue
 .ad
 .RS 12n
 .rt
@@ -232,9 +237,15 @@ The
 .B ddi_prop_op()
 function gets arbitrary-size properties for leaf
 devices. The routine searches the device's property list. If it does not find
-the property at the device level, it examines the \fIflags\fR argument, and if
-\fBDDI_PROP_DONTPASS\fR is set, then \fBddi_prop_op()\fR returns
-\fBDDI_PROP_NOT_FOUND.\fR Otherwise, it passes the request to the next level of
+the property at the device level, it examines the
+.I flags
+argument, and if
+.B DDI_PROP_DONTPASS
+is set, then
+.B ddi_prop_op()
+returns
+.B DDI_PROP_NOT_FOUND.
+Otherwise, it passes the request to the next level of
 the device info tree. If it does find the property, but the property has been
 explicitly undefined, it returns
 .B DDI_PROP_UNDEFINED.
@@ -261,7 +272,8 @@ argument should be set to the actual device number that
 this property applies to.  However, if the
 .I dev
 argument is
-\fBDDI_DEV_T_ANY,\fR the
+.B DDI_DEV_T_ANY,
+the
 .IR "wildcard dev" ,
 then
 .B ddi_prop_op()
@@ -271,7 +283,9 @@ match the request based on
 only (regardless of the actual \fIdev\fR
 the property was created with). This property/dev match is done according to
 the property search order which is to first search software properties created
-by the driver in \fIlast-in, first-out\fR (LIFO) order, next search software
+by the driver in
+.I "last-in, first-out"
+(LIFO) order, next search software
 properties created by the
 .I system
 in LIFO order, then search PROM
@@ -281,11 +295,19 @@ properties if they exist in the system architecture.
 Property operations are specified by the
 .I prop_op
 argument. If
-\fIprop_op\fR is \fBPROP_LEN,\fR then \fBddi_prop_op()\fR just sets the callers
+.I prop_op
+is
+.B PROP_LEN,
+then
+.B ddi_prop_op()
+just sets the callers
 length,
 .I *lengthp,
 to the property length and returns the value
-\fBDDI_PROP_SUCCESS\fR to the caller. The \fIvaluep\fR argument is not used in
+.B DDI_PROP_SUCCESS
+to the caller. The
+.I valuep
+argument is not used in
 this case.  Property lengths are
 .B 0
 for boolean properties,
@@ -301,11 +323,16 @@ then
 .I valuep
 should be a
 pointer to a user-supplied buffer whose length should be given in
-\fI*lengthp\fR by the caller.  If the requested property exists,
-\fBddi_prop_op()\fR first sets \fI*lengthp\fR to the property length.  It then
+.I *lengthp
+by the caller.  If the requested property exists,
+.B ddi_prop_op()
+first sets
+.I *lengthp
+to the property length.  It then
 examines the size of the buffer supplied by the caller, and if it is large
 enough, copies the property value into that buffer, and returns
-\fBDDI_PROP_SUCCESS.\fR If the named property exists but the buffer supplied is
+.B DDI_PROP_SUCCESS.
+If the named property exists but the buffer supplied is
 .RB "too small to hold it, it returns" " DDI_PROP_BUF_TOO_SMALL."
 .sp
 .LP
@@ -314,18 +341,29 @@ If
 is
 .B PROP_LEN_AND_VAL_ALLOC,
 and the property is found,
-\fBddi_prop_op()\fR sets \fI*lengthp\fR to the property length. It then
+.B ddi_prop_op()
+sets
+.I *lengthp
+to the property length. It then
 attempts to allocate a buffer to return to the caller using the
 .BR kmem_alloc (9F)
 routine, so that memory can be later recycled using
-\fBkmem_free\fR(9F). The driver is expected to call \fBkmem_free()\fR with the
+.BR kmem_free (9F).
+The driver is expected to call
+.B kmem_free()
+with the
 returned address and size when it is done using the allocated buffer. If the
 allocation is successful, it sets
 .I *valuep
 to point to the allocated
 buffer, copies the property value into the buffer and returns
-\fBDDI_PROP_SUCCESS.\fR Otherwise, it returns \fBDDI_PROP_NO_MEMORY.\fR Note
-that the \fIflags\fR argument may affect the behavior of memory allocation in
+.B DDI_PROP_SUCCESS.
+Otherwise, it returns
+.B DDI_PROP_NO_MEMORY.
+Note
+that the
+.I flags
+argument may affect the behavior of memory allocation in
 .BR ddi_prop_op() .
 In particular, if
 .B DDI_PROP_CANSLEEP
@@ -357,18 +395,22 @@ a convenience wrapper for
 with
 .I prop_op
 set to
-\fBPROP_LEN_AND_VAL_ALLOC,\fR so that the routine will allocate space to hold
+.B PROP_LEN_AND_VAL_ALLOC,
+so that the routine will allocate space to hold
 the buffer that will be returned to the caller via
 .IR *valuep .
 .sp
 .LP
-The \fBddi_getlongprop_buf()\fR function returns arbitrary-size properties. It
+The
+.B ddi_getlongprop_buf()
+function returns arbitrary-size properties. It
 is a convenience wrapper for
 .B ddi_prop_op()
 with
 .I prop_op
 set to
-\fBPROP_LEN_AND_VAL_BUF\fR so the user must supply a buffer.
+.B PROP_LEN_AND_VAL_BUF
+so the user must supply a buffer.
 .sp
 .LP
 The
@@ -459,7 +501,8 @@ function returns:
 .sp
 .LP
 The value of the property or the value passed into the routine as
-\fIdefvalue\fR if the property is not found. By convention, the value of zero
+.I defvalue
+if the property is not found. By convention, the value of zero
 length properties (boolean properties) are returned as the integer value 1.
 .SH CONTEXT
 .sp

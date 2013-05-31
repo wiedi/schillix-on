@@ -43,11 +43,14 @@ Network (ISDN) STREAMS devices. The arguments
 .B command
 and
 .IR arg
-are passed to the file designated by \fIfd\fR and are interpreted by the
+are passed to the file designated by
+.I fd
+and are interpreted by the
 ISDN device driver.
 .sp
 .LP
-\fIfd\fR is an open file descriptor that refers to a stream. \fBcommand\fR
+.I fd
+is an open file descriptor that refers to a stream. \fBcommand\fR
 determines the control function to be performed as described in the IOCTLS
 section of this document.
 .I arg
@@ -431,9 +434,13 @@ typedef enum {
 .SS "ISDN Interface types"
 .sp
 .LP
-The \fBisdn_interface_t\fR type enumerates the interfaces available on
-\fBISDN\fR controllers. The defined interfaces are described by the
-\fBisdn_interface_t\fR type as shown below:
+The
+.B isdn_interface_t
+type enumerates the interfaces available on
+.B ISDN
+controllers. The defined interfaces are described by the
+.B isdn_interface_t
+type as shown below:
 .sp
 .in +2
 .nf
@@ -462,9 +469,11 @@ activation, deactivation and receive information about the activation state
 of the interface. See the descriptions of the
 .B ISDN_PH_ACTIVATE_REQ
 and
-\fBISDN_MPH_DEACTIVATE_REQ\fR ioctls. Changes in the activation state of an
+.B ISDN_MPH_DEACTIVATE_REQ
+ioctls. Changes in the activation state of an
 interface are communicated to the D-channel application through
-\fBM_PROTO\fR messages sent up-stream on the management device associated
+.B M_PROTO
+messages sent up-stream on the management device associated
 with the D-channel. If the D-channel protocol stack is implemented as a user
 process, the user process can retrieve the
 .B M_PROTO
@@ -525,8 +534,11 @@ Request
 physical layer activation. This
 .B command
 is valid
-for both TE and NT interfaces. \fIfd\fR must be a D-channel file descriptor.
-\fIarg\fR is ignored.
+for both TE and NT interfaces.
+.I fd
+must be a D-channel file descriptor.
+.I arg
+is ignored.
 .sp
 TE activation will occur without use of the
 .BR ISDN_PH_ACTIVATE_REQ
@@ -542,13 +554,17 @@ ISDN switch is requesting activation.
 .ad
 .RS 27n
 .rt
-\fIfd\fR must be an NT D-channel file descriptor. \fIarg\fR is ignored.
+.I fd
+must be an NT D-channel file descriptor.
+.I arg
+is ignored.
 .sp
 This
 .B command
 requests ISDN physical layer de-activation. This is not
 valid for TE interfaces. A TE interace may be turned off by use of the
-\fBISDN_PARAM_POWER\fR command or by
+.B ISDN_PARAM_POWER
+command or by
 .BR close (2)
 on the associated
 .IR fd .
@@ -562,14 +578,16 @@ on the associated
 .ad
 .RS 27n
 .rt
-\fIfd\fR is the file descriptor for a D-channel, the management device
+.I fd
+is the file descriptor for a D-channel, the management device
 associated with an
 .B ISDN
 interface, or the management device associated
 with the controller.
 .I arg
 is a pointer to an
-\fBisdn_activation_status_t\fR structure. Although it is possible for
+.B isdn_activation_status_t
+structure. Although it is possible for
 applications to determine the current activation state with this ioctl, a
 D-channel protocol stack should instead process messages from the management
 pseudo channel associated with the D-channel.
@@ -620,13 +638,17 @@ The
 .B ISDN_INTERFACE_STATUS
 ioctl retrieves the status and statistics
 of an ISDN interface.  The requesting channel must own the interface whose
-status is being requested or the ioctl will fail. \fIfd\fR is the file
+status is being requested or the ioctl will fail.
+.I fd
+is the file
 descriptor for an ISDN interface management device.
 .I arg
 is a pointer
 to a
 .BR "struct isdn_interface_info" .
-If the \fBinterface\fR field is set
+If the
+.B interface
+field is set
 to
 .B ISDN_TYPE_SELF,
 it will be changed in the returned structure to
@@ -664,11 +686,17 @@ The
 .B ISDN_CHANNEL_STATUS
 ioctl retrieves the status and statistics of
 an ISDN channel.  The requesting channel must own the channel whose status
-is being requested or the ioctl will fail. \fIfd\fR is any file descriptor.
-\fIarg\fR is a pointer to a
+is being requested or the ioctl will fail.
+.I fd
+is any file descriptor.
+.I arg
+is a pointer to a
 .BR "struct isdn_channel_info" .
 If the
-\fBinterface\fR field is set to \fBISDN_CHAN_SELF,\fR it will be changed in
+.B interface
+field is set to
+.B ISDN_CHAN_SELF,
+it will be changed in
 the returned structure to reflect the proper device-specific channel of the
 requesting
 .IR fd .
@@ -697,7 +725,10 @@ typedef struct isdn_channel_info {
 .ad
 .RS 27n
 .rt
-\fIfd\fR is the file descriptor for a management device. \fIarg\fR is a
+.I fd
+is the file descriptor for a management device.
+.I arg
+is a
 pointer to a
 .BR "struct isdn_param" .
 This
@@ -717,7 +748,10 @@ uses the same arguments as the
 .ad
 .RS 27n
 .rt
-\fIfd\fR is the file descriptor for a management device. \fIarg\fR is a
+.I fd
+is the file descriptor for a management device.
+.I arg
+is a
 pointer to a
 .B "struct isdn_param"
 This
@@ -771,20 +805,24 @@ typedef struct isdn_param {
 .RS 27n
 .rt
 If an implementation provides power on and off functions, then power should
-be on by default. If \fBflag\fR is
+be on by default. If
+.B flag
+is
 .B ISDN_PARAM_POWER_OFF
 then a TE
 interface is forced into state F0, NT interfaces are forced into state G0.
 If \fBflag\fR is \fBISDN_PARAM_POWER_ON\fR then a TE interface will
 immediately transition to state F3 when the TE D-channel is opened. If
-\fBflag\fR is one, an NT interface will transition to state G1 when the NT
+.B flag
+is one, an NT interface will transition to state G1 when the NT
 D-channel is opened.
 .sp
 Implementations that do not provide
 .B ISDN_POWER
 return failure with
 errno set to  \fBENXIO\fR.\fBISDN_POWER\fR is different from
-\fBISDN_PH_ACTIVATE_REQ\fR since CCITT specification requires that if a
+.B ISDN_PH_ACTIVATE_REQ
+since CCITT specification requires that if a
 BRI-TE interface device has power, then it permits activation.
 .RE
 
@@ -851,7 +889,8 @@ T4 is not available.
 .rt
 This parameter sets the multi-framing mode of a BRI-TE interface. For
 normal operation this parameter should be set to
-\fBISDN_PARAM_MAINT_ECHO.\fR Other uses of this parameter are dependent on
+.B ISDN_PARAM_MAINT_ECHO.
+Other uses of this parameter are dependent on
 the definition and use of the BRI interface S and Q channels.
 .RE
 
@@ -868,7 +907,8 @@ machine standards. This parameter allows the selection of the appropriate
 standard. At this time, only
 .B ISDN_PARAM_TE_ASMB_CCITT88
 and
-\fBISDN_PARAM_TE_ASMB_CTS2\fR are available.
+.B ISDN_PARAM_TE_ASMB_CTS2
+are available.
 .RE
 
 .sp
@@ -880,12 +920,17 @@ and
 .RS 27n
 .rt
 This parameter allows a management device to pause the IO on a B-channel.
-\fBpause.channel\fR is set to indicate which channel is to be paused or
+.B pause.channel
+is set to indicate which channel is to be paused or
 un-paused.
 .B pause.paused
 is set to zero to un-pause and one to pause.
-\fIfd\fR is associated with an \fBISDN\fR interface management device.
-\fIarg\fR is a pointer to a
+.I fd
+is associated with an
+.B ISDN
+interface management device.
+.I arg
+is a pointer to a
 .BR "struct isdn_param" .
 .RE
 
@@ -897,7 +942,10 @@ is set to zero to un-pause and one to pause.
 .ad
 .RS 27n
 .rt
-\fIfd\fR is the file descriptor for an \fBISDN\fR interface's management
+.I fd
+is the file descriptor for an
+.B ISDN
+interface's management
 device.
 .I arg
 is a pointer to an
@@ -951,14 +999,20 @@ the following values:
 .ad
 .RS 27n
 .rt
-\fIarg\fR is a pointer to an \fBisdn_loopback_request_t\fR structure.
-\fBISDN_RESET_LOOPBACK\fR turns off the selected loopback modes.
+.I arg
+is a pointer to an
+.B isdn_loopback_request_t
+structure.
+.B ISDN_RESET_LOOPBACK
+turns off the selected loopback modes.
 .RE
 
 .SS "ISDN Data Format"
 .sp
 .LP
-The \fBisdn_format_t\fR type is meant to be a complete description of the
+The
+.B isdn_format_t
+type is meant to be a complete description of the
 various data modes and rates available on an ISDN interface. Several macros
 are available for setting the format fields. The \fBisdn_format_t\fR
 structure is shown below:
@@ -1035,7 +1089,8 @@ connection of multiple channels.
 .ad
 .RS 20n
 .rt
-\fIfd\fR is a data channel, the management pseudo-channel associated with
+.I fd
+is a data channel, the management pseudo-channel associated with
 the data channel, or the management channel associated with the data
 channel's interface or controller.
 .I arg
@@ -1045,9 +1100,11 @@ ISDN channel-stream datapath. It may be issued on both an open ISDN
 channel-stream datapath Stream or an ISDN Management Stream. Note that an
 .BR open (2)
 call for a channel-stream datapath will fail if an
-\fBISDN_SET_FORMAT\fR has never been issued after a reset, as the mode for
+.B ISDN_SET_FORMAT
+has never been issued after a reset, as the mode for
 .RB "all channel-stream datapaths is initially biased to" " ISDN_MODE_NOTSPEC."
-\fIarg\fR is a pointer to an ISDN format type (\fBisdn_format_req_t\fR*).
+.I arg
+is a pointer to an ISDN format type (\fBisdn_format_req_t\fR*).
 .sp
 .in +2
 .nf
@@ -1144,8 +1201,11 @@ To specify a read-only, write-only, or read-write path, or to disconnect a
 path, the
 .B dir
 field should be set to
-\fBISDN_PATH\fB_ONEWAY\fR, \fBISDN_PATH\fB_TWOWAY\fR, and
-\fBISDN_PATH\fB_DISCONNECT\fR respectively. To modify the format of
+.BR ISDN_PATH_ONEWAY ,
+.BR ISDN_PATH_TWOWAY ,
+and
+.B ISDN_PATH_DISCONNECT
+respectively. To modify the format of
 a channel-channel datapath, a user must disconnect the channel and then
 reconnect with the desired format.
 .sp
@@ -1175,9 +1235,11 @@ The
 ioctl gets the ISDN data format of the
 channel-stream datapath described by
 .IR fd .
-\fIarg\fR is a pointer to an
+.I arg
+is a pointer to an
 ISDN data format request type (\fBisdn_format_req_t\fR*).
-\fBISDN_GET_FORMAT\fR can be issued on any channel to retrieve the format of
+.B ISDN_GET_FORMAT
+can be issued on any channel to retrieve the format of
 any channel it owns. For example, if issued on the TE management channel,
 the format of any other te channel can be retrieved.
 .RE
@@ -1194,7 +1256,8 @@ The
 .B ISDN_GETCONFIG
 ioctl is used to get the current connection status
 of all ISDN channels associated with a particular management stream.
-\fBISDN_GETCONFIG\fR also retrieves a hardware identifier and the generic
+.B ISDN_GETCONFIG
+also retrieves a hardware identifier and the generic
 interface type.
 .I arg
 is an ISDN connection table pointer
@@ -1224,7 +1287,8 @@ number of entries will always be
 .BR ISDN_MAX_CHANS ,
 and can be referenced
 in the hardware specific implementation documentation.  An
-\fBisdn_conn_tab_t\fR structure is allocated on a per controller basis.
+.B isdn_conn_tab_t
+structure is allocated on a per controller basis.
 .RE
 
 .SH SEE ALSO
@@ -1240,5 +1304,6 @@ in the hardware specific implementation documentation.  An
 .BR streamio (7I)
 .sp
 .LP
-\fIISDN, An Introduction\fR - William Stallings, Macmillan Publishing
+.I ISDN, An Introduction
+- William Stallings, Macmillan Publishing
 Company. ISBN 0-02-415471-7

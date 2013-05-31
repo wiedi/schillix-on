@@ -36,7 +36,7 @@ int n = ioctl(int fd, DP_ISPOLLED, struct pollfd* pfd);\fR
 .ne 2
 .mk
 .na
-\fIfd\fR
+.I fd
 .ad
 .RS 12n
 .rt
@@ -60,22 +60,26 @@ driver.
 .ne 2
 .mk
 .na
-\fIbuf\fR
+.I buf
 .ad
 .RS 12n
 .rt
-Array of  \fBpollfd\fR structures.
+Array of
+.B pollfd
+structures.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fIbufsize\fR
+.I bufsize
 .ad
 .RS 12n
 .rt
-Size of  \fIbuf\fR in bytes.
+Size of
+.I buf
+in bytes.
 .RE
 
 .sp
@@ -95,11 +99,13 @@ structure.
 .ne 2
 .mk
 .na
-\fIpfd\fR
+.I pfd
 .ad
 .RS 12n
 .rt
-Pointer to \fBpollfd\fR structure.
+Pointer to
+.B pollfd
+structure.
 .RE
 
 .SH DESCRIPTION
@@ -131,7 +137,9 @@ and
 system calls.
 .sp
 .LP
-Writing an array of  \fBpollfd\fR struct to the
+Writing an array of
+.B pollfd
+struct to the
 .B /dev/poll
 driver has
 the effect of  adding these file descriptors to the monitored
@@ -142,7 +150,10 @@ To monitor multiple file
 descriptor sets, open the
 .B /dev/poll
 driver multiple times. Each
-\fBfd\fR corresponds to one set. For each \fBpollfd\fR struct entry (defined
+.B fd
+corresponds to one set. For each
+.B pollfd
+struct entry (defined
 in
 .BR sys/poll.h ):
 .sp
@@ -158,12 +169,21 @@ in
 
 .sp
 .LP
-The  \fBfd\fR field specifies the file descriptor being polled. The
-\fBevents\fR field indicates the interested \fBpoll events\fR on the
+The
+.B fd
+field specifies the file descriptor being polled. The
+.B events
+field indicates the interested
+.B "poll events"
+on the
 file descriptor. If a \fBpollfd\fR array contains multiple \fBpollfd\fR
 entries with the same \fBfd\fR field, the "events" field in each
-\fBpollfd\fR entry is OR'ed. A special \fBPOLLREMOVE\fR event in the
-\fBevents\fR field of the \fBpollfd\fR structure removes the \fBfd\fR from
+.B pollfd
+entry is OR'ed. A special
+.B POLLREMOVE
+event in the
+.B events
+field of the \fBpollfd\fR structure removes the \fBfd\fR from
 the monitored set. The
 .B revents
 field is not used. Write returns the
@@ -176,7 +196,8 @@ The
 .B DP_POLL
 ioctl is used to retrieve returned
 .BR poll
-\fBevents\fR occured on the  polled file descriptors in the monitored set
+.B events
+occured on the  polled file descriptors in the monitored set
 represented by
 .IR fd .
 .I "arg is"
@@ -196,34 +217,58 @@ structures which are defined as follows:
 
 .sp
 .LP
-The  \fBdp_fds\fR points to a buffer that holds an array of returned
-\fBpollfd\fR structures. The \fBdp_nfds\fR field specifies the size of the
-buffer in terms of the  number of \fBpollfd\fR entries it contains. The
-\fBdp_nfds\fR field also indicates the maximum number of file descriptors
+The
+.B dp_fds
+points to a buffer that holds an array of returned
+.B pollfd
+structures. The
+.B dp_nfds
+field specifies the size of the
+buffer in terms of the  number of
+.B pollfd
+entries it contains. The
+.B dp_nfds
+field also indicates the maximum number of file descriptors
 from which poll information can be obtained. If there is no interested
-\fBevents\fR on any of the polled file descriptors, the \fBDP_POLL\fR ioctl
+.B events
+on any of the polled file descriptors, the
+.B DP_POLL
+ioctl
 call will wait
 .B dp_timeout
 milliseconds before returning. If
-\fBdp_timeout\fR is
+.B dp_timeout
+is
 .BR 0 ,
 the ioctl call returns immediately. If
-\fBdp_timeout\fR is
+.B dp_timeout
+is
 .BR -1 ,
 the call blocks until an interested
 .BR poll
-\fBevents\fR is available or the call is interrupted. Upon return, if the
+.B events
+is available or the call is interrupted. Upon return, if the
 ioctl call has failed,
 .B -1
 is returned. The memory content pointed by
-\fBdp_fds\fR is not modified. A return value \fB0\fR means the ioctl is
-timed out. In this case, the memory content pointed by  \fBdp_fds\fR is not
+.B dp_fds
+is not modified. A return value
+.B 0
+means the ioctl is
+timed out. In this case, the memory content pointed by
+.B dp_fds
+is not
 modified. If the call is successful, it returns the number of valid
-\fBpollfd\fR entries in  the array pointed by
+.B pollfd
+entries in  the array pointed by
 .BR dp_fds ;
 the contents of
-the rest of the buffer is undefined. For each valid \fBpollfd\fR entry, the
-\fBfd\fR field indicates the file desciptor on which the polled \fBevents\fR
+the rest of the buffer is undefined. For each valid
+.B pollfd
+entry, the
+.B fd
+field indicates the file desciptor on which the polled
+.BR events
 happened. The
 .B events
 field is the user specified
@@ -234,15 +279,23 @@ The
 field contains the
 .B events
 occurred.
-\fB-1\fR is returned if the  call fails.
+.B -1
+is returned if the  call fails.
 .sp
 .LP
-\fBDP_ISPOLLED\fR ioctl allows you to query if a file descriptor is already
+.B DP_ISPOLLED
+ioctl allows you to query if a file descriptor is already
 in the  monitored set represented by
 .BR fd .
-The \fBfd\fR field of the
-\fBpollfd\fR structure indicates the file descriptor of interest. The
-\fBDP_ISPOLLED\fR ioctl returns  \fB1\fR if the file descriptor is in the
+The
+.B fd
+field of the
+.B pollfd
+structure indicates the file descriptor of interest. The
+.B DP_ISPOLLED
+ioctl returns
+.B 1
+if the file descriptor is in the
 set. The
 .B events
 field contains
@@ -255,7 +308,9 @@ contains the currently polled
 The ioctl returns
 .B 0
 if
-the file descriptor is not in the set. The  \fBpollfd\fR structure pointed
+the file descriptor is not in the set. The
+.B pollfd
+structure pointed
 by \fIpfd\fR is not modified. The ioctl returns a  \fB-1\fR if the call
 fails.
 .SH EXAMPLES
@@ -319,7 +374,8 @@ may be used.
 .sp
 .LP
 The following example is part of a test program which shows how
-\fBDP_ISPOLLED()\fR ioctl may be used.
+.B DP_ISPOLLED()
+ioctl may be used.
 .sp
 .in +2
 .nf
@@ -459,7 +515,8 @@ DPPOLL ioctl dp_nfds is greater than or equal to {OPEN_MAX}}.
 The
 .B O_NONBLOCK
 flag is set, the named file is a FIFO, the
-\fBO_WRONLY\fR flag is set, and no process has the file open for reading; or
+.B O_WRONLY
+flag is set, and no process has the file open for reading; or
 the named file is a character special or block special file and the device
 associated with this special file does not exist.
 .RE
@@ -509,12 +566,14 @@ When using the
 .B /dev/poll
 driver, you should remove a closed file
 descriptor from a monitored poll set. Failure to do so may result in a
-\fBPOLLNVAL revents\fR being returned for the closed file descriptor.
+.B POLLNVAL revents
+being returned for the closed file descriptor.
 When a file descriptor is closed but not removed from the monitored set, and
 is reused in subsequent open of a different device, you will be polling the
 device associated with the reused file descriptor. In a multithreaded
 application, careful coordination among threads doing close and
-\fBDP_POLL\fR ioctl is recommended for consistent results.
+.B DP_POLL
+ioctl is recommended for consistent results.
 .sp
 .LP
 The
@@ -540,7 +599,12 @@ and open its own if desired.
 The
 .B /dev/poll
 driver does not yet support polling. Polling on a
-\fB/dev/poll\fR file descriptor will result in \fBPOLLERR\fR being returned
+.B /dev/poll
+file descriptor will result in
+.B POLLERR
+being returned
 in the
 .B revents
-field of \fBpollfd\fR structure.
+field of
+.B pollfd
+structure.

@@ -32,16 +32,20 @@ growfs \- non-destructively expand a UFS file system
 .SH DESCRIPTION
 .sp
 .LP
-\fBgrowfs\fR non-destructively expands a mounted or unmounted UNIX file
+.B growfs
+non-destructively expands a mounted or unmounted UNIX file
 system (UFS) to the size of the file system's slice(s).
 .sp
 .LP
 Typically, disk space is expanded by first adding a slice to a metadevice,
-then running the \fBgrowfs\fR command. When adding space to a mirror, you
+then running the
+.B growfs
+command. When adding space to a mirror, you
 expand each submirror before expanding the file system.
 .sp
 .LP
-\fBgrowfs\fR will ``write-lock'' (see \fBlockfs\fR(1M)) a mounted file
+.B growfs
+will ``write-lock'' (see \fBlockfs\fR(1M)) a mounted file
 system when expanding. The length of time the file system is write-locked
 can be shortened by expanding the file system in stages. For instance, to
 expand a 1 Gbyte file system to 2 Gbytes, the file system can be grown in 16
@@ -53,21 +57,31 @@ file system at each stage. The argument for
 is the number of
 sectors, and must be a multiple of the cylinder size. Note: The file system
 cannot be grown if a cylinder size of less than 2 is specified. Refer to the
-\fBnewfs\fR(1M) man page for information on the options available when
+.BR newfs (1M)
+man page for information on the options available when
 growing a file system.
 .sp
 .LP
-\fBgrowfs\fR displays the same information as \fBmkfs\fR during the
+.B growfs
+displays the same information as
+.B mkfs
+during the
 expansion of the file system.
 .sp
 .LP
-If \fBgrowfs\fR is aborted, recover any lost free space by unmounting the
+If
+.B growfs
+is aborted, recover any lost free space by unmounting the
 file system and running the \fBfsck\fR command, or run the \fBgrowfs\fR
 command again.
 .sp
 .LP
-\fBNote:\fR If \fBgrowfs\fR is aborted and the file system is used before
-\fBfsck\fR is run on it, UFS metadata might be left in an incomplete state,
+.B Note:
+If
+.B growfs
+is aborted and the file system is used before
+.B fsck
+is run on it, UFS metadata might be left in an incomplete state,
 with the result that the file system would be corrupted. In such a
 circumstance, you would have to restore the file system from backups.
 .SH OPTIONS
@@ -78,7 +92,8 @@ Root privileges are required for all of the following options.
 .ne 2
 .mk
 .na
-\fB-M\fR \fImount-point\fR
+.B -M
+.I mount-point
 .ad
 .RS 18n
 .rt
@@ -92,11 +107,13 @@ locking (\fBlockfs\fR) will be used.
 .ne 2
 .mk
 .na
-\fInewfs-options\fR
+.I newfs-options
 .ad
 .RS 18n
 .rt
-The options are documented in the \fBnewfs\fR man page.
+The options are documented in the
+.B newfs
+man page.
 .RE
 
 .sp
@@ -117,7 +134,10 @@ slice, where you want the file system to be grown.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Expanding nonmetadevice slice for \fB/export\fR file
+.B Example 1
+Expanding nonmetadevice slice for
+.B /export
+file
 system
 .sp
 .LP
@@ -137,10 +157,15 @@ is converted to a metadevice so additional slices can be concatenated.
 .sp
 
 .LP
-\fBExample 2\fR Associate \fB/export\fR with new metadevice
+.B Example 2
+Associate
+.B /export
+with new metadevice
 .sp
 .LP
-Edit the \fB/etc/vfstab\fR file to change the entry for
+Edit the
+.B /etc/vfstab
+file to change the entry for
 .B /export
 to
 the newly defined metadevice,
@@ -160,7 +185,8 @@ the newly defined metadevice,
 The first example starts by running the
 .B metainit
 command with the
-\fB-f\fR option to force the creation of a new concatenated metadevice
+.B -f
+option to force the creation of a new concatenated metadevice
 .BR d8 ,
 which consists of the existing slice
 .B /dev/dsk/c1t0d0s3
@@ -168,28 +194,43 @@ and a
 new slice
 .BR /dev/dsk/c2t0d0s3 .
 Next, the file system on \fB/export\fR
-must be unmounted. The \fB/etc/vfstab\fR file is edited to change the entry
+must be unmounted. The
+.B /etc/vfstab
+file is edited to change the entry
 for
 .B /export
 to the newly defined metadevice name, rather than the
-slice name. After the file system is remounted, the \fBgrowfs\fR command is
+slice name. After the file system is remounted, the
+.B growfs
+command is
 run to expand the file system. The file system will span the entire
-metadevice when \fBgrowfs\fR completes. The
+metadevice when
+.B growfs
+completes. The
 .B -M
 option enables the
-\fBgrowfs\fR command to expand a mounted file system. During the expansion,
+.B growfs
+command to expand a mounted file system. During the expansion,
 write access for
 .B /export
-is suspended until \fBgrowfs\fR unlocks the
+is suspended until
+.B growfs
+unlocks the
 file system. Read access is not affected, though access times are not kept
 when the lock is in effect.
 
 .LP
-\fBExample 3\fR Dynamic Expansion of \fB/export\fR file system
+.B Example 3
+Dynamic Expansion of
+.B /export
+file system
 .sp
 .LP
 The following example picks up from the previous one. Here, the
-\fB/export\fR file system mounted on metadevice \fBd8\fR is dynamically
+.B /export
+file system mounted on metadevice
+.B d8
+is dynamically
 expanded.
 
 .sp
@@ -211,22 +252,29 @@ concatenate a new slice,
 to the end of an existing
 metadevice,
 .BR d8 .
-Next, the \fBgrowfs\fR command specifies that the
+Next, the
+.B growfs
+command specifies that the
 mount-point is
 .B /export
 and that it is to be expanded onto the raw
 metadevice
 .BR /dev/md/rdsk/d8 .
 The file system will span the entire
-metadevice when \fBgrowfs\fR completes. During the expansion, write access
+metadevice when
+.B growfs
+completes. During the expansion, write access
 for
 .B /export
-is suspended until \fBgrowfs\fR unlocks the file system.
+is suspended until
+.B growfs
+unlocks the file system.
 Read access is not affected, though access times are not kept when the lock
 is in effect.
 
 .LP
-\fBExample 4\fR Expanding mounted file system to existing mirror
+.B Example 4
+Expanding mounted file system to existing mirror
 .sp
 .LP
 The following example expands a mounted file system
@@ -259,13 +307,19 @@ new slices to each submirror. The
 command must be run for
 each submirror. The mirror will automatically grow when the last submirror
 is dynamically concatenated. The mirror will grow to the size of the
-smallest submirror. The \fBgrowfs\fR command then expands the file system.
+smallest submirror. The
+.B growfs
+command then expands the file system.
 The \fBgrowfs\fR command specifies that the mount-point is \fB/files\fR and
 that it is to be expanded onto the raw metadevice
 .BR /dev/md/rdsk/d80 .
-The file system will span the entire mirror when the \fBgrowfs\fR command
+The file system will span the entire mirror when the
+.B growfs
+command
 completes. During the expansion, write access for the file system is
-suspended until \fBgrowfs\fR unlocks the file system. Read access is not
+suspended until
+.B growfs
+unlocks the file system. Read access is not
 affected, though access times are not kept when the lock is in effect.
 
 .SH EXIT STATUS
@@ -316,7 +370,9 @@ AvailabilitySUNWmdu
 .SH SEE ALSO
 .sp
 .LP
-\fBfsck\fR(1M), \fBlockfs\fR(1M), \fBmkfs\fR(1M),
+.BR fsck (1M),
+.BR lockfs (1M),
+.BR mkfs (1M),
 .BR metattach (1M),
 .BR newfs (1M),
 .BR attributes (5)
@@ -327,7 +383,9 @@ AvailabilitySUNWmdu
 .sp
 .LP
 Only UFS file systems (either mounted or unmounted) can be expanded using
-the \fBgrowfs\fR command. Once a file system is expanded, it cannot be
+the
+.B growfs
+command. Once a file system is expanded, it cannot be
 decreased in size. The following conditions prevent you from expanding file
 systems: When
 .B acct

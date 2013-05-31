@@ -104,7 +104,8 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-lscf\fR [ \fIlibrary\fR\&.\|.
 .LP
 Transactions are the mechanism for changing property groups. They act
 atomically, whereby either all of the updates occur or none of them do. An
-\fBscf_transaction_t\fR is always in one of the following states:
+.B scf_transaction_t
+is always in one of the following states:
 .sp
 .ne 2
 .mk
@@ -127,10 +128,16 @@ moves the transaction to the started state.
 .rt
 The transaction has started. The
 .BR scf_transaction_property_delete() ,
-\fBscf_transaction_property_new()\fR, \fBscf_transaction_property_change()\fR,
-and \fBscf_transaction_property_change_type()\fR functions can be used to
-set up changes to properties. The \fBscf_transaction_reset()\fR and
-\fBscf_transaction_reset_all()\fR functions return the transaction to the
+.BR scf_transaction_property_new() ,
+.BR scf_transaction_property_change() ,
+and
+.B scf_transaction_property_change_type()
+functions can be used to
+set up changes to properties. The
+.B scf_transaction_reset()
+and
+.B scf_transaction_reset_all()
+functions return the transaction to the
 reset state.
 .RE
 
@@ -142,7 +149,9 @@ reset state.
 .ad
 .RS 13n
 .rt
-A call to \fBscf_transaction_commit()\fR (whether or not it is successful)
+A call to
+.B scf_transaction_commit()
+(whether or not it is successful)
 moves the transaction to the committed state. Modifying, resetting, or
 destroying the entries and values associated with a transaction will move it
 to the invalid state.
@@ -162,24 +171,35 @@ functions return the transaction to the reset state.
 
 .sp
 .LP
-The \fBscf_transaction_create()\fR function allocates and initializes an
-\fBscf_transaction_t\fR bound to
+The
+.B scf_transaction_create()
+function allocates and initializes an
+.B scf_transaction_t
+bound to
 .IR handle .
 The
-\fBscf_transaction_destroy()\fR function resets, destroys, and frees
+.B scf_transaction_destroy()
+function resets, destroys, and frees
 .IR tran .
 If there are any entries associated with the transaction,
-\fBscf_transaction_destroy()\fR also effects a call to
-\fBscf_transaction_reset()\fR. The \fBscf_transaction_destroy_children()\fR
+.B scf_transaction_destroy()
+also effects a call to
+.BR scf_transaction_reset() .
+The \fBscf_transaction_destroy_children()\fR
 function resets, destroys, and frees all entries and values associated the
 transaction.
 .sp
 .LP
-The \fBscf_transaction_handle()\fR function gets the handle to which
-\fItran\fR is bound.
+The
+.B scf_transaction_handle()
+function gets the handle to which
+.I tran
+is bound.
 .sp
 .LP
-The \fBscf_transaction_start()\fR function sets up the transaction to
+The
+.B scf_transaction_start()
+function sets up the transaction to
 modify the property group to which
 .I pg
 is set. The time reference used
@@ -189,29 +209,36 @@ becomes the basis of the transaction. The transaction fails if
 the property group has been modified since the last update of
 .I pg
 at
-the time when \fBscf_transaction_commit()\fR is called.
+the time when
+.B scf_transaction_commit()
+is called.
 .sp
 .LP
 The
 .BR scf_transaction_property_delete() ,
-\fBscf_transaction_property_new()\fR, \fBscf_transaction_property_change()\fR,
-and \fBscf_transaction_property_change_type()\fR functions add a new
+.BR scf_transaction_property_new() ,
+.BR scf_transaction_property_change() ,
+and
+.B scf_transaction_property_change_type()
+functions add a new
 transaction entry to the transaction. Each property the transaction affects
 must have a unique
 .BR scf_transaction_entry_t .
 Each
-\fBscf_transaction_entry_t\fR can be associated with only a single
+.B scf_transaction_entry_t
+can be associated with only a single
 transaction at a time. These functions all fail if the transaction is not in
 the started state,
 .I prop_name
 is not a valid property name, or
-\fIentry\fR is already associated with a transaction. These functions affect
+.I entry
+is already associated with a transaction. These functions affect
 commit and failure as follows:
 .sp
 .ne 2
 .mk
 .na
-\fBscf_transaction_property_delete()\fR
+.B scf_transaction_property_delete()
 .ad
 .sp .6
 .RS 4n
@@ -228,7 +255,7 @@ group.
 .ne 2
 .mk
 .na
-\fBscf_transaction_property_new()\fR
+.B scf_transaction_property_new()
 .ad
 .sp .6
 .RS 4n
@@ -245,12 +272,15 @@ existing property in the property group.
 .ne 2
 .mk
 .na
-\fBscf_transaction_property_change()\fR
+.B scf_transaction_property_change()
 .ad
 .sp .6
 .RS 4n
 This function changes the value list for an existing property
-\fIprop_name\fR in the property group. It fails if \fIprop_name\fR does not
+.I prop_name
+in the property group. It fails if
+.I prop_name
+does not
 name an existing property in the property group or names an existing
 property with a different type.
 .RE
@@ -259,12 +289,15 @@ property with a different type.
 .ne 2
 .mk
 .na
-\fBscf_transaction_property_change_type()\fR
+.B scf_transaction_property_change_type()
 .ad
 .sp .6
 .RS 4n
 This function changes the value list and type for an existing property
-\fIprop_name\fR in the property group. It fails if \fIprop_name\fR does not
+.I prop_name
+in the property group. It fails if
+.I prop_name
+does not
 name an existing property in the property group.
 .RE
 
@@ -275,53 +308,77 @@ If the function call is successful,
 remains active in the
 transaction until
 .BR scf_transaction_destroy() ,
-\fBscf_transaction_reset()\fR, or \fBscf_transaction_reset_all()\fR is
+.BR scf_transaction_reset() ,
+or
+.B scf_transaction_reset_all()
+is
 called. The \fBscf_entry_add_value\fR(3SCF) manual page provides information
 for setting up the value list for entries that are not associated with
-\fBscf_transaction_property_delete()\fR. Resetting or destroying an entry or
+.BR scf_transaction_property_delete() .
+Resetting or destroying an entry or
 value active in a transaction will move it into the invalid state.
 .sp
 .LP
-The \fBscf_transaction_commit()\fR function attempts to commit
+The
+.B scf_transaction_commit()
+function attempts to commit
 .IR tran .
 .sp
 .LP
-The \fBscf_transaction_reset()\fR function returns the transaction to the
+The
+.B scf_transaction_reset()
+function returns the transaction to the
 reset state and releases all of the transaction entries that were added.
 .sp
 .LP
-The \fBscf_transaction_reset_all()\fR function returns the transaction to
+The
+.B scf_transaction_reset_all()
+function returns the transaction to
 the reset state, releases all of the transaction entries, and calls
-\fBscf_value_reset\fR(3SCF) on all values associated with the entries.
+.BR scf_value_reset (3SCF)
+on all values associated with the entries.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBscf_transaction_create()\fR returns a new
-\fBscf_transaction_t\fR. Otherwise, it returns
+Upon successful completion,
+.B scf_transaction_create()
+returns a new
+.BR scf_transaction_t .
+Otherwise, it returns
 .IR NULL .
 .sp
 .LP
-Upon successful completion, \fBscf_transaction_handle()\fR returns the
+Upon successful completion,
+.B scf_transaction_handle()
+returns the
 handle associated with the transaction. Otherwise, it returns
 .IR NULL .
 .sp
 .LP
 Upon successful completion,
 .BR scf_transaction_start() ,
-\fBscf_transaction_property_delete()\fR, \fBscf_transaction_property_new()\fR,
+.BR scf_transaction_property_delete() ,
+.BR scf_transaction_property_new() ,
 .BR scf_transaction_property_change() ,
 and
-\fBscf_transaction_property_change_type()\fR return 0. Otherwise, they
+.B scf_transaction_property_change_type()
+return 0. Otherwise, they
 return \(mi1.
 .sp
 .LP
-The \fBscf_transaction_commit()\fR function returns 1 upon successful
-commit, 0 if the property group set in \fBscf_transaction_start()\fR is not
+The
+.B scf_transaction_commit()
+function returns 1 upon successful
+commit, 0 if the property group set in
+.B scf_transaction_start()
+is not
 the most recent, and -1 on failure.
 .SH ERRORS
 .sp
 .LP
-The \fBscf_transaction_create()\fR function will fail if:
+The
+.B scf_transaction_create()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -361,7 +418,9 @@ The server does not have adequate resources for a new transaction handle.
 
 .sp
 .LP
-The \fBscf_transaction_handle()\fR function will fail if:
+The
+.B scf_transaction_handle()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -377,7 +436,9 @@ has been destroyed.
 
 .sp
 .LP
-The \fBscf_transaction_start()\fR function will fail if:
+The
+.B scf_transaction_start()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -444,7 +505,8 @@ The transaction and property group are not derived from the same handle.
 The transaction is not in the
 .B reset
 state. The
-\fBscf_transaction_reset()\fR and \fBscf_transaction_reset_all()\fR
+.B scf_transaction_reset()
+and \fBscf_transaction_reset_all()\fR
 functions can be used to return the transaction to the
 .B reset
 state.
@@ -501,8 +563,11 @@ group.
 .LP
 The
 .BR scf_transaction_property_delete() ,
-\fBscf_transaction_property_new()\fR, \fBscf_transaction_property_change()\fR,
-and \fBscf_transaction_property_change_type()\fR functions will fail if:
+.BR scf_transaction_property_new() ,
+.BR scf_transaction_property_change() ,
+and
+.B scf_transaction_property_change_type()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -636,7 +701,8 @@ The
 .BR scf_transaction_property_delete() ,
 .BR scf_transaction_property_change() ,
 and
-\fBscf_transaction_property_change_type()\fR functions will fail if:
+.B scf_transaction_property_change_type()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -667,7 +733,8 @@ The
 ,
 .BR scf_transaction_property_change() ,
 and
-\fBscf_transaction_property_change_type()\fR functions will fail if:
+.B scf_transaction_property_change_type()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -679,12 +746,15 @@ and
 The
 .I prop_name
 argument is not not a valid property name, or the
-\fItype\fR argument is an invalid type.
+.I type
+argument is an invalid type.
 .RE
 
 .sp
 .LP
-The \fBscf_transaction_property_new()\fR function will fail if:
+The
+.B scf_transaction_property_new()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -710,7 +780,9 @@ Nothing of that name was found.
 
 .sp
 .LP
-The \fBscf_transaction_property_change()\fR function will fail if:
+The
+.B scf_transaction_property_change()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -727,7 +799,9 @@ is not of type
 
 .sp
 .LP
-The \fBscf_transaction_commit()\fR function will fail if:
+The
+.B scf_transaction_commit()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -834,7 +908,8 @@ The \fBscf_error\fR(3SCF) function can be used to retrieve the error
 value.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Set an existing boolean value to true.
+.B Example 1
+Set an existing boolean value to true.
 .sp
 .in +2
 .nf
@@ -899,6 +974,8 @@ MT-LevelSafe
 .SH SEE ALSO
 .sp
 .LP
-\fBlibscf\fR(3LIB), \fBscf_value_reset\fR(3SCF), \fBscf_error\fR(3SCF),
+.BR libscf (3LIB),
+.BR scf_value_reset (3SCF),
+.BR scf_error (3SCF),
 .BR scf_pg_create (3SCF),
 .BR attributes (5)

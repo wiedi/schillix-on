@@ -31,25 +31,36 @@ disks \- creates /dev entries for hard disks attached to the system
 .SH DESCRIPTION
 .sp
 .LP
-\fBdevfsadm\fR(1M) is now the preferred command for \fB/dev\fR and should
+.BR devfsadm (1M)
+is now the preferred command for
+.B /dev
+and should
 be used instead of
 .BR disks .
 .sp
 .LP
-\fBdisks\fR creates symbolic links in the \fB/dev/dsk\fR and
-\fB/dev/rdsk\fR directories pointing to the actual disk device special files
+.B disks
+creates symbolic links in the
+.B /dev/dsk
+and
+.B /dev/rdsk
+directories pointing to the actual disk device special files
 under the
 .B /devices
 directory tree. It performs the following steps:
 .RS +4
 .TP
 1.
-\fBdisks\fR searches the kernel device tree to see what hard disks are
+.B disks
+searches the kernel device tree to see what hard disks are
 attached to the system. It notes the
 .B /devices
 pathnames for the slices
 on the drive and determines the physical component of the corresponding
-\fB/dev/dsk\fR or \fB/dev/rdsk\fR name.
+.B /dev/dsk
+or
+.B /dev/rdsk
+name.
 .RE
 .RS +4
 .TP
@@ -74,7 +85,12 @@ or
 (the
 .B target
 number for
-\fBSCSI,\fR and the \fBfacility\fR number for \fBIPI\fR controllers).
+.B SCSI,
+and the
+.B facility
+number for
+.B IPI
+controllers).
 \fBd\fIN\fR is the number of the disk attached to the controller.
 \fBs\fIN\fR is the \fIslice\fR number on the disk. \fBp\fIN\fR is the
 FDISK partition number used by \fBfdisk\fR(1M). (x86 Only)
@@ -91,7 +107,8 @@ directory tree, disks creates
 the missing symbolic links. If none of the entries for a particular disk are
 found in
 .BR /dev/dsk ,
-\fBdisks\fR checks to see if any entries exist for
+.B disks
+checks to see if any entries exist for
 other disks attached to the same controller, and if so, creates new entries
 using the same controller number as used for other disks on the same
 controller. If no other
@@ -103,7 +120,8 @@ slices using this newly-assigned controller number.
 .RE
 .sp
 .LP
-\fBdisks\fR is run automatically each time a reconfiguration-boot is
+.B disks
+is run automatically each time a reconfiguration-boot is
 performed or when \fBadd_drv\fR(1M) is executed. When invoking \fBdisks\fR
 manually, first run \fBdrvconfig\fR(1M) to ensure
 .B /devices
@@ -112,11 +130,16 @@ consistent with the current device configuration.
 .SS "Notice to Driver Writers"
 .sp
 .LP
-\fBdisks\fR considers all devices with a node type of \fBDDI_NT_BLOCK,\fR
+.B disks
+considers all devices with a node type of
+.BR DDI_NT_BLOCK,
 .B "DDI_NT_BLOCK_CHAN, DDI_NT_CD,"
 .B DDI_NT_BLOCK_WWN
 or
-\fBDDI_NT_CD_CHAN\fR to be disk devices. \fBdisks\fR requires the minor name
+.B DDI_NT_CD_CHAN
+to be disk devices.
+.B disks
+requires the minor name
 of disk devices obey the following format conventions.
 .sp
 .LP
@@ -148,24 +171,43 @@ followed by
 .BR ,raw .
 .sp
 .LP
-\fBdisks\fR performs the following translations:
+.B disks
+performs the following translations:
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBa\fR through \fBp\fR to \fBs0\fR through \fBs15\fR
+.B a
+through
+.B p
+to
+.B s0
+through
+.BR s15
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBq\fR through \fBu\fR to \fBp0\fR through \fBp4\fR
+.B q
+through
+.B u
+to
+.B p0
+through
+.BR p4
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-\fBp5\fR through \fBp36\fR to \fBp5\fR through \fBp36\fR
+.B p5
+through
+.B p36
+to
+.B p5
+through
+.BR p36
 .RE
 .sp
 .LP
@@ -189,7 +231,10 @@ represents the entire disk, while
 and
 .BR u
 represent up to four additional primary partitions. For logical drives,
-\fBp5\fR to \fBp36\fR correspond to the 32 logical drives that are
+.B p5
+to
+.B p36
+correspond to the 32 logical drives that are
 supported. The device nodes for logical drives change dynamically as and
 when they are created or deleted.
 .sp
@@ -200,8 +245,10 @@ from attempting to automatically generate links for
 a device, drivers must specify a private node type and refrain from using a
 node type:
 .B "DDI_NT_BLOCK, DDI_NT_BLOCK_CHAN,"
-\fBDDI_NT_CD,\fR or
-\fBDDI_NT_CD_CHAN\fR when calling
+.B DDI_NT_CD,
+or
+.B DDI_NT_CD_CHAN
+when calling
 .BR ddi_create_minor_node (9F).
 .SH OPTIONS
 .sp
@@ -216,7 +263,8 @@ The following options are supported:
 .RS 14n
 .rt
 Causes disks to remove any invalid links after adding any new entries to
-\fB/dev/dsk\fR and
+.B /dev/dsk
+and
 .BR /dev/rdsk .
 Invalid links are links which refer to
 non-existent disk nodes that have been removed, powered off, or are
@@ -227,7 +275,8 @@ otherwise inaccessible.
 .ne 2
 .mk
 .na
-\fB-r\fR \fIrootdir\fR
+.B -r
+.I rootdir
 .ad
 .RS 14n
 .rt
@@ -235,8 +284,10 @@ Causes
 .B disks
 to presume that the
 .BR /dev/dsk ,
-\fB/dev/rdsk\fR and
-\fB/devices\fR directory trees are found under
+.B /dev/rdsk
+and
+.B /devices
+directory trees are found under
 .IR rootdir ,
 not directly
 under
@@ -256,7 +307,8 @@ links should be manually corrected or removed before another
 reconfiguration-boot is performed.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Creating Block and Character Minor Devices
+.B Example 1
+Creating Block and Character Minor Devices
 .sp
 .LP
 The following example demonstrates creating the block and character minor
@@ -437,7 +489,8 @@ AvailabilitySUNWcsu
 .sp
 .LP
 .BR add_drv (1M),
-\fBdevfsadm\fR(1M), \fBfdisk\fR(1M),
+.BR devfsadm (1M),
+.BR fdisk (1M),
 .BR attributes (5),
 .BR isp (7D),
 .BR devfs (7FS),
@@ -450,4 +503,5 @@ AvailabilitySUNWcsu
 .SH BUGS
 .sp
 .LP
-\fBdisks\fR silently ignores malformed minor device names.
+.B disks
+silently ignores malformed minor device names.

@@ -64,7 +64,8 @@ nisprefadm \- NIS+ utility to set server preferences for NIS+ clients
 .SH DESCRIPTION
 .sp
 .LP
-\fBnisprefadm\fR defines which servers are to be preferred by NIS+ clients.
+.B nisprefadm
+defines which servers are to be preferred by NIS+ clients.
 This information is used by
 .BR nis_cachemgr "(1M) to control the order in"
 which it selects which server to use for a particular domain. On a client
@@ -81,9 +82,12 @@ puts all servers that are on the same subnet
 as the client system (that is, local servers) are on the preferred server
 list. In some cases this default preferred server list is inadequate. For
 example, if all of the servers for a domain are remote, but some are
-\fIcloser\fR than others, the cache manager should try to select the closer
+.I closer
+than others, the cache manager should try to select the closer
 one. Because the cache manager has no reliable way to determine the distance
-to remote servers, \fBnisprefadm\fR is used to provide this information.
+to remote servers,
+.B nisprefadm
+is used to provide this information.
 .sp
 .LP
 The preferred server information is stored either globally in a NIS+ table
@@ -94,14 +98,18 @@ option) or locally in a file, \fB/var/nis/client_info\fR
 .B -L
 option). It is preferable to store the information
 globally so that it can be used by all clients on a subnet. The
-\fBnis_cachemgr\fR process on a client machine reloads the preferred server
+.B nis_cachemgr
+process on a client machine reloads the preferred server
 information periodically, depending on the machine's setup. If the local
 file is used, the information is reloaded every 12 hours. If the global
 table is used, the information is reloaded based on the
 .B TTL
 value of
-the client information table. This TTL value can be changed using \fB nischttl\fR(1). If you want your changes to take effect immediately, use the
-\fBnisprefadm -F\fR command. When changing local information
+the client information table. This TTL value can be changed using
+.BR " nischttl" (1).
+If you want your changes to take effect immediately, use the
+.B nisprefadm -F
+command. When changing local information
 (\fB-L\fR), \fBnisprefadm\fR automatically forces \fBnis_cachemgr\fR to
 reload the information.
 .sp
@@ -109,7 +117,9 @@ reload the information.
 The cache manager assigns weights to all of the servers on the preferred
 list. By default, local servers (that is, servers on the same subnet) are
 given a weight of 0. Other servers are given the weight, "infinite". This
-can be changed by using the \fBnisprefadm\fR command and giving a weight in
+can be changed by using the
+.B nisprefadm
+command and giving a weight in
 parentheses after the server name. When selecting a server for a domain, the
 cache manager first tries to contact the servers with the lowest weight. If
 it doesn't get a response, it tries the servers with the next lowest weight,
@@ -158,7 +168,9 @@ example% \fBnisprefadm -G -a -C client1 "srv1(2)"\fR
 In general,
 .B nis_cachemgr
 does a fairly good job of selecting servers
-on its own. Therefore, the use of \fBnisprefadm\fR is not usually necessary.
+on its own. Therefore, the use of
+.B nisprefadm
+is not usually necessary.
 Some situations in which it is recommended are:
 .sp
 .ne 2
@@ -175,7 +187,8 @@ Because it doesn't have information on which is closest, it sends a ping to
 all of them and then selects the one that responds fastest. This may not
 always select the best server. If some of the servers are closer to the
 client than the others, they should be listed as preferred servers so that
-\fBnis_cachemgr\fR will try them first. This reduces the amount of network
+.B nis_cachemgr
+will try them first. This reduces the amount of network
 traffic for selecting a server.
 .RE
 
@@ -193,7 +206,9 @@ traffic over that connection. If the \fIpref_type\fR=\fBpref_only\fR option
 is set along with preferred servers, then only the preferred servers are
 contacted for domains they serve. The non-preferred servers are not tried at
 all; even if all of the preferred servers are unavailable. For domains that
-are not served by any of the preferred servers, the \fBpref_only\fR option
+are not served by any of the preferred servers, the
+.B pref_only
+option
 is ignored.
 .RE
 
@@ -219,14 +234,16 @@ Add the specified servers to the preferred server list.
 .ne 2
 .mk
 .na
-\fB-C\fR \fIclient\fR
+.B -C
+.I client
 .ad
 .RS 13n
 .rt
 Store the preferred server information with the key,
 .IR client .
 The
-\fIclient\fR can be either a hostname or a subnet number. When a hostname is
+.I client
+can be either a hostname or a subnet number. When a hostname is
 specified, the preferred server information applies to that host only. When
 a subnet is specified, the preferred server information applies to all
 clients on that subnet. The cache manager searches for host specific entries
@@ -239,7 +256,8 @@ command is run is used.
 .ne 2
 .mk
 .na
-\fB-d\fR \fIdomain\fR
+.B -d
+.I domain
 .ad
 .RS 13n
 .rt
@@ -259,7 +277,8 @@ to which the command is to apply.
 Tells \fBnis_cachemgr\fR(1M) to refresh its preferred server information.
 The program periodically does this anyway, but this option forces it to do
 the refresh immediately. When updating the local information,
-\fBnis_cachemgr\fR automatically refreshes the preferred server
+.B nis_cachemgr
+automatically refreshes the preferred server
 information.
 .sp
 This option must be executed as
@@ -281,12 +300,16 @@ List the current preferred server information.
 .ne 2
 .mk
 .na
-\fB-L\fR \fB\||\fR \fB-G\fR
+.B -L
+\fB\||\fR \fB-G\fR
 .ad
 .RS 13n
 .rt
 Store the preferred server information locally in the file,
-\fB/var/nis/client_info\fR (the \fB-L\fR option), or globally in a NIS+
+.B /var/nis/client_info
+(the
+.B -L
+option), or globally in a NIS+
 table \fBclient.info.org-dir.\fIdomain\fR (the \fB-G\fR option). If the
 information is stored locally, then it only applies to the system on which
 the command is run. If it is stored globally then it can apply to all
@@ -334,7 +357,9 @@ If the value is
 .BR all ,
 then the cache
 manager tries to contact non-preferred servers if all of the preferred
-servers fail to respond. If \fBpref_only\fR is specified, then it won't try
+servers fail to respond. If
+.B pref_only
+is specified, then it won't try
 non-preferred servers. The only exception to this is when a domain is not
 served by any of the preferred servers. In this case, the cache manager
 ignores the option. This is to avoid requiring that preferred servers be
@@ -378,7 +403,8 @@ Remove the preferred server information completely.
 .SH RETURN VALUES
 .sp
 .LP
-\fBnisprefadm\fR returns the following values:
+.B nisprefadm
+returns the following values:
 .sp
 .ne 2
 .mk
@@ -403,7 +429,8 @@ On failure.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Using \fBnisprefadm\fR
+.B Example 1
+Using \fBnisprefadm\fR
 .sp
 .LP
 This command sets the preferred server list for the system on which it is

@@ -65,7 +65,7 @@ An opaque mapping handle that the system uses to describe the mapping.
 .ne 2
 .mk
 .na
-\fIoff\fR
+.I off
 .ad
 .RS 11n
 .rt
@@ -92,7 +92,8 @@ Length (in bytes) of the mapping to be mapped.
 .RS 11n
 .rt
 Pointer to length (in bytes) of mapping that has been validated.
-\fImaplen\fR is less than or equal to
+.I maplen
+is less than or equal to
 .IR len .
 .RE
 
@@ -110,7 +111,8 @@ The data model type of the current thread.
 .SH DESCRIPTION
 .sp
 .LP
-\fBdevmap()\fR is a required entry point for character drivers supporting
+.B devmap()
+is a required entry point for character drivers supporting
 memory-mapped devices if the drivers use the devmap framework to set up the
 mapping. A memory mapped device has memory  that can be mapped into a
 process's address space. The
@@ -123,7 +125,10 @@ space for direct access by the user applications.
 As a result of a
 .BR mmap (2)
 system call, the system calls the
-\fBdevmap()\fR entry point during the mapping setup when \fBD_DEVMAP\fR is
+.B devmap()
+entry point during the mapping setup when
+.B D_DEVMAP
+is
 set in the \fBcb_flag\fR field of the \fBcb_ops\fR(9S) structure, and any of
 the following conditions apply:
 .RS +4
@@ -168,7 +173,8 @@ corresponding physical offset within the device address space, and to pass
 the mapping information to the system for setting up the mapping.
 .sp
 .LP
-\fIdhp\fR is a device mapping handle that the system uses to describe a
+.I dhp
+is a device mapping handle that the system uses to describe a
 mapping to a memory that is either contiguous in physical address space or
 in kernel virtual address space. The system may create multiple mapping
 handles in one
@@ -177,7 +183,8 @@ system call (for example, if the mapping
 contains multiple physically discontiguous memory regions).
 .sp
 .LP
-\fImodel\fR returns the C Language Type Model which the current thread
+.I model
+returns the C Language Type Model which the current thread
 expects. It is set to
 .B DDI_MODEL_ILP32
 if the current thread expects
@@ -197,13 +204,23 @@ The device driver might have to adjust the shape of data structures before
 exporting them to a user thread which supports a different data model.
 .sp
 .LP
-\fBdevmap()\fR should return \fBEINVAL\fR if the logical offset, \fIoff\fR,
+.B devmap()
+should return
+.B EINVAL
+if the logical offset, \fIoff\fR,
 is out of the range of memory exported by the device to user space. If
-\fIoff\fR + \fIlen\fR exceeds the range of the contiguous memory,
-\fBdevmap()\fR should return the length from  \fIoff\fR to the end of the
+.I off
++
+.I len
+exceeds the range of the contiguous memory,
+.B devmap()
+should return the length from
+.I off
+to the end of the
 .RB "contiguous memory region. The system will repeatedly call" " devmap()"
 until the original mapping length is satisfied. The driver sets
-\fI*maplen\fR to the validated length which must be either less than or
+.I *maplen
+to the validated length which must be either less than or
 equal to
 .IR len .
 .sp
@@ -236,7 +253,9 @@ after the return from either
 .sp
 .LP
 For device mappings, the system establishes the mapping to the physical
-address that corresponds to \fIoff\fR by passing the register number and the
+address that corresponds to
+.I off
+by passing the register number and the
 offset within the register address space to
 .BR devmap_devmem_setup (9F).
 
@@ -269,7 +288,10 @@ An error occurred.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Implementing the \fBdevmap()\fR Entry Point
+.B Example 1
+Implementing the
+.B devmap()
+Entry Point
 .sp
 .LP
 The following is an example of the implementation for the
@@ -392,7 +414,8 @@ xxdevmap(dev_t dev, devmap_cookie_t dhp, offset_t off, size_t len,
 .BR mmap (9E),
 .BR segmap (9E),
 .BR ddi_devmap_segmap (9F),
-\fBddi_model_convert_from\fR(9F), \fBddi_soft_state\fR(9F),
+.BR ddi_model_convert_from (9F),
+.BR ddi_soft_state (9F),
 .BR ddi_umem_alloc (9F),
 .BR ddi_umem_free (9F),
 .BR devmap_devmem_setup (9F),

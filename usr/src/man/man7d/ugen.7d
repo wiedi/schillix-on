@@ -35,7 +35,8 @@ ugen \- USB generic driver
 .SH DESCRIPTION
 .sp
 .LP
-\fBugen\fR is a generic USBA (Solaris USB Architecture) compliant client
+.B ugen
+is a generic USBA (Solaris USB Architecture) compliant client
 character driver that presents USB devices to applications through a
 standard
 .BR open (2),
@@ -50,14 +51,16 @@ USB endpoint. Status is obtained by reading file descriptors created for
 endpoint and full device status.
 .sp
 .LP
-\fBugen\fR supports control, bulk, isochronous and interrupt (in and out)
+.B ugen
+supports control, bulk, isochronous and interrupt (in and out)
 transfers.
 .BR libusb (3LIB)
 uses
 .B ugen
 to access devices that do not
 contain drivers (such as digital cameras and PDAs). Refer to
-\fB/usr/sfw/share/doc/libusb/libusb.txt\fR for details.
+.B /usr/sfw/share/doc/libusb/libusb.txt
+for details.
 .SH BINDING
 .sp
 .LP
@@ -78,7 +81,8 @@ explicitly to a device or
 interface, the following section explains the necessary steps.
 .sp
 .LP
-\fBugen\fR can bind to a device with one or more interfaces in its
+.B ugen
+can bind to a device with one or more interfaces in its
 entirety, or to a single interface of that device. The binding type depends
 on information that is passed to
 .BR add_drv "(1M) or"
@@ -239,15 +243,22 @@ each instance will share access to the same source or endpoint pipes. For
 example, a device with two interfaces, each operated by their own \fBugen\fR
 instance, will show
 .B endpoint0
-as \fBif0cntrl0\fR to the first
-interface, and will show it as \fBif1cntrl0\fR to the second interface. Both
+as
+.B if0cntrl0
+to the first
+interface, and will show it as
+.B if1cntrl0
+to the second interface. Both
 of these logical device names share
 .BR endpoint0 .
 Likewise for the same
 device,
 .B ugen
 makes the device-wide status available as
-\fBif0devstat\fR to the first interface and as \fBif1devstat\fR to the
+.B if0devstat
+to the first interface and as
+.B if1devstat
+to the
 second interface. \fBif0devstat\fR and \fBif1devstat\fR both return the same
 data.
 .sp
@@ -402,7 +413,8 @@ subsequent transfer requests fail as an indication to the application to
 reinitialize. Applications should close and reopen all endpoints to
 reinstate them. All endpoint and device status on Resume (before close and
 reopen) is USB_LC_STAT_SUSPENDED. A system suspend will fail while
-\fBugen\fR is performing a transfer.
+.B ugen
+is performing a transfer.
 .SH DEVICE POWER MANAGEMENT
 .sp
 .LP
@@ -418,7 +430,8 @@ from the device status logical name. When opened without O_NONBLOCK and
 O_NDELAY, all reads from that file descriptor (with the exception of the the
 intial read that follows the open) block until a device status change
 occurs. Calls to read will always return immediately if opened with
-\fBO_NONBLOCK\fR or
+.B O_NONBLOCK
+or
 .BR O_NDELAY .
 Nonblocking calls to read which have no
 data to return, return no error and zero bytes read.
@@ -923,7 +936,8 @@ fdstat = open("/dev/usb/472.b0b0/0/if0in1stat", O_RDONLY);
 
 .sp
 .LP
-\fBugen\fR starts polling interrupt\(emIN endpoints immediately upon
+.B ugen
+starts polling interrupt\(emIN endpoints immediately upon
 opening them and stops polling them upon closure. (Polling refers to
 interrogation of the device by the driver and should not be confused with
 .BR poll (2),
@@ -936,7 +950,8 @@ A
 of an endpoint opened with the
 .B O_NONBLOCK
 or
-\fBO_NDELAY\fR flags set will not block when there is insufficient data
+.B O_NDELAY
+flags set will not block when there is insufficient data
 available to satisfy the request. The
 .B read
 simply returns what it can
@@ -944,7 +959,8 @@ without signifying any error.
 .sp
 .LP
 Applications should continuously check for and consume interrupt data.
-\fBugen\fR enables buffering of up to one second of incoming data. In case
+.B ugen
+enables buffering of up to one second of incoming data. In case
 of buffer overflow,
 .B ugen
 stops polling the interrupt-IN endpoint until
@@ -954,7 +970,8 @@ of an
 empty buffer returns
 .BR -1 ,
 sets the endpoint status to
-\fBUSB_LC_STAT_INTR_BUF_FULL\fR (to indicate that the buffer had been full
+.B USB_LC_STAT_INTR_BUF_FULL
+(to indicate that the buffer had been full
 and polling had been stopped) and causes
 .B ugen
 to start polling the
@@ -990,7 +1007,8 @@ for (;;) {
 
 .sp
 .LP
-\fBugen\fR will never drop data. However, the device may drop data if the
+.B ugen
+will never drop data. However, the device may drop data if the
 application cannot read it at the rate that it is produced.
 .sp
 .LP
@@ -1051,7 +1069,9 @@ You can monitor the device status endpoint via
 concurrently
 with the multiple interrupt-IN endpoints.  Simply add another pollfd element
 to the pfd array in the previous code example, and initialize the new
-element's \fBfd\fR field with the file  descriptor  of the device status
+element's
+.B fd
+field with the file  descriptor  of the device status
 endpoint (opened without O_NONBLOCK  or  O_NDELAY).  Set the new element's
 event field to POLLIN like the other elements. Note that only interrupt-IN
 endpoints and the device status endpoint can be monitored using
@@ -1222,7 +1242,8 @@ typedef struct ugen_isoc_pkt_descr {
 
 .sp
 .LP
-\fBreq_isoc_pkts_count\fR is limited by the capability of the USB host
+.B req_isoc_pkts_count
+is limited by the capability of the USB host
 controller driver. The current upper bound for the
 .B uhci
 and
@@ -1233,7 +1254,9 @@ driver is 1024.
 .sp
 .LP
 For an isochronous-IN endpoint, applications must first use the
-\fBugen_isoc_req_head_t\fR structure followed by \fBugen_isoc_pkt_descr_t\fR
+.B ugen_isoc_req_head_t
+structure followed by
+.BR ugen_isoc_pkt_descr_t
 to write packet request information to the
 .B ugen
 .RB "node. The" " ugen"
@@ -1370,7 +1393,8 @@ The following example shows how to read an isochronous-IN endpoint:
 .LP
 For an isochronous-OUT endpoint, applications use the same packet
 descriptor and request structures to write request   information to the
-\fBugen\fR node. Following the packet request head information is the packet
+.B ugen
+node. Following the packet request head information is the packet
 payload data. Upon successful return of
 .BR write (2),
 applications can
@@ -2000,7 +2024,13 @@ unable to identify the original device with a name string.
 .SH NOTES
 .sp
 .LP
-\fBugen\fR returns \fB-1\fR for all commands and sets \fBerrno\fR to
-\fBENODEV\fR when device has been hot-removed or resumed from a suspend. The
+.B ugen
+returns
+.B -1
+for all commands and sets
+.B errno
+to
+.B ENODEV
+when device has been hot-removed or resumed from a suspend. The
 application must close and reopen all open minor nodes to reinstate
 successful communication.

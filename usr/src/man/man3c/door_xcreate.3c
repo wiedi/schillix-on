@@ -72,7 +72,8 @@ a private door was
 created using
 .B door_create()
 specifying attributes including
-\fBDOOR_PRIVATE\fR after installing a suitable door server thread creation
+.B DOOR_PRIVATE
+after installing a suitable door server thread creation
 function using
 .BR door_server_create() .
 During such a call to
@@ -112,10 +113,13 @@ limitations:
 .ie t \(bu
 .el o
 The server thread creation function appointed via the
-\fBdoor_server_create()\fR is shared by all doors in the process. Private
+.B door_server_create()
+is shared by all doors in the process. Private
 doors are distinguished from non-private in that the \fBdoor_info_t\fR
 pointer argument to the thread creation function is non-null for private
-doors; from the \fBdoor_info_t\fR the associated door server procedure is
+doors; from the
+.B door_info_t
+the associated door server procedure is
 available via the
 .B di_proc
 member.
@@ -139,7 +143,9 @@ Newly-created server threads must bind to the door they will service, but
 the door file descriptor to quote in
 .B door_bind()
 is not available in
-the \fBdoor_info_t\fR structure we receive a pointer to. The door file
+the
+.B door_info_t
+structure we receive a pointer to. The door file
 descriptor is returned as the result of
 .BR door_create() ,
 but the initial
@@ -195,16 +201,23 @@ the initial number of threads to create for this door.
 .TP
 .ie t \(bu
 .el o
-The \fBdoor_xcreate_server_func_t()\fR for creating server threads has
-differing semantics to those of a \fBdoor_server_func_t()\fR used in
+The
+.B door_xcreate_server_func_t()
+for creating server threads has
+differing semantics to those of a
+.B door_server_func_t()
+used in
 .BR door_server_create() .
-In addition to a \fBdoor_info_t\fR pointer it
+In addition to a
+.B door_info_t
+pointer it
 also receives as arguments a library-provided thread start function and
 thread start argument that it must use, and the private cookie registered in
 the call to
 .BR door_xcreate() .
 The nominated
-\fBdoor_xcreate_server_func_t()\fR must:
+.B door_xcreate_server_func_t()
+must:
 .RS +4
 .TP
 .ie t \(bu
@@ -215,7 +228,8 @@ thread creation function is invoked as part of a depletion callback (as
 opposed to during initial
 .BR door_xcreate() )
 the \fBdoor_info_t\fR
-\fBdi_attributes\fR member includes
+.B di_attributes
+member includes
 .BR DOOR_DEPLETION_CB .
 .RE
 .RS +4
@@ -231,7 +245,8 @@ desired and quoting the implementation-provided thread start function and
 opaque data cookie. If the call to
 .B thr_create()
 or
-\fBpthread_create()\fR is successful then return 1, otherwise return -1.
+.B pthread_create()
+is successful then return 1, otherwise return -1.
 .RE
 .RS +4
 .TP
@@ -245,7 +260,10 @@ or request to enter service via
 As in
 .B door_server_create()
 new server threads must be created
-\fBPTHREAD_SCOPE_SYSTEM\fR and \fBPTHREAD_CREATE_DETACHED\fR for POSIX
+.B PTHREAD_SCOPE_SYSTEM
+and
+.B PTHREAD_CREATE_DETACHED
+for POSIX
 threads, and
 .B THR_BOUND
 and
@@ -253,7 +271,8 @@ and
 for Solaris threads. The
 signal disposition and scheduling class of newly-created threads are
 inherited from the calling thread, initially from the thread calling
-\fBdoor_xcreate()\fR and subsequently from the current active door server
+.B door_xcreate()
+and subsequently from the current active door server
 thread.
 .RE
 .RS +4
@@ -266,7 +285,9 @@ operations in the order presented:
 .TP
 .ie t \(bu
 .el o
-Calls the \fBdoor_xcreate_thrsetup_func_t()\fR if it is not
+Calls the
+.B door_xcreate_thrsetup_func_t()
+if it is not
 .IR NULL ,
 passing the
 .IR crcookie .
@@ -303,7 +324,8 @@ so that the new server thread is
 known to have successfully completed
 .B door_bind()
 before
-\fBdoor_xcreate()\fR returns.
+.B door_xcreate()
+returns.
 .RE
 .RE
 .RS +4
@@ -315,8 +337,13 @@ be controlled through the
 .I nthread
 argument to
 .BR door_xcreate() .
-The nominated \fBdoor_xcreate_server_func_t()\fR will be called
-\fInthread\fR times. All \fInthread\fR new server threads must be created
+The nominated
+.B door_xcreate_server_func_t()
+will be called
+.I nthread
+times. All
+.I nthread
+new server threads must be created
 successfully (\fBthr_create_func()\fR returns 1 for each) and all must
 succeed in binding to the new door; if fewer than
 .I nthread
@@ -324,7 +351,8 @@ threads are
 created, or fewer than
 .I nthread
 succeed in binding, then
-\fBdoor_xcreate()\fR fails and any threads that were created are made to
+.B door_xcreate()
+fails and any threads that were created are made to
 exit.
 .sp
 No artificial maximum value is imposed on the
@@ -332,7 +360,8 @@ No artificial maximum value is imposed on the
 argument: it
 may be as high as system resources and available virtual memory permit.
 There is a small amount of additional stack usage in the
-\fBdoor_xcreate()\fR stack frame for each thread - up to 16 bytes in a
+.B door_xcreate()
+stack frame for each thread - up to 16 bytes in a
 64-bit application. If there is unsufficient room to extend the stack for
 this purpose then
 .B door_xcreate()
@@ -340,10 +369,14 @@ fails with
 .BR E2BIG .
 .sp
 The door attributes that can be selected in the call to
-\fBdoor_xcreate()\fR are the same as in
+.B door_xcreate()
+are the same as in
 .BR door_create() ,
 with
-\fBDOOR_PRIVATE\fR implied and \fBDOOR_NO_DEPLETION_CB\fR added:
+.B DOOR_PRIVATE
+implied and
+.B DOOR_NO_DEPLETION_CB
+added:
 .RS
 
 .sp
@@ -369,7 +402,9 @@ interfaces only creates private doors.
 Create the initial pool of
 .I nthread
 service threads, but do not
-perform further callbacks to the \fBthr_create_func()\fR for this door when
+perform further callbacks to the
+.B thr_create_func()
+for this door when
 the thread pool appears to be depleted at the start of a new door
 invocation. This allows you to select a fixed level of concurrency.
 .sp
@@ -494,10 +529,12 @@ function failed.
 Invalid attributes are passed,
 .I nthread
 is less than 1, or
-\fBthr_create_func()\fR is
+.B thr_create_func()
+is
 .IR NULL .
 This is also returned if
-\fBthr_create_func()\fR returns 0 (no thread creation attempted) during
+.B thr_create_func()
+returns 0 (no thread creation attempted) during
 .BR door_xcreate() .
 .RE
 
@@ -544,19 +581,27 @@ call was attempted from a fork handler.
 .ad
 .RS 11n
 .rt
-A call to the nominated \fBthr_create_func()\fR returned -1 indicating that
-\fBpthread_create()\fR or \fBthr_create()\fR failed.
+A call to the nominated
+.B thr_create_func()
+returned -1 indicating that
+.B pthread_create()
+or
+.B thr_create()
+failed.
 .RE
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Create a private door with an initial pool of 10 server
+.B Example 1
+Create a private door with an initial pool of 10 server
 threads
 .sp
 .LP
 Create a private door with an initial pool of 10 server threads. Threads
 are created with the minimum required attributes and there is no thread
-setup function. Use \fBfattach()\fR to advertise the door in the filesystem
+setup function. Use
+.B fattach()
+to advertise the door in the filesystem
 namespace.
 
 .sp
@@ -641,7 +686,8 @@ main(int argc, char *argv[])
 .in -2
 
 .LP
-\fBExample 2\fR Create a private door with exactly one server thread and no
+.B Example 2
+Create a private door with exactly one server thread and no
 callbacks for additional threads
 .sp
 .LP

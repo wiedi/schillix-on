@@ -30,7 +30,8 @@ pam.conf \- configuration file for pluggable authentication modules
 .SH DESCRIPTION
 .sp
 .LP
-\fBpam.conf\fR is the configuration file for the Pluggable Authentication
+.B pam.conf
+is the configuration file for the Pluggable Authentication
 Module architecture, or
 .BR PAM .
 A
@@ -89,11 +90,15 @@ password.
 .sp
 .LP
 Each of the four service modules can be implemented as a shared library
-object which can be referenced in the \fBpam.conf\fR configuration file.
+object which can be referenced in the
+.B pam.conf
+configuration file.
 .SS "Simplified pam.conf Configuration File"
 .sp
 .LP
-The \fBpam.conf\fR file contains a listing of services. Each service is
+The
+.B pam.conf
+file contains a listing of services. Each service is
 paired with a corresponding service module. When a service is requested, its
 associated module is invoked. Each entry may be a maximum of 256 characters,
 including the end of line, and has the following format:
@@ -107,9 +112,13 @@ including the end of line, and has the following format:
 
 .sp
 .LP
-The following is an example of a \fBpam.conf\fR configuration file with
+The following is an example of a
+.B pam.conf
+configuration file with
 support for authentication, account management, session management and
-password management modules (See the \fBpam.conf\fR file that is shipped
+password management modules (See the
+.B pam.conf
+file that is shipped
 with your system for the contents of this file):
 .sp
 .in +2
@@ -133,7 +142,8 @@ other   password required       pam_authtok_store.so.1
 
 .sp
 .LP
-\fIservice_name\fR denotes the service (for example,
+.I service_name
+denotes the service (for example,
 .BR login ,
 .BR dtlogin ,
 or
@@ -154,7 +164,8 @@ could have been replaced by a single
 line.
 .sp
 .LP
-\fImodule_type\fR denotes the service module type: authentication
+.I module_type
+denotes the service module type: authentication
 (\fBauth\fR), account management
 .RB ( account ),
 session management
@@ -162,7 +173,9 @@ session management
 .RB ( password ).
 .sp
 .LP
-The \fIcontrol_flag\fR field determines the behavior of stacking.
+The
+.I control_flag
+field determines the behavior of stacking.
 .sp
 .LP
 The
@@ -211,8 +224,11 @@ of the same
 .I module_type
 is defined more
 than once, the service is said to be stacked. Each module referenced in the
-\fImodule_path\fR for that service is then processed in the order that it
-occurs in the configuration file. The \fIcontrol_flag\fR field specifies the
+.I module_path
+for that service is then processed in the order that it
+occurs in the configuration file. The
+.I control_flag
+field specifies the
 continuation and failure semantics of the modules, and can contain one of
 the following values:
 .sp
@@ -227,7 +243,8 @@ If the service module returns success and no preceding
 .BR required
 modules returned failures, immediately return success without calling any
 subsequent modules. If a failure is returned, treat the failure as a
-\fBrequired\fR module failure, and continue to process the \fBPAM\fR
+.B required
+module failure, and continue to process the \fBPAM\fR
 stack.
 .RE
 
@@ -266,7 +283,8 @@ If the service module returns success, record the success, and continue to
 process the
 .B PAM
 stack. If a failure is returned, and it is the first
-\fBoptional\fR module failure, save the failure code as an \fBoptional\fR
+.B optional
+module failure, save the failure code as an \fBoptional\fR
 failure. Continue to process the
 .B PAM
 stack.
@@ -284,7 +302,10 @@ If the service module returns success, record the success, and continue to
 process the
 .B PAM
 stack. If a failure is returned, and it is the first
-\fBrequired\fR failure, save the failure code as a \fBrequired\fR failure.
+.B required
+failure, save the failure code as a
+.B required
+failure.
 Continue to process the
 .B PAM
 stack.
@@ -312,7 +333,7 @@ first of those values.
 .ne 2
 .mk
 .na
-\fBsufficient\fR
+.B sufficient
 .ad
 .RS 14n
 .rt
@@ -329,7 +350,10 @@ stack.
 If the
 .B PAM
 stack runs to completion, that is, neither a
-\fBrequisite\fR module failed, nor a \fBbinding\fR or \fBsufficient\fR
+.B requisite
+module failed, nor a
+.B binding
+or \fBsufficient\fR
 module success stops it, success is returned if no required modules failed
 and at least one required, requisite, optional module succeeded. If no
 module succeeded and a required or binding module failed, the first of those
@@ -340,13 +364,22 @@ ignore status, a default error based on module type, for example, "User
 account expired," is returned.
 .sp
 .LP
-All errors in \fBpam.conf\fR entries are logged to
+All errors in
+.B pam.conf
+entries are logged to
 .B syslog
 as
-\fBLOG_AUTH\fR | \fBLOG_ERR\fR errors. The use of a service with an error
-noted in the \fBpam.conf\fR entry for that service will fail. The system
+.B LOG_AUTH
+|
+.B LOG_ERR
+errors. The use of a service with an error
+noted in the
+.B pam.conf
+entry for that service will fail. The system
 administrator will need to correct the noted errors before that service may
-be used. If no services are available or the \fBpam.conf\fR file is missing,
+be used. If no services are available or the
+.B pam.conf
+file is missing,
 the system administrator may enter system maintenance mode to correct or
 restore the file.
 .sp
@@ -393,7 +426,8 @@ authentication modules.
 Because the
 .B inhouse
 and the other authentication modules are
-\fBrequired\fR and
+.B required
+and
 .BR requisite ,
 respectively, an error is returned back
 to the application if any module fails. In addition, if the \fBrequisite\fR
@@ -407,10 +441,14 @@ In the case of
 the
 .B required
 keyword for
-\fIcontrol_flag\fR requires that the user be allowed to login only if the
+.I control_flag
+requires that the user be allowed to login only if the
 user is authenticated by all the service modules. If \fBpam_unix_auth\fR
 authentication fails, control continues to proceed down the stack, and the
-\fBinhouse\fR authentication module is invoked. \fBinhouse\fR authentication
+.B inhouse
+authentication module is invoked.
+.B inhouse
+authentication
 is optional by virtue of the optional keyword in the \fIcontrol_flag\fR
 field. The user can still log in even if
 .B inhouse
@@ -420,16 +458,23 @@ assuming the modules stacked above succeeded.
 .LP
 In the case of
 .BR rlogin ,
-the \fBsufficient\fR keyword for
-\fIcontrol_flag\fR specifies that if the \fBrhosts\fR authentication check
+the
+.B sufficient
+keyword for
+.I control_flag
+specifies that if the
+.B rhosts
+authentication check
 succeeds, then
 .B PAM
 should return success to
 .B rlogin
 and
-\fBrlogin\fR should not prompt the user for a password. The other
+.B rlogin
+should not prompt the user for a password. The other
 authentication modules, which are in the stack, will only be invoked if the
-\fBrhosts\fR check fails. This gives the system administrator the
+.B rhosts
+check fails. This gives the system administrator the
 flexibility to determine if
 .B rhosts
 alone is sufficient enough to
@@ -487,7 +532,7 @@ prepended to it.
 .ne 2
 .mk
 .na
-\fB/etc/pam.conf\fR
+.B /etc/pam.conf
 .ad
 .RS 29n
 .rt
@@ -509,11 +554,14 @@ framework library
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Using the include control flag
+.B Example 1
+Using the include control flag
 .sp
 .LP
 The following example collects the common Unix modules into a single file
-to be included as needed in the example of a \fBpam.conf\fR file. The common
+to be included as needed in the example of a
+.B pam.conf
+file. The common
 Unix module file is named
 .B unix_common
 and consists of:
@@ -538,7 +586,9 @@ OTHER   password required       pam_authtok_store.so.1
 
 .sp
 .LP
-The \fBpam.conf\fR file and consists of:
+The
+.B pam.conf
+file and consists of:
 
 .sp
 .in +2

@@ -125,7 +125,7 @@ Return SCSI status byte.
 .ne 2
 .mk
 .na
-\fBsizeof(scsi_arq_status)\fR
+.B sizeof(scsi_arq_status)
 .ad
 .sp .6
 .RS 4n
@@ -162,7 +162,7 @@ area.
 .ne 2
 .mk
 .na
-\fIflags\fR
+.I flags
 .ad
 .sp .6
 .RS 4n
@@ -217,25 +217,45 @@ driver's packet
 allocator. The
 .I bp
 is a pointer to a \fBbuf\fR(9S) structure. If
-\fIbp\fR is non-\fINULL\fR and contains a valid byte count, the
-\fBbuf\fR(9S) structure is also set up for \fBDMA\fR transfer using the
-\fBHBA\fR driver \fBDMA\fR resources allocator. When \fIbp\fR is allocated
+.I bp
+is non-\fINULL\fR and contains a valid byte count, the
+.BR buf (9S)
+structure is also set up for
+.B DMA
+transfer using the
+.B HBA
+driver
+.B DMA
+resources allocator. When
+.I bp
+is allocated
 by
 .BR scsi_alloc_consistent_buf "(9F), the"
 .B PKT_CONSISTENT
 bit must be
-set in the \fIflags\fR argument to ensure proper operation. If
-\fIprivatelen\fR is non-zero then additional space is allocated for the
-\fIpkt_private\fR area of the \fBscsi_pkt\fR(9S). On return
-\fIpkt_private\fR points to this additional space. Otherwise
-\fIpkt_private\fR is a pointer that is typically used to store the \fIbp\fR
+set in the
+.I flags
+argument to ensure proper operation. If
+.I privatelen
+is non-zero then additional space is allocated for the
+.I pkt_private
+area of the
+.BR scsi_pkt "(9S). On return"
+.I pkt_private
+points to this additional space. Otherwise
+.I pkt_private
+is a pointer that is typically used to store the
+.IR bp
 during execution of the command. In this case
 .I pkt_private
 is
-\fINULL\fR on return.
+.I NULL
+on return.
 .sp
 .LP
-The \fIflags\fR argument is a set of bit flags. Possible bits include:
+The
+.I flags
+argument is a set of bit flags. Possible bits include:
 .sp
 .ne 2
 .mk
@@ -247,7 +267,10 @@ The \fIflags\fR argument is a set of bit flags. Possible bits include:
 This must be set if the
 .B DMA
 buffer was allocated using
-\fBscsi_alloc_consistent_buf\fR(9F). In this case, the \fBHBA\fR driver will
+.BR scsi_alloc_consistent_buf (9F).
+In this case, the
+.B HBA
+driver will
 guarantee that the data transfer is properly synchronized before performing
 the target driver's command completion callback.
 .RE
@@ -268,7 +291,10 @@ set,
 will allocate
 .B DMA
 resources with the
-\fBDDI_DMA_PARTIAL\fR bit set in the \fBdmar_flag\fR element of the
+.B DDI_DMA_PARTIAL
+bit set in the
+.B dmar_flag
+element of the
 .BR ddi_dma_req (9S)
 structure. The
 .B pkt_resid
@@ -279,7 +305,12 @@ indicates the number of bytes for which
 .B scsi_init_pkt()
 was unable to
 allocate DMA resources. In this case, a subsequent call to
-\fBscsi_init_pkt()\fR may be made for the same \fIpktp\fR and \fIbp\fR to
+.B scsi_init_pkt()
+may be made for the same
+.I pktp
+and
+.I bp
+to
 adjust the DMA resources to the next portion of the transfer. This sequence
 should be repeated until the
 .B pkt_resid
@@ -304,9 +335,13 @@ up to  20 bytes. More than 20 bytes of sense data can be requested by
 setting this flag and setting the
 .I statuslen
 correctly. Set the
-\fIstatuslen\fR to be the \fBsizeof(struct scsi_arq_status)\fR plus the
+.I statuslen
+to be the
+.B "sizeof(struct scsi_arq_status)"
+plus the
 number of sense bytes needed beyond 20. For example, set statuslen to be
-\fB(sizeof(struct scsi_arq_status) + 5)\fR for 25 bytes of sense.
+.B (sizeof(struct scsi_arq_status) + 5)
+for 25 bytes of sense.
 .RE
 
 .sp
@@ -331,7 +366,8 @@ function when
 it is invoked.
 .sp
 .LP
-\fIcallback\fR indicates what the allocator routines should do when
+.I callback
+indicates what the allocator routines should do when
 resources are not available:
 .sp
 .ne 2
@@ -365,7 +401,8 @@ Wait indefinitely for resources.
 .ad
 .RS 16n
 .rt
-\fIcallback\fR points to a function which is called when resources may have
+.I callback
+points to a function which is called when resources may have
 become available.
 .I callback
 must return either
@@ -386,11 +423,19 @@ When allocating
 resources,
 .B scsi_init_pkt()
 returns the
-\fBscsi_pkt\fR field \fBpkt_resid\fR as the number of residual bytes for
+.B scsi_pkt
+field
+.B pkt_resid
+as the number of residual bytes for
 which the system was unable to allocate
 .B DMA
 resources.  A
-\fBpkt_resid\fR of \fB0\fR means that all necessary \fBDMA\fR resources were
+.B pkt_resid
+of
+.B 0
+means that all necessary
+.B DMA
+resources were
 allocated.
 .SH RETURN VALUES
 .sp
@@ -400,7 +445,8 @@ The
 function returns
 .I NULL
 if the packet or
-\fBDMA\fR resources could not be allocated. Otherwise, it returns a pointer
+.B DMA
+resources could not be allocated. Otherwise, it returns a pointer
 to an initialized \fBscsi_pkt\fR(9S). If
 .I pktp
 was not
@@ -425,7 +471,10 @@ function may not block or call routines
 that block.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Allocating a Packet Without \fBDMA\fR Resources Attached
+.B Example 1
+Allocating a Packet Without
+.B DMA
+Resources Attached
 .sp
 .LP
 To allocate a packet without
@@ -442,7 +491,10 @@ pkt = scsi_init_pkt(&devp->sd_address, NULL, NULL, CDB_GROUP1,
 .in -2
 
 .LP
-\fBExample 2\fR Allocating a Packet With \fBDMA\fR Resources Attached
+.B Example 2
+Allocating a Packet With
+.B DMA
+Resources Attached
 .sp
 .LP
 To allocate a packet with
@@ -458,7 +510,10 @@ pkt = scsi_init_pkt(&devp->sd_address, NULL, bp, CDB_GROUP1,
 .in -2
 
 .LP
-\fBExample 3\fR Attaching \fBDMA\fR Resources to a Preallocated Packet
+.B Example 3
+Attaching
+.B DMA
+Resources to a Preallocated Packet
 .sp
 .LP
 To attach
@@ -474,7 +529,10 @@ pkt = scsi_init_pkt(&devp->sd_address, old_pkt, bp, 0,
 .in -2
 
 .LP
-\fBExample 4\fR Allocating a Packet with Consistent \fBDMA\fR Resources
+.B Example 4
+Allocating a Packet with Consistent
+.B DMA
+Resources
 Attached
 .sp
 .LP
@@ -486,7 +544,8 @@ and
 are
 .BR 0 .
 To allocate a packet with consistent
-\fBDMA\fR resources attached, use:
+.B DMA
+resources attached, use:
 
 .sp
 .in +2
@@ -500,7 +559,10 @@ bp = scsi_alloc_consistent_buf(&devp->sd_address, NULL,
 .in -2
 
 .LP
-\fBExample 5\fR Allocating a Packet with Partial \fBDMA\fR Resources
+.B Example 5
+Allocating a Packet with Partial
+.B DMA
+Resources
 Attached
 .sp
 .LP
@@ -539,7 +601,8 @@ If a
 allocation request fails with
 .BR DDI_DMA_NOMAPPING ,
 the
-\fBB_ERROR\fR flag will be set in
+.B B_ERROR
+flag will be set in
 .IR bp ,
 and the
 .B b_error
@@ -553,7 +616,8 @@ If a
 allocation request fails with
 .BR DDI_DMA_TOOBIG ,
 the
-\fBB_ERROR\fR flag will be set in
+.B B_ERROR
+flag will be set in
 .IR bp ,
 and the
 .B b_error

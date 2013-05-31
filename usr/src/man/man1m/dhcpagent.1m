@@ -30,7 +30,8 @@ dhcpagent \- Dynamic Host Configuration Protocol (DHCP) client daemon
 .SH DESCRIPTION
 .sp
 .LP
-\fBdhcpagent\fR implements the client half of the Dynamic Host
+.B dhcpagent
+implements the client half of the Dynamic Host
 Configuration Protocol
 .B (DHCP)
 for machines running Solaris software.
@@ -61,13 +62,16 @@ client machine powers down.
 For IPv4, the
 .B dhcpagent
 daemon is controlled through
-\fBifconfig\fR(1M) in much the same way that the \fBinit\fR(1M) daemon is
+.BR ifconfig (1M)
+in much the same way that the
+.BR init "(1M) daemon is"
 controlled by
 .BR telinit (1M).
 .B dhcpagent
 can be invoked as a user
 process, albeit one requiring root privileges, but this is not necessary, as
-\fBifconfig\fR(1M) will start it automatically.
+.BR ifconfig (1M)
+will start it automatically.
 .sp
 .LP
 For IPv6, the
@@ -92,13 +96,16 @@ queried for the values of the various network parameters. In addition, if
 DHCP was used to obtain a lease on an address for an interface, it
 configures the address for use. When a lease is obtained, it is
 automatically renewed as necessary. If the lease cannot be renewed,
-\fBdhcpagent\fR will unconfigure the address, but the interface will be left
+.B dhcpagent
+will unconfigure the address, but the interface will be left
 up and
 .B dhcpagent
 will attempt to acquire a new address lease.
-\fBdhcpagent\fR monitors system suspend/resume events and will validate any
+.B dhcpagent
+monitors system suspend/resume events and will validate any
 non-permanent leases with the DHCP server upon resume. Similarly,
-\fBdhcpagent\fR monitors link up/down events and will validate any
+.B dhcpagent
+monitors link up/down events and will validate any
 non-permanent leases with the DHCP server when the downed link is brought
 back up. The lease validation mechanism will restart DHCP if the server
 indicates that the existing lease is no longer valid. If the server cannot
@@ -106,7 +113,8 @@ be contacted, then the existing lease will continue. This behavior can be
 modified with the
 .B VERIFIED_LEASE_ONLY
 parameter in the
-\fB/etc/default/dhcpagent\fR file. See the description of this parameter
+.B /etc/default/dhcpagent
+file. See the description of this parameter
 below.
 .sp
 .LP
@@ -130,7 +138,10 @@ removed.
 .LP
 In addition to
 .BR DHCP ,
-\fBdhcpagent\fR also supports \fBBOOTP\fR (IPv4
+.B dhcpagent
+also supports
+.B BOOTP
+(IPv4
 only). See
 .IR "RFC 951, Bootstrap Protocol" .
 Configuration parameters
@@ -142,10 +153,12 @@ from a
 server, except that the
 .B IP
 address received from a
-\fBBOOTP\fR server always has an infinite lease.
+.B BOOTP
+server always has an infinite lease.
 .sp
 .LP
-\fBDHCP\fR also acts as a mechanism to configure other information needed
+.B DHCP
+also acts as a mechanism to configure other information needed
 by the client, for example, the domain name and addresses of routers. Aside
 from the IP address, and for IPv4 alone, the netmask, broadcast address, and
 default router, the agent does not directly configure the workstation, but
@@ -161,7 +174,8 @@ may be inconsistent. Furthermore, the configuration of the interfaces is
 asynchronous, so requests may arrive while some or all of the interfaces are
 still unconfigured. To handle these cases, one interface may be designated
 as primary, which makes it the authoritative source for the values of
-\fBDHCP\fR parameters in the case where no specific interface is requested.
+.B DHCP
+parameters in the case where no specific interface is requested.
 See
 .BR dhcpinfo (1)
 and \fBifconfig\fR(1M) for details.
@@ -173,7 +187,8 @@ daemon can be configured to request a
 particular host name. See the
 .B REQUEST_HOSTNAME
 description in the
-\fBFILES\fR section. When first configuring a client to request a host name,
+.B FILES
+section. When first configuring a client to request a host name,
 you must perform the following steps as root to ensure that the full DHCP
 negotiation takes place:
 .sp
@@ -259,7 +274,7 @@ cannot be provided.
 .ne 2
 .mk
 .na
-\fBinformational\fR
+.B informational
 .ad
 .sp .6
 .RS 4n
@@ -293,13 +308,18 @@ option.
 .LP
 When
 .B dhcpagent
-is run without the \fB-f\fR option, all messages are
+is run without the
+.B -f
+option, all messages are
 sent to the system logger
 .BR syslog "(3C) at the appropriate matching"
 priority and with a facility identifier
 .BR LOG_DAEMON .
 When
-\fBdhcpagent\fR is run with the \fB-f\fR option, all messages are directed
+.B dhcpagent
+is run with the
+.B -f
+option, all messages are directed
 to standard error.
 .SS "DHCP Events and User-Defined Actions"
 .sp
@@ -314,7 +334,9 @@ the following events occur:
 .ne 2
 .mk
 .na
-\fBBOUND\fR and \fBBOUND6\fR
+.B BOUND
+and
+.BR BOUND6
 .ad
 .sp .6
 .RS 4n
@@ -324,7 +346,10 @@ invoked when
 receives the DHCPv4 ACK or DHCPv6 Reply message
 from the DHCP server for the lease request of an address, indicating
 successful initial configuration of the interface. (See also the
-\fBINFORM\fR and \fBINFORM6\fR events, which occur when configuration
+.B INFORM
+and
+.B INFORM6
+events, which occur when configuration
 parameters are obtained without address leases.)
 .RE
 
@@ -332,7 +357,9 @@ parameters are obtained without address leases.)
 .ne 2
 .mk
 .na
-\fBEXTEND\fR and \fBEXTEND6\fR
+.B EXTEND
+and
+.BR EXTEND6
 .ad
 .sp .6
 .RS 4n
@@ -352,14 +379,17 @@ received that leaves one or more address leases still valid, even if the
 Reply message does not extend the lease for any address. The event program
 is invoked just before any addresses are removed, but just after any new
 addresses are added. Those to be removed will be marked with the
-\fBIFF_DEPRECATED\fR flag.
+.B IFF_DEPRECATED
+flag.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fBEXPIRE\fR and \fBEXPIRE6\fR
+.B EXPIRE
+and
+.BR EXPIRE6
 .ad
 .sp .6
 .RS 4n
@@ -373,7 +403,9 @@ addresses are removed from the interface.
 .ne 2
 .mk
 .na
-\fBDROP\fR and \fBDROP6\fR
+.B DROP
+and
+.BR DROP6
 .ad
 .sp .6
 .RS 4n
@@ -388,7 +420,9 @@ place. The interface might not be present.
 .ne 2
 .mk
 .na
-\fBINFORM\fR and \fBINFORM6\fR
+.B INFORM
+and
+.BR INFORM6
 .ad
 .sp .6
 .RS 4n
@@ -397,7 +431,9 @@ information from a DHCP server by means of the DHCPv4
 .B INFORM
 or the
 DHCPv6 Information-Request message. These messages are sent using an
-\fBifconfig\fR(1M) \fBdhcp inform\fR command or when the DHCPv6 Router
+.BR ifconfig (1M)
+.B dhcp inform
+command or when the DHCPv6 Router
 Advertisement
 .B O
 (letter 0) bit is set and the
@@ -430,7 +466,9 @@ instead.
 .ne 2
 .mk
 .na
-\fBRELEASE\fR and \fBRELEASE6\fR
+.B RELEASE
+and
+.BR RELEASE6
 .ad
 .sp .6
 .RS 4n
@@ -447,7 +485,8 @@ packet to the DHCP server.
 .sp
 .LP
 The system does not provide a default event program. The file
-\fB/etc/dhcp/eventhook\fR is expected to be owned by root and have a mode of
+.B /etc/dhcp/eventhook
+is expected to be owned by root and have a mode of
 755.
 .sp
 .LP
@@ -468,7 +507,8 @@ itself, except that
 .BR stdin ,
 .BR stdout ,
 and
-\fBstderr\fR are redirected to
+.B stderr
+are redirected to
 .BR /dev/null .
 Note that this means that
 the event program runs with root privileges.
@@ -497,9 +537,11 @@ The following options are supported:
 .sp .6
 .RS 4n
 Adopt a configured IPv4 interface. This option is for use with diskless
-\fBDHCP\fR clients. In the case of diskless
+.B DHCP
+clients. In the case of diskless
 .BR DHCP ,
-\fBDHCP\fR has
+.B DHCP
+has
 already been performed on the network interface providing the operating
 system image prior to running
 .BR dhcpagent .
@@ -512,7 +554,8 @@ adopted.
 .sp
 If the interface is being adopted, the following conditions apply:
 .sp
-\fBdhcpagent\fR uses the client id specified in
+.B dhcpagent
+uses the client id specified in
 \fB/chosen\fR:\fI<client_id>\fR, as published by the PROM or as specified on
 a \fBboot\fR(1M) command line. If this value is not present, the client id
 is undefined. The DHCP server then determines what to use as a client id. It
@@ -521,7 +564,8 @@ PROM value is not present.
 .sp
 If the interface is not being adopted:
 .sp
-\fBdhcpagent\fR uses the value stored in
+.B dhcpagent
+uses the value stored in
 .BR /etc/default/dhcpagent .
 If
 this value is not present, the client id is undefined. If the interface is
@@ -543,7 +587,8 @@ http://www.ietf.org
 .ne 2
 .mk
 .na
-\fB-d\fR \fIn\fR
+.B -d
+.I n
 .ad
 .sp .6
 .RS 4n
@@ -557,7 +602,7 @@ available, 1 and 2; the latter is more verbose.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .sp .6
 .RS 4n
@@ -579,7 +624,8 @@ Provide verbose output useful for debugging site configuration problems.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Example Event Program
+.B Example 1
+Example Event Program
 .sp
 .LP
 The following script is stored in the file
@@ -668,7 +714,7 @@ undocumented, and applications should not read from or write to them.
 .ne 2
 .mk
 .na
-\fB/etc/default/dhcpagent\fR
+.B /etc/default/dhcpagent
 .ad
 .sp .6
 .RS 4n
@@ -935,7 +981,8 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
-\fBdhcpinfo\fR(1), \fBifconfig\fR(1M),
+.BR dhcpinfo (1),
+.BR ifconfig (1M),
 .BR init (1M),
 .BR in.mpathd (1M),
 .BR in.ndpd (1M),
@@ -973,13 +1020,16 @@ daemon can be used on IPv4 logical interfaces, just as
 with physical interfaces. When used on a logical interface, the daemon
 automatically constructs a Client ID value based on the DUID and IAID
 values, according to RFC 4361. The \fB/etc/default/dhcpagent\fR
-\fBCLIENT_ID\fR value, if any, overrides this automatic identifier.
+.B CLIENT_ID
+value, if any, overrides this automatic identifier.
 .sp
 .LP
 As with physical IPv4 interfaces, the
 .B /etc/hostname.hme0:1
 and
-\fB/etc/dhcp.hme0:1\fR files must also be created in order for \fBhme0:1\fR
+.B /etc/dhcp.hme0:1
+files must also be created in order for
+.BR hme0:1
 to be automatically plumbed and configured at boot. In addition, unlike
 physical IPv4 interfaces,
 .B dhcpagent
@@ -992,13 +1042,19 @@ data addresses. Because an IPMP IP interface has no hardware address, the
 daemon automatically constructs a Client ID using the same approach
 described above for IPv4 logical interfaces. In addition, the lack of a
 hardware address means the daemon must set the "broadcast" flag in all
-\fBDISCOVER\fR and \fBREQUEST\fR messages on IPMP IP interfaces. Some DHCP
+.B DISCOVER
+and
+.B REQUEST
+messages on IPMP IP interfaces. Some DHCP
 servers may refuse such requests.
 .sp
 .LP
 DHCP can be performed on IP interfaces that are part of an IPMP group (to
 acquire and maintain test addresses). The daemon will automatically set the
-\fBNOFAILOVER\fR and \fBDEPRECATED\fR flags on each test address.
+.B NOFAILOVER
+and
+.B DEPRECATED
+flags on each test address.
 Additionally, the daemon will not add or remove default routes in this case.
 Note that the actual DHCP packet exchange may be performed over any active
 IP interface in the IPMP group. It is strongly recommended that test
@@ -1010,6 +1066,9 @@ erroneous repair.
 .sp
 .LP
 With DHCPv6, the link-local interface must be configured using
-\fB/etc/hostname6.hme0\fR in order for DHCPv6 to run on \fBhme0\fR at boot
+.B /etc/hostname6.hme0
+in order for DHCPv6 to run on
+.B hme0
+at boot
 time. The logical interfaces for each address are plumbed by \fBdhcpagent\fR
 automatically.

@@ -93,7 +93,7 @@ Solaris architecture specific (Solaris DDI).
 .ne 2
 .mk
 .na
-\fImacinfo\fR
+.I macinfo
 .ad
 .RS 18n
 .rt
@@ -110,7 +110,8 @@ Pointer to a \fBgld_mac_info\fR(9S) structure.
 .rt
 Pointer to the beginning of a character array containing a valid MAC address.
 The array will be of the length specified by the driver in the
-\fBgldm_addrlen\fR element of the \fBgld_mac_info\fR(9S) structure.
+.B gldm_addrlen
+element of the \fBgld_mac_info\fR(9S) structure.
 .RE
 
 .sp
@@ -132,7 +133,7 @@ element of the \fBgld_mac_info\fR(9S) structure.
 .ne 2
 .mk
 .na
-\fImultiflag\fR
+.I multiflag
 .ad
 .RS 18n
 .rt
@@ -147,7 +148,7 @@ or
 .ne 2
 .mk
 .na
-\fIpromiscflag\fR
+.I promiscflag
 .ad
 .RS 18n
 .rt
@@ -205,7 +206,8 @@ designed to interface with the Generic LAN Driver (GLD).
 .LP
 As described in \fBgld\fR(7D), the main data structure for communication
 between the device-specific driver and the GLD module is the
-\fBgld_mac_info\fR(9S) structure. Some of the elements in that structure are
+.BR gld_mac_info (9S)
+structure. Some of the elements in that structure are
 function pointers to the entry points described here. The device-specific driver
 must, in its \fBattach\fR(9E) routine, initialize these function pointers before
 calling \fBgld_register\fR(\|).
@@ -237,7 +239,9 @@ MAC address
 .sp
 .LP
 \fBgldm_set_multicast\fR(\|) enables and disables device-level reception of
-specific multicast addresses. If the third argument \fImultiflag\fR is set to
+specific multicast addresses. If the third argument
+.I multiflag
+is set to
 .BR GLD_MULTI_ENABLE ,
 then the function sets the interface to receive packets
 with the multicast address pointed to by the second argument; if \fImultiflag\fR
@@ -268,13 +272,19 @@ enable, or the last request to disable a particular multicast address is made.
 \fBgldm_set_promiscuous\fR(\|) enables and disables promiscuous mode. This
 function is called whenever GLD wants to enable or disable the reception of all
 packets on the medium, or all multicast packets on the medium. If the second
-argument \fIpromiscflag\fR is set to the value of
+argument
+.I promiscflag
+is set to the value of
 .BR GLD_MAC_PROMISC_PHYS ,
 then the function enables physical-level promiscuous mode, resulting in the
-reception of all packets on the medium. If \fIpromiscflag\fR is set to
+reception of all packets on the medium. If
+.I promiscflag
+is set to
 .BR GLD_MAC_PROMISC_MULTI ,
 then reception of all multicast packets will be
-enabled. If \fIpromiscflag\fR is set to
+enabled. If
+.I promiscflag
+is set to
 .BR GLD_MAC_PROMISC_NONE ,
 then
 promiscuous mode is disabled.
@@ -292,11 +302,14 @@ any superfluous packets that are not required.
 For forward compatibility,
 .BR gldm_set_promiscuous (\|)
 routines should treat
-any unrecognized values for \fIpromiscflag\fR as though they were
+any unrecognized values for
+.I promiscflag
+as though they were
 .BR GLD_MAC_PROMISC_PHYS .
 .sp
 .LP
-\fBgldm_send()\fR queues a packet to the device for transmission. This routine
+.B gldm_send()
+queues a packet to the device for transmission. This routine
 is passed a STREAMS message containing the packet to be sent. The message may
 comprise multiple message blocks, and the send routine must chain through all
 the message blocks in the message to access the entire packet to be sent. The
@@ -322,7 +335,8 @@ to
 inform GLD that it should retry packets that the driver previously failed to
 queue for transmission. (If the driver's \fBgldm_stop\fR(\|) routine is called,
 the driver is absolved from this obligation until it later again returns
-\fBGLD_NORESOURCES\fR from its
+.B GLD_NORESOURCES
+from its
 .BR gldm_send (\|)
 routine; however, extra calls
 to
@@ -346,7 +360,8 @@ than
 then the driver must not free the message.
 .sp
 .LP
-\fBgldm_intr()\fR is called when the device might have interrupted. Since it is
+.B gldm_intr()
+is called when the device might have interrupted. Since it is
 possible to share interrupts with other devices, the driver must check the
 device status to determine whether it actually caused an interrupt. If the
 device that the driver controls did not cause the interrupt, then this routine
@@ -363,9 +378,13 @@ and pass that message to
 .BR gld_recv (\|).
 .sp
 .LP
-\fBgld_recv()\fR will pass the inbound packet upstream to the appropriate next
+.B gld_recv()
+will pass the inbound packet upstream to the appropriate next
 layer of the network protocol stack. It is important to correctly set the
-\fBb_rptr\fR and \fBb_wptr\fR members of the STREAMS message before calling
+.B b_rptr
+and
+.B b_wptr
+members of the STREAMS message before calling
 .BR gld_recv (\|).
 .sp
 .LP

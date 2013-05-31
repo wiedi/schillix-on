@@ -128,7 +128,8 @@ These functions are used to obtain entries describing user groups. Entries
 can come from any of the sources for
 .B group
 specified in the
-\fB/etc/nsswitch.conf\fR file (see \fBnsswitch.conf\fR(4)).
+.B /etc/nsswitch.conf
+file (see \fBnsswitch.conf\fR(4)).
 .sp
 .LP
 The
@@ -167,7 +168,10 @@ The
 .B getgrent()
 function returns a pointer to a structure containing
 the broken-out fields of an entry in the group database.  When first called,
-\fBgetgrent()\fR returns a pointer to a \fBgroup\fR structure containing the
+.B getgrent()
+returns a pointer to a
+.B group
+structure containing the
 next group structure in the group database. Successive calls can be used to
 search the entire database.
 .sp
@@ -181,11 +185,16 @@ calling
 .BR endgrent() .
 .sp
 .LP
-The \fBfgetgrent()\fR function, unlike the other functions above, does not
+The
+.B fgetgrent()
+function, unlike the other functions above, does not
 use
 .BR nsswitch.conf .
 It reads and parses the next line from the stream
-\fIf\fR, which is assumed to have the format of the \fBgroup\fR file (see
+.IR f ,
+which is assumed to have the format of the
+.B group
+file (see
 .BR group (4)).
 .SS "Reentrant Interfaces"
 .sp
@@ -195,7 +204,8 @@ The
 .BR getgrgid() ,
 .BR getgrent() ,
 and
-\fBfgetgrent()\fR functions use thread-specific storage that is reused in
+.B fgetgrent()
+functions use thread-specific storage that is reused in
 each call to one of these functions by the same thread, making them safe to
 use but not recommended for multithreaded applications.
 .sp
@@ -204,7 +214,9 @@ The parallel functions
 .BR getgrnam_r() ,
 .BR getgrgid_r() ,
 .BR getgrent_r() ,
-and \fBfgetgrent_r()\fR provide reentrant interfaces for
+and
+.B fgetgrent_r()
+provide reentrant interfaces for
 these operations.
 .sp
 .LP
@@ -225,11 +237,17 @@ argument must be a pointer to a
 structure allocated by
 the caller.  On successful completion, the function returns the group entry
 in this structure. Storage referenced by the group structure is allocated
-from the memory provided with the \fIbuffer\fR argument that is
-\fIbufsize\fR characters in size.  The maximum size needed for  this buffer
+from the memory provided with the
+.I buffer
+argument that is
+.I bufsize
+characters in size.  The maximum size needed for  this buffer
 can be determined with the \fB_SC_GETGR_R_SIZE_MAX sysconf\fR(3C)
 parameter. The standard-conforming versions place a pointer to the modified
-\fIgrp\fR structure in the \fIresult\fR parameter, instead of returning a
+.I grp
+structure in the
+.I result
+parameter, instead of returning a
 pointer to this structure. A null pointer is returned at the location
 pointed to by
 .I result
@@ -239,13 +257,17 @@ found.
 .LP
 For enumeration in multithreaded applications, the position within the
 enumeration is a process-wide property shared by all threads. The
-\fBsetgrent()\fR function can be used in a multithreaded application but
+.B setgrent()
+function can be used in a multithreaded application but
 resets the enumeration position for all threads.  If multiple threads
 interleave calls to
 .BR getgrent_r() ,
 the threads will enumerate disjoint
 subsets of the group database. Like their non-reentrant counterparts,
-\fBgetgrnam_r()\fR and \fBgetgrgid_r()\fR leave the enumeration position in
+.B getgrnam_r()
+and
+.B getgrgid_r()
+leave the enumeration position in
 an indeterminate state.
 .SS "group Structure"
 .sp
@@ -275,11 +297,19 @@ The
 .BR getgrnam_r() ,
 .BR getgrgid() ,
 and
-\fBgetgrgid_r()\fR functions each return a pointer to a \fBstruct group\fR
+.B getgrgid_r()
+functions each return a pointer to a
+.BR "struct group"
 if they successfully locate the requested entry. They return a null pointer
 if either the requested entry was not found or an error occurred. On error,
-\fBerrno\fR is set to indicate the error. The standard-conforming functions
-\fBgetgrnam_r()\fR and \fBgetgrgid_r()\fR return \fB0\fR upon success or an
+.B errno
+is set to indicate the error. The standard-conforming functions
+.B getgrnam_r()
+and
+.B getgrgid_r()
+return
+.B 0
+upon success or an
 error number in case of failure.
 .sp
 .LP
@@ -288,7 +318,9 @@ The
 .BR getgrent_r() ,
 .BR fgetgrent() ,
 and
-\fBfgetgrent_r()\fR functions each return a pointer to a \fBstruct group\fR
+.B fgetgrent_r()
+functions each return a pointer to a
+.BR "struct group"
 if they successfully enumerate an entry; otherwise they return a null
 pointer on end-of-file or error. On error,
 .B errno
@@ -301,7 +333,8 @@ The
 .BR getgrgid() ,
 .BR getgrent() ,
 and
-\fBfgetgrent()\fR functions use thread-specific data storage, so returned
+.B fgetgrent()
+functions use thread-specific data storage, so returned
 data must be copied before a subsequent call to any of these functions if
 the data are to be saved.
 .sp
@@ -310,7 +343,9 @@ When the pointer returned by the reentrant functions
 .BR getgrnam_r() ,
 .BR getgrgid_r() ,
 .BR getgrent_r() ,
-and \fBfgetgrent_r()\fR is non-null,
+and
+.B fgetgrent_r()
+is non-null,
 it is always equal to the
 .I grp
 pointer that was supplied by the
@@ -329,13 +364,15 @@ to 0 before calling
 and
 .BR fgetgrent_r() .
 If these functions return a null pointer and
-\fBerrno\fR is non-zero, an error occurred.
+.B errno
+is non-zero, an error occurred.
 .SH ERRORS
 .sp
 .LP
 The
 .BR getgrent_r() ,
-\fBfgetgrent()\fR, and \fBfgetgrent_r()\fR
+.BR fgetgrent() ,
+and \fBfgetgrent_r()\fR
 functions will fail if:
 .sp
 .ne 2
@@ -497,7 +534,8 @@ The
 .BR getgrnam() ,
 .BR getgrnam_r() ,
 and
-\fBsetgrent()\fR functions are Standard.
+.B setgrent()
+functions are Standard.
 .SH SEE ALSO
 .sp
 .LP
@@ -522,13 +560,16 @@ and
 is discouraged; enumeration is supported for the group file,
 .B NIS,
 and
-\fBNIS+,\fR but in general is not efficient and might not be supported for
+.B NIS+,
+but in general is not efficient and might not be supported for
 all database sources.  The semantics of enumeration are discussed further in
 .BR nsswitch.conf (4).
 .sp
 .LP
 Previous releases allowed the use of ``+'' and ``-'' entries in
-\fB/etc/group\fR to selectively include and exclude entries from \fBNIS.\fR
+.B /etc/group
+to selectively include and exclude entries from
+.BR NIS.
 The primary usage of these entries is superseded by the name service switch,
 so the ``+/-'' form might not be supported in future releases.
 .sp
@@ -558,7 +599,10 @@ for details.
 .sp
 .LP
 Solaris 2.4 and earlier releases provided definitions of the
-\fBgetgrnam_r()\fR and \fBgetgrgid_r()\fR functions as specified in POSIX.1c
+.B getgrnam_r()
+and
+.B getgrgid_r()
+functions as specified in POSIX.1c
 Draft 6. The final POSIX.1c standard changed the interface for these
 functions. Support for the Draft 6 interface is provided for compatibility
 only and might not be supported in future releases. New applications and
@@ -569,4 +613,5 @@ For POSIX.1c-conforming applications, the \fB_POSIX_PTHREAD_SEMANTICS\fR
 and
 .B _REENTRANT
 flags are automatically turned on by defining the
-\fB_POSIX_C_SOURCE\fR flag with a value \(>=199506L.
+.B _POSIX_C_SOURCE
+flag with a value \(>=199506L.

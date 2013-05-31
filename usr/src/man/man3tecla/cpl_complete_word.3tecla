@@ -142,7 +142,8 @@ them, one at a time, by calling
 The
 .B new_WordCompletion()
 function creates the resources used by the
-\fBcpl_complete_word()\fR function. In particular, it maintains the memory
+.B cpl_complete_word()
+function. In particular, it maintains the memory
 that is used to return the results of calling
 .BR cpl_complete_word() .
 .sp
@@ -153,7 +154,8 @@ function deletes the resources that were
 returned by a previous call to
 .BR new_WordCompletion() .
 It always returns
-\fINULL\fR (that is, a deleted object). It takes no action if the \fIcpl\fR
+.I NULL
+(that is, a deleted object). It takes no action if the \fIcpl\fR
 argument is
 .IR NULL .
 .sp
@@ -217,7 +219,8 @@ The
 .IR cpl ,
 .IR line ,
 and
-\fIword_end\fR arguments should be those that were passed to the callback
+.I word_end
+arguments should be those that were passed to the callback
 function. The
 .I word_start
 argument should be the index within the input
@@ -225,7 +228,8 @@ line string of the start of the word that is being completed. This should
 equal
 .I word_end
 if a zero-length string is being completed. The
-\fIsuffix\fR argument is the string that would have to be appended to the
+.I suffix
+argument is the string that would have to be appended to the
 incomplete word to complete it. If this needs any quoting (for example, the
 addition of backslashes before special charaters) to be valid within the
 displayed input line, this should be included. A copy of the suffix string
@@ -248,7 +252,9 @@ and
 in the input line.
 .sp
 .LP
-The \fItype_suffix\fR argument specifies an optional string to be appended
+The
+.I type_suffix
+argument specifies an optional string to be appended
 to the completion if it is displayed as part of a list of completions by
 .IR cpl_list_completions .
 The intention is that this indicate to the user
@@ -259,10 +265,13 @@ function, you could indicate this to the user by setting \fItype_suffix\fR
 to "()". Note that the \fItype_suffix\fR string is not copied, so if the
 argument is not a literal string between speech marks, be sure that the
 string remains valid for at least as long as the results of
-\fBcpl_complete_word()\fR are needed.
+.B cpl_complete_word()
+are needed.
 .sp
 .LP
-The \fIcont_suffix\fR argument is a continuation suffix to append to the
+The
+.I cont_suffix
+argument is a continuation suffix to append to the
 completed word in the input line if this is the only completion. This is
 something that is not part of the completion itself, but that gives the user
 an indication about how they might continue to extend the token. For
@@ -293,7 +302,9 @@ contains the index of the character in the input line, that just follows the
 last character of the word to be completed. When called by
 .BR gl_get_line() ,
 this is the character over which the user pressed TAB.
-The \fImatch_fn\fR argument is the function pointer of the callback function
+The
+.I match_fn
+argument is the function pointer of the callback function
 which will lookup possible completions of the word, as described above, and
 the
 .I data
@@ -358,7 +369,8 @@ If an error occurs during completion,
 returns
 .IR NULL .
 A description of the error can be acquired by calling the
-\fBcpl_last_error()\fR function.
+.B cpl_last_error()
+function.
 .sp
 .LP
 The
@@ -371,7 +383,8 @@ or
 .sp
 .LP
 As a convenience, the return value of the last call to
-\fBcpl_complete_word()\fR can be recalled at a later time by calling
+.B cpl_complete_word()
+can be recalled at a later time by calling
 .BR cpl_recall_matches() .
 If
 .B cpl_complete_word()
@@ -422,26 +435,37 @@ CPL_MATCH_FN(cpl_file_completions);
 .sp
 .LP
 Certain aspects of the behavior of this callback can be changed via its
-\fIdata\fR argument. If you are happy with its default behavior you can pass
-\fINULL\fR in this argument. Otherwise it should be a pointer to a
-\fBCplFileConf\fR object, previously allocated by calling
+.I data
+argument. If you are happy with its default behavior you can pass
+.I NULL
+in this argument. Otherwise it should be a pointer to a
+.B CplFileConf
+object, previously allocated by calling
 .BR new_CplFileConf() .
 .sp
 .LP
-\fBCplFileConf\fR objects encapsulate the configuration parameters of
-\fBcpl_file_completions()\fR. These parameters, which start out with default
+.B CplFileConf
+objects encapsulate the configuration parameters of
+.BR cpl_file_completions() .
+These parameters, which start out with default
 values, can be changed by calling the accessor functions described below.
 .sp
 .LP
-By default, the \fBcpl_file_completions()\fR callback function searches
+By default, the
+.B cpl_file_completions()
+callback function searches
 backwards for the start of the filename being completed, looking for the
 first unescaped space or the start of the input line. If you wish to specify
-a different location, call \fBcfc_file_start()\fR with the index at which
+a different location, call
+.B cfc_file_start()
+with the index at which
 the filename starts in the input line. Passing \fIstart_index\fR=-1
 reenables the default behavior.
 .sp
 .LP
-By default, when \fBcpl_file_completions()\fR looks at a filename in the
+By default, when
+.B cpl_file_completions()
+looks at a filename in the
 input line, each lone backslash in the input line is interpreted as being a
 special character which removes any special significance of the character
 which follows it, such as a space which should be taken as part of the
@@ -449,11 +473,15 @@ filename rather than delimiting the start of the filename. These backslashes
 are thus ignored while looking for completions, and subsequently added
 before spaces, tabs and literal back slashes in the list of completions. To
 have unescaped back slashes treated as normal characters, call
-\fBcfc_literal_escapes()\fR with a non-zero value in its \fIliteral\fR
+.B cfc_literal_escapes()
+with a non-zero value in its
+.I literal
 argument.
 .sp
 .LP
-By default, \fBcpl_file_completions()\fR reports all files whose names
+By default,
+.B cpl_file_completions()
+reports all files whose names
 start with the prefix that is being completed. If you only want a selected
 subset of these files to be reported in the list of completions, you can
 arrange this by providing a callback function which takes the full pathname
@@ -491,12 +519,18 @@ type, for use with
 .BR cpl_file_completions() .
 It returns non-zero if the
 filename that it is given represents a normal file that the user has execute
-permission to. You could use this to have \fBcpl_file_completions()\fR only
+permission to. You could use this to have
+.B cpl_file_completions()
+only
 list completions of executable files.
 .sp
 .LP
-When you have finished with a \fBCplFileConf\fR variable, you can pass it
-to the \fBdel_CplFileConf()\fR destructor function to reclaim its memory.
+When you have finished with a
+.B CplFileConf
+variable, you can pass it
+to the
+.B del_CplFileConf()
+destructor function to reclaim its memory.
 .SS "Thread Safety"
 .sp
 .LP

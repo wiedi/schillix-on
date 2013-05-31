@@ -64,13 +64,16 @@ also pertains to
 .BR getpmsg() .
 .sp
 .LP
-The \fIfildes\fR argument specifies a file descriptor referencing an open
+The
+.I fildes
+argument specifies a file descriptor referencing an open
 stream. The
 .I ctlptr
 and
 .I dataptr
 arguments each point to a
-\fBstrbuf\fR structure, which contains the following members:
+.B strbuf
+structure, which contains the following members:
 .sp
 .in +2
 .nf
@@ -82,7 +85,9 @@ char   *buf;        /* ptr to buffer */
 
 .sp
 .LP
-The \fBbuf\fR member points to a buffer into which the data or control
+The
+.B buf
+member points to a buffer into which the data or control
 information is to be placed, and the
 .B maxlen
 member indicates the
@@ -97,8 +102,10 @@ user is able to receive, as described below.
 The
 .I ctlptr
 argument holds the control part from the message and the
-\fIdataptr\fR argument  holds the data part from the message. If
-\fIctlptr\fR (or
+.I dataptr
+argument  holds the data part from the message. If
+.I ctlptr
+(or
 .IR dataptr )
 is
 .I NULL
@@ -117,7 +124,8 @@ and there is no corresponding control (or data) part of the
 messages on the stream head read queue,
 .B len
 is set to \(mi1. If the
-\fBmaxlen\fR member is set to 0 and there is a zero-length control (or data)
+.B maxlen
+member is set to 0 and there is a zero-length control (or data)
 part, that zero-length part is removed from the read queue and
 .B len
 is
@@ -130,7 +138,10 @@ read queue and
 is set to 0. If the
 .B maxlen
 member in
-\fIctlptr\fR or \fIdataptr\fR is less than,  respectively, the control or
+.I ctlptr
+or
+.I dataptr
+is less than,  respectively, the control or
 data part of the message,
 .B maxlen
 bytes are  retrieved. In this case,
@@ -143,7 +154,9 @@ By default,
 .B getmsg()
 processes the first available message on the
 stream head read queue. A user may, however, choose to retrieve only high
-priority messages by setting  the integer pointed to by \fIflagsp\fR to
+priority messages by setting  the integer pointed to by
+.I flagsp
+to
 .BR RS_HIPRI .
 In this case,
 .B getmsg()
@@ -151,18 +164,25 @@ processes the next message only
 if it is a high priority message.
 .sp
 .LP
-If the integer pointed to by \fIflagsp\fR is 0,
+If the integer pointed to by
+.I flagsp
+is 0,
 .B getmsg()
 retrieves
 any message available on the stream head read queue. In this case, on
-return, the integer pointed to by \fIflagsp\fR will be set to
-\fBRS_HIPRI\fR if a high priority message was retrieved, or to 0
+return, the integer pointed to by
+.I flagsp
+will be set to
+.B RS_HIPRI
+if a high priority message was retrieved, or to 0
 otherwise.
 .sp
 .LP
 For
 .BR getpmsg() ,
-the \fIflagsp\fR argument points to a bitmask with the
+the
+.I flagsp
+argument points to a bitmask with the
 following mutually-exclusive flags defined:
 .BR MSG_HIPRI ,
 .BR MSG_BAND ,
@@ -170,10 +190,16 @@ and
 .BR MSG_ANY .
 Like
 .BR getmsg() ,
-\fBgetpmsg()\fR processes the first
+.B getpmsg()
+processes the first
 available message on the stream head read queue. A user may choose to
 retrieve only high-priority messages by setting the integer pointed to by
-\fIflagsp\fR to \fBMSG_HIPRI\fR and the integer pointed to by \fIbandp\fR to
+.I flagsp
+to
+.B MSG_HIPRI
+and the integer pointed to by
+.I bandp
+to
 0. In this case,
 .B getpmsg()
 will only process the next message if it is
@@ -188,17 +214,27 @@ than, the integer pointed to by
 .IR bandp ,
 or if it is a high-priority
 message. If a user just wants to get the first message off the queue, the
-integer pointed to by \fIflagsp\fR should be set to
+integer pointed to by
+.I flagsp
+should be set to
 .B MSG_ANY
 and the
 integer pointed to by
 .I bandp
 should be set to 0. On return, if the
 message retrieved was a high-priority message, the integer pointed to by
-\fIflagsp\fR will be set to \fBMSG_HIPRI\fR and the integer pointed to by
-\fIbandp\fR will be set to 0. Otherwise, the integer pointed to by
-\fIflagsp\fR will be set to \fBMSG_BAND\fR and the integer pointed to by
-\fIbandp\fR will be set to the priority band of the message.
+.I flagsp
+will be set to
+.B MSG_HIPRI
+and the integer pointed to by
+.I bandp
+will be set to 0. Otherwise, the integer pointed to by
+.I flagsp
+will be set to
+.B MSG_BAND
+and the integer pointed to by
+.I bandp
+will be set to the priority band of the message.
 .sp
 .LP
 If
@@ -208,19 +244,25 @@ and
 are clear,
 .B getmsg()
 blocks
-until a message of the type specified by \fIflagsp\fR is available on the
+until a message of the type specified by
+.I flagsp
+is available on the
 stream head read queue. If
 .B O_NDELAY
 or
 .B O_NONBLOCK
 has been set
 and a message of the specified type is not present on the read queue,
-\fBgetmsg()\fR fails and sets \fBerrno\fR to
+.B getmsg()
+fails and sets
+.B errno
+to
 .BR EAGAIN .
 .sp
 .LP
 If a hangup occurs on the stream from which messages are to be retrieved,
-\fBgetmsg()\fR continues to operate normally, as described above, until the
+.B getmsg()
+continues to operate normally, as described above, until the
 stream head read queue is empty. Thereafter, it returns 0 in the \fBlen\fR
 member of
 .I ctlptr
@@ -242,8 +284,10 @@ indicates that more
 data are waiting for retrieval. A return value of
 .B MORECTL
 |
-\fBMOREDATA\fR indicates that both types of information remain. Subsequent
-\fBgetmsg()\fR calls retrieve the remainder of the message. However, if a
+.B MOREDATA
+indicates that both types of information remain. Subsequent
+.B getmsg()
+calls retrieve the remainder of the message. However, if a
 message of higher priority has been received by the stream head read queue,
 the next call to
 .B getmsg()
@@ -282,7 +326,9 @@ available.
 .ad
 .RS 11n
 .rt
-The \fIfildes\fR argument is not a valid file descriptor open for
+The
+.I fildes
+argument is not a valid file descriptor open for
 reading.
 .RE
 
@@ -310,7 +356,9 @@ The
 .IR ctlptr ,
 .IR dataptr ,
 .IR bandp ,
-or \fIflagsp\fR argument
+or
+.I flagsp
+argument
 points to an illegal address.
 .RE
 
@@ -338,7 +386,8 @@ function.
 An illegal value was specified in
 .IR flagsp ,
 or the stream referenced by
-\fIfildes\fR is linked under a multiplexor.
+.I fildes
+is linked under a multiplexor.
 .RE
 
 .sp

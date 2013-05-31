@@ -85,10 +85,12 @@ fork, fork1, forkall, forkx, forkallx \- create a new process
 .LP
 The
 .BR fork() ,
-\fBfork1()\fR, \fBforkall()\fR,
+.BR fork1() ,
+.BR forkall() ,
 .BR forkx() ,
 and
-\fBforkallx()\fR functions create a new process. The address space of the
+.B forkallx()
+functions create a new process. The address space of the
 new process (child process) is an exact copy of the address space of the
 calling process (parent process). The child process inherits the following
 attributes from the parent process:
@@ -317,7 +319,8 @@ pointer with the corresponding file descriptor of the parent.
 .ie t \(bu
 .el o
 Each shared memory segment remains attached and the value of
-\fBshm_nattach\fR is incremented by 1.
+.B shm_nattach
+is incremented by 1.
 .RE
 .RS +4
 .TP
@@ -364,7 +367,8 @@ The
 and
 .B it_interval
 values for the
-\fBITIMER_REAL\fR timer are reset to 0; see
+.B ITIMER_REAL
+timer are reset to 0; see
 .BR getitimer (2).
 .RE
 .RS +4
@@ -425,11 +429,16 @@ process all of the threads (see
 .BR thr_create (3C)
 and
 .BR pthread_create (3C))
-in the parent process. A call to \fBfork1()\fR or
-\fBforkx()\fR replicates only the calling thread in the child process.
+in the parent process. A call to
+.B fork1()
+or
+.B forkx()
+replicates only the calling thread in the child process.
 .sp
 .LP
-A call to \fBfork()\fR is identical to a call to
+A call to
+.B fork()
+is identical to a call to
 .BR fork1() ;
 only the
 calling thread is replicated in the child process. This is the
@@ -444,13 +453,17 @@ library. When linked with
 (Solaris Threads) but not linked
 with
 .B -lpthread
-(POSIX Threads), \fBfork()\fR was the same as
-\fBforkall()\fR. When linked with
+(POSIX Threads),
+.B fork()
+was the same as
+.BR forkall() .
+When linked with
 .BR -lpthread ,
 whether or not also
 linked with
 .BR -lthread ,
-\fBfork()\fR was the same as \fBfork1()\fR.
+.B fork()
+was the same as \fBfork1()\fR.
 .sp
 .LP
 Prior to Solaris 10, either
@@ -516,7 +529,8 @@ If a multithreaded application calls
 .BR fork() ,
 .BR fork1() ,
 or
-\fBforkx()\fR, and the child does more than simply call one of the
+.BR forkx() ,
+and the child does more than simply call one of the
 .BR exec (2)
 functions, there is a possibility of deadlock occurring in the
 child. The application should use \fBpthread_atfork\fR(3C) to ensure safety
@@ -529,7 +543,9 @@ to wait for and acquire those mutexes prior to calling
 manual page.
 .sp
 .LP
-The \fBpthread_atfork()\fR mechanism is used to protect the locks that
+The
+.B pthread_atfork()
+mechanism is used to protect the locks that
 .BR libc (3LIB)
 uses to implement interfaces such as
 .BR malloc "(3C).  All"
@@ -538,7 +554,9 @@ interfaces provided by
 are safe to use in a child process
 following a
 .BR fork() ,
-except when \fBfork()\fR is executed within a
+except when
+.B fork()
+is executed within a
 signal handler.
 .sp
 .LP
@@ -549,7 +567,9 @@ Async-Signal-Safe (see
 .BR attributes (5)).
 This cannot be made to happen
 with fork handlers in place, because they acquire locks. To be in nominal
-compliance, no fork handlers are called when \fBfork()\fR is executed within
+compliance, no fork handlers are called when
+.B fork()
+is executed within
 a signal context.  This leaves the child process in a questionable state
 with respect to its locks, but at least the calling thread will not deadlock
 itself attempting to acquire a lock that it already owns.  In this
@@ -563,8 +583,14 @@ functions is called."
 .LP
 Upon successful completion,
 .BR fork() ,
-\fBfork1()\fR, \fBforkall()\fR,
-\fBforkx()\fR, and \fBforkallx()\fR return \fB0\fR to the child process and
+.BR fork1() ,
+.BR forkall() ,
+.BR forkx() ,
+and
+.B forkallx()
+return
+.B 0
+to the child process and
 return the process
 .B ID
 of the child process to the parent process.
@@ -577,10 +603,12 @@ is set to indicate the error.
 .LP
 The
 .BR fork() ,
-\fBfork1()\fR, \fBforkall()\fR,
+.BR fork1() ,
+.BR forkall() ,
 .BR forkx() ,
 and
-\fBforkallx()\fR functions will fail if:
+.B forkallx()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -629,7 +657,9 @@ The \fBforkx()\fR and \fBforkallx()\fR functions will fail if:
 .ad
 .RS 10n
 .rt
-The \fIflags\fR argument is invalid.
+The
+.I flags
+argument is invalid.
 .RE
 
 .SH ATTRIBUTES
@@ -714,12 +744,15 @@ The thread in the child that calls
 .BR fork() ,
 .BR fork1() ,
 or
-\fBfork1x()\fR must not depend on any resources held by threads that no
+.B fork1x()
+must not depend on any resources held by threads that no
 longer exist in the child. In particular, locks held by these threads will
 not be released.
 .sp
 .LP
-In a multithreaded process, \fBforkall()\fR in one thread can cause
+In a multithreaded process,
+.B forkall()
+in one thread can cause
 blocking system calls to be interrupted and return with an
 .BR EINTR
 error.

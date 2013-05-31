@@ -182,7 +182,8 @@ following virtual devices are supported:
 .rt
 A block device, typically located under
 .BR /dev/dsk .
-\fBZFS\fR can use
+.B ZFS
+can use
 individual slices or partitions, though the recommended mode of operation is
 to use whole disks. A disk can be specified by a full path, or it can be a
 shorthand name (the relative portion of the path under "/dev/dsk"). A whole
@@ -197,7 +198,7 @@ automatically labels the disk, if necessary.
 .ne 2
 .mk
 .na
-\fBfile\fR
+.B file
 .ad
 .RS 10n
 .rt
@@ -219,7 +220,10 @@ A mirror of two or more devices. Data is replicated in an identical fashion
 across all components of a mirror. A mirror with
 .I N
 disks of size
-\fIX\fR can hold \fIX\fR bytes and can withstand (\fIN-1\fR) devices failing
+.I X
+can hold
+.I X
+bytes and can withstand (\fIN-1\fR) devices failing
 before data integrity is compromised.
 .RE
 
@@ -267,8 +271,13 @@ specifies a single-parity
 type specifies a double-parity
 .B raidz
 .RB "group; and the" " raidz3"
-\fBvdev\fR type specifies a triple-parity \fBraidz\fR group. The \fBraidz\fR
-\fBvdev\fR type is an alias for
+.B vdev
+type specifies a triple-parity
+.B raidz
+group. The
+.B raidz
+.B vdev
+type is an alias for
 .BR raidz1 .
 .sp
 A
@@ -281,7 +290,8 @@ with
 .I P
 parity
 disks can hold approximately (\fIN-P\fR)*\fIX\fR bytes and can withstand
-\fIP\fR device(s) failing before data integrity is compromised. The minimum
+.I P
+device(s) failing before data integrity is compromised. The minimum
 number of devices in a
 .B raidz
 group is one more than the number of
@@ -365,7 +375,8 @@ two root vdevs, each a mirror of two disks:
 .SS "Device Failure and Recovery"
 .sp
 .LP
-\fBZFS\fR supports a rich set of mechanisms for handling device failure and
+.B ZFS
+supports a rich set of mechanisms for handling device failure and
 .RB "data corruption. All metadata and data is checksummed, and" " ZFS"
 automatically repairs bad data from a good copy when corruption is
 detected.
@@ -375,7 +386,8 @@ In order to take advantage of these features, a pool must make use of some
 form of redundancy, using either mirrored or
 .B raidz
 groups. While
-\fBZFS\fR supports running in a non-redundant configuration, where each root
+.B ZFS
+supports running in a non-redundant configuration, where each root
 vdev is simply a disk or file, this is strongly discouraged. A single case
 of bit corruption can render some or all of your data unavailable.
 .sp
@@ -714,7 +726,8 @@ being written. In addition,
 .B ZFS
 reserves some space for internal
 accounting that the \fBzfs\fR(1M) command takes into account, but the
-\fBzpool\fR command does not. For non-full pools of a reasonable size, these
+.B zpool
+command does not. For non-full pools of a reasonable size, these
 effects should be invisible. For small pools, or pools that are close to
 being completely full, these discrepancies may become more noticeable.
 .sp
@@ -735,7 +748,8 @@ environment, where the typical paths are not valid.
 .B altroot
 is not a
 persistent property. It is valid only while the system is up. Setting
-\fBaltroot\fR defaults to using \fBcachefile\fR=none, though this may be
+.B altroot
+defaults to using \fBcachefile\fR=none, though this may be
 overridden	 using an explicit setting.
 .RE
 
@@ -819,7 +833,8 @@ special value \fB\&''\fR (empty string) uses the default location.
 Multiple pools can share the same cache file. Because the kernel destroys
 and recreates this file when pools are added and removed, care should be
 taken when attempting to access this file. When the last pool using a
-\fBcachefile\fR is exported or destroyed, the file is removed.
+.B cachefile
+is exported or destroyed, the file is removed.
 .RE
 
 .sp
@@ -949,19 +964,22 @@ Displays a help message.
 .ne 2
 .mk
 .na
-\fBzpool add\fR [\fB-fn\fR] \fIpool vdev\fR .\|.\|.\fR
+.B zpool add
+[\fB-fn\fR] \fIpool vdev\fR .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
 Adds the specified virtual devices to the given pool. The \fIvdev\fR
 specification is described in the "Virtual Devices" section. The behavior of
-the \fB-f\fR option, and the device checks performed are described in the
+the
+.B -f
+option, and the device checks performed are described in the
 "zpool create" subcommand.
 .sp
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 6n
 .rt
@@ -992,7 +1010,8 @@ quorum device.
 .ne 2
 .mk
 .na
-\fBzpool attach\fR [\fB-f\fR] \fIpool device\fR
+.B zpool attach
+[\fB-f\fR] \fIpool device\fR
 .I new_device
 .ad
 .sp .6
@@ -1015,7 +1034,10 @@ transforms into a two-way mirror of
 and
 .IR new_device .
 If
-\fIdevice\fR is part of a two-way mirror, attaching \fInew_device\fR creates
+.I device
+is part of a two-way mirror, attaching
+.I new_device
+creates
 a three-way mirror, and so on. In either case,
 .I new_device
 begins to
@@ -1024,7 +1046,7 @@ resilver immediately.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 6n
 .rt
@@ -1040,7 +1062,9 @@ devices can be overridden in this manner.
 .ne 2
 .mk
 .na
-\fBzpool clear\fR \fIpool\fR [\fIdevice\fR] .\|.\|.\fR
+.B zpool clear
+.I pool
+[\fIdevice\fR] .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1054,7 +1078,8 @@ cleared.
 .ne 2
 .mk
 .na
-\fBzpool create\fR [\fB-fn\fR] [\fB-o\fR \fIproperty=value\fR] .\|.\|.
+.B zpool create
+[\fB-fn\fR] [\fB-o\fR \fIproperty=value\fR] .\|.\|.
 [\fB-O\fR \fIfile-system-property=value\fR] .\|.\|. [\fB-m\fR \fImountpoint\fR]
 [\fB-R\fR \fIroot\fR] \fIpool vdev\fR .\|.\|.\fR
 .ad
@@ -1082,7 +1107,10 @@ The command also checks that the replication strategy for the pool is
 consistent. An attempt to combine redundant and non-redundant storage in a
 single pool, or to mix disks and files, results in an error unless \fB-f\fR
 is specified. The use of differently sized devices within a single
-\fBraidz\fR or mirror group is also flagged as an error unless \fB-f\fR is
+.B raidz
+or mirror group is also flagged as an error unless
+.B -f
+is
 specified.
 .sp
 Unless the
@@ -1095,7 +1123,7 @@ option.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .sp .6
 .RS 4n
@@ -1121,7 +1149,9 @@ or device sharing.
 .ne 2
 .mk
 .na
-\fB-o\fR \fIproperty=value\fR [\fB-o\fR \fIproperty=value\fR] .\|.\|.\fR
+.B -o
+.I property=value
+[\fB-o\fR \fIproperty=value\fR] .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1133,11 +1163,13 @@ valid properties that can be set.
 .ne 2
 .mk
 .na
-\fB-O\fR \fIfile-system-property=value\fR
+.B -O
+.I file-system-property=value
 .ad
 .br
 .na
-\fB[-O\fR \fIfile-system-property=value\fR] .\|.\|.\fR
+.B [-O
+\fIfile-system-property=value\fR] .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1150,7 +1182,8 @@ that can be set.
 .ne 2
 .mk
 .na
-\fB-R\fR \fIroot\fR
+.B -R
+.I root
 .ad
 .sp .6
 .RS 4n
@@ -1161,7 +1194,8 @@ Equivalent to "-o cachefile=none,altroot=\fIroot\fR"
 .ne 2
 .mk
 .na
-\fB-m\fR \fImountpoint\fR
+.B -m
+.I mountpoint
 .ad
 .sp .6
 .RS 4n
@@ -1177,7 +1211,8 @@ For more information on dataset mount points, see \fBzfs\fR(1M).
 .ne 2
 .mk
 .na
-\fBzpool destroy\fR [\fB-f\fR] \fIpool\fR
+.B zpool destroy
+[\fB-f\fR] \fIpool\fR
 .ad
 .sp .6
 .RS 4n
@@ -1187,7 +1222,7 @@ tries to unmount any active datasets before destroying the pool.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 6n
 .rt
@@ -1200,7 +1235,8 @@ Forces any active datasets contained within the pool to be unmounted.
 .ne 2
 .mk
 .na
-\fBzpool detach\fR \fIpool device\fR
+.B zpool detach
+.I pool device
 .ad
 .sp .6
 .RS 4n
@@ -1214,7 +1250,8 @@ no other valid replicas of the data.
 .ne 2
 .mk
 .na
-\fBzpool export\fR [\fB-f\fR] \fIpool\fR .\|.\|.\fR
+.B zpool export
+[\fB-f\fR] \fIpool\fR .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1233,13 +1270,14 @@ command whole
 disks, not just slices, so that
 .B ZFS
 can label the disks with portable
-\fBEFI\fR labels. Otherwise, disk drivers on platforms of different
+.B EFI
+labels. Otherwise, disk drivers on platforms of different
 endianness will not recognize the disks.
 .sp
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 6n
 .rt
@@ -1281,7 +1319,8 @@ properties.
 .ne 2
 .mk
 .na
-\fBzpool history\fR [\fB-il\fR] [\fIpool\fR] .\|.\|.\fR
+.B zpool history
+[\fB-il\fR] [\fIpool\fR] .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1320,7 +1359,8 @@ was performed.
 .ne 2
 .mk
 .na
-\fBzpool import\fR [\fB-d\fR \fIdir\fR | \fB-c\fR \fIcachefile\fR]
+.B zpool import
+[\fB-d\fR \fIdir\fR | \fB-c\fR \fIcachefile\fR]
 [\fB-D\fR]\fR
 .ad
 .sp .6
@@ -1332,7 +1372,8 @@ this command searches for devices in "/dev/dsk". The \fB-d\fR option can be
 specified multiple times, and all directories are searched. If the device
 appears to be part of an exported pool, this command displays a summary of
 the pool with the name of the pool, a numeric identifier, as well as the
-\fIvdev\fR layout and current health of the device for each device or file.
+.I vdev
+layout and current health of the device for each device or file.
 Destroyed pools, pools that were previously destroyed with the "\fBzpool
 destroy\fR" command, are not listed unless the \fB-D\fR option is specified.
 
@@ -1343,11 +1384,14 @@ when multiple exported pools of the same name are available.
 .ne 2
 .mk
 .na
-\fB-c\fR \fIcachefile\fR
+.B -c
+.I cachefile
 .ad
 .RS 16n
 .rt
-Reads configuration from the given \fBcachefile\fR that was created with
+Reads configuration from the given
+.B cachefile
+that was created with
 the "\fBcachefile\fR" pool property. This \fBcachefile\fR is used instead of
 searching for devices.
 .RE
@@ -1356,7 +1400,8 @@ searching for devices.
 .ne 2
 .mk
 .na
-\fB-d\fR \fIdir\fR
+.B -d
+.I dir
 .ad
 .RS 16n
 .rt
@@ -1385,7 +1430,8 @@ Lists destroyed pools only.
 .ne 2
 .mk
 .na
-\fBzpool import\fR [\fB-o\fR \fImntopts\fR] [ \fB-o\fR
+.B zpool import
+[\fB-o\fR \fImntopts\fR] [ \fB-o\fR
 \fIproperty\fR=\fIvalue\fR] .\|.\|. [\fB-d\fR \fIdir\fR | \fB-c\fR
 \fIcachefile\fR] [\fB-D\fR] [\fB-f\fR] [\fB-R\fR \fIroot\fR] \fB-a\fR
 .ad
@@ -1402,7 +1448,8 @@ option is specified.
 .ne 2
 .mk
 .na
-\fB-o\fR \fImntopts\fR
+.B -o
+.I mntopts
 .ad
 .RS 21n
 .rt
@@ -1415,7 +1462,8 @@ mount options.
 .ne 2
 .mk
 .na
-\fB-o\fR \fIproperty=value\fR
+.B -o
+.I property=value
 .ad
 .RS 21n
 .rt
@@ -1427,11 +1475,14 @@ section for more information on the available pool properties.
 .ne 2
 .mk
 .na
-\fB-c\fR \fIcachefile\fR
+.B -c
+.I cachefile
 .ad
 .RS 21n
 .rt
-Reads configuration from the given \fBcachefile\fR that was created with
+Reads configuration from the given
+.B cachefile
+that was created with
 the "\fBcachefile\fR" pool property. This \fBcachefile\fR is used instead of
 searching for devices.
 .RE
@@ -1440,7 +1491,8 @@ searching for devices.
 .ne 2
 .mk
 .na
-\fB-d\fR \fIdir\fR
+.B -d
+.I dir
 .ad
 .RS 21n
 .rt
@@ -1461,14 +1513,16 @@ option.
 .ad
 .RS 21n
 .rt
-Imports destroyed pools only. The \fB-f\fR option is also required.
+Imports destroyed pools only. The
+.B -f
+option is also required.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 21n
 .rt
@@ -1490,7 +1544,8 @@ Searches for and imports all pools found.
 .ne 2
 .mk
 .na
-\fB-R\fR \fIroot\fR
+.B -R
+.I root
 .ad
 .RS 21n
 .rt
@@ -1504,7 +1559,8 @@ property to "\fIroot\fR".
 .ne 2
 .mk
 .na
-\fBzpool import\fR [\fB-o\fR \fImntopts\fR] [ \fB-o\fR
+.B zpool import
+[\fB-o\fR \fImntopts\fR] [ \fB-o\fR
 \fIproperty\fR=\fIvalue\fR] .\|.\|. [\fB-d\fR \fIdir\fR | \fB-c\fR
 \fIcachefile\fR] [\fB-D\fR] [\fB-f\fR] [\fB-R\fR \fIroot\fR] \fIpool\fR |
 \fIid\fR [\fInewpool\fR]\fR
@@ -1523,13 +1579,16 @@ as its exported name.
 If a device is removed from a system without running "\fBzpool export\fR"
 first, the device appears as potentially active. It cannot be determined if
 this was a failed export, or whether the device is really in use from
-another host. To import a pool in this state, the \fB-f\fR option is
+another host. To import a pool in this state, the
+.B -f
+option is
 required.
 .sp
 .ne 2
 .mk
 .na
-\fB-o\fR \fImntopts\fR
+.B -o
+.I mntopts
 .ad
 .sp .6
 .RS 4n
@@ -1542,7 +1601,8 @@ mount options.
 .ne 2
 .mk
 .na
-\fB-o\fR \fIproperty=value\fR
+.B -o
+.I property=value
 .ad
 .sp .6
 .RS 4n
@@ -1554,11 +1614,14 @@ section for more information on the available pool properties.
 .ne 2
 .mk
 .na
-\fB-c\fR \fIcachefile\fR
+.B -c
+.I cachefile
 .ad
 .sp .6
 .RS 4n
-Reads configuration from the given \fBcachefile\fR that was created with
+Reads configuration from the given
+.B cachefile
+that was created with
 the "\fBcachefile\fR" pool property. This \fBcachefile\fR is used instead of
 searching for devices.
 .RE
@@ -1567,7 +1630,8 @@ searching for devices.
 .ne 2
 .mk
 .na
-\fB-d\fR \fIdir\fR
+.B -d
+.I dir
 .ad
 .sp .6
 .RS 4n
@@ -1588,14 +1652,16 @@ option.
 .ad
 .sp .6
 .RS 4n
-Imports destroyed pool. The \fB-f\fR option is also required.
+Imports destroyed pool. The
+.B -f
+option is also required.
 .RE
 
 .sp
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .sp .6
 .RS 4n
@@ -1606,7 +1672,8 @@ Forces import, even if the pool appears to be potentially active.
 .ne 2
 .mk
 .na
-\fB-R\fR \fIroot\fR
+.B -R
+.I root
 .ad
 .sp .6
 .RS 4n
@@ -1620,7 +1687,8 @@ property to "\fIroot\fR".
 .ne 2
 .mk
 .na
-\fBzpool iostat\fR [\fB-T u\fR | \fBd\fR] [\fB-v\fR] [\fIpool\fR]
+.B zpool iostat
+[\fB-T u\fR | \fBd\fR] [\fB-v\fR] [\fIpool\fR]
 \&.\|.\|. [\fIinterval\fR[\fIcount\fR]]\fR
 .ad
 .sp .6
@@ -1638,12 +1706,15 @@ are specified, statistics for every pool in
 the system is shown. If
 .I count
 is specified, the command exits after
-\fIcount\fR reports are printed.
+.I count
+reports are printed.
 .sp
 .ne 2
 .mk
 .na
-\fB-T u\fR | \fBd\fR
+.B -T u
+|
+.B d
 .ad
 .RS 12n
 .rt
@@ -1678,7 +1749,8 @@ within the pool, in addition to the pool-wide statistics.
 .ne 2
 .mk
 .na
-\fBzpool list\fR [\fB-H\fR] [\fB-o\fR \fIprops\fR[,.\|.\|.]] [\fIpool\fR]
+.B zpool list
+[\fB-H\fR] [\fB-o\fR \fIprops\fR[,.\|.\|.]] [\fIpool\fR]
 \&.\|.\|.\fR
 .ad
 .sp .6
@@ -1701,7 +1773,8 @@ instead of arbitrary space.
 .ne 2
 .mk
 .na
-\fB-o\fR \fIprops\fR
+.B -o
+.I props
 .ad
 .RS 12n
 .rt
@@ -1716,7 +1789,8 @@ available, capacity, health, altroot"
 .ne 2
 .mk
 .na
-\fBzpool offline\fR [\fB-t\fR] \fIpool device\fR .\|.\|.\fR
+.B zpool offline
+[\fB-t\fR] \fIpool device\fR .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1744,7 +1818,8 @@ previous state.
 .ne 2
 .mk
 .na
-\fBzpool online\fR [\fB-e\fR] \fIpool device\fR.\|.\|.\fR
+.B zpool online
+[\fB-e\fR] \fIpool device\fR.\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1782,7 +1857,10 @@ Removes the specified device from the pool. This command currently only
 supports removing hot spares, cache, and log devices. A mirrored log device
 can be removed by specifying the top-level mirror for the log. Non-log
 devices that are part of a mirrored configuration can be removed using the
-\fBzpool detach\fR command. Non-redundant and \fBraidz\fR devices cannot be
+.B zpool detach
+command. Non-redundant and
+.B raidz
+devices cannot be
 removed from a pool.
 .RE
 
@@ -1790,7 +1868,8 @@ removed from a pool.
 .ne 2
 .mk
 .na
-\fBzpool replace\fR [\fB-f\fR] \fIpool old_device\fR
+.B zpool replace
+[\fB-f\fR] \fIpool old_device\fR
 [\fInew_device\fR]\fR
 .ad
 .sp .6
@@ -1812,13 +1891,16 @@ size of all the devices in a mirror or
 .B raidz
 configuration.
 .sp
-\fInew_device\fR is required if the pool is not redundant. If
-\fInew_device\fR is not specified, it defaults to
+.I new_device
+is required if the pool is not redundant. If
+.I new_device
+is not specified, it defaults to
 .IR old_device .
 This
 form of replacement is useful after an existing disk has failed and has been
 physically replaced. In this case, the new disk may have the same
-\fB/dev/dsk\fR path as the old device, even though it is actually a
+.B /dev/dsk
+path as the old device, even though it is actually a
 different disk.
 .B ZFS
 recognizes this.
@@ -1826,7 +1908,7 @@ recognizes this.
 .ne 2
 .mk
 .na
-\fB-f\fR
+.B -f
 .ad
 .RS 6n
 .rt
@@ -1842,7 +1924,8 @@ devices can be overridden in this manner.
 .ne 2
 .mk
 .na
-\fBzpool scrub\fR [\fB-s\fR] \fIpool\fR .\|.\|.\fR
+.B zpool scrub
+[\fB-s\fR] \fIpool\fR .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1865,7 +1948,8 @@ errors due to hardware faults or disk failure.
 .sp
 Because scrubbing and resilvering are
 .BR I/O "-intensive operations,"
-\fBZFS\fR only allows one at a time. If a scrub is already in progress, the
+.B ZFS
+only allows one at a time. If a scrub is already in progress, the
 "\fBzpool scrub\fR" command terminates it and starts a new scrub. If a
 resilver is in progress,
 .B ZFS
@@ -1900,7 +1984,8 @@ for more information on what properties can be set and acceptable values.
 .ne 2
 .mk
 .na
-\fBzpool status\fR [\fB-xv\fR] [\fIpool\fR] .\|.\|.\fR
+.B zpool status
+[\fB-xv\fR] [\fIpool\fR] .\|.\|.\fR
 .ad
 .sp .6
 .RS 4n
@@ -1967,7 +2052,8 @@ these pools will be inaccessible on the system.
 Displays
 .B ZFS
 versions supported by the current software. The current
-\fBZFS\fR versions and all previous supported versions are displayed, along
+.B ZFS
+versions and all previous supported versions are displayed, along
 with an explanation of the features provided with each version.
 .RE
 
@@ -1975,7 +2061,8 @@ with an explanation of the features provided with each version.
 .ne 2
 .mk
 .na
-\fBzpool upgrade\fR [\fB-V\fR \fIversion\fR] \fB-a\fR | \fIpool\fR
+.B zpool upgrade
+[\fB-V\fR \fIversion\fR] \fB-a\fR | \fIpool\fR
 \&.\|.\|.\fR
 .ad
 .sp .6
@@ -1998,7 +2085,8 @@ Upgrades all pools.
 .ne 2
 .mk
 .na
-\fB-V\fR \fIversion\fR
+.B -V
+.I version
 .ad
 .RS 14n
 .rt
@@ -2014,13 +2102,15 @@ supported by this software.
 
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Creating a RAID-Z Storage Pool
+.B Example 1
+Creating a RAID-Z Storage Pool
 .sp
 .LP
 The following command creates a pool with a single
 .B raidz
 root
-\fIvdev\fR that consists of six disks.
+.I vdev
+that consists of six disks.
 
 .sp
 .in +2
@@ -2031,7 +2121,8 @@ root
 .sp
 
 .LP
-\fBExample 2\fR Creating a Mirrored Storage Pool
+.B Example 2
+Creating a Mirrored Storage Pool
 .sp
 .LP
 The following command creates a pool with two mirrors, where each mirror
@@ -2046,7 +2137,8 @@ contains two disks.
 .sp
 
 .LP
-\fBExample 3\fR Creating a ZFS Storage Pool by Using Slices
+.B Example 3
+Creating a ZFS Storage Pool by Using Slices
 .sp
 .LP
 The following command creates an unmirrored pool using two disk slices.
@@ -2060,7 +2152,8 @@ The following command creates an unmirrored pool using two disk slices.
 .sp
 
 .LP
-\fBExample 4\fR Creating a ZFS Storage Pool by Using Files
+.B Example 4
+Creating a ZFS Storage Pool by Using Files
 .sp
 .LP
 The following command creates an unmirrored pool using files. While not
@@ -2076,7 +2169,8 @@ purposes.
 .sp
 
 .LP
-\fBExample 5\fR Adding a Mirror to a ZFS Storage Pool
+.B Example 5
+Adding a Mirror to a ZFS Storage Pool
 .sp
 .LP
 The following command adds two mirrored disks to the pool "\fItank\fR",
@@ -2092,7 +2186,8 @@ space is immediately available to any datasets within the pool.
 .sp
 
 .LP
-\fBExample 6\fR Listing Available ZFS Storage Pools
+.B Example 6
+Listing Available ZFS Storage Pools
 .sp
 .LP
 The following command lists all available pools on the system. In this
@@ -2117,7 +2212,8 @@ The results from this command are similar to the following:
 .sp
 
 .LP
-\fBExample 7\fR Destroying a ZFS Storage Pool
+.B Example 7
+Destroying a ZFS Storage Pool
 .sp
 .LP
 The following command destroys the pool "\fItank\fR" and any datasets
@@ -2132,7 +2228,8 @@ contained within.
 .sp
 
 .LP
-\fBExample 8\fR Exporting a ZFS Storage Pool
+.B Example 8
+Exporting a ZFS Storage Pool
 .sp
 .LP
 The following command exports the devices in pool
@@ -2149,7 +2246,8 @@ can be relocated or later imported.
 .sp
 
 .LP
-\fBExample 9\fR Importing a ZFS Storage Pool
+.B Example 9
+Importing a ZFS Storage Pool
 .sp
 .LP
 The following command displays available pools, and then imports the pool
@@ -2180,7 +2278,8 @@ config:
 .sp
 
 .LP
-\fBExample 10\fR Upgrading All ZFS Storage Pools to the Current Version
+.B Example 10
+Upgrading All ZFS Storage Pools to the Current Version
 .sp
 .LP
 The following command upgrades all ZFS Storage pools to the current version
@@ -2196,7 +2295,8 @@ This system is currently running ZFS version 2.
 .sp
 
 .LP
-\fBExample 11\fR Managing Hot Spares
+.B Example 11
+Managing Hot Spares
 .sp
 .LP
 The following command creates a new pool with an available hot spare:
@@ -2237,7 +2337,8 @@ permanently removed from the pool using the following command:
 .sp
 
 .LP
-\fBExample 12\fR Creating a ZFS Pool with Mirrored Separate Intent Logs
+.B Example 12
+Creating a ZFS Pool with Mirrored Separate Intent Logs
 .sp
 .LP
 The following command creates a ZFS storage pool consisting of two, two-way
@@ -2253,7 +2354,8 @@ mirrors and mirrored log devices:
 .sp
 
 .LP
-\fBExample 13\fR Adding Cache Devices to a ZFS Pool
+.B Example 13
+Adding Cache Devices to a ZFS Pool
 .sp
 .LP
 The following command adds two disks for use as cache devices to a ZFS
@@ -2283,7 +2385,8 @@ option as follows:
 .sp
 
 .LP
-\fBExample 14\fR Removing a Mirrored Log Device
+.B Example 14
+Removing a Mirrored Log Device
 .sp
 .LP
 The following command removes the mirrored log device

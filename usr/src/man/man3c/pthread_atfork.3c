@@ -64,13 +64,17 @@ pthread_atfork \- register fork handlers
 .SH DESCRIPTION
 .sp
 .LP
-The \fBpthread_atfork()\fR function declares fork handlers to be called prior
+The
+.B pthread_atfork()
+function declares fork handlers to be called prior
 to and following
 .BR fork (2),
 within the thread that called
 .BR fork() .
 The
-order of calls to \fBpthread_atfork()\fR is significant.
+order of calls to
+.B pthread_atfork()
+is significant.
 .sp
 .LP
 Before \fBfork()\fR processing begins, the \fIprepare\fR fork handler is
@@ -83,12 +87,18 @@ handler is not called if its address is
 .LP
 The
 .I parent
-fork handler is called after \fBfork()\fR processing finishes
+fork handler is called after
+.B fork()
+processing finishes
 in the parent process, and the
 .I child
 fork handler is called after
-\fBfork()\fR processing finishes in the child process. If the address of
-\fIparent\fR or \fIchild\fR is
+.B fork()
+processing finishes in the child process. If the address of
+.I parent
+or
+.I child
+is
 .IR NULL ,
 then its handler is not called.
 .sp
@@ -103,19 +113,24 @@ order, whereas the
 and
 .I child
 fork handlers are called in
-\fBFIFO\fR (first-in first-out) order. This calling order allows applications
+.B FIFO
+(first-in first-out) order. This calling order allows applications
 to preserve locking order.
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBpthread_atfork()\fR returns
+Upon successful completion,
+.B pthread_atfork()
+returns
 .BR 0 .
 Otherwise,
 an error number is returned.
 .SH ERRORS
 .sp
 .LP
-The \fBpthread_atfork()\fR function will fail if:
+The
+.B pthread_atfork()
+function will fail if:
 .sp
 .ne 2
 .mk
@@ -130,17 +145,24 @@ Insufficient table space exists to record the fork handler addresses.
 .SH USAGE
 .sp
 .LP
-Solaris threads do not offer \fBpthread_atfork()\fR functionality (there is no
-\fBthr_atfork()\fR interface). However, a Solaris threads application can call
-\fBpthread_atfork()\fR to ensure \fBfork()\fR-safety, since the two thread APIs
+Solaris threads do not offer
+.B pthread_atfork()
+functionality (there is no
+.B thr_atfork()
+interface). However, a Solaris threads application can call
+.B pthread_atfork()
+to ensure \fBfork()\fR-safety, since the two thread APIs
 are interoperable. See\fBfork\fR(2) for information relating to \fBfork()\fR in
 a Solaris threads environment in Solaris 10 relative to previous releases.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Make a library safe with respect to \fBfork()\fR.
+.B Example 1
+Make a library safe with respect to \fBfork()\fR.
 .sp
 .LP
-All multithreaded applications that call \fBfork()\fR in a POSIX threads
+All multithreaded applications that call
+.B fork()
+in a POSIX threads
 program and do more than simply call
 .BR exec (2)
 in the child of the fork
@@ -149,7 +171,8 @@ need to ensure that the child is protected from deadlock.
 .sp
 .LP
 Since the "fork-one" model results in duplicating only the thread that called
-\fBfork()\fR, it is possible that at the time of the call another thread in the
+.BR fork() ,
+it is possible that at the time of the call another thread in the
 parent owns a lock. This thread is not duplicated in the child, so no thread
 will unlock this lock in the child.  Deadlock occurs if the single thread in
 the child needs this lock.
@@ -169,7 +192,8 @@ application deadlocks inside the library.
 .sp
 .LP
 The following describes how to make a library  safe with respect to
-\fBfork()\fR by using  \fBpthread_atfork()\fR.
+.B fork()
+by using  \fBpthread_atfork()\fR.
 
 .RS +4
 .TP
@@ -185,7 +209,9 @@ Identify also the locking order for these locks (for example
 Add a call to \fBpthread_atfork(f1, f2, f3)\fR in the  library's \fI\&.init\fR
 section.
 .BR f1 ,
-\fBf2\fR, \fBf3\fR are defined as follows:
+.BR f2 ,
+.B f3
+are defined as follows:
 .RE
 .sp
 .in +2

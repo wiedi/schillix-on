@@ -42,7 +42,9 @@ extended FILE facility (see NOTES) and determines which, if any, signal will
 be sent when an application uses \fBFILE\fR->\fI_file\fR inappropriately.
 .sp
 .LP
-The \fIlow_fd\fR argument specifies the lowest file descriptor in the range
+The
+.I low_fd
+argument specifies the lowest file descriptor in the range
 3 through 255 that the application wants to be selected as the unallocatable
 file descriptor.  File descriptors 0, 1, and 2 cannot be used because they
 are reserved for use as the default file descriptors underlying the
@@ -51,7 +53,8 @@ are reserved for use as the default file descriptors underlying the
 and
 .B stderr
 standard I/O streams.  The
-\fIlow_fd\fR argument can also be set to \(mi1 to request that
+.I low_fd
+argument can also be set to \(mi1 to request that
 \fBenable_extended_FILE_stdio()\fR select a "reasonable" unallocatable file
 descriptor. In this case,
 .B enable_extended_FILE_stdio()
@@ -68,7 +71,8 @@ the process when the unallocatable file descriptor is used as a file
 descriptor argument to any system call except
 .BR close (2).
 If
-\fIsignal_action\fR is \(mi1, the default signal (\fBSIGABRT\fR) will be
+.I signal_action
+is \(mi1, the default signal (\fBSIGABRT\fR) will be
 sent. If
 .I signal_action
 is 0, no signal will be sent. Otherwise, the
@@ -91,10 +95,14 @@ unallocatablefd = fcntl(low_fd, F_BADFD, action);
 .LP
 to reserve the unallocatable file descriptor and set the signal to be sent
 if the unallocatable file descriptor is used in a system call.  If the
-\fBfcntl\fR(2) call succeeds, the extended FILE facility is enabled and the
+.BR fcntl (2)
+call succeeds, the extended FILE facility is enabled and the
 unallocatable file descriptor is saved for later use by the standard I/O
 functions. When an attempt is made to open a standard I/O stream (see
-\fBfdopen\fR(3C), \fBfopen\fR(3C), and \fBpopen\fR(3C)) with an underlying
+.BR fdopen (3C),
+.BR fopen (3C),
+and
+.BR popen "(3C)) with an underlying"
 file descriptor greater than 255, the file descriptor is stored in an
 auxiliary location and the field formerly known as \fBFILE\fR->\fI_file\fR
 is set to the unallocatable file descriptor.
@@ -104,7 +112,8 @@ If the file descriptor limit for the process is less than or equal to 256
 (the system default), the application needs to raise the limit (see
 .BR getrlimit (2))
 for the extended FILE facility to be useful. The
-\fBenable_extended_FILE_stdio()\fR function does not attempt to change the
+.B enable_extended_FILE_stdio()
+function does not attempt to change the
 file descriptor limit.
 .sp
 .LP
@@ -147,7 +156,9 @@ that are currently open in the process.
 .ad
 .RS 10n
 .rt
-The \fIlow_fd\fR argument is greater than 255, or is less than 3 and not
+The
+.I low_fd
+argument is greater than 255, or is less than 3 and not
 equal to -1.
 .RE
 
@@ -188,7 +199,10 @@ function is available only in the
 .LP
 The \fBfdopen\fR(3C), \fBfopen\fR(3C), and \fBpopen\fR(3C) functions all
 enable the use of the extended FILE facility. For source changes, a trailing
-\fBF\fR character in the \fImode\fR argument can be used with any of these
+.B F
+character in the
+.I mode
+argument can be used with any of these
 functions if the \fBFILE *\fIfptr\fR is used only within the context of a
 single function or group of functions and not meant to be returned to a
 caller. All of the source code to the application must then be recompiled,
@@ -210,7 +224,8 @@ Use
 for binary relief.
 .SH EXAMPLES
 .LP
-\fBExample 1\fR Increase the file limit and enable the extended FILE
+.B Example 1
+Increase the file limit and enable the extended FILE
 facility.
 .sp
 .LP
@@ -371,9 +386,12 @@ If the application continues using standard I/O functions after changing
 \fBFILE\fR->\fI_file\fR, silent data corruption could occur because the
 application thinks it has changed file descriptors with the above assignment
 but the actual standard I/O file descriptor is stored in the auxiliary
-location. The chances for corruption are even higher if \fImyfd\fR has a
+location. The chances for corruption are even higher if
+.I myfd
+has a
 value greater than 255 and is truncated by the assignment to the 8-bit
-\fI_file\fR field.
+.I _file
+field.
 .sp
 .LP
 Since the\fI_file\fR field has been renamed, attempts to recompile this
@@ -384,6 +402,8 @@ structure.
 .sp
 .LP
 The application should not use this facility if it uses \fI_file\fR
-directly, including using the \fBfileno()\fR macro that was provided in
+directly, including using the
+.B fileno()
+macro that was provided in
 .BR stdio.h (3HEAD)
 in Solaris 2.0 through 2.7.

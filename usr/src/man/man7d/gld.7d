@@ -85,7 +85,8 @@ functions when it receives data or needs some service from
 GLD. GLD makes calls into the \fBgld\fR(9E) entry points of the
 device-specific driver through pointers provided to GLD by the
 device-specific driver when it registered itself with GLD. The
-\fBgld_mac_info\fR(9S) structure is the main data interface between GLD and
+.BR gld_mac_info (9S)
+structure is the main data interface between GLD and
 the device-specific driver.
 .sp
 .LP
@@ -142,7 +143,9 @@ never exceed 1500.
 .sp
 .LP
 All frames received from the media that have a type field in the range
-[0-1500] are assumed to be \fI802.3\fR frames and are routed up all open
+[0-1500] are assumed to be
+.I 802.3
+frames and are routed up all open
 streams that are in
 .I 802.3
 mode,  (those streams  bound to a SAP value
@@ -172,7 +175,8 @@ of 0 denotes that the user wishes to use LLC mode. SAP values in  the range
 [1-1535] have undefined semantics and should not be used.
 .sp
 .LP
-\fBSNAP\fR headers are carried under LLC headers with destination SAP 0xAA.
+.B SNAP
+headers are carried under LLC headers with destination SAP 0xAA.
 For outgoing packets with SAP values greater than 1535, GLD creates an
 LLC+SNAP header that always looks like:
 .sp
@@ -216,7 +220,8 @@ that determines the route that the packet will take through the network.
 Functionally, the source routing support provided by GLD learns routes,
 solicits and responds to requests for information about possible multiple
 routes and selects among the multiple routes that are available. It adds
-\fIRouting Information Fields\fR to the MAC headers of outgoing packets and
+.I Routing Information Fields
+to the MAC headers of outgoing packets and
 recognizes such fields in incoming packets.
 .sp
 .LP
@@ -270,7 +275,8 @@ device-dependent values in the
 .B DL_INFO_ACK
 response to this request,
 based on information the GLD-based driver specified in the
-\fBgld_mac_info\fR(9S) structure passed to
+.BR gld_mac_info (9S)
+structure passed to
 .BR gld_register() .
 However GLD
 returns the following values on behalf of all GLD-based drivers:
@@ -337,9 +343,13 @@ The
 and
 .B DL_UNBIND_REQ
 primitives bind and unbind a
-\fBDLSAP\fR to the stream. The \fBPPA\fR associated with each stream will
+.B DLSAP
+to the stream. The
+.B PPA
+associated with each stream will
 have been initialized upon completion of the processing of the
-\fBDL_BIND_REQ.\fR Multiple streams may be bound to the same
+.B DL_BIND_REQ.
+Multiple streams may be bound to the same
 .BR SAP ;
 each
 such stream receives a copy of any packets received for that SAP.
@@ -409,7 +419,8 @@ primitive returns the MAC address currently
 associated with the
 .B PPA
 attached to the stream, in the
-\fBDL_PHYS_ADDR_ACK\fR primitive. When using style 2, this primitive is only
+.B DL_PHYS_ADDR_ACK
+primitive. When using style 2, this primitive is only
 valid following a successful
 .BR DL_ATTACH_REQ .
 .sp
@@ -430,7 +441,8 @@ or the driver is reloaded.
 The
 .B DL_GET_STATISTICS_REQ
 primitive requests a
-\fBDL_GET_STATISTICS_ACK\fR response containing statistics information
+.B DL_GET_STATISTICS_ACK
+response containing statistics information
 associated with the PPA attached to the stream. Style 2 streams must be
 attached to a particular
 .B PPA
@@ -451,7 +463,8 @@ GLD implements the
 ioctl described in
 .BR dlpi "(7P).  For"
 any other ioctl command, GLD passes it to the device-specific driver's
-\fBgldm_ioctl()\fR function as described in
+.B gldm_ioctl()
+function as described in
 .BR gld (9E).
 .SS "Requirements on GLD Drivers"
 .sp
@@ -573,7 +586,9 @@ elements as shown below:
 
 .sp
 .LP
-The \fBdevo_getinfo\fR element of the
+The
+.B devo_getinfo
+element of the
 .BR dev_ops (9S)
 structure should
 specify \fBgld_getinfo\fR as the \fBgetinfo\fR(9E) routine.
@@ -626,8 +641,13 @@ entry points may be called by GLD at any time.
 .sp
 .LP
 The \fBattach\fR(9E) routine should return \fBDDI_SUCCESS\fR if
-\fBgld_register()\fR succeeds. If \fBgld_register()\fR fails, it returns
-\fBDDI_FAILURE\fR and the \fBattach\fR(9E) routine should deallocate any
+.B gld_register()
+succeeds. If
+.B gld_register()
+fails, it returns
+.B DDI_FAILURE
+and the
+.BR attach "(9E) routine should deallocate any"
 resources it allocated before calling
 .B gld_register()
 and then also
@@ -645,7 +665,8 @@ described in
 .BR gld (9F).
 The
 .BR detach "(9E) routine can get a pointer to the needed"
-\fBgld_mac_info\fR(9S) structure from the device's private data using
+.BR gld_mac_info (9S)
+structure from the device's private data using
 .BR ddi_get_driver_private (9F).
 .BR gld_unregister ()
 checks certain
@@ -662,7 +683,8 @@ return
 .BR DDI_FAILURE .
 If the checks succeed, \fBgld_unregister()\fR
 ensures that the device interrupts are stopped, calling the driver's
-\fBgldm_stop()\fR routine if necessary, unlinks the driver from the GLD
+.B gldm_stop()
+routine if necessary, unlinks the driver from the GLD
 framework, and returns
 .BR DDI_SUCCESS .
 In this case, the
@@ -684,7 +706,8 @@ using the
 .BR kstat "(7D) and"
 .BR kstat (9S)
 mechanism. The
-\fBDL_GET_STATISTICS_REQ\fR DLPI command may also be used to retrieve the
+.B DL_GET_STATISTICS_REQ
+DLPI command may also be used to retrieve the
 current statistics counters. All statistics are maintained as unsigned, and
 all are 32 bits unless otherwise noted.
 .sp
@@ -839,7 +862,7 @@ Valid received packets not accepted by any stream (long).
 .ne 2
 .mk
 .na
-\fBnoxmtbuf\fR
+.B noxmtbuf
 .ad
 .RS 15n
 .rt
@@ -897,7 +920,7 @@ the named statistics variables below.
 .ne 2
 .mk
 .na
-\fBifspeed\fR
+.B ifspeed
 .ad
 .RS 13n
 .rt
@@ -931,7 +954,7 @@ Times interrupt handler was called and claimed the interrupt (long).
 .ne 2
 .mk
 .na
-\fBnorcvbuf\fR
+.B norcvbuf
 .ad
 .RS 13n
 .rt
@@ -978,7 +1001,7 @@ Packets known to have been dropped by the hardware on receive (long).
 .ne 2
 .mk
 .na
-\fBuflo\fR
+.B uflo
 .ad
 .RS 13n
 .rt
@@ -989,7 +1012,7 @@ Times FIFO underflowed on transmit (long).
 .ne 2
 .mk
 .na
-\fBoflo\fR
+.B oflo
 .ad
 .RS 13n
 .rt
@@ -1018,7 +1041,7 @@ Packets received with framing errors (not an integral number of octets)
 .ne 2
 .mk
 .na
-\fBfcs_errors\fR
+.B fcs_errors
 .ad
 .RS 23n
 .rt
@@ -1086,7 +1109,7 @@ Times a transmit collision occurred late (after 512 bit times) (long).
 .ne 2
 .mk
 .na
-\fBdefer_xmts\fR
+.B defer_xmts
 .ad
 .RS 23n
 .rt
@@ -1098,7 +1121,7 @@ the medium was busy (long).
 .ne 2
 .mk
 .na
-\fBfirst_collisions\fR
+.B first_collisions
 .ad
 .RS 23n
 .rt
@@ -1237,7 +1260,7 @@ Times the station recognized an internal error.
 .ne 2
 .mk
 .na
-\fBlost_frame_errors\fR
+.B lost_frame_errors
 .ad
 .RS 24n
 .rt
@@ -1248,7 +1271,7 @@ Times the TRR timer expired during transmit.
 .ne 2
 .mk
 .na
-\fBframe_copied_errors\fR
+.B frame_copied_errors
 .ad
 .RS 24n
 .rt
@@ -1272,7 +1295,7 @@ condition that needed a token transmitted.
 .ne 2
 .mk
 .na
-\fBfreq_errors\fR
+.B freq_errors
 .ad
 .RS 24n
 .rt
