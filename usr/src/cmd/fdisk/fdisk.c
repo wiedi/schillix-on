@@ -2,8 +2,9 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
  *
  * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
  * or http://www.opensolaris.org/os/licensing.
@@ -1035,7 +1036,8 @@ main(int argc, char *argv[])
 			    sectors,
 			    sectsiz,
 			    Numcyl * heads * sectors,
-			    (Numcyl * heads * sectors * sectsiz) / 1048576);
+			    (int)(((long long)Numcyl *
+			    heads * sectors * sectsiz) / 1048576LL));
 			(void) fprintf(stderr, "Virtual (HBA) Geometry:\n");
 			(void) fprintf(stderr,
 			    "  cylinders[%d] heads[%d] sectors[%d]\n"
@@ -1045,8 +1047,8 @@ main(int argc, char *argv[])
 			    hba_sectors,
 			    sectsiz,
 			    hba_Numcyl * hba_heads * hba_sectors,
-			    (hba_Numcyl * hba_heads * hba_sectors * sectsiz) /
-			    1048576);
+			    (int)(((long long)hba_Numcyl *
+			    hba_heads * hba_sectors * sectsiz) / 1048576LL));
 		}
 	}
 
