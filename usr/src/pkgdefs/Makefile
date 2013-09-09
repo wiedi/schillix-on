@@ -442,6 +442,7 @@ COMMON_SUBDIRS= \
 	SUNWpppdt \
 	SUNWpppg \
 	SUNWpppgS \
+	SUNWproduct-registry-root \
 	SUNWpsdpr \
 	SUNWpsf	\
 	SUNWpsm-ipp \
@@ -569,6 +570,7 @@ COMMON_SUBDIRS= \
 	SUNWwlanu  \
 	SUNWwpar  \
 	SUNWwpau  \
+	SUNWwsr2  \
 	SUNWxcu4  \
 	SUNWxcu6  \
 	SUNWxwdv \

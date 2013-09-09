@@ -164,7 +164,8 @@ SUBDIRS += \
 	libdscfg	\
 	librdc		\
 	libinstzones	\
-	libpkg
+	libpkg		\
+	libwsreg
 
 SUBDIRS += \
 	passwdutil	\
@@ -363,6 +364,7 @@ MSGSUBDIRS=		\
 	libvscan	\
 	libwanboot	\
 	libwanbootutil	\
+	libwsreg	\
 	libzfs		\
 	libzonecfg	\
 	lvm		\
@@ -481,6 +483,7 @@ HDRSUBDIRS=		\
 	libwanboot	\
 	libwanbootutil	\
 	libwrap		\
+	libwsreg	\
 	libxcurses2	\
 	libzfs		\
 	libzfs_jni	\
