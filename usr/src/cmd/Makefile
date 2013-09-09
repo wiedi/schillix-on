@@ -252,6 +252,7 @@ COMMON_SUBDIRS=		\
 	mail		\
 	mailx		\
 	makekey		\
+	makeuuid	\
 	mdb		\
 	mesg		\
 	mkdir		\
@@ -313,6 +314,7 @@ COMMON_SUBDIRS=		\
 	prctl		\
 	print		\
 	priocntl	\
+	prodreg		\
 	profiles	\
 	projadd		\
 	projects	\
@@ -630,6 +632,7 @@ MSGSUBDIRS=		\
 	luxadm		\
 	lvm		\
 	mailx		\
+	makeuuid	\
 	mesg		\
 	mkdir		\
 	mkpwdict	\
@@ -659,6 +662,7 @@ MSGSUBDIRS=		\
 	pr		\
 	praudit		\
 	print		\
+	prodreg		\
 	profiles	\
 	projadd		\
 	projects	\
