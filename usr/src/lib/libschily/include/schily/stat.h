@@ -1,8 +1,8 @@
-/* @(#)stat.h	1.15 10/08/27 Copyright 1998-2010 J. Schilling */
+/* @(#)stat.h	1.18 13/03/19 Copyright 1998-2013 J. Schilling */
 /*
  *	Definitions for stat() file mode
  *
- *	Copyright (c) 1998-2010 J. Schilling
+ *	Copyright (c) 1998-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -198,6 +198,8 @@
 /*
  * Mode permission bits.
  * UNIX V.7 has only	S_ISUID/S_ISGID/S_ISVTX and S_IREAD/S_IWRITE/S_IEXEC
+ *
+ * S_ISUID/S_ISGID/S_ISVTX is available on UNIX V.7 and POSIX
  */
 #ifndef	S_ISUID			/* Set-user-ID on execution */
 #define	S_ISUID	0		/* If it is not defined, it is not supported */
@@ -209,68 +211,59 @@
 #define	S_ISVTX	0		/* If it is not defined, it is not supported */
 #endif
 
-#ifndef	S_IRUSR			/* Read permission, owner */
-#ifdef	S_IREAD
-#define	S_IRUSR	S_IREAD		/* Needed on old UNIX systems */
+/*
+ * S_IREAD/S_IWRITE/S_IEXEC is only available on UNIX V.7 but not on POSIX
+ * Emulate these definitions to support compilation of programs like
+ * SCCS and the Bourne Shell and to make the other definitions simpler.
+ */
+#ifndef	S_IREAD
+#ifdef	S_IRUSR
+#define	S_IREAD		S_IRUSR	/* Use POSIX name */
 #else
-#define	S_IRUSR	0400
+#define	S_IREAD		0400	/* Very old UNIX, use own definition */
 #endif
+#endif
+#ifndef	S_IWRITE
+#ifdef	S_IWUSR
+#define	S_IWRITE	S_IWUSR	/* Use POSIX name */
+#else
+#define	S_IWRITE	0200	/* Very old UNIX, use own definition */
+#endif
+#endif
+#ifndef	S_IEXEC
+#ifdef	S_IXUSR
+#define	S_IEXEC		S_IXUSR	/* Use POSIX name */
+#else
+#define	S_IEXEC		0100	/* Very old UNIX, use own definition */
+#endif
+#endif
+
+#ifndef	S_IRUSR			/* Read permission, owner */
+#define	S_IRUSR	S_IREAD		/* Needed on old UNIX systems */
 #endif
 #ifndef	S_IWUSR			/* Write permission, owner */
-#ifdef	S_IWRITE
 #define	S_IWUSR	S_IWRITE	/* Needed on old UNIX systems */
-#else
-#define	S_IWUSR	0200
-#endif
 #endif
 #ifndef	S_IXUSR			/* Execute/search permission, owner */
-#ifdef	S_IEXEC
 #define	S_IXUSR	S_IEXEC		/* Needed on old UNIX systems */
-#else
-#define	S_IXUSR	0100
-#endif
 #endif
 #ifndef	S_IRGRP			/* Read permission, group */
-#ifdef	S_IREAD
 #define	S_IRGRP	(S_IREAD >> 3)	/* Needed on old UNIX systems */
-#else
-#define	S_IRGRP	040
-#endif
 #endif
 #ifndef	S_IWGRP			/* Write permission, group */
-#ifdef	S_IWRITE
 #define	S_IWGRP	(S_IWRITE >> 3)	/* Needed on old UNIX systems */
-#else
-#define	S_IWGRP	020
-#endif
 #endif
 #ifndef	S_IXGRP			/* Execute/search permission, group */
-#ifdef	S_IEXEC
 #define	S_IXGRP	(S_IEXEC >> 3)	/* Needed on old UNIX systems */
-#else
-#define	S_IXGRP	010
-#endif
 #endif
 #ifndef	S_IROTH			/* Read permission, others */
-#ifdef	S_IREAD
 #define	S_IROTH	(S_IREAD >> 6)	/* Needed on old UNIX systems */
-#else
-#define	S_IROTH	004
-#endif
 #endif
 #ifndef	S_IWOTH			/* Write permission, others */
-#ifdef	S_IWRITE
 #define	S_IWOTH	(S_IWRITE >> 6)	/* Needed on old UNIX systems */
-#else
-#define	S_IWOTH	002
-#endif
 #endif
 #ifndef	S_IXOTH			/* Execute/search permission, others */
-#ifdef	S_IEXEC
 #define	S_IXOTH	(S_IEXEC >> 6)	/* Needed on old UNIX systems */
-#else
-#define	S_IXOTH	001
-#endif
 #endif
 
 #ifndef	S_IRWXU			/* Read, write, execute/search by owner */
@@ -291,45 +284,80 @@
  */
 #if	defined(HAVE_ST_ATIMENSEC)
 
+/*
+ * Found e.g. on NetBSD and OpenBSD.
+ */
 #define	stat_ansecs(s)		((s)->st_atimensec)
 #define	stat_mnsecs(s)		((s)->st_mtimensec)
 #define	stat_cnsecs(s)		((s)->st_ctimensec)
+
+#define	stat_set_ansecs(s, n)	((s)->st_atimensec = n)
+#define	stat_set_mnsecs(s, n)	((s)->st_mtimensec = n)
+#define	stat_set_cnsecs(s, n)	((s)->st_ctimensec = n)
 
 #define	_FOUND_STAT_NSECS_
 #endif
 
 #if	defined(HAVE_ST_ATIME_N)
 
+/*
+ * Found e.g. on AIX.
+ */
 #define	stat_ansecs(s)		((s)->st_atime_n)
 #define	stat_mnsecs(s)		((s)->st_mtime_n)
 #define	stat_cnsecs(s)		((s)->st_ctime_n)
+
+#define	stat_set_ansecs(s, n)	((s)->st_atime_n = n)
+#define	stat_set_mnsecs(s, n)	((s)->st_mtime_n = n)
+#define	stat_set_cnsecs(s, n)	((s)->st_ctime_n = n)
 
 #define	_FOUND_STAT_NSECS_
 #endif
 
 #if	defined(HAVE_ST__TIM) && !defined(_FOUND_STAT_NSECS_)
 
+/*
+ * Found e.g. on UnixWare.
+ */
 #define	stat_ansecs(s)		((s)->st_atim.st__tim.tv_nsec)
 #define	stat_mnsecs(s)		((s)->st_mtim.st__tim.tv_nsec)
 #define	stat_cnsecs(s)		((s)->st_ctim.st__tim.tv_nsec)
+
+#define	stat_set_ansecs(s, n)	((s)->st_atim.st__tim.tv_nsec = n)
+#define	stat_set_mnsecs(s, n)	((s)->st_mtim.st__tim.tv_nsec = n)
+#define	stat_set_cnsecs(s, n)	((s)->st_ctim.st__tim.tv_nsec = n)
 
 #define	_FOUND_STAT_NSECS_
 #endif
 
 #if	defined(HAVE_ST_NSEC) && !defined(_FOUND_STAT_NSECS_)
 
+/*
+ * Found e.g. on SunOS-5.x and IRIX.
+ */
 #define	stat_ansecs(s)		((s)->st_atim.tv_nsec)
 #define	stat_mnsecs(s)		((s)->st_mtim.tv_nsec)
 #define	stat_cnsecs(s)		((s)->st_ctim.tv_nsec)
+
+#define	stat_set_ansecs(s, n)	((s)->st_atim.tv_nsec = n)
+#define	stat_set_mnsecs(s, n)	((s)->st_mtim.tv_nsec = n)
+#define	stat_set_cnsecs(s, n)	((s)->st_ctim.tv_nsec = n)
 
 #define	_FOUND_STAT_NSECS_
 #endif
 
 #if	defined(HAVE_ST_ATIMESPEC) && !defined(_FOUND_STAT_NSECS_)
 
+/*
+ * Found e.g. on FreeBSD and Mac OS X.
+ */
 #define	stat_ansecs(s)		((s)->st_atimespec.tv_nsec)
 #define	stat_mnsecs(s)		((s)->st_mtimespec.tv_nsec)
 #define	stat_cnsecs(s)		((s)->st_ctimespec.tv_nsec)
+
+#define	stat_set_ansecs(s, n)	((s)->st_atimespec.tv_nsec = n)
+#define	stat_set_mnsecs(s, n)	((s)->st_mtimespec.tv_nsec = n)
+#define	stat_set_cnsecs(s, n)	((s)->st_ctimespec.tv_nsec = n)
 
 #define	_FOUND_STAT_NSECS_
 #endif
@@ -340,9 +368,16 @@
  */
 #if	defined(HAVE_ST_SPARE1) && !defined(_FOUND_STAT_NSECS_)
 
+/*
+ * Found e.g. on SunOS-4.x and HP-UX.
+ */
 #define	stat_ansecs(s)		((s)->st_spare1 * 1000)
 #define	stat_mnsecs(s)		((s)->st_spare2 * 1000)
 #define	stat_cnsecs(s)		((s)->st_spare3 * 1000)
+
+#define	stat_set_ansecs(s, n)	((s)->st_spare1 = n / 1000)
+#define	stat_set_mnsecs(s, n)	((s)->st_spare2 = n / 1000)
+#define	stat_set_cnsecs(s, n)	((s)->st_spare3 = n / 1000)
 
 #define	_FOUND_STAT_USECS_
 #define	_FOUND_STAT_NSECS_
@@ -352,6 +387,10 @@
 #define	stat_ansecs(s)		(0)
 #define	stat_mnsecs(s)		(0)
 #define	stat_cnsecs(s)		(0)
+
+#define	stat_set_ansecs(s, n)	(0)
+#define	stat_set_mnsecs(s, n)	(0)
+#define	stat_set_cnsecs(s, n)	(0)
 #endif
 
 #endif	/* _SCHILY_STAT_H */

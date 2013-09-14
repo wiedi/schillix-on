@@ -1,7 +1,8 @@
-/* @(#)util.c	1.12 11/01/30 2011 J. Schilling */
+/* @(#)util.c	1.21 11/11/07 2011 J. Schilling */
+#include <schily/mconfig.h>
 #ifndef lint
-static	char sccsid[] =
-	"@(#)util.c	1.12 11/01/30 2011 J. Schilling";
+static	UConst char sccsid[] =
+	"@(#)util.c	1.21 11/11/07 2011 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986 Larry Wall
@@ -17,6 +18,9 @@ static	char sccsid[] =
 #define	EXT
 #include "util.h"
 #include <schily/varargs.h>
+#include <schily/errno.h>
+
+static	Llong	fetchtime	__PR((char *t));
 
 /* Rename a file, copying it if necessary. */
 
@@ -32,7 +36,7 @@ move_file(from, to)
 
 	/* to stdout? */
 
-	if (strEQ(to, "-")) {
+	if (from && strEQ(to, "-")) {
 #ifdef DEBUGGING
 		if (debug & 4)
 			say(_("Moving %s to stdout.\n"), from);
@@ -67,9 +71,12 @@ move_file(from, to)
 				simplename = s+1;
 		}
 		/* find a backup name that is not the same file */
+		file_stat.st_ctime = (time_t)0;
 		while (stat(bakname, &file_stat) >= 0 &&
 			to_device == file_stat.st_dev &&
 			to_inode == file_stat.st_ino) {
+			if (file_stat.st_ctime >= starttime) /* mult patches */
+				goto backup_done;
 			for (s = simplename; *s && !islower(*s); s++) {
 				;
 				/* LINTED */
@@ -79,6 +86,8 @@ move_file(from, to)
 			else
 				Strcpy(simplename, simplename+1);
 		}
+		if (file_stat.st_ctime >= starttime) /* mult patches */
+			goto backup_done;
 		while (unlink(bakname) >= 0) {	/* while() is for Eunice */
 			;
 			/* LINTED */
@@ -87,6 +96,13 @@ move_file(from, to)
 		if (debug & 4)
 			say(_("Moving %s to %s.\n"), to, bakname);
 #endif
+#ifdef	HAVE_RENAME
+		if (rename(to, bakname) < 0) {
+			say(_("patch: can't backup %s, output is in %s\n"),
+			    to, from);
+			return (-1);
+		}
+#else
 		if (link(to, bakname) < 0) {
 			say(_("patch: can't backup %s, output is in %s\n"),
 			    to, from);
@@ -96,12 +112,27 @@ move_file(from, to)
 			;
 			/* LINTED */
 		}
+#endif
+	}
+backup_done:
+	if (from == NULL) {
+		if (!do_backup) {
+			if (debug & 4)
+				say(_("Removing file %s\n"), to);
+			if (unlink(to) != 0 && errno != ENOENT)
+				fatal(_("Can't remove file %s\n"), to);
+		}
+		return (0);
 	}
 #ifdef DEBUGGING
 	if (debug & 4)
 		say(_("Moving %s to %s.\n"), from, to);
 #endif
+#ifdef	HAVE_RENAME
+	if (rename(from, to) < 0) {		/* different file system? */
+#else
 	if (link(from, to) < 0) {		/* different file system? */
+#endif
 		int tofd;
 
 		tofd = creat(to, 0666);
@@ -123,6 +154,27 @@ move_file(from, to)
 	}
 	Unlink(from);
 	return (0);
+}
+
+void
+removedirs(path)
+	char	*path;
+{
+	char	*p = strrchr(path, '/');
+
+	if (p == NULL)
+		return;
+	while (p > path) {
+		*p = '\0';
+		if (rmdir(path) == 0 && verbose)
+			say(_("Removed empty directory %s\n"),
+				path);
+		*p = '/';
+		while (--p > path) {
+			if (*p == '/')
+				break;
+		}
+	}
 }
 
 /* Copy a file. */
@@ -156,7 +208,6 @@ savestr(s)
 	char *s;
 {
 	char *rv;
-	char *t;
 
 	if (!s)
 		s = "Oops";
@@ -298,14 +349,18 @@ set_signals(reset)
 	static RETSIGTYPE (*hupval) __PR((int)), (*intval) __PR((int));
 
 	if (!reset) {
+#ifdef	SIGHUP
 		hupval = signal(SIGHUP, SIG_IGN);
 		if (hupval != SIG_IGN)
 			hupval = (RETSIGTYPE(*) __PR((int)))my_exit;
+#endif
 		intval = signal(SIGINT, SIG_IGN);
 		if (intval != SIG_IGN)
 			intval = (RETSIGTYPE(*) __PR((int)))my_exit;
 	}
+#ifdef	SIGHUP
 	Signal(SIGHUP, hupval);
+#endif
 	Signal(SIGINT, intval);
 }
 
@@ -314,16 +369,25 @@ set_signals(reset)
 void
 ignore_signals()
 {
+#ifdef	SIGHUP
 	Signal(SIGHUP, SIG_IGN);
+#endif
 	Signal(SIGINT, SIG_IGN);
 }
 
 /* Make sure we'll have the directories to create a file. */
 
-void
-makedirs(filename, striplast)
+#ifndef	_SCHILY_SCHILY_H
+#ifdef	PROTOTYPES
+int
+makedirs(char *filename, mode_t mode, bool striplast)
+#else
+int
+makedirs(filename, mode, striplast)
 	char *filename;
+	mode_t mode;
 	bool striplast;
+#endif
 {
 	char tmpbuf[256];
 	char *s = tmpbuf;
@@ -345,7 +409,18 @@ makedirs(filename, striplast)
 	if (striplast)
 		dirvp--;
 	if (dirvp < 0)
-		return;
+		return (0);
+#if 1
+	for (i = 0; i <= dirvp; i++) {
+		mkdir(tmpbuf, mode);
+#if 0
+			S_IRUSR|S_IWUSR|S_IXUSR
+			|S_IRGRP|S_IWGRP|S_IXGRP
+			|S_IROTH|S_IWOTH|S_IXOTH);
+#endif
+		*dirv[i] = '/';
+	}
+#else
 	strcpy(buf, "mkdir");
 	s = buf;
 	for (i = 0; i <= dirvp; i++) {
@@ -355,20 +430,27 @@ makedirs(filename, striplast)
 		*dirv[i] = '/';
 	}
 	system(buf);
+#endif
+	return (0);
 }
+#endif	/* _SCHILY_SCHILY_H */
 
 /* Make filenames more reasonable. */
 
 char *
-fetchname(at, strip_leading, assume_exists)
+fetchname(at, strip_leading, assume_exists, isnulldate)
 	char *at;
 	int strip_leading;
 	int assume_exists;
+	bool *isnulldate;
 {
 	char *s;
 	char *name;
 	char *t;
 	char tmpbuf[200];
+
+	if (isnulldate)
+		*isnulldate = FALSE;
 
 	if (!at)
 		return (Nullch);
@@ -383,13 +465,18 @@ fetchname(at, strip_leading, assume_exists)
 		say(_("fetchname %s %d %d\n"),
 			name, strip_leading, assume_exists);
 #endif
-	if (strnEQ(name, "/dev/null", 9)) /* files can be created by diffing */
-		return (Nullch);	  /* against /dev/null. */
 	for (; *t && !isspace(*t); t++)
 		if (*t == '/')
 			if (--strip_leading >= 0)
 				name = t+1;
 	*t = '\0';
+	if (strEQ(name, "/dev/null")) {	/* files can be created by diffing */
+		if (isnulldate)		/* against /dev/null. */
+			*isnulldate = TRUE;
+		return (Nullch);
+	}
+	if (isnulldate)
+		*isnulldate = fetchtime(t) == 0;
 	if (name != s && *s != '/') {
 		name[-1] = '\0';
 		if (stat(s, &file_stat) && file_stat.st_mode & S_IFDIR) {
@@ -413,4 +500,47 @@ fetchname(at, strip_leading, assume_exists)
 		}
 	}
 	return (name);
+}
+
+static Llong
+fetchtime(t)
+	char	*t;
+{
+	Llong	d = -1;
+	struct tm tm;
+	int	n;
+	int	h;
+	int	m;
+
+	for (++t; *t != '\0' && isspace(*t); t++)
+		;
+	n = sscanf(t, "%4d-%2d-%2d %2d:%2d:%2d",
+			&tm.tm_year, &tm.tm_mon, &tm.tm_mday,
+			&tm.tm_hour, &tm.tm_min, &tm.tm_sec);
+	tm.tm_year -= 1900;
+	tm.tm_mon -= 1;
+
+	if (n != 6)
+		return (d);
+
+	if (strlen(t) <= 19)
+		return (d);
+
+	t += 19;
+	for (; *t != '\0' && !isspace(*t); t++)
+		;
+	for (; *t != '\0' && isspace(*t); t++)
+		;
+	n = sscanf(t, "%3d%2d", &h, &m);
+	if (n != 2)
+		return (d);
+	if (h < -24 || h > 25)
+		return (d);
+	if (m < 0 || m > 59)
+		return (d);
+	d = mklgmtime(&tm);
+	m += 60 * h;
+	m *= 60;
+	d -= m;
+	return (d);
 }

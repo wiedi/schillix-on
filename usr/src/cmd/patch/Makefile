@@ -33,6 +33,8 @@ CPPFLAGS +=	-DNO_PRINTFLIKE=1
 
 #XGETFLAGS += -a -x $(PROG).xcl
 
+LDLIBS += -lschily
+
 .KEEP_STATE:
 
 all: $(PROG)

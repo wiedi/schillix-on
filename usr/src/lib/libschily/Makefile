@@ -77,6 +77,9 @@ HDRS=	\
 	device.h  \
 	dirent.h  \
 	dlfcn.h  \
+	err_arch.h  \
+	err_bit.h  \
+	err_char.h  \
 	errno.h  \
 	fcntl.h  \
 	fetchdir.h  \
@@ -93,6 +96,7 @@ HDRS=	\
 	in.h  \
 	inet.h  \
 	intcvt.h  \
+	inttypes.h  \
 	io.h  \
 	ioctl.h  \
 	ipc.h  \
@@ -113,6 +117,7 @@ HDRS=	\
 	nlsdefs.h  \
 	param.h  \
 	patmatch.h  \
+	poll.h  \
 	priv.h  \
 	procfs.h  \
 	prototyp.h  \
@@ -138,6 +143,8 @@ HDRS=	\
 	socket.h  \
 	standard.h  \
 	stat.h  \
+	stdarg.h  \
+	stdint.h  \
 	stdio.h  \
 	stdlib.h  \
 	stkframe.h  \
@@ -148,6 +155,7 @@ HDRS=	\
 	termcap.h  \
 	termios.h  \
 	time.h  \
+	timeb.h  \
 	times.h  \
 	types.h  \
 	unistd.h  \
@@ -160,6 +168,7 @@ HDRS=	\
 	walk.h  \
 	wchar.h  \
 	wctype.h  \
+	windows.h  \
 	xconfig.h  \
 	xmconfig.h
 

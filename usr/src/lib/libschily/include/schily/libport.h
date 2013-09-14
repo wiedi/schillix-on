@@ -1,6 +1,9 @@
-/* @(#)libport.h	1.25 10/08/27 Copyright 1995-2010 J. Schilling */
+/* @(#)libport.h	1.36 13/05/01 Copyright 1995-2013 J. Schilling */
 /*
- *	Copyright (c) 1995-2010 J. Schilling
+ *	Prototypes for POSIX standard functions that may be missing on the
+ *	local platform and thus are implemented inside libschily.
+ *
+ *	Copyright (c) 1995-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -33,7 +36,7 @@
 extern "C" {
 #endif
 
-#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_) || defined(size_t)
+#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_H) || defined(size_t)
 #	ifndef	FOUND_SIZE_T
 #	define	FOUND_SIZE_T
 #	endif
@@ -54,6 +57,18 @@ extern "C" {
 /* #undef	HAVE_USLEEP */
 #endif
 
+#ifdef	FOUND_SIZE_T
+/*
+ * We currently cannot define this here because there IXIX has a definition
+ * than violates the standard.
+ */
+#ifndef	HAVE_SNPRINTF
+/*PRINTFLIKE3*/
+extern	int	snprintf __PR((char *, size_t, const char *, ...))
+					__printflike__(3, 4);
+#endif
+#endif
+
 #ifndef	HAVE_GETHOSTID
 extern	long		gethostid	__PR((void));
 #endif
@@ -62,6 +77,15 @@ extern	int		getpagesize	__PR((void));
 #endif
 #ifndef	HAVE_USLEEP
 extern	int		usleep		__PR((int usec));
+#endif
+
+#ifndef	HAVE_STRCASECMP
+extern	int		strcasecmp	__PR((const char *, const char *));
+#endif
+#ifdef	FOUND_SIZE_T
+#ifndef	HAVE_STRNCASECMP
+extern 	int		strncasecmp	__PR((const char *, const char *, size_t));
+#endif
 #endif
 
 #ifndef	HAVE_STRCAT
@@ -112,6 +136,10 @@ extern	char		*strncpy	__PR((char *s1, const char *s2,
 #endif	/* FOUND_SIZE_T */
 #ifndef	HAVE_STRRCHR
 extern	char		*strrchr	__PR((const char *s1, int c));
+#endif
+
+#ifndef	HAVE_STRSTR
+extern	char		*strstr		__PR((const char *s1, const char *s2));
 #endif
 
 #ifdef	_SCHILY_WCHAR_H
@@ -166,6 +194,10 @@ extern	wchar_t		*wcsncpy	__PR((wchar_t *s1, const wchar_t *s2,
 #ifndef	HAVE_WCSRCHR
 extern	wchar_t		*wcsrchr	__PR((const wchar_t *s1, wchar_t c));
 #endif
+
+#ifndef	HAVE_WCSSTR
+extern	wchar_t		*wcsstr		__PR((const wchar_t *s1, const wchar_t *s2));
+#endif
 #endif	/* _SCHILY_WCHAR_H */
 
 #ifndef	HAVE_RENAME
@@ -189,6 +221,95 @@ extern	char		*basename	__PR((char *name));
 #ifndef	HAVE_DIRNAME
 extern	char		*dirname	__PR((char *name));
 #endif
+
+#ifndef	HAVE_TIMEGM
+#if	defined(_SCHILY_TIME_H)
+extern	time_t		timegm		__PR((struct tm *));
+#endif
+#endif
+
+#ifndef	HAVE_GETUID
+extern	uid_t	getuid	__PR((void));
+#endif
+#ifndef	HAVE_GETEUID
+extern	uid_t	geteuid	__PR((void));
+#endif
+#ifndef	HAVE_SETUID
+extern	int	setuid	__PR((uid_t uid));
+#endif
+#ifndef	HAVE_SETEUID
+extern	int	seteuid	__PR((uid_t uid));
+#endif
+
+#ifndef	HAVE_GETGID
+extern	gid_t	getgid	__PR((void));
+#endif
+#ifndef	HAVE_GETEGID
+extern	gid_t	getegid	__PR((void));
+#endif
+#ifndef	HAVE_SETGID
+extern	int	setgid	__PR((gid_t gid));
+#endif
+#ifndef	HAVE_SETEGID
+extern	int	setegid	__PR((gid_t gid));
+#endif
+
+#ifndef	HAVE_GETPWNAM
+extern	struct passwd *getpwnam __PR((const char *name));
+#endif
+#ifndef	HAVE_GETPWENT
+extern	struct passwd *getpwent __PR((void));
+#endif
+#ifndef	HAVE_GETPWUID
+extern	struct passwd *getpwuid __PR((uid_t uid));
+#endif
+#ifndef	HAVE_SETPWENT
+extern	void		setpwent __PR((void));
+#endif
+#ifndef	HAVE_ENDPWENT
+extern	void		endpwent __PR((void));
+#endif
+
+
+#ifndef	HAVE_GETGRNAM
+extern	struct group	*getgrnam __PR((const char *name));
+#endif
+#ifndef	HAVE_GETGRENT
+extern	struct group	*getgrent __PR((void));
+#endif
+#ifndef	HAVE_GETGRGID
+extern	struct group	*getgrgid __PR((gid_t gid));
+#endif
+#ifndef	HAVE_SETGRENT
+extern	void		setgrent __PR((void));
+#endif
+#ifndef	HAVE_ENDGRENT
+extern	void		endgrent __PR((void));
+#endif
+
+#ifndef	HAVE_FCHDIR
+extern	int		fchdir __PR((int fd));
+#endif
+#ifndef	HAVE_OPENAT
+extern	int		openat __PR((int fd, const char *name, int oflag, ...));
+#endif
+
+
+#ifndef	HAVE_GETTIMEOFDAY
+#ifdef	_SCHILY_TIME_H
+extern	int		gettimeofday __PR((struct timeval *__tp, void *__tzp));
+#endif
+#endif
+
+
+#ifdef	__SUNOS4
+/*
+ * Define prototypes for POSIX standard functions that are missing on SunOS-4.x
+ * to make compilation smooth.
+ */
+#include <schily/sunos4_proto.h>
+
+#endif	/* __SUNOS4 */
 
 #ifdef	__cplusplus
 }

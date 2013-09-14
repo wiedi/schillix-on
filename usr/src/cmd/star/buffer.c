@@ -1,13 +1,13 @@
-/* @(#)buffer.c	1.160 11/01/04 Copyright 1985, 1995, 2001-2011 J. Schilling */
+/* @(#)buffer.c	1.165 13/04/29 Copyright 1985, 1995, 2001-2013 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)buffer.c	1.160 11/01/04 Copyright 1985, 1995, 2001-2011 J. Schilling";
+	"@(#)buffer.c	1.165 13/04/29 Copyright 1985, 1995, 2001-2013 J. Schilling";
 #endif
 /*
  *	Buffer handling routines
  *
- *	Copyright (c) 1985, 1995, 2001-2011 J. Schilling
+ *	Copyright (c) 1985, 1995, 2001-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -40,7 +40,6 @@ static	UConst char sccsid[] =
 #include <schily/stdio.h>
 #include <schily/stdlib.h>
 #include <schily/unistd.h>
-#include <schily/libport.h>	/* getpagesize() */
 #include <schily/fcntl.h>
 #include <schily/ioctl.h>
 #include <schily/varargs.h>
@@ -51,15 +50,17 @@ static	UConst char sccsid[] =
 #include "fifo.h"
 #include <schily/string.h>
 #include <schily/wait.h>
-#include <schily/schily.h>
 #include <schily/mtio.h>
 #include <schily/librmt.h>
+#include <schily/schily.h>
 #include "starsubs.h"
 
 #include <schily/io.h>		/* for setmode() prototype */
+#include <schily/libport.h>	/* getpagesize() */
 
 long	bigcnt	= 0;
-int	bigsize	= 0;		/* Tape block size */
+int	bigsize	= 0;		/* Tape block size (may shrink < bigbsize) */
+int	bigbsize = 0;		/* Big buffer size */
 int	bufsize	= 0;		/* Available buffer size */
 char	*bigbase = NULL;
 char	*bigbuf	= NULL;
@@ -115,6 +116,7 @@ extern	BOOL	bzflag;
 extern	BOOL	lzoflag;
 extern	BOOL	p7zflag;
 extern	BOOL	xzflag;
+extern	BOOL	lzipflag;
 extern	char	*compress_prg;
 extern	BOOL	multblk;
 extern	BOOL	partial;
@@ -387,6 +389,11 @@ opentape()
 					"WARNING: Archive is 'xz' compressed, trying to use the -xz option.\n");
 				xzflag = TRUE;
 				break;
+			case C_LZIP:
+				if (!silent) errmsgno(EX_BAD,
+					"WARNING: Archive is 'lzip' compressed, trying to use the -lzip option.\n");
+				lzipflag = TRUE;
+				break;
 			default:
 				if (!silent) errmsgno(EX_BAD,
 					"WARNING: Unknown compression type %d.\n", cmptype);
@@ -395,7 +402,9 @@ opentape()
 		}
 		mtseek((off_t)0, SEEK_SET);
 	}
-	if (Zflag || zflag || bzflag || lzoflag || p7zflag || xzflag || compress_prg) {
+	if (Zflag || zflag || bzflag || lzoflag ||
+	    p7zflag || xzflag || lzipflag ||
+	    compress_prg) {
 		if (isremote)
 			comerrno(EX_BAD, "Cannot compress remote archives (yet).\n");
 		/*
@@ -582,6 +591,7 @@ startvol(buf, amount)
 	long	xcnt = 0;
 	BOOL	ofifo = use_fifo;
 static	BOOL	active = FALSE;	/* If TRUE: We are already in a media change */
+extern	m_head	*mp;
 
 	if (amount <= 0)
 		return (amount);
@@ -592,6 +602,19 @@ static	BOOL	active = FALSE;	/* If TRUE: We are already in a media change */
 		"Panic: trying to write more than bs (%d > %d)!\n",
 		amount, bigsize);
 	}
+	mp->chreel = TRUE;
+#ifdef	FIFO
+	if (use_fifo) {
+		/*
+		 * Make sure the put side of the FIFO is waiting either on
+		 * mp->iblocked (because the FIFO is full) or on mp->reelwait
+		 * before temporary disabling the FIFO during media change.
+		 */
+		while (mp->iblocked == FALSE && mp->reelwait == FALSE) {
+			usleep(100000);
+		}
+	}
+#endif
 	active = TRUE;
 
 	/*
@@ -627,6 +650,12 @@ static	BOOL	active = FALSE;	/* If TRUE: We are already in a media change */
 	bigcnt = ocnt;
 	use_fifo = ofifo;
 	active = FALSE;
+	mp->chreel = FALSE;
+#ifdef	FIFO
+	if (use_fifo) {
+		fifo_reelwake();
+	}
+#endif
 	return (xcnt);		/* Return the amount taken from orig. buffer */
 }
 
@@ -828,7 +857,7 @@ initbuf(nblocks)
 		}
 	}
 	stats->nblocks = nblocks;
-	stats->blocksize = bigsize;
+	stats->blocksize = bigbsize = bigsize;
 	stats->volno = 1;
 	stats->swapflg = -1;
 }
@@ -1215,6 +1244,12 @@ writetape(buf, amount)
 		 */
 		return (-2);
 	}
+	if (multivol && (err == ENXIO)) {
+		/*
+		 * EOF condition on disk devices
+		 */
+		return (-2);
+	}
 
 	if (cnt == stats->blocksize)
 		stats->blocks++;
@@ -1527,7 +1562,7 @@ mtioctl(cmd, count)
 		ret = rmtioctl(remfd, cmd, count);
 #endif
 	} else {
-#ifdef	MTIOCTOP
+#if	defined(MTIOCTOP) && defined(HAVE_IOCTL)
 		struct mtop mtop;
 
 		mtop.mt_op = cmd;
@@ -1535,6 +1570,11 @@ mtioctl(cmd, count)
 
 		ret = ioctl(fdown(tarf), MTIOCTOP, &mtop);
 #else
+#ifdef	ENOSYS
+		seterrno(ENOSYS);
+#else
+		seterrno(EINVAL);
+#endif
 		return (-1);
 #endif
 	}
@@ -1610,7 +1650,7 @@ prstats()
 		p = mp->end;
 	} else
 #endif
-		p = &bigbuf[bigsize];
+		p = &bigbuf[bigbsize];
 
 	if ((*p != 'U' && *p != ' ') || p[1] != 'U')
 		errmsgno(EX_BAD, "The buffer has been overwritten, please contact the author.\n");
@@ -1853,6 +1893,8 @@ compressopen()
 		zip_prog = "p7zip";
 	else if (xzflag)
 		zip_prog = "xz";
+	else if (lzipflag)
+		zip_prog = "lzip";
 
 	multblk = TRUE;
 
@@ -1965,6 +2007,8 @@ compressclose()
 		zip_prog = "p7zip";
 	else if (xzflag)
 		zip_prog = "xz";
+	else if (lzipflag)
+		zip_prog = "lzip";
 
 #ifdef __DJGPP__
 	if (cflag) {

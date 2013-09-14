@@ -1,6 +1,6 @@
 /*
  * This file has been generated automatically
- * by @(#)avoffset.c	1.30 09/07/10 Copyright 1987, 1995-2009 J. Schilling
+ * by @(#)avoffset.c	1.33 11/11/28 Copyright 1987, 1995-2011 J. Schilling
  * do not edit by hand.
  *
  * This file includes definitions for AV_OFFSET and FP_INDIR.
