@@ -1,4 +1,4 @@
-/* @(#)schily.h	1.94 10/11/18 Copyright 1985-2010 J. Schilling */
+/* @(#)schily.h	1.108 13/05/01 Copyright 1985-2013 J. Schilling */
 /*
  *	Definitions for libschily
  *
@@ -18,7 +18,7 @@
  *	include ctype.h past schily/schily.h as OpenBSD does not follow POSIX
  *	and defines EOF in ctype.h
  *
- *	Copyright (c) 1985-2010 J. Schilling
+ *	Copyright (c) 1985-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -50,12 +50,12 @@
 extern "C" {
 #endif
 
-#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_) || defined(off_t)
+#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_H) || defined(off_t)
 #	ifndef	FOUND_OFF_T
 #	define	FOUND_OFF_T
 #	endif
 #endif
-#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_) || defined(size_t)
+#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_H) || defined(size_t)
 #	ifndef	FOUND_SIZE_T
 #	define	FOUND_SIZE_T
 #	endif
@@ -165,6 +165,10 @@ extern	int	js_fspawnl __PR((FILE *, FILE *, FILE *, const char *, ...));
 extern	int	js_fspawnv_nowait __PR((FILE *, FILE *, FILE *,
 					const char *, int, char *const*));
 extern	int	js_fgetline __PR((FILE *, char *, int));
+#ifdef	FOUND_SIZE_T
+extern	ssize_t	fgetaline __PR((FILE *, char **, size_t *));
+extern	ssize_t	getaline __PR((char **, size_t *));
+#endif
 extern	int	fgetstr __PR((FILE *, char *, int));
 extern	int	file_getraise __PR((FILE *));
 extern	void	file_raise __PR((FILE *, int));
@@ -214,6 +218,42 @@ extern	int	spawnv_nowait __PR((FILE *, FILE *, FILE *,
 #endif	/* __never_def__ */
 #endif	/* EOF */
 
+#ifdef	FOUND_SIZE_T
+extern	char	*abspath __PR((const char *relp, char *absp, size_t asize));
+extern	char	*absnpath __PR((const char *relp, char *absp, size_t asize));
+#ifndef	HAVE_RESOLVEPATH
+extern	int	resolvepath __PR((const char *__path, char *__buf, size_t __bufsiz));
+#endif
+extern	int	resolvenpath __PR((const char *__path, char *__buf, size_t __bufsiz));
+#endif
+
+#ifdef	_SCHILY_TYPES_H
+extern	int	mkdirs __PR((char *, mode_t));
+extern	int	makedirs __PR((char *, mode_t, int __striplast));
+#endif
+
+extern	int	lxchdir	__PR((char *));
+#ifdef	HAVE_FCHDIR
+#define	fdsetname(fd, name)	(0)
+#define	fdclosename(fd)		(0)
+#else
+extern	int	fdsetname __PR((int fd, const char *name));
+extern	int	fdclosename __PR((int fd));
+#endif
+extern	int	diropen __PR((const char *));
+extern	int	dirrdopen __PR((const char *));
+extern	int	dirclose __PR((int));
+
+struct save_wd {
+	int	fd;
+	char	*name;
+};
+
+extern int	savewd	__PR((struct save_wd *sp));
+extern void	closewd	__PR((struct save_wd *sp));
+extern int	restorewd __PR((struct save_wd *sp));
+
+
 #ifdef	_SCHILY_UTYPES_H
 typedef struct gnmult {
 	char	key;
@@ -229,9 +269,17 @@ extern	int	getxtnum  __PR((char *arg, time_t *valp, gnmult_t *mult));
 extern	int	getllxtnum __PR((char *arg, Llong *lvalp, gnmult_t *mult));
 #endif
 extern	int	getnum	__PR((char *arg, long *valp));
-#ifdef	_SCHILY_TYPES_H
+#ifdef	_SCHILY_TIME_H
 extern	int	gettnum	__PR((char *arg, time_t *valp));
 #endif
+
+#ifdef	_SCHILY_TIME_H
+#ifdef	_SCHILY_UTYPES_H
+extern	Llong		mklgmtime	__PR((struct tm *));
+#endif
+extern	time_t		mkgmtime	__PR((struct tm *));
+#endif
+
 
 #ifdef	EOF			/* stdio.h has been included */
 #ifdef	_SCHILY_TYPES_H
@@ -242,9 +290,11 @@ extern	int	gettnum	__PR((char *arg, time_t *valp));
 #define	GP_DOX		1	/* 'X' perm character is valid		  */
 #define	GP_XERR		2	/* 'X' perm characters are invalid	  */
 #define	GP_FPERM	4	/* TRUE if we implement find -perm	  */
+#define	GP_UMASK	8	/* TRUE if we implement umask		  */
 
 extern	int	getperm	__PR((FILE *f, char *perm, char *opname, \
 				mode_t *modep, int smode, int flag));
+extern	void	permtostr	__PR((mode_t mode, char *));
 #endif
 #endif
 
@@ -298,6 +348,7 @@ extern	int	_comerr		__PR((FILE *, int, int, const char *, va_list));
 extern	int	error __PR((const char *, ...)) __printflike__(1, 2);
 #ifdef	FOUND_SIZE_T
 extern	char	*fillbytes __PR((void *, ssize_t, char));
+extern	char	*zerobytes __PR((void *, ssize_t));
 extern	char	*findbytes __PR((const void *, ssize_t, char));
 #endif
 extern	char	*findinpath __PR((char *__name, int __mode,
@@ -358,17 +409,6 @@ extern	void	setfp __PR((void * const *));
 extern	int	wait_chld __PR((int));		/* for fspawnv_nowait() */
 extern	int	geterrno __PR((void));
 extern	void	raisecond __PR((const char *, long));
-#ifdef	FOUND_SIZE_T
-/*
- * We currently cannot define this here because there IXIX has a definition
- * than violates the standard.
- */
-#ifndef	HAVE_SNPRINTF
-/*PRINTFLIKE3*/
-extern	int	snprintf __PR((char *, size_t, const char *, ...))
-					__printflike__(3, 4);
-#endif
-#endif
 #ifdef	__never__
 /*
  * sprintf() may be declared incorrectly somewhere else
@@ -400,6 +440,7 @@ extern	int	qftofs __PR((char *, long double, int, int));
 /*PRINTFLIKE2*/
 extern	int	js_fprintf	__PR((FILE *, const char *, ...))
 							__printflike__(2, 3);
+#endif	/* EOF */
 /*PRINTFLIKE1*/
 extern	int	js_printf	__PR((const char *, ...)) __printflike__(1, 2);
 #ifdef	FOUND_SIZE_T
@@ -410,7 +451,6 @@ extern	int	js_snprintf	__PR((char *, size_t, const char *, ...))
 /*PRINTFLIKE2*/
 extern	int	js_sprintf	__PR((char *, const char *, ...))
 							__printflike__(2, 3);
-#endif	/* EOF */
 
 #ifdef	FOUND_SIZE_T
 extern	void	swabbytes	__PR((void *, ssize_t));
@@ -422,6 +462,7 @@ extern	void	**getfp		__PR((void));
 extern	int	flush_reg_windows __PR((int));
 #ifdef	FOUND_SIZE_T
 extern	ssize_t	cmpbytes	__PR((const void *, const void *, ssize_t));
+extern	int	cmpmbytes	__PR((const void *, const void *, ssize_t));
 extern	ssize_t	cmpnullbytes	__PR((const void *, ssize_t));
 #endif
 

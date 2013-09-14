@@ -1,10 +1,11 @@
 /*
  * This file has been generated automatically
- * by @(#)align_test.c	1.26 09/11/07 Copyright 1995-2009 J. Schilling
+ * by @(#)align_test.c	1.30 13/04/25 Copyright 1995-2013 J. Schilling
  * do not edit by hand.
  */
 #ifndef	__ALIGN_H
 #define	__ALIGN_H
+
 
 #define	ALIGN_SHORT	2	/* alignment value for (short *)	*/
 #define	ALIGN_SMASK	1	/* alignment mask  for (short *)	*/

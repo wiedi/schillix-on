@@ -1,4 +1,4 @@
-/* @(#)star.h	1.123 11/01/01 Copyright 1985, 1995-2011 J. Schilling */
+/* @(#)star.h	1.125 11/04/12 Copyright 1985, 1995-2011 J. Schilling */
 /*
  *	Copyright (c) 1985, 1995-2011 J. Schilling
  */
@@ -97,7 +97,8 @@ extern "C" {
 #define	C_LZO		8	/* Compr. with 'lzop', unpack with 'lzop'   */
 #define	C_7Z		9	/* Compr. with 'p7zip', unpack with 'p7zip' */
 #define	C_XZ		10	/* Compr. with 'xz', unpack with 'xz'	    */
-#define	C_MAX		10
+#define	C_LZIP		11	/* Compr. with 'lzip', unpack with 'lzip'   */
+#define	C_MAX		11
 
 /*
  * Header size values
@@ -664,6 +665,7 @@ typedef	struct	{
 #define	F_SAME		0x80000	/* Same symlink of special found	  */
 #define	F_DATA_SKIPPED	0x100000 /* The data part of the file was skipped */
 #define	F_BAD_ACL	0x200000 /* Unsupported ACL encoding type	  */
+#define	F_ALL_HOLE	0x400000 /* File is sparse, one hole with no data */
 
 /*
  * Used with f_xflags

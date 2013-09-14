@@ -1,13 +1,13 @@
-/* @(#)extract.c	1.137 10/08/23 Copyright 1985-2010 J. Schilling */
+/* @(#)extract.c	1.142 13/09/07 Copyright 1985-2013 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)extract.c	1.137 10/08/23 Copyright 1985-2010 J. Schilling";
+	"@(#)extract.c	1.142 13/09/07 Copyright 1985-2013 J. Schilling";
 #endif
 /*
  *	extract files from archive
  *
- *	Copyright (c) 1985-2010 J. Schilling
+ *	Copyright (c) 1985-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -352,16 +354,10 @@ extracti(info, imp)
 		return (FALSE);
 	}
 	/*
-	 * If uncond is set, then newer() doesn't call getinfo(&cinfo)
+	 * Name substitution and interactive name changing need to happen before
+	 * we check whether the file is newer than an existing file of the same
+	 * name in the filesystem.
 	 */
-	if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
-		void_file(info);
-		return (FALSE);
-	}
-	if (is_symlink(info) && same_symlink(info)) {
-		void_file(info);
-		return (FALSE);
-	}
 	if (do_subst && subst(info)) {
 		if (info->f_name[0] == '\0') {
 			if (verbose)
@@ -375,6 +371,19 @@ extracti(info, imp)
 	if (interactive && !ia_change(ptb, info)) {
 		if (!nflag)
 			fprintf(vpr, "Skipping ...\n");
+		void_file(info);
+		return (FALSE);
+	}
+	/*
+	 * If uncond is set and neither keep_old nor refresh_old is set,
+	 * then newer() doesn't call getinfo(&cinfo).
+	 * As newer() calls getinfo(&cinfo), it also checks for refresh_old.
+	 */
+	if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
+		void_file(info);
+		return (FALSE);
+	}
+	if (is_symlink(info) && same_symlink(info)) {
 		void_file(info);
 		return (FALSE);
 	}
@@ -526,7 +535,7 @@ newer(info, cinfo)
 	FINFO	*cinfo;
 {
 
-	if (uncond)
+	if (uncond && !keep_old && !refresh_old)
 		return (FALSE);
 	if (!_getinfo(info->f_name, cinfo)) {
 		if (refresh_old) {
@@ -540,6 +549,9 @@ newer(info, cinfo)
 			errmsgno(EX_BAD, "file '%s' exists.\n", info->f_name);
 		return (TRUE);
 	}
+	if (uncond)
+		return (FALSE);
+
 	if (xdot) {
 		if (info->f_name[0] == '.' &&
 		    (info->f_name[1] == '\0' ||
@@ -726,7 +738,7 @@ create_dirs(name)
 		return (TRUE);
 	}
 	*dp = '\0';
-	if (access(name, 0) < 0) {
+	if (access(name, F_OK) < 0) {
 		if (_create_dirs(name)) {
 			*dp = '/';
 			return (TRUE);
@@ -1377,10 +1389,16 @@ copy_file(from, to, do_symlink, eflags)
 		return (-2);
 	}
 
+rretry:
 	if ((fin = fileopen(from, "rub")) == 0) {
+		if (geterrno() == EINTR)
+			goto rretry;
 		errmsg("Cannot open '%s'.\n", from);
 	} else {
+wretry:
 		if ((fout = fileopen(to, "wtcub")) == 0) {
+			if (geterrno() == EINTR)
+				goto wretry;
 #ifdef	__really__
 			errmsg("Cannot create '%s'.\n", to);
 #endif
@@ -1563,7 +1581,13 @@ file_open(info, name)
 	FINFO	*info;
 	char	*name;
 {
-	return (filemopen(name, "wctub", osmode(info->f_mode) & mode_mask));
+	FILE	*f;
+
+	while ((f = filemopen(name, "wctub",
+				osmode(info->f_mode) & mode_mask)) == NULL &&
+				geterrno() == EINTR)
+		;
+	return (f);
 }
 
 /*

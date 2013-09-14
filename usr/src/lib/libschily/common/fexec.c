@@ -1,8 +1,8 @@
-/* @(#)fexec.c	1.45 10/10/21 Copyright 1985, 1995-2010 J. Schilling */
+/* @(#)fexec.c	1.49 13/01/27 Copyright 1985, 1995-2013 J. Schilling */
 /*
  *	Execute a program with stdio redirection
  *
- *	Copyright (c) 1985, 1995-2010 J. Schilling
+ *	Copyright (c) 1985, 1995-2013 J. Schilling
  *
  *	This is an interface that exists in the public since 1982.
  *	The POSIX.1-2008 standard did ignore POSIX rules not to
@@ -44,6 +44,17 @@
 #include <schily/vfork.h>
 #endif	/* __DO__FEXEC__ */
 
+#if	defined(IS_MACOS_X) && defined(HAVE_CRT_EXTERNS_H)
+/*
+ * The MAC OS X linker does not grok "common" varaibles.
+ * We need to fetch the address of "environ" using a hack.
+ */
+#include <crt_externs.h>
+#define	environ	*_NSGetEnviron()
+#else
+extern	char **environ;
+#endif
+
 /*
  * Check whether fexec may be implemented...
  */
@@ -82,6 +93,9 @@ EXPORT	int	fexecve __PR((const char *, FILE *, FILE *, FILE *,
 #undef	js_fexecle
 #undef	__DO__FEXEC__
 
+/*
+ * Use ac == -1 together with a NULL terminated arg vector.
+ */
 EXPORT int
 fexecv(name, in, out, err, ac, av)
 	const char *name;
@@ -89,7 +103,8 @@ fexecv(name, in, out, err, ac, av)
 	int ac;
 	char *av[];
 {
-	av[ac] = NULL;			/*  force list to be null terminated */
+	if (ac >= 0)
+		av[ac] = NULL;		/*  force list to be null terminated */
 	return (js_fexecve(name, in, out, err, av, environ));
 }
 
@@ -117,17 +132,6 @@ fexecve(name, in, out, err, av, env)
 					(t)  == EIO)
 #endif
 
-#if	defined(IS_MACOS_X) && defined(HAVE_CRT_EXTERNS_H)
-/*
- * The MAC OS X linker does not grok "common" varaibles.
- * We need to fetch the address of "environ" using a hack.
- */
-#include <crt_externs.h>
-#define	environ	*_NSGetEnviron()
-#else
-extern	char **environ;
-#endif
-
 #ifndef	set_child_standard_fds
 LOCAL void	 fdcopy __PR((int, int));
 LOCAL void	 fdmove __PR((int, int));
@@ -138,12 +142,12 @@ LOCAL const char *getpath __PR((char * const *));
 #ifdef	F_GETFD
 #define	fd_getfd(fd)		fcntl((fd), F_GETFD, 0)
 #else
-#define	fd_getfd(fd)
+#define	fd_getfd(fd)		(0)
 #endif
 #ifdef	F_SETFD
 #define	fd_setfd(fd, val)	fcntl((fd), F_SETFD, (val));
 #else
-#define	fd_setfd(fd, val)
+#define	fd_setfd(fd, val)	(0)
 #endif
 #endif	/* __DO__FEXEC__ */
 
@@ -274,6 +278,9 @@ const	char	**pav;
 }
 
 #ifndef	__DO__FEXEC__
+/*
+ * Use ac == -1 together with a NULL terminated arg vector.
+ */
 EXPORT int
 js_fexecv(name, in, out, err, ac, av)
 	const char *name;
@@ -281,7 +288,8 @@ js_fexecv(name, in, out, err, ac, av)
 	int ac;
 	char *av[];
 {
-	av[ac] = NULL;			/*  force list to be null terminated */
+	if (ac >= 0)
+		av[ac] = NULL;		/*  force list to be null terminated */
 	return (js_fexecve(name, in, out, err, av, environ));
 }
 
@@ -369,19 +377,19 @@ js_fexecve(name, in, out, err, av, env)
 	if (fin != STDIN_FILENO) {
 		f[0] = fd_getfd(STDIN_FILENO);
 		o[0] = dup(STDIN_FILENO);
-		fd_setfd(o[0], 1);
+		fd_setfd(o[0], FD_CLOEXEC);
 		fdmove(fin, STDIN_FILENO);
 	}
 	if (fout != STDOUT_FILENO) {
 		f[1] = fd_getfd(STDOUT_FILENO);
 		o[1] = dup(STDOUT_FILENO);
-		fd_setfd(o[1], 1);
+		fd_setfd(o[1], FD_CLOEXEC);
 		fdmove(fout, STDOUT_FILENO);
 	}
 	if (ferr != STDERR_FILENO) {
 		f[2] = fd_getfd(STDERR_FILENO);
 		o[2] = dup(STDERR_FILENO);
-		fd_setfd(o[2], 1);
+		fd_setfd(o[2], FD_CLOEXEC);
 		fdmove(ferr, STDERR_FILENO);
 	}
 #endif

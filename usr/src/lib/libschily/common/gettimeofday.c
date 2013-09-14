@@ -1,13 +1,13 @@
-/* @(#)gettimeofday.c	1.4 10/05/24 Copyright 2007-2010 J. Schilling */
+/* @(#)gettimeofday.c	1.9 12/11/29 Copyright 2007-2012 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)gettimeofday.c	1.4 10/05/24 Copyright 2007-2010 J. Schilling";
+	"@(#)gettimeofday.c	1.9 12/11/29 Copyright 2007-2012 J. Schilling";
 #endif
 /*
  *	Emulate gettimeofday where it does not exist
  *
- *	Copyright (c) 2007-2010 J. Schilling
+ *	Copyright (c) 2007-2012 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -21,20 +21,28 @@ static	UConst char sccsid[] =
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
 
-#if	!defined(HAVE_GETTIMEOFDAY) && defined(_MSC_VER)
-#include <windows.h>
+#if	!defined(HAVE_GETTIMEOFDAY)
+#if	(defined(_MSC_VER) || defined(__MINGW32__))
+#include <schily/windows.h>
 #include <schily/time.h>
+#include <schily/utypes.h>
+#include <schily/standard.h>
 
+#ifdef	_MSC_VER
 const	__int64 MS_FTIME_ADD	= 0x2b6109100i64;
 const	__int64 MS_FTIME_SECS	= 10000000i64;
+#else
+const	Int64_t MS_FTIME_ADD	= 0x2b6109100LL;
+const	Int64_t MS_FTIME_SECS	= 10000000LL;
+#endif
 
 EXPORT int
 gettimeofday(tp, dummy)
 	struct timeval	*tp;
-	void		*dummy;
+	void		*dummy;		/* tzp is unspecified by POSIX */
 {
 	FILETIME	ft;
-	__int64		T;
+	Int64_t		T;
 
 	if (tp == 0)
 		return (0);
@@ -44,9 +52,38 @@ gettimeofday(tp, dummy)
 	T <<= 32;
 	T  += ft.dwLowDateTime;
 
-	tp->tv_sec  = T / MS_FTIME_SECS - MS_FTIME_ADD;
-	tp->tv_usec = (T % MS_FTIME_SECS) / 10);
+	/*
+	 * Cast to avoid a loss of data warning
+	 * MSVC uses long instead of time_t for tv_sec
+	 */
+	tp->tv_sec  = (long) (T / MS_FTIME_SECS - MS_FTIME_ADD);
+	tp->tv_usec = (long) (T % MS_FTIME_SECS) / 10;
+
+	return (0);
+}
+#else	/* (defined(_MSC_VER) || defined(__MINGW32__)) */
+
+#ifdef	HAVE_TIME
+#include <schily/time.h>
+#include <schily/standard.h>
+
+EXPORT int
+gettimeofday(tp, dummy)
+	struct timeval	*tp;
+	void		*dummy;		/* tzp is unspecified by POSIX */
+{
+	time_t	t;
+
+	if (tp == 0)
+		return (0);
+
+	(void) time(&t);
+	tp->tv_sec  = t;
+	tp->tv_usec = 0;
 
 	return (0);
 }
 #endif
+
+#endif	/* (defined(_MSC_VER) || defined(__MINGW32__)) */
+#endif	/* !defined(HAVE_GETTIMEOFDAY) */

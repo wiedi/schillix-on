@@ -1,10 +1,10 @@
 /* xconfig.h.  Generated automatically by configure.  */
-/* @(#)xconfig.h.in	1.210 10/11/17 Copyright 1998-2010 J. Schilling */
+/* @(#)xconfig.h.in	1.229 13/04/17 Copyright 1998-2013 J. Schilling */
 /*
  *	Dynamic autoconf C-include code.
  *	Do not edit, this file has been created automatically.
  *
- *	Copyright (c) 1998-2010 J. Schilling
+ *	Copyright (c) 1998-2013 J. Schilling
  *
  *	The layout for this file is controlled by "configure".
  *	Switch off cstyle(1) checks for now.
@@ -34,6 +34,8 @@
 /* #undef HAVE_AOUTHDR_H */	/* if aouthdr.h is present. This is a COFF system */
 #define HAVE_ELF_H 1	/* if elf.h is present. This is an ELF system */
 #define HAVE_FCNTL_H 1	/* to access, O_XXX constants for open(), otherwise use sys/file.h */
+/* #undef HAVE_IO_H */	/* to access setmode()... from WIN-DOS, OS/2 and similar */
+/* #undef HAVE_CONIO_H */	/* to access getch()... from WIN-DOS, OS/2 and similar */
 #define HAVE_SYS_FILE_H 1	/* to use O_XXX constants for open() and flock() defs */
 #define HAVE_INTTYPES_H 1	/* to use UNIX-98 inttypes.h */
 #define HAVE_STDINT_H 1	/* to use SUSv3 stdint.h */
@@ -77,6 +79,8 @@
 #define HAVE_SYS_MOUNT_H 1		/* if sys/mount.h is present */
 #define HAVE_WAIT_H 1		/* to use wait.h for prototypes and union wait */
 #define HAVE_SYS_WAIT_H 1		/* else use sys/wait.h */
+#define HAVE_ULIMIT_H 1		/* to use ulimit() as fallback for getrlimit()  */
+/* #undef HAVE_PROCESS_H */		/* to use process.h for spawn*() and cwait() */
 #define HAVE_SYS_RESOURCE_H 1	/* to use sys/resource.h for rlimit() and wait3() */
 #define HAVE_PROCFS_H 1		/* to use procfs.h instead of sys/procfs.h (Solaris forces profcs-2) */
 #define HAVE_SYS_PROCFS_H 1	/* to use sys/procfs.h for wait3() emulation */
@@ -134,9 +138,14 @@
 #define HAVE_ARPA_INET_H 1		/* if we have arpa/inet.h (missing on BeOS) */
 				/* BeOS has inet_ntoa() in <netdb.h> */
 /* #undef HAVE_BSD_DEV_SCSIREG_H */	/* if we have a NeXT Step compatible sg driver */
+/* #undef HAVE_SCSI_SCSI_H */		/* if we may include scsi/scsi.h */
+/* #undef HAVE_SCSI_SG_H */		/* if we may include scsi/sg.h */
+/* #undef HAVE_LINUX_SCSI_H */	/* if we may include linux/scsi.h */
+/* #undef HAVE_LINUX_SG_H */		/* if we may include linux/sg.h */
 /* #undef HAVE_LINUX_TYPES_H */	/* if we may include linux/types.h */
 /* #undef HAVE_LINUX_GFP_H */		/* if we may include linux/gfp.h */
 /* #undef HAVE_ASM_TYPES_H */		/* if we may include asm/types.h */
+/* #undef HAVE_SYS_CAPABILITY_H */	/* if we may include sys/capability.h */
 /* #undef HAVE_SYS_BSDTTY_H */	/* if we have sys/bsdtty.h on HP-UX for TIOCGPGRP */
 /* #undef HAVE_OS_H */		/* if we have the BeOS kernel definitions in OS.h */
 /* #undef HAVE_OS2_H */		/* if we have the OS/2 definitions in os2.h */
@@ -211,7 +220,9 @@
 #define HAVE_CRYPT 1		/* crypt() is present in libc or libcrypt */
 #define HAVE_STRERROR 1		/* strerror() is present in libc */
 #define HAVE_MEMCHR 1		/* memchr() is present in libc */
+#define HAVE_MEMCMP 1		/* memcmp() is present in libc */
 #define HAVE_MEMCPY 1		/* memcpy() is present in libc */
+#define HAVE_MEMCCPY 1		/* memccpy() is present in libc */
 #define HAVE_MEMMOVE 1		/* memmove() is present in libc */
 #define HAVE_MEMSET 1		/* memset() is present in libc */
 #define HAVE_MADVISE 1		/* madvise() is present in libc */
@@ -224,6 +235,7 @@
 #define HAVE_FCNTL_LOCKF 1		/* file locking via fcntl() is present in libc */
 #define HAVE_FCHDIR 1		/* fchdir() is present in libc */
 #define HAVE_FDOPENDIR 1		/* fdopendir() is present in libc */
+#define HAVE_GETDELIM 1		/* getdelim() is present in libc */
 #define HAVE_OPENAT 1		/* openat() is present in libc */
 #define HAVE_ATTROPEN 1		/* attropen() is present in libc */
 #define HAVE_FSTATAT 1		/* fstatat() is present in libc */
@@ -231,23 +243,27 @@
 #define HAVE_FUTIMESAT 1		/* futimesat() is present in libc */
 #define HAVE_RENAMEAT 1		/* renameat() is present in libc */
 #define HAVE_UNLINKAT 1		/* unlinkat() is present in libc */
-#define HAVE___ACCESSAT 1		/* __accessat() is present in libc */
+/* #undef HAVE___ACCESSAT */		/* __accessat() is present in libc */
 /* #undef HAVE_ACCESSAT */		/* accessat() is present in libc */
 #define HAVE_REALPATH 1		/* realpath() is present in libc */
 #define HAVE_RESOLVEPATH 1		/* resolvepath() is present in libc */
 /*
  * See e.g. http://www.die.net/doc/linux/man/man2/mkdirat.2.html
  */
-/* #undef HAVE_MKDIRAT */		/* mkdirat() is present in libc */
-/* #undef HAVE_FACCESSAT */		/* faccessat() is present in libc */
-/* #undef HAVE_FCHMODAT */		/* fchmodat() is present in libc */
-/* #undef HAVE_LINKAT */		/* inkat() is present in libc */
-/* #undef HAVE_MKFIFOAT */		/* mkfifoat() is present in libc */
+#define HAVE_MKDIRAT 1		/* mkdirat() is present in libc */
+#define HAVE_FACCESSAT 1		/* faccessat() is present in libc */
+#define HAVE_FCHMODAT 1		/* fchmodat() is present in libc */
+#define HAVE_LINKAT 1		/* inkat() is present in libc */
+#define HAVE_MKFIFOAT 1		/* mkfifoat() is present in libc */
 /* #undef HAVE_MKNODKAT */		/* mknodat() is present in libc */
-/* #undef HAVE_READLINKAT */		/* readlinkat() is present in libc */
-/* #undef HAVE_SYMLINKAT */		/* symlinkat() is present in libc */
-/* #undef HAVE_FUTIMENS */		/* futimens() is present in libc */
-/* #undef HAVE_UTIMENSAT */		/* utimensat() is present in libc */
+#define HAVE_READLINKAT 1		/* readlinkat() is present in libc */
+#define HAVE_SYMLINKAT 1		/* symlinkat() is present in libc */
+#define HAVE_FUTIMENS 1		/* futimens() is present in libc */
+#define HAVE_UTIMENSAT 1		/* utimensat() is present in libc */
+#define HAVE_IOCTL 1		/* ioctl() is present in libc */
+#define HAVE_FCNTL 1		/* fcntl() is present in libc */
+#define HAVE_PIPE 1		/* pipe() is present in libc */
+#define HAVE__PIPE 1		/* _pipe() is present in libc */
 #define HAVE_POPEN 1		/* popen() is present in libc */
 #define HAVE_PCLOSE 1		/* pclose() is present in libc */
 #define HAVE__POPEN 1		/* _popen() is present in libc */
@@ -277,8 +293,19 @@
 #define HAVE_SETPGRP 1		/* setpgrp() is present in libc (ANY) */
 /* #undef HAVE_BSD_GETPGRP */		/* getpgrp() in libc is BSD-4.2 compliant */
 /* #undef HAVE_BSD_SETPGRP */		/* setpgrp() in libc is BSD-4.2 compliant */
+#define HAVE_GETPWNAM 1		/* getpwnam() in libc */
+#define HAVE_GETPWENT 1		/* getpwent() in libc */
+#define HAVE_GETPWUID 1		/* getpwuid() in libc */
+#define HAVE_SETPWENT 1		/* setpwent() in libc */
+#define HAVE_ENDPWENT 1		/* endpwent() in libc */
+#define HAVE_GETGRNAM 1		/* getgrnam() in libc */
+#define HAVE_GETGRENT 1		/* getgrent() in libc */
+#define HAVE_GETGRGID 1		/* getgrgid() in libc */
+#define HAVE_SETGRENT 1		/* setgrent() in libc */
+#define HAVE_ENDGRENT 1		/* endgrent() in libc */
 #define HAVE_GETSPNAM 1		/* getspnam() in libc (SVR4 compliant) */
 /* #undef HAVE_GETSPWNAM */		/* getspwnam() in libsec.a (HP-UX) */
+#define HAVE_GETLOGIN 1		/* getlogin() in libc */
 #define HAVE_SYNC 1		/* sync() is present in libc */
 #define HAVE_FSYNC 1		/* fsync() is present in libc */
 #define HAVE_TCGETATTR 1		/* tcgetattr() is present in libc */
@@ -290,6 +317,7 @@
 #define HAVE_WAIT4 1		/* wait4() is present in libc */
 #define HAVE_WAITID 1		/* waitid() is present in libc */
 #define HAVE_WAITPID 1		/* waitpid() is present in libc */
+/* #undef HAVE_CWAIT */		/* cwait() is present in libc */
 #define HAVE_GETHOSTID 1		/* gethostid() is present in libc */
 #define HAVE_GETHOSTNAME 1		/* gethostname() is present in libc */
 /* #undef HAVE_GETDOMAINNAME */	/* getdomainname() is present in libc */
@@ -411,12 +439,14 @@
 #define HAVE_STRLCPY 1		/* strlcpy() is present in libc */
 #define HAVE_STRNCPY 1		/* strncpy() is present in libc */
 #define HAVE_STRDUP 1		/* strdup() is present in libc */
-/* #undef HAVE_STRNDUP */		/* strndup() is present in libc */
+#define HAVE_STRNDUP 1		/* strndup() is present in libc */
 #define HAVE_STRLEN 1		/* strlen() is present in libc */
 #define HAVE_STRNLEN 1		/* strnlen() is present in libc */
 #define HAVE_STRCHR 1		/* strchr() is present in libc */
 #define HAVE_STRRCHR 1		/* strrchr() is present in libc */
+#define HAVE_STRSTR 1		/* strstr() is present in libc */
 #define HAVE_STRCASECMP 1		/* strcasecmp() is present in libc */
+#define HAVE_STRNCASECMP 1		/* strncasecmp() is present in libc */
 #define HAVE_BASENAME 1		/* basename() is present in libc */
 #define HAVE_DIRNAME 1		/* dirname() is present in libc */
 #define HAVE_PATHCONF 1		/* pathconf() is present in libc */
@@ -434,12 +464,17 @@
 #define HAVE_KILL 1		/* kill() is present in libc */
 #define HAVE_KILLPG 1		/* killpg() is present in libc */
 #define HAVE_SIGNAL 1		/* signal() is present in libc */
+#define HAVE_SIGHOLD 1		/* sighold() is present in libc */
 #define HAVE_SIGRELSE 1		/* sigrelse() is present in libc */
+#define HAVE_SIGIGNORE 1		/* sigignore() is present in libc */
+#define HAVE_SIGPAUSE 1		/* sigpause() is present in libc */
 #define HAVE_SIGPROCMASK 1		/* sigprocmask() is present in libc (POSIX) */
 /* #undef HAVE_SIGSETMASK */		/* sigsetmask() is present in libc (BSD) */
 #define HAVE_SIGSET 1		/* sigset() is present in libc (POSIX) */
 #define HAVE_SIGALTSTACK 1		/* sigaltstack() is present in libc (POSIX) */
+/* #undef HAVE_SIGBLOCK */		/* sigblock() is present in libc (BSD) */
 /* #undef HAVE_SYS_SIGLIST */		/* char *sys_siglist[] is present in libc */
+#define HAVE_ALARM 1		/* alarm() is present in libc */
 #define HAVE_SLEEP 1		/* sleep() is present in libc */
 #define HAVE_USLEEP 1		/* usleep() is present in libc */
 #define HAVE_FORK 1		/* fork() is present in libc */
@@ -454,9 +489,17 @@
 #define HAVE_EXECV 1		/* execv() is present in libc */
 #define HAVE_EXECVE 1		/* execve() is present in libc */
 #define HAVE_EXECVP 1		/* execvp() is present in libc */
+/* #undef HAVE_SPAWNL */		/* spawnl() is present in libc */
+/* #undef HAVE_SPAWNLE */		/* spawnle() is present in libc */
+/* #undef HAVE_SPAWNLP */		/* spawnlp() is present in libc */
+/* #undef HAVE_SPAWNLPE */		/* spawnlpe() is present in libc */
+/* #undef HAVE_SPAWNV */		/* spawnv() is present in libc */
+/* #undef HAVE_SPAWNVE */		/* spawnve() is present in libc */
+/* #undef HAVE_SPAWNVP */		/* spawnvp() is present in libc */
+/* #undef HAVE_SPAWNVPE */		/* spawnvpe() is present in libc */
 #define HAVE_GETEXECNAME 1		/* getexecname() is present in libc */
-/* #undef HAVE_GETPROGNAME */		/* getprogname() is present in libc */
-/* #undef HAVE_SETPROGNAME */		/* setprogname() is present in libc */
+#define HAVE_GETPROGNAME 1		/* getprogname() is present in libc */
+#define HAVE_SETPROGNAME 1		/* setprogname() is present in libc */
 /* #undef HAVE_PROC_PIDPATH */	/* proc_pidpath() is present in libc */
 /* #undef HAVE_VAR_PROGNAME */	/* extern char *__progname is present in libc */
 /* #undef HAVE_VAR_PROGNAME_FULL */	/* extern char *__progname_full is present in libc */
@@ -464,6 +507,7 @@
 #define HAVE_MALLOC 1		/* malloc() is present in libc */
 #define HAVE_CALLOC 1		/* calloc() is present in libc */
 #define HAVE_REALLOC 1		/* realloc() is present in libc */
+#define HAVE_REALLOC_NULL 1	/* realloc() implements realloc(NULL, size) */
 #define HAVE_VALLOC 1		/* valloc() is present in libc (else use malloc())*/
 #define HAVE_MEMALIGN 1		/* memalign() is present in libc */
 #define HAVE_POSIX_MEMALIGN 1	/* posix_memalign() is present in libc */
@@ -476,12 +520,13 @@
 /* #undef HAVE_WCSLCAT */		/* wcsncat() is present in libc */
 /* #undef HAVE_WCSLCPY */		/* wcsncpy() is present in libc */
 #define HAVE_WCSNCPY 1		/* wcsncpy() is present in libc */
-/* #undef HAVE_WCSDUP */		/* wcsdup() is present in libc */
+#define HAVE_WCSDUP 1		/* wcsdup() is present in libc */
 /* #undef HAVE_WCSNDUP */		/* wcsndup() is present in libc */
 #define HAVE_WCSLEN 1		/* wcslen() is present in libc */
-/* #undef HAVE_WCSNLEN */		/* wcsnlen() is present in libc */
+#define HAVE_WCSNLEN 1		/* wcsnlen() is present in libc */
 #define HAVE_WCSCHR 1		/* wcschr() is present in libc */
 #define HAVE_WCSRCHR 1		/* wcsrchr() is present in libc */
+#define HAVE_WCSSTR 1		/* wcsstr() is present in libc */
 #define HAVE_WCWIDTH 1		/* wcwidth() is present in libc */
 #define HAVE_WCSWIDTH 1		/* wcswidth() is present in libc */
 #define HAVE_WCTYPE 1		/* wctype() is present in libc */
@@ -556,11 +601,26 @@
 #define HAVE_SCHED_YIELD 1		/* sched_yield() is present in librt */
 #define HAVE_NANOSLEEP 1		/* nanosleep() is present in librt */
 
+/*
+ * The POSIX.1e draft has been withdrawn in 1997.
+ * Linux started to implement this outdated concept in 1997.
+ */
+/* #undef HAVE_CAP_GET_PROC */	/* cap_get_proc() is present in libcap */
+/* #undef HAVE_CAP_SET_PROC */	/* cap_set_proc() is present in libcap */
+/* #undef HAVE_CAP_SET_FLAG */	/* cap_set_flag() is present in libcap */
+/* #undef HAVE_CAP_CLEAR_FLAG */	/* cap_clear_flag() is present in libcap */
+
+
 #define HAVE_DIRFD 1		/* dirfd() is present in libc */
 #define HAVE_ISWPRINT 1		/* iswprint() is present in libc */
 #define HAVE_MBSINIT 1		/* mbsinit() is present in libc */
+#define HAVE_MBTOWC 1		/* mbtowc() is present in libc */
+#define HAVE_WCTOMB 1		/* wctomb() is present in libc */
 #define HAVE_MBRTOWC 1		/* mbrtowc() is present in libc */
 #define HAVE_WCRTOMB 1		/* wcrtomb() is present in libc */
+
+#define HAVE_PRINTF_J 1		/* *printf() in libc supports %jd */
+#define HAVE_PRINTF_LL 1		/* *printf() in libc supports %lld */
 
 /*
  * Functions that we defined in 1982 but where POSIX.1-2008 defined
@@ -582,15 +642,18 @@
 /*
  * Misc OS stuff
  */
-#define HAVE_DEV_TTY 1		/* /dev/tty present */
-#define HAVE_DEV_NULL 1		/* /dev/null present */
-#define HAVE_DEV_ZERO 1		/* /dev/zero present */
-#define HAVE_DEV_STDIN 1		/* /dev/stdin present */
-#define HAVE_DEV_STDOUT 1		/* /dev/stdout present */
-#define HAVE_DEV_STDERR 1		/* /dev/stderr present */
-#define HAVE_DEV_FD_0 1		/* /dev/fd/0 present */
-#define HAVE_DEV_FD_1 1		/* /dev/fd/1 present */
-#define HAVE_DEV_FD_2 1		/* /dev/fd/2 present */
+#ifndef	_MSC_VER		/* Dirty hack, better use C program not test */
+#define HAVE__DEV_TTY 1		/* /dev/tty present */
+#define HAVE__DEV_NULL 1		/* /dev/null present */
+#define HAVE__DEV_ZERO 1		/* /dev/zero present */
+#define HAVE__DEV_STDIN 1		/* /dev/stdin present */
+#define HAVE__DEV_STDOUT 1		/* /dev/stdout present */
+#define HAVE__DEV_STDERR 1		/* /dev/stderr present */
+#define HAVE__DEV_FD_0 1		/* /dev/fd/0 present */
+#define HAVE__DEV_FD_1 1		/* /dev/fd/1 present */
+#define HAVE__DEV_FD_2 1		/* /dev/fd/2 present */
+/* #undef HAVE__USR_SRC_LINUX_INCLUDE */	/* /usr/src/linux/include present */
+#endif
 
 /*
  * Misc OS programs
@@ -673,6 +736,9 @@
 /*
  * Structures
  */
+/* #undef HAVE_FILE__FLAGS */		/* if FILE * contains _flags */
+/* #undef HAVE_FILE__IO_BUF_BASE */	/* if FILE * contains _IO_buf_base */
+
 #define HAVE_MTGET_TYPE 1		/* if struct mtget contains mt_type (drive type) */
 /* #undef HAVE_MTGET_MODEL */		/* if struct mtget contains mt_model (drive type) */
 #define HAVE_MTGET_DSREG 1		/* if struct mtget contains mt_dsreg (drive status) */
@@ -760,6 +826,25 @@
 #define SIZEOF_SSIZE_T 4
 #define SIZEOF_PTRDIFF_T 4
 
+#define SIZEOF_MODE_T 4
+#define SIZEOF_UID_T 4
+#define SIZEOF_GID_T 4
+#define SIZEOF_PID_T 4
+
+/*
+ * If sizeof (mode_t) is < sizeof (int) and used with va_arg(),
+ * GCC4 will abort the code. So we need to use the promoted size.
+ */
+#if	SIZEOF_MODE_T < SIZEOF_INT
+#define	PROMOTED_MODE_T	int
+#else
+#define	PROMOTED_MODE_T	mode_t
+#endif
+
+#define SIZEOF_DEV_T 4
+#define SIZEOF_MAJOR_T 4
+#define SIZEOF_MINOR_T 4
+
 #define SIZEOF_TIME_T 4
 #define SIZEOF_WCHAR 4		/* sizeof (L'a')	*/
 #define SIZEOF_WCHAR_T 4		/* sizeof (wchar_t)	*/
@@ -791,6 +876,21 @@
 
 #define	HAVE_TYPE_INTMAX_T 1	/* if <stdint.h> defines intmax_t */
 #define	HAVE_TYPE_UINTMAX_T 1	/* if <stdint.h> defines uintmax_t */
+
+/* #undef int8_t */			/* To be used if int8_t is not present */
+/* #undef int16_t */			/* To be used if int16_t is not present */
+/* #undef int32_t */			/* To be used if int32_t is not present */
+#if	defined(HAVE_LONGLONG) || defined(HAVE___INT64)
+/* #undef int64_t */			/* To be used if int64_t is not present */
+#endif
+/* #undef intmax_t */			/* To be used if intmax_t is not present */
+/* #undef uint8_t */			/* To be used if uint8_t is not present */
+/* #undef uint16_t */			/* To be used if uint16_t is not present */
+/* #undef uint32_t */			/* To be used if uint32_t is not present */
+#if	defined(HAVE_LONGLONG) || defined(HAVE___INT64)
+/* #undef uint64_t */			/* To be used if uint64_t is not present */
+#endif
+/* #undef uintmax_t */		/* To be used if uintmax_t is not present */
 
 #define	HAVE_TYPE_GREG_T 1	/* if <sys/frame.h> defines greg_t */
 
