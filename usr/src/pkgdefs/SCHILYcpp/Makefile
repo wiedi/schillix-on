@@ -18,9 +18,14 @@ include ../Makefile.com
 DATAFILES += depend
 CLOBBERFILES += action
 
-ACTION_SCHILYsystem-library-schily=grep SCHILYsystem-library-schily depend > /dev/null || \
+ACTION_SCHILYsystem-library-schily-root=grep SCHILYsystem-library-schily-root depend > /dev/null || \
 	( chmod 666 depend; \
-	echo "P SCHILYsystem-library-schily	Schily System Libraries" >> depend; \
+	echo "P SCHILYsystem-library-schily-root	Schily System Libraries (Root)" >> depend; \
+	chmod 444 depend );
+
+ACTION_SCHILYsystem-library-schily=grep 'SCHILYsystem-library-schily	' depend > /dev/null || \
+	( chmod 666 depend; \
+	echo "P SCHILYsystem-library-schily	Schily System Libraries (Usr)" >> depend; \
 	chmod 444 depend );
 
 
@@ -33,6 +38,7 @@ install: all pkg
 
 # action is a pseudotarget denoting completed work on the depend file
 action: depend
+	$(ACTION_SCHILYsystem-library-schily-root)
 	$(ACTION_SCHILYsystem-library-schily)
 	touch $@
 

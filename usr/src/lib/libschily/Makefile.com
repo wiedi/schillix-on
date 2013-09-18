@@ -117,9 +117,10 @@ OBJECTS=	$(OBJECTS_STDIO) $(OBJECTS_REST)
 
 include ../../Makefile.lib
 #
+# libschily must be installed in the root filesystem for /sbin/sh = Bourne Shell
 # To put this library to /lib instead of /usr/lib
 # uncomment the following line
-#include ../../Makefile.rootfs
+include ../../Makefile.rootfs
 
 LIBS =		$(DYNLIB) $(LINTLIB)
 LDLIBS +=	-lc
