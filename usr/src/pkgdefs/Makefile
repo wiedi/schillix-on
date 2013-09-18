@@ -199,6 +199,7 @@ COMMON_SUBDIRS= \
 	SCHILYcppr \
 	SCHILYsystem-header-hdr-schily \
 	SCHILYsystem-library-schily \
+	SCHILYsystem-library-schily-root \
 	SCHILYsystem-star \
 	SUNW0on \
 	SUNW1394h \
