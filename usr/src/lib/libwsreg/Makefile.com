@@ -54,10 +54,10 @@ LIBS =		$(DYNLIB) $(LINTLIB)
 LDLIBS +=	-lsecdb -ladm -lm -lc
 $(LINTLIB) :=	SRCS = $(SRCDIR)/$(LINTSRC)
 
+C99MODE =	$(C99_ENABLE)
+
 CFLAGS +=	$(CCVERBOSE)
 CPPFLAGS +=	-D_REENTRANT
-
-CPPFLAGS +=	-xc99=%all
 
 all: $(LIBS)
 
