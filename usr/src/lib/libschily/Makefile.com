@@ -49,7 +49,8 @@ OBJECTS_REST=	abspath.o \
 		geterrno.o getexecpath.o \
 		getgrent.o gethostid.o gethostname.o getlogin.o \
 		getnum.o getpagesize.o \
-		getperm.o getpwent.o gettimeofday.o \
+		getperm.o getpwent.o \
+		getnstimeofday.o gettimeofday.o \
 		gettnum.o getxnum.o getxtnum.o \
 		gid.o \
 		handlecond.o \
@@ -63,6 +64,7 @@ OBJECTS_REST=	abspath.o \
 		raisecond.o rename.o resolvepath.o \
 		saveargs.o savewd.o searchinpath.o \
 		serrmsg.o seterrno.o setfp.o \
+		setnstimeofday.o \
 		sleep.o \
 		spawn.o \
 		strcasecmp.o strcasemap.o \
