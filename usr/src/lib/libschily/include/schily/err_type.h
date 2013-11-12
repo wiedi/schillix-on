@@ -1,8 +1,8 @@
-/* @(#)xutimes.h	1.3 13/10/02 Copyright 1996, 2013 J. Schilling */
+/* @(#)err_type.h	1.1 12/12/03 Copyright 2012 J. Schilling */
 /*
- *	Prototypes for xutimes users
+ *	#error include for missing type
  *
- *	Copyright (c) 1996, 2013 J. Schilling
+ *	Copyright (c) 2012 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -18,7 +18,9 @@
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
 
-/*
- * star_unix.c
- */
-extern	int	xutimes		__PR((char *name, struct timespec *tp));
+#ifndef _SCHILY_ERR_TYPE_H
+#define	_SCHILY_ERR_TYPE_H
+
+#error Type is missing
+
+#endif /* _SCHILY_ERR_TYPE_H */

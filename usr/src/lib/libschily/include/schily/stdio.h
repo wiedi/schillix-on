@@ -1,4 +1,4 @@
-/* @(#)stdio.h	1.5 13/09/14 Copyright 2009-2013 J. Schilling */
+/* @(#)stdio.h	1.6 13/11/06 Copyright 2009-2013 J. Schilling */
 /*
  *	Abstraction from stdio.h
  *
@@ -20,7 +20,8 @@
 
 #ifndef _SCHILY_STDIO_H
 #define	_SCHILY_STDIO_H
-#ifndef NO_SCHILY_STDIO_H
+#ifndef NO_SCHILY_STDIO_H	/* We #undef _SCHILY_STDIO_H later because */
+				/* of the ill designed "hdrchk" program    */
 
 #ifndef	_SCHILY_MCONFIG_H
 #include <schily/mconfig.h>
@@ -65,5 +66,7 @@
 #define	pclose(fp)	_pclose(fp)
 #endif
 
+#else	/* !NO_SCHILY_STDIO_H */
+#undef	_SCHILY_STDIO_H			/* Undefine here to pass "hdrchk" */
 #endif	/* NO_SCHILY_STDIO_H */
 #endif	/* _SCHILY_STDIO_H */

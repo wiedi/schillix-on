@@ -1,8 +1,8 @@
-/* @(#)extract.c	1.142 13/09/07 Copyright 1985-2013 J. Schilling */
+/* @(#)extract.c	1.144 13/10/07 Copyright 1985-2013 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)extract.c	1.142 13/09/07 Copyright 1985-2013 J. Schilling";
+	"@(#)extract.c	1.144 13/10/07 Copyright 1985-2013 J. Schilling";
 #endif
 /*
  *	extract files from archive
@@ -96,6 +96,7 @@ extern	BOOL	nospec;
 extern	BOOL	xdir;
 extern	BOOL	xdot;
 extern	BOOL	uncond;
+extern	BOOL	uncond_rename;
 extern	BOOL	keep_old;
 extern	BOOL	refresh_old;
 extern	BOOL	abs_path;
@@ -307,7 +308,7 @@ extern	struct WALK walkstate;
 	if (copyhardlinks || copysymlinks)
 		make_copies();
 #endif
-	dirtimes("", (struct timeval *)0, (mode_t)0);
+	dirtimes("", (struct timespec *)0, (mode_t)0);
 	if (dorestore)
 		sym_close();
 }
@@ -354,16 +355,49 @@ extracti(info, imp)
 		return (FALSE);
 	}
 	/*
+	 * If uncond is set and neither keep_old nor refresh_old is set,
+	 * then newer() doesn't call getinfo(&cinfo).
+	 * As newer() calls getinfo(&cinfo), it also checks for refresh_old.
+	 */
+	if (!uncond_rename) {
+		/*
+		 * -uncond-rename was not specified, so check whether newer.
+		 */
+		if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
+			void_file(info);
+			return (FALSE);
+		}
+		if (is_symlink(info) && same_symlink(info)) {
+			void_file(info);
+			return (FALSE);
+		}
+	}
+	/*
 	 * Name substitution and interactive name changing need to happen before
 	 * we check whether the file is newer than an existing file of the same
 	 * name in the filesystem.
 	 */
 	if (do_subst && subst(info)) {
 		if (info->f_name[0] == '\0') {
+			/*
+			 * Changed to empty name: skip...
+			 */
 			if (verbose)
 				fprintf(vpr,
 				"'%s' substitutes to null string, skipping ...\n",
 							name);
+			void_file(info);
+			return (FALSE);
+		}
+		/*
+		 * Changed name to a probably existing file,
+		 * check whether file in archive is newer.
+		 */
+		if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
+			void_file(info);
+			return (FALSE);
+		}
+		if (is_symlink(info) && same_symlink(info)) {
 			void_file(info);
 			return (FALSE);
 		}
@@ -379,13 +413,21 @@ extracti(info, imp)
 	 * then newer() doesn't call getinfo(&cinfo).
 	 * As newer() calls getinfo(&cinfo), it also checks for refresh_old.
 	 */
-	if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
-		void_file(info);
-		return (FALSE);
-	}
-	if (is_symlink(info) && same_symlink(info)) {
-		void_file(info);
-		return (FALSE);
+	if (uncond_rename) {
+		/*
+		 * -uncond-rename was specified
+		 * If the file was not renamed we now need to check whether
+		 * the file in the archive is newer than the file with the
+		 * new name on disk.
+		 */
+		if (newer(info, &cinfo) && !(xdir && is_dir(info))) {
+			void_file(info);
+			return (FALSE);
+		}
+		if (is_symlink(info) && same_symlink(info)) {
+			void_file(info);
+			return (FALSE);
+		}
 	}
 	if (!(interactive || allow_dotdot) && has_dotdot(info->f_name)) {
 		if (!errhidden(E_SECURITY, info->f_name)) {
