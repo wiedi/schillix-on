@@ -24,8 +24,8 @@
 #
 
 PROG= profile .login ksh.kshrc system
-PROGSKEL= local.login local.profile local.cshrc .profile
-PROGROOT= .profile .bashrc
+PROGSKEL= local.login local.profile local.cshrc .profile .shrc .termcap
+PROGROOT= .profile .bashrc .shrc .termcap
 
 include ../Makefile.cmd
 
@@ -35,7 +35,9 @@ ROOTETCSKELPROG= $(PROGSKEL:%=$(ROOTETCSKEL)/%)
 ROOTROOTPROG= $(PROGROOT:%=$(ROOTROOT)/%)
 FILEMODE= 0644
 
-CLOBBERFILES = profile .bashrc .profile .login
+CLOBBERFILES = profile .bashrc .profile .login .shrc .termcap
+
+all: $(PROG) $(PROGROOT) $(PROGSKEL)
 
 .login: login.csh
 	$(RM) .login; 
@@ -53,9 +55,15 @@ profile: etc-profile.sh
 	$(RM) .bashrc
 	$(CP) bashrc.sh $@
 
-.KEEP_STATE:
+.shrc: dot-shrc.sh
+	$(RM) .shrc
+	$(CP) dot-shrc.sh $@
 
-all: $(PROG) $(PROGSKEL)
+.termcap: dot-termcap.tc
+	$(RM) .termcap
+	$(CP) dot-termcap.tc $@
+
+.KEEP_STATE:
 
 $(ROOTROOT)/% \
 $(ROOTETCSKEL)/%: %

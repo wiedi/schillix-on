@@ -15,15 +15,6 @@
 
 include ../Makefile.com
 
-DATAFILES += depend
-CLOBBERFILES += action
-
-ACTION_SCHILYsystem-library-schily-root=grep SCHILYsystem-library-schily-root depend > /dev/null || \
-	( chmod 666 depend; \
-	echo "P SCHILYsystem-library-schily-root	Schily System Libraries (Root)" >> depend; \
-	chmod 444 depend );
-
-
 LICENSEFILES = $(SCHILY) \
 ../../lib/libdeflt/THIRDPARTYLICENSE \
 ../../lib/libfind/THIRDPARTYLICENSE \
@@ -36,15 +27,12 @@ LICENSEFILES = $(SCHILY) \
 ../../lib/libschily/THIRDPARTYLICENSE.sha2 \
 ../../lib/libschily/THIRDPARTYLICENSE.strtod \
 ../../lib/libschily/THIRDPARTYLICENSE.sysexits \
+../../lib/libshedit/THIRDPARTYLICENSE \
+../../lib/libxtermcap/THIRDPARTYLICENSE
 
 .KEEP_STATE:
 
-all: $(FILES) action
+all: $(FILES)
 install: all pkg
-
-# action is a pseudotarget denoting completed work on the depend file
-action: depend
-	$(ACTION_SCHILYsystem-library-schily-root)
-	touch $@
 
 include ../Makefile.targ

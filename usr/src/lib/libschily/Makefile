@@ -80,6 +80,7 @@ HDRS=	\
 	err_arch.h  \
 	err_bit.h  \
 	err_char.h  \
+	err_type.h  \
 	errno.h  \
 	fcntl.h  \
 	fetchdir.h  \
@@ -135,6 +136,7 @@ HDRS=	\
 	sha2.h  \
 	shadow.h  \
 	shcall.h  \
+	shedit.h  \
 	shm.h  \
 	siconv.h  \
 	sigblk.h  \

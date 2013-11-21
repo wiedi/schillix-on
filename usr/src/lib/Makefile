@@ -84,6 +84,7 @@ SUBDIRS += \
 	libast			\
 	libdll			\
 	libcmd			\
+	libshedit		\
 	libshell		\
 	libsum			\
 	librt			\
@@ -165,7 +166,8 @@ SUBDIRS += \
 	librdc		\
 	libinstzones	\
 	libpkg		\
-	libwsreg
+	libwsreg	\
+	libxtermcap
 
 SUBDIRS += \
 	passwdutil	\
@@ -681,6 +683,8 @@ cfgadm_plugins:	libhotplug
 libilb:		libsocket
 libfind:	libschily
 librmt:		libschily libsocket
+libshedit:	libschily libxtermcap
+libxtermcap:	libschily
 $(INTEL_BUILD)libdiskmgt:libfdisk
 
 #
