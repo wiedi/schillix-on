@@ -15,12 +15,12 @@
 
 include ../Makefile.com
 
-DATAFILES += depend
-
 LICENSEFILES = $(SCHILY) \
 ../../lib/libschily/THIRDPARTYLICENSE \
 ../../lib/libschily/THIRDPARTYLICENSE.fnmatch \
-../../lib/libschily/THIRDPARTYLICENSE.strtod
+../../lib/libschily/THIRDPARTYLICENSE.strtod \
+../../lib/libshedit/THIRDPARTYLICENSE \
+../../lib/libxtermcap/THIRDPARTYLICENSE
 
 .KEEP_STATE:
 

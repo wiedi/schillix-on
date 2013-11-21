@@ -74,6 +74,7 @@ COMMON_SUBDIRS=		\
 	bfs		\
 	bnu		\
 	boot		\
+	bosh		\
 	busstat		\
 	cal		\
 	calendar	\
@@ -538,6 +539,7 @@ MSGSUBDIRS=		\
 	basename	\
 	beadm		\
 	bnu		\
+	bosh		\
 	busstat		\
 	cal		\
 	cat		\
