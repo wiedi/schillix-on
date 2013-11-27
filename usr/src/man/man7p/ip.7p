@@ -82,13 +82,17 @@ calls (see
 .BR send (3SOCKET)
 and
 .BR recv (3SOCKET)),
-although the \fBconnect\fR(3SOCKET) call may also be used to fix the destination
+although the
+.BR connect (3SOCKET)
+call may also be used to fix the destination
 for future datagram. In this case, the
 .BR read (2)
 or
 .BR recv "(3SOCKET) and"
 .BR write (2)
-or \fBsend\fR(3SOCKET) calls may be used. If
+or
+.BR send (3SOCKET)
+calls may be used. If
 .I proto
 is
 .B IPPROTO_RAW
@@ -96,7 +100,8 @@ or
 .BR IPPROTO_IGMP ,
 the application is expected to include a
 complete IP header when sending. Otherwise, that protocol number will be set in
-outgoing datagrams and used to filter incoming datagrams and an IP header will be
+outgoing datagrams and used to filter incoming datagrams and an IP header will
+be
 generated and prepended to each outgoing datagram. In either case, received
 datagrams are returned with the IP header and options intact.
 .sp
@@ -104,7 +109,8 @@ datagrams are returned with the IP header and options intact.
 If an application uses
 .B IP_HDRINCL
 and provides the IP header contents, the
-IP stack does not modify the following supplied fields under any conditions: Type
+IP stack does not modify the following supplied fields under any conditions:
+Type
 of Service, DF Flag, Protocol, and Destination Address. The IP Options and IHL
 fields are set by use of
 .BR IP_OPTIONS ,
@@ -116,7 +122,8 @@ the normal IP ID selection logic. The source address is updated if none was
 specified and the TTL is changed if the packet has a broadcast destination
 address. Since an applicaton cannot send down fragments (as IP assigns the IP
 ID), Fragment Offset is always 0. The IP Checksum field is computed by IP. None
-of the data beyond the IP header are changed, including the application-provided
+of the data beyond the IP header are changed, including the
+application-provided
 transport header.
 .sp
 .LP
@@ -133,7 +140,9 @@ IP options for outgoing datagrams. This socket option may be used to set IP
 options to be included in each outgoing datagram. IP options to be sent are set
 with
 .B setsockopt()
-(see \fBgetsockopt\fR(3SOCKET)). The
+(see
+.BR getsockopt (3SOCKET)).
+The
 .BR getsockopt (3SOCKET)
 call returns the IP options set in the last
 .B setsockopt()
@@ -141,9 +150,12 @@ call. IP options on received datagrams are visible to user
 programs only using raw IP sockets. The format of IP options given in
 .B setsockopt()
 matches those defined in the IP specification with one
-exception: the list of addresses for the source routing options must include the
-first-hop gateway at the beginning of the list of gateways. The first-hop gateway
-address will be extracted from the option list and the size adjusted accordingly
+exception: the list of addresses for the source routing options must include
+the
+first-hop gateway at the beginning of the list of gateways. The first-hop
+gateway
+address will be extracted from the option list and the size adjusted
+accordingly
 before use. IP options may be used with any socket type in the Internet family.
 .RE
 
@@ -190,7 +202,8 @@ Leave a multicast group.
 .ad
 .RS 22n
 .rt
-Limit  reception and transmission of packets to this interface. Takes an integer
+Limit  reception and transmission of packets to this interface. Takes an
+integer
 as an argument. The integer is the selected interface index.
 .RE
 
@@ -208,7 +221,8 @@ as the parameter:
 .sp .6
 .RS 4n
 Set the source address and/or transmit interface of  the packet(s).  Note that
-the IP_BOUND_IF socket option takes precedence over the interface index passed in
+the IP_BOUND_IF socket option takes precedence over the interface index passed
+in
 IP_PKTINFO.
 .sp
 .in +2
@@ -221,8 +235,10 @@ struct in_pktinfo {
 .fi
 .in -2
 
-When passed in (on transmit) via ancillary data with IP_PKTINFO, ipi_spec_dst is
-used as the source address and ipi_ifindex is used as the interface index to send
+When passed in (on transmit) via ancillary data with IP_PKTINFO, ipi_spec_dst
+is
+used as the source address and ipi_ifindex is used as the interface index to
+send
 the packet out.
 .RE
 
@@ -236,7 +252,8 @@ the packet out.
 .RS 4n
 Enable/disable receipt of the index of the interface the packet arrived on, the
 local address that was matched for reception, and the inbound packet's actual
-destination address. Takes boolean as the parameter.  Returns struct in_pktinfo_t
+destination address. Takes boolean as the parameter.  Returns struct
+in_pktinfo_t
 as ancillary data.
 .RE
 
@@ -401,7 +418,8 @@ address, and source address.
 .ad
 .RS 21n
 .rt
-The outgoing interface for multicast packets. This option takes a \fBstruct\fR
+The outgoing interface for multicast packets. This option takes a
+.B struct
 .B in_addr
 as an argument, and it selects that interface for outgoing IP
 multicast packets. If the address specified is
@@ -419,7 +437,8 @@ behavior).
 .ad
 .RS 21n
 .rt
-Time to live for multicast datagrams. This option takes an unsigned character as
+Time to live for multicast datagrams. This option takes an unsigned character
+as
 an argument. Its value is the TTL that IP uses on outgoing multicast datagrams.
 The default is
 .BR 1 .
@@ -435,7 +454,8 @@ The default is
 .rt
 Loopback for multicast  datagrams. Normally multicast  datagrams are delivered
 to members on the sending host (or sending zone). Setting the unsigned character
-argument to 0 causes the opposite behavior, meaning that when multiple zones are
+argument to 0 causes the opposite behavior, meaning that when multiple zones
+are
 present, the datagrams are delivered to all zones except the sending zone.
 .RE
 
@@ -459,7 +479,8 @@ Receive the inbound interface index.
 .RS 21n
 .rt
 This option takes an integer argument as its input value. The least significant
-8 bits of the value are used to set the Type Of Service field in the IP header of
+8 bits of the value are used to set the Type Of Service field in the IP header
+of
 the outgoing packets.
 .RE
 
@@ -472,13 +493,16 @@ the outgoing packets.
 .RS 21n
 .rt
 This option specifies the address of the onlink nexthop for traffic originating
-from that socket. It causes the routing table to be bypassed and outgoing traffic
-is sent directly to the specified nexthop. This option takes an ipaddr_t argument
+from that socket. It causes the routing table to be bypassed and outgoing
+traffic
+is sent directly to the specified nexthop. This option takes an ipaddr_t
+argument
 representing the IPv4 address of the nexthop as the input value. The IP_NEXTHOP
 option takes precedence over IPOPT_LSRR. IP_BOUND_IF and SO_DONTROUTE take
 precedence over IP_NEXTHOP. This option has no meaning for broadcast and
 multicast packets. The application must ensure that the specified nexthop is
-alive. An application may want to specify the IP_NEXTHOP option on a TCP listener
+alive. An application may want to specify the IP_NEXTHOP option on a TCP
+listener
 socket only for incoming requests to a particular IP address. In this case, it
 must avoid binding the socket to INADDR_ANY and instead must bind the listener
 socket to the specific IP address. In addition, typically the application may
@@ -492,7 +516,8 @@ the PRIV_SYS_NET_CONFIG privilege.
 .sp
 .LP
 The multicast socket options (IP_MULTICAST_IF, IP_MULTICAST_TTL,
-IP_MULTICAST_LOOP and IP_RECVIF) can be used with any datagram socket type in the
+IP_MULTICAST_LOOP and IP_RECVIF) can be used with any datagram socket type in
+the
 Internet family.
 .sp
 .LP
@@ -510,7 +535,8 @@ Raw IP datagrams can also be sent and received using the TLI connectionless
 primitives.
 .sp
 .LP
-Datagrams flow through the IP layer in two directions: from the network \fIup\fR
+Datagrams flow through the IP layer in two directions: from the network
+.I up
 to user processes and from user processes
 .I down
 to the network. Using this
@@ -529,17 +555,21 @@ datagrams and checked when receiving datagrams.
 .sp
 .LP
 IP options in received datagrams are processed in the IP layer according to the
-protocol specification. Currently recognized IP options include: security, loose
+protocol specification. Currently recognized IP options include: security,
+loose
 source and record route (LSRR), strict source and record route (SSRR), record
 route, and internet timestamp.
 .sp
 .LP
-By default, the IP layer will not forward IPv4 packets that are not addressed to
+By default, the IP layer will not forward IPv4 packets that are not addressed
+to
 it. This behavior can be overridden by using
 .BR routeadm (1M)
 to enable the
 ipv4-forwarding option. IPv4 forwarding is configured at boot time based on the
-setting of \fBrouteadm\fR(1M)'s ipv4-forwarding option.
+setting of
+.BR routeadm (1M)'s
+ipv4-forwarding option.
 .sp
 .LP
 For backwards compatibility, IPv4 forwarding can be enabled or disabled using
@@ -548,16 +578,19 @@ enabled, or 0 if it is disabled.
 .sp
 .LP
 Additionally, finer-grained forwarding can be configured in IP. Each interface
-can be configured to forward IP packets by setting the IFF_ROUTER interface flag.
-This flag can be set and cleared using \fBifconfig\fR(1M)'s router and router
-options. If an interface's IFF_ROUTER flag is set, packets can be forwarded to or
+can be configured to forward IP packets by setting the IFF_ROUTER interface
+flag.
+This flag can be set and cleared using
+.BR ifconfig (1M)'s
+router and router
+options. If an interface's IFF_ROUTER flag is set, packets can be forwarded to
+or
 from the interface. If it is clear, packets will neither be forwarded from this
 interface to others, nor forwarded to this interface. Setting the ip_forwarding
 variable sets all of the IPv4 interfaces' IFF_ROUTER flags.
 .sp
 .LP
-For backwards compatibility, each interface creates an \fB<ifname>:ip_forwarding
-/dev/ip\fR variable that can be modified using \fBndd\fR(1M). An interface's
+For backwards compatibility, each interface creates an \fB<ifname>:ip_forwarding /dev/ip\fR variable that can be modified using \fBndd\fR(1M). An interface's
 .B :ip_forwarding ndd
 variable is a boolean variable that mirrors the status
 of its IFF_ROUTER interface flag. It is set to 1 if the flag is set, or 0 if it
@@ -569,11 +602,13 @@ obsolete and may be removed in a future release of Solaris. The
 router and -router interfaces are preferred.
 .sp
 .LP
-The IP layer sends an ICMP message back to the source host in many cases when it
+The IP layer sends an ICMP message back to the source host in many cases when
+it
 receives a datagram that can not be handled. A "time exceeded" ICMP message is
 sent if the "time to live" field in the IP header drops to zero in the process of
 forwarding a datagram. A "destination unreachable" message is sent if a datagram
-can not be forwarded because there is no route to the final destination, or if it
+can not be forwarded because there is no route to the final destination, or if
+it
 can not be fragmented. If the datagram is addressed to the local host but is
 destined for a protocol that is not supported or a port that is not in use, a
 destination unreachable message is also sent. The IP layer may send an ICMP
@@ -589,11 +624,13 @@ reassembly queues if the complete datagram is not reconstructed within a short
 time period.
 .sp
 .LP
-Errors in sending discovered at the network interface driver layer are passed by
+Errors in sending discovered at the network interface driver layer are passed
+by
 IP back up to the user process.
 .sp
 .LP
-Multi-Data Transmit allows more than one packet to be sent from the IP module to
+Multi-Data Transmit allows more than one packet to be sent from the IP module
+to
 another in a given call, thereby reducing the per-packet processing costs. The
 behavior of Multi-Data Transmit can be overrideen by using
 .BR ndd (1M)
@@ -664,7 +701,8 @@ Packets about  to  be  received by a local application from another.
 
 .sp
 .LP
-Currently, only a single function may be registered for each event. As a result,
+Currently, only a single function may be registered for each event. As a
+result,
 if the slot for an event is already occupied by someone else, a second attempt
 to register a callback fails.
 .sp
@@ -740,7 +778,8 @@ Pointer to the mblk_t with the IP header in it.
 .LP
 In addition to events describing packets as they move through the system, it is
 also possible to receive notification of events relating to network interfaces.
-These events are all reported back through the same callback. The list of events
+These events are all reported back through the same callback. The list of
+events
 is as follows:
 .sp
 .ne 2

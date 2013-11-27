@@ -38,7 +38,7 @@ Functions in this library access device configuration information.
 .LP
 Device configuration data is organized as a tree of device nodes, defined as
 .B di_node_t
-in the \fBlibdevinfo\fR interfaces. Each \fBdi_node_t\fR
+.RB "in the " libdevinfo " interfaces. Each " di_node_t 
 represents a physical or logical (pseudo) device. The types of data associated
 with device nodes are:
 .RS +4
@@ -77,8 +77,10 @@ calling
 .sp
 .LP
 Properties provide device specific information for device configuration and
-usage. Properties can be defined by software (\fBdi_prop_t\fR) or by firmware
-(\fBdi_prom_prop_t\fR). One way to access each \fBdi_prop_t\fR is to make
+usage. Properties can be defined by software
+.RB ( di_prop_t )
+or by firmware
+.RB ( di_prom_prop_t "). One way to access each " di_prop_t " is to make"
 successive calls to
 .BR di_prop_next "(3DEVINFO) until"
 .B DI_PROP_NIL
@@ -98,18 +100,25 @@ is similar to accessing a
 except that the interface names start with
 .B di_prom_prop
 and additional
-calls to \fBdi_prom_init\fR(3DEVINFO) and \fBdi_prom_fini\fR(3DEVINFO) are
+calls to
+.BR di_prom_init (3DEVINFO)
+and \fBdi_prom_fini\fR(3DEVINFO) are
 required.
 .sp
 .LP
 Minor nodes contain information exported by the device for creating special
-files for the device. Each device node has 0 or more minor nodes associated with
-it. A list of minor nodes (\fBdi_minor_t\fR) can be obtained by making successive
+files for the device. Each device node has 0 or more minor nodes associated
+with
+it. A list of minor nodes
+.RB ( di_minor_t )
+can be obtained by making successive
 calls to
 .BR di_minor_next "(3DEVINFO) until"
 .B DI_MINOR_NIL
 is returned. For
-each minor node, \fBdi_minor_devt\fR(3DEVINFO) and related interfaces are called
+each minor node,
+.BR di_minor_devt (3DEVINFO)
+and related interfaces are called
 to get minor node data.
 .sp
 .LP
@@ -118,17 +127,22 @@ interface (vHCI) abstraction is possible. An example of a driver using this
 abstraction is
 .BR scsi_vhci "(7D). In such cases, devices are not directly"
 represented as children of their physical host controller interface (pHCI) bus
-adapter. Instead, devices have an identity-oriented representation as a child of
-a vHCI. All paths leading to the same identity are represented by a common child
+adapter. Instead, devices have an identity-oriented representation as a child
+of
+a vHCI. All paths leading to the same identity are represented by a common
+child
 endpoint of the vHCI called the "client" device node. The vHCI virtualizes access
 among the underlying pHCI physical paths. The underlying connection between
-vHCI-managed client endpoints and the pHCI paths to that endpoint is represented
+vHCI-managed client endpoints and the pHCI paths to that endpoint is
+represented
 by a class of nodes called "path" nodes (\fBdi_path_t\fR).
 .sp
 .LP
 Each path node is associated with two device nodes: its pHCI device node, and
 its client device node. A list of paths associated with a specific pHCI device
-node can be obtained using \fBdi_path_phci_next_path\fR(3DEVINFO), and a list of
+node can be obtained using
+.BR di_path_phci_next_path (3DEVINFO),
+and a list of
 paths associated with a specific client device node can be obtained using
 .BR di_path_client_next_path (3DEVINFO).
 These functions return
@@ -136,7 +150,9 @@ These functions return
 when the end of the list of path nodes is reached.
 .sp
 .LP
-For each path node, \fBdi_path_state\fR(3DEVINFO) and related interfaces are
+For each path node,
+.BR di_path_state (3DEVINFO)
+and related interfaces are
 called to get path node data.
 .sp
 .LP
@@ -165,22 +181,29 @@ Destroying the snapshot of the device tree
 .LP
 A snapshot of the device tree is created by calling
 .BR di_init "(3DEVINFO) and"
-destroyed by calling \fBdi_fini\fR(3DEVINFO). An application can specify the data
+destroyed by calling
+.BR di_fini (3DEVINFO).
+An application can specify the data
 to be included in the snapshot (full or partial tree, include or exclude
-properties and minor nodes) and get a handle to the root of the device tree. See
+properties and minor nodes) and get a handle to the root of the device tree.
+See
 .BR di_init (3DEVINFO)
 for details. The application then traverses the device
 tree in the snapshot to obtain device configuration data.
 .sp
 .LP
-The device tree is normally traversed through parent-child-sibling linkage. Each
-device node contains references to its parent, its next sibling, and the first of
+The device tree is normally traversed through parent-child-sibling linkage.
+Each
+device node contains references to its parent, its next sibling, and the first
+of
 its children. Given the
 .B di_node_t
 returned from
 .BR di_init() ,
 one can
-find all children by first calling \fBdi_child_node\fR(3DEVINFO), followed by
+find all children by first calling
+.BR di_child_node (3DEVINFO),
+followed by
 successive calls to
 .BR di_sibling_node "(3DEVINFO) until"
 .B DI_NODE_NIL
@@ -188,7 +211,9 @@ is
 returned. By following this procedure recursively, an application can visit all
 device nodes contained in the snapshot. Two interfaces,The
 .BR di_walk_node (3DEVINFO)
-and \fBdi_walk_minor\fR(3DEVINFO) functions are
+and
+.BR di_walk_minor (3DEVINFO)
+functions are
 provided to facilitate device tree traversal. The
 .B di_walk_node()
 function
@@ -213,11 +238,14 @@ followed by successive calls to
 until
 .B DI_NODE_NIL
 is returned. Traversing
-the per-driver device node list works only when the snapshot includes all device
+the per-driver device node list works only when the snapshot includes all
+device
 nodes.
 .sp
 .LP
-See \fBdi_init\fR(3DEVINFO) for examples of \fBlibdevinfo\fR usage. See
+See
+.BR di_init (3DEVINFO)
+for examples of \fBlibdevinfo\fR usage. See
 .I Writing Device Drivers
 for information about Solaris device
 configuration.

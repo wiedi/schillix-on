@@ -426,7 +426,10 @@ open in the child.
 .SS "Threads"
 .sp
 .LP
-A call to \fBforkall()\fR or \fBforkallx()\fR replicates in the child
+A call to
+.BR forkall() " or "
+.B forkallx()
+replicates in the child
 process all of the threads (see
 .BR thr_create (3C)
 and
@@ -448,7 +451,8 @@ POSIX-specified behavior for
 .BR fork() .
 .sp
 .LP
-In releases of Solaris prior to Solaris 10, the behavior of \fBfork()\fR
+In releases of Solaris prior to Solaris 10, the behavior of
+.B fork()
 depended on whether or not the application was linked with the POSIX threads
 library. When linked with
 .B -lthread
@@ -465,7 +469,8 @@ whether or not also
 linked with
 .BR -lthread ,
 .B fork()
-was the same as \fBfork1()\fR.
+was the same as
+.BR fork1() .
 .sp
 .LP
 Prior to Solaris 10, either
@@ -476,11 +481,13 @@ was required
 for multithreaded applications. This is no longer the case. The standard C
 library provides all threading support for both sets of application
 programming interfaces.  Applications that require replicate-all fork
-semantics must call \fBforkall()\fR or \fBforkallx()\fR.
+.RB "semantics must call " forkall() " or " forkallx() .
 .SS "Fork Extensions"
 .sp
 .LP
-The \fBforkx()\fR and \fBforkallx()\fR functions accept a \fIflags\fR
+The \fBforkx()\fR and
+.B forkallx()
+functions accept a \fIflags\fR
 argument consisting of a bitwise inclusive-OR of zero or more of the
 following flags, which are defined in the header
 .BR <sys/fork.h> :
@@ -495,7 +502,8 @@ following flags, which are defined in the header
 Do not post a
 .B SIGCHLD
 signal to the parent process when the child
-process terminates, regardless of the disposition of the \fBSIGCHLD\fR
+process terminates, regardless of the disposition of the
+.B SIGCHLD
 signal in the parent.
 .B SIGCHLD
 signals are still possible for job
@@ -515,15 +523,19 @@ Do not allow wait-for-multiple-pids by the parent, as in
 \fBwaitid\fR(\fBP_ALL\fR), or \fBwaitid\fR(\fBP_PGID\fR), to reap the child
 and do not allow the child to be reaped automatically due the disposition of
 the SIGCHLD signal being set to be ignored in the parent.  Only a specific
-wait for the child, as in \fBwaitid\fR(\fBP_PID\fR, \fBpid\fR), is allowed
+wait for the child, as in \fBwaitid\fR(\fBP_PID\fR,
+.BR pid ),
+is allowed
 and it is required, else when the child exits it will remain a zombie until
 the parent exits.
 .RE
 
 .sp
 .LP
-If the \fIflags\fR argument is 0 \fBforkx()\fR is identical to \fBfork()\fR
-and \fBforkallx()\fR is identical to \fBforkall()\fR.
+If the \fIflags\fR argument is 0
+.B forkx()
+is identical to \fBfork()\fR
+.RB "and " forkallx() " is identical to " forkall() .
 .SS "\fBfork()\fR Safety"
 .sp
 .LP
@@ -535,9 +547,12 @@ or
 and the child does more than simply call one of the
 .BR exec (2)
 functions, there is a possibility of deadlock occurring in the
-child. The application should use \fBpthread_atfork\fR(3C) to ensure safety
+child. The application should use
+.BR pthread_atfork (3C)
+to ensure safety
 with respect to this deadlock. Should there be any outstanding mutexes
-throughout the process, the application should call \fBpthread_atfork()\fR
+throughout the process, the application should call
+.B pthread_atfork()
 to wait for and acquire those mutexes prior to calling
 .BR fork() ,
 \fBfork1()\fR, or \fBforkx()\fR. See  "MT-Level of Libraries" on the
@@ -644,13 +659,18 @@ There is not enough swap space.
 .ad
 .RS 10n
 .rt
-The {\fBPRIV_PROC_FORK\fR} privilege is not asserted in the effective set
+The
+.RB { PRIV_PROC_FORK }
+privilege is not asserted in the effective set
 of the calling process.
 .RE
 
 .sp
 .LP
-The \fBforkx()\fR and \fBforkallx()\fR functions will fail if:
+The
+.BR forkx() " and "
+.B forkallx()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -731,14 +751,18 @@ see
 .LP
 An application should call
 .B _exit()
-rather than \fBexit\fR(3C) if it
+rather than
+.BR exit (3C)
+if it
 cannot
 .BR execve() ,
 since
 .B exit()
 will flush and close standard I/O
 channels and thereby corrupt the parent process's standard I/O data
-structures. Using \fBexit\fR(3C) will flush buffered data twice. See
+structures. Using
+.BR exit (3C)
+will flush buffered data twice. See
 .BR exit (2).
 .sp
 .LP

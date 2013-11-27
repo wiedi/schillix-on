@@ -57,9 +57,10 @@ decimal record
 .LP
 These functions attempt to parse a numeric token from at most
 .IR nmax
-characters read from a string **\fIpc\fR, a file *\fIpf\fR, or function
-(*\fIpget\fR). They set the decimal record *\fIpd\fR to reflect the value of
-the numeric token recognized and set *\fIpform\fR and *\fIpechar\fR to
+.RI "characters read from a string **" pc ", a file *" pf ,
+or function
+.RI (* pget "). They set the decimal record *" pd " to reflect the value of"
+.RI "the numeric token recognized and set *" pform " and *" pechar " to"
 indicate its form.
 .sp
 .LP
@@ -86,7 +87,7 @@ one of INF or INFINITY, ignoring case
 .TP
 .ie t \(bu
 .el o
-one of NAN or NAN(\fIstring\fR), ignoring case in the NAN part; \fIstring\fR
+.RI "one of NAN or NAN(" string "), ignoring case in the NAN part; " string 
 can be any sequence of characters not containing ')' (right parenthesis) or
 \&'\e0' (null).
 .RE
@@ -179,7 +180,7 @@ or
 blanks can appear in
 the digit strings for the integer, fraction, and exponent parts, between the
 exponent delimiter and optional exponent sign, and after an INF, INFINITY,
-NAN, or NAN(\fIstring\fR).  When \fIfortran_conventions\fR is
+.RI "NAN, or NAN(" string ").  When " fortran_conventions " is"
 .BR 2 ,
 all
 blanks are ignored.  When
@@ -230,20 +231,27 @@ Notes:
 .RS +4
 .TP
 1.
-The \fBwhitespace_form\fR is accepted only when \fIfortran_conventions\fR is
+The
+.BR whitespace_form " is accepted only when "
+.I fortran_conventions
+is
 2 or 3 and is interpreted as zero.
 .RE
 .RS +4
 .TP
 2.
-For all numeric forms, \fIpd\fR->\fBfpclass\fR is set to \fBfp_normal\fR if
+For all numeric forms, \fIpd\fR->\fBfpclass\fR is set to
+.B fp_normal
+if
 any non-zero digits appear in the integer or fraction parts, and otherwise
 \fIpd\fR->\fBfpclass\fR is set to \fBfp_zero\fR.
 .RE
 .sp
 .LP
 If the accepted token has one of the numeric forms and represents a non-zero
-number \fIx\fR, its significant digits are stored in \fIpd\fR->\fBds\fR.
+number
+.IR x ,
+its significant digits are stored in \fIpd\fR->\fBds\fR.
 Leading and trailing zeroes and the radix point are omitted.
 \fIpd\fR->\fBsign\fR and \fIpd\fR->\fBexponent\fR are set so that if \fIm\fR
 is the integer represented by pd->\fBds\fR,
@@ -265,12 +273,13 @@ the accepted token contains additional non-zero digits beyond those copied to
 .sp
 .LP
 If the accepted token has the NAN(\fIstring\fR) form, up to 511 characters
-from the string part are copied to \fIpd\fR->\fBds\fR.
+from the string part are copied to
+.IR pd ->\fBds\fR.
 .sp
 .LP
 \fIpd\fR->\fBds\fR is always terminated by a null byte, and
 \fIpd\fR->\fBndigits\fR is set to the length of the string stored in
-\fIpd\fR->\fBds\fR.
+.IR pd\fR->\fBds .
 .sp
 .LP
 On entry, *\fIpc\fR points to the beginning of a character string buffer.
@@ -286,7 +295,8 @@ function reads
 characters from the file *\fIpf\fR and stores them in the buffer. The
 .B func_to_decimal()
 function reads characters one at a time by calling the
-function (*\fIpget\fR)() and stores them in the buffer; (*\fIpget\fR)() must
+.RI "function (*" pget ")() and stores them in the buffer; (*" pget )()
+must
 return integer values in the range \(mi1 to 255, where \(mi1 is interpreted as
 EOF and 0, .\|.\|., 255 are interpreted as
 .B "unsigned char"
@@ -307,7 +317,9 @@ argument is not
 .IR NULL ,
 .B func_to_decimal()
 pushes back characters one at a time by calling
-(*\fIpunget\fR)(\fIc\fR), where \fIc\fR is an integer in the range 0 to 255
+(*\fIpunget\fR)(\fIc\fR), where
+.I c
+is an integer in the range 0 to 255
 corresponding to a value previously read via (*\fIpget\fR)(). After pushing
 back as many excess characters as possible,
 .B file_to_decimal()
@@ -325,7 +337,9 @@ characters, the buffer must be large enough to hold
 .LP
 On exit, *\fIpc\fR points to the next character in the buffer past the last
 one that was accepted as part of the numeric token.  If no valid token is
-found, *\fIpc\fR is unchanged.  If \fBfile_to_decimal()\fR and
+found, *\fIpc\fR is unchanged.  If
+.B file_to_decimal()
+and
 .B func_to_decimal()
 successfully push back all unused characters,
 *\fIpc\fR points to the null byte stored in the buffer following the last
@@ -342,14 +356,18 @@ field is stored.  If the accepted token does not contain an exponent part,
 .LP
 If the
 .B _IOWRT
-flag is set in *\fIpf\fR, \fBfile_to_decimal()\fR reads
+flag is set in *\fIpf\fR,
+.B file_to_decimal()
+reads
 characters directly from the file buffer until a null character is found.
 (The
 .B _IOWRT
 flag should only be set when
 .B file_to_decimal()
 is
-called from \fBsscanf\fR(3C).)  Otherwise, \fBfile_to_decimal()\fR uses
+called from
+.BR sscanf (3C).)
+Otherwise, \fBfile_to_decimal()\fR uses
 .BR getc_unlocked (3C),
 so it is not MT-safe unless the caller holds the
 stream lock.

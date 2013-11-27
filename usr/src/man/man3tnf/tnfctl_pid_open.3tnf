@@ -81,14 +81,18 @@ The process is stopped on return of this call.  The
 function returns an error message if
 .I pid
 is the
-same as the calling process. See \fBtnfctl_internal_open\fR(3TNF) for
+same as the calling process. See
+.BR tnfctl_internal_open (3TNF)
+for
 information on internal process probe control. A pointer to an opaque handle
 is returned in
 .IR ret_val ,
 which can be used to control the process and
 the probes in the process. The target process must have
 .B libtnfprobe.so.1
-(defined in <\fBtnf/tnfctl.h\fR> as macro
+(defined in
+.RB < tnf/tnfctl.h >
+as macro
 .B TNFCTL_LIBTNFPROBE)
 linked in for probe control to work.
 .sp
@@ -102,7 +106,8 @@ obtain a probe control handle. For probe control to work, the process image to
 be
 .BR exec "'d must load"
 .BR libtnfprobe.so.1 .
-The \fBtnfctl_exec_open()\fR
+The
+.B tnfctl_exec_open()
 function makes it simple for the library to be loaded at process start up
 time. The
 .I pgm_name
@@ -172,7 +177,9 @@ If
 is set, it overrides
 .IR ld_preload .
 In this case, it is the caller's responsibility to ensure
-that \fBlibtnfprobe.so.1\fR is loaded into the target program.  If \fIenvp\fR
+that
+.B libtnfprobe.so.1
+is loaded into the target program.  If \fIenvp\fR
 is not set, the new process image inherits the environment of the calling
 process, except for
 .BR LD_PRELOAD .
@@ -192,7 +199,7 @@ function is a blocking call and lets the target
 process referenced by
 .I hndl
 continue running.  It can only be used on
-handles returned by \fBtnfctl_pid_open()\fR and \fBtnfctl_exec_open()\fR
+.RB "handles returned by " tnfctl_pid_open() " and " tnfctl_exec_open() 
 (direct process probe control). It returns when the target stops; the reason
 that the  process stopped  is returned in
 .IR evt .
@@ -221,31 +228,40 @@ returns with an event of
 or
 .BR TNFCTL_EVENT_TARGGONE ,
 respectively, when
-the target program calls \fBdlopen\fR(3C), \fBdlclose\fR(3C), any flavor of
+the target program calls
+.BR dlopen (3C),
+\fBdlclose\fR(3C), any flavor of
 .BR exec (2),
 .BR fork (2)
-(or \fBfork1\fR(2)),
+(or
+.BR fork1 (2)),
 .BR exit (2),
 or terminates
 unexpectedly. If the target program called
 .BR exec (2),
 the client then
-needs to call \fBtnfctl_close\fR(3TNF) on the current handle leaving the
+needs to call
+.BR tnfctl_close (3TNF)
+on the current handle leaving the
 target resumed, suspended, or killed (second argument to
 .BR tnfctl_close (3TNF)).
 No other
 .B libtnfctl
 interface call can be used
-on the existing handle. If the client wants to control the \fBexec\fR'ed
+on the existing handle. If the client wants to control the
+.BR exec 'ed
 image, it should leave the old handle suspended, and use
 .B tnfctl_pid_open()
 to reattach to the same process.  This new handle can
-then be used to control the \fBexec\fR'ed image.  See \fBEXAMPLES\fR below for
+then be used to control the
+.BR exec 'ed
+image.  See \fBEXAMPLES\fR below for
 sample code.  If the target process did a
 .BR fork (2)
 or
 .BR fork1 (2),
-and if control of the child process is not needed, then \fIchild_hndl\fR
+and if control of the child process is not needed, then
+.I child_hndl
 should be
 .IR NULL .
 If control of the child process is needed, then
@@ -485,7 +501,8 @@ No such target process exists.
 .SH EXAMPLES
 .LP
 .B Example 1
-Using \fBtnfctl_pid_open()\fR
+Using
+.B tnfctl_pid_open()
 .sp
 .LP
 These examples do not include any error-handling code.  Only the initial
@@ -635,7 +652,9 @@ case TNFCTL_EVENT_EXEC:
 
 .sp
 .LP
-To let  \fBfork\fR'ed children continue without control, use
+To let 
+.BR fork 'ed
+children continue without control, use
 .I NULL
 as
 the last argument to \fBtnfctl_continue(\|).\fR

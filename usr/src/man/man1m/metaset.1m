@@ -117,18 +117,22 @@ The
 .B metaset
 command administers sets of disks in named disk sets. Named
 disk sets include any disk set that is not in the local set. While disk sets
-enable a high-availability configuration, Solaris Volume Manager itself does not
+enable a high-availability configuration, Solaris Volume Manager itself does
+not
 actually provide a high-availability environment.
 .sp
 .LP
 A single-owner disk set configuration manages storage on a SAN or
-fabric-attached storage, or provides namespace control and state database replica
+fabric-attached storage, or provides namespace control and state database
+replica
 management for a specified set of disks.
 .sp
 .LP
 In a shared disk set configuration, multiple hosts are physically connected to
-the same set of disks. When one host fails, another host has exclusive access to
-the disks. Each host can control a shared disk set, but only one host can control
+the same set of disks. When one host fails, another host has exclusive access
+to
+the disks. Each host can control a shared disk set, but only one host can
+control
 it at a time.
 .sp
 .LP
@@ -197,13 +201,15 @@ where
 is the name of the disk set, and
 .I number
 is the number
-of the metadevice (\fB0\fR-\fB127\fR).
+of the metadevice
+.RB ( 0 -\fB127\fR).
 .sp
 .LP
 If you have disk sets that you upgraded from Solstice DiskSuite software, the
 default state database replica size on those sets is 1034 blocks, not the 8192
 block size from Solaris Volume Manager. Also, slice 7 on the disks that were
-added under Solstice DiskSuite are correspondingly smaller than slice 7 on disks
+added under Solstice DiskSuite are correspondingly smaller than slice 7 on
+disks
 that were added under Solaris Volume Manager.
 .sp
 .LP
@@ -239,7 +245,8 @@ contain an entry for all other host names. This is not required in a SunCluster
 .sp
 .LP
 Tagged data occurs when there are different versions of a disk set's replicas.
-This tagged data consists of the set owner's nodename, the hardware serial number
+This tagged data consists of the set owner's nodename, the hardware serial
+number
 of the owner and the time it was written out to the available replicas. The
 system administer can use this information to determine which replica contains
 the correct data.
@@ -247,8 +254,10 @@ the correct data.
 .LP
 When a disk set is configured with an even number of storage enclosures and has
 replicas balanced across them evenly, it is possible that up to half of the
-replicas can be lost (for example, through a power failure of half of the storage
-enclosures). After the enclosure that went down is rebooted, half of the replicas
+replicas can be lost (for example, through a power failure of half of the
+storage
+enclosures). After the enclosure that went down is rebooted, half of the
+replicas
 are not recognized by SVM. When the set is retaken, the
 .B metaset
 command
@@ -260,7 +269,8 @@ Some of the replicas that are not recognized need to be deleted. The action of
 deleting the replicas also causes updates to the replicas that are not being
 deleted. In a dual hosted disk set environment, the second node can access the
 deleted replicas instead of the existing replicas when it takes the set. This
-leads to the possibility of getting the wrong replica record on a disk set take.
+leads to the possibility of getting the wrong replica record on a disk set
+take.
 An error message is displayed, and user intervention is required.
 .sp
 .LP
@@ -290,7 +300,9 @@ A mediator configuration can survive the failure of a single host or a single
 string of drives, without administrative intervention. If both a host and a
 string of drives fail (multiple failures), the integrity of the data cannot be
 guaranteed. At this point, administrative intervention is required to make the
-data accessible. See \fBmediator\fR(7D) for further details.
+data accessible. See
+.BR mediator (7D)
+for further details.
 .sp
 .LP
 Use the
@@ -310,14 +322,17 @@ The following options are supported:
 .ad
 .sp .6
 .RS 4n
-Add drives or hosts to the named set. For a drive to be accepted into a set, the
+Add drives or hosts to the named set. For a drive to be accepted into a set,
+the
 drive must not be in use within another metadevice or disk set, mounted on, or
-swapped on. When the drive is accepted into the set, it is repartitioned and the
+swapped on. When the drive is accepted into the set, it is repartitioned and
+the
 metadevice state database replica (for the set) can be placed on it. However, if
 a slice 7 (or slice 6 on an EFI labelled device), starts at cylinder 0, and is
 large enough to hold a state database replica, then the disk is not
 repartitioned. Also, a drive is not accepted if it cannot be found on all hosts
-specified as part of the set. This means that if a host within the specified set
+specified as part of the set. This means that if a host within the specified
+set
 is unreachable due to network problems, or is administratively down, the add
 fails.
 .sp
@@ -348,7 +363,8 @@ pathname for each drive. Such a name has the form:
 .ad
 .sp .6
 .RS 4n
-Add (\fB-a\fR) or delete (\fB-d\fR) mediator hosts to the specified disk set. A
+.RB "Add (" -a ") or delete (" -d )
+mediator hosts to the specified disk set. A
 .I mediator_host_list
 is the
 .BR nodename (4)
@@ -382,8 +398,10 @@ disk set can be mounted through
 entries. Only a single host can
 be associated with an auto-take set, so attempts to add a second host to an
 auto-take set or attempts to configure a disk set with multiple hosts as
-auto-take fails with an error message. Disabling auto-take status for a specific
-disk set causes the disk set to revert to normal behavior. That is, the disk set
+auto-take fails with an error message. Disabling auto-take status for a
+specific
+disk set causes the disk set to revert to normal behavior. That is, the disk
+set
 is potentially shared (non-concurrently) among hosts, and unavailable for
 mounting through
 .BR /etc/vfstab .
@@ -398,7 +416,8 @@ mounting through
 .sp .6
 .RS 4n
 Insure that the replicas are distributed according to the replica layout
-algorithm. This can be invoked at any time, and does nothing if the replicas are
+algorithm. This can be invoked at any time, and does nothing if the replicas
+are
 correctly distributed. In cases where the user has used the
 .B metadb
 command
@@ -471,7 +490,8 @@ accessible and requires rebuilding.
 .sp .6
 .RS 4n
 Delete drives or hosts from the named disk set. For a drive to be deleted, it
-must not be in use within the set. The last host cannot be deleted unless all of
+must not be in use within the set. The last host cannot be deleted unless all
+of
 the drives within the set are deleted. Deleting the last host in a disk set
 destroys the disk set.
 .sp
@@ -487,7 +507,8 @@ pathname for each drive. Such a name has the form:
 .in -2
 .sp
 
-This option fails on a multi-owner disk set if attempting to withdraw the master
+This option fails on a multi-owner disk set if attempting to withdraw the
+master
 node while other nodes are in the set.
 .RE
 
@@ -503,7 +524,8 @@ Force one of three actions to occur: takes ownership of a disk set when used
 with
 .BR -t ;
 deletes the last disk drive from the disk set; or deletes the last
-host from the disk set. Deleting the last drive or host from a disk set requires
+host from the disk set. Deleting the last drive or host from a disk set
+requires
 the
 .B -d
 option.
@@ -511,7 +533,8 @@ option.
 When used to forcibly take ownership of the disk set, this causes the disk set
 to be grabbed whether or not another host owns the set. All of the disks within
 the set are taken over (reserved) and fail fast is enabled, causing the other
-host to panic if it had disk set ownership. The metadevice state database is read
+host to panic if it had disk set ownership. The metadevice state database is
+read
 in by the host performing the take, and the shared metadevices contained in the
 set are accessible.
 .sp
@@ -537,10 +560,14 @@ list of hosts to clean up after one-host administration has been performed.
 .ad
 .sp .6
 .RS 4n
-Specify one or more host names to be added to or deleted from a disk set. Adding
-the first host creates the set. The last host cannot be deleted unless all of the
-drives within the set have been deleted. The host name is not accepted if all of
-the drives within the set cannot be found on the specified host. The host name is
+Specify one or more host names to be added to or deleted from a disk set.
+Adding
+the first host creates the set. The last host cannot be deleted unless all of
+the
+drives within the set have been deleted. The host name is not accepted if all
+of
+the drives within the set cannot be found on the specified host. The host name
+is
 the same name found in
 .BR /etc/nodename .
 .RE
@@ -592,7 +619,8 @@ to join the host to the owner list. After the cluster reconfiguration, when the
 host reenters the cluster, the node is automatically joined to the set. The
 .B metaset -j
 command joins the host to all multi-owner sets that the
-host has been added to. In a single node situation, joining the node to the disk
+host has been added to. In a single node situation, joining the node to the
+disk
 set starts any necessary resynchronizations.
 .RE
 
@@ -620,7 +648,8 @@ standard Solaris Volume Manager algorithm. See
 .RS 4n
 Set the size (in blocks) for the metadevice state database replica. The length
 can only be set when adding a new drive; it cannot be changed on an existing
-drive. The default (and maximum) size is 8192 blocks, which should be appropriate
+drive. The default (and maximum) size is 8192 blocks, which should be
+appropriate
 for most configurations. Replica sizes of less than 128 blocks are not
 recommended.
 .RE
@@ -715,7 +744,8 @@ This option is not for use with a multi-owner disk set.
 .RS 4n
 Specify the name of a disk set on which
 .B metaset
-works. If no \fIsetname\fR
+works. If no
+.I setname
 is specified, all disk sets are returned.
 .RE
 
@@ -731,7 +761,8 @@ Take ownership of a disk set safely. If
 .B metaset
 finds that another host
 owns the set, this host is not be allowed to take ownership of the set. If the
-set is not owned by any other host, all the disks within the set are owned by the
+set is not owned by any other host, all the disks within the set are owned by
+the
 host on which
 .B metaset
 was executed. The metadevice state database is read
@@ -772,7 +803,8 @@ can be executed to select the data associated with the given
 .ad
 .sp .6
 .RS 4n
-Withdraws a host from the owner list for a multi-owner disk set. The concepts of
+Withdraws a host from the owner list for a multi-owner disk set. The concepts
+of
 take and release, used with traditional disk sets, do not apply to multi-owner
 sets, because multiple owners are allowed.
 .sp
@@ -785,8 +817,10 @@ metaset -s \fImultinodesetname\fR -w
 .in -2
 .sp
 
-to withdraw from the owner list. A host automatically withdraws on a reboot, but
-can be manually withdrawn if it should not be able to use the set, but should be
+to withdraw from the owner list. A host automatically withdraws on a reboot,
+but
+can be manually withdrawn if it should not be able to use the set, but should
+be
 able to rejoin at a later time. A host that withdrew due to a reboot can still
 appear joined from other hosts in the set until a reconfiguration cycle occurs.
 
@@ -795,7 +829,8 @@ appear joined from other hosts in the set until a reconfiguration cycle occurs.
 withdraws from ownership of all multi-owner sets of which
 the host is a member. This option fails if you attempt to withdraw the master
 node while other nodes are in the disk set owner list. This option cancels all
-resyncs running on the node. A cluster reconfiguration process that is removing a
+resyncs running on the node. A cluster reconfiguration process that is
+removing a
 node from the cluster membership list effectively withdraws the host from the
 ownership list.
 .RE
@@ -808,7 +843,8 @@ ownership list.
 .ad
 .sp .6
 .RS 4n
-Execute a subsequent take. If the take operation encounters ``tagged data,'' the
+Execute a subsequent take. If the take operation encounters ``tagged data,''
+the
 take operation exits with code 2. You can then run the
 .B metaset
 command with
@@ -846,7 +882,8 @@ respectively. (The hostname
 is found in
 .BR /etc/nodename .)
 Adding the first host creates the disk set. A
-disk set can be created with just one host, with the second added later. The last
+disk set can be created with just one host, with the second added later. The
+last
 host cannot be deleted until all of the drives within the set have been
 deleted.
 

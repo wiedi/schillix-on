@@ -61,8 +61,7 @@ ddi_trigger_softintr \- software interrupt handling routines
 .sp
 .LP
 Solaris DDI specific (Solaris DDI). These interfaces are obsolete. Use the new
-interrupt interfaces referenced in \fBIntro\fR(9F). Refer to \fIWriting Device
-Drivers\fR for more information.
+interrupt interfaces referenced in \fBIntro\fR(9F). Refer to \fIWriting Device Drivers\fR for more information.
 .SH PARAMETERS
 .sp
 .LP
@@ -161,7 +160,8 @@ cookie is stored.
 .ad
 .RS 19n
 .rt
-Optional pointer to an interrupt device cookie where a returned interrupt device
+Optional pointer to an interrupt device cookie where a returned interrupt
+device
 cookie is stored (not used).
 .RE
 
@@ -225,7 +225,8 @@ For
 .LP
 .B ddi_get_soft_iblock_cookie()
 retrieves the interrupt block cookie
-associated with a particular soft interrupt preference level. This routine should
+associated with a particular soft interrupt preference level. This routine
+should
 be called before
 .B ddi_add_softintr()
 to retrieve the interrupt block cookie
@@ -236,7 +237,8 @@ used by the
 software interrupt routine.
 .I preference
 determines which type of soft
-interrupt to retrieve the cookie for. The possible values for \fIpreference\fR
+interrupt to retrieve the cookie for. The possible values for
+.I preference
 are:
 .sp
 .ne 2
@@ -284,7 +286,10 @@ interrupt routine before calling
 .B ddi_add_softintr()
 which prevents a
 possible race condition where the driver's soft interrupt handler is called
-immediately \fBafter\fR the driver has called \fBddi_add_softintr()\fR but
+immediately
+.BR after " the driver has called "
+.B ddi_add_softintr()
+but
 .B before
 the driver has initialized the mutexes. This can happen when a soft
 interrupt for a different device occurs on the same soft interrupt priority
@@ -353,13 +358,15 @@ The routine
 with its argument
 .IR int_handler_arg ,
 is
-called upon receipt of a software interrupt. Software interrupt handlers must not
+called upon receipt of a software interrupt. Software interrupt handlers must
+not
 assume that they have work to do when they run, since (like hardware interrupt
 handlers) they may run because a soft interrupt occurred for some other reason.
 For example, another driver may have triggered a soft interrupt at the same
 level. For this reason, before triggering the soft interrupt, the driver must
 indicate to its soft interrupt handler that it should do work. This is usually
-done by setting a flag in the state structure. The routine \fIint_handler\fR
+done by setting a flag in the state structure. The routine
+.I int_handler
 checks this flag, reachable through
 .IR int_handler_arg ,
 to determine if it
@@ -394,7 +401,8 @@ interrupt identifier
 which was returned from a call to
 .BR ddi_add_softintr() ,
 is used to determine which soft interrupt and which
-soft interrupt handler to remove. Drivers must remove any soft interrupt handlers
+soft interrupt handler to remove. Drivers must remove any soft interrupt
+handlers
 before allowing the system to unload the driver.
 .sp
 .LP
@@ -453,7 +461,8 @@ device using high-level interrupts
 .sp
 .LP
 In the following example, the device uses high-level interrupts. High-level
-interrupts are those that interrupt at the level of the scheduler and above. High
+interrupts are those that interrupt at the level of the scheduler and above.
+High
 level interrupts must be handled without using system services that manipulate
 thread or process states, because these interrupts are not blocked by the
 scheduler. In addition, high level interrupt handlers must take care to do a
@@ -463,8 +472,10 @@ minimum of work because they are not preemptable. See
 .sp
 .LP
 In the example, the high-level interrupt routine minimally services the device,
-and enqueues the data for later processing by the soft interrupt handler. If the
-soft interrupt handler is not currently running, the high-level interrupt routine
+and enqueues the data for later processing by the soft interrupt handler. If
+the
+soft interrupt handler is not currently running, the high-level interrupt
+routine
 triggers a soft interrupt so the soft interrupt handler can process the data.
 Once running, the soft interrupt handler processes all the enqueued data before
 returning.
@@ -473,7 +484,8 @@ returning.
 .LP
 The state structure contains two mutexes. The high-level mutex is used to
 protect data shared between the high-level interrupt handler and the soft
-interrupt handler. The low-level mutex is used to protect the rest of the driver
+interrupt handler. The low-level mutex is used to protect the rest of the
+driver
 from the soft interrupt handler.
 
 .sp
@@ -568,8 +580,10 @@ High-level interrupt routine
 .sp
 .LP
 The next code fragment represents the high-level interrupt routine. The
-high-level interrupt routine minimally services the device, and enqueues the data
-for later processing by the soft interrupt routine. If the soft interrupt routine
+high-level interrupt routine minimally services the device, and enqueues the
+data
+for later processing by the soft interrupt routine. If the soft interrupt
+routine
 is not already running,
 .B ddi_trigger_softintr()
 is called to start the
@@ -686,7 +700,8 @@ in each of the calls to
 .BR ddi_add_softintr() .
 Instead,
 the argument passed to the interrupt handler should indicate what service(s) the
-interrupt handler should perform. For example, the argument could be a pointer to
+interrupt handler should perform. For example, the argument could be a pointer
+to
 the device's soft state structure, which could contain a 'which_service' field
 that the handler examines. The driver must set this field to the appropriate
 value before calling

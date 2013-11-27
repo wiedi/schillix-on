@@ -379,9 +379,12 @@ calls
 in a loop, the work done by
 .B bar()
 counts as work generated
-by \fBfoo()\fR (along with any work done by \fBfoo()\fR itself). The \fB-g\fR
+by \fBfoo()\fR (along with any work done by
+.B foo()
+itself). The \fB-g\fR
 option works by counting the total number of stack frames in which each
-function appears. This implies two things: (1) the data reported by \fB-g\fR
+function appears. This implies two things: (1) the data reported by
+.B -g
 can be misleading if the stack traces are not deep enough, and (2) functions
 that are called recursively might show greater than 100% activity. In light
 of issue (1), the default data gathering mode when using
@@ -423,7 +426,9 @@ Direct output to
 .ad
 .sp .6
 .RS 4n
-Sort data by (\fIcount * time\fR) product.
+Sort data by
+.RI ( "count * time" )
+product.
 .RE
 
 .sp
@@ -742,7 +747,7 @@ Basic Kernel Profiling
 .sp
 .LP
 For basic profiling, we don't care whether the profiling interrupt sampled
-\fBfoo()\fB+0x4c\fR or \fBfoo()\fB+0x78\fR; we care only that it
+\fBfoo()+0x4c\fR or \fBfoo()+0x78\fR; we care only that it
 sampled somewhere in
 .BR foo() ,
 so we use
@@ -822,13 +827,15 @@ the
 .RB "option. The example below shows that although" " polltest"
 spends only 5% of its time in
 .B poll()
-itself, \fBpoll()\fR-induced work
+itself,
+.BR poll() -induced
+work
 accounts for 34% of the load.
 
 .sp
 .LP
 Note that the functions that generate the profiling interrupt
-(\fBlockstat_intr()\fR,
+.RB ( lockstat_intr() ,
 .BR cyclic_fire() ,
 and so forth) appear in every
 stack trace, and therefore are considered to have generated 100% of the load.
@@ -839,7 +846,8 @@ stack traces contain both
 .B foo()
 and
 .BR bar() ,
-then both \fBfoo()\fR
+then both
+.B foo()
 and
 .B bar()
 are 72% load generators.
@@ -1064,19 +1072,24 @@ and
 .sp
 .LP
 Tail-call elimination can affect call sites. For example, if
-\fBfoo()\fB+0x50\fR calls \fBbar()\fR and the last thing \fBbar()\fR does
+\fBfoo()+0x50\fR calls \fBbar()\fR and the last thing
+.B bar()
+does
 is call
 .BR mutex_exit() ,
 the compiler can arrange for
 .B bar()
 to
-branch to \fBmutex_exit()\fRwith a return address of \fBfoo()\fB+0x58\fR.
+branch to
+.BR mutex_exit() with
+a return address of \fBfoo()+0x58\fR.
 Thus, the
 .B mutex_exit()
 in
 .B bar()
 will appear as though it occurred
-at \fBfoo()\fB+0x58\fR.
+at
+.BR foo()+0x58 .
 .sp
 .LP
 The

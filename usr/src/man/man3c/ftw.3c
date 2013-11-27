@@ -88,7 +88,9 @@ structure (see
 .BR stat (2))
 containing information
 about the object, and an integer. Possible values of the integer, defined in
-the <\fBftw.h\fR> header, are:
+the
+.RB < ftw.h >
+header, are:
 .sp
 .ne 2
 .mk
@@ -154,15 +156,21 @@ The tree traversal continues until the tree is exhausted, an invocation of
 .I fn
 returns a non-zero value, or some error is detected within
 .B ftw()
-(such as an I/O error). If the tree is exhausted, \fBftw()\fR
+(such as an I/O error). If the tree is exhausted,
+.B ftw()
 returns
 .BR 0 .
-If \fIfn\fR returns a non-zero value, \fBftw()\fR stops its
+If \fIfn\fR returns a non-zero value,
+.B ftw()
+stops its
 tree traversal and returns whatever value was returned by
 .IR fn .
 .sp
 .LP
-The  \fBnftw()\fR function is similar to \fBftw()\fR except that it takes
+The 
+.BR nftw() " function is similar to "
+.B ftw()
+except that it takes
 the additional argument
 .IR flags ,
 which is a bitwise-inclusive OR of zero
@@ -408,7 +416,10 @@ does not preserve the current working directory.
 .RE
 .sp
 .LP
-Both \fBftw()\fR and \fBnftw()\fR use one file descriptor for each level in
+Both
+.BR ftw() " and "
+.B nftw()
+use one file descriptor for each level in
 the tree. The
 .I depth
 argument limits the number of file descriptors
@@ -429,7 +440,8 @@ are able to descend to arbitrary depths in a file hierarchy and
 do not fail due to path length limitations unless either the length of the
 path name pointed to by the
 .I path
-argument exceeds {\fBPATH_MAX\fR}
+argument exceeds
+.RB { PATH_MAX }
 requirements, or for
 .BR ftw() ,
 the specified depth is less than 2, or for
@@ -437,17 +449,25 @@ the specified depth is less than 2, or for
 the specified depth is less than 2 and
 .B FTW_CHDIR
 is not
-set. When \fBftw()\fR and \fBnftw()\fR return, they close any file
+set. When
+.BR ftw() " and "
+.B nftw()
+return, they close any file
 descriptors they have opened; they do not close any file descriptors that
 might have been opened by
 .IR fn .
 .SH RETURN VALUES
 .sp
 .LP
-If the tree is exhausted, \fBftw()\fR and \fBnftw()\fR return
+If the tree is exhausted,
+.BR ftw() " and "
+.B nftw()
+return
 .BR 0 .
 If
-the function pointed to by \fIfn\fR returns a non-zero value, \fBftw()\fR
+the function pointed to by
+.I fn
+returns a non-zero value, \fBftw()\fR
 and
 .B nftw()
 stop their tree traversal and return whatever value was
@@ -461,7 +481,9 @@ detect an error,  they return \fB\(mi1\fR and set \fBerrno\fR
 to indicate the error.
 .sp
 .LP
-If \fBftw()\fR and \fBnftw()\fR encounter an error other than \fBEACCES\fR
+If \fBftw()\fR and
+.B nftw()
+encounter an error other than \fBEACCES\fR
 (see
 .B FTW_DNR
 and
@@ -478,7 +500,10 @@ functions is executed on a directory or file.
 .SH ERRORS
 .sp
 .LP
-The \fBftw()\fR and \fBnftw()\fR functions will fail if:
+The
+.BR ftw() " and "
+.B nftw()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -503,8 +528,9 @@ argument
 The length of the path name pointed to by the
 .I path
 argument exceeds
-{\fBPATH_MAX\fR}, or a path name component is longer than
-{\fBNAME_MAX\fR}.
+.RB { PATH_MAX },
+or a path name component is longer than
+.RB { NAME_MAX }.
 .RE
 
 .sp
@@ -582,7 +608,8 @@ permission is denied for
 The
 .B ftw()
 function has descended to a path that exceeds
-{\fBPATH_MAX\fR} and the depth argument specified by the application is less
+.RB { PATH_MAX }
+and the depth argument specified by the application is less
 than 2 and
 .B FTW_CHDIR
 is not set.
@@ -615,7 +642,10 @@ not reset
 
 .sp
 .LP
-The \fBnftw()\fR and \fBftw()\fR functions may fail if:
+The
+.BR nftw() " and "
+.B ftw()
+functions may fail if:
 .sp
 .ne 2
 .mk
@@ -640,7 +670,7 @@ argument.
 Pathname resolution of a symbolic link in the path name pointed to by the
 .I path
 argument produced an intermediate result whose length exceeds
-{\fBPATH_MAX\fR}.
+.RB { PATH_MAX }.
 .RE
 
 .sp
@@ -674,7 +704,9 @@ function may fail if:
 .ad
 .RS 10n
 .rt
-There are {\fBOPEN_MAX\fR} file descriptors currently open in the calling
+There are
+.RB { OPEN_MAX }
+file descriptors currently open in the calling
 process.
 .RE
 
@@ -699,7 +731,8 @@ may be set accordingly.
 .SH EXAMPLES
 .LP
 .B Example 1
-Walk a directory structure using \fBftw()\fR.
+Walk a directory structure using
+.BR ftw() .
 .sp
 .LP
 The following example walks the current directory structure, calling the
@@ -720,7 +753,8 @@ if (ftw(".", fn, 10) != 0) {
 
 .LP
 .B Example 2
-Walk a directory structure using \fBnftw()\fR.
+Walk a directory structure using
+.BR nftw() .
 .sp
 .LP
 The following example walks the
@@ -754,23 +788,35 @@ ret = nftw(startpath, nftwfunc, depth, flags);
 .SH USAGE
 .sp
 .LP
-Because \fBftw()\fR and \fBnftw()\fR are recursive, they can terminate with
+Because
+.BR ftw() " and "
+.B nftw()
+are recursive, they can terminate with
 a memory fault when applied by a thread with a small stack to very deep file
 structures.
 .sp
 .LP
-The \fBftw()\fR and \fBnftw()\fR functions allocate resources (memory, file
+The
+.BR ftw() " and "
+.B nftw()
+functions allocate resources (memory, file
 descriptors) during their operation. If
 .B ftw()
 they are forcibly
-terminated, such as by \fBlongjmp\fR(3C) being executed by \fIfn\fR or an
+terminated, such as by
+.BR longjmp (3C)
+being executed by \fIfn\fR or an
 interrupt routine, they will not have a chance to free those resources, so
 they remain permanently allocated. A safe way to handle interrupts is to
-store the fact that an interrupt has occurred and arrange to have \fIfn\fR
+store the fact that an interrupt has occurred and arrange to have
+.I fn
 return a non-zero value at its next invocation.
 .sp
 .LP
-The \fBftw()\fR and \fBnftw()\fR functions have transitional interfaces for
+The
+.BR ftw() " and "
+.B nftw()
+functions have transitional interfaces for
 64-bit file offsets.  See
 .BR lf64 (5).
 .sp

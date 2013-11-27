@@ -54,13 +54,16 @@ Solaris architecture specific (Solaris DDI).
 .sp
 .LP
 GLD is a multi-threaded, clonable, loadable kernel module providing support
-for Solaris local area network  (\fBLAN\fR) device drivers. \fBLAN\fR
+.RB "for Solaris local area network  (" LAN ") device drivers. " LAN 
 drivers in Solaris are
 .BR STREAMS "-based drivers that use the Data Link"
-Provider Interface (\fBDLPI\fR) to communicate with network protocol stacks.
+Provider Interface
+.RB ( DLPI )
+to communicate with network protocol stacks.
 These protocol stacks use the network drivers to send and receive packets on
 a local area network. A network device driver must implement and adhere to
-the requirements imposed by the DDI/DKI specification, \fBSTREAMS\fR
+the requirements imposed by the DDI/DKI specification,
+.B STREAMS
 specification, DLPI specification, and programmatic interface of the device
 itself.
 .sp
@@ -84,7 +87,9 @@ function. Once it is successfully loaded, the driver is
 \fBDLPI\fR-compliant. The device-specific part of the driver calls
 .BR gld (9F)
 functions when it receives data or needs some service from
-GLD. GLD makes calls into the \fBgld\fR(9E) entry points of the
+GLD. GLD makes calls into the
+.BR gld (9E)
+entry points of the
 device-specific driver through pointers provided to GLD by the
 device-specific driver when it registered itself with GLD. The
 .BR gld_mac_info (9S)
@@ -128,7 +133,9 @@ GLD provides support for both
 Ethernet V2 and ISO 8802-3 (IEEE 802.3) packet processing. Ethernet V2
 enables a data link service user to access and use any of a variety of
 conforming data link service providers without special knowledge of the
-provider's protocol. A service access point (\fBSAP\fR) is the point through
+provider's protocol. A service access point
+.RB ( SAP )
+is the point through
 which the user communicates with the service provider.
 .sp
 .LP
@@ -227,15 +234,16 @@ to the MAC headers of outgoing packets and
 recognizes such fields in incoming packets.
 .sp
 .LP
-GLD's source routing support does not implement the full \fIRoute
-Determination Entity\fR \fB(RDE)\fR specified in \fIISO 8802-2 (IEEE
+GLD's source routing support does not implement the full \fIRoute Determination Entity\fR \fB(RDE)\fR specified in \fIISO 8802-2 (IEEE
 802.2)\fR Section 9. However, it is designed to interoperate with any such
 implementations that may exist in the same (or a bridged) network.
 .SS "Style 1 and 2 Providers"
 .sp
 .LP
 GLD implements both Style 1 and Style 2 providers. A physical point of
-attachment (\fBPPA\fR) is the point at which a system attaches itself to a
+attachment
+.RB ( PPA )
+is the point at which a system attaches itself to a
 physical communication medium. All communication on that physical medium
 funnels through the
 .BR PPA .
@@ -471,7 +479,8 @@ function as described in
 .SS "Requirements on GLD Drivers"
 .sp
 .LP
-GLD-based drivers must include the header file \fB<sys/gld.h>\fR\&.
+GLD-based drivers must include the header file
+.BR <sys/gld.h> \&.
 .sp
 .LP
 GLD-based  drivers  must also specify  a link dependency on "misc/gld".
@@ -479,20 +488,29 @@ GLD-based  drivers  must also specify  a link dependency on "misc/gld".
 .BR ld (1)).
 .sp
 .LP
-GLD implements the \fBopen\fR(9E) and \fBclose\fR(9E) functions and the
-required \fBSTREAMS put\fR(9E) and \fBsrv\fR(9E) functions on behalf
-of the device-specific driver. GLD also implements the \fBgetinfo\fR(9E)
+GLD implements the
+.BR open (9E)
+and \fBclose\fR(9E) functions and the
+required
+.BR "STREAMS put" (9E)
+and \fBsrv\fR(9E) functions on behalf
+of the device-specific driver. GLD also implements the
+.BR getinfo (9E)
 function for the driver.
 .sp
 .LP
 The
 .B mi_idname
-element of the \fBmodule_info\fR(9S) structure is a
+element of the
+.BR module_info (9S)
+structure is a
 string specifying the name of the driver. This must exactly match the name
 of the driver module as it exists in the file system.
 .sp
 .LP
-The read-side \fBqinit\fR(9S) structure should specify the following
+The read-side
+.BR qinit (9S)
+structure should specify the following
 elements as shown below:
 .sp
 .ne 2
@@ -540,7 +558,9 @@ elements as shown below:
 
 .sp
 .LP
-The write-side \fBqinit\fR(9S) structure should specify the following
+The write-side
+.BR qinit (9S)
+structure should specify the following
 elements as shown below:
 .sp
 .ne 2
@@ -593,15 +613,20 @@ The
 element of the
 .BR dev_ops (9S)
 structure should
-specify \fBgld_getinfo\fR as the \fBgetinfo\fR(9E) routine.
+.RB "specify " gld_getinfo " as the " getinfo (9E)
+routine.
 .sp
 .LP
-The driver's \fBattach\fR(9E) function does all the work of associating the
+The driver's
+.BR attach (9E)
+function does all the work of associating the
 hardware-specific device driver with the GLD facility and preparing the
 device and driver for use.
 .sp
 .LP
-The \fBattach\fR(9E) function allocates a \fBgld_mac_info\fR(9S)
+The
+.BR attach (9E)
+function allocates a \fBgld_mac_info\fR(9S)
 (``macinfo'') structure using
 .BR gld_mac_alloc() .
 The driver usually
@@ -614,15 +639,21 @@ member of the
 structure.
 .sp
 .LP
-The \fBattach\fR(9E) routine must initialize the macinfo structure as
-described in \fBgld_mac_info\fR(9S) and then call
+The
+.BR attach (9E)
+routine must initialize the macinfo structure as
+described in
+.BR gld_mac_info (9S)
+and then call
 .B gld_register()
 to
 link the driver with the GLD module. The driver should map registers if
 necessary and be fully initialized and prepared to accept interrupts before
 calling
 .BR gld_register() .
-The \fBattach\fR(9E) function should add
+The
+.BR attach (9E)
+function should add
 interrupts but not enable the device to generate them. The driver should
 reset the hardware before calling
 .B gld_register()
@@ -642,7 +673,9 @@ succeeds, the
 entry points may be called by GLD at any time.
 .sp
 .LP
-The \fBattach\fR(9E) routine should return \fBDDI_SUCCESS\fR if
+The
+.BR attach (9E)
+routine should return \fBDDI_SUCCESS\fR if
 .B gld_register()
 succeeds. If
 .B gld_register()
@@ -660,7 +693,9 @@ structure be reused; it should be deallocated using
 .BR gld_mac_free ().
 .sp
 .LP
-The \fBdetach\fR(9E) function should attempt to unregister the driver from
+The
+.BR detach (9E)
+function should attempt to unregister the driver from
 GLD. This is done by calling
 .B gld_unregister()
 described in
@@ -683,7 +718,8 @@ driver's
 routine must leave the device operational and
 return
 .BR DDI_FAILURE .
-If the checks succeed, \fBgld_unregister()\fR
+If the checks succeed,
+.B gld_unregister()
 ensures that the device interrupts are stopped, calling the driver's
 .B gldm_stop()
 routine if necessary, unlinks the driver from the GLD
@@ -692,11 +728,15 @@ framework, and returns
 In this case, the
 .BR detach (9E)
 routine should remove interrupts, deallocate any data structures allocated
-in the \fBattach\fR(9E) routine, using \fBgld_mac_free()\fR to deallocate
+in the
+.BR attach (9E)
+routine, using \fBgld_mac_free()\fR to deallocate
 the macinfo structure, and return
 .BR DDI_SUCCESS .
 It is important to
-remove the interrupt \fIbefore\fR calling \fBgld_mac_free()\fR.
+remove the interrupt
+.I before
+calling \fBgld_mac_free()\fR.
 .SS "Network Statistics"
 .sp
 .LP
@@ -914,7 +954,9 @@ of them in a private per-instance structure. When GLD is asked to report
 statistics, it calls the driver's
 .B gldm_get_stats()
 entry point, as
-described in \fBgld\fR(9E), to update the device-specific statistics in the
+described in
+.BR gld (9E),
+to update the device-specific statistics in the
 .BR gld_stats (9S)
 structure. GLD then reports the updated statistics using
 the named statistics variables below.

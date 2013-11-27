@@ -212,7 +212,9 @@ similar to the local disk mirroring scheme of RAID 1 but it performs its
 replication operations over longer distances.
 .sp
 .LP
-If you do not specify a Remote Mirror set (\fIsndr_set\fR) on the command line,
+If you do not specify a Remote Mirror set
+.RI ( sndr_set )
+on the command line,
 .B sndradm
 operates on all configured Remote Mirror sets.
 .sp
@@ -225,14 +227,15 @@ file,
 (see
 .BR ds.log (4)),
 for all operations except
-print (\fB-p\fR,
+print
+.RB ( -p ,
 .B -P
 and
 .BR -i ),
 help
 .RB ( -h ),
 and version
-(\fB-v\fR).
+.RB ( -v ).
 .SH OPTIONS
 .sp
 .LP
@@ -301,7 +304,8 @@ Does not prompt the user after starting a Remote Mirror operation using
 .BR sndradm .
 For all but the printing, help, and version options, the default
 behavior is to prompt for a response. For example, after starting a full
-synchronization from the primary to the secondary volume, Remote Mirror prompts:
+synchronization from the primary to the secondary volume, Remote Mirror
+prompts:
 \fB"Overwrite secondary with primary? (Y/N) [N]"\fR.
 .RE
 
@@ -314,7 +318,9 @@ synchronization from the primary to the secondary volume, Remote Mirror prompts:
 .sp .6
 .RS 4n
 Specifies the Remote Mirror set. For a set that has already been enabled, this
-can be a \fBset_name\fR in the format \fIshost\fR:\fIsdev\fR. You can supply a
+can be a
+.B set_name
+in the format \fIshost\fR:\fIsdev\fR. You can supply a
 fully specified Remote Mirror set in the same format as a configuration file:
 .sp
 .in +2
@@ -493,8 +499,11 @@ below.
 Add an
 .B ndr_ii
 entry with the specified master, shadow, and bitmap to the
-Availability Suite configuration file. See \fBsndrsyncd\fR(1M). If the
-corresponding Point-in-Time Copy set does not exist, it is enabled when the next
+Availability Suite configuration file. See
+.BR sndrsyncd (1M).
+If the
+corresponding Point-in-Time Copy set does not exist, it is enabled when the
+next
 .B sync
 command is issued on the related volume(s). When no longer required,
 this Point-in-Time Copy set can be disabled by
@@ -596,7 +605,7 @@ async I/O queues. This value is ignored when disk based I/O queues are used.
 .ad
 .sp .6
 .RS 4n
-Toggles the \fBblock\fR|\fBnoblock\fR attribute of a disk-based queue. The
+.RB "Toggles the " block | noblock " attribute of a disk-based queue. The"
 default setting is
 .BR block .
 If the I/O fill rate is larger than the drain
@@ -662,7 +671,9 @@ Prints the Remote Mirror version number.
 .RS 4n
 Enables Remote Mirror for the set and enables scoreboard logging. The
 scoreboard is set to indicate that a full synchronization is required. Details
-of the set are saved in the current configuration. See \fBdscfg\fR(1M). The
+of the set are saved in the current configuration. See
+.BR dscfg (1M).
+The
 local volume and the bitmap volume are enabled for the Storage Volume driver
 (see
 .BR sv (7D)).
@@ -678,8 +689,11 @@ local volume and the bitmap volume are enabled for the Storage Volume driver
 .RS 4n
 Enables Remote Mirror for the set and enables scoreboard logging. The
 scoreboard is cleared to indicate that the primary and secondary volumes are
-already guaranteed to be fully synchronized. Details of the set are saved in the
-current configuration. See \fBdscfg\fR(1M). The local volume and the bitmap
+already guaranteed to be fully synchronized. Details of the set are saved in
+the
+current configuration. See
+.BR dscfg (1M).
+The local volume and the bitmap
 volume are enabled for the Storage Volume driver (see
 .BR sv (7D)).
 .RE
@@ -753,7 +767,8 @@ if invoked on the secondary system.
 .RS 4n
 Reports on the health of the network link used by the specified volume set. The
 health of the link is reported as active or inactive. Active means that the
-network link is actively being used for replicating or resynchronizing data, and
+network link is actively being used for replicating or resynchronizing data,
+and
 is therefore in good health. Inactive means that the network link is not
 actively being used for replicating or resynchronizing data, which might
 indicate a problem with the link.
@@ -888,7 +903,8 @@ reconfigure the secondary bitmap for one set at a time.
 .RS 4n
 Reconfigure the cluster tag, or disk group name, of a Remote Mirror set's local
 volumes, in those cases where this is not indicated by the pathname. This does
-not affect the remote volumes. This parameter cannot be used on a system that is
+not affect the remote volumes. This parameter cannot be used on a system that
+is
 not clustered.
 .RE
 
@@ -988,7 +1004,8 @@ Updates a Remote Mirror volume set. This parameter resynchronizes a Remote
 Mirror volume set. Only the blocks logged as changed in the Remote Mirror
 scoreboards are updated. Enables Remote Mirror replication for the primary
 volume and also uses the Remote Mirror scoreboard logs to start the
-resynchronization process so that the corresponding secondary volume matches the
+resynchronization process so that the corresponding secondary volume matches
+the
 primary volume.
 .RE
 
@@ -1054,7 +1071,8 @@ changed until one or the other is done.
 .sp .6
 .RS 4n
 A reverse sync to this volume has been interrupted. It needs to be completed
-(or restored via Point-in-Time Copy). The direction of the data flow must not be
+(or restored via Point-in-Time Copy). The direction of the data flow must not
+be
 changed until one or the other is done.
 .RE
 
@@ -1109,17 +1127,22 @@ A primary to secondary copy is in progress.
 .sp .6
 .RS 4n
 During normal async replication using disk queues, i/o is placed on the disk
-queue to be replicated by the async flusher threads. In the event of a temporary
+queue to be replicated by the async flusher threads. In the event of a
+temporary
 link failure, the set transitions to queuing mode. The queue is not discarded,
 as it would be with memory based queues. Instead, data is logged in the bitmap
 and placed on the queue. When the link comes up, and
 .B "sndradm -u"
 is
 issued, (automated by turning autosync on for the set) the flushers restarts.
-This preserves write ordering through a temporary link outage. If write ordering
+This preserves write ordering through a temporary link outage. If write
+ordering
 is not necessary, and only the latest data is needed, the set can be put into
-logging manually (\fBsndradm -l\fR) and an update sync issued
-(\fBsndradm -u\fR). This action discards the data on the queue, and fast
+logging manually
+.RB ( "sndradm -l" )
+and an update sync issued
+.RB ( "sndradm -u" ).
+This action discards the data on the queue, and fast
 resyncs using the bitmap. If the queue fills before the link comes back and the
 update sync is issued, the queue is discarded and the set put into logging mode
 to avoid application hangs.
@@ -1226,7 +1249,8 @@ When the
 or
 .B -u
 option is executed in a script, the exit status
-following one of these options always returns success, regardless of the current
+following one of these options always returns success, regardless of the
+current
 status of the Remote Mirror set.
 .SH ATTRIBUTES
 .sp
