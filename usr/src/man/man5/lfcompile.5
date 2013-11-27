@@ -37,8 +37,12 @@ environment allows 32-bit applications to access files whose size is greater
 than or equal to 2 Gbyte ( 2^31 bytes).
 .sp
 .LP
-Each interface named \fIxxx\fB()\fR that needs to access 64-bit entities
-to access large files maps to a \fIxxx\fB64()\fR call in the resulting
+Each interface named
+.IB xxx ()
+that needs to access 64-bit entities
+to access large files maps to a
+.IB xxx 64()
+call in the resulting
 binary. All relevant data types are defined to be of correct size (for
 example,
 .B off_t
@@ -46,9 +50,11 @@ has a typedef definition for a 64-bit entity).
 .sp
 .LP
 An application compiled in this environment is able to use the
-\fIxxx\fB()\fR source interfaces to access both large and small files,
+.IB xxx ()
+source interfaces to access both large and small files,
 rather than having to explicitly utilize the transitional
-\fIxxx\fB64()\fR interface calls to access large files. See the
+.IB xxx 64()
+interface calls to access large files. See the
 .BR lfcompile64 (5)
 manual page for information regarding the transitional
 compilation environment.
@@ -100,7 +106,9 @@ environments.
 .SS "Access to Additional Large File Interfaces"
 .sp
 .LP
-The \fBfseek()\fR and \fBftell()\fR functions \fIdo not\fR map to functions
+The \fBfseek()\fR and \fBftell()\fR functions
+.I do not
+map to functions
 named
 .B fseek64()
 and
@@ -111,19 +119,29 @@ and
 .BR ftello() ,
 have functionality identical to
 .B fseek()
-and \fBftell()\fR and \fIdo\fR map to the 64-bit functions
+and
+.BR ftell() " and "
+.I do
+map to the 64-bit functions
 .B fseeko64()
 and
 .BR ftello64() .
 Applications wishing to access large
-files should use \fBfseeko()\fR and \fBftello()\fR in place of \fBfseek()\fR
+files should use \fBfseeko()\fR and
+.B ftello()
+in place of \fBfseek()\fR
 and
 .BR ftell() .
-See the \fBfseek\fR(3C) and \fBftell\fR(3C) manual pages
-for information about  \fBfseeko()\fR and \fBftello()\fR.
+See the
+.BR fseek (3C)
+and \fBftell\fR(3C) manual pages
+.RB "for information about  " fseeko() " and " ftello() .
 .sp
 .LP
-Applications wishing to access  \fBfseeko()\fR and \fBftello()\fR as well
+Applications wishing to access 
+.BR fseeko() " and "
+.B ftello()
+as well
 as the POSIX and X/Open specification-conforming interfaces should define
 the macro
 .B _LARGEFILE_SOURCE
@@ -138,7 +156,8 @@ accessed by invoking the
 .B getconf
 utility with one of the arguments
 listed in the table above. The additional large file interfaces are accessed
-by specifying \fB-D_LARGEFILE_SOURCE\fR\&.
+by specifying
+.BR -D_LARGEFILE_SOURCE \&.
 .sp
 .LP
 The examples that use the form of command substitution specifying the
@@ -183,7 +202,10 @@ $ c89 -D_LARGEFILE_SOURCE                \e
 
 .LP
 \fBExample 2\fR Compile a program with a "large" \fBoff_t\fR that does not
-use \fBfseeko()\fR and \fBftello()\fR and has no application specific
+use
+.BR fseeko() " and "
+.B ftello()
+and has no application specific
 libraries.
 .sp
 .in +2
@@ -198,7 +220,8 @@ libraries.
 .LP
 \fBExample 3\fR Compile a program with a "default" \fBoff_t\fR that uses
 .B fseeko()
-and \fBftello()\fR.
+and
+.BR ftello() .
 .sp
 .in +2
 .nf
@@ -235,7 +258,8 @@ Kernel data structures read from
 .TP
 .ie t \(bu
 .el o
-Interfaces in the kernel virtual memory library, \fB-lkvm\fR\&.
+Interfaces in the kernel virtual memory library,
+.BR -lkvm \&.
 .RE
 .RS +4
 .TP
@@ -243,7 +267,8 @@ Interfaces in the kernel virtual memory library, \fB-lkvm\fR\&.
 .el o
 Interfaces in the
 .B ELF
-access library, \fB-lelf\fR\&.
+access library,
+.BR -lelf \&.
 .RE
 .RS +4
 .TP
@@ -251,7 +276,8 @@ access library, \fB-lelf\fR\&.
 .el o
 Interfaces to
 .B /proc
-defined in <\fBprocfs.h\fR>.
+defined in
+.RB < procfs.h >.
 .RE
 .RS +4
 .TP
@@ -265,7 +291,7 @@ system call.
 .LP
 Programs that use these interfaces should not be compiled in the large file
 compilation environment.  As a partial safeguard against making this
-mistake, including either of the <\fBlibelf.h\fR> or <\fBsys/procfs.h\fR>
+.RB "mistake, including either of the <" libelf.h "> or <" sys/procfs.h >
 header files will induce a compilation error when the large file compilation
 environment is enabled.
 .sp
@@ -274,8 +300,7 @@ In general, caution should be exercised when using any separately-compiled
 library whose interfaces include data items of type
 .B off_t
 or the other
-redefined types either directly or indirectly, such as with '\fBstruct
-stat\fR'. (The redefined types are
+redefined types either directly or indirectly, such as with '\fBstruct stat\fR'. (The redefined types are
 .BR off_t ,
 .BR rlim_t ,
 .BR ino_t ,
@@ -285,13 +310,15 @@ and
 .BR fsfilcnt_t .)
 For the large file
 compilation environment to work correctly with such a library, the library
-interfaces must include the appropriate \fIxxx\fB64()\fR binary entry
+interfaces must include the appropriate
+.IB xxx 64()
+binary entry
 points and must have them mapped to the corresponding primary functions when
 .B _FILE_OFFSET_BITS
 is set to 64.
 .sp
 .LP
-Care should be exercised using any of the \fBprintf()\fR or \fBscanf()\fR
+.RB "Care should be exercised using any of the " printf() " or " scanf() 
 routines on variables of the types mentioned above.  In the large file
 compilation environment, these variables should be printed or scanned using
 .B long long

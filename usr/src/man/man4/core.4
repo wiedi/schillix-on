@@ -102,8 +102,7 @@ If the core file pattern expands to a pathname that contains intermediate
 directory components that do not exist. For example, if the global pattern
 is set to
 .BR /var/core/%n/core.%p ,
-and no directory \fB/var/core/`uname
--n`\fR has been created, no global core files are produced.
+and no directory \fB/var/core/`uname -n`\fR has been created, no global core files are produced.
 .RE
 .RS +4
 .TP
@@ -173,7 +172,9 @@ field in the file header has type
 The program
 header contains an entry for every segment that was part of the process
 address space, including shared library segments. The contents of the
-mappings specified by \fBcoreadm\fR(1M) are also part of the core image.
+mappings specified by
+.BR coreadm (1M)
+are also part of the core image.
 Each program header has its
 .B p_memsz
 field set to the size of the
@@ -191,7 +192,8 @@ is
 A mapping's data can be excluded due to the core file content settings (see
 .BR coreadm (1M)),
 or due to some failure. If the data is excluded because
-of a failure, the program header entry will have the \fBPF_SUNW_FAILURE\fR
+of a failure, the program header entry will have the
+.B PF_SUNW_FAILURE
 flag set in its
 .B p_flags
 field.
@@ -202,12 +204,17 @@ The program headers of an
 core file also contain entries for two
 .B NOTE
 segments, each containing several note entries as described
-below. The note entry header and core file note type (\fBn_type\fR)
-definitions are contained in <\fBsys/elf.h\fR>. The first
+below. The note entry header and core file note type
+.RB ( n_type )
+definitions are contained in
+.RB < sys/elf.h >.
+The first
 .B NOTE
 segment
 exists for binary compatibility with old programs that deal with core files.
-It contains structures defined in <\fBsys/old_procfs.h\fR>. New programs
+It contains structures defined in
+.RB < sys/old_procfs.h >.
+New programs
 should recognize and skip this
 .B NOTE
 segment, advancing instead to the
@@ -243,7 +250,8 @@ value, controlling terminal, user-ID, process-ID, the name
 of the executable, and so forth. The
 .B prpsinfo_t
 structure is defined
-in <\fBsys/old_procfs.h\fR>.
+in
+.RB < sys/old_procfs.h >.
 .RE
 
 .sp
@@ -279,7 +287,7 @@ This entry contains the array of
 .BR auxv_t
 structures that was passed by the operating system as startup information to
 the dynamic linker. Auxiliary vector information is defined in
-<\fBsys/auxv.h\fR>.
+.RB < sys/auxv.h >.
 .RE
 
 .sp
@@ -306,7 +314,8 @@ to a debugger from the operating system, such as the general registers,
 signal dispositions, state, reason for stopping, process-ID, and so forth.
 The
 .B prstatus_t
-structure is defined in <\fBsys/old_procfs.h\fR>.
+structure is defined in
+.RB < sys/old_procfs.h >.
 .RE
 
 .sp
@@ -322,7 +331,7 @@ structure is defined in <\fBsys/old_procfs.h\fR>.
 This entry is present only if the
 .BR LWP
 used the floating-point hardware. It contains the floating-point registers.
-The \fBprfpregset_t\fR structure is defined in <\fBsys/procfs_isa.h\fR>.
+.RB "The " prfpregset_t " structure is defined in <" sys/procfs_isa.h >.
 .RE
 
 .sp
@@ -339,7 +348,8 @@ This entry is present only on a SPARC
 machine and only if the system was unable to flush all of the register
 windows to the stack. It contains all of the unspilled register windows. The
 .B gwindows_t
-structure is defined in <\fBsys/regset.h\fR>.
+structure is defined in
+.RB < sys/regset.h >.
 .RE
 
 .sp
@@ -357,7 +367,7 @@ has extra register state associated with it. It contains the extra register
 state. The
 .B prxregset_t
 structure is defined in
-<\fBsys/procfs_isa.h\fR>.
+.RB < sys/procfs_isa.h >.
 .RE
 
 .sp
@@ -386,7 +396,7 @@ value, controlling terminal, user-ID, process-ID, the name
 of the executable, and so forth. The
 .B psinfo_t
 structure is defined in
-<\fBsys/procfs.h\fR>.
+.RB < sys/procfs.h >.
 .RE
 
 .sp
@@ -404,7 +414,7 @@ to a debugger from the operating system, such as pending signals, state,
 process-ID, and so forth. The
 .B pstatus_t
 structure is defined in
-<\fBsys/procfs.h\fR>.
+.RB < sys/procfs.h >.
 .RE
 
 .sp
@@ -440,7 +450,7 @@ This entry contains the array of
 .BR auxv_t
 structures that was passed by the operating system as startup information to
 the dynamic linker. Auxiliary vector information is defined in
-<\fBsys/auxv.h\fR>.
+.RB < sys/auxv.h >.
 .RE
 
 .sp
@@ -458,7 +468,8 @@ information that would have been returned to the process if it had performed
 a
 .BR uname (2)
 .RB "system call prior to dumping core. The" " utsname"
-structure is defined in <\fBsys/utsname.h\fR>.
+structure is defined in
+.RB < sys/utsname.h >.
 .RE
 
 .sp
@@ -475,7 +486,9 @@ This structure contains the process
 credentials, including the real, saved, and effective user and group IDs.
 The
 .B prcred_t
-structure is defined in <\fBaasys/procfs.h\fR>. Following
+structure is defined in
+.RB < aasys/procfs.h >.
+Following
 the structure is an optional array of supplementary group IDs. The total
 number of supplementary group IDs is given by the
 .B pr_ngroups
@@ -533,7 +546,7 @@ fetch the address of the current thread information structure in a
 multithreaded process. The
 .B ssd
 structure is defined in
-<\fBsys/sysi86.h\fR>.
+.RB < sys/sysi86.h >.
 .RE
 
 .sp
@@ -585,8 +598,11 @@ usage,
 .B nice
 value,
 .BR LWP-ID ,
-and so forth. The \fBlwpsinfo_t\fR
-structure is defined in <\fBsys/procfs.h\fR>. This is the only entry present
+and so forth. The
+.B lwpsinfo_t
+structure is defined in
+.RB < sys/procfs.h >.
+This is the only entry present
 for a zombie LWP.
 .RE
 
@@ -607,7 +623,7 @@ registers, the floating point registers, state, reason for stopping,
 and so forth. The
 .B lwpstatus_t
 structure is defined in
-<\fBsys/procfs.h>\fR>.
+.RB < sys/procfs.h> >.
 .RE
 
 .sp
@@ -624,7 +640,8 @@ This entry is present only on a SPARC
 machine and only if the system was unable to flush all of the register
 windows to the stack. It contains all of the unspilled register windows. The
 .B gwindows_t
-structure is defined in \fB<sys/regset.h>\fR\&.
+structure is defined in
+.BR <sys/regset.h> \&.
 .RE
 
 .sp
@@ -662,12 +679,15 @@ ancillary state registers for the
 The
 .B asrset_t
 structure is
-defined in \fB<sys/regset.h>\fR\&.
+defined in
+.BR <sys/regset.h> \&.
 .RE
 
 .sp
 .LP
-Depending on the \fBcoreadm\fR(1M) settings, the section header of an ELF
+Depending on the
+.BR coreadm (1M)
+settings, the section header of an ELF
 core file can contain entries for CTF, symbol table, and string table
 sections. The
 .B sh_addr

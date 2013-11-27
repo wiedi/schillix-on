@@ -58,8 +58,10 @@ cc [ \fIflag\fR.\|.\|. ] \fIfile\fR .\|.\|. \fB-lelf\fR [ \fIlibrary\fR .\|.\|. 
 .LP
 The
 .BR elf_begin() ,
-\fBelf_end()\fR, \fBelf_memory()\fR,
-\fBelf_next()\fR, and \fBelf_rand()\fR functions work together to process
+.BR elf_end() ,
+\fBelf_memory()\fR,
+.BR elf_next() ,
+and \fBelf_rand()\fR functions work together to process
 Executable and Linking Format (ELF) object files, either individually or as
 members of archives. After obtaining an
 .B ELF
@@ -67,9 +69,14 @@ descriptor from
 \fBelf_begin()\fR or
 .BR elf_memory() ,
 the program can read an existing
-file, update an existing file, or create a new file. The \fIfildes\fR
-argument is an open file descriptor that \fBelf_begin()\fR uses for reading
-or writing. The \fIelf\fR argument is an
+file, update an existing file, or create a new file. The
+.I fildes
+argument is an open file descriptor that
+.B elf_begin()
+uses for reading
+or writing. The
+.I elf
+argument is an
 .B ELF
 descriptor previously
 returned from
@@ -93,8 +100,12 @@ argument can take the following values:
 .rt
 When a program sets
 .I cmd
-to this value, \fBelf_begin()\fR returns a
-null pointer, without opening a new descriptor. \fIref\fR is ignored for
+to this value,
+.B elf_begin()
+returns a
+null pointer, without opening a new descriptor.
+.I ref
+is ignored for
 this command. See the examples below for more information.
 .RE
 
@@ -117,32 +128,51 @@ command examines archive members or entire files. Three cases can occur.
 .TP
 .ie t \(bu
 .el o
-If \fIref\fR is a null pointer, \fBelf_begin()\fR allocates a new \fBELF\fR
+If \fIref\fR is a null pointer,
+.B elf_begin()
+allocates a new \fBELF\fR
 descriptor and prepares to process the entire file. If the file being read
-is an archive, \fBelf_begin()\fR also prepares the resulting descriptor to
+is an archive,
+.B elf_begin()
+also prepares the resulting descriptor to
 examine the initial archive member on the next call to
 .BR elf_begin() ,
 as
-if the program had used \fB elf_next()\fR or \fBelf_rand()\fR to ``move'' to
+if the program had used
+.BR " elf_next()" " or "
+.B elf_rand()
+to ``move'' to
 the initial member.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIref\fR is a non-null descriptor associated with an archive file,
-\fBelf_begin()\fR lets a program obtain a separate \fBELF\fR descriptor
+If
+.I ref
+is a non-null descriptor associated with an archive file,
+\fBelf_begin()\fR lets a program obtain a separate
+.B ELF
+descriptor
 associated with an individual member. The program should have used
-\fBelf_next()\fR or \fBelf_rand()\fR to position \fIref\fR appropriately
-(except for the initial member, which \fBelf_begin()\fR prepares; see the
-example below). In this case, \fIfildes\fR should be the same file
+\fBelf_next()\fR or \fBelf_rand()\fR to position
+.I ref
+appropriately
+(except for the initial member, which
+.B elf_begin()
+prepares; see the
+example below). In this case,
+.I fildes
+should be the same file
 descriptor used for the parent archive.
 .RE
 .RS +4
 .TP
 .ie t \(bu
 .el o
-If \fIref\fR is a non-null
+If
+.I ref
+is a non-null
 .B ELF
 descriptor that is not an archive,
 \fBelf_begin()\fR increments the number of activations for the descriptor
@@ -152,7 +182,9 @@ without allocating a new descriptor and without
 changing the descriptor's read/write permissions. To terminate the
 descriptor for
 .IR ref ,
-the program must call \fBelf_end()\fR once for
+the program must call
+.B elf_end()
+once for
 each activation. See the examples below for more information.
 .RE
 .RE
@@ -168,12 +200,17 @@ each activation. See the examples below for more information.
 This command duplicates the actions of
 .B ELF_C_READ
 and additionally
-allows the program to update the file image (see \fBelf_update\fR(3ELF)).
+allows the program to update the file image (see
+.BR elf_update (3ELF)).
 Using
 .B ELF_C_READ
 gives a read-only view of the file, while
-\fBELF_C_RDWR\fR lets the program read \fIand\fR write the file.
-\fBELF_C_RDWR\fR is not valid for archive members. If  \fIref\fR is
+\fBELF_C_RDWR\fR lets the program read
+.I and
+write the file.
+\fBELF_C_RDWR\fR is not valid for archive members. If 
+.I ref
+is
 non-null, it must have been created with the
 .B ELF_C_RDWR
 command.
@@ -190,16 +227,22 @@ command.
 If the program wants to ignore previous file contents, presumably to create
 a new file, it should set
 .I cmd
-to this value. \fIref\fR is ignored for
+to this value.
+.I ref
+is ignored for
 this command.
 .RE
 
 .sp
 .LP
-The \fBelf_begin()\fR function operates on all files (including files with
+The
+.B elf_begin()
+function operates on all files (including files with
 zero bytes), providing it can allocate memory for its internal structures
 and read any necessary information from the file. Programs reading object
-files can call \fBelf_kind\fR(3ELF) or \fBelf32_getehdr\fR(3ELF) to
+files can call
+.BR elf_kind (3ELF)
+or \fBelf32_getehdr\fR(3ELF) to
 determine the file type (only object files have an
 .B ELF
 header). If the
@@ -216,19 +259,24 @@ a program must call
 \fBelf_version()\fR to coordinate versions.
 .sp
 .LP
-The \fBelf_end()\fR function is used to terminate an
+The
+.B elf_end()
+function is used to terminate an
 .B ELF
 descriptor,
-\fIelf\fR, and to deallocate data associated with the descriptor. Until the
+.IR elf ,
+and to deallocate data associated with the descriptor. Until the
 program terminates a descriptor, the data remain allocated. A null pointer
 is allowed as an argument, to simplify error handling. If the program wants
 to write data associated with the
 .B ELF
 descriptor to the file, it must
-use \fBelf_update()\fR before calling \fBelf_end()\fR.
+.RB "use " elf_update() " before calling " elf_end() .
 .sp
 .LP
-Calling \fBelf_end()\fR removes one activation and returns the remaining
+Calling
+.B elf_end()
+removes one activation and returns the remaining
 activation count. The library does not terminate the descriptor until the
 activation count reaches
 .BR 0 .
@@ -240,7 +288,7 @@ indicates the
 descriptor is no longer valid.
 .sp
 .LP
-The \fBelf_memory()\fR function returns a pointer to an \fBELF\fR
+.RB "The " elf_memory() " function returns a pointer to an " ELF 
 descriptor. The
 .B ELF
 image has read operations enabled (
@@ -251,26 +299,37 @@ argument is a pointer to an image of the
 Elf file mapped into memory. The
 .I sz
 argument is the size of the
-\fBELF\fR image. An \fBELF\fR image that is mapped in with
-\fBelf_memory()\fR can be read and modified, but the \fBELF\fR image size
+\fBELF\fR image. An
+.B ELF
+image that is mapped in with
+\fBelf_memory()\fR can be read and modified, but the
+.B ELF
+image size
 cannot be changed.
 .sp
 .LP
-The \fBelf_next()\fR function provides sequential access to the next
+The
+.B elf_next()
+function provides sequential access to the next
 archive member. Having an
 .B ELF
 descriptor,
 .IR elf ,
 associated with
-an archive member, \fBelf_next()\fR prepares the containing archive to
+an archive member,
+.B elf_next()
+prepares the containing archive to
 access the following member when the program calls
 .BR elf_begin() .
 After
-successfully positioning an archive for the next member, \fBelf_next()\fR
+successfully positioning an archive for the next member,
+.B elf_next()
 returns the value
 .BR ELF_C_READ .
 Otherwise, the open file was not an
-archive, \fIelf\fR was
+archive,
+.I elf
+was
 .IR NULL ,
 or an error occurred, and the return
 value is
@@ -281,17 +340,26 @@ an argument to
 specifying the appropriate action.
 .sp
 .LP
-The \fBelf_rand()\fR function provides random archive processing, preparing
-\fIelf\fR to access an arbitrary archive member. The \fIelf\fR argument must
+The
+.B elf_rand()
+function provides random archive processing, preparing
+\fIelf\fR to access an arbitrary archive member. The
+.I elf
+argument must
 be a descriptor for the archive itself, not a member within the archive. The
 \fIoffset\fR argument specifies the byte offset from the beginning of the
 archive to the archive header of the desired member. See
-\fBelf_getarsym\fR(3ELF) for more information about archive member offsets.
-When \fBelf_rand()\fR works, it returns
+.BR elf_getarsym (3ELF)
+for more information about archive member offsets.
+When
+.B elf_rand()
+works, it returns
 .IR offset .
 Otherwise, it returns
 .BR 0 ,
-because an error occurred, \fIelf\fR was
+because an error occurred,
+.I elf
+was
 .IR " NULL" ,
 or the file
 was not an archive (no archive member can have a zero offset). A program can
@@ -317,7 +385,8 @@ descriptor remain allocated until
 \fBelf_end()\fR terminates the descriptor's last activation. After the
 descriptors have been terminated, the storage is released; attempting to
 reference such data gives undefined behavior. Consequently, a program that
-deals with multiple input (or output) files must keep the \fBELF\fR
+deals with multiple input (or output) files must keep the
+.B ELF
 descriptors active until it finishes with them.
 .SH EXAMPLES
 .LP
@@ -327,9 +396,13 @@ function.
 .LP
 A prototype for reading a file appears on the next page. If the file is a
 simple object file, the program executes the loop one time, receiving a null
-descriptor in the second iteration. In this case, both \fBelf\fR and
+descriptor in the second iteration. In this case, both
+.B elf
+and
 \fBarf\fR will have the same value, the activation count will be \fB2\fR,
-and the program calls \fBelf_end()\fR twice to terminate the descriptor. If
+and the program calls
+.B elf_end()
+twice to terminate the descriptor. If
 the file is an archive, the loop processes each archive member in turn,
 ignoring those that are not object files.
 
@@ -396,7 +469,9 @@ An archive starts with a ``magic string'' that has
 bytes; the
 initial archive member follows immediately. An application could thus
 provide the following function to rewind an archive (the function returns
-\fB\(mi1\fR for errors and \fB0\fR otherwise).
+\fB\(mi1\fR for errors and
+.B 0
+otherwise).
 
 .sp
 .in +2
@@ -501,8 +576,13 @@ MT-LevelMT-Safe
 .BR mmap (2),
 .BR open (2),
 .BR ar.h (3HEAD),
-\fBelf\fR(3ELF), \fBelf32_getehdr\fR(3ELF),
-\fBelf_cntl\fR(3ELF), \fBelf_getarhdr\fR(3ELF), \fBelf_getarsym\fR(3ELF),
-\fBelf_getbase\fR(3ELF), \fBelf_getdata\fR(3ELF), \fBelf_getscn\fR(3ELF),
-\fBelf_kind\fR(3ELF), \fBelf_rawfile\fR(3ELF), \fBelf_update\fR(3ELF),
-\fBelf_version\fR(3ELF), \fBlibelf\fR(3LIB), \fBattributes\fR(5)
+.BR elf (3ELF),
+\fBelf32_getehdr\fR(3ELF),
+.BR elf_cntl (3ELF),
+\fBelf_getarhdr\fR(3ELF), \fBelf_getarsym\fR(3ELF),
+.BR elf_getbase (3ELF),
+\fBelf_getdata\fR(3ELF), \fBelf_getscn\fR(3ELF),
+.BR elf_kind (3ELF),
+\fBelf_rawfile\fR(3ELF), \fBelf_update\fR(3ELF),
+.BR elf_version (3ELF),
+\fBlibelf\fR(3LIB), \fBattributes\fR(5)

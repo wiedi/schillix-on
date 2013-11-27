@@ -31,7 +31,9 @@
 .TH gl_io_mode 3TECLA "1 Jun 2004" "SunOS 5.11" "Interactive Command-line Input Library Functions"
 .SH NAME
 gl_io_mode, gl_raw_io, gl_normal_io, gl_tty_signals, gl_abandon_line,
-gl_handle_signal, gl_pending_io \- use \fBgl_get_line()\fR from an external
+gl_handle_signal, gl_pending_io \- use
+.B gl_get_line()
+from an external
 event loop
 .SH SYNOPSIS
 .LP
@@ -76,10 +78,13 @@ cc [ \fIflag\fR\&.\|.\|. ] \fIfile\fR\&.\|.\|. \fB-ltecla\fR [ \fIlibrary\fR\&.\
 .SH DESCRIPTION
 .sp
 .LP
-The \fBgl_get_line\fR(3TECLA) function supports two different I/O modes. These
+The
+.BR gl_get_line (3TECLA)
+function supports two different I/O modes. These
 are selected by calling the
 .B gl_io_mode()
-function. The \fImode\fR
+function. The
+.I mode
 argument of
 .B gl_io_mode()
 specifies the new I/O mode and must be one of
@@ -167,7 +172,8 @@ the
 .B gl_pending_io()
 function before each call to these functions to
 determine which direction of I/O it should tell them to watch for, and
-configure their arguments accordingly. In the case of the \fBselect()\fR
+configure their arguments accordingly. In the case of the
+.B select()
 function, this means using the
 .B FD_SET()
 macro to add the terminal file
@@ -221,7 +227,9 @@ arguments of
 .B gl_get_line()
 will be ignored on these
 calls. If you need to change the prompt of the line that is currently being
-edited, you can call the \fBgl_replace_prompt\fR(3TECLA) function between calls
+edited, you can call the
+.BR gl_replace_prompt (3TECLA)
+function between calls
 to
 .BR gl_get_line() .
 .SS "Giving Up The Terminal"
@@ -401,13 +409,16 @@ The
 function uses the POSIX
 .BR sigaction (2)
 function
-to install these signal handlers, and it is careful to use the \fIsa_mask\fR
+to install these signal handlers, and it is careful to use the
+.I sa_mask
 member of each
 .B sigaction
 structure to ensure that only one of these
 signals is ever delivered at a time. This guards against different instances of
 these signal handlers from simultaneously trying to write to common global
-data, such as a shared \fBsigsetjmp\fR(3C) buffer or a signal-received flag.
+data, such as a shared
+.BR sigsetjmp (3C)
+buffer or a signal-received flag.
 The signal handlers installed by this function should call the
 .BR gl_handle_signal() .
 .sp
@@ -526,7 +537,8 @@ particular, most shells use this information to print a corresponding message
 to the terminal. Users would be rightly confused if when their process received
 a
 .B SIGPIPE
-signal, the program responded by sending itself a \fBSIGKILL\fR
+signal, the program responded by sending itself a
+.B SIGKILL
 signal, and the shell then printed out the provocative statement, "Killed!".
 .SS "Interrupting The Event Loop"
 .sp
@@ -622,7 +634,8 @@ Replace all of the handlers of the signals that
 .B gl_get_line()
 is
 configured to catch, with a signal handler that first records the number of the
-signal that was caught, in a file-scope variable, then calls \fBsiglongjmp()\fR
+signal that was caught, in a file-scope variable, then calls
+.B siglongjmp()
 with a non-zero
 .I val
 argument, to return execution to the above
@@ -712,7 +725,8 @@ application while
 .RB "is being called," " gl_get_line()"
 reinstates the caller's signal handlers, then immediately before returning,
 re-sends the signal to the process to let the application's signal handler
-handle it. If the process is not terminated by this signal, \fBgl_get_line()\fR
+handle it. If the process is not terminated by this signal,
+.B gl_get_line()
 returns
 .IR NULL ,
 and a following call to
@@ -799,14 +813,17 @@ application needs only to get out of
 .B gl_get_line()
 periodically to
 briefly do something else before returning to accept input from the user, use
-the \fBgl_inactivity_timeout\fR(3TECLA) function in non-blocking server mode to
+the
+.BR gl_inactivity_timeout (3TECLA)
+function in non-blocking server mode to
 specify that a callback function that returns
 .B GLTO_CONTINUE
 should be
 called whenever
 .B gl_get_line()
 has been waiting for I/O for more than a
-specified amount of time. When this callback is triggered, \fBgl_get_line()\fR
+specified amount of time. When this callback is triggered,
+.B gl_get_line()
 will return
 .I NULL
 and a following call to

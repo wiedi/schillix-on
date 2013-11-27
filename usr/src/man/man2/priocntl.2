@@ -58,7 +58,8 @@ The class attribute of an LWP is inherited across the
 .BR fork (2)
 function and the
 .BR exec (2)
-family of functions. The \fBpriocntl()\fR
+family of functions. The
+.B priocntl()
 function can be used to dynamically change the class and other scheduling
 parameters associated with a running LWP or set of LWPs given the
 appropriate permissions as explained below.
@@ -322,7 +323,8 @@ ID, session ID, task ID, class ID, user ID, group ID, project ID, zone ID,
 or process contract ID of the calling LWP.
 .sp
 .LP
-To change the scheduling parameters of an LWP (using the \fBPC_SETPARMS\fR
+To change the scheduling parameters of an LWP (using the
+.B PC_SETPARMS
 or
 .B PC_SETXPARMS
 command as explained below) , the real or effective
@@ -381,8 +383,7 @@ The
 .B init
 process can be assigned to any class configured on
 the system, but the time-sharing class is almost always the appropriate
-choice. (Other choices might be highly undesirable. See the \fISystem
-Administration Guide: Basic Administration\fR for more information.)
+choice. (Other choices might be highly undesirable. See the \fISystem Administration Guide: Basic Administration\fR for more information.)
 .sp
 .LP
 The data type and value of
@@ -430,7 +431,9 @@ used to hold the class name:
 .B RT
 for realtime,
 .B TS
-for time-sharing, \fBIA\fRfor interactive, \fBFSS\fR for
+for time-sharing,
+.BR IA for
+interactive, \fBFSS\fR for
 fair-share, or
 .B FX
 for fixed-priority. Each string is
@@ -446,8 +449,7 @@ in
 .BR <sys/priocntl.h> ,
 used to return data describing the attributes of
 a specific class. The format of this data is class-specific and is described
-under the appropriate heading (\fBREALTIME CLASS\fR, \fBTIME-SHARING
-CLASS\fR,
+under the appropriate heading (\fBREALTIME CLASS\fR, \fBTIME-SHARING CLASS\fR,
 .BR "INTERACTIVE CLASS" ,
 .BR "FAIR-SHARE CLASS" ,
 or
@@ -626,7 +628,8 @@ function returns \fB\(mi1\fR with
 set to
 .B EPERM
 if the calling LWP doesn't have appropriate permissions to set
-or get nice values for one or more of the target LWPs. If \fBpriocntl()\fR
+or get nice values for one or more of the target LWPs. If
+.B priocntl()
 encounters an error other than permissions, it does not continue through the
 set of target LWPs but returns the error immediately.
 .RE
@@ -770,7 +773,9 @@ buffer. If the LWP specified does not exist
 or does not belong to the specified class, the
 .B priocntl()
 call returns
-\fB\(mi1\fR with \fBerrno\fR set to
+\fB\(mi1\fR with
+.B errno
+set to
 .BR ESRCH .
 .sp
 If
@@ -858,9 +863,11 @@ is set to
 .BR ESRCH .
 .sp
 If the class name is a null pointer, a single process or LWP is specified,
-and a (key, value) pair for a class name request is given, \fBpriocntl()\fR
+and a (key, value) pair for a class name request is given,
+.B priocntl()
 fills the buffer pointed to by value with the class name of the specified
-process or LWP. The key for the class name  request is \fBPC_KY_CLNAME\fR
+process or LWP. The key for the class name  request is
+.B PC_KY_CLNAME
 and the class name buffer should be declared as:
 .sp
 .in +2
@@ -909,7 +916,8 @@ under the appropriate class heading below.
 When setting parameters for a set of LWPs,
 .B priocntl()
 acts on the
-LWPs in the set in an implementation-specific order. If \fBpriocntl()\fR
+LWPs in the set in an implementation-specific order. If
+.B priocntl()
 encounters an error for one or more of the target processes, it might or
 might not continue through the set of LWPs, depending on the nature of the
 error. If the error is related to permissions
@@ -963,7 +971,8 @@ and
 When setting parameters for a set of LWPs,
 .B priocntl()
 acts on the
-LWPs in the set in an implementation-specific order. If \fBpriocntl()\fR
+LWPs in the set in an implementation-specific order. If
+.B priocntl()
 encounters an error for one or more of the target processes, it might or
 might not continue through the set of LWPs, depending on the nature of the
 error. If the error is related to permissions
@@ -978,7 +987,8 @@ returns \fB\(mi1\fR and
 is set to
 .B EPERM
 when the operation
-failed for one or more of the target LWPs. All errors other than \fBEPERM\fR
+failed for one or more of the target LWPs. All errors other than
+.B EPERM
 result in an immediate termination of
 .BR priocntl() .
 .RE
@@ -995,7 +1005,9 @@ realtime LWP is given CPU service before any LWP belonging to any other
 class.
 .sp
 .LP
-The realtime class has a range of realtime priority (\fIrt_pri\fR) values
+The realtime class has a range of realtime priority
+.RI ( rt_pri )
+values
 that can be assigned to an LWP within the class. Realtime priorities range
 from 0 to
 .IR x ,
@@ -1050,7 +1062,9 @@ The realtime quantum signal can be used for the notification of runaway
 realtime processes about the consumption of their time quantum. Those
 processes, which are monitored by the realtime time quantum signal, receive
 the configured signal in the event of time quantum expiration. The default
-value (\fB0\fR) of the time quantum signal will denote no signal delivery
+value
+.RB ( 0 )
+of the time quantum signal will denote no signal delivery
 and a positive value will denote the delivery of the signal specified by the
 .RB "value. The realtime quantum signal can be set with the" " priocntl()"
 .B PC_SETXPARMS
@@ -1182,7 +1196,8 @@ other class results in the realtime priority being set to 0.
 .LP
 For the
 .B "priocntl() PC_GETPARMS"
-command, if \fIpc_cid\fR
+command, if
+.I pc_cid
 specifies the realtime class and more than one realtime LWP is specified,
 the scheduling parameters of the realtime LWP with the highest
 .IR rt_pri
@@ -1209,7 +1224,8 @@ to 2 and
 .B rt_tqnsecs
 to 500,000,000
 (decimal) would result in a time quantum of two and one-half seconds.
-Specifying a value of 1,000,000,000 or greater in the \fIrt_tqnsecs\fR
+Specifying a value of 1,000,000,000 or greater in the
+.I rt_tqnsecs
 member results in an error return with
 .B errno
 set to
@@ -1296,7 +1312,9 @@ When using the
 or
 .BR PC_GETXPARMS
 commands, the first argument after the command code must be the class name
-of the realtime class (\fBRT\fR) . The next arguments are formed as (key,
+of the realtime class
+.RB ( RT )
+\&. The next arguments are formed as (key,
 value) pairs, terminated by a
 .B 0
 key. The definition for the keys of
@@ -1341,16 +1359,22 @@ given as a  direct value.
 A
 .B "priocntl() PC_SETXPARMS"
 command with the class name
-(\fBRT\fR) and without a following (key, value) pair will set or reset all
+.RB ( RT )
+and without a following (key, value) pair will set or reset all
 realtime scheduling parameters of the target process(es) to their default
 values. Changing the class of an LWP to realtime from some other class
 causes the parameters to be set to their default values. The default
-realtime priority (\fBRT_KY_PRI\fR) is
+realtime priority
+.RB ( RT_KY_PRI )
+is
 .BR 0 .
 A default time quantum
-(\fBRT_TQDEF\fR) is assigned to each priority class (see
+.RB ( RT_TQDEF )
+is assigned to each priority class (see
 .BR rt_dptbl (4)).
-The default realtime time quantum signal (\fBRT_KY_TQSIG\fR) is
+The default realtime time quantum signal
+.RB ( RT_KY_TQSIG )
+is
 .BR 0 .
 .sp
 .LP
@@ -1378,11 +1402,13 @@ an error return and
 is set to
 .BR ERANGE .
 If seconds
-(\fBRT_KY_TQSECS\fR) but no nanoseconds (\fBRT_KY_TQNSECS\fR) are supplied,
+.RB ( RT_KY_TQSECS ") but no nanoseconds (" RT_KY_TQNSECS )
+are supplied,
 the number of nanoseconds is set to
 .BR 0 .
 If nanoseconds
-(\fBRT_KY_TQNSECS\fR) but no seconds (\fBRT_KY_TQSECS\fR) are supplied, the
+.RB ( RT_KY_TQNSECS ") but no seconds (" RT_KY_TQSECS )
+are supplied, the
 number of seconds is set to
 .BR 0 .
 A time quantum of
@@ -1556,7 +1582,8 @@ buffer is in this format.
 .LP
 For the
 .B "priocntl() PC_GETPARMS"
-command, if \fBpc_cid\fR
+command, if
+.B pc_cid
 specifies the time-sharing class and more than one time-sharing LWP is
 specified, the scheduling parameters of the time-sharing LWP with the
 highest
@@ -1619,7 +1646,8 @@ special value
 defined in
 .BR <sys/tspriocntl.h> ,
 to set
-one of the values without affecting the other. Specifying \fBTS_NOCHANGE\fR
+one of the values without affecting the other. Specifying
+.B TS_NOCHANGE
 for the
 .I ts_upri
 when the
@@ -1653,7 +1681,9 @@ When using the
 or
 .BR PC_GETXPARMS
 commands, the first argument after the command code is the class name of the
-time-sharing class (\fBTS\fR) . The next arguments are formed as (key,
+time-sharing class
+.RB ( TS )
+\&. The next arguments are formed as (key,
 value) pairs, terminated by a
 .B 0
 key. The definition for the keys of
@@ -1694,15 +1724,22 @@ value.
 A
 .B "priocntl() PC_SETXPARMS"
 command with the class name
-(\fBTS\fR) and without a following (key, value) pair will set or reset all
+.RB ( TS )
+and without a following (key, value) pair will set or reset all
 time-sharing scheduling parameters of the target process(es) to their
 default values. Changing the class of an LWP to time-sharing from some other
 class causes the parameters to be set to their default values. The default
-value for the user priority limit (\fBTS_KY_UPRILIM\fR) is
+value for the user priority limit
+.RB ( TS_KY_UPRILIM )
+is
 .BR 0 .
 The
-default value for the user priority (\fBTS_KY_UPRI\fR) is equal to the user
-priority limit (\fBTS_KY_UPRILIM\fR) that is being set.
+default value for the user priority
+.RB ( TS_KY_UPRI )
+is equal to the user
+priority limit
+.RB ( TS_KY_UPRILIM )
+that is being set.
 .sp
 .LP
 The
@@ -1800,7 +1837,8 @@ buffer is in this format.
 .LP
 For the
 .B "priocntl() PC_GETPARMS"
-command, if \fIpc_cid\fR
+command, if
+.I pc_cid
 specifies the interactive class and more than one interactive LWP is
 specified, the scheduling parameters of the interactive LWP with the highest
 .I ia_upri
@@ -1889,10 +1927,17 @@ without a following (key, value) pair will set or reset all interactive
 scheduling parameters of the target process(es) to their default values.
 Changing the class of an LWP to interactive from some other class causes the
 parameters to be set to their default values. The default value for the user
-priority limit (\fBIA_KY_UPRILIM\fR) is 0. The default value for the user
-priority (\fBIA_KY_UPRI\fR) is equal to the user priority limit
-(\fBIA_KY_UPRILIM\fR) that is being set. The default value for the
-interactive mode (\fBIA_KY_MODE\fR) is
+priority limit
+.RB ( IA_KY_UPRILIM )
+is 0. The default value for the user
+priority
+.RB ( IA_KY_UPRI )
+is equal to the user priority limit
+.RB ( IA_KY_UPRILIM )
+that is being set. The default value for the
+interactive mode
+.RB ( IA_KY_MODE )
+is
 .BR IA_SET_INTERACTIVE .
 .sp
 .LP
@@ -1925,7 +1970,7 @@ scheduling class. An
 .I fss_upri
 value of 0 is defined as the default
 base priority for the fair-share class. User priorities range from -\fIx\fR
-to +\fIx\fR where the value of \fIx\fR is configurable and can be determined
+.RI "to +" x " where the value of " x " is configurable and can be determined"
 for a specific installation by using the
 .B "priocntl() PC_GETCID"
 or
@@ -2041,7 +2086,8 @@ buffer is in this format.
 .LP
 For the
 .B "priocntl() PC_GETPARMS"
-command, if \fIpc_cid\fR
+command, if
+.I pc_cid
 specifies the fair-share class and more than one fair-share LWP is
 specified, the scheduling parameters of the  fair-share LWP with the highest
 .I fss_upri
@@ -2080,7 +2126,9 @@ Any fair-share LWP can set its own
 (or that of another LWP
 with the same user ID) to any value less than or equal to the LWP's
 .IR fss_uprilim .
-Attempts to set the \fBfss_upr\fRi above the
+Attempts to set the
+.BR fss_upr i
+above the
 .B fss_uprilim
 (and/or set the
 .I fss_uprilim
@@ -2092,7 +2140,10 @@ being set equal to the
 .IR fss_uprilim .
 .sp
 .LP
-Either of the \fIfss_uprilim\fR or \fBfss_upri\fR members can be set to the
+Either of the
+.IR fss_uprilim " or "
+.B fss_upri
+members can be set to the
 special value
 .B FSS_NOCHANGE
 (defined in
@@ -2100,7 +2151,10 @@ special value
 to
 set one of the values without affecting the other. Specifying
 .B FSS_NOCHANGE
-for the \fIfss_upri\fR when the \fIfss_uprilim\fR is
+for the
+.IR fss_upri " when the "
+.I fss_uprilim
+is
 being set to a value below the current
 .I fss_upri
 causes the
@@ -2115,7 +2169,9 @@ LWP to fair-share (from some other class) causes the parameter to be set to
 a default value. The default value for the
 .B fss_uprilim
 is 0 and the
-default for the \fBfss_upri\fR is to set it equal to the \fIfss_uprilim\fR
+default for the
+.B fss_upri
+is to set it equal to the \fIfss_uprilim\fR
 which is being set.
 .sp
 .LP
@@ -2245,7 +2301,8 @@ buffer is in this format.
 .LP
 For the
 .B "priocntl() PC_GETPARMS"
-command, if \fIpc_cid\fR
+command, if
+.I pc_cid
 specifies the fixed-priority class and more than one fixed-priority LWP is
 specified, the scheduling parameters of the fixed-priority LWP with the
 highest
@@ -2288,20 +2345,34 @@ Attempts to set the
 .I fx_upri
 above the
 .B fx_uprilim
-(and/or set the \fIfx_uprilim\fR below the \fIfx_upri\fR)
-result in the \fBfx_upri\fR being set equal to the \fIfx_uprilim\fR.
+.RI "(and/or set the " fx_uprilim " below the " fx_upri )
+result in the
+.B fx_upri
+being set equal to the \fIfx_uprilim\fR.
 .sp
 .LP
-Either of the \fIfx_uprilim\fR or \fIfx_upri\fR members can be set to the
+Either of the
+.IR fx_uprilim " or "
+.I fx_upri
+members can be set to the
 special value
 .B FX_NOCHANGE
 (defined in
 .BR <sys/fxpriocntl.h> )
 to set
-one of the values without affecting the other. Specifying \fBFX_NOCHANGE\fR
-for the \fIfx_upri\fR when the \fIfx_uprilim\fR is being set to a value
-below the current \fIfx_upri\fR causes the \fIfx_upri\fR to be set equal to
-the \fIfx_uprilim\fR being set. Specifying \fBFX_NOCHANGE\fR for a parameter
+one of the values without affecting the other. Specifying
+.B FX_NOCHANGE
+for the
+.IR fx_upri " when the "
+.I fx_uprilim
+is being set to a value
+below the current
+.IR fx_upri " causes the "
+.I fx_upri
+to be set equal to
+the \fIfx_uprilim\fR being set. Specifying
+.B FX_NOCHANGE
+for a parameter
 when changing the class of an LWP to fixed-priority (from some other class)
 causes the parameter to be set to a default value. The default value for the
 .I fx_uprilim
@@ -2318,15 +2389,19 @@ see
 .BR fx_dptbl (4).
 .sp
 .LP
-The \fIfx_tqsecs\fR and \fIfx_tqnsecs\fR members are used for getting or
+The
+.IR fx_tqsecs " and "
+.I fx_tqnsecs
+members are used for getting or
 setting the time quantum associated with an LWP or group of LWPs.
 .I fx_tqsecs
 is the number of seconds in the time quantum and
 .I fx_tqnsecs
 is the number of additional nanoseconds in the quantum. For
-example, setting \fIfx_tqsecs\fR to 2 and \fIfx_tqnsecs\fR to 500,000,000
+.RI "example, setting " fx_tqsecs " to 2 and " fx_tqnsecs " to 500,000,000"
 (decimal) would result in a time quantum of two and one-half seconds.
-Specifying a value of 1,000,000,000 or greater in the \fIfx_tqnsecs\fR
+Specifying a value of 1,000,000,000 or greater in the
+.I fx_tqnsecs
 member results in an error return with
 .B errno
 set to
@@ -2336,7 +2411,8 @@ Although the resolution of the
 member is very fine, the
 specified time quantum length is rounded up by the system to the next
 integral multiple of the system clock's resolution. The maximum time quantum
-that can be specified is implementation-specific and equal to \fBINT_MAX\fR
+that can be specified is implementation-specific and equal to
+.B INT_MAX
 ticks (defined in
 .BR <limits.h> ).
 Requesting a quantum greater than this
@@ -2455,10 +2531,16 @@ without a following (key, value) pair will set or reset all realtime
 scheduling parameters of the target process(es) to their default values.
 Changing the class of an LWP to fixed-priority from some other class causes
 the parameters to be set to their default values. The default value for the
-user priority limit (\fBFX_KY_UPRILIM\fR) is 0. The default value for the
-user priority (\fBFX_KY_UPRI\fR) is equal to the user priority limit
-(\fBFX_KY_UPRILIM\fR) that is being set. A default time quantum
-(\fBFX_TQDEF\fR) is assigned to each priority class (see
+user priority limit
+.RB ( FX_KY_UPRILIM )
+is 0. The default value for the
+user priority
+.RB ( FX_KY_UPRI )
+is equal to the user priority limit
+.RB ( FX_KY_UPRILIM )
+that is being set. A default time quantum
+.RB ( FX_TQDEF )
+is assigned to each priority class (see
 .BR fx_dptbl (4)).
 .sp
 .LP
@@ -2486,9 +2568,13 @@ an error return and
 is set to
 .BR ERANGE .
 If seconds
-(\fBFX_KY_TQSECS\fR) but no nanoseconds (\fBFX_KY_TQNSECS\fR) are supplied,
-the number of nanoseconds is set to 0. If nanoseconds (\fBFX_KY_TQNSECS\fR)
-but no seconds (\fBFX_KY_TQSECS\fR) are supplied, the number of seconds is
+.RB ( FX_KY_TQSECS ") but no nanoseconds (" FX_KY_TQNSECS )
+are supplied,
+the number of nanoseconds is set to 0. If nanoseconds
+.RB ( FX_KY_TQNSECS )
+but no seconds
+.RB ( FX_KY_TQSECS )
+are supplied, the number of seconds is
 set to 0. A time quantum of 0 (seconds and nanoseconds are 0) results in an
 error return with
 .B errno
@@ -2594,7 +2680,9 @@ memory.
 .ad
 .RS 10n
 .rt
-The {\fBPRIV_PROC_PRIOCNTL\fR} privilege is not asserted in the effective
+The
+.RB { PRIV_PROC_PRIOCNTL }
+privilege is not asserted in the effective
 set of the calling LWP.
 .sp
 The calling LWP does not have sufficient privileges to affect the target

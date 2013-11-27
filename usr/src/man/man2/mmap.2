@@ -70,8 +70,7 @@ space and a file or shared memory object. The format of the call is as
 follows:
 .sp
 .LP
-\fIpa\fR = \fBmmap(\fIaddr\fB, \fIlen\fB, \fIprot\fB,
-\fIflags\fB, \fIfildes\fB, \fIoff\fB);\fR
+\fIpa\fR = \fBmmap(\fIaddr\fB, \fIlen\fB, \fIprot\fB, \fIflags\fB, \fIfildes\fB, \fIoff\fB);\fR
 .sp
 .LP
 The
@@ -82,7 +81,10 @@ the process at an address
 for
 .I len
 bytes to the memory object
-represented by the file descriptor \fIfildes\fR at offset \fIoff\fR for
+represented by the file descriptor
+.IR fildes " at offset "
+.I off
+for
 .I len
 bytes. The value of
 .I pa
@@ -111,7 +113,9 @@ shared memory object represented by
 .IR fildes .
 .sp
 .LP
-The \fBmmap()\fR function allows [\fIpa, pa + len\fR) to extend beyond the
+The
+.B mmap()
+function allows [\fIpa, pa + len\fR) to extend beyond the
 end of the object both at the time of the
 .B mmap()
 and while the mapping
@@ -157,14 +161,15 @@ objects. Support for any other type of file is unspecified.
 The
 .I prot
 argument determines whether read, write, execute, or some
-combination of accesses are permitted to the data being mapped. The \fIprot\fR
+combination of accesses are permitted to the data being mapped. The
+.I prot
 argument should be either
 .B PROT_NONE
 or the bitwise inclusive
 .B OR
 of
 one or more of the other flags in the following table, defined in the header
-<\fBsys/mman.h\fR>.
+.RB < sys/mman.h >.
 .sp
 .ne 2
 .mk
@@ -239,14 +244,16 @@ of
 .B PROT_READ
 and
 .BR PROT_WRITE .
-On some platforms, the \fBPROT_WRITE\fR
+On some platforms, the
+.B PROT_WRITE
 protection option is implemented as
 .B PROT_READ|PROT_WRITE
 and
 .B PROT_EXEC
 as
 .BR PROT_READ|PROT_EXEC .
-The file descriptor \fIfildes\fR
+The file descriptor
+.I fildes
 is opened with read permission, regardless of the protection options
 specified. If
 .B PROT_WRITE
@@ -264,8 +271,12 @@ below.
 The
 .I flags
 argument provides other information about the handling of
-the mapped data. The value of \fIflags\fR is the bitwise inclusive \fBOR\fR of
-these options, defined in <\fBsys/mman.h\fR>:
+the mapped data. The value of
+.IR flags " is the bitwise inclusive "
+.B OR
+of
+these options, defined in
+.RB < sys/mman.h >:
 .sp
 .ne 2
 .mk
@@ -397,7 +408,9 @@ exactly. If
 .B MAP_FIXED
 is set,
 .B mmap()
-may return (\fBvoid *\fR)\(mi1 and set
+may return
+.RB ( "void *" )\(mi1
+and set
 .B errno
 to
 .BR EINVAL .
@@ -466,7 +479,8 @@ alignment.
 The
 .B MAP_NORESERVE
 option specifies that no swap space be reserved for a
-mapping. Without this flag, the creation of a writable \fBMAP_PRIVATE\fR
+mapping. Without this flag, the creation of a writable
+.B MAP_PRIVATE
 mapping reserves swap space equal to the size of the mapping; when the mapping
 is written into, the reserved space is employed to hold private copies of the
 data. A write into a
@@ -519,7 +533,9 @@ When the
 .B MAP_TEXT
 option is used for regular file mappings on some
 platforms, the system can choose a mapping size larger than the page size
-returned by \fBsysconf\fR(3C). The specific page sizes that are used depend on
+returned by
+.BR sysconf (3C).
+The specific page sizes that are used depend on
 the platform and the alignment of the addr and len arguments. Several diffrent
 mapping sizes can be used to map the region with larger page sizes used in the
 parts of the region that meet alignment and size requirements for those page
@@ -551,7 +567,8 @@ or
 .BR _SC_PAGE_SIZE .
 When
 .B MAP_FIXED
-is specified, the \fIaddr\fR
+is specified, the
+.I addr
 argument must also meet these constraints. The system performs mapping
 operations over whole pages. Thus, while the
 .I len
@@ -610,13 +627,17 @@ and
 .BR PROT_WRITE ,
 will be marked for update at some point
 in the interval between a write reference to the mapped region and the next
-call to \fBmsync\fR(3C) with \fBMS_ASYNC\fR or \fBMS_SYNC\fR for that portion
+call to
+.BR msync (3C)
+with \fBMS_ASYNC\fR or \fBMS_SYNC\fR for that portion
 of the file by any process.  If there is no such call, these fields may be
 marked for update at any time after a write reference if the underlying file
 is modified as a result.
 .sp
 .LP
-If the process calls \fBmlockall\fR(3C) with the \fBMCL_FUTURE\fR flag, the
+If the process calls
+.BR mlockall (3C)
+with the \fBMCL_FUTURE\fR flag, the
 pages mapped by all future calls to
 .B mmap()
 will be locked in memory. In
@@ -631,7 +652,8 @@ to
 The
 .B mmap()
 function aligns based on the length of the mapping. When
-determining the amount of space to add to the address space, \fBmmap()\fR
+determining the amount of space to add to the address space,
+.B mmap()
 includes two 8-Kbyte pages, one at each end of the mapping that are not mapped
 and are therefore used as "red-zone" pages. Attempts to reference these pages
 result in access violations.
@@ -976,7 +998,9 @@ and sets
 .B errno
 to indicate the error. The symbol
 .B MAP_FAILED
-is defined in the header <\fBsys/mman.h\fR>. No successful
+is defined in the header
+.RB < sys/mman.h >.
+No successful
 return from
 .B mmap()
 will return the value
@@ -1073,7 +1097,8 @@ The argument
 (if
 .B MAP_ALIGN
 was specified) is not 0 or some
-power of two multiple of page size as returned by \fBsysconf\fR(3C).
+power of two multiple of page size as returned by
+.BR sysconf (3C).
 .sp
 .B MAP_FIXED
 and
@@ -1142,8 +1167,7 @@ meaningless, such as a terminal.
 .ad
 .RS 13n
 .rt
-The \fBMAP_FIXED\fR option was specified and the range [\fIaddr, addr +
-len\fR) exceeds that allowed for the address space of a process.
+The \fBMAP_FIXED\fR option was specified and the range [\fIaddr, addr + len\fR) exceeds that allowed for the address space of a process.
 .sp
 The
 .B MAP_FIXED
@@ -1188,7 +1212,9 @@ argument.
 .ad
 .RS 13n
 .rt
-Addresses in the range [\fIoff, off + len\fR) are invalid for the object
+Addresses in the range
+.RI [ "off, off + len" )
+are invalid for the object
 specified by
 .IR fildes .
 .sp
@@ -1300,7 +1326,7 @@ offsets. See
 The
 .B mmap()
 function allows access to resources using address space
-manipulations instead of the \fBread()\fR/\fBwrite()\fR interface. Once a file
+.RB "manipulations instead of the " read() / write() " interface. Once a file"
 is mapped, all a process has to do to access it is use the data at the address
 to which the object was mapped.
 .sp

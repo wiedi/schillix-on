@@ -99,7 +99,9 @@ Solaris architecture specific (Solaris DDI).
 .ad
 .RS 18n
 .rt
-Pointer to a \fBgld_mac_info\fR(9S) structure.
+Pointer to a
+.BR gld_mac_info (9S)
+structure.
 .RE
 
 .sp
@@ -113,7 +115,9 @@ Pointer to a \fBgld_mac_info\fR(9S) structure.
 Pointer to the beginning of a character array containing a valid MAC address.
 The array will be of the length specified by the driver in the
 .B gldm_addrlen
-element of the \fBgld_mac_info\fR(9S) structure.
+element of the
+.BR gld_mac_info (9S)
+structure.
 .RE
 
 .sp
@@ -128,7 +132,9 @@ Pointer to the beginning of a character array containing a multicast, group, or
 functional address. The array will be of the length specified by the driver in
 the
 .B gldm_addrlen
-element of the \fBgld_mac_info\fR(9S) structure.
+element of the
+.BR gld_mac_info (9S)
+structure.
 .RE
 
 .sp
@@ -182,7 +188,9 @@ the ioctl to be executed.
 .ad
 .RS 18n
 .rt
-Pointer to a \fBgld_stats\fR(9S) structure to be filled in with the current
+Pointer to a
+.BR gld_stats (9S)
+structure to be filled in with the current
 values of statistics counters.
 .RE
 
@@ -206,13 +214,19 @@ These entry points must be implemented by a device-specific network driver
 designed to interface with the Generic LAN Driver (GLD).
 .sp
 .LP
-As described in \fBgld\fR(7D), the main data structure for communication
+As described in
+.BR gld (7D),
+the main data structure for communication
 between the device-specific driver and the GLD module is the
 .BR gld_mac_info (9S)
 structure. Some of the elements in that structure are
-function pointers to the entry points described here. The device-specific driver
-must, in its \fBattach\fR(9E) routine, initialize these function pointers before
-calling \fBgld_register\fR(\|).
+function pointers to the entry points described here. The device-specific
+driver
+must, in its
+.BR attach (9E)
+routine, initialize these function pointers before
+calling
+.BR gld_register (\|).
 .sp
 .LP
 \fBgldm_reset\fR(\|) resets the hardware to its initial state.
@@ -246,7 +260,8 @@ specific multicast addresses. If the third argument
 is set to
 .BR GLD_MULTI_ENABLE ,
 then the function sets the interface to receive packets
-with the multicast address pointed to by the second argument; if \fImultiflag\fR
+with the multicast address pointed to by the second argument; if
+.I multiflag
 is set to
 .BR GLD_MULTI_DISABLE ,
 the driver is allowed to disable reception of
@@ -260,12 +275,14 @@ specific multicast address. Some devices may use a hash algorithm and a bitmask
 to enable collections of multicast addresses; this is allowed, and GLD will
 filter out any superfluous packets that are not required. If disabling an
 address could result in disabling more than one address at the device level, it
-is the responsibility of the device driver to keep whatever information it needs
+is the responsibility of the device driver to keep whatever information it
+needs
 to avoid disabling an address that GLD has enabled but not disabled.
 .sp
 .LP
 \fBgldm_set_multicast\fR(\|) will not be called to enable a particular
-multicast address that is already enabled, nor to disable an address that is not
+multicast address that is already enabled, nor to disable an address that is
+not
 currently enabled. GLD keeps track of multiple requests for the same multicast
 address and only calls the driver's entry point when the first request to
 enable, or the last request to disable a particular multicast address is made.
@@ -294,7 +311,8 @@ promiscuous mode is disabled.
 .LP
 In the case of a request for promiscuous multicast mode, drivers for devices
 that have no multicast-only promiscuous mode must set the device to physical
-promiscuous mode to ensure that all multicast packets are received. In this case
+promiscuous mode to ensure that all multicast packets are received. In this
+case
 the routine should return
 .BR GLD_SUCCESS .
 The GLD software will filter out
@@ -352,11 +370,13 @@ then the driver is
 responsible for freeing the message when the driver and the hardware no longer
 need it. If the send routine copied the message into the device, or into a
 private buffer, then the send routine may free the message after the copy is
-made. If the hardware uses DMA to read the data directly out of the message data
+made. If the hardware uses DMA to read the data directly out of the message
+data
 blocks, then the driver must not free the message until the hardware has
 completed reading the data. In this case the driver will probably free the
 message in the interrupt routine, or in a buffer-reclaim operation at the
-beginning of a future send operation. If the send routine returns anything other
+beginning of a future send operation. If the send routine returns anything
+other
 than
 .BR GLD_SUCCESS ,
 then the driver must not free the message.
@@ -373,7 +393,8 @@ Otherwise it must service the interrupt
 and should return
 .BR DDI_INTR_CLAIMED .
 If the interrupt was caused by
-successful receipt of a packet, this routine should put the received packet into
+successful receipt of a packet, this routine should put the received packet
+into
 a STREAMS message of type
 .B M_DATA
 and pass that message to
@@ -421,8 +442,11 @@ structure pointed to by
 .IR stats .
 This routine is called by GLD when it gets a request for
 statistics, and provides the mechanism by which GLD acquires device dependent
-statistics from the driver before composing its reply to the statistics request.
-See \fBgld_stats\fR(9S) and \fBgld\fR(7D) for a description of the defined
+statistics from the driver before composing its reply to the statistics
+request.
+See
+.BR gld_stats (9S)
+and \fBgld\fR(7D) for a description of the defined
 statistics counters.
 .sp
 .LP
@@ -430,14 +454,19 @@ statistics counters.
 element may be specified as
 .I NULL
 if the driver does not implement any
-ioctl functions. The driver is responsible for converting the message block into
-an ioctl reply message and calling the \fBqreply\fR(9F) function before
+ioctl functions. The driver is responsible for converting the message block
+into
+an ioctl reply message and calling the
+.BR qreply (9F)
+function before
 returning
 .BR GLD_SUCCESS .
 This function should always return
 .BR GLD_SUCCESS ;
 any errors the driver may wish to report should be returned
-via the message passed to \fBqreply\fR(9F). If the
+via the message passed to
+.BR qreply (9F).
+If the
 .B gldm_ioctl
 element is
 specified as
@@ -527,8 +556,10 @@ network or link partner.
 .ad
 .RS 21n
 .rt
-if the requested function is not supported. Only \fBgldm_set_mac_addr\fR(\|),
-\fBgldm_set_multicast\fR(\|), and \fBgldm_set_promiscuous\fR(\|) may return this
+if the requested function is not supported. Only
+.BR gldm_set_mac_addr (\|),
+\fBgldm_set_multicast\fR(\|), and \fBgldm_set_promiscuous\fR(\|) may return
+this
 value.
 .RE
 

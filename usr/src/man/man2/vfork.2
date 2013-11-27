@@ -27,7 +27,10 @@ vfork, vforkx \- spawn new process in a virtual memory efficient way
 .SH DESCRIPTION
 .sp
 .LP
-The \fBvfork()\fR and \fBvforkx()\fR functions create a new process without
+The
+.BR vfork() " and "
+.B vforkx()
+functions create a new process without
 fully copying the address space of the old process. These functions are
 useful in instances where the purpose of a
 .BR fork (2)
@@ -57,9 +60,16 @@ The parent process is suspended while the child is using its
 resources.
 .sp
 .LP
-In a multithreaded application,  \fBvfork()\fR and \fBvforkx()\fR borrow
-only the thread of control that called \fBvfork()\fR or \fBvforkx()\fR in the
-parent; that is, the child contains only one thread. The use of \fBvfork()\fR
+In a multithreaded application, 
+.BR vfork() " and "
+.B vforkx()
+borrow
+only the thread of control that called
+.BR vfork() " or "
+.B vforkx()
+in the
+parent; that is, the child contains only one thread. The use of
+.B vfork()
 or
 .B vforkx()
 in multithreaded applications, however, is unsafe due to
@@ -68,18 +78,26 @@ consequently block both the child and parent process from execution
 indefinitely.
 .sp
 .LP
-The \fBvfork()\fR and \fBvforkx()\fR functions can normally be used the same
+The
+.BR vfork() " and "
+.B vforkx()
+functions can normally be used the same
 way as
 .B fork()
 and
 .BR forkx() ,
 respectively. The calling procedure,
 however, should not return while running in the child's context, since the
-eventual return from \fBvfork()\fR or \fBvforkx()\fR in the parent would be
+eventual return from
+.BR vfork() " or "
+.B vforkx()
+in the parent would be
 to a stack frame that no longer exists. The
 .B _exit()
 function should be
-used in favor of \fBexit\fR(3C) if unable to perform an \fBexecve()\fR
+used in favor of
+.BR exit (3C)
+if unable to perform an \fBexecve()\fR
 operation, since
 .B exit()
 will invoke all functions registered by
@@ -105,7 +123,10 @@ and
 are called.
 .sp
 .LP
-The \fBvfork()\fR and \fBvforkx()\fR functions are deprecated. Their sole
+The
+.BR vfork() " and "
+.B vforkx()
+functions are deprecated. Their sole
 legitimate use as a prelude to an immediate call to a function from the
 .B exec
 family can be achieved safely by
@@ -114,7 +135,10 @@ family can be achieved safely by
 .SS "Fork Extensions"
 .sp
 .LP
-The \fBvforkx()\fR function accepts a \fIflags\fR argument consisting of a
+The
+.BR vforkx() " function accepts a "
+.I flags
+argument consisting of a
 bitwise inclusive-OR of zero or more of the following flags, which are
 defined in the header
 .BR <sys/fork.h> :
@@ -130,12 +154,15 @@ defined in the header
 .LP
 See
 .BR fork (2)
-for descriptions of these flags. If the \fIflags\fR
-argument is 0, \fBvforkx()\fR is identical to \fBvfork()\fR.
+for descriptions of these flags. If the
+.I flags
+.RB "argument is 0, " vforkx() " is identical to " vfork() .
 .SH RETURN VALUES
 .sp
 .LP
-Upon successful completion, \fBvfork()\fR and \fBvforkx()\fR return  \fB0\fR
+Upon successful completion, \fBvfork()\fR and
+.B vforkx()
+return  \fB0\fR
 to the child process and returns the process ID of the child process to the
 parent process. Otherwise, \fB\(mi1\fR is returned to the parent process, no
 child process is created, and
@@ -144,7 +171,10 @@ is set to indicate the error.
 .SH ERRORS
 .sp
 .LP
-The \fBvfork()\fR and \fBvforkx()\fR functions will fail if:
+The
+.BR vfork() " and "
+.B vforkx()
+functions will fail if:
 .sp
 .ne 2
 .mk
@@ -227,7 +257,10 @@ MT-LevelUnsafe
 .sp
 .LP
 To avoid a possible deadlock situation, processes that are children in the
-middle of a \fBvfork()\fR or \fBvforkx()\fR are never sent
+middle of a
+.BR vfork() " or "
+.B vforkx()
+are never sent
 .B SIGTTOU
 or
 .B SIGTTIN
@@ -238,11 +271,16 @@ indication.
 .sp
 .LP
 To forestall parent memory corruption due to race conditions with signal
-handling, \fBvfork()\fR and \fBvforkx()\fR treat signal handlers in the child
+handling,
+.BR vfork() " and "
+.B vforkx()
+treat signal handlers in the child
 process in the same manner as the
 .BR exec (2)
 functions: signals set to be
-caught by the parent process are set to the default action (\fBSIG_DFL\fR) in
+caught by the parent process are set to the default action
+.RB ( SIG_DFL )
+in
 the child process (see
 .BR signal.h (3HEAD)).
 Any attempt to set a signal
@@ -257,11 +295,14 @@ handler to
 .BR SIG_DFL .
 .sp
 .LP
-On some systems, the implementation of \fBvfork()\fR and \fBvforkx()\fR
+.RB "On some systems, the implementation of " vfork() " and " vforkx() 
 cause the parent to inherit register values from the child. This can create
 problems for certain optimizing compilers if
 .B <unistd.h>
 is not included
-in the source calling \fBvfork()\fR or if \fB<sys/fork.h>\fR is not included
+in the source calling
+.BR vfork() " or if "
+.B <sys/fork.h>
+is not included
 in the source calling
 .BR vforkx() .
