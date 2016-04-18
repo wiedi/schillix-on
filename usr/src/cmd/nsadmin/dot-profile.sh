@@ -19,8 +19,33 @@ export PAGER
 #
 if ( [ ! -z "${.sh.version}" ] ) 2>/dev/null ; then
 
-PS1='${LOGNAME}@$(/usr/bin/hostname):$(
-    [[ "${LOGNAME}" == "root" ]] && printf "%s" "${PWD/${HOME}/~}# " ||
-    printf "%s" "${PWD/${HOME}/~}\$ ")'
+	#
+	# bosh also supports ${.sh.version}, but bosh does not support "[[",
+	# so check whether it refers to ksh93 or to bosh.
+	# If it refers to bosh, we have no "93" and "version"
+	# is used while ksh93 uses "Version" in the string.
+	#
+	case "${.sh.version}" in
+
+	Version*93*)
+	    #
+	    # This is ksh93
+	    #
+	    PS1='${LOGNAME}@$(/usr/bin/hostname):$(
+	    [[ "${LOGNAME}" == "root" ]] && printf "%s" "${PWD/${HOME}/~}# " ||
+	    printf "%s" "${PWD/${HOME}/~}\$ ")'
+	    ;;
+
+	*)	case "${.sh.shell}" in
+
+		*Bourne*)
+		    #
+		    # This is the Bourne Shell
+		    #
+		    # We may like to insert "set -o hostprompt" to get
+		    # "<username>@<hostname> > "
+		    ;;
+		esac
+	esac
 
 fi
