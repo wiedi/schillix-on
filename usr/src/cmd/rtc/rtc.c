@@ -1,13 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License, Version 1.0 only
- * (the "License").  You may not use this file except in compliance
- * with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may only use this file in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -22,6 +23,9 @@
 /*
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ */
+/*
+ * Copyright 2016 J. Schilling
  */
 
 #pragma ident	"%Z%%M%	%I%	%E% SMI"
@@ -196,6 +200,20 @@ set_zone(char *zone_string)
 }
 
 void
+correct_time_and_lag(long current_lag)
+{
+	/* correct the lag */
+	(void) sysi86(SGMTL, current_lag);
+
+	/*
+	 * set the unix time from the rtc,
+	 * assuming the rtc was the correct
+	 * local time.
+	 */
+	(void) sysi86(RTCSYNC);
+}
+
+void
 correct_rtc_and_lag()
 {
 	struct tm *tm;
@@ -217,17 +235,45 @@ correct_rtc_and_lag()
 	(void) time(&clock_val);
 	tm = localtime(&clock_val);
 	current_lag = tm->tm_isdst ? altzone : timezone;
+	(void) sysi86(GGMTL, &kernels_lag);
+	if (debug)
+		(void) fprintf(stderr,
+				"current lag %d, %s lag %d, kernel lag %d\n",
+				current_lag, zonefile, lag, kernels_lag);
+
+	if (lag != kernels_lag) {
+		/*
+		 * The kernel did read a different /etc/rtc_config file
+		 * than the one we see. This happens when the boot achive
+		 * was not updated after a DST change and the kernel crashed
+		 * and rebooted with the old boot archive.
+		 *
+		 * We fix this situation by setting the lag we read from the
+		 * /etc/rtc_config file in the kernel and then tell the kernel
+		 * to sync the UNIX time from the RTC.
+		 */
+		if (debug)
+			(void) fprintf(stderr,
+				"kernel lag and %s lag disagree\n",
+				zonefile);
+		if (lag == current_lag) {
+			if (debug)
+				(void) fprintf(stderr,
+					"correcting unix time\n");
+			correct_time_and_lag(lag);
+			return;
+		}
+	}
 
 	if (current_lag != lag) {	/* if file is wrong */
 		if (debug)
-			(void) fprintf(stderr, "correcting file");
+			(void) fprintf(stderr, "correcting file\n");
 		(void) set_zone(zone_info);	/* then rewrite file */
 	}
 
-	(void) sysi86(GGMTL, &kernels_lag);
 	if (current_lag != kernels_lag) {
 		if (debug)
-			(void) fprintf(stderr, "correcting kernel's lag");
+			(void) fprintf(stderr, "correcting kernel's lag\n");
 		(void) sysi86(SGMTL, current_lag);	/* correct the lag */
 		(void) sysi86(WTODC);			/* set the rtc to */
 							/* new local time */
@@ -242,15 +288,7 @@ initialize_zone(char *zone_string)
 	/* write the config file */
 	current_lag = set_zone(zone_string);
 
-	/* correct the lag */
-	(void) sysi86(SGMTL, current_lag);
-
-	/*
-	 * set the unix time from the rtc,
-	 * assuming the rtc was the correct
-	 * local time.
-	 */
-	(void) sysi86(RTCSYNC);
+	correct_time_and_lag(current_lag);
 }
 
 void

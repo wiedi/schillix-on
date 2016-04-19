@@ -106,6 +106,13 @@ if smf_is_globalzone && [ $rootiszfs = 0 ]; then
 fi
 
 #
+# If the system crashed after a DST change, the boot archive still holds the
+# old value for the rtc UTC lag. We correct the lag if needed directly after
+# the real root has been mounted rw.
+#
+[ -x /usr/sbin/rtc ] && /usr/sbin/rtc -c > /dev/null 2>&1
+
+#
 # Check and remount the /usr file system (formerly mounted read-only).
 # Unless root is zfs, in which case we've already mounted /usr read-write
 #
