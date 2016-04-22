@@ -3546,7 +3546,7 @@ if [ "$M_FLAG" != "y" -a "$build_ok" = y ]; then
 	done
 
 	if [ -n "$abspkgdefs" ]; then
-		pmodes -qvdP \
+		pmodes -qvdP -r ${CODEMGR_WS}/exception_lists/pmodes \
 		    `find $abspkgdefs -name pkginfo.tmpl -print -o \
 		    -name .del\* -prune | sed -e 's:/pkginfo.tmpl$::' | \
 		    sort -u` >> $mail_msg_file
