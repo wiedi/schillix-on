@@ -2,8 +2,9 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
  *
  * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
  * or http://www.opensolaris.org/os/licensing.
@@ -18,16 +19,26 @@
  *
  * CDDL HEADER END
  */
-
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2006-2016 J. Schilling
+ *
+ * @(#)getopt.c	1.16 16/04/26 J. Schilling
+ */
+#if defined(sun)
+#pragma ident "@(#)getopt.c 1.16 16/04/26 J. Schilling"
+#endif
+
+#if defined(sun)
+#pragma ident	"@(#)getopt.c	1.23	05/06/08 SMI"
+#endif
 
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved  	*/
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * See getopt(3C) and SUS/XPG getopt() for function definition and
@@ -39,6 +50,13 @@
  * alnum characters ([a-z][A-Z][0-9]).
  */
 
+/*
+ * Configuration options:
+ */
+#define	DO_GETOPT_LONGONLY	/* Support getopt(.. "?900?(long)")	*/
+#define	DO_GETOPT_SDASH_LONG	/* Support -long also			*/
+
+
 #pragma weak _getopt = getopt
 
 #include "lint.h"
@@ -47,6 +65,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+
+static char *parseshort(const char *optstring, const char c);
+#ifdef	DO_GETOPT_LONGONLY
+static int  parseshortval(const char *optstring, const char *cp);
+#endif
+static char *parselong(const char *optstring, const char *opt,
+				char **longoptarg);
 
 /*
  * Generalized error processing macro. The parameter i is a pointer to
@@ -90,6 +115,19 @@ parseshort(const char *optstring, const char c)
 	if (c == ':' || c == '(')
 		return (NULL);
 	do {
+#ifdef	DO_GETOPT_LONGONLY
+		if (*cp == '?' && cp[1] >= '0' && cp[1] <= '9') {
+			const char *ocp = cp;
+
+			do {
+				cp++;
+			} while (*cp >= '0' && *cp <= '9');
+			if (*cp == '?')
+				cp++;
+			else
+				cp = (char *)ocp;
+		}
+#endif
 		if (*cp == c)
 			return (cp);
 		while (*cp == '(')
@@ -98,6 +136,39 @@ parseshort(const char *optstring, const char c)
 	} while (*cp++ != '\0');
 	return (NULL);
 }
+
+#ifdef	DO_GETOPT_LONGONLY
+/*
+ * Parse strings in the form "?ddd?", where ddd represents a
+ * decimal numeric value. We are called with cp pointing to the
+ * rightmost '?'.
+ */
+static int
+parseshortval(const char *optstring, const char *cp)
+{
+	const char *p = cp;
+
+	while (p > optstring) {
+		p--;
+		if (*p < '0' || *p > '9')
+			break;
+	}
+	if ((p + 1) == cp)	/* Did not find a number before '?' */
+		return ('?');
+	if (*p == '?') {
+		int	i = 0;
+
+		while (*++p != '?') {
+			if (i > 2000000000)	/* Avoid integer overflow */
+				return (-1);
+			i *= 10;
+			i += *p - '0';
+		}
+		return (i);
+	}
+	return ('?');
+}
+#endif
 
 /*
  * Determine if the specified string (opt) is present in the string
@@ -178,10 +249,11 @@ parselong(const char *optstring, const char *opt, char **longoptarg)
 int
 getopt(int argc, char *const *argv, const char *optstring)
 {
-	char	c;
+	int	c;
 	char	*cp;
 	int	longopt;
-	char	*longoptarg;
+	char	*longoptarg = NULL;
+	int	l = 2;
 
 	/*
 	 * Has the end of the options been encountered?  The following
@@ -195,14 +267,13 @@ getopt(int argc, char *const *argv, const char *optstring)
 	 *	argv[optind]	points to the string "--"
 	 * getopt() returns -1 after incrementing optind.
 	 */
-	if (_sp == 1) {
-		if (optind >= argc || argv[optind][0] != '-' ||
-		    argv[optind] == NULL || argv[optind][1] == '\0')
-			return (EOF);
-		else if (strcmp(argv[optind], "--") == NULL) {
-			optind++;
-			return (EOF);
-		}
+	if (optind >= argc || argv[optind] == NULL ||
+	    argv[optind][0] != '-' || argv[optind][1] == '\0') {
+		return (-1);
+	} else if (argv[optind][0] == '-' && argv[optind][1] == '-' &&
+	    argv[optind][2] == '\0') {		/* "--" */
+		optind++;
+		return (-1);
 	}
 
 	/*
@@ -227,9 +298,33 @@ getopt(int argc, char *const *argv, const char *optstring)
 	optopt = c = (unsigned char)argv[optind][_sp];
 	optarg = NULL;
 	longopt = (_sp == 1 && c == '-');
+#ifdef	DO_GETOPT_SDASH_LONG
+	/*
+	 * If optstring starts with "()", traditional UNIX -long options are
+	 * allowed in addition to --long.
+	 */
+	if (optstring[0] == '(' ||
+	    (optstring[0] == ':' && optstring[1] == '(')) {
+		if (!longopt && _sp == 1 &&
+		    c != '\0' && argv[optind][2] != '\0') {
+			longopt = l = 1;
+		}
+	}
+tryshort:
+#endif
 	if (!(longopt ?
-	    ((cp = parselong(optstring, argv[optind]+2, &longoptarg)) != NULL) :
+	    ((cp = parselong(optstring, argv[optind]+l, &longoptarg)) != NULL) :
 	    ((cp = parseshort(optstring, c)) != NULL))) {
+#ifdef	DO_GETOPT_SDASH_LONG
+		if (longopt && optopt != '-') {
+			/*
+			 * In case of "-long" retry as combined short options.
+			 */
+			longopt = 0;
+			goto tryshort;
+		}
+#endif
+		/* LINTED: variable format specifier */
 		ERR(_libc_gettext("%s: illegal option -- %s\n"),
 		    c, (longopt ? optind : 0));
 		/*
@@ -242,7 +337,16 @@ getopt(int argc, char *const *argv, const char *optstring)
 		}
 		return ('?');
 	}
-	optopt = c = *cp;
+	optopt = c = (unsigned char)*cp;
+#ifdef	DO_GETOPT_LONGONLY
+	if (*cp == '?') {
+		optopt = c = parseshortval(optstring, cp);
+		if (c < 0) {
+			optopt = (unsigned char)argv[optind++][_sp];
+			return ('?');
+		}
+	}
+#endif
 
 	/*
 	 * A valid option has been identified.  If it should have an
@@ -280,8 +384,10 @@ getopt(int argc, char *const *argv, const char *optstring)
 			optind++;
 			optarg = longoptarg;
 		} else if (++optind >= argc) {
-			ERR(_libc_gettext("%s: option requires an argument" \
-			    " -- %s\n"), c, (longopt ? optind - 1 : 0));
+			/* LINTED: variable format specifier */
+			ERR(_libc_gettext(
+				"%s: option requires an argument -- %s\n"),
+				c, (longopt ? optind - 1 : 0));
 			_sp = 1;
 			optarg = NULL;
 			return (optstring[0] == ':' ? ':' : '?');
@@ -291,12 +397,13 @@ getopt(int argc, char *const *argv, const char *optstring)
 	} else {
 		/* The option does NOT take an argument */
 		if (longopt && (longoptarg != NULL)) {
-			/* User supplied an arg to an option that takes none */
-			ERR(_libc_gettext(
-			    "%s: option doesn't take an argument -- %s\n"),
-			    0, (longopt ? optind : 0));
-			optarg = longoptarg = NULL;
-			c = '?';
+		    /* User supplied an arg to an option that takes none */
+		    /* LINTED: variable format specifier */
+		    ERR(_libc_gettext(
+			"%s: option doesn't take an argument -- %s\n"),
+			0, (longopt ? optind : 0));
+		    optarg = longoptarg = NULL;
+		    c = '?';
 		}
 
 		if (longopt || argv[optind][++_sp] == '\0') {
