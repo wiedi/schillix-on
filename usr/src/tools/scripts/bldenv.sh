@@ -169,7 +169,14 @@ typeset flags=(
 typeset progname="$(basename "${0}")"
 
 OPTIND=1
-SUFFIX="-nd"
+#
+# Was: SUFFIX="-nd"
+#
+# The new default in "nightly" is to do a no-DEBUG compilation
+# but to install the results in the plain prototype directories.
+# Make bldenv behave similar to nightly:
+#
+SUFFIX=""
 
 while getopts -a "${progname}" "${USAGE}" OPT ; do 
     case ${OPT} in
