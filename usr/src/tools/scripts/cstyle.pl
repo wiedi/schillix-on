@@ -2,14 +2,14 @@
 #
 # CDDL HEADER START
 #
-# The contents of this file are subject to the terms of the
-# Common Development and Distribution License (the "License").
-# You may not use this file except in compliance with the License.
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
 #
 # When distributing Covered Code, include this CDDL HEADER in each
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -23,7 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# @(#)cstyle	1.11 16/06/09 J. Schilling
+# @(#)cstyle	1.13 16/07/14 J. Schilling
 #
 #
 # @(#)cstyle 1.58 98/09/09 (from shannon)
@@ -210,7 +210,11 @@ my $no_errs = 0;		# set for CSTYLED-protected lines
 sub err($) {
 	my ($error) = @_;
 	unless ($no_errs) {
-		printf $fmt, $filename, $., $error, $line;
+		if ($verbose) {
+			printf $fmt, $filename, $., $error, $line;
+		} else {
+			printf $fmt, $filename, $., $error;
+		}
 		$err_stat = 1;
 	}
 }
@@ -219,7 +223,11 @@ sub err_prefix($$) {
 	my ($prevline, $error) = @_;
 	my $out = $prevline."\n".$line;
 	unless ($no_errs) {
-		printf $fmt, $filename, $., $error, $out;
+		if ($verbose) {
+			printf $fmt, $filename, $., $error, $out;
+		} else {
+			printf $fmt, $filename, $., $error;
+		}
 		$err_stat = 1;
 	}
 }
@@ -227,7 +235,11 @@ sub err_prefix($$) {
 sub err_prev($) {
 	my ($error) = @_;
 	unless ($no_errs) {
-		printf $fmt, $filename, $. - 1, $error, $prev;
+		if ($verbose) {
+			printf $fmt, $filename, $. - 1, $error, $prev;
+		} else {
+			printf $fmt, $filename, $. - 1, $error;
+		}
 		$err_stat = 1;
 	}
 }
@@ -644,7 +656,7 @@ line: while (<$filehandle>) {
 	if (/^\s*\(void\)[^ ]/) {
 		err("missing space after (void) cast");
 	}
-	if (/\S{/ && !/{{/) {
+	if (/\S\{/ && !/\{\{/) {
 		err("missing space before left brace");
 	}
 	if ($in_function && /^\s+{/ &&
