@@ -23,7 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# @(#)cstyle	1.13 16/07/14 J. Schilling
+# @(#)cstyle	1.15 16/07/15 J. Schilling
 #
 #
 # @(#)cstyle 1.58 98/09/09 (from shannon)
@@ -519,9 +519,6 @@ line: while (<$filehandle>) {
 			err("missing blank before close comment");
 		}
 	}
-	if (/\/\/\S/) {		# C++ comments
-		err("missing blank after start comment");
-	}
 	# check for unterminated single line comments, but allow them when
 	# they are used to comment out the argument list of a function
 	# declaration.
@@ -562,6 +559,11 @@ line: while (<$filehandle>) {
 	# multiple comments on the same line.
 	#
 	s/\/\*.*?\*\///g;
+
+	if (/\/\/\S/) {		# C++ comments
+		err("missing blank after start comment");
+	}
+
 	s/\/\/.*$//;		# C++ comments
 
 	# delete any trailing whitespace; we have already checked for that.
