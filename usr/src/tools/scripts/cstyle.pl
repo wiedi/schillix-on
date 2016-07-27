@@ -23,7 +23,9 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# @(#)cstyle	1.15 16/07/15 J. Schilling
+# Copyright 2004-2016 J. Schilling. All rights reserved.
+#
+# @(#)cstyle	1.17 16/07/15 J. Schilling
 #
 #
 # @(#)cstyle 1.58 98/09/09 (from shannon)
@@ -636,7 +638,7 @@ line: while (<$filehandle>) {
 #		}
 	# this is a close approximation
 	if (/^(\w+(\s|\*)+)+\w+\(.*\)(\s|)*$/ &&
-	    !/^(extern|static)\b/) {
+	    !/^(extern|static)\b.*;/) {
 		err("return type of function not on separate line");
 	}
 	if (/^#define /) {
