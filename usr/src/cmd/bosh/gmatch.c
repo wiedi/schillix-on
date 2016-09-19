@@ -1,8 +1,8 @@
-/* @(#)gmatch.c	1.8 12/04/20 2008-2012 J. Schilling */
+/* @(#)gmatch.c	1.11 16/07/30 2008-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)gmatch.c	1.8 12/04/20 2008-2012 J. Schilling";
+	"@(#)gmatch.c	1.11 16/07/30 2008-2016 J. Schilling";
 #endif
 
 #include <schily/mconfig.h>
@@ -47,8 +47,8 @@ static char *cclass	__PR((const char *p, int sub));
 
 static char *
 cclass(p, sub)
-register const char *p;
-register int sub;
+	register const char	*p;
+	register int		sub;
 {
 	register int c, d, not, found;
 		wchar_t	lc;
@@ -107,6 +107,8 @@ gmatch(s, p)
 
 		switch (pc) {
 		case '[':
+			if (sc == 0)
+				return (0);
 			if ((p = cclass(p, sc)) == NULL)
 				return (0);
 			break;
@@ -117,6 +119,8 @@ gmatch(s, p)
 			break;
 
 		case '*':
+			while (*p == '*')
+				p++;
 			do {
 				if (*p == '\0' || gmatch(os, p))
 					return (1);

@@ -22,7 +22,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH set 1 "20 Nov 2007" "SunOS 5.11" "User Commands"
+.TH set 1 "12 Sept 2016" "SunOS 5.11" "User Commands"
 .SH NAME
 set, unset, setenv, unsetenv, export \- shell built-in functions to
 determine the characteristics for environmental variables of the current
@@ -42,6 +42,16 @@ shell and its descendents
 .LP
 .nf
 \fBexport\fR [\fIname\fR].\|.\|.
+.fi
+
+.SS "bosh"
+.LP
+.nf
+\fB+ set\fR [ \fB\-abCefhkmntuvxP\fR [ \fB-o \fR[ \fIoption\fR ]] [ \fIargument\fR .\|.\|. ] ]
+
+\fB+ unset\fR [ \fB\-f\fR | \fB\-v\fR ] [ \fIname\fR .\|.\|. ]
+
+\fB+ export\fR [ \fB\-p\fR ] [ \fIname\fR[\fB=\fIvalue\fR] .\|.\|. ]
 .fi
 
 .SS "csh"
@@ -283,6 +293,456 @@ If no arguments are specified, variable names that have been marked for
 export during the current shell's execution are listed. Function names are
 .B not
 exported.
+
+.SS "bosh"
+.sp
+.LP
+The
+.B set
+commands supports the following options:
+.br
+.ne 3
+.TP 6n
+.B \-a
+Mark variables which are modified or created for export.
+
+.br
+.ne 3
+.TP
+.B \-b
+Prints job completion messages as soon as a background job
+changes state rather than waiting for the next prompt.
+This options is currently without effect.
+
+.br
+.ne 3
+.TP
+.B \-C
+Prevents redirection
+.RB ( > )
+from truncating existing files.
+Files that are created are opened with the
+.B O_EXCL
+mode. Requires
+.B >|
+to truncate a file when turned on.
+
+.br
+.ne 3
+.TP
+.B \-e
+Exit immediately if a command exits with a non-zero exit status.
+
+.br
+.ne 3
+.TP
+.B \-f
+Disable file name generation.
+
+.br
+.ne 3
+.TP
+.B \-h
+Locate and remember function commands as functions are defined (function
+commands are normally located when the function is executed).
+
+.br
+.ne 3
+.TP
+.B \-k
+All keyword arguments are placed in the environment for a command, not just
+those that precede the command name.
+
+.br
+.ne 3
+.TP
+.B \-m
+Switch job control mode on.
+
+.br
+.ne 3
+.TP
+.B \-n
+Read commands but do not execute them.
+Setting
+.B \-n
+in an interactive shell is ignored as this could not be undone and the shell
+could not even be terminated anymore.
+
+.br
+.ne 3
+.TP
+.B \-t
+Exit after reading and executing one command.
+
+.br
+.ne 3
+.TP
+\fB\-o\fR [\fIoption\fR]
+If
+.I option
+is not specified, list the current option setting to stdout;
+when invoked with
+.B +o
+instead of
+.BR \-o ,
+the output is written in a format that is suitable to reinput to the
+shell to restore the current setting.
+When invoked with
+.B +o
+and with
+.I option
+argument, the related option is cleared.
+The
+.B +o
+option may be repeated to enable or disable multiple options.
+The value of
+.I option
+must be one of the following:
+.RS
+.TP 15
+.PD 0
+.B allexport
+Equivalent to
+.BR \-a .
+.TP
+.BI aliasowner= name
+Set an alternate trusted owner for the files
+.B $HOME/.globals
+and
+.BR .locals .
+By default, the shell ignores alias files if they are not
+owned by the current shell user. This option allows to set up
+an alternate file owner that is accepted. Setting the alternate
+owner to the empty string disables the feature.
+.TP
+.B bgnice
+All background jobs are run at a lower priority.
+This is the default in interactive mode.
+.TP
+.B errexit
+Equivalent to
+.BR \-e .
+.TP
+.B fdpipe
+Enables the
+.B extended pipe syntax
+that allows to have a pipe output
+file descriptor number in front of the pipe sign
+.RB ( | ),
+e.g.
+.B 2|
+for a pipe from
+.BR stderr .
+It is recommended to put
+.RB ` "set\ \-o\ fdpipe" '
+into the file
+.B $HOME/.shrc
+to enable the extended pipe syntax for interactive shells by default.
+Scripts that like to use this feature, need to enable it.
+.TP
+.B fullexitcode
+Do not mask the exit code with 0xFF when expanding 
+.BR $? .
+This gives access to the full 32 bits from the child's exit code via
+.B $?
+on all modern operating systems that support
+.BR waitid (2).
+.TP
+.B globalaliases
+Enables/disables persistent global aliases that are read from the file
+.BR $HOME/.globals .
+Changing the state for this option first removes all current global aliases.
+If the new state is
+.BR on ,
+the persistent global aliases are loaded.
+.TP
+.B hashall
+Equivalent to
+.BR \-h .
+.TP
+.B hashcmds
+Enable hash commands, see section
+.B #\ commands
+above.
+.TP
+.B hostprompt
+Set the
+.B PS1
+value to
+.BI \fR`` "hostname\ uname" ">\ " \fR''
+if it was not yet changed from the default value.
+.TP
+.B ignoreeof
+The POSIX variant of telling the shell not to exit on EOF;
+the command
+.B exit
+must be used instead.
+The original method of the history editor introduced in 1984
+is to set
+.B IGNOREEOF=on
+see section
+.B Parameter Substitution
+for more information.
+If the parameter
+.B IGNOREEOF=on
+was set and
+.B ignoreeof
+is
+.BR off ,
+EOF is still ignored.
+.TP
+.B interactive
+Equivalent to
+.BR \-i .
+.TP
+.B keyword
+Equivalent to
+.BR \-k .
+.TP
+.B localaliases
+Enables/disables persistent directory local aliases that are read from the file
+.B .locals
+in the current directory.
+Local aliases are specific to the current working directory.
+Changing the state for this option first removes all current local aliases.
+If the new state is
+.BR on ,
+the persistent local aliases are loaded from the current directory.
+.TP
+.B monitor
+Equivalent to
+.BR \-m .
+.TP
+.B noclobber
+Equivalent to
+.BR \-C .
+.TP
+.B noexec
+Equivalent to
+.BR \-n .
+.TP
+.B noglob
+Equivalent to
+.BR \-f .
+.TP
+.B notify
+Equivalent to
+.BR \-b .
+.TP
+.B nounset
+Equivalent to
+.BR \-u .
+.TP
+.B onecmd
+Equivalent to
+.BR \-t .
+.TP
+.B pfsh
+Equivalent to
+.BR \-P .
+.TP
+.B posix
+Set the behavior of the Bourne Shell to POSIX mode
+where its default differs from the POSIX standard.
+.br
+This currently disallows to use
+.RB `` ^ ''
+as the pipe symbol and switches off support for
+.B test \-t
+without a parameter.
+.br
+POSIX mode is enabled by default if the executable path of the
+shell equals a compiled in value, e.g.
+.BR /usr/xpg4/bin/sh .
+.TP
+.B privileged
+Equivalent to
+.BR \-p .
+.TP
+.B promptcmdsubst
+Apply 
+.B command substitution
+and
+.B arithmetic substitution
+to the variables
+.BR PS1 ,
+.BR PS2
+and
+.BR PS4 .
+By default,
+.B promptcmdsubst
+is switched off to avoid security problems caused by imported variables.
+If
+.B promptcmdsubst
+is switched on, the variables
+.BR PS1 ,
+.BR PS2
+and
+.B PS4
+are reset to their default values for security reasons.
+Note that POSIX only requires parameter substitution, but no
+command substitution or arithmetic substitution for 
+.BR PS1 ,
+.BR PS2
+and
+.BR PS4 .
+.TP
+.B restricted
+Equivalent to
+.BR \-r .
+.TP
+.B stdin
+Equivalent to
+.BR \-s .
+.TP
+.B time
+Switch on automatic timing for commands.
+The variable
+.B TIMEFORMAT
+may be used to control the output format.
+.TP
+.B verbose
+Equivalent to
+.BR \-v .
+.TP
+.B ved
+Allow shell command line editing using the built in
+.BR ved (1)
+editor.
+.TP
+.B vi
+Allow shell command line editing using the built in
+.B vi
+editor.
+The Bourne Shell currently does not allow to set the vi mode
+for any type of terminal.
+.TP
+.B xtrace
+Equivalent to
+.BR \-x .
+.PD
+.RE
+
+.br
+.ne 3
+.TP
+.B \-u
+Treat unset variables as an error when substituting.
+
+.br
+.ne 3
+.TP
+.B \-v
+Print shell input lines as they are read.
+
+.br
+.ne 3
+.TP
+.B \-x
+Print commands and their arguments as they are executed.
+
+.br
+.ne 5
+.TP
+.B \-P
+Switch profile mode on.
+In this mode, the shell runs privilleged programs automatically in
+privilleged mode.
+See
+.BR pfexec (1)
+for further information.
+This feature is only supported on Solaris 10 and above.
+
+.br
+.ne 3
+.TP
+.B \-
+Clear the
+.B \-v
+and
+.B \-x
+option.
+
+.br
+.ne 3
+.TP
+\fB\-\-\fR
+Stop option processing.
+Further parameters are handled as normal args even when they start with a
+.BR \- .
+If no arguments follow this delimiter, then the positional parameters are unset.
+.LP
+Using
+.B +
+rather than
+.B \(mi
+causes these flags to be turned off.
+These flags can also be used upon invocation of the shell.
+The flags
+.BR \-c ,
+.BR \-i ,
+.BR \-p ,
+.B \-r
+and
+.B \-s
+can only be set upon invocation of the shell, they cannot be modified
+using the
+.B set
+command.
+The current set of flags can be found in
+.BR $\(mi .
+The remaining arguments are positional
+parameters and are assigned, in order, to
+.BR $1 ,
+.BR $2 ,
+\&.\|.\|.
+.sp
+If no arguments are given, the names and values of all variables are printed.
+When is POSIX mode
+.RB "(via " "set\ \-o\ posix" ),
+only shell variables are printed; otherwise functions are listed amongst the
+shell variables.
+.RE
+
+.LP
+For each
+.IR name ,
+.B unset
+removes the corresponding variable or function value.
+Readonly variables cannot be unset.
+If the option
+.B \-v
+is used, only
+.B variables
+will be unset.
+If the option
+.B \-f
+is used, only
+.B functions
+will be unset.
+
+.LP
+With the
+.B export
+built-in, the given
+.IR name s
+are marked for automatic export to the
+.I environment
+of subsequently executed commands. If no arguments are
+given, variable names that have been marked for export during the current
+shell's execution are listed.
+The
+.B \-p
+option causes the word
+.B export
+to be inserted before each name.
+(Variable names exported from a parent shell
+are listed only if they have been exported again during the current shell's
+execution.) Function names are
+.B not
+exported.
+
 .SS "csh"
 .sp
 .LP
@@ -2073,6 +2533,7 @@ AvailabilitySUNWcsu
 .SH SEE ALSO
 .sp
 .LP
+.BR bosh (1),
 .BR csh (1),
 .BR ksh (1),
 .BR ksh93 (1),

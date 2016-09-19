@@ -21,7 +21,7 @@ include ../../Makefile.lib
 #
 # To put this library to /lib instead of /usr/lib
 # uncomment the following line
-#include ../../Makefile.rootfs
+include ../../Makefile.rootfs
 
 LIBS =		$(DYNLIB) $(LINTLIB)
 LDLIBS +=	-lschily -lc
@@ -34,6 +34,7 @@ CPPFLAGS +=      -DUSE_LARGEFILES
 CPPFLAGS +=      -DUSE_ACL
 CPPFLAGS +=      -DUSE_XATTR
 CPPFLAGS +=      -DUSE_NLS
+CPPFLAGS +=      -DUSE_DGETTEXT			# _() -> dgettext()
 CPPFLAGS +=      -DSCHILY_PRINT
 
 

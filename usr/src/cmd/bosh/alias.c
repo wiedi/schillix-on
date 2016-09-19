@@ -1,11 +1,11 @@
-/* @(#)alias.c	1.4 13/09/24 Copyright 1986-2013 J. Schilling */
+/* @(#)alias.c	1.11 16/01/21 Copyright 1986-2016 J. Schilling */
 #include <schily/mconfig.h>
 static	UConst char sccsid[] =
-	"@(#)alias.c	1.4 13/09/24 Copyright 1986-2013 J. Schilling";
+	"@(#)alias.c	1.11 16/01/21 Copyright 1986-2016 J. Schilling";
 /*
  *	The built-in commands "alias" and "unalias".
  *
- *	Copyright (c) 1986-2013 J. Schilling
+ *	Copyright (c) 1986-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -32,11 +32,7 @@ sysalias(argc, argv)
 	int	argc;
 	unsigned char	**argv;
 {
-extern int opterr, optind;
-	int	savopterr = opterr;
-	int	savoptind = optind;
-	int	savsp = _sp;
-	char	*savoptarg = optarg;
+	struct optv optv;
 	int	c;
 	int	ret = 1;
 	int	badflag = 0;	/* -g/-l with {local!global}aliases disabled */
@@ -54,13 +50,11 @@ extern int opterr, optind;
 	unsigned char	*a1;
 	unsigned char	o[3];
 
-	optind = 1;
-	_sp = 1;
-	opterr = 0;
+	optinit(&optv);
 	o[0] = '-';
 	o[2] = '\0';
-	while ((c = getopt(argc, (char **)argv,
-			    "aeglprR(raw)")) != -1) {
+	while ((c = optget(argc, argv, &optv,
+			    "()aeglprR(raw)")) != -1) {
 		switch (c) {
 		case 'a':
 			allflag++;
@@ -69,7 +63,7 @@ extern int opterr, optind;
 			persist++;
 			break;
 		case 'g':
-			if ((flags & globalaliasflg) == 0) {
+			if ((flags2 & globalaliasflg) == 0) {
 				o[1] = c;
 				badflag++;
 				goto err;
@@ -78,7 +72,7 @@ extern int opterr, optind;
 			doglobal++;
 			break;
 		case 'l':
-			if ((flags & localaliasflg) == 0) {
+			if ((flags2 & localaliasflg) == 0) {
 				o[1] = c;
 				badflag++;
 				goto err;
@@ -101,15 +95,11 @@ extern int opterr, optind;
 		}
 	}
 	ret = 0;
-	c = optind;
+	c = optv.optind;
 err:
-	optind = savoptind;
-	opterr = savopterr;
-	_sp = savsp;
-	optarg = savoptarg;
 	if (badflag) {
-		failed(o, badopt);
-		/* NOTREACHED */
+		failure(o, badopt);
+		return;
 	}
 	if (ret)
 		return;
@@ -123,21 +113,24 @@ err:
 	if (pflag) {
 		if (dolocal)
 			pflags |= AB_PLOCAL;
-		else if ((flags & globalaliasflg) != 0)
+		else if ((flags2 & globalaliasflg) != 0)
 			pflags |= AB_PGLOBAL;
 	}
 	if (doreload) {
 		char	*fname;
 
 		if (c < argc) {
-			failed(argv[0], toomanyargs);
-			/* NOTREACHED */
+			failure(argv[0], toomanyargs);
+			return;
 		}
 		fname = ab_gname(tab);
 		ab_use(tab, fname);
 		return;
 	}
 	if (c >= argc) {
+		/*
+		 * Just list everysthing, never fail.
+		 */
 		ab_dump(tab, 1, lflags | pflags);
 		return;
 	}
@@ -149,16 +142,24 @@ err:
 		if (val) {
 			*val++ = '\0';
 			if (pflag || (doglobal == 0 && dolocal == 0)) {
-				ab_push(tab,
-					(char *)make(a1), (char *)make(val),
-					aflags);
+				if (!ab_push(tab,
+						(char *)make(a1),
+						(char *)make(val),
+						aflags)) {
+					failure(a1, "cannot push alias");
+				}
+
 			} else {
-				ab_insert(tab,
-					(char *)make(a1), (char *)make(val),
-					aflags);
+				if (!ab_insert(tab,
+						(char *)make(a1),
+						(char *)make(val),
+						aflags)) {
+					failure(a1, "cannot define alias");
+				}
 			}
 		} else {
-			ab_list(tab, (char *)a1, 1, lflags | pflags);
+			if (!ab_list(tab, (char *)a1, 1, lflags | pflags))
+				failure(a1, "alias not found");
 		}
 	}
 }
@@ -168,11 +169,7 @@ sysunalias(argc, argv)
 	int	argc;
 	unsigned char	**argv;
 {
-extern int opterr, optind;
-	int	savopterr = opterr;
-	int	savoptind = optind;
-	int	savsp = _sp;
-	char	*savoptarg = optarg;
+	struct optv optv;
 	int	c;
 	int	ret = 1;
 	int	badflag = 0;	/* -g/-l with {local!global}aliases disabled */
@@ -185,19 +182,16 @@ extern int opterr, optind;
 	unsigned char	*a1;
 	unsigned char	o[3];
 
-	optind = 1;
-	_sp = 1;
-	opterr = 0;
+	optinit(&optv);
 	o[0] = '-';
 	o[2] = '\0';
-	while ((c = getopt(argc, (char **)argv,
-			    "aglp")) != -1) {
+	while ((c = optget(argc, argv, &optv, "aglp")) != -1) {
 		switch (c) {
 		case 'a':
 			allflag++;
 			break;
 		case 'g':
-			if ((flags & globalaliasflg) == 0) {
+			if ((flags2 & globalaliasflg) == 0) {
 				o[1] = c;
 				badflag++;
 				goto err;
@@ -206,7 +200,7 @@ extern int opterr, optind;
 			doglobal++;
 			break;
 		case 'l':
-			if ((flags & localaliasflg) == 0) {
+			if ((flags2 & localaliasflg) == 0) {
 				o[1] = c;
 				badflag++;
 				goto err;
@@ -223,15 +217,11 @@ extern int opterr, optind;
 		}
 	}
 	ret = 0;
-	c = optind;
+	c = optv.optind;
 err:
-	optind = savoptind;
-	opterr = savopterr;
-	_sp = savsp;
-	optarg = savoptarg;
 	if (badflag) {
-		failed(o, badopt);
-		/* NOTREACHED */
+		failure(o, badopt);
+		return;
 	}
 	if (ret)
 		return;
@@ -246,10 +236,14 @@ err:
 		return;
 	}
 	for (; c < argc; c++) {
+		BOOL	r;
+
 		a1 = argv[c];
 		if (pflag || (doglobal == 0 && dolocal == 0))
-			ab_delete(tab, (char *)a1, AB_POP | AB_POPALL);
+			r = ab_delete(tab, (char *)a1, AB_POP | AB_POPALL);
 		else
-			ab_delete(tab, (char *)a1, 0);
+			r = ab_delete(tab, (char *)a1, 0);
+		if (!r)
+			failure(a1, "alias not found");
 	}
 }

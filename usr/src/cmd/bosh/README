@@ -19,24 +19,31 @@
 # CDDL HEADER END
 #
 #
-# Copyright (c) 2013, J. Schilling
+# Copyright (c) 2013-2016, J. Schilling
 #
 
 This is the new maintained version of the Bourne Shell.
+
+See http://schilytools.sourceforge.net/bosh.html for more information.
 
 It fixes all well known bugs from the SVr4 Bourne Shell documented at:
 http://www.in-ulm.de/~mascheck/bourne/.
 
 This version of the Bourne Shell adds the following features:
 
--	fixes all Bourne Shell bugs that have been documented since the late
-	1980s but never fixed by AT&T or Sun. See
+-	fixes all Bourne Shell bugs that have been documented since the
+	1980s but never have been fixed by AT&T or Sun. See
 
 		http://www.in-ulm.de/~mascheck/bourne/
 
 	for a list of well known problems of the old Bourne Shell.
 
 -	converted to use ANSI C prototypes to ensure type correctness.
+
+-	Enhanced to support full POSIX shell compliance. This includes many
+	features like $(cmd), $((arith-expr)), PS4, more shell parameter
+	expressions and the ability to support functions and shell variables
+	with the same name.
 
 -	converted from using sbrk(2) to malloc(3) to achieve portability
 	and allows to use libc routines that depend on malloc().
@@ -46,42 +53,109 @@ This version of the Bourne Shell adds the following features:
 	automatic string management as implemented in the original version
 	from 1977.
 
--	Adds the Commandline History editor I developed in 1982 and implemented 
-	in 1984 for my "bsh". Related new builtins:
+-	Adds the Commandline History Editor developed in 1982 and implemented 
+	in 1984 by J. Schilling for "bsh" (Berthold Shell from the UNOS based
+	VBertos operating system developed by H.Berthold AG in 1984). Related
+	new builtins:
 
-	-	history		list the current listory
+	-	history		list the current history
 	-	savehistory	save the history to $HOME/.history
+	-	map		manage key mapping for the editor, see below
 
--	Adds the advanced alias mechanism from my "bsh" that is better than the
-	alias implementation from ksh. Related new builtins:
+-	Adds the advanced alias mechanism from "bsh" that is more powerful than
+	the alias implementation from ksh. Related new builtins:
 
 	-	alias		add, change or list aliases
 	-	unalias		remove aliases
 
+	Note that this alias implementation implements persistent aliases that
+	are managed by $HOME/.globals and $PWD/.locals in the current working
+	directory.
+
+	Type "alias -raw" to list aliases in "raw" mode without quoting to
+	verify complex aliases.
+
 -	Adds a new builtin "dosh" that allows to write intrinsic "shell scripts"
 	via aliases.
 
--	Adds "pushd"/"popd"/"dirs" builtins
+-	Adds "hash commands" (commands that start with a '#' at column 1 of
+	a command line). This helps to manage aliases, that need quoting,
+	without a need to worry about how to define complex quoting. Complex
+	quoting for the single quote character would be needed when using the
+	"alias" command instead, as the typed text would pass the parser more
+	than once.
+	A typical usage uses this chain of commands:
 
--	Adds the "repeat" builtin
+	-	enter "#lh schily" to list the "schily" macro in raw mode
+		(without quoting) and enter it to the command history.
+
+	-	push the "cursor up" key to move to the previous entry in the
+		history.
+
+	-	edit the alias to create the new version of the alias.
+
+	-	push the "RETURN" key to enter the modified alias into the
+		persistent aliases.
+
+-	Adds "pushd"/"popd"/"dirs" builtins using the mechanism implemented for
+	"bsh" in 1985.
+
+-	Adds the "repeat" builtin as implemented for "bsh" in 1984.
 
 -	Makes the "umask" builtin aware of symbolic file modes
 
 -	Adds long options to the "set" builtin (see also "set -o" or "set +o")
 
+-	Adds support to access all 32 bits from the exit(2) code of programs.
+	Note that in 1989, when SVr4 has been created, a new syscall "waitid()"
+	was added that permits to access more than the low 8 bits from the exit
+	code. Either use the new shell parameters introduced for thus purpose
+	or enter "set -o fullexitcode" to switch off 8 bit masking for $?.
+
 -	Adds a mapper for e.g. cursor keys that works reliably in contrast to
 	what is known from ksh and bash that sometimes do not map strings and
-	thus insert raw key strings. Related new builtins:
+	thus insert raw cursor key strings. Related new builtins:
 
 	-	map		list and manipulate input mappings
 
--	Implements a runtime switch between the "pf" version behavior and the
-	standard behavior that allows to decide whether privileged commands
-	should be enabled or not. Use "set -P" to enable the "pf" shell
-	behavior.
-	
+-	Implements a runtime switch to switch between the "pf" version behavior
+	and the standard behavior. This allows to decide whether privileged
+	commands should be enabled or not. Use "set -P" or "set -o pfsh" to
+	enable the "pf" shell behavior and "set +P" or "set +o pfsh". Note that
+	the behavior implemented in "bosh" avoids the serurity problems that
+	the original Sun implementation suffers from which are caused by the
+	fact that calling "pfsh" from a user privileged to raise privileges
+	runs all typed commands as root.
 
-Note that this version of the Bourne Shell needs three additional shared
+-	The parser has been rewritten to avoid fork() calls and to make the
+	shell the parent of all children of a pipeline.
+
+-	The parser and interpreter have been rewritten to to use vfork()
+	where ever possible to enhance performance.
+
+-	The parser has been rewritten to make "echo bla | read var; echo $var"
+	to echo bla.
+
+-	Adds support for pipes on othe fd's than "1" by calling e.g.:
+
+		cmd 2| more
+
+-	The getopts(1) built-in now supports "--long" options that are not just
+	aliases for short options.
+
+-	The getopts(1) built-in now permits to enable Multics/UNIX-style 
+	"-long" options.
+
+-	Adds a POSIX compliant "printf(1)" built-in command.
+
+-	The find(1) command is now a shell built-in. This was done to
+	demonstrate how new and complex built-ins based on external code can
+	be integrated and to create an approach on how a "built-in command"
+	may be loaded on demand by using the new "builtin(1)" built-in command.
+
+-	New built-in commands: pgrp, killpg, repeat, errstr and builtin
+
+Note that this version of the Bourne Shell needs four additional shared
 libraries:
 
 -	libshedit	The Shell history editing library taken from "bsh"
@@ -92,21 +166,30 @@ libraries:
 -	libschily	A general portability library - a dependency from
 			libshedit
 
+-	libfind		A library that implements the find(1) command in a
+			reentrant way. and that is used by the "find"
+			built-in command of "bosh".
+
 These libraries are installed in /lib instead of /usr/lib to allow the
 Bourne Shell to be used on installations where / and /usr are on different
 filesystems. Install a file /root/.termcap with a minimum set of termcap
 entries to permit to use correct cursor mappings even when in single user
-mode with no /usr filesystem mounted.
+mode with no /usr filesystem mounted, as "/etc/termcap" usually is a symlink
+to "/usr/share/lib/termcap". Note that a file ".termcap" is delivered together
+with this shell.
 
 As these libraries are lazyloaded, they are not used in case the Bourne Shell
-just interprets shell scripts but is not in interactive mode.
+just interprets shell scripts but is not in interactive mode. As a result,
+the Schily Bourne Shell (bosh) does not need more shared libraries than the
+historic Bourne Shell seen on Sun Solaris.
 
 Note that a file /root/.shrc is delivered together with this shell. This file
 contains code to enable persistent shell aliases in interactive mode. Persistent
-aliases are kept in the files: $(HOME)/.globals and $(PWD)/.locals, to make
-directory specific local aliases safe, $(PWD)/.locals must be owned by the
+aliases are kept in the files: $HOME/.globals and $PWD/.locals, to make
+directory specific local aliases safe, $PWD/.locals must be owned by the
 effective UID of the shell process or enabled via the aliasowner flag. Call
-e.g. "bosh -o aliasowner=joerg" to allow a root shell to read the persistent
-aliases for user joerg.
+e.g. "su root bosh -o aliasowner=joerg" to tell a root shell (bosh) to read the
+persistent aliases for user joerg if $HOME points to the home directory for
+joerg.
 
 	Jörg Schilling

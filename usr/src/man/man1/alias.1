@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2007, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2016, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Portions Copyright (c) 1992, X/Open Company Limited All Rights Reserved
 .\" Portions Copyright (c) 1982-2007 AT&T Knowledge Ventures
@@ -49,7 +49,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH alias 1 "8 Apr 2008" "SunOS 5.11" "User Commands"
+.TH alias 1 "12 Sept 2016" "SunOS 5.11" "User Commands"
 .SH NAME
 alias, unalias \- create or remove a pseudonym or shorthand for a command
 or series of commands
@@ -69,6 +69,25 @@ or series of commands
 \fB/usr/bin/unalias\fR \fB-a\fR
 .fi
 
+.SS "\fBbosh\fR"
+.LP
+.B alias\ \c
+.RB [ \-a ]\ \c
+.RB [ \-e ]\ \c
+.RB [ \-g ]\ \c
+.RB [ \-l ]\ \c
+.RB [ \-p ]\ \c
+.RB [ \-r ]\ \c
+.RB [ \-\-raw ]\ \c
+.RI [ name [= value ]...]
+
+.B unalias\ \c
+.RB [ \-a ]\ \c
+.RB [ \-g ]\ \c
+.RB [ \-l ]\ \c
+.RB [ \-p ]\ \c
+.RI [ name... ]
+
 .SS "\fBcsh\fR"
 .LP
 .nf
@@ -83,7 +102,7 @@ or series of commands
 .SS "\fBksh\fR"
 .LP
 .nf
-\fBalias\fR [\fB-tx\fR] [\fIname\fR[= \fIvalue\fR].\|.\|.]
+\fBalias\fR [\fB-tx\fR] [\fIname\fR[=\fIvalue\fR].\|.\|.]
 .fi
 
 .LP
@@ -99,7 +118,7 @@ or series of commands
 .SS "\fBksh93\fR"
 .LP
 .nf
-\fBalias\fR [\fB-ptx\fR] [\fIname\fR[= \fIvalue\fR].\|.\|.]
+\fBalias\fR [\fB-ptx\fR] [\fIname\fR[=\fIvalue\fR].\|.\|.]
 .fi
 
 .LP
@@ -144,6 +163,245 @@ environment. The
 .B -a
 option removes all alias definitions from the
 current execution environment.
+
+.SS \fBbosh\fR
+.LP
+The
+.B alias
+command creates, redefines or lists existing alias definitions.
+An alias definition provides a string value that replaces a command name
+when it is encountered on the command line.
+.sp
+The
+.B alias
+command in the Bourne Shell supports temporary aliases (POSIX aliases)
+that affect only the current execution environment as well as
+persistent aliases that affect all interactive shells that are called after a
+persistent alias definition was entered or modified.
+.sp
+An argument in the form
+.I alias-name
+causes
+.B alias
+to list the related alias on stdout.
+An argument in the form
+.IR alias-name = value
+causes
+.B alias
+to define or redefine an alias or to push an alias definition on top of
+an old one.
+If no argument was given,
+.B alias
+lists all current alias definitions.
+.sp
+Alias definitions using the 
+.B alias
+shell built-in must be written with appropriate quoting so that it is
+suitable for reinput to the shell parser.
+.sp
+The
+.B # commands
+provide an alternate interface to define aliases that does not use the
+standard shell parser. It thus does not require quoting that goes beyond
+the quoting needed for the final command line in the expanded command.
+
+.sp
+When operating on temporary aliases (i.e. when neither
+.B \-g
+nor
+.B \-l
+have been specified), the
+.B alias
+command always pushes new definitions on top of older ones.
+This makes such alias definitions temporary in the
+global aliases name space by default, as required by the POSIX standard.
+The following options may be used to modify operation:
+.RS
+.TP
+.B \-a
+Define an alias definition that is expanded on all arguments of a
+command line and not only for command names. Use with care.
+.TP
+.B \-e
+List the everlasting version of the persistent alias definitions instead of
+listing the currently active definitions that may have been pushed on top
+of the persistent definitions.
+.TP
+.B \-g
+Define or list persistent global aliases that are stored in the file
+.B $HOME/.globals
+and read by interactive shells.
+When defining an alias with
+.B \-g
+in effect,
+.B alias
+by default modifies the current top level definition for global aliases.
+If there was no push operation before on the related alias,
+the current definition is made persistent by writing the definitions to
+.BR $HOME/.globals .
+The option
+.B \-g
+is not permitted if persistent global aliases are disabled (see
+.B set
+command below).
+.TP
+.B \-l
+Define or list persistent directory local aliases that are stored in the file
+.B .locals
+in the current directory and read by interactive shells.
+When defining an alias with
+.B \-l
+in effect,
+.B alias
+by default modifies the current top level definition for local aliases.
+If there was no push operation before on the related alias,
+the current definition is made persistent by writing the definitions to
+.B .locals
+in the current directory.
+The option
+.B \-l
+is not permitted if persistent local aliases are disabled (see
+.B set
+command below).
+.TP
+.B \-p
+When defining or redefining aliases,
+enforce a push operation even if the option
+.B \-g
+or
+.B \-l
+has been specified.
+In push mode, the new alias definition is pushed temporarily on
+top of existing definitions instead of modifying the current
+definition.
+.sp
+When listing aliases, this option implements compatibility to bash/ksh93
+and outputs aliases in a form that can be used as input to the shell
+to recreate the current aliases.
+With
+.B \-p
+in effect in list mode, the persistent definition and all pushed definitions
+are listed; otherwise only the current active definitions are listed.
+.TP
+.B \-r
+Reload persistent aliases after removing all current aliases.
+If persistent aliases are disabled, the effect is the same as with
+calling
+.BR "unalias \-a" .
+No arguments are allowed with this option.
+.TP
+.B \-R
+.PD 0
+.TP
+.B \-raw
+.TP
+.B \-\-raw
+.PD
+Output the listing in the raw format that is used in the persistent
+definition files
+.B $HOME/.globals
+and
+.BR .locals .
+This increases readability as the quoting needed for defining an alias
+with the
+.B alias
+command is omitted.
+.sp
+Aliases can be edited in the raw format using
+.BR "#\ commands" ,
+see the related section above.
+.LP
+Aliases are often used together with the
+.B dosh
+builtin in order to run small parameterized pseudo shell scripts.
+An alias to list files in the long format and to pipe the result into
+.BR more (1)
+could be implemented this way:
+.LP
+.B
+    alias lm='dosh '\e''ls -l "$@" | more'\e'' lm-alias'
+.RE
+
+The
+.B unalias
+command removes existing alias definitions.
+.sp
+The
+.B unalias
+command in the Bourne Shell supports temporary aliases (POSIX aliases)
+that affect only the current execution environment as well as
+persistent aliases that affect all interactive shells that are called after a
+persistent alias definition was entered or modified.
+.sp
+When operating on temporary aliases (i.e. when neither
+.B \-g
+nor
+.B \-l
+have been specified), all alias definitions for a specified
+.I alias-name
+are popped from the existing global definitions. No alias definition for the
+specified
+.I alias-name
+remains active, but the file with persistent alias definitions is not touched.
+This makes
+.B unalias
+compatible to the POSIX standard and able to support persistent aliases at the
+same time.
+The following options may be used to modify operation:
+.RS
+.TP
+.B \-a
+Remove all alias definitions from the current shell execution environment.
+No arguments are permitted with this option.
+As the persistent definitions are not touched, the persistent aliases
+may be restored by calling
+.BR "alias \-r" .
+.TP
+.B \-g
+Pop a single alias definition for
+.I alias-name
+from the global aliases.
+If the related alias definition is the last for
+.I alias-name
+(use
+.BI "alias \-p \-g" " alias-name
+to verify), remove it from the persistent global aliases that are stored
+in the file
+.B $HOME/.globals
+and read by interactive shells.
+.TP
+.B \-l
+Pop a single alias definition for
+.I alias-name
+from the local aliases.
+If the related alias definition is the last for
+.I alias-name
+(use
+.BI "alias \-p \-l" " alias-name
+to verify), remove it from the persistent local aliases that are stored
+in the file
+.B .locals
+in the current directory and read by interactive shells.
+.TP
+.B \-p
+When removing aliases,
+enforce a
+.B pop all
+operation even if the option
+.B \-g
+or
+.B \-l
+has been specified.
+In
+.B pop all
+mode, all alias definitions for a specified
+.I alias-name
+are popped from the existing definitions. No alias definition for the
+specified
+.I alias-name
+remains active, but the file with persistent alias definitions is not touched.
+.RE
+
 .SS "\fBcsh\fR"
 .sp
 .LP
@@ -581,7 +839,7 @@ alias definition, or an error occurred.
 See
 .BR attributes (5)
 for descriptions of the following attributes:
-.SS "\fBcsh, ksh\fR"
+.SS "\fBbosh, csh, ksh\fR"
 .sp
 
 .sp
@@ -618,6 +876,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
+.BR bosh (1),
 .BR csh (1),
 .BR ksh (1),
 .BR ksh93 (1),

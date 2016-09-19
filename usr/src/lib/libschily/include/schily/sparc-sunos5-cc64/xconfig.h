@@ -1,10 +1,10 @@
 /* xconfig.h.  Generated automatically by configure.  */
-/* @(#)xconfig.h.in	1.235 13/11/04 Copyright 1998-2013 J. Schilling */
+/* @(#)xconfig.h.in	1.254 16/09/03 Copyright 1998-2016 J. Schilling */
 /*
  *	Dynamic autoconf C-include code.
  *	Do not edit, this file has been created automatically.
  *
- *	Copyright (c) 1998-2013 J. Schilling
+ *	Copyright (c) 1998-2016 J. Schilling
  *
  *	The layout for this file is controlled by "configure".
  *	Switch off cstyle(1) checks for now.
@@ -45,6 +45,7 @@
 /* #undef HAVE_SYS_NDIR_H */	/* to use sys/ndir.h */
 #define HAVE_ALLOCA_H 1	/* if alloca.h exists */
 #define HAVE_MALLOC_H 1	/* if malloc.h exists */
+/* #undef HAVE_POSIX_MALLOC_H */ /* The Haiku include file for malloc()/valloc()/... */
 #define HAVE_SGTTY_H 1	/* if sgtty.h exists */
 #define HAVE_TERMIOS_H 1	/* to use POSIX termios.h */
 #define HAVE_TERMIO_H 1	/* to use SVR4 termio.h */
@@ -120,6 +121,7 @@
 #define HAVE_SYS_SELECT_H 1	/* if we may have sys/select.h nonstandard use for select() on some systems*/
 /* #undef NEED_SYS_SELECT_H */	/* if we need sys/select.h to use select() (this is nonstandard) */
 #define HAVE_NETDB_H 1		/* if we have netdb.h for get*by*() and rcmd() */
+/* #undef HAVE_ARPA_AIXRCMDS_H */	/* if we have arpa/aixrcmds.h for get*by*() and rcmd() */
 #define HAVE_SYS_SOCKET_H 1	/* if we have sys/socket.h for socket() */
 /* #undef NEED_SYS_SOCKET_H */	/* if we need sys/socket.h to use select() (this is nonstandard) */
 #define HAVE_NETINET_IN_H 1	/* if we have netinet/in.h */
@@ -184,8 +186,10 @@
 #define HAVE_REGEXPR_H 1		/* if we may include regexpr.h */
 
 #define HAVE_DLFCN_H 1		/* if we may include dlfcn.h */
-#define HAVE_LINK_H 1		/* if we may include linh.h */
+#define HAVE_LINK_H 1		/* if we may include link.h */
 /* #undef HAVE_DL_H */		/* if we may include dl.h */
+
+#define HAVE_EXPAT_H 1		/* if we may include expat.h */
 
 /*
  * Convert to SCHILY name
@@ -316,11 +320,14 @@
 #define HAVE_TCSETATTR 1		/* tcsetattr() is present in libc */
 #define HAVE_TCGETPGRP 1		/* tcgetpgrp() is present in libc */
 #define HAVE_TCSETPGRP 1		/* tcsetpgrp() is present in libc */
+#define HAVE_TCGETSID 1		/* tcgetsid() is present in libc */
 #define HAVE_WAIT 1		/* wait() is present in libc */
 #define HAVE_WAIT3 1		/* working wait3() is present in libc */
 #define HAVE_WAIT4 1		/* wait4() is present in libc */
+/* #undef HAVE_WAIT6 */		/* wait6() is present in libc */
 #define HAVE_WAITID 1		/* waitid() is present in libc */
 #define HAVE_WAITPID 1		/* waitpid() is present in libc */
+#define HAVE_WNOWAIT_WAITPID 1	/* waitpid() supports NOWAIT */
 /* #undef HAVE_CWAIT */		/* cwait() is present in libc */
 #define HAVE_GETHOSTID 1		/* gethostid() is present in libc */
 #define HAVE_GETHOSTNAME 1		/* gethostname() is present in libc */
@@ -413,6 +420,13 @@
 #define HAVE_ISNAN 1		/* isnan() is present in libc */
 #define HAVE_C99_ISINF 1		/* isinf() is present in math.h/libc */
 #define HAVE_C99_ISNAN 1		/* isnan() is present in math.h/libc */
+#define HAVE_GETC_UNLOCKED 1	/* getc_unlocked() is present in libc */
+#define HAVE_GETCHAR_UNLOCKED 1	/* getchar_unlocked() is present in libc */
+#define HAVE_PUTC_UNLOCKED 1	/* putc_unlocked() is present in libc */
+#define HAVE_PUTCHAR_UNLOCKED 1	/* putchar_unlocked() is present in libc */
+#define HAVE_FLOCKFILE 1		/* flockfile() is present in libc */
+#define HAVE_FUNLOCKFILE 1		/* funlockfile() is present in libc */
+#define HAVE_FTRYLOCKFILE 1	/* ftrylockfile() is present in libc */
 #define HAVE_FINITE 1		/* finite() is present in libc/ieeefp.h (SVr4) */
 #define HAVE_ISNAND 1		/* isnand() is present in libc/ieeefp.h (SVr4) */
 #define HAVE_RAND 1		/* rand() is present in libc */
@@ -450,12 +464,15 @@
 #define HAVE_STRCHR 1		/* strchr() is present in libc */
 #define HAVE_STRRCHR 1		/* strrchr() is present in libc */
 #define HAVE_STRSTR 1		/* strstr() is present in libc */
+#define HAVE_STRSPN 1		/* strspn() is present in libc */
+#define HAVE_STRCSPN 1		/* strcspn() is present in libc */
 #define HAVE_STRCASECMP 1		/* strcasecmp() is present in libc */
 #define HAVE_STRNCASECMP 1		/* strncasecmp() is present in libc */
 #define HAVE_BASENAME 1		/* basename() is present in libc */
 #define HAVE_DIRNAME 1		/* dirname() is present in libc */
 #define HAVE_PATHCONF 1		/* pathconf() is present in libc */
 #define HAVE_FPATHCONF 1		/* fpathconf() is present in libc */
+/* #undef HAVE_LPATHCONF */		/* lpathconf() is present in libc */
 #define HAVE_STRTOL 1		/* strtol() is present in libc */
 #define HAVE_STRTOLL 1		/* strtoll() is present in libc */
 #define HAVE_STRTOUL 1		/* strtoul() is present in libc */
@@ -532,6 +549,8 @@
 #define HAVE_WCSCHR 1		/* wcschr() is present in libc */
 #define HAVE_WCSRCHR 1		/* wcsrchr() is present in libc */
 #define HAVE_WCSSTR 1		/* wcsstr() is present in libc */
+#define HAVE_WCSSPN 1		/* wcsspn() is present in libc */
+#define HAVE_WCSCSPN 1		/* wcscspn() is present in libc */
 #define HAVE_WCWIDTH 1		/* wcwidth() is present in libc */
 #define HAVE_WCSWIDTH 1		/* wcswidth() is present in libc */
 #define HAVE_WCTYPE 1		/* wctype() is present in libc */
@@ -548,6 +567,18 @@
 #define HAVE_SETLOCALE 1		/* setlocale() is present in libc */
 #define HAVE_LOCALECONV 1		/* localeconv() is present in libc */
 #define HAVE_NL_LANGINFO 1		/* nl_langinfo() is present in libc */
+
+/* #undef HAVE_EXPAT_IN_LIBC */	/* whether XML_Parse() is in libc (needs no -lexpat) */
+#define HAVE_XML_PARSE 1		/* whether XML_Parse() libc or -lexpat */
+
+/* #undef HAVE_PCSC_IN_LIBC */	/* whether SCardEstablishContext() is in libc (needs no -lpcsclite) */
+/* #undef HAVE_SCARDESTABLISHCONTEXT */	/* whether SCardEstablishContext() libc or -lpcsclite */
+
+/* #undef HAVE_CRYPTO_IN_LIBC */	/* whether CRYPTO_free() is in libc (needs no -lcrypto) */
+#define HAVE_CRYPTO_FREE 1		/* whether CRYPTO_free() libc or -lcrypto */
+
+/* #undef HAVE_SSL_IN_LIBC */		/* whether SSL_free() is in libc (needs no -lssl) */
+#define HAVE_SSL_FREE 1		/* whether SSL_free() libc or -lssl */
 
 #define HAVE_SETBUF 1		/* setbuf() is present in libc */
 #define HAVE_SETVBUF 1		/* setvbuf() is present in libc */
@@ -587,7 +618,7 @@
 /* #undef HAVE_SHL_LOAD */		/* shl_load() is present in libc */
 /* #undef HAVE_SHL_UNLOAD */		/* shl_unload() is present in libc */
 /* #undef HAVE_SHL_GETHANDLE */	/* shl_gethandle() is present in libc */
-/* #undef HAVE_LOADLOBRARY */		/* LoadLibrary() as present in libc */
+/* #undef HAVE_LOADLIBRARY */		/* LoadLibrary() as present in libc */
 /* #undef HAVE_FREELIBRARY */		/* FreeLibrary() is present in libc */
 /* #undef HAVE_GETPROCADDRESS */	/* GetProcAddress() is present in libc */
 
@@ -630,6 +661,7 @@
 #define HAVE_WCRTOMB 1		/* wcrtomb() is present in libc */
 
 #define HAVE_PRINTF_J 1		/* *printf() in libc supports %jd */
+#define HAVE_PRINTF_Z 1		/* *printf() in libc supports %zd */
 #define HAVE_PRINTF_LL 1		/* *printf() in libc supports %lld */
 
 /*
@@ -652,7 +684,8 @@
 /*
  * Misc OS stuff
  */
-#ifndef	_MSC_VER		/* Dirty hack, better use C program not test */
+				/* Dirty hack, better use C program not test */
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
 #define HAVE__DEV_TTY 1		/* /dev/tty present */
 #define HAVE__DEV_NULL 1		/* /dev/null present */
 #define HAVE__DEV_ZERO 1		/* /dev/zero present */
@@ -770,6 +803,7 @@
 /* #undef HAVE_UNION_WAIT */		/* have union wait in wait.h */
 /* #undef USE_UNION_WAIT */		/* union wait in wait.h is used by default */
 #define HAVE_DIRENT_D_INO 1	/* have d_ino in struct dirent */
+/* #undef HAVE_DIRENT_D_TYPE */	/* have d_type in struct dirent */
 #define HAVE_DIR_DD_FD 1		/* have dd_fd in DIR * */
 /*
  * SCO UnixWare has st_atim.st__tim.tv_nsec but the st_atim.tv_nsec tests also
@@ -905,6 +939,10 @@
 
 /* #undef	HAVE_TYPE_GREG_T */	/* if <sys/frame.h> defines greg_t */
 
+#define	HAVE_TYPE_RLIM_T 1	/* if <sys/resource.h> defines rlim_t */
+#define	HAVE_TYPE_IDTYPE_T 1	/* if <sys/wait.h> defines idtype_t */
+#define	HAVE_TYPE_SIGINFO_T 1	/* if <sys/wait.h> defines siginfo_t */
+
 #define	HAVE_STACK_T 1		/* if <signal.h> defines stack_t */
 #define	HAVE_SIGINFO_T 1		/* if <signal.h> defines siginfo_t */
 
@@ -978,6 +1016,10 @@
 /* #undef HAVE_ACL_GET_ENTRY */	/* acl_get_entry() function */
 /* #undef HAVE_ACL_FROM_TEXT */	/* acl_from_text() function */
 /* #undef HAVE_ACL_TO_TEXT */		/* acl_to_text() function */
+/* #undef HAVE_ACL_TO_TEXT_NP */	/* acl_to_text_np() function */
+/* #undef HAVE_ACL_GET_BRAND_NP */	/* acl_get_brand_np() function */
+/* #undef HAVE_ACL_IS_TRIVIAL_NP */	/* acl_is_trivial_np() function */
+/* #undef HAVE_ACL_STRIP_NP */	/* acl_strip_np() function */
 /* #undef HAVE_ACL_FREE */		/* acl_free() function */
 /* #undef HAVE_ACL_DELETE_DEF_FILE */	/* acl_delete_def_file() function */
 /* #undef HAVE_ACL_EXTENDED_FILE */	/* acl_extended_file() function (Linux only)*/
@@ -1021,6 +1063,13 @@
 #	define	HAVE_NFSV4_ACL	1 /* NFSv4 ACL's present */
 #endif
 
+#if defined(HAVE_ACL_GET_BRAND_NP)
+#ifndef	HAVE_NFSV4_ACL
+#	define	HAVE_NFSV4_ACL	1 /* NFSv4 ACL's present */
+#endif
+#	define	HAVE_FREEBSD_NFSV4_ACL	1 /* FreeBSD NFSv4 ACL implementation */
+#endif
+
 /*
  * HP-UX ACL support.
  * Note: unfortunately, HP-UX has an (undocumented) acl() function in libc.
@@ -1061,6 +1110,7 @@
 /* #undef NO_USER_XCVT */		/* If we cannot define our own ecvt()/fcvt()/gcvt() */
 #define HAVE_DYN_ARRAYS 1		/* If the compiler allows dynamic sized arrays */
 #define HAVE_PRAGMA_WEAK 1		/* If the compiler allows #pragma weak */
+#define HAVE_LINK_WEAK 1		/* If the linker sees weak entries in other files */
 #define HAVE_STRINGIZE 1		/* If the cpp supports ANSI C stringize */
 /* #undef inline */
 

@@ -29,7 +29,11 @@ OBJS=	abbrev.o alias.o args.o bltin.o cmd.o ctype.o defs.o \
 	echo.o error.o expand.o fault.o func.o gmatch.o hash.o hashserv.o \
 	io.o jobs.o macro.o main.o msg.o name.o print.o pwd.o \
 	service.o sh_policy.o signames.o stak.o string.o \
-	test.o ulimit.o umask.o word.o xec.o
+	strexpr.o test.o ulimit.o umask.o word.o xec.o \
+	builtin.o find.o \
+	hashcmd.o hashtab.o \
+	optget.o printf.o 
+
 SRCS=	$(OBJS:%.o=%.c)
 
 #
@@ -61,16 +65,116 @@ iBCS2FLAG =	$($(MACH)_SPFLAG)
 #
 CPPFLAGS +=	-DSCHILY_INCLUDES	# Tell the code to use schily include files
 CPPFLAGS +=	-DBOURNE_SHELL		# Tell the code that we compile for sh/bosh
-CPPFLAGS +=	-DINTERACTIVE		# Include command line history editor
 CPPFLAGS +=	-DUSE_LARGEFILES	# Allow Large Files (> 2 GB)
-CPPFLAGS +=	-DUSE_NLS		# Enable native language support
+CPPFLAGS +=	-DUSE_NLS		# Enable NLS support in include/schily/*.h
+CPPFLAGS +=	-DUSE_JS_BOOL		# Allow to use schily/dbgmalloc.h
 #CPPFLAGS +=	-DNO_LOCALE		# Don't use setlocale()
 #CPPFLAGS +=	-DNO_WCHAR		# Don't use wide chars
-CPPFLAGS +=	-DDO_SYSALLOC		# Include the "alloc" debug builtin command
+#CPPFLAGS +=	-DNO_VFORK		# Don't use vfork()
+#CPPFLAGS +=	-DNO_WAITID		# Don't use waitid()
+
+CPPFLAGS +=	-DDO_SHRCFILES		# Enable rcfiles "/etc/sh.shrc" "$HOME/.shrc"
+CPPFLAGS +=	-DDO_HASHCMDS		# Include hash cmds (line starts with #)
+CPPFLAGS +=	-DDO_HOSTPROMPT		# Set PS1 to "hostname uname> "
+CPPFLAGS +=	-DDO_SYSALIAS		# Include alias/unalias builtin
+CPPFLAGS +=	-DDO_SYSALLOC		# Include the "alloc" debug builtin
+CPPFLAGS +=	-DDO_SYSREPEAT		# Include the "repeat" builtin
+CPPFLAGS +=	-DDO_SYSDOSH		# Include the "dosh" builtin
+CPPFLAGS +=	-DDO_SYSPUSHD		# Include pushd / popd / dirs builtin && cd -
+CPPFLAGS +=	-DDO_SYSTRUE		# Include true / false builtin
+CPPFLAGS +=	-DDO_ECHO_A		# Include support for echo \a
+CPPFLAGS +=	-DDO_EXEC_AC		# Include support for exec -c -a
+CPPFLAGS +=	-DDO_READ_R		# Include support for read -r
+CPPFLAGS +=	-DDO_SET_O		# Include support for set -o
+CPPFLAGS +=	-DDO_MULTI_OPT		# Include support for sh -v -x / set -v -x
+CPPFLAGS +=	-DDO_UMASK_S		# Include support for umask -S
+CPPFLAGS +=	-DDO_GETOPT_LONGONLY	# Include support for getopts "?900?(lo)"
+CPPFLAGS +=	-DDO_GETOPT_POSIX	# Fail: $OPTARG has optopt for optstr[0] = ':'
+CPPFLAGS +=	-DDO_GETOPT_UTILS	# Include support for -- in all builtins
+CPPFLAGS +=	-DDO_POSIX_FOR		# Support for i; do .... with semicolon
+CPPFLAGS +=	-DDO_POSIX_CASE		# Support for POSIX case with _(_ pat )
+CPPFLAGS +=	-DDO_POSIX_TYPE		# Report keywords as well
+CPPFLAGS +=	-DDO_PIPE_SEMI_SYNTAX_E	# Report a syntax error for "echo foo |;"
+CPPFLAGS +=	-DDO_PIPE_SYNTAX_E	# Report a syntax error for "echo foo |"
+CPPFLAGS +=	-DDO_EMPTY_SEMI		# Permit ";" and ";echo" as valid commands
+CPPFLAGS +=	-DDO_PIPE_PARENT	# Optimized pipes: Shell always parent
+CPPFLAGS +=	-DDO_ALLEXPORT		# Bugfix for set -a; read VAR / getopts
+CPPFLAGS +=	-DDO_O_APPEND		# Support O_APPEND instead of lseek() for >>
+CPPFLAGS +=	-DDO_EXPAND_DIRSLASH	# Expand dir*/ to dir/
+CPPFLAGS +=	-DDO_SIGNED_EXIT	# Allow negative exit(1) parameters
+CPPFLAGS +=	-DDO_DOT_SH_PARAMS	# Include support for ${.sh.xxx} parameters
+CPPFLAGS +=	-DDO_U_DOLAT_NOFAIL	# set -u; echo "$@" does not fail
+CPPFLAGS +=	-DDO_DUP_FAIL		# call failed() when dup() fails
+CPPFLAGS +=	-DDO_SUBSTRING		# Include support for substring operations
+CPPFLAGS +=	-DDO_POSIX_SPEC_BLTIN	# Only special builtins keep var assignment
+CPPFLAGS +=	-DDO_POSIX_FAILURE	# Only special builtins exit() on errors
+CPPFLAGS +=	-DDO_POSIX_CD		# cd/pwd/... implement POSIX -L/-P
+CPPFLAGS +=	-DDO_POSIX_EXIT		# Use POSIX exit codes 126/127
+CPPFLAGS +=	-DDO_POSIX_EXPORT	# Support export/readonly -p name=value
+CPPFLAGS +=	-DDO_POSIX_UNSET	# Support unset -f / -v
+CPPFLAGS +=	-DDO_POSIX_SET		# Let set -- clear the arguments
+CPPFLAGS +=	-DDO_POSIX_TEST		# Implement POSIX test -e & text -S
+CPPFLAGS +=	-DDO_POSIX_TRAP		# Implement POSIX trap -- for output
+CPPFLAGS +=	-DDO_POSIX_READ		# Implement POSIX read, mult. IFS -> ""
+CPPFLAGS +=	-DDO_POSIX_PARAM	# Implement support for ${10}
+#CPPFLAGS +=	-DDO_POSIX_SH		# set -o posix if basename(argv[0]) == "sh"
+					# This has precedence before DO_POSIX_PATH
+					# Define DO_POSIX_SH if you like to use
+					# bosh as /bin/sh on Linux.
+CPPFLAGS +=	-DDO_POSIX_PATH		# Implement set -o posix from PATH
+					# call smake 'CPPOPTX=-DPOSIX_BOSH_PATH=\"/bin/sh\"'
+					# or add CPPFLAGS += -DPOSIX_BOSH_PATH=\"/bin/sh\"
+					# to make a PATH auto set -o posix
+
+CPPFLAGS +=	-DDO_NOTSYM		# Implement POSIX NOT symbol (!)
+CPPFLAGS +=	-DDO_SELECT		# Implement ksh "select" feature
+CPPFLAGS +=	-DDO_IFS_HACK		# Implement an IFS hack similar to ksh88
+CPPFLAGS +=	-DDO_DOL_PAREN		# Implement POSIX $(...) command subst
+CPPFLAGS +=	-DDO_EXT_TEST		# Implement extended test features
+CPPFLAGS +=	-DDO_TILDE		# Include support for tilde expansion
+CPPFLAGS +=	-DDO_BGNICE		# Include support for set -o bgnice
+CPPFLAGS +=	-DDO_TIME		# Include support for set -o time
+CPPFLAGS +=	-DDO_FULLEXCODE		# Include support for set -o fullexitcode
+#					# The next feature is currently not POSIX
+#CPPOPTX +=	-DDO_EXIT_MODFIX	# Prevent $? == 0 whith exitcode & 0xFF
+CPPFLAGS +=	-DDO_CONT_BRK_FIX	# Fix the SYS III (1981) continue/break bug
+CPPFLAGS +=	-DDO_CONT_BRK_POSIX	# Exit 1 with break 0 / continue 0
+CPPFLAGS +=	-DDO_IOSTRIP_FIX	# Fix the SYS III (1981) cat 0<<-EOF bug
+CPPFLAGS +=	-DDO_NOCLOBBER		# Include support for set -o noclobber
+CPPFLAGS +=	-DDO_NOTIFY		# Include support for set -o notify
+CPPFLAGS +=	-DDO_FDPIPE		# Include support for 2| for stderr pipe
+CPPFLAGS +=	-DDO_KILL_L_SIG		# Include support for kill -l signo
+CPPFLAGS +=	-DDO_IFS_SEP		# First char in IFS is "$*" separator
+CPPFLAGS +=	-DDO_PS34		# Include support for PS3 and PS4
+CPPFLAGS +=	-DDO_PPID		# Include support for POSIX PPID
+CPPFLAGS +=	-DDO_LINENO		# Include support for POSIX LINENO
+CPPFLAGS +=	-DDO_ULIMIT_OPTS	# Add options to the ulimit(1) output
+CPPFLAGS +=	-DDO_SYSBUILTIN		# Include the "builtin" builtin
+CPPFLAGS +=	-DDO_SYSCOMMAND		# Include the "command" builtin
+#CPPFLAGS +=	-DDO_SYSATEXPR		# Include the "@" builtin
+CPPFLAGS +=	-DDO_SYSSYNC		# Include the "sync" builtin
+CPPFLAGS +=	-DDO_SYSPGRP		# Include the "pgrp" builtin
+CPPFLAGS +=	-DDO_SYSKILLPG		# Include the "killpg" builtin
+CPPFLAGS +=	-DDO_SYSERRSTR		# Include the "errstr" builtin
+CPPFLAGS +=	-DDO_SYSFIND		# Include the "find" builtin
+CPPFLAGS +=	-DDO_SYSPRINTF		# Include the "printf" builtin
+CPPFLAGS +=	-DDO_SYSLOCAL		# Include the "local" builtin
+
+#CPPFLAGS +=	-DPARSE_DEBUG		# Include debug code/messages for parser
 #CPPFLAGS +=	-DSTAK_DEBUG		# Include debug code for stak.c
+CPPFLAGS +=	-DTOSSGROWING_MACRO	# Make stak.c::tossgrowing() a macro
+#CPPFLAGS +=	-DTOSSCHECK		# Debug / verify magic in tossgrowing()
 #CPPFLAGS +=	-DARGS_RIGHT_TO_LEFT	# Evaluate var2=val2 var1=val1 left to right
 #CPPFLAGS +=	-DMY_GMATCH		# Enforce to use our local gmatch()
 					# instead if the gmatch() from -lgen
+
+#CPPFLAGS +=	-DSUN_EXPORT_BUG	# Export local readoly vars to scripts
+
+CPPFLAGS +=	-DINTERACTIVE		# Include command line history editor
+CPPFLAGS +=	-DINT_DOLMINUS		# Auto set -i for interactive shell
+
+#CPPFLAGS +=	-DNO_SIGSEGV		# Do not install a SIGSEGV handler for debug
+
 #
 # Standard UNIX #defines for the Bourne Shell:
 #
@@ -91,8 +195,8 @@ LDFLAGS += $(MAPFILES:%=-M%)
 # These dependencies are loaded when libshedit is loaded because we are in
 # interactive mode.
 #
-LAZYLIBS = $(ZLAZYLOAD) -lgen -lsecdb -lshedit $(ZNOLAZYLOAD)
-lint := LAZYLIBS = -lgen -lsecdb -lshedit -lschily
+LAZYLIBS = $(ZLAZYLOAD) -lgen -lsecdb -lshedit -lfind -lschily $(ZNOLAZYLOAD)
+lint := LAZYLIBS = -lgen -lsecdb -lshedit -lfind -lschily
 LDLIBS += $(LAZYLIBS)
 
 .KEEP_STATE:

@@ -205,6 +205,7 @@ MANFILES=				\
 	space.4				\
 	ssh_config.4			\
 	sshd_config.4			\
+	star.4				\
 	sulog.4				\
 	sysbus.4			\
 	sysidcfg.4			\

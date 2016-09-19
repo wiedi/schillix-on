@@ -1,4 +1,4 @@
-/* @(#)schily.h	1.111 13/10/30 Copyright 1985-2013 J. Schilling */
+/* @(#)schily.h	1.119 16/08/01 Copyright 1985-2016 J. Schilling */
 /*
  *	Definitions for libschily
  *
@@ -18,7 +18,7 @@
  *	include ctype.h past schily/schily.h as OpenBSD does not follow POSIX
  *	and defines EOF in ctype.h
  *
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -327,7 +327,11 @@ extern	int	on_comerr __PR((void (*fun)(int, void *), void *arg));
 /*PRINTFLIKE1*/
 extern	void	comerr __PR((const char *, ...)) __printflike__(1, 2);
 /*PRINTFLIKE2*/
+extern	void	xcomerr	 __PR((int, const char *, ...)) __printflike__(2, 3);
+/*PRINTFLIKE2*/
 extern	void	comerrno __PR((int, const char *, ...)) __printflike__(2, 3);
+/*PRINTFLIKE3*/
+extern	void	xcomerrno __PR((int, int, const char *, ...)) __printflike__(3, 4);
 /*PRINTFLIKE1*/
 extern	int	errmsg __PR((const char *, ...)) __printflike__(1, 2);
 /*PRINTFLIKE2*/
@@ -348,8 +352,14 @@ extern	char	*errmsgstr __PR((int));
 extern	void	fcomerr		__PR((FILE *, const char *, ...))
 					__printflike__(2, 3);
 /*PRINTFLIKE3*/
+extern	void	fxcomerr	__PR((FILE *, int, const char *, ...))
+					__printflike__(3, 4);
+/*PRINTFLIKE3*/
 extern	void	fcomerrno	__PR((FILE *, int, const char *, ...))
 					__printflike__(3, 4);
+/*PRINTFLIKE4*/
+extern	void	fxcomerrno	__PR((FILE *, int, int, const char *, ...))
+					__printflike__(4, 5);
 /*PRINTFLIKE2*/
 extern	int	ferrmsg		__PR((FILE *, const char *, ...))
 					__printflike__(2, 3);
@@ -357,8 +367,12 @@ extern	int	ferrmsg		__PR((FILE *, const char *, ...))
 extern	int	ferrmsgno	__PR((FILE *, int, const char *, ...))
 					__printflike__(3, 4);
 #ifdef	_SCHILY_VARARGS_H
+#define	COMERR_RETURN	0
+#define	COMERR_EXIT	1
+#define	COMERR_EXCODE	2
 /*PRINTFLIKE4*/
-extern	int	_comerr		__PR((FILE *, int, int, const char *, va_list));
+extern	int	_comerr		__PR((FILE *, int, int, int,
+						const char *, va_list));
 #endif
 #endif
 
@@ -410,10 +424,12 @@ extern	char	**saved_av __PR((void));
 extern	char	*saved_av0 __PR((void));
 extern	char	*searchfileinpath __PR((char *__name, int __mode,
 					int __file_mode, char *__path));
-#define	SIP_ANY_FILE	0x00
-#define	SIP_PLAIN_FILE	0x01
-#define	SIP_NO_PATH	0x10
-#define	SIP_TYPE_MASK	0x0F
+#define	SIP_ANY_FILE	0x00	/* Search for any file type		*/
+#define	SIP_PLAIN_FILE	0x01	/* Search for plain files - not dirs	*/
+#define	SIP_NO_PATH	0x10	/* Do not do PATH search		*/
+#define	SIP_ONLY_PATH	0x20	/* Do only PATH search			*/
+#define	SIP_NO_STRIPBIN	0x40	/* Do not strip "/bin" from PATH elem.	*/
+#define	SIP_TYPE_MASK	0x0F	/* Mask file type related bits		*/
 
 #ifndef	seterrno
 extern	int	seterrno __PR((int));
@@ -435,16 +451,24 @@ extern	void	raisecond __PR((const char *, long));
 extern	int	sprintf __PR((char *, const char *, ...));
 #endif
 extern	char	*strcatl __PR((char *, ...));
+#ifdef	FOUND_SIZE_T
+extern	size_t	strlcatl __PR((char *, size_t, ...));
+#endif
 extern	int	streql __PR((const char *, const char *));
 #ifdef	_SCHILY_WCHAR_H
 extern	wchar_t	*wcscatl __PR((wchar_t *, ...));
+#ifdef	FOUND_SIZE_T
+extern	size_t	wcslcatl __PR((wchar_t *, size_t, ...));
+#endif
 extern	int	wcseql __PR((const wchar_t *, const wchar_t *));
 #endif
 #ifdef	va_arg
 extern	int	format __PR((void (*)(char, long), long, const char *,
 							va_list));
+extern	int	fprformat __PR((long, const char *, va_list));
 #else
 extern	int	format __PR((void (*)(char, long), long, const char *, void *));
+extern	int	fprformat __PR((long, const char *, void *));
 #endif
 
 extern	int	ftoes __PR((char *, double, int, int));
@@ -454,6 +478,11 @@ extern	int	qftoes __PR((char *, long double, int, int));
 extern	int	qftofs __PR((char *, long double, int, int));
 #endif
 
+/*PRINTFLIKE1*/
+extern	int	js_error __PR((const char *, ...)) __printflike__(1, 2);
+/*PRINTFLIKE2*/
+extern	int	js_dprintf	__PR((int, const char *, ...))
+							__printflike__(2, 3);
 #ifdef	EOF	/* stdio.h has been included */
 /*PRINTFLIKE2*/
 extern	int	js_fprintf	__PR((FILE *, const char *, ...))
@@ -510,6 +539,12 @@ extern	int	_openfd64	__PR((const char *, int));
 
 #ifndef	NO_SCHILY_PRINT		/* Define to disable *printf() redirects */
 #ifdef	SCHILY_PRINT
+#ifdef	__never__
+#undef	error
+#define	error		js_error
+#endif
+#undef	dprintf
+#define	dprintf		js_dprintf
 #undef	fprintf
 #define	fprintf		js_fprintf
 #undef	printf
@@ -553,6 +588,7 @@ extern	int	_openfd64	__PR((const char *, int));
 #define	fspawnl		js_fspawnl
 #endif
 
+extern	int	js_mexval	__PR((int exval));
 #ifdef	FOUND_SIZE_T
 extern	void	*js_malloc	__PR((size_t size, char *msg));
 extern	void	*js_realloc	__PR((void *ptr, size_t size, char *msg));
@@ -569,6 +605,7 @@ extern	char	*js_savestr	__PR((const char *s));
 #define	JM_EXIT		((sigjmps_t *)-1) /* Call comexit(errno) instead */
 #define	JM_RETURN	((sigjmps_t *)0)  /* Return instead		 */
 
+extern	int	js_jmexval	__PR((int exval));
 #ifdef	FOUND_SIZE_T
 extern	void	*js_jmalloc	__PR((size_t size, char *msg, sigjmps_t *jmp));
 extern	void	*js_jrealloc	__PR((void *ptr, size_t size, char *msg,
@@ -576,6 +613,7 @@ extern	void	*js_jrealloc	__PR((void *ptr, size_t size, char *msg,
 #endif
 extern	char	*js_jsavestr	__PR((const char *s, sigjmps_t *jmp));
 
+extern	int	js_fjmexval	__PR((int exval));
 #ifdef	EOF	/* stdio.h has been included */
 #ifdef	FOUND_SIZE_T
 extern	void	*js_fjmalloc	__PR((FILE *f, size_t size, char *msg,
@@ -587,13 +625,16 @@ extern	char	*js_fjsavestr	__PR((FILE *f, const char *s, sigjmps_t *jmp));
 #endif	/* EOF */
 #endif	/* _SCHILY_JMPDEFS_H */
 
+#define	___mexval	js_mexval
 #define	___malloc	js_malloc
 #define	___realloc	js_realloc
 #define	___savestr	js_savestr
+#define	__jmexval	js_jmexval
 #define	__jmalloc	js_jmalloc
 #define	__jrealloc	js_jrealloc
 #define	__jsavestr	js_jsavestr
 #define	__fjmalloc	js_fjmalloc
+#define	__fjmexval	js_fjmexval
 #define	__fjrealloc	js_fjrealloc
 #define	__fjsavestr	js_fjsavestr
 

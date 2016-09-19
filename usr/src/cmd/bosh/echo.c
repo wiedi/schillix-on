@@ -35,13 +35,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2012 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)echo.c	1.9 12/03/12 2008-2012 J. Schilling
+ * @(#)echo.c	1.16 16/07/15 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)echo.c	1.9 12/03/12 2008-2012 J. Schilling";
+	"@(#)echo.c	1.16 16/07/15 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -50,19 +50,18 @@ static	UConst char sccsid[] =
 
 #define	exit(a)	flushb(); return (a)
 
-extern int exitval;
-
-int echo	__PR((int argc, unsigned char **argv));
+	int	echo		__PR((int argc, unsigned char **argv));
+unsigned char	*escape_char	__PR((unsigned char *cp, unsigned char *res,
+							int echomode));
 
 int
 echo(argc, argv)
-int argc;
-unsigned char **argv;
+	int		argc;
+	unsigned char	**argv;
 {
 	unsigned char	*cp;
-	int	i, wd;
+	int	i;
 	int	nflg = 0;
-	int	j;
 	int	len;
 	wchar_t	wc;
 
@@ -131,51 +130,13 @@ unsigned char **argv;
 				}
 
 				if (wc == '\\') {
-					switch (*++cp) {
-					case 'b':
-						prc_buff('\b');
-						continue;
-					case 'c':
+					unsigned char	cc;
+
+					cp = escape_char(cp, &cc, TRUE);
+					if (cp == NULL) {
 						exit(0);
-
-					case 'f':
-						prc_buff('\f');
-						continue;
-
-					case 'n':
-						prc_buff('\n');
-						continue;
-
-					case 'r':
-						prc_buff('\r');
-						continue;
-
-					case 't':
-						prc_buff('\t');
-						continue;
-
-					case 'v':
-						prc_buff('\v');
-						continue;
-
-					case '\\':
-						prc_buff('\\');
-						continue;
-					case '0':
-						j = wd = 0;
-						while ((*++cp >= '0' &&
-						    *cp <= '7') && j++ < 3) {
-							wd <<= 3;
-							wd |= (*cp - '0');
-						}
-						prc_buff(wd);
-						--cp;
-						continue;
-
-					default:
-						cp--;
 					}
-					prc_buff(*cp);
+					prc_buff(cc);
 					continue;
 				} else {
 					for (; len > 0; len--)
@@ -192,4 +153,57 @@ unsigned char **argv;
 		}
 		exit(0);
 	}
+}
+
+unsigned char *
+escape_char(cp, res, echomode)
+	unsigned char	*cp;
+	unsigned char	*res;
+	int		echomode;	/* echo mode vs. C mode */
+{
+	int		j;
+	int		wd;
+	unsigned char	c;
+
+	switch (*++cp) {
+#if	defined(DO_SYSPRINTF) || defined(DO_ECHO_A)
+	case 'a':	c = ALERT; break;
+#endif
+	case 'b':	c = '\b'; break;
+	case 'c':	if (echomode)
+				return (NULL);
+			goto norm;
+	case 'f':	c = '\f'; break;
+	case 'n':	c = '\n'; break;
+	case 'r':	c = '\r'; break;
+	case 't':	c = '\t'; break;
+	case 'v':	c = '\v'; break;
+	case '\\':	c = '\\'; break;
+
+	case '0':
+		j = wd = 0;
+	oct:
+		while ((*++cp >= '0' &&
+		    *cp <= '7') && j++ < 3) {
+			wd <<= 3;
+			wd |= (*cp - '0');
+		}
+		c = wd;
+		--cp;
+		break;
+
+	case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7':
+		if (!echomode) {
+			j = 1;
+			wd = (*cp - '0');
+			goto oct;
+		}
+
+	default:
+	norm:
+		c = *--cp;
+	}
+	*res = c;
+	return (cp);
 }

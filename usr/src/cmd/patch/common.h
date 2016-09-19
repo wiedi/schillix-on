@@ -1,10 +1,25 @@
-/* @(#)common.h	1.15 11/05/06 2011 J. Schilling */
+/* @(#)common.h	1.24 16/09/16 2011-2016 J. Schilling */
 /*
  *	Copyright (c) 1986, 1988 Larry Wall
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
- *	This program may be copied as long as you don't try to make any
- *	money off of it, or pretend that you wrote it.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition is met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #define	DEBUGGING
@@ -22,10 +37,20 @@
 #include <schily/ctype.h>
 #include <schily/signal.h>
 #include <schily/utypes.h>
+#include <schily/errno.h>
 #include <schily/nlsdefs.h>
 #ifndef	NO_SCHILY_PRINT
 #include <schily/schily.h>
 #endif
+
+#define	CH	(char)
+#define	UCH	(unsigned char)
+#define	C	(char *)
+#define	UC	(unsigned char *)
+#define	CP	(char **)
+#define	UCP	(unsigned char **)
+#define	CPP	(char ***)
+#define	UCPP	(unsigned char ***)
 
 #ifndef	NO_FLEXNAMES
 /*
@@ -54,9 +79,7 @@
 
 /* constants */
 
-#define	MAXHUNKSIZE	100000		/* is this enough lines? */
 #define	INITHUNKMAX	125		/* initial dynamic allocation size */
-#define	MAXLINELEN	8192
 #define	BUFFERSIZE	8192
 #define	SCCSPREFIX	"s."
 #define	GET		"get -e %s"
@@ -99,7 +122,8 @@ EXT char **Argv_last;
 EXT struct stat file_stat;		/* file statistics area */
 EXT int filemode;
 
-EXT char buf[MAXLINELEN];		/* general purpose buffer */
+EXT char *buf;				/* general purpose buffer */
+EXT size_t bufsize;			/* current size of buf */
 EXT FILE *ofp;				/* output file pointer */
 EXT FILE *rejfp;			/* reject file pointer */
 
@@ -140,6 +164,7 @@ EXT int strippath;			/*   -p#		*/
 EXT bool canonicalize;			/*   -l			*/
 
 EXT bool do_posix;			/* POSIX vers. old patch behavior */
+EXT bool do_wall;			/* Old Larry patch-2.0 compatibility */
 EXT bool wall_plus;			/* Permit enhancements from old patch */
 EXT bool do_backup;			/* Create backup from original file */
 
@@ -149,8 +174,19 @@ EXT bool do_backup;			/* Create backup from original file */
 #define	NEW_CONTEXT_DIFF	4
 #define	UNI_DIFF		5
 
+#define	EXIT_OK			0
+#define	EXIT_REJECT		1
+#define	EXIT_FAIL		2
+#define	EXIT_SIGNAL		3
+
 EXT int diff_type;			/*   -c/-e/-n/-u	*/
 
 EXT char *revision;			/* prerequisite revision, if any */
 
+EXT LINENUM p_repl_lines;		/* From pch.c # of replacement lines */
+
 extern	void	my_exit __PR((int status));
+
+#ifdef	HAVE_GETDELIM
+#define	fgetaline(f, bufp, lenp)	getdelim(bufp, lenp, '\n', f)
+#endif

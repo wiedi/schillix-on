@@ -1,8 +1,8 @@
-/* @(#)mconfig.h	1.68 10/08/27 Copyright 1995-2010 J. Schilling */
+/* @(#)mconfig.h	1.71 15/08/14 Copyright 1995-2015 J. Schilling */
 /*
  *	definitions for machine configuration
  *
- *	Copyright (c) 1995-2010 J. Schilling
+ *	Copyright (c) 1995-2015 J. Schilling
  *
  *	This file must be included before any other file.
  *	If this file is not included before stdio.h you will not be
@@ -19,6 +19,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -172,6 +174,15 @@ extern "C" {
 #ifdef	NO_SCANSTACK
 #	ifdef	HAVE_SCANSTACK
 #	undef	HAVE_SCANSTACK
+#	endif
+#endif
+
+/*
+ * This is the global switch to deactivate using #pragma weak
+ */
+#ifdef	NO_PRAGMA_WEAK
+#	ifdef	HAVE_PRAGMA_WEAK
+#	undef	HAVE_PRAGMA_WEAK
 #	endif
 #endif
 
@@ -517,11 +528,26 @@ extern "C" {
 #	define	near
 #endif
 
+/*
+ * Is there a solution for /dev/tty and similar?
+ */
+#ifdef	HAVE__DEV_NULL
+#	define	DEV_NULL		"/dev/null"
+#else
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#	define	DEV_NULL		"NUL"
+#else
+/*
+ * What to do here?
+ */
+#endif
+#endif
+
 #ifdef	DBG_MALLOC
 /*
  * We need to include this here already in order to make sure that
  * every program that is based on mconfig.h will include schily/dbgmalloc.h
- * in case that we specify -DDBD_MALLOC
+ * in case that we specify -DDBG_MALLOC
  */
 #include <schily/dbgmalloc.h>
 #endif

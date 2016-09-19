@@ -1,13 +1,13 @@
-/* @(#)abbrev.c	1.53 13/09/26 Copyright 1985-2013 J. Schilling */
+/* @(#)abbrev.c	1.69 16/08/09 Copyright 1985-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)abbrev.c	1.53 13/09/26 Copyright 1985-2013 J. Schilling";
+	"@(#)abbrev.c	1.69 16/08/09 Copyright 1985-2016 J. Schilling";
 #endif
 /*
  *	Abbreviation symbol handling
  *
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2016 J. Schilling
  *
  *	.global & .local alias abbreviations are handled here
  *
@@ -16,7 +16,7 @@ static	UConst char sccsid[] =
  *						is trusted
  *		ab_getaltoname(tab)		Get name of alternate file
  *						owner that is trusted
- *		ab_setaltowner(tab, uname)	Set alternate file owner that
+ *		ab_setaltowner(tab, usrname)	Set alternate file owner that
  *						is trusted
  *		ab_read(tab, fname)		Read new abbrev table from fname
  *		ab_use(tab, fname)		Use new abbrev table from fname
@@ -87,6 +87,7 @@ static	UConst char sccsid[] =
 #include <schily/fcntl.h>
 #include <schily/stat.h>
 #include <schily/pwd.h>
+#include <schily/shedit.h>
 
 LOCAL	char	sn_badtab[]	= "bad_astab_number";
 LOCAL	char	sn_no_mem[]	= "no_memory";
@@ -96,8 +97,10 @@ LOCAL	char	sn_badfile[]	= "bad_sym_file";
  * The Bourne shell does not use stdio, so we need to redefine some functions.
  * Be sure to first #undef things that might be #define'd in schily/schily.h.
  */
+#undef	filemopen
+#define	filemopen(n, m, c)	open(n, m, c)
 #undef	fileopen
-#define	fileopen(n, m)	open(n, m, 0666)
+#define	fileopen(n, m)	open(n, m, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 #define	fileread	read
 #undef	filestat
 #define	filestat	fstat
@@ -115,7 +118,16 @@ LOCAL	char	sn_badfile[]	= "bad_sym_file";
 
 #define	ctlc		intrcnt
 
-#else
+#ifdef	HAVE_SNPRINTF
+	/*
+	 * Try to avoid js_snprintf() in the Bourne Shell
+	 * to allow to lazyload libschily
+	 */
+#undef	snprintf
+#define	js_snprintf	snprintf
+#endif
+
+#else	/* !BOURNE_SHELL */
 #include <schily/stdio.h>
 #include <schily/string.h>
 #include <schily/stdlib.h>
@@ -129,7 +141,7 @@ LOCAL	char	sn_badfile[]	= "bad_sym_file";
 #include <schily/patmatch.h>
 
 #define	open_failed(f)	(f == (FILE *)0)
-#endif
+#endif	/* !BOURNE_SHELL */
 
 /*
  * Replacement node entry, one is allocated for each abbrev/alias replacement
@@ -177,44 +189,49 @@ typedef struct abtab {
 LOCAL	abtab_t	ab_tabs[ABTABS]	= {	{0, 0, 0, 0, 0, (uid_t)-1},
 					{0, 0, 0, 0, 0, (uid_t)-1}};
 
+extern	abidx_t	deftab;		/* Variable is defined in hashcmd.c */
+
 LOCAL	abtab_t	*_ab_down	__PR((abidx_t tab));
 LOCAL	abent_t	*_ab_lookup	__PR((abtab_t *ap, char *name, BOOL new));
 LOCAL	abent_t	*_ab_newnode	__PR((void));
 LOCAL	void	_ab_output	__PR((abtab_t *ap));
-LOCAL	void	_ab_print	__PR((abidx_t tab, char *name, FILE_p f,
+LOCAL	BOOL	_ab_print	__PR((abidx_t tab, char *name, FILE_p f,
 								int aflags));
 LOCAL	void	_ab_dump	__PR((abent_t *np, FILE_p f, int aflags));
 LOCAL	void	_ab_list	__PR((abent_t *np, FILE_p f, int aflags));
-LOCAL	void	_ab_match	__PR((abent_t *np, FILE_p f, int aflags,
+LOCAL	BOOL	_ab_match	__PR((abent_t *np, FILE_p f, int aflags,
 				char *pattern, int *aux, int alt, int *state));
 LOCAL	void	_ab_close	__PR((abent_t *np, abidx_t tab));
 LOCAL	char	*ab_beginword	__PR((char *p, abtab_t *ap));
 LOCAL	char	*ab_endword	__PR((char *p, abtab_t *ap));
 LOCAL	char	*ab_endline	__PR((char *p, abtab_t *ap));
 LOCAL	BOOL	ab_inblock	__PR((abidx_t tab, char *p));
+LOCAL	time_t	ab_statmtime	__PR((struct stat *sp));
 LOCAL	time_t	ab_filemtime	__PR((char *fname));
 EXPORT	void	ab_read		__PR((abidx_t tab, char *fname));
 EXPORT	void	ab_sname	__PR((abidx_t tab, char *fname));
 EXPORT	char	*ab_gname	__PR((abidx_t tab));
 EXPORT	void	ab_use		__PR((abidx_t tab, char *fname));
 EXPORT	void	ab_close	__PR((abidx_t tab));
-EXPORT	void	ab_insert	__PR((abidx_t tab, char *name, char *val,
+EXPORT	BOOL	ab_insert	__PR((abidx_t tab, char *name, char *val,
 								int aflags));
-EXPORT	void	ab_push		__PR((abidx_t tab, char *name, char *val,
+EXPORT	BOOL	ab_push		__PR((abidx_t tab, char *name, char *val,
 								int aflags));
 LOCAL	void	_ab_delete	__PR((abent_t *np, abidx_t tab, int aflags));
-EXPORT	void	ab_delete	__PR((abidx_t tab, char *name, int aflags));
+EXPORT	BOOL	ab_delete	__PR((abidx_t tab, char *name, int aflags));
 LOCAL	void	_ab_deleteall	__PR((abent_t *np, abidx_t tab, int aflags));
 EXPORT	void	ab_deleteall	__PR((abidx_t tab, int aflags));
 EXPORT	char	*ab_value	__PR((abidx_t tab, char *name, void **seen,
 								int aflags));
 EXPORT	void	ab_dump		__PR((abidx_t tab, FILE_p f, int aflags));
-EXPORT	void	ab_list		__PR((abidx_t tab, char *pattern, FILE_p f,
+EXPORT	BOOL	ab_list		__PR((abidx_t tab, char *pattern, FILE_p f,
 								int aflags));
 LOCAL	void	ab_eupdated	__PR((abtab_t *ap));
 LOCAL	void	_ab_pr		__PR((abent_t *np, FILE_p f, int aflags));
 LOCAL	void	_ab_prposix	__PR((abent_t *np, FILE_p f, int aflags));
+#ifdef	INTERACTIVE
 LOCAL	void	_ab_phist	__PR((abent_t *np, FILE_p f, int aflags));
+#endif
 #ifdef	BOURNE_SHELL
 LOCAL	off_t	filesize	__PR((int f));
 LOCAL	BOOL	any_match	__PR((char *s));
@@ -313,6 +330,7 @@ _ab_output(ap)
 {
 	register FILE_p f;
 		time_t	mtime;
+		struct stat sb;
 
 #ifdef DEBUG
 	berror("updating: %s", ap->at_fname);
@@ -327,7 +345,12 @@ _ab_output(ap)
 		ab_eupdated(ap);
 		return;
 	}
-	f = fileopen(ap->at_fname, for_wct);
+	if (lstat(ap->at_fname, &sb) < 0) /* Check whether a symlink */
+		/* EMPTY */;		/* No file yet		   */
+	else if (S_ISLNK(sb.st_mode))
+		return;
+
+	f = filemopen(ap->at_fname, for_wct, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (open_failed(f)) {
 		raisecond(sn_badfile, (long)ap->at_fname);
 	} else {
@@ -351,15 +374,22 @@ _ab_output(ap)
 /*
  * Print a single name/value replacement entry to an open file.
  */
-LOCAL void
+LOCAL BOOL
 _ab_print(tab, name, f, aflags)
 	abidx_t	tab;
 	char	*name;
 	FILE_p	f;
 	int	aflags;		/* should push into History? */
 {
-	_ab_list(_ab_lookup(_ab_down(tab), name, FALSE), f, aflags);
+	register abent_t *np;
+
+	np = _ab_lookup(_ab_down(tab), name, FALSE);
+	if (np == NULL)
+		return (FALSE);
+
+	_ab_list(np, f, aflags);
 	fflush(f);
+	return (TRUE);
 }
 
 /*
@@ -424,7 +454,7 @@ _ab_list(np, f, aflags)
 }
 
 
-LOCAL void
+LOCAL BOOL
 _ab_match(np, f, aflags, pattern, aux, alt, state)
 	register abent_t *np;
 		FILE_p	f;
@@ -438,25 +468,31 @@ _ab_match(np, f, aflags, pattern, aux, alt, state)
 #ifndef	BOURNE_SHELL
 	register char	*p;
 #endif
+	BOOL		ok;
 
 	if (np == AB_NULL)
-		return;
-	_ab_match(np->ab_next, f, aflags, pattern, aux, alt, state);
+		return (FALSE);
+	ok = _ab_match(np->ab_next, f, aflags, pattern, aux, alt, state);
 	if (ctlc)
-		return;
+		return (FALSE);
 	tp = np;
 	while (tp->ab_push != AB_NULL)
 		tp = tp->ab_push;
 #ifdef	BOURNE_SHELL
-	if (gmatch(tp->ab_name, pattern))
+	if (gmatch(tp->ab_name, pattern)) {
 		_ab_list(tp, f, aflags);
+		return (TRUE);
+	}
 #else
 	p = (char *)patmatch((unsigned char *)pattern, aux,
 		(unsigned char *)tp->ab_name, 0, strlen(tp->ab_name),
 		alt, state);
-	if (p && *p == '\0')
+	if (p && *p == '\0') {
 		_ab_list(tp, f, aflags);
+		return (TRUE);
+	}
 #endif
+	return (ok);
 }
 
 /*
@@ -550,6 +586,15 @@ ab_inblock(tab, p)
 }
 
 LOCAL time_t
+ab_statmtime(sp)
+	struct stat	*sp;
+{
+	if (sp->st_mtime == (time_t)0)
+		sp->st_mtime++;
+	return (sp->st_mtime);
+}
+
+LOCAL time_t
 ab_filemtime(fname)
 	char	*fname;
 {
@@ -558,9 +603,7 @@ ab_filemtime(fname)
 	if (stat(fname, &sb) < 0)
 		return ((time_t)0);
 
-	if (sb.st_mtime == (time_t)0)
-		sb.st_mtime++;
-	return (sb.st_mtime);
+	return (ab_statmtime(&sb));
 }
 
 /*
@@ -609,19 +652,19 @@ static	char oname[12];
  * shell user.
  */
 EXPORT void
-ab_setaltowner(tab, uname)
+ab_setaltowner(tab, usrname)
 	abidx_t	tab;
-	char	*uname;
+	char	*usrname;
 {
 	register abtab_t *ap = _ab_down(tab);
 	register struct passwd *pw;
-	register char	*p = uname;
+	register char	*p = usrname;
 
-	if (*uname == '\0') {
+	if (*usrname == '\0') {
 		ap->at_altowner = (uid_t)-1;
 		return;
 	}
-	pw = getpwnam(uname);
+	pw = getpwnam(usrname);
 	endpwent();
 
 	if (pw) {
@@ -634,7 +677,7 @@ ab_setaltowner(tab, uname)
 		if (*p++ > '9')
 			return;
 	}
-	ap->at_altowner = atoi(uname);
+	ap->at_altowner = atoi(usrname);
 }
 
 /*
@@ -662,21 +705,32 @@ ab_read(tab, fname)
 
 	if (fname == NULL)
 		return;
-	f = fileopen(fname, for_ru);
-	if (open_failed(f)) {
-		ap->at_blk = NULL;
+
+	if (lstat(fname, &sb) < 0)	/* Check whether a symlink */
+		return;			/* No file to open, return */
+	if (S_ISLNK(sb.st_mode))
 		return;
-	}
+
+	f = fileopen(fname, for_ru);
+	if (open_failed(f))
+		return;
+
 	if (filestat(f, &sb) >= 0) {
-		if (geteuid() != sb.st_uid &&
-		    (ap->at_altowner == (uid_t)-1 ||
+		if (geteuid() == sb.st_uid) {
+			if (sb.st_mode & (S_IWGRP|S_IWOTH)) {
+				fclose(f);
+				return;
+			}
+		} else if ((ap->at_altowner == (uid_t)-1 ||
 		    ap->at_altowner != sb.st_uid)) {
 			fclose(f);
 			return;
 		}
+		ap->at_mtime = ab_statmtime(&sb);
 	}
 	fsize = filesize(f);
-	ap->at_mtime = ab_filemtime(fname);
+	if (ap->at_mtime == 0)
+		ap->at_mtime = ab_filemtime(fname);
 #ifdef DEBUG
 	berror("ab_read(%d, %s)-> %d %.24s", tab, fname,
 			ap->at_mtime, ctime(&ap->at_mtime));
@@ -783,7 +837,7 @@ ab_close(tab)
 /*
  * Insert a new name/value pair into an abbreviation/alias table.
  */
-EXPORT void
+EXPORT BOOL
 ab_insert(tab, name, val, aflags)
 	abidx_t	tab;
 	char	*name;
@@ -794,6 +848,8 @@ ab_insert(tab, name, val, aflags)
 	register abent_t *np;
 
 	np = _ab_lookup(ap, name, TRUE);
+	if (np == NULL)
+		return (FALSE);
 	if (np->ab_value != NULL && !ab_inblock(tab, np->ab_value))
 		free(np->ab_value);
 	np->ab_value = val;
@@ -807,13 +863,14 @@ ab_insert(tab, name, val, aflags)
 	 */
 	if (np->ab_push == AB_NULL)
 		_ab_output(ap);
+	return (TRUE);
 }
 
 
 /*
  * Push a new name/value pair on top of an abbreviation/alias table entry.
  */
-EXPORT void
+EXPORT BOOL
 ab_push(tab, name, val, aflags)
 	abidx_t	tab;
 	char	*name;
@@ -825,7 +882,11 @@ ab_push(tab, name, val, aflags)
 	register abent_t	*new;
 
 	np = _ab_lookup(ap, name, TRUE);
+	if (np == NULL)
+		return (FALSE);
 	new = _ab_newnode();		/* Get space for node to push	*/
+	if (new == NULL)
+		return (FALSE);
 	new->ab_name = np->ab_name;	/* Dup to allow to list all	*/
 	new->ab_value = np->ab_value;	/* First save old node data	*/
 	new->ab_flags = np->ab_flags;
@@ -836,6 +897,7 @@ ab_push(tab, name, val, aflags)
 		np->ab_flags |= ABF_BEGIN;
 	else
 		np->ab_flags &= ~ABF_BEGIN;
+	return (TRUE);
 }
 
 
@@ -881,7 +943,7 @@ _ab_delete(np, tab, aflags)
 	}
 }
 
-EXPORT void
+EXPORT BOOL
 ab_delete(tab, name, aflags)
 	abidx_t	tab;
 	char	*name;
@@ -891,7 +953,10 @@ ab_delete(tab, name, aflags)
 	abent_t	*np;
 
 	np = _ab_lookup(ap, name, FALSE);
+	if (np == NULL)
+		return (FALSE);
 	_ab_delete(np, tab, aflags);
+	return (TRUE);
 }
 
 LOCAL void
@@ -973,7 +1038,7 @@ ab_dump(tab, f, aflags)
 /*
  * Print all name/value replacements with matched entries to an open file.
  */
-EXPORT void
+EXPORT BOOL
 ab_list(tab, pattern, f, aflags)
 		abidx_t	tab;
 	register char	*pattern;
@@ -987,28 +1052,39 @@ ab_list(tab, pattern, f, aflags)
 	register int	patlen;		/* pattern lenght */
 #endif
 
+	if ((aflags & AB_POSIX) == 0 && (tab != deftab)) {
+		if (tab == GLOBAL_AB)
+			aflags |= AB_PGLOBAL;
+		else
+			aflags |= AB_PLOCAL;
+	}
+
 	if (!any_match(pattern)) {
-		_ab_print(tab, pattern, f, aflags);
+		return (_ab_print(tab, pattern, f, aflags));
 	} else {
+		BOOL	ok;
+
 #ifndef	BOURNE_SHELL
 		patlen = strlen(pattern);
 		aux = (int *)malloc((size_t)patlen * sizeof (int));
 		state = (int *)malloc((size_t)(patlen+1) * sizeof (int));
 		alt = patcompile((unsigned char *)pattern, patlen, aux);
 		if (alt) {
-			_ab_match(_ab_down(tab)->at_ent,
+			ok = _ab_match(_ab_down(tab)->at_ent,
 					f, aflags, pattern, aux, alt, state);
 			fflush(f);
 		} else {
 			berror("%s", ebadpattern);
+			return (FALSE);
 		}
 		free((char *)aux);
 		free((char *)state);
 #else
-		_ab_match(_ab_down(tab)->at_ent,
+		ok = _ab_match(_ab_down(tab)->at_ent,
 				f, aflags, pattern, aux, alt, state);
 		fflush(f);
 #endif
+		return (ok);
 	}
 }
 
@@ -1017,7 +1093,8 @@ ab_eupdated(ap)
 	abtab_t *ap;
 {
 #ifdef	BOURNE_SHELL
-	failed(UC ap->at_fname, "updated by another shell, cannot write back.");
+	gfailure(UC ap->at_fname,
+		"updated by another shell, cannot write back.");
 #else
 	berror("'%s' was updated by another shell, cannot write back.",
 		ap->at_fname);
@@ -1048,6 +1125,10 @@ _ab_pr(np, f, aflags)
 	if (np->ab_push)
 		prc_buff('p');
 	prc_buff((np->ab_flags & ABF_BEGIN) ? 'b':'a');
+	if (aflags & AB_PLOCAL)
+		prc_buff('l');
+	else if (aflags & AB_PGLOBAL)
+		prc_buff('g');
 	prc_buff(' ');
 	prs_buff(UC np->ab_name);
 	len = length(UC np->ab_name);
@@ -1057,9 +1138,11 @@ _ab_pr(np, f, aflags)
 	prs_buff(UC np->ab_value);
 	prc_buff(NL);
 #else
-	fprintf(f, "#%s%c %-8s %s\n",
+	fprintf(f, "#%s%c%s %-8s %s\n",
 				np->ab_push ? "p":"",
 				np->ab_flags & ABF_BEGIN ? 'b':'a',
+				(aflags & AB_PLOCAL) ? "l":
+				(aflags & AB_PGLOBAL) ? "g":"",
 				np->ab_name, np->ab_value);
 #endif
 }
@@ -1127,6 +1210,7 @@ _ab_prposix(np, f, aflags)
 #endif
 }
 
+#ifdef	INTERACTIVE
 /*
  * The argument "f" is not used in the Bourne Shell
  */
@@ -1137,25 +1221,29 @@ _ab_phist(np, f, aflags)
 		FILE_p		f;
 		int		aflags;
 {
-#ifndef	BOURNE_SHELL
+#ifdef	BOURNE_SHELL
+#define	append_line	shedit_append_line
+#endif
 	if (np->ab_value == NULL)
 		return;
 	if (np->ab_push && (aflags & AB_ALL))
 		_ab_phist(np->ab_push, f, aflags);
 
-	{	char		buf[4096];
+	{	char		buf[8192];
 		unsigned int	len;
 
 		js_snprintf(buf, sizeof (buf),
-				"#%s%c %-8s %s",
+				"#%s%c%s %-8s %s",
 				np->ab_push ? "p":"",
 				np->ab_flags & ABF_BEGIN ? 'b':'a',
+				(aflags & AB_PLOCAL) ? "l":
+				(aflags & AB_PGLOBAL) ? "g":"",
 				np->ab_name, np->ab_value);
 		len = strlen(buf);
 		append_line(buf, len + 1, len);
 	}
-#endif
 }
+#endif	/* INTERACTIVE */
 
 #ifdef	BOURNE_SHELL
 LOCAL off_t

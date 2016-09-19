@@ -1,8 +1,8 @@
-/* @(#)hdump.c	1.34 11/07/14 Copyright 1986-2011 J. Schilling */
+/* @(#)hdump.c	1.37 15/12/26 Copyright 1986-2015 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)hdump.c	1.34 11/07/14 Copyright 1986-2011 J. Schilling";
+	"@(#)hdump.c	1.37 15/12/26 Copyright 1986-2015 J. Schilling";
 #endif
 /*
  *	hex dump for files
@@ -20,7 +20,7 @@ static	UConst char sccsid[] =
  *	traditional Solaris interface, /usr/bin/od and /usr/xpg4/bin/od must be
  *	hard linked. Symlinks would be followed by getexecname().
  *
- *	Copyright (c) 1986-2011 J. Schilling
+ *	Copyright (c) 1986-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -29,6 +29,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -47,6 +49,7 @@ static	UConst char sccsid[] =
 #include <schily/nlsdefs.h>
 #include <schily/io.h>		/* for setmode() prototype */
 #include <schily/limits.h>	/* for  MB_LEN_MAX	*/
+#include <schily/ctype.h>	/* For isprint()	*/
 #include <schily/wchar.h>	/* wchar_t		*/
 #include <schily/wctype.h>	/* For iswprint()	*/
 
@@ -424,9 +427,9 @@ main(ac, av)
 		usage(0);
 	if (prversion) {
 		printf(
-		_("%s release %s (%s-%s-%s) Copyright (C) 1986-2011 %s\n"),
+		_("%s release %s (%s-%s-%s) Copyright (C) 1986-2015 %s\n"),
 				is_od ? "Od":"Hdump",
-				"1.34",
+				"1.37",
 				HOST_CPU, HOST_VENDOR, HOST_OS,
 				_("Joerg Schilling"));
 		exit(0);
@@ -901,7 +904,7 @@ prch(cnt, buf, dstp)
 		else switch (c) {
 
 		case '\0':	printf("  \\0"); break;
-		case '\a':	printf("  \\a"); break;
+		case ALERT:	printf("  \\a"); break;
 		case '\b':	printf("  \\b"); break;
 		case '\f':	printf("  \\f"); break;
 		case '\n':	printf("  \\n"); break;
@@ -969,7 +972,7 @@ again:
 			switch (wc) {
 
 			case '\0':	printf("  \\0"); break;
-			case '\a':	printf("  \\a"); break;
+			case ALERT:	printf("  \\a"); break;
 			case '\b':	printf("  \\b"); break;
 			case '\f':	printf("  \\f"); break;
 			case '\n':	printf("  \\n"); break;
@@ -1174,7 +1177,7 @@ bufeql(b1, b2, cnt)
 		if (*b1++ != *b2++)
 			return (dont_print = FALSE);
 	if (!dont_print) {
-		printf(samefmt);
+		printf("%s", samefmt);
 		if (is_pipe)	/* Make it immediately visible in $PAGER */
 			(void) fflush(stdout);
 	}

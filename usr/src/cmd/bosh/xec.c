@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)xec.c	1.25 13/09/22 2008-2013 J. Schilling
+ * @(#)xec.c	1.74 16/08/28 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)xec.c	1.25 13/09/22 2008-2013 J. Schilling";
+	"@(#)xec.c	1.74 16/08/28 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -51,19 +51,37 @@ static	UConst char sccsid[] =
  *
  */
 
-#include	<errno.h>
 #include	"sym.h"
 #include	"hash.h"
+#ifdef	DO_TIME
+#include	"jobs.h"
+#endif
+#ifdef	SCHILY_INCLUDES
+#include	<schily/times.h>
+#include	<schily/vfork.h>
+#include	<schily/errno.h>
+#else
 #include	<sys/types.h>
 #include	<sys/times.h>
+#include	<errno.h>
+#endif
 
 pid_t parent;
+#ifdef	DO_PIPE_PARENT
+static jmp_buf	forkjmp;	/* To go back to TNOFORK in case of builtins */
+#endif
 
 	int	execute		__PR((struct trenod *argt,
 					int xflags, int errorflg,
 					int *pf1, int *pf2));
-	void	execexp		__PR((unsigned char *s, Intptr_t f));
+#ifdef	DO_PS34
+	unsigned char *ps_macro	__PR((unsigned char *as));
+#endif
+	void	execexp		__PR((unsigned char *s, Intptr_t f,
+					int xflags));
 static	void	execprint	__PR((unsigned char **));
+static	int	ismonitor	__PR((int xflags));
+static	int	exallocjob	__PR((struct trenod *t, int xflags));
 
 #define	no_pipe	(int *)0
 
@@ -72,9 +90,11 @@ static	void	execprint	__PR((unsigned char **));
 /*VARARGS3*/
 int
 execute(argt, xflags, errorflg, pf1, pf2)
-struct trenod *argt;
-int xflags, errorflg;
-int *pf1, *pf2;
+	struct trenod	*argt;
+	int		xflags;
+	int		errorflg;
+	int		*pf1;
+	int		*pf2;
 {
 	/*
 	 * `stakbot' is preserved by this routine
@@ -96,14 +116,19 @@ int *pf1, *pf2;
 		treeflgs = t->tretyp;
 		type = treeflgs & COMMSK;
 
-		switch (type)
-		{
-		case TFND:
+		/*
+		 * If we ever like to move a global exitval = 0; exval_clear();
+		 * here, we need to take care about the last exit val for a
+		 * "exit" call without arguments.
+		 */
+		switch (type) {
+		case TFND:		/* function definition */
 			{
 				struct fndnod	*f = fndptr(t);
 				struct namnod	*n = lookup(f->fndnam);
 
 				exitval = 0;
+				exval_clear();
 
 				if (n->namflg & N_RDONLY)
 					failed(n->namid, wtfailed);
@@ -117,13 +142,16 @@ int *pf1, *pf2;
 				 */
 				if (n->namflg & N_FUNCTN) {
 					freefunc(n);
-				} else {
+				}
+#ifndef	DO_POSIX_UNSET
+				else {
 					free(n->namval);
 					free(n->namenv);
 
 					n->namval = 0;
 					n->namflg &= ~(N_EXPORT | N_ENVCHG);
 				}
+#endif
 				/*
 				 * If function is defined within function,
 				 * we don't want to free it along with the
@@ -135,57 +163,139 @@ int *pf1, *pf2;
 					f->fndref++;
 
 				/*
-				 * We hang a fndnod on the namenv so that
+				 * We hang a fndnod on the funcval so that
 				 * ref cnt(fndref) can be increased while
 				 * running in the function.
 				 */
-				n->namenv = (unsigned char *)f;
+				n->funcval = (unsigned char *)f;
 				attrib(n, N_FUNCTN);
 				hash_func(n->namid);
 				break;
 			}
 
-		case TCOM:
+#ifdef	DO_TIME
+		case TTIME:		/* "time" command prefix */
 			{
-				unsigned char	*a1;
+				struct parnod	*p = parptr(t);
+				struct job	j;
+				int		osystime = flags2 & systime;
+
+				exitval = 0;
+				exval_clear();
+
+				gettimeofday(&j.j_start, NULL);
+				ruget(&j.j_rustart);
+				flags2 |= systime;
+				execute(p->partre, xflags, errorflg, pf1, pf2);
+				prtime(&j);
+				if (!osystime)
+					flags2 &= ~systime;
+				break;
+			}
+#endif
+
+#ifdef	DO_NOTSYM
+		case TNOT:		/* NOT command prefix */
+			{
+				struct parnod	*p = parptr(t);
+
+				exitval = 0;
+				exval_clear();
+
+				execute(p->partre, xflags, errorflg, pf1, pf2);
+				/*
+				 * In extended Bourne Shell mode, exitval does
+				 * not suffer from the exitcode mod 256 problem
+				 * and exitval is != 0 if exitcode is != 0, even
+				 * when exitcode is masked by 0xFF.
+				 */
+				ex.ex_status = exitval = !exitval;
+				break;
+			}
+#endif
+
+		case TCOM:		/* some kind of command */
+			{
 				int	argn;
 				struct argnod	*schain = gchain;
 				struct ionod	*io = t->treio;
 				short	cmdhash = 0;
 				short	comtype = 0;
+#ifdef	DO_POSIX_SPEC_BLTIN
+				const struct sysnod	*sp = 0;
+#endif
+				int			pushov = 0;
 
 				exitval = 0;
+				exval_clear();
 
 				gchain = 0;
 				argn = getarg((struct comnod *)t);
 				com = scan(argn);
-				a1 = com[1];
 				gchain = schain;
 
 				if (argn != 0)
 					cmdhash = pathlook(com[0],
 							1, comptr(t)->comset);
 
+#ifdef	DO_PIPE_PARENT
+				if (xflags & XEC_NOBLTIN) {
+					/*
+					 * Check whether we cannot run the
+					 * builtin in the main shell because we
+					 * would need to fork when in the
+					 * middle of a longer pipe.
+					 */
+					comtype = hashtype(cmdhash);
+					if (comtype == BUILTIN ||
+					    comtype == FUNCTION) {
+						tdystak(sav, iosav);
+						longjmp(forkjmp, 1);
+					}
+				}
+#endif	/* DO_PIPE_PARENT */
+
 				if (argn == 0 ||
 				    (comtype = hashtype(cmdhash)) == BUILTIN) {
-					setlist(comptr(t)->comset, 0);
+#ifdef	DO_POSIX_SPEC_BLTIN
+					sp = sysnlook(com[0],
+							commands, no_commands);
+					if (sp && (sp->sysflg & BLT_SPC) == 0)
+						pushov = N_PUSHOV;
+#endif
+					setlist(comptr(t)->comset, pushov);
 				}
 
-				if (argn && (flags&noexec) == 0)
-				{
+				if (argn && (flags&noexec) == 0) {
 
 					/* print command if execpr */
 					if (flags & execpr)
 						execprint(com);
 
 					if (comtype == NOTFOUND) {
+#ifdef	DO_PIPE_PARENT
+						resetjobfd();	/* Rest stdin */
+						if (ismonitor(xflags)) {
+							settgid(mypgid,
+								curpgid());
+						}
+#endif
 						pos = hashdata(cmdhash);
-						if (pos == 1)
-							failure(*com, notfound);
-						else if (pos == 2)
-							failure(*com, badexec);
-						else
-							failure(*com, badperm);
+						ex.ex_status = C_NOEXEC;
+						if (pos == 1) {
+							ex.ex_status =
+							ex.ex_code = C_NOTFOUND;
+							failurex(ERR_NOTFOUND,
+								*com, notfound);
+						} else if (pos == 2) {
+							ex.ex_code = C_NOEXEC;
+							failurex(ERR_NOEXEC,
+								*com, badexec);
+						} else {
+							ex.ex_code = C_NOEXEC;
+							failurex(ERR_NOEXEC,
+								*com, badperm);
+						}
 						break;
 					} else if (comtype == PATH_COMMAND) {
 						pos = -1;
@@ -193,19 +303,69 @@ int *pf1, *pf2;
 						    (COMMAND | REL_COMMAND)) {
 						pos = hashdata(cmdhash);
 					} else if (comtype == BUILTIN) {
-						builtin(hashdata(cmdhash),
-								argn, com, t);
+#ifdef	DO_PIPE_PARENT
+						pid_t	pgid = curpgid();
+						int	monitor =
+							    ismonitor(xflags);
+#endif
+#ifdef	DO_TIME
+						struct job	*jp = NULL;
+
+						if (((flags2 &
+						    (timeflg|systime)) ==
+						    timeflg) &&
+						    !(xflags & XEC_EXECED) &&
+						    !(treeflgs&(FPOU|FAMP))) {
+							/*
+							 * treeflgs is always 0
+							 * here and if we don't
+							 * check xflags as well
+							 * we come here even
+							 * for the left side of
+							 * a pipe or backgr job.
+							 */
+							allocjob("", UC "", 0);
+							jp =
+							postjob(parent, 1, 1);
+						}
+#endif
+						builtin(cmdhash,
+							argn, com, t, xflags);
+#ifdef	DO_PIPE_PARENT
+						/*
+						 * Rest stdin if needed
+						 */
+						if (xflags & XEC_STDINSAV)
+							resetjobfd();
+
+						if (monitor)
+							settgid(mypgid, pgid);
+#endif
+#ifdef	DO_POSIX_SPEC_BLTIN
+						if (pushov && comptr(t)->comset)
+							popvars();
+#endif
+#ifdef	DO_TIME
+						if (jp) {
+							prtime(jp);
+							deallocjob(jp);
+						}
+#endif
 						freejobs();
 						break;
 					} else if (comtype == FUNCTION) {
+						unsigned long	oflags = flags;
 						struct dolnod *olddolh;
 						struct namnod *n;
 						struct fndnod *f;
 						short idx;
 						unsigned char **olddolv = dolv;
 						int olddolc = dolc;
+						void *olocalp = localp;
+						int olocalcnt = localcnt;
+
 						n = findnam(com[0]);
-						f = fndptr(n->namenv);
+						f = fndptr(n->funcval);
 						/* just in case */
 						if (f == NULL)
 							break;
@@ -214,19 +374,48 @@ int *pf1, *pf2;
 								savargs(funcnt);
 						f->fndref++;
 						funcnt++;
+#ifdef	DO_POSIX_FAILURE
+						flags |= noexit;
+#endif
 						idx = initio(io, 1);
+						flags = oflags;
 						setargs(com);
-						execute(f->fndval, xflags,
-						    errorflg, pf1, pf2);
+						/*
+						 * If flags & noexit is not set,
+						 * we do not come here in case
+						 * exitval != 0,
+						 */
+						if (exitval == 0) {
+							localp = t;
+							localcnt = 0;
+							execute(f->fndval,
+							    xflags,
+							    errorflg, pf1, pf2);
+#ifdef	DO_SYSLOCAL
+							if (localcnt > 0) {
+								localp = t;
+								poplvars();
+							}
+#endif
+							localp = olocalp;
+							localcnt = olocalcnt;
+						}
 						execbrk = 0;
 						restore(idx);
+#ifdef	DO_PIPE_PARENT
+						/*
+						 * Rest stdin if needed
+						 */
+						if (xflags & XEC_STDINSAV)
+							resetjobfd();
+#endif
 						(void) restorargs(olddolh,
 								funcnt);
 						dolv = olddolv;
 						dolc = olddolc;
 						funcnt--;
 						/*
-						 * n->namenv may have been
+						 * n->funcval may have been
 						 * pointing different func.
 						 * Therefore, we can't use
 						 * freefunc(n).
@@ -243,43 +432,79 @@ int *pf1, *pf2;
 			}
 			/* FALLTHROUGH */
 
-		case TFORK:
+		case TFORK:		/* running forked cmd */
+#ifdef	DO_PIPE_PARENT
+		dofork:			/* In case we modify a TNOFORK cmd */
+#endif
 		{
 			int monitor = 0;
 			int linked = 0;
+			int isvfork = 0;
+#ifdef	HAVE_VFORK
+			int oflags = flags;
+			int oserial = serial;
+			pid_t opid = mypid;
+			pid_t opgid = mypgid;
+			struct ionod *ofiot = fiotemp;
+			struct ionod *oiot = iotemp;
+			struct fileblk *ostandin = standin;
+#endif
 
 			exitval = 0;
+			exval_clear();
 
-			if (!(xflags & XEC_EXECED) || treeflgs&(FPOU|FAMP))
-			{
-
+			if (!(xflags & XEC_EXECED) || treeflgs&(FPOU|FAMP)) {
 				int forkcnt = 1;
 
-				if (!(treeflgs&FPOU))
-				{
-					monitor = (!(xflags & XEC_NOSTOP) &&
-					    (flags&(monitorflg|jcflg|jcoff))
-					    == (monitorflg|jcflg));
-					if (monitor) {
-						int save_fd;
-
-						save_fd = setb(-1);
-						prcmd(t);
-						allocjob((char *)stakbot,
-							cwdget(), monitor);
-						(void) setb(save_fd);
-					} else {
-						allocjob("",
-							(unsigned char *)"", 0);
-					}
+#ifdef	DO_PIPE_PARENT
+				if ((xflags & XEC_ALLOCJOB) ||
+				    !(treeflgs & FPOU)) {
+#else
+				if (!(treeflgs & FPOU)) {
+#endif
+					/*
+					 * Allocate job slot
+					 */
+					monitor = exallocjob(t, xflags);
+#ifdef	DO_PIPE_PARENT
+					xflags |= XEC_ALLOCJOB;
+#endif
 				}
 
+#ifdef	HAVE_VFORK
+				if (type == TCOM) {
+					if (com != NULL && com[0] != ENDARGS &&
+					    !(flags & vforked)) {
+						isvfork = TRUE;
+						flags |= vforked;
+						/*
+						 * exflag does not need to be
+						 * set here already as done()
+						 * only calls exit()
+						 * if (flags & subsh) is set.
+						 */
+					}
+					/*
+					 * Cygwin has no real vfork() as it runs
+					 * parent and child simultaneously. This
+					 * is the last chance to save things
+					 * that would be clobbered by vfork().
+					 */
+				}
+				if (!isvfork &&
+				    (treeflgs & (FPOU|FAMP))) {
+					link_iodocs(iotemp);
+					linked = 1;
+				}
+script:
+				while ((parent = isvfork?vfork():fork()) == -1)
+#else
 				if (treeflgs & (FPOU|FAMP)) {
 					link_iodocs(iotemp);
 					linked = 1;
 				}
-
 				while ((parent = fork()) == -1)
+#endif
 				{
 				/*
 				 * FORKLIM is the max period between forks -
@@ -287,21 +512,19 @@ int *pf1, *pf2;
 				 * after 2,4,8,16, and 32 seconds and then quits
 				 */
 
-				if ((forkcnt = (forkcnt * 2)) > FORKLIM)
-				{
-					switch (errno)
-					{
+				if ((forkcnt = (forkcnt * 2)) > FORKLIM) {
+					switch (errno) {
 					case ENOMEM:
-						deallocjob();
+						deallocjob(NULL);
 						error(noswap);
 						break;
 					default:
-						deallocjob();
+						deallocjob(NULL);
 						error(nofork);
 						break;
 					}
 				} else if (errno == EPERM) {
-					deallocjob();
+					deallocjob(NULL);
 					error(eacces);
 					break;
 				}
@@ -309,20 +532,135 @@ int *pf1, *pf2;
 				sh_sleep(forkcnt);
 				}
 
-				if (parent) {
+				if (parent) {	/* Parent != 0 -> Child pid */
+#ifdef	DO_PIPE_PARENT
+					pid_t pgid = curpgid();
+
+					/*
+					 * The first process in this command
+					 * Remember the id as process group.
+					 */
+					if (pgid == 0 && monitor)
+						setjobpgid(parent);
+#endif
+					/*
+					 * XXX Do we need to call restoresigs()
+					 * XXX here too on Solaris?
+					 */
+#ifdef	HAVE_VFORK
+					if (isvfork) {
+						/*
+						 * Needed by the jobcontrol
+						 * called from postjob().
+						 * So we need to restore these
+						 * variables immediately.
+						 */
+						mypid = opid;
+						mypgid = opgid;
+						flags = oflags;
+					}
+#endif
 					if (monitor)
+#ifdef	DO_PIPE_PARENT
+						setpgid(parent, pgid);
+#else
 						setpgid(parent, 0);
+#endif
 					if (treeflgs & FPIN)
 						closepipe(pf1);
 					if (!(treeflgs&FPOU)) {
 						postjob(parent,
-							!(treeflgs&FAMP));
+							!(treeflgs&FAMP), 0);
 						freejobs();
 					}
+#ifdef	HAVE_VFORK
+					if (isvfork) {
+						/*
+						 * Restore evereything that was
+						 * overwritten by the vforked
+						 * child. As Cygwin does not
+						 * have a real vfork() (see
+						 * above), we need to make sure
+						 * the child did start up before
+						 * we restore global variables.
+						 */
+						mypid = opid;
+						mypgid = opgid;
+						flags = oflags;
+						settmp();
+						serial = oserial;
+						isvfork = 0;
+						fiotemp = ofiot;
+						iotemp = oiot;
+						standin = ostandin;
+						if (comptr(t)->comset)
+							popvars();
+						restoresigs();
+						if (exflag == 2) {
+							exflag = 0;
+
+							if (treeflgs & FPOU)
+								goto script;
+							/*
+							 * Allocate job slot
+							 */
+#ifdef	DO_PIPE_PARENT
+							if (!curjob()) {
+								xflags &=
+								~XEC_ALLOCJOB;
+							}
+#endif
+							monitor = exallocjob(t,
+								    xflags);
+#ifdef	DO_PIPE_PARENT
+							xflags |= XEC_ALLOCJOB;
+#endif
+							goto script;
+						} else {
+							exflag = 0;
+						}
+					}
+#endif
 					chktrap();
 					break;		/* From case TFORK: */
 				}
 				mypid = getpid();	/* This is the child */
+#ifdef	DO_PIPE_PARENT
+				if (monitor) {
+					pid_t pgid = curpgid();
+
+					/*
+					 * The first process in this command
+					 * Remember the id as process group.
+					 *
+					 * In special when using vfork together
+					 * with the new pipe setup, we need to
+					 * set the process group for every
+					 * child but cannot do this from the
+					 * parent as the parent process is
+					 * blocked until the child called exec()
+					 */
+					if (pgid == 0) {
+						pgid = mypid;
+						setjobpgid(pgid);
+						/*
+						 * If this is a subshell with a
+						 * new job entry (pgid == 0),
+						 * we need to remember the pgid
+						 * as mypgid to avoid to reset
+						 * the tty process group from
+						 * inside waitjob(). This
+						 * assignment to mypgid used to
+						 * be in makejob().
+						 */
+						if (type == TFORK)
+							mypgid = pgid;
+					}
+					setpgid(mypid, pgid);
+					if (!(treeflgs & FAMP))
+						settgid(pgid, mypgid);
+				}
+#endif	/* DO_PIPE_PARENT */
 			}
 
 			/*
@@ -330,7 +668,7 @@ int *pf1, *pf2;
 			 * now.  If it is, the presence of a left parenthesis
 			 * will trigger the jcoff flag to be turned off.
 			 * When jcoff is turned on, monitoring is not going on
-			 * and waitpid will not look for WUNTRACED.
+			 * and waitpid will not look for WSTOPPED.
 			 */
 
 			flags |= (forked|jcoff);
@@ -346,7 +684,7 @@ int *pf1, *pf2;
 			suspacct();
 #endif
 			settmp();			/* /tmp/sh<pid> */
-			oldsigs();			/* Calls clrsig/free */
+			oldsigs(!isvfork);		/* Calls clrsig/free */
 
 			/*
 			 * Job control: pgrp / TTY-signal handling
@@ -357,16 +695,17 @@ int *pf1, *pf2;
 			/*
 			 * pipe in or out
 			 */
-			if (treeflgs & FPIN)
-			{
-				renamef(pf1[INPIPE], 0);
+			if (treeflgs & FPIN) {
+				renamef(pf1[INPIPE], STDIN_FILENO);
 				close(pf1[OTPIPE]);
 			}
 
-			if (treeflgs & FPOU)
-			{
+			if (treeflgs & FPOU) {
 				close(pf2[INPIPE]);
-				renamef(pf2[OTPIPE], 1);
+				/*
+				 * pipe fd # is in low bits of treeflgs
+				 */
+				renamef(pf2[OTPIPE], treeflgs & IOUFD);
 			}
 
 			/*
@@ -379,19 +718,111 @@ int *pf1, *pf2;
 					xflags | XEC_EXECED,
 					errorflg, no_pipe, no_pipe);
 			} else if (com != NULL && com[0] != ENDARGS) {
+				int	pushov = isvfork?N_PUSHOV:0;
+
 				eflag = 0;
-				setlist(comptr(t)->comset, N_EXPORT);
-				rmtemp(0);
-				clearjobs();
-				execa(com, pos);
+				setlist(comptr(t)->comset, N_EXPORT|pushov);
+#ifdef	HAVE_VFORK
+				if (isvfork)
+					rmtemp(oiot);
+				else
+#endif
+				{
+					rmtemp(0);
+					clearjobs();
+				}
+				execa(com, pos, isvfork, NULL);
 			}
 			done(0);
 			/* NOTREACHED */
 		}
 
-		case TPAR:
-			/* Forked process is subshell:  may want job control */
-			flags &= ~jcoff;
+#ifdef	DO_PIPE_PARENT
+		case TNOFORK:		/* running avoid fork cmd */
+		{
+			struct trenod	*anod = forkptr(t)->forktre;
+
+			/*
+			 * pipe-in only -> last element of a pipeline
+			 * we execute builtin command in the main shell
+			 */
+			if ((treeflgs & ~COMMSK) == FPIN) {
+				int		sfd = -1;
+				extern short	topfd;
+
+				if ((xflags & XEC_STDINSAV) == 0) {
+					/*
+					 * Move stdin to save it. This move is
+					 * restored from inside postjob().
+					 */
+					sfd = topfd;
+					fdmap[topfd].org_fd = STDIN_FILENO;
+					fdmap[topfd].dup_fd =
+							savefd(STDIN_FILENO);
+					setjobfd(fdmap[topfd++].dup_fd, sfd);
+				}
+				renamef(pf1[INPIPE], STDIN_FILENO);
+				close(pf1[OTPIPE]);
+				execute(anod,
+					xflags | XEC_STDINSAV,
+					errorflg, pf1, pf2);
+				break;
+			}
+
+			/*
+			 * Other cases: need to fork if a builtin is part
+			 * of a pipeline. This construct helps to use vfork for
+			 * non-builtin commands.
+			 */
+			if (setjmp(forkjmp)) {
+				type = TFORK;
+				xflags |= XEC_ALLOCJOB;	/* Was in a register? */
+				goto dofork;
+			} else {
+				struct trenod	*tptr;
+				struct comnod	cnod;
+				struct lstnod	lnod;
+
+				/*
+				 * A double cast (first to void *) is needed to
+				 * make gcc quiet.
+				 * comnod is an int and three pointers
+				 * lstnod is an int and two pointers
+				 */
+				switch (anod->tretyp & COMMSK) {
+				case TFIL:
+					lnod = *lstptr(anod);
+					tptr = treptr((void *)&lnod);
+					break;
+				case TCOM:
+					cnod = *comptr(anod);
+					tptr = treptr((void *)&cnod);
+					break;
+				default:
+					/*
+					 * Should never happen
+					 */
+					failed(UC "TNOFORK", "botch");
+					goto out;
+				}
+				tptr->tretyp |= treeflgs & (FPIN|FPOU|IOFMSK);
+				execute(tptr,
+					xflags | XEC_NOBLTIN,
+					errorflg, pf1, pf2);
+				break;
+			}
+		}
+			/* NOTREACHED */
+#endif	/* DO_PIPE_PARENT */
+
+
+		case TPAR:		/* "()" parentized cmd */
+			/*
+			 * Forked process is subshell:  may want job control
+			 * but not for left hand sides of of a pipeline.
+			 */
+			if ((xflags & XEC_LINKED) == 0)
+				flags &= ~jcoff;
 			clearjobs();
 			execute(parptr(t)->partre,
 				xflags, errorflg,
@@ -399,16 +830,29 @@ int *pf1, *pf2;
 			done(0);
 			/* NOTREACHED */
 
-		case TFIL:
+		case TFIL:		/* PIPE "|" filter */
 			{
 				int pv[2];
 
 				chkpipe(pv);
+
+#ifdef	DO_PIPE_PARENT
+				if (!(xflags & XEC_ALLOCJOB) &&
+				    !(treeflgs&FPOU)) {
+					/*
+					 * Allocate job slot
+					 */
+					exallocjob(t, xflags);
+					xflags |= XEC_ALLOCJOB;
+				}
+#endif	/* DO_PIPE_PARENT */
 				if (execute(lstptr(t)->lstlef,
-				    xflags & XEC_NOSTOP, errorflg,
+				    xflags & (XEC_NOSTOP|XEC_ALLOCJOB),
+				    errorflg,
 				    pf1, pv) == 0) {
 					execute(lstptr(t)->lstrit,
-						xflags, errorflg,
+						xflags,
+						errorflg,
 						pv, pf2);
 				} else {
 					closepipe(pv);
@@ -416,7 +860,7 @@ int *pf1, *pf2;
 			}
 			break;
 
-		case TLST:
+		case TLST:		/* ";" separated command list */
 			execute(lstptr(t)->lstlef,
 				xflags&XEC_NOSTOP, errorflg,
 				no_pipe, no_pipe);
@@ -426,8 +870,8 @@ int *pf1, *pf2;
 				no_pipe, no_pipe);
 			break;
 
-		case TAND:
-		case TORF:
+		case TAND:		/* "&&" command */
+		case TORF:		/* "||" command */
 		{
 			int xval;
 			xval = execute(lstptr(t)->lstlef,
@@ -440,32 +884,89 @@ int *pf1, *pf2;
 			break;
 		}
 
-		case TFOR:
+		case TFOR:		/* for ... do .. done */
+		case TSELECT:		/* select ... do .. done */
 			{
 				struct namnod *n = lookup(forptr(t)->fornam);
 				unsigned char	**args;
 				struct dolnod *argsav = 0;
+				int	argn;
+#ifdef	DO_SELECT
+				int	printlist = 1;
+#endif
 
-				if (forptr(t)->forlst == 0)
-				{
+				if (forptr(t)->forlst == 0) {
+					argn = dolc;
 					args = dolv + 1;
 					argsav = useargs();
-				}
-				else
-				{
+				} else {
 					struct argnod *schain = gchain;
 
 					gchain = 0;
-					args = scan(getarg(forptr(t)->forlst));
+					argn = getarg(forptr(t)->forlst);
+					args = scan(argn);
 					gchain = schain;
 				}
 				loopcnt++;
-				while (*args != ENDARGS && execbrk == 0)
-				{
-					assign(n, *args++);
+				while (*args != ENDARGS && execbrk == 0) {
+#ifdef	DO_SELECT
+					if (type == TSELECT) {
+						int		c;
+						unsigned char	*cp;
+
+						if (printlist) {
+							for (c = 0; c < argn;
+									c++) {
+								prn(c+1);
+								prs(UC ") ");
+								prs(args[c]);
+								prc(NL);
+							}
+							printlist = 0;
+						}
+
+						prs(ps3nod.namval);
+						rwait = 1;
+						exitval = readvar(0, NULL);
+						rwait = 0;
+						if (exitval)
+							break;
+						if (repnod.namval == NULL ||
+						    *repnod.namval == '\0') {
+							printlist++;
+							continue;
+						}
+
+						cp = repnod.namval;
+						while ((c = *cp++) != '\0') {
+							if (!digit(c))
+								break;
+						}
+						if (c == 0) {
+							c = stoi(repnod.namval);
+							cp = args[c-1];
+						} else {
+							cp = UC nullstr;
+						}
+						assign(n, cp);
+					} else
+#endif
+						assign(n, *args++);
 					execute(forptr(t)->fortre,
 						XEC_NOSTOP, errorflg,
 						no_pipe, no_pipe);
+#ifdef	DO_SELECT
+					if (type == TSELECT) {
+						/*
+						 * Check whether RESULT has
+						 * been cleared from the code
+						 * above.
+						 */
+						if (repnod.namval == NULL ||
+						    *repnod.namval == '\0')
+							printlist++;
+					}
+#endif
 					if (breakcnt < 0)
 						execbrk = (++breakcnt != 0);
 				}
@@ -479,19 +980,24 @@ int *pf1, *pf2;
 			}
 			break;
 
-		case TWH:
-		case TUN:
+		case TWH:		/* "while" loop */
+		case TUN:		/* "until" loop */
 			{
-				int	i = 0;
+				int		i = 0;
+				struct excode	savex;
 
+				exval_clear();
+				savex = ex;
 				loopcnt++;
 				while (execbrk == 0 && (execute(whptr(t)->whtre,
 				    XEC_NOSTOP, 0,
 				    no_pipe, no_pipe) == 0) == (type == TWH) &&
 				    (flags&noexec) == 0) {
+					exval_clear();
 					i = execute(whptr(t)->dotre,
 						XEC_NOSTOP, errorflg,
 						no_pipe, no_pipe);
+					savex = ex;
 					if (breakcnt < 0)
 						execbrk = (++breakcnt != 0);
 				}
@@ -500,10 +1006,11 @@ int *pf1, *pf2;
 
 				loopcnt--;
 				exitval = i;
+				ex = savex;
 			}
 			break;
 
-		case TIF:
+		case TIF:		/* if ... then ... */
 			if (execute(ifptr(t)->iftre,
 			    XEC_NOSTOP, 0,
 			    no_pipe, no_pipe) == 0) {
@@ -517,14 +1024,20 @@ int *pf1, *pf2;
 			} else {
 				/* force zero exit for if-then-fi */
 				exitval = 0;
+				exval_clear();
+				exval_set(0);
 			}
 			break;
 
-		case TSW:
+		case TSW:		/* "case command */
 			{
 				unsigned char	*r = mactrim(swptr(t)->swarg);
 				struct regnod *regp;
 
+#ifdef	DO_POSIX_CASE
+				exitval = 0;
+				exval_clear();
+#endif
 				regp = swptr(t)->swlst;
 				while (regp) {
 					struct argnod *rex = regp->regptr;
@@ -554,6 +1067,9 @@ int *pf1, *pf2;
 		}
 		exitset();
 	}
+#ifdef	DO_PIPE_PARENT
+out:
+#endif
 	sigchk();
 	tdystak(sav, iosav);
 	flags |= eflag;
@@ -561,23 +1077,44 @@ int *pf1, *pf2;
 }
 
 void
-execexp(s, f)
+execexp(s, f, xflags)
 	unsigned char	*s;
 	Intptr_t	f;
+	int		xflags;
 {
 	struct fileblk	fb;
 
 	push(&fb);
-	if (s)
-	{
+	if (s) {
 		estabf(s);
 		fb.feval = (unsigned char **)(f);
 	} else if (f >= 0)
 		initf(f);
-	execute(cmd(NL, NLFLG | MTFLG),
-		0, (int)(flags & errflg), no_pipe, no_pipe);
+	execute(cmd(NL, NLFLG | MTFLG | SEMIFLG),
+		xflags, (int)(flags & errflg), no_pipe, no_pipe);
 	pop();
 }
+
+#ifdef	DO_PS34
+unsigned char *
+ps_macro(as)
+	unsigned char	*as;
+{
+extern	int		macflag;
+	int		oflags = flags;
+	int		omacflag = macflag;
+	unsigned char	*res;
+
+	flags &= ~(execpr|readpr);
+	if ((flags2 & promptcmdsubst) == 0)
+		macflag |= M_NOCOMSUBST;
+	res = macro(as);
+	macflag = omacflag;
+	flags = oflags;
+
+	return (res);
+}
+#endif
 
 static void
 execprint(com)
@@ -586,13 +1123,50 @@ execprint(com)
 	int	argn = 0;
 	unsigned char	*s;
 
+#ifdef	DO_PS34
+	prs(ps_macro(ps4nod.namval?ps4nod.namval:UC execpmsg));
+#else
 	prs(_gettext(execpmsg));
-	while (com[argn] != ENDARGS)
-	{
+#endif
+	while (com[argn] != ENDARGS) {
 		s = com[argn++];
 		write(output, s, length(s) - 1);
 		blank();
 	}
 
 	newline();
+}
+
+static int
+ismonitor(xflags)
+	int		xflags;
+{
+	return (!(xflags & XEC_NOSTOP) &&
+		    (flags&(monitorflg|jcflg|jcoff)) == (monitorflg|jcflg));
+}
+
+static int
+exallocjob(t, xflags)
+	struct trenod	*t;
+	int		xflags;
+{
+	int	monitor = ismonitor(xflags);
+
+	if (xflags & XEC_ALLOCJOB) {
+		/* EMPTY */;
+	} else if (monitor) {
+		int save_fd;
+
+		save_fd = setb(-1);
+		prcmd(t);
+		/*
+		 * We use cwdget(CHDIR_L) as this does not modify PWD
+		 * unless it is definitely invalid.
+		 */
+		allocjob((char *)stakbot, cwdget(CHDIR_L), monitor);
+		(void) setb(save_fd);
+	} else {
+		allocjob("", (unsigned char *)"", 0);
+	}
+	return (monitor);
 }

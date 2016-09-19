@@ -43,14 +43,21 @@ $(LINTLIB) :=	SRCS = $(SRCDIR)/$(LINTSRC)
 # the -I$(ROOT)/usr/include that refers to the prototype system include.
 #
 CFLAGS +=	$(CCVERBOSE)
-CFLAGS +=	-I../include		# Path to our modified stdio.h
-CFLAGS64 +=	-I../include		# Path to our modified stdio.h
+CFLAGS +=	-I../			# Path to our mystdio.h
+CFLAGS64 +=	-I../			# Path to our mystdio.h
+
+LINTFLAGS +=	-I../
+LINTFLAGS64 +=	-I../
+
 CPPFLAGS +=	-D_REENTRANT
 
 CPPFLAGS +=	-DBSH			# Use Shell variant with map.c
 CPPFLAGS +=	-DINTERACTIVE		# Switch on history editing code
 #CPPFLAGS +=	-DBOURNE		# ???
 CPPFLAGS +=	-DLIB_SHEDIT		# We compile libshedit
+CPPFLAGS +=	-DINCL_MYSTDIO
+CPPFLAGS +=	-DNO_WEAK_SYMBOLS
+CPPFLAGS +=	-DNO_GETLINE_COMPAT
 CPPFLAGS +=	-DUSE_LARGEFILES	# Enable large files
 CPPFLAGS +=	-DNO_PRINTFLIKE=1	# Avoid gcc: "unknown conversion type"
 

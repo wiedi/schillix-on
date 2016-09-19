@@ -134,6 +134,7 @@ HDRS=	\
 	setjmp.h  \
 	sha1.h  \
 	sha2.h  \
+	sha3.h  \
 	shadow.h  \
 	shcall.h  \
 	shedit.h  \

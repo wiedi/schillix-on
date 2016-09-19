@@ -41,7 +41,7 @@
 /*
  *				Copyright Geoff Collyer 1987-2005
  *
- * @(#)stak.c	2.9 13/09/25	Copyright 2010-2013 J. Schilling
+ * @(#)stak.c	2.20 16/07/15	Copyright 2010-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -57,7 +57,7 @@
 
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)stak.c	2.9 13/09/25 Copyright 2010-2013 J. Schilling";
+	"@(#)stak.c	2.20 16/07/15 Copyright 2010-2016 J. Schilling";
 #endif
 
 
@@ -71,6 +71,10 @@ static	UConst char sccsid[] =
  */
 #undef	BRKINCR
 #define	BRKINCR 1024
+
+#ifdef	NO_TOSSGROWING_MACRO
+#undef	TOSSGROWING_MACRO
+#endif
 
 #define	UC		(unsigned char *)
 
@@ -156,14 +160,18 @@ static char	*stkhigh;		/* Highest known addr on stak */
  */
 
 static void	*xmalloc	__PR((size_t size));
+#ifndef	TOSSGROWING_MACRO
 static void	tossgrowing	__PR((void));
+#endif
 static char	*stalloc	__PR((int size));
 static void	grostalloc	__PR((void));
 	unsigned char *getstak	__PR((Intptr_t asize));
 #ifdef	STAK_DEBUG
 static void	prnln		__PR((long));
 #endif
+#if defined(STAK_DEBUG) || defined(FREE_DEBUG) || defined(TOSSCHECK)
 static void	prln		__PR((long));
+#endif
 	unsigned char *locstak	__PR((void));
 	unsigned char *savstak	__PR((void));
 	unsigned char *endstak	__PR((unsigned char *argp));
@@ -207,21 +215,60 @@ xmalloc(size)
 	return ((void *)ret);
 }
 
+#ifdef	TOSSGROWING_MACRO
+#ifdef	TOSSCHECK
+#define	tosscheck(stk)							\
+		/* verify magic before freeing */			\
+		if (stk.topitem->h.magic != STMAGICNUM &&		\
+		    stk.topitem->h.magic != STNMAGICNUM) {		\
+			prs((unsigned char *)				\
+				"tossgrowing: stk.topitem->h.magic ");	\
+			prln((long)stk.topitem->h.magic);		\
+			prs((unsigned char *)"\n");			\
+			error("tossgrowing: bad magic on stack");	\
+		}
+#else
+#define	tosscheck(stk)
+#endif
+#define	tossgrowing()							\
+	if (stk.topitem != 0) {		/* any growing stack? */	\
+		Stackblk *nextitem;					\
+									\
+		tosscheck(stk);						\
+		stk.topitem->h.magic = 0;	/* erase magic */	\
+									\
+		/*							\
+		 * about to free the ptr to next, so copy it first	\
+		 */							\
+		nextitem = stk.topitem->h.word;				\
+									\
+		TPRS("tossgrowing freeing ");				\
+		TPRN((long)stk.topitem);				\
+		TPRS("\n");						\
+									\
+		free(stk.topitem);					\
+		stk.topitem = nextitem;					\
+	}
+#endif	/* TOSSGROWING_MACRO */
+
+#ifndef	tossgrowing
 static void
 tossgrowing()				/* free the growing stack */
 {
 	if (stk.topitem != 0) {		/* any growing stack? */
 		Stackblk *nextitem;
 
+#ifdef	TOSSCHECK
 		/* verify magic before freeing */
 		if (stk.topitem->h.magic != STMAGICNUM &&
 		    stk.topitem->h.magic != STNMAGICNUM) {
 			prs((unsigned char *)
-					"tossgrowing: stk.topitem->h.magic ");
+			    "tossgrowing: stk.topitem->h.magic ");
 			prln((long)stk.topitem->h.magic);
 			prs((unsigned char *)"\n");
 			error("tossgrowing: bad magic on stack");
 		}
+#endif	/* TOSSCHECK */
 		stk.topitem->h.magic = 0;	/* erase magic */
 
 		/*
@@ -237,6 +284,7 @@ tossgrowing()				/* free the growing stack */
 		stk.topitem = nextitem;
 	}
 }
+#endif	/* !tossgrowing */
 
 static char *
 stalloc(size)		/* allocate requested stack space (no frills) */
@@ -318,12 +366,14 @@ prnln(l)
 }
 #endif
 
+#if defined(STAK_DEBUG) || defined(FREE_DEBUG) || defined(TOSSCHECK)
 static void
 prln(l)
 	long	l;
 {
 	prs(&numbuf[ltos(l)]);
 }
+#endif
 
 /*
  * set up stack for local use (i.e. make it big).
@@ -412,7 +462,7 @@ tdystak(sav, iosav)
 		/* EMPTY */
 		STPRS("tdystak(0)\n");
 	} else if (blk->h.magic == STMAGICNUM ||
-		blk->h.magic == STNMAGICNUM) {
+		    blk->h.magic == STNMAGICNUM) {
 		/* EMPTY */
 		STPRS("tdystak(data ptr: ");
 		STPRN((long)sav);
@@ -560,7 +610,16 @@ __growstak(incr)
 
 		if (new == (unsigned char *)NIL)
 			error(nostack);
-		memcpy(new, oldbsy, staklen);
+		if (staklen > 16) {
+			memcpy(new, oldbsy, staklen);
+		} else {
+			register int		amt = staklen;
+			register unsigned char	*to = new;
+			register unsigned char	*fr = oldbsy;
+
+			while (amt--)
+				*to++ = *fr++;
+		}
 		free(oldbsy);
 		oldbsy = new;
 	} else {
@@ -568,7 +627,7 @@ __growstak(incr)
 		 * get realloc to grow the stack to match the stack top
 		 */
 		if ((oldbsy = realloc(oldbsy, (unsigned)staklen)) ==
-							(unsigned char *)NIL)
+						    (unsigned char *)NIL)
 			error(nostack);
 	}
 	TPRS("now @ ");
@@ -708,10 +767,25 @@ shfree(ap)
 	}
 }
 
+void
+libc_free(ap)
+	void	*ap;
+{
+	free(ap);
+}
+
 #ifdef	DO_SYSALLOC
 void
 chkmem()
 {
+	prs_buff((unsigned char *)"stklow: ");		/* Do not translate */
+	prull_buff((UIntmax_t)(UIntptr_t)stklow);
+	prs_buff((unsigned char *)" stkhigh: ");	/* Do not translate */
+	prull_buff((UIntmax_t)(UIntptr_t)stkhigh);
+	prs_buff((unsigned char *)" total: ");		/* Translate this? */
+	prull_buff((UIntmax_t)(stkhigh-stklow));
+	prc_buff(NL);
+	flushb();
 }
 #endif
 
@@ -719,7 +793,7 @@ chkmem()
 /*
  * The code below has been taken from the historical stak.c
  *
- * Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  */
 
 /*
@@ -737,7 +811,7 @@ chkmem()
  */
 unsigned char *
 cpystak(x)
-unsigned char	*x;
+	unsigned char	*x;
 {
 	return (endstak(movstrstak(x, locstak())));
 }

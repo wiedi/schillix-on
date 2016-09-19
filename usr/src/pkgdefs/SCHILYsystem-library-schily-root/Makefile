@@ -16,6 +16,7 @@
 include ../Makefile.com
 
 LICENSEFILES = $(SCHILY) \
+../../lib/libfind/THIRDPARTYLICENSE \
 ../../lib/libschily/THIRDPARTYLICENSE \
 ../../lib/libschily/THIRDPARTYLICENSE.fnmatch \
 ../../lib/libschily/THIRDPARTYLICENSE.strtod \

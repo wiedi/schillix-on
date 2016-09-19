@@ -1,8 +1,8 @@
-/* @(#)inputc.c	1.68 13/09/25 Copyright 1982, 1984-2013 J. Schilling */
+/* @(#)inputc.c	1.82 16/09/15 Copyright 1982, 1984-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)inputc.c	1.68 13/09/25 Copyright 1982, 1984-2013 J. Schilling";
+	"@(#)inputc.c	1.82 16/09/15 Copyright 1982, 1984-2016 J. Schilling";
 #endif
 /*
  *	inputc.c
@@ -20,7 +20,7 @@ static	UConst char sccsid[] =
  *	in 1982 and 1983. This prototype only contained the editor and called
  *	shell commands via system().
  *
- *	Copyright (c) 1982, 1984-2013 J. Schilling
+ *	Copyright (c) 1982, 1984-2016 J. Schilling
  *	This version was first coded August 1984 and rewritten 01/22/85
  *
  *	Exported functions:
@@ -62,7 +62,8 @@ static	UConst char sccsid[] =
 #include <schily/stdlib.h>
 #include <schily/fcntl.h>
 #include <schily/limits.h>	/* for  MB_LEN_MAX	*/
-#include <schily/wchar.h>	/* wchar_t		*/
+#include <schily/pwd.h>		/* #includes <stdio.h> */
+#include <schily/wchar.h>	/* wchar_t #includes <stdio.h>	*/
 #include <schily/wctype.h>	/* For iswprint()	*/
 #include <schily/patmatch.h>	/* Past wchar.h to enable patchwmatch() */
 #undef	NO_SCHILY_STDIO_H
@@ -82,6 +83,12 @@ static	UConst char sccsid[] =
 #include "ctype.h"
 #endif	/* USE_WCHAR */
 #undef	toint		/* Atari MiNT has this nonstandard definition */
+#ifdef	LIB_SHEDIT
+#define	toint		shell_toint
+#define	MYFILE		int
+#else
+#define	MYFILE		FILE
+#endif
 
 #ifdef	XDEBUG		/* eXpand Debug */
 #define	DO_DEBUG
@@ -123,25 +130,27 @@ static	UConst char sccsid[] =
 #define	BUFSIZE	133
 
 typedef struct {
-	int b_index;
-	char b_buf[BUFSIZE+MB_LEN_MAX];
+	int b_index;			/* Index in b_buf	*/
+	char b_buf[BUFSIZE+MB_LEN_MAX];	/* The buffer space	*/
 } BUF;
 
 #define	LINEQUANT	64
 #define	BEGINLINE	1	/* ^A Move Cursor leftmost */
 #define	SHOW		2	/* ^B Show possible file name completion(s) */
-#define	EXPAND		3	/* ^C Do file name completion		    */
+#define	CTRLC		3	/* ^C Logical INTR			    */
 #define	CTRLD		4	/* ^D Logical EOF			    */
 #define	ENDLINE		5	/* ^E Move Cursor rightmost		    */
 #define	FORWARD		6	/* ^F Move Corsor one position to the right */
 #define	BEEP		7	/* ^G Audible Bell			    */
 #define	BACKSPACE	8	/* ^H Mode Cursor one position to the left  */
-#define	TAB		9	/* ^I TAB is an alias for EXPAND (^C)	    */
+#define	TAB		9	/* ^I TAB is an alias for EXPAND	    */
 				/* ^J New Line				    */
 #define	DOWNWARD	14	/* ^N Scroll down to next line in history   */
 #define	UPWARD		16	/* ^P Scroll up to previous line in history */
 #define	RETYPE		18	/* ^R Redisplay current edit line	    */
+#define	EXPAND		TAB	/* ^I Do file name completion		    */
 #define	CTRLU		21	/* ^U Clear current edit line		    */
+#define	CTRLV		22	/* ^V VNEXT quote next char		    */
 #define	CTRLW		23	/* ^W Backwards erase one word		    */
 #define	ESC		27	/* ^[ Lead in character for Escape sequence */
 #define	QUOTECH		30	/* ^^ Quote next character		    */
@@ -158,17 +167,20 @@ typedef struct {
 #define	SEARCHDOWN	(SEARCH|DOWNWARD)
 
 typedef struct histptr {
-	struct histptr	*h_prev,
-			*h_next;
-	wchar_t		*h_line;
-	unsigned	h_len;
-	unsigned	h_pos;
-	unsigned char	h_flags;
+	struct histptr	*h_prev;	/* Previous element in revolver	    */
+	struct histptr	*h_next;	/* Next element in revolver	    */
+	wchar_t		*h_line;	/* Space to store the line	    */
+	unsigned	h_len;		/* Number of wchar_t elements in line */
+	unsigned	h_pos;		/* wchar_t based offset in line	    */
+	unsigned char	h_flags;	/* Flags, see below		    */
 } _HISTPTR, *HISTPTR;
 
+/*
+ * Flags used in h_flags:
+ */
 #define	F_TMP	0x01		/* Claimed by a tmp pointer */
 
-EXPORT	FILE	*getinfile	__PR((void));
+EXPORT	MYFILE	*getinfile	__PR((void));
 EXPORT	int	get_histlen	__PR((void));
 EXPORT	void	chghistory	__PR((char *cp));
 LOCAL	void	changehistory	__PR((int n));
@@ -221,8 +233,9 @@ LOCAL	wchar_t	*undo_del	__PR((wchar_t *lp, wchar_t *cp,
 						unsigned int *lenp));
 LOCAL	char	*strwchr	__PR((char *s, wchar_t c));
 LOCAL	wchar_t	*xpwcs		__PR((wchar_t *cp));
+LOCAL	wchar_t *xp_tilde	__PR((char *ns, int *delp));
 LOCAL	wchar_t	*xp_files	__PR((wchar_t *lp, wchar_t *cp, BOOL show,
-						int *multip));
+						int *multip, int *delp));
 LOCAL	wchar_t	*exp_files	__PR((wchar_t **lpp, wchar_t *cp,
 						unsigned int *lenp,
 						unsigned int *maxlenp,
@@ -233,13 +246,13 @@ LOCAL	wchar_t	*esc_process	__PR((int xc, wchar_t *lp, wchar_t *cp,
 						unsigned int *lenp));
 LOCAL	wchar_t	*sget_line	__PR((void));
 LOCAL	wchar_t	*iget_line	__PR((void));
-EXPORT	char	*make_line	__PR((int (*f)(FILE *), FILE *arg));
-LOCAL	char	*fread_line	__PR((FILE *f));
-EXPORT	char	*get_line	__PR((int n, FILE *f));
-EXPORT	void	put_history	__PR((FILE *f, int intrflg));
+EXPORT	char	*make_line	__PR((int (*f)(MYFILE *), MYFILE *arg));
+LOCAL	char	*fread_line	__PR((MYFILE *f));
+EXPORT	char	*get_line	__PR((int n, MYFILE *f));
+EXPORT	void	put_history	__PR((MYFILE *f, int intrflg));
 EXPORT	void	save_history	__PR((int intrflg));
 EXPORT	void	read_init_history	__PR((void));
-EXPORT	void	readhistory	__PR((FILE *f));
+EXPORT	void	readhistory	__PR((MYFILE *f));
 LOCAL	void	term_init	__PR((void));
 LOCAL	void	tty_init	__PR((void));
 LOCAL	void	tty_term	__PR((void));
@@ -257,22 +270,24 @@ extern	char	*inithome;
 extern	BOOL	ins_mode;
 extern	BOOL	i_should_echo;
 
-LOCAL	FILE	*infile		= 0;
-LOCAL	HISTPTR	first_line	= (HISTPTR) NULL;
-LOCAL	HISTPTR	last_line	= (HISTPTR) NULL;
+LOCAL	MYFILE	*infile		= 0;			/* FILE * to read frm */
+LOCAL	HISTPTR	first_line	= (HISTPTR) NULL;	/* Oldest line	    */
+LOCAL	HISTPTR	last_line	= (HISTPTR) NULL;	/* Newest line in h   */
 LOCAL	HISTPTR	rub_line	= (HISTPTR) NULL;
 LOCAL	HISTPTR	del_line	= (HISTPTR) NULL;
-LOCAL	char	*hfilename	= NULL;
-LOCAL	char	*line_pointer	= NULL;
-LOCAL	wchar_t	*wline_pointer	= NULL;
-LOCAL	char	*iprompt	= NULL;
-LOCAL	int	histlen		= 0;
-LOCAL	int	no_lines	= 0;
-LOCAL	BUF	buf		= {0};
-LOCAL	char	mapesc		= '\0';
+LOCAL	char	*hfilename	= NULL;			/* Abs history path  */
+LOCAL	char	*line_pointer	= NULL;			/* Temp MB line ptr  */
+LOCAL	wchar_t	*wline_pointer	= NULL;			/* Temp WC line ptr  */
+LOCAL	char	*iprompt	= NULL;			/* Current promot    */
+LOCAL	int	histlen		= 0;			/* Max allowed h len */
+LOCAL	int	no_lines	= 0;			/* Current hist len  */
+LOCAL	BUF	buf		= {0};			/* BUF to optimize   */
+LOCAL	char	mapesc		= '\0';			/* ESC char for map  */
 #ifdef	notneeded
 LOCAL	int	eof;
 #endif
+EXPORT	BOOL	(*__ign_eof)	__PR((void));
+
 
 
 /* Begin wide string support routines -------> */
@@ -402,7 +417,7 @@ tombs(cbuf, bsize, ws, wlen)
 /*
  * Return actual input FILE *
  */
-EXPORT FILE *
+EXPORT MYFILE *
 getinfile()
 {
 	return (infile);
@@ -464,8 +479,17 @@ init_input()
 #ifdef DEBUGX
 	printf("init_input()\r\n");
 #endif
-	if ((p = getcurenv(histname)) == NULL) {
-		p = "100";
+	/*
+	 * First check for "HISTSIZE" as this is POSIX
+	 */
+	if ((p = getcurenv(histsizename)) != NULL) {
+		/* EMPTY */;
+	} else if ((p = getcurenv(histname)) == NULL) {
+		/*
+		 * If our historic name "HISTORY" is not present, use the
+		 * minimum size required by POSIX.
+		 */
+		p = "128";
 		ev_insert(concat(histname, eql, p, (char *)NULL));
 	}
 	chghistory(p);
@@ -730,8 +754,8 @@ chlen(c)
 		return (1);
 #endif
 	}
-	if (c > 0xFF)
-		return (11);
+	if (c > 0xFF)		/* UNICODE	*/
+		return (11);	/* "'%10.10X"	*/
 	if (c & 0x80)
 		return (2 + !iswprint(c&0177));
 	return (2);
@@ -1091,7 +1115,7 @@ append_line(linep, len, pos)
 	wchar_t		wline[512];
 	wchar_t		*wp;
 
-	wp = towcs(wline, sizeof (wline), linep, len);
+	wp = towcs(wline, sizeof (wline) / sizeof (wline[0]), linep, len);
 	if (wp == NULL)
 		return;
 
@@ -1158,7 +1182,11 @@ append_hline(linep, len)
 
 	len += p->h_len;
 	lp = malloc(len * sizeof (*lp));
+#ifdef	USE_ANSI_NL_SEPARATOR
 	anl[0] = '\205';
+#else
+	anl[0] = '\n';
+#endif
 	anl[1] = '\0';
 	wcscatl(lp, p->h_line, anl, linep, (wchar_t *)NULL);
 	free(p->h_line);
@@ -1287,7 +1315,8 @@ match_hist(pattern)
 		wpattern[1] = '\0';
 		wp = wpattern;
 	} else {
-		wp = towcs(wpattern, sizeof (wpattern), pattern, -1);
+		wp = towcs(wpattern, sizeof (wpattern) / sizeof (wpattern[0]),
+								pattern, -1);
 		if (wp == NULL)
 			return (NULL);
 	}
@@ -1418,7 +1447,6 @@ edit_line(cur_line)
 			show_files(lp, cp);
 			break;
 		case '\t':
-		case EXPAND:
 			if (multi) {
 				show_files(lp, cp);
 				break;
@@ -1455,7 +1483,8 @@ edit_line(cur_line)
 		case CTRLD:
 			multi = 0;
 			if ((cp == lp && !wcslen(lp) &&
-				!ev_eql(ignoreeofname, on)) || c == EOF) {
+				!ev_eql(ignoreeofname, on) &&
+				!(__ign_eof && (*__ign_eof)())) || c == EOF) {
 				delim = EOF;
 				clearline(lp, cp);
 				reset_tty_modes();
@@ -1477,6 +1506,17 @@ edit_line(cur_line)
 				beep();
 
 			break;
+		case CTRLC:
+			multi = 0;
+			delim = CTRLC;
+#ifndef	LIB_SHEDIT
+			ctlc++;			/* Mark for bsh */
+#endif
+			*lp = 0;
+			llen = 1;		/* NULL Byte !!! */
+			cp = lp;
+			writes("^C");
+			return (EOF);
 		case CTRLU:
 			multi = 0;
 			clearline(lp, cp);
@@ -1531,11 +1571,15 @@ edit_line(cur_line)
 			bflush();
 			break;
 		case QUOTECH:
+		case CTRLV: {	int	oc = c;
+
 			set_insert_modes(infile);
 			c = _nextwc();
 
-			if ((towupper(c) < 0140) && c >= '@')
+			if (oc == QUOTECH &&
+			    (towupper(c) < 0140) && c >= '@')
 				c &= 037;
+			}
 		default:
 			multi = 0;
 			if (i_should_echo || !iswprint(c))
@@ -1660,6 +1704,48 @@ xpwcs(cp)
 }
 
 /*
+ * Expand tilde.
+ * delp returns the number of characters to delete left to the cursor.
+ * Returns the allocated replacement as wide string.
+ */
+LOCAL wchar_t *
+xp_tilde(ns, delp)
+	char	*ns;
+	int	*delp;
+{
+	struct passwd	*pw;
+	char		*ep = NULL;	/* Keep GCC happy ;-) */
+	int		dels = 0;
+
+	if (*ns == '\0') {
+		dels = 1;
+		ep = getcurenv("HOME");
+	} else if (*ns == '+' && ns[1] == '\0') {
+		dels = 2;
+		ep = getcurenv("PWD");
+	} else if (*ns == '-' && ns[1] == '\0') {
+		dels = 2;
+		ep = getcurenv("OLDPWD");
+	}
+	if (dels) {
+		if (ep == NULL)
+			return (0);
+		if (delp)
+			*delp = dels;
+		return (towcs((wchar_t *)NULL, 0, ep, -1));
+	}
+	dels = strlen(ns) + 1;
+
+	pw = getpwnam(ns);
+	endpwent();
+	if (pw == NULL)
+		return (0);
+	if (delp)
+		*delp = dels;
+	return (towcs((wchar_t *)NULL, 0, pw->pw_dir, -1));
+}
+
+/*
  * The characters ' ' ... '&' are handled by the shell parser as word separators
  */
 LOCAL char wschars[] = " \t<>%|;()&"; /* Chars that are word separators */
@@ -1668,13 +1754,16 @@ LOCAL char wschars[] = " \t<>%|;()&"; /* Chars that are word separators */
  * Expand filenames (implement file name completion).
  * This is the basic function that either expands or lists filenames.
  * It gets called by exp_files() and by show_files().
+ *
+ * Returns pointer with string to insert
  */
 LOCAL wchar_t *
-xp_files(lp, cp, show, multip)
+xp_files(lp, cp, show, multip, delp)
 	register wchar_t	*lp;	/* Begin of current line	*/
 	register wchar_t	*cp;	/* Current cursor position	*/
 		BOOL	show;	/* Show list of multi-results		*/
 		int	*multip; /* Found mult results in non show mode */
+		int	*delp;	/* Chars to delete before cursor	*/
 {
 	Tnode	*np;
 	Tnode	*l1;
@@ -1737,12 +1826,22 @@ again:
 	if (tp == NULL)
 		return (0);
 	wcsncpy(tp, wp, len);
-	tp[len] = '*';
-	tp[len+1] = '\0';
+	tp[len] = '\0';
+	if (tp[0] != '~') {
+		tp[len] = '*';
+		tp[len+1] = '\0';
+	}
 	ns = tombs(NULL, 0, tp, -1);
 	free(tp);
 	if (ns == NULL)
 		return (0);
+
+	if (ns[0] == '~')
+		return (xp_tilde(++ns, delp));
+
+	/*
+	 * Call path name expand routing from bsh
+	 */
 	np = expand(ns);
 	free(ns);
 	if (np == NULL) {
@@ -1873,8 +1972,9 @@ exp_files(lpp, cp, lenp, maxlenp, multip)
 {
 	wchar_t	*p;
 	int	diff;
+	int	del = 0;
 
-	p = xp_files(*lpp, cp, FALSE, multip);
+	p = xp_files(*lpp, cp, FALSE, multip, &del);
 	if (p) {
 		diff = wcslen(p);
 		if (*lenp + diff >= *maxlenp) {
@@ -1883,6 +1983,10 @@ exp_files(lpp, cp, lenp, maxlenp, multip)
 			diff = cp - *lpp;
 			*lpp = new_line(*lpp, *lenp, *maxlenp);
 			cp = *lpp + diff;
+		}
+		while (--del >= 0 && cp > *lpp) {
+			del_char(--cp);
+			(*lenp)--;
 		}
 		cp = insert(cp, p, lenp);
 		free(p);
@@ -1903,7 +2007,7 @@ show_files(lp, cp)
 {
 		wchar_t		*p;
 
-	p = xp_files(lp, cp, TRUE, NULL);
+	p = xp_files(lp, cp, TRUE, NULL, NULL);
 	if (p)
 		free(p);
 	redisp(lp, cp);
@@ -2165,8 +2269,8 @@ iget_line()
 /* VARARGS1 */
 EXPORT char *
 make_line(f, arg)
-	register int	(*f) __PR((FILE *));
-	register FILE	*arg;
+	register int	(*f) __PR((MYFILE *));
+	register MYFILE	*arg;
 {
 	register unsigned	maxl;
 	register unsigned	llen;
@@ -2203,9 +2307,9 @@ make_line(f, arg)
  */
 LOCAL char *
 fread_line(f)
-	FILE	*f;
+	MYFILE	*f;
 {
-	extern int	fgetc __PR((FILE *));
+	extern int	fgetc __PR((MYFILE *));
 
 	return (make_line(fgetc, f));
 }
@@ -2220,7 +2324,7 @@ fread_line(f)
 EXPORT char *
 get_line(n, f)
 	int	n;		/* Prompt index */
-	FILE	*f;		/* FILE * to read from */
+	MYFILE	*f;		/* FILE * to read from */
 {
 	if (line_pointer) {
 		free(line_pointer);
@@ -2271,7 +2375,7 @@ get_line(n, f)
  */
 EXPORT void
 put_history(f, intrflg)
-	register FILE	*f;
+	register MYFILE	*f;
 	register int	intrflg;
 {
 	register HISTPTR p;
@@ -2287,10 +2391,20 @@ put_history(f, intrflg)
 		} else {
 			char	line[512];
 			char	*lp;
+#ifndef	USE_ANSI_NL_SEPARATOR
+			char	*cp;
+#endif
 
 			lp = tombs(line, sizeof (line), p->h_line, -1);
 			if (lp == NULL)
 				continue;
+
+#ifndef	USE_ANSI_NL_SEPARATOR
+			for (cp = lp; *cp; cp++) {
+				if (*cp == '\n')
+					*cp = '\205';
+			}
+#endif
 			/*
 			 * XXX could be fprintf(f, "%ws\n", p->h_line);
 			 */
@@ -2311,7 +2425,7 @@ EXPORT void
 save_history(intrflg)
 	int intrflg;
 {
-	FILE	*f;
+	MYFILE	*f;
 
 	if (no_lines == 0)	/* don't damage history File */
 		return;
@@ -2329,9 +2443,20 @@ save_history(intrflg)
 EXPORT void
 read_init_history()
 {
-	FILE	*f;
+	MYFILE	*f;
 
-	hfilename = concat(inithome, slash, historyname, (char *)NULL);
+	/*
+	 * First check for "HISTFILE" as this is required by POSIX.
+	 */
+	if ((hfilename = getcurenv(histfilename)) != NULL) {
+		hfilename = concat(hfilename, (char *)NULL);
+	} else {
+		/*
+		 * Our historic name is "$HOME/.history", use it whenever
+		 * "HISTFILE" is not present.
+		 */
+		hfilename = concat(inithome, slash, historyname, (char *)NULL);
+	}
 	f = fileopen(hfilename, for_read);
 	if (f) {
 		readhistory(f);
@@ -2345,32 +2470,81 @@ read_init_history()
  */
 EXPORT void
 readhistory(f)
-	register FILE	*f;
+	register MYFILE	*f;
 {
-		char	line[512];
-	register char	*s = line;
+#define	BUF_SIZE	8192		/* XXX Dymanic resize ???	*/
+		char	rbuf[BUF_SIZE+1]; /* + space for null byte	*/
+	register char	*s = rbuf;	/* Start of current line	*/
+	register char	*ep;		/* End of current line		*/
 	register int	len;
+	register int	amt;
 
-	while ((len = fgetline(f, s, sizeof (line))) >= 0) {
-		if (len == 0)
-			continue;
+	amt = BUF_SIZE;
+	rbuf[amt] = '\0';		/* Final null byte after rbuf */
+	while ((amt = fileread(f, s, amt)) > 0) {
+		amt += s - rbuf;	/* Continue to work on whole rest */
+		s = rbuf;
+
+	again:
+		ep = strchr(s, '\n');
+		if (ep == NULL && s > rbuf && amt >= BUF_SIZE) {
+			/*
+			 * If no '\n' could be found, we need to check whether
+			 * we are in the middle of a line. If the buffer was
+			 * not full, we are at EOF already.
+			 */
+			amt = amt - (s - rbuf);	/* Compute unprocessed amt  */
+			movebytes(s, rbuf, amt); /* Move to the start of buf */
+			s = &rbuf[amt];		/* Point past old content   */
+			amt = BUF_SIZE - amt;	/* Compute remaining space  */
+			continue;		/* Read again to fill buf   */
+		}
+		if (ep)				/* Current line ends in '\n' */
+			*ep = '\0';		/* so clear it		    */
+
+#ifdef	__skip__bash_timestamps__
 		/*
 		 * Skip bash timestamps
 		 */
-		if (line[0] == '#' && line[1] == '+') {
+		if (s[0] == '#' && s[1] == '+') {
 			register char	*p;
 
-			for (p = &line[2]; *p != '\0'; p++)
+			for (p = &s[2]; *p != '\0'; p++)
 				if (!_isdigit((unsigned char)*p))
 					break;
 			if (*p == '\0')
 				continue;
+			s = p;
 		}
-#ifdef	DEBUG
-		fprintf(stderr, "appending: %s\r\n", s);
-#endif
+#endif	/* __skip__bash_timestamps__ */
+
+#ifdef	USE_ANSI_NL_SEPARATOR
 		len = strlen(s);
+#else
+		{
+			char *cp;
+			for (cp = s, len = 0; *cp; cp++, len++) {
+				if (*cp == '\205')
+					*cp = '\n';
+			}
+		}
+#endif
+#ifdef	DEBUG
+		fprintf(stderr, "appending: %d bytes: %s\r\n", len, s);
+#endif
 		append_line(s, (unsigned)len+1, len);
+
+		if (ep) {			/* Found '\n', check rest */
+			s = &ep[1];
+			if ((s - rbuf) >= amt && amt < BUF_SIZE) /* EOF */
+				break;
+			goto again;
+		} else {
+			if (amt < BUF_SIZE)			/* EOF */
+				break;
+			s = rbuf;
+			amt = BUF_SIZE;
+		}
 	}
 }
 

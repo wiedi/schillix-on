@@ -53,6 +53,7 @@ MANFILES=				\
 	bdiff.1				\
 	bfs.1				\
 	bosh.1				\
+	bosh-errstr.1			\
 	break.1				\
 	builtin.1			\
 	cal.1				\
@@ -86,6 +87,7 @@ MANFILES=				\
 	compress.1			\
 	cp.1				\
 	cpio.1				\
+	cpp.1				\
 	cputrack.1			\
 	crle.1				\
 	crontab.1			\
@@ -113,6 +115,7 @@ MANFILES=				\
 	dispgid.1			\
 	dispuid.1			\
 	dos2unix.1			\
+	dosh.1				\
 	download.1			\
 	dpost.1				\
 	dtappsession.1			\
@@ -172,6 +175,7 @@ MANFILES=				\
 	grep.1				\
 	groups.1			\
 	hash.1				\
+	hdump.1				\
 	head.1				\
 	history.1			\
 	hostid.1			\
@@ -219,6 +223,7 @@ MANFILES=				\
 	listusers.1			\
 	ln.1				\
 	loadkeys.1			\
+	local.1				\
 	locale.1			\
 	localedef.1			\
 	logger.1			\
@@ -244,6 +249,7 @@ MANFILES=				\
 	Makefile			\
 	makekey.1			\
 	man.1				\
+	map.1				\
 	mconnect.1			\
 	mcs.1				\
 	mdb.1				\
@@ -310,6 +316,7 @@ MANFILES=				\
 	pfexec.1			\
 	pg.1				\
 	pgrep.1				\
+	pgrp.1				\
 	pkcs11_inspect.1		\
 	pkginfo.1			\
 	pkgmk.1				\
@@ -375,6 +382,7 @@ MANFILES=				\
 	rwho.1				\
 	sag.1				\
 	sar.1				\
+	savehistory.1			\
 	sccs-admin.1			\
 	sccs-cdc.1			\
 	sccs-comb.1			\
@@ -420,6 +428,7 @@ MANFILES=				\
 	ssh-keyscan.1			\
 	ssh-socks5-proxy-connect.1	\
 	ssh.1				\
+	star.1				\
 	strchg.1			\
 	strings.1			\
 	strip.1				\
@@ -553,7 +562,9 @@ MANSO=					\
 	iAPX286.1			\
 	if.1				\
 	intro.1				\
+	jbosh.1				\
 	jsh.1				\
+	killpg.1			\
 	ldapadd.1			\
 	neqn.1				\
 	nis.1				\
@@ -704,7 +715,9 @@ i860.1			:= SOFILE = man1/machid.1
 iAPX286.1		:= SOFILE = man1/machid.1
 if.1			:= SOFILE = man1/shell_builtins.1
 intro.1			:= SOFILE = man1/Intro.1
+jbosh.1			:= SOFILE = man1/bosh.1
 jsh.1			:= SOFILE = man1/sh.1
+killpg.1		:= SOFILE = man1/kill.1
 ldapadd.1		:= SOFILE = man1/ldapmodify.1
 neqn.1			:= SOFILE = man1/eqn.1
 nis.1			:= SOFILE = man1/NIS+.1

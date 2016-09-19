@@ -27,8 +27,8 @@
 #pragma ident	"@(#)sym.h	1.8	05/06/08 SMI"	/* SVr4.0 1.6	*/
 #endif
 /*
- * This file contains modifications Copyright 2009-2013 J. Schilling
- * @(#)sym.h	1.5 13/09/23 2009-2013 J. Schilling
+ * Copyright 2009-2016 J. Schilling
+ * @(#)sym.h	1.10 16/08/28 2009-2016 J. Schilling
  */
 /*
  *	UNIX shell
@@ -36,6 +36,7 @@
 
 
 /* symbols for parsing */
+#define	NOTSYM	'!'		/* "!"		*/
 #define	DOSYM	0405		/* "do"		*/
 #define	FISYM	0420		/* "fi"		*/
 #define	EFSYM	0422		/* "elif"	*/
@@ -51,6 +52,8 @@
 #define	WHSYM	0433		/* "while"	*/
 #define	UNSYM	0427		/* "until"	*/
 #define	CASYM	0417		/* "case"	*/
+#define	SELSYM 	0470		/* "select"	*/
+#define	TIMSYM	0474		/* "time"	*/
 
 #define	SYMREP	04000		/* symbols with doubled characters */
 #define	ECSYM	(SYMREP|';')	/* ";;"		*/
@@ -64,6 +67,8 @@
 /* arg to `cmd' */
 #define	NLFLG	1		/* treat NL as ';' */
 #define	MTFLG	2		/* empty cmd does not cause a syntax error */
+#define	SEMIFLG	4		/* semi-colon after NL is ok */
+#define	DOIOFLG	8		/* Parse I/O first in item() */
 
 /* for peekc */
 #define	MARK	0x80000000

@@ -1,6 +1,6 @@
-/* @(#)fgetaline.c	1.1 11/10/26 Copyright 2011 J. Schilling */
+/* @(#)fgetaline.c	1.5 15/05/09 Copyright 2011-2015 J. Schilling */
 /*
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2015 J. Schilling
  *
  */
 /*
@@ -10,6 +10,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -30,9 +32,15 @@ fgetaline(f, bufp, lenp)
 			char	**bufp;
 	register	size_t	*lenp;
 {
-#ifdef	HAVE_GETDELIM
+#if	defined(HAVE_GETDELIM) || !defined(USE_FGETS_FOR_FGETALINE)
 	return (getdelim(bufp, lenp, '\n', f));
 #else
+	/*
+	 * WARNING: fgets() cannot signal that the read line-buffer
+	 * WARNING: has embedded nul bytes. We cannot distinguish
+	 * WARNING: read nul bytes from the inserted nul past '\n'
+	 * WARNING: without knowing file positions before and after.
+	 */
 	int	eof;
 	register size_t used = 0;
 	register size_t line_size;
@@ -41,13 +49,15 @@ fgetaline(f, bufp, lenp)
 	if (bufp == NULL || lenp == NULL) {
 		seterrno(EINVAL);
 		return (-1);
-	} 
+	}
 
 	line_size = *lenp;
 	line = *bufp;
 	if (line == NULL || line_size == 0) {
-		line_size = DEF_LINE_SIZE;
-		line = (char *) malloc(line_size);
+		if (line_size == 0)
+			line_size = DEF_LINE_SIZE;
+		if (line == NULL)
+			line = (char *) malloc(line_size);
 		if (line == NULL)
 			return (-1);
 	}

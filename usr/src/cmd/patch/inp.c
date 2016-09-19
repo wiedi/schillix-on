@@ -1,15 +1,30 @@
-/* @(#)inp.c	1.12 11/11/07 2011 J. Schilling */
+/* @(#)inp.c	1.17 15/06/02 2011-2015 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)inp.c	1.12 11/11/07 2011 J. Schilling";
+	"@(#)inp.c	1.17 15/06/02 2011-2015 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986, 1988 Larry Wall
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2015 J. Schilling
  *
- *	This program may be copied as long as you don't try to make any
- *	money off of it, or pretend that you wrote it.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition is met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #define	EXT	extern
@@ -28,9 +43,10 @@ static char **i_ptr;			/* pointers to lines in i_womp */
 
 static int tifd = -1;			/* plan b virtual string array */
 static char *tibuf[2];			/* plan b buffers */
+static size_t tibufsize;		/* size of plan b buffers */
 static LINENUM tiline[2] = {-1, -1};	/* 1st line in each buffer */
 static LINENUM lines_per_buf;		/* how many lines per buffer */
-static int tireclen;			/* length of records in tmp file */
+static size_t	tireclen;		/* length of records in tmp file */
 
 static	void	plan_b __PR((char *filename));
 static	bool	rev_in_string __PR((char *string));
@@ -64,7 +80,7 @@ re_input()
 
 void
 scan_input(filename)
-	char *filename;
+	char *filename;			/* File to patch */
 {
 	if (!plan_a(filename))
 		plan_b(filename);
@@ -133,7 +149,7 @@ _("Can't find %s--attempting to get it from SCCS.\n"),
 	if (i_womp == Nullch)
 		return (FALSE);
 	if ((ifd = open(filename, 0)) < 0)
-		fatal(_("Can't open file %s\n"), filename);
+		pfatal(_("Can't open file %s\n"), filename);
 	if (read(ifd, i_womp, (int)i_size) != i_size) {
 		Close(ifd);	/* probably means i_size > 15 / 16 bits worth */
 		free(i_womp);	/* at this point it doesn't matter if i_womp */
@@ -196,22 +212,23 @@ _("Good.  This file appears to be the %s version.\n"),
 
 static void
 plan_b(filename)
-	char *filename;
+	char *filename;			/* File to patch */
 {
 	FILE *ifp;
-	int i = 0;
-	int maxlen = 1;
+	ssize_t	i = 0;
+	size_t	maxlen = 1;
+
 	bool found_revision = (revision == Nullch);
 
 	using_plan_a = FALSE;
 	if ((ifp = fopen(filename, "r")) == Nullfp)
-		fatal(_("Can't open file %s\n"), filename);
+		pfatal(_("Can't open file %s\n"), filename);
 	if ((tifd = creat(TMPINNAME, 0666)) < 0)
-		fatal(_("Can't open file %s\n"), TMPINNAME);
-	while (fgets(buf, sizeof (buf), ifp) != Nullch) {
+		pfatal(_("Can't open file %s\n"), TMPINNAME);
+	while ((i = fgetaline(ifp, &buf, &bufsize)) > 0) {
 		if (revision != Nullch && !found_revision && rev_in_string(buf))
 			found_revision = TRUE;
-		if ((i = strlen(buf)) > maxlen)
+		if (i > maxlen)
 			maxlen = i;	/* find longest line */
 	}
 	if (revision != Nullch) {
@@ -235,25 +252,27 @@ _("Good.  This file appears to be the %s version.\n"),
 		}
 	}
 	Fseek(ifp, (off_t)0, 0);	/* rewind file */
-	lines_per_buf = BUFFERSIZE / maxlen;
+	for (tibufsize = BUFFERSIZE; tibufsize < maxlen; tibufsize *= 2)
+		;
+	lines_per_buf = tibufsize / maxlen;
 	tireclen = maxlen;
-	tibuf[0] = malloc((MEM)(BUFFERSIZE + 1));
-	tibuf[1] = malloc((MEM)(BUFFERSIZE + 1));
+	tibuf[0] = malloc((MEM)(tibufsize + 1));
+	tibuf[1] = malloc((MEM)(tibufsize + 1));
 	if (tibuf[1] == Nullch)
 		fatal(_("Can't seem to get enough memory.\n"));
 
 	for (i = 1; ; i++) {
 		if (! (i % lines_per_buf)) /* new block */
-			if (write(tifd, tibuf[0], BUFFERSIZE) < BUFFERSIZE)
-				fatal(_("patch: can't write temp file.\n"));
+			if (write(tifd, tibuf[0], tibufsize) < tibufsize)
+				pfatal(_("can't write temp file.\n"));
 		if (fgets(tibuf[0] + maxlen * (i%lines_per_buf),
 		    maxlen + 1, ifp) == Nullch) {
 			input_lines = i - 1;
 			if (i % lines_per_buf) {
-				if (write(tifd, tibuf[0], BUFFERSIZE) <
-				    BUFFERSIZE) {
-					fatal(
-					_("patch: can't write temp file.\n"));
+				if (write(tifd, tibuf[0], tibufsize) <
+				    tibufsize) {
+					pfatal(
+					_("can't write temp file.\n"));
 				}
 			}
 			break;
@@ -262,7 +281,7 @@ _("Good.  This file appears to be the %s version.\n"),
 	Fclose(ifp);
 	Close(tifd);
 	if ((tifd = open(TMPINNAME, 0)) < 0) {
-		fatal(_("Can't reopen file %s\n"), TMPINNAME);
+		pfatal(_("Can't reopen file %s\n"), TMPINNAME);
 	}
 }
 
@@ -287,9 +306,9 @@ ifetch(line, whichbuf)
 			whichbuf = 1;
 		else {
 			tiline[whichbuf] = baseline;
-			Lseek(tifd, baseline / lines_per_buf * BUFFERSIZE, 0);
-			if (read(tifd, tibuf[whichbuf], BUFFERSIZE) < 0) {
-				fatal(_("Error reading tmp file %s.\n"),
+			Lseek(tifd, baseline / lines_per_buf * tibufsize, 0);
+			if (read(tifd, tibuf[whichbuf], tibufsize) < 0) {
+				pfatal(_("Error reading tmp file %s.\n"),
 				    TMPINNAME);
 			}
 		}
@@ -309,11 +328,11 @@ rev_in_string(string)
 	if (revision == Nullch)
 		return (TRUE);
 	patlen = strlen(revision);
-	if (strnEQ(string, revision, patlen) && isspace(string[patlen]))
+	if (strnEQ(string, revision, patlen) && isspace(UCH string[patlen]))
 		return (TRUE);
 	for (s = string; *s; s++) {
-		if (isspace(*s) && strnEQ(s+1, revision, patlen) &&
-		    isspace(s[patlen+1])) {
+		if (isspace(UCH *s) && strnEQ(s+1, revision, patlen) &&
+		    isspace(UCH s[patlen+1])) {
 			return (TRUE);
 		}
 	}

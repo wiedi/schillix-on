@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)io.c	1.20 13/09/25 2008-2013 J. Schilling
+ * @(#)io.c	1.29 16/08/28 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)io.c	1.20 13/09/25 2008-2013 J. Schilling";
+	"@(#)io.c	1.29 16/08/28 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -77,7 +77,7 @@ static	void	pushtemp	__PR((int fd, struct tempblk *tb));
 	void	chkpipe		__PR((int *pv));
 	int	chkopen		__PR((unsigned char *idf, int mode));
 	void	renamef		__PR((int f1, int f2));
-	int	create		__PR((unsigned char *s));
+	int	create		__PR((unsigned char *s, int iof));
 	int	tmpfil		__PR((struct tempblk *tb));
 	void	copy		__PR((struct ionod *ioparg));
 	void	link_iodocs	__PR((struct ionod *i));
@@ -180,19 +180,24 @@ chkopen(idf, mode)
 
 	if ((rc = open((char *)idf, mode, 0666)) < 0) {
 		failed(idf, badopen);
-		/* NOTREACHED */
+		/*
+		 * Returns only if flags & noexit is set.
+		 */
 	} else {
 		struct stat sb;
 
 		if (fstat(rc, &sb) < 0 || S_ISDIR(sb.st_mode)) {
 			close(rc);
 			failed(idf, eisdir);
-			/* NOTREACHED */
+			/*
+			 * Returns only if flags & noexit is set.
+			 */
+			return (-1);
 		}
 		return (rc);
 	}
 
-	return (-1);		/* Not reached, but keeps GCC happy */
+	return (-1);
 }
 
 /*
@@ -229,18 +234,53 @@ renamef(f1, f2)
 }
 
 int
-create(s)
+create(s, iof)
 	unsigned char	*s;
+	int		iof;
 {
 	int	rc;
+#ifdef	O_CREAT
+	int	omode = O_WRONLY|O_CREAT|O_TRUNC;
+#endif
+#ifdef	DO_NOCLOBBER
+	struct stat statb;
 
+	if ((flags2 & noclobberflg) && (iof & IOCLOB) == 0) {
+		if (stat((char *)s, &statb) >= 0) {
+			if (S_ISREG(statb.st_mode)) {
+				failed(s, eclobber);
+				/*
+				 * Returns only if flags & noexit is set.
+				 */
+				return (-1);
+			}
+		} else {
+			statb.st_mode = 0;
+		}
+#ifdef	O_CREAT
+		/*
+		 * As we here assume that no plain file of that name exists,
+		 * it would be wrong truncate the file.
+		 */
+		omode &= ~O_TRUNC;
+		if (statb.st_mode == 0)
+			omode |= O_EXCL;
+#endif
+	}
+#endif
+#ifdef	O_CREAT
+	if ((rc = open((char *)s, omode, 0666)) < 0) {
+#else
 	if ((rc = creat((char *)s, 0666)) < 0) {
+#endif
 		failed(s, badcreate);
-		/* NOTREACHED */
-	} else
+		/*
+		 * Returns only if flags & noexit is set.
+		 */
+	} else {
 		return (rc);
-
-	return (-1);		/* Not reached, but keeps GCC happy */
+	}
+	return (-1);
 }
 
 
@@ -295,6 +335,7 @@ copy(ioparg)
 	unsigned int	c;
 	unsigned char	*ends;
 	unsigned char	*start;
+	ptrdiff_t	poff;
 	int		fd;
 	int		i;
 	int		stripflg;
@@ -319,6 +360,7 @@ copy(ioparg)
 		iotemp = iop;
 
 		cline = clinep = start = locstak();
+		poff = 0;
 		if (stripflg) {
 			iop->iofile &= ~IOSTRIP;
 			while (*ends == '\t')
@@ -335,7 +377,7 @@ copy(ioparg)
 				while (!eolchar(c)) {
 					pc = readw(c);
 					while (*pc) {
-						GROWSTAK(clinep);
+						GROWSTAK2(clinep, poff);
 						*clinep++ = *pc++;
 					}
 					c = readwc();
@@ -349,7 +391,7 @@ copy(ioparg)
 				while (!eolchar(c)) {
 					pc = readw(c);
 					while (*pc) {
-						GROWSTAK(clinep);
+						GROWSTAK2(clinep, poff);
 						*clinep++ = *pc++;
 					}
 					if (c == '\\') {
@@ -358,11 +400,11 @@ copy(ioparg)
 						/* BEGIN CSTYLED */
 						if (*pc) {
 							while (*pc) {
-								GROWSTAK(clinep);
+								GROWSTAK2(clinep, poff);
 								*clinep++ = *pc++;
 							}
 						} else {
-							GROWSTAK(clinep);
+							GROWSTAK2(clinep, poff);
 							*clinep++ = *pc;
 						}
 						/* END CSTYLED */
@@ -371,21 +413,30 @@ copy(ioparg)
 				}
 			}
 
-			GROWSTAK(clinep);
+			GROWSTAK2(clinep, poff);
 			*clinep = 0;
+			if (poff) {
+				cline += poff;
+				start += poff;
+				poff = 0;
+			}
 			if (eof || eq(cline, ends)) {
 				if ((i = cline - start) > 0)
 					write(fd, start, i);
 				break;
 			} else {
-				GROWSTAK(clinep);
+				GROWSTAK2(clinep, poff);
 				*clinep++ = NL;
+				if (poff) {
+					cline += poff;
+					start += poff;
+					poff = 0;
+				}
 			}
 
-			if ((i = clinep - start) < CPYSIZ)
+			if ((i = clinep - start) < CPYSIZ) {
 				cline = clinep;
-			else
-			{
+			} else {
 				write(fd, start, i);
 				cline = clinep = start;
 			}
@@ -416,6 +467,11 @@ link_iodocs(i)
 			    size_left, "%u", serial);
 			serial++;
 			r = link(i->ioname, (char *)tmpout);
+
+#ifdef	HAVE_SYMLINK	/* Need to support Haiku */
+			if (r == -1 && errno != EEXIST)
+				r = symlink(i->ioname, (char *)tmpout);
+#endif
 			if ((serial >= UINT_MAX) || (len >= size_left)) {
 			/*
 			 * We've already cycled through all the possible
@@ -430,8 +486,9 @@ link_iodocs(i)
 		if (r != -1) {
 			i->iolink = (char *)make(tmpout);
 			i = i->iolst;
-		} else
+		} else {
 			failed(tmpout, badcreate);
+		}
 
 	}
 }

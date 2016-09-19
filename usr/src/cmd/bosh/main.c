@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)main.c	1.26 13/09/24 2008-2013 J. Schilling
+ * @(#)main.c	1.58 16/09/09 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)main.c	1.26 13/09/24 2008-2013 J. Schilling";
+	"@(#)main.c	1.58 16/09/09 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -61,7 +61,9 @@ static	UConst char sccsid[] =
 #endif
 #include	"dup.h"
 #include	"sh_policy.h"
+#ifdef	DO_SYSALIAS
 #include	"abbrev.h"
+#endif
 #undef	feof
 #else
 #include	"sym.h"
@@ -74,7 +76,9 @@ static	UConst char sccsid[] =
 #include	<sys/wait.h>
 #include	"dup.h"
 #include	"sh_policy.h"
+#ifdef	DO_SYSALIAS
 #include	"abbrev.h"
+#endif
 #endif
 
 #ifdef RES
@@ -91,6 +95,8 @@ struct fileblk	stdfile;
 struct fileblk *standin = &stdfile;
 int mailchk = 0;
 
+static int	posix = 0;
+
 static unsigned char	*mailp;
 static long	*mod_time = 0;
 static BOOL login_shell = FALSE;
@@ -106,6 +112,9 @@ char **execargs = (char **)(-2);
 	int	main		__PR((int c, char *v[], char *e[]));
 static void	exfile		__PR((int prof));
 	void	chkpr		__PR((void));
+#ifdef	INTERACTIVE
+static void	editpr		__PR((int idx));
+#endif
 	void	settmp		__PR((void));
 static void	Ldup		__PR((int, int));
 	void	chkmail		__PR((void));
@@ -121,7 +130,6 @@ main(c, v, e)
 {
 	int		rflag = ttyflg;
 	int		rsflag = 1;	/* local restricted flag */
-	unsigned char	*flagc = flagadr;
 	struct namnod	*n;
 
 	init_sigval();
@@ -233,6 +241,62 @@ main(c, v, e)
 	    eq("-jbosh", simple((unsigned char *)*v)))
 		flags |= monitorflg;
 
+#ifdef	DO_POSIX_SH
+	/*
+	 * If the last path name component is "sh", set -o posix by default.
+	 * This may be the right way for Linux, but probably not for Solaris.
+	 */
+	if (eq("sh", simple((unsigned char *)*v)))
+		flags2 |= posixflg;
+#else
+#ifdef	DO_POSIX_PATH
+	/*
+	 * If the last path name component is not "sh", it may behave different.
+	 */
+	if (eq("sh", simple((unsigned char *)*v))) {
+#ifdef	HAVE_GETEXECNAME
+		const char	*exname = getexecname();
+#else
+			char	*exname = getexecpath();
+#endif
+		if (exname) {
+			if (strstr(exname, "/xpg4"))	/* X-Open interface? */
+				flags2 |= posixflg;
+
+#ifdef	POSIX_BOSH_PATH
+			if (eq(POSIX_BOSH_PATH, exname)) {
+				flags2 |= posixflg;
+			} else if (**v == '/' &&
+			    eq(POSIX_BOSH_PATH, (unsigned char *)*v)) {
+				flags2 |= posixflg;
+			} else {
+				char	*p;
+
+				/*
+				 * We like to recognise symlinks as well,
+				 * so we cannot base results on getexecname() or
+				 * getexecpath(). Use SIP_ONLY_PATH to only do
+				 * a PATH based search.
+				 */
+				p = searchfileinpath(*v, X_OK,
+					SIP_PLAIN_FILE |
+					SIP_ONLY_PATH |
+					SIP_NO_STRIPBIN, NULL);
+				if (p && eq(POSIX_BOSH_PATH, p))
+					flags2 |= posixflg;
+				if (p)
+					libc_free(p);
+			}
+#endif	/* POSIX_BOSH_PATH */
+#ifndef	HAVE_GETEXECNAME
+			libc_free(exname);
+#endif
+		}
+	}
+#endif	/* DO_POSIX_PATH */
+#endif	/* DO_POSIX_SH */
+	posix = flags2 & posixflg;	/* remember "auto-posix" value */
+
 	hcreate();
 	set_dotpath();
 
@@ -245,13 +309,7 @@ main(c, v, e)
 
 	if (dolc < 2) {
 		flags |= stdflg;
-		{
-
-			while (*flagc)
-				flagc++;
-			*flagc++ = STDFLG;
-			*flagc = 0;
-		}
+		setopts();				/* set flagadr */
 	}
 	if ((flags & stdflg) == 0)
 		dolc--;
@@ -289,13 +347,16 @@ main(c, v, e)
 	 */
 	if (setjmp(subshell)) {
 		freejobs();
+#ifdef	DO_SYSALIAS
 		/*
 		 * Shell scripts start with empty alias definitions.
 		 * Turn off all aliases and disable persistent aliases.
 		 */
 		ab_use(GLOBAL_AB, NULL);
 		ab_use(LOCAL_AB, NULL);
+#endif
 		flags |= subsh;
+		flags2 |= posix;	/* restore "auto-posix" value */
 	}
 
 	/*
@@ -323,6 +384,26 @@ main(c, v, e)
 
 	dfault(&mchknod, (unsigned char *)MAILCHECK);
 	mailchk = stoi(mchknod.namval);
+#ifdef	DO_PS34
+	dfault(&ps3nod, (unsigned char *)selectmsg);
+	dfault(&ps4nod, (unsigned char *)execpmsg);
+#endif
+#ifdef	DO_PPID
+	itos(getppid());
+	dfault(&ppidnod, numbuf);
+#ifdef	__readonly_ppid__
+	attrib((&ppidnod), N_RDONLY);
+#endif
+#endif
+#ifdef	DO_POSIX_CD
+	/*
+	 * XXX Should we set a timeout here in order to allow people to log in
+	 * XXX when the home directory hangs?
+	 * XXX Root should not have these problems as root's homedir is local.
+	 */
+	cwdget(CHDIR_P);		/* Verify/set PWD as with pwd -P */
+	attrib(&pwdnod, N_EXPORT);	/* Speedup nested "sh" calls	*/
+#endif
 
 	/* initialize OPTIND for getopt */
 
@@ -334,8 +415,7 @@ main(c, v, e)
 	 */
 	_sp = 1;
 
-	if ((beenhere++) == FALSE)	/* ? profile */
-	{
+	if ((beenhere++) == FALSE) {	/* ? profile */
 		if ((login_shell == TRUE) && (flags & privflg) == 0) {
 
 			/* system profile */
@@ -358,28 +438,29 @@ main(c, v, e)
 		}
 		if (rsflag == 0 || rflag == 0) {
 			if ((flags & rshflg) == 0) {
-				while (*flagc)
-					flagc++;
-				*flagc++ = 'r';
-				*flagc = '\0';
+				flags |= rshflg;
+				setopts();		/* set flagadr */
 			}
-			flags |= rshflg;
 		}
+#if	defined(INT_DOLMINUS) || defined(INTERACTIVE)
 		if ((flags & stdflg) && (flags & oneflg) == 0 && comdiv == 0) {
 			/*
 			 * This is an interactive shell, mark it as interactive.
 			 */
 			if ((flags & intflg) == 0) {
-				if ((flags & rshflg) == 0) {
-					while (*flagc)
-						flagc++;
-					*flagc++ = 'i';
-					*flagc = '\0';
-				}
 				flags |= intflg;
 			}
+#ifdef	DO_BGNICE
+			flags2 |= bgniceflg;
+#endif
+#ifdef	INTERACTIVE
+			flags2 |= vedflg;
+#endif
+			setopts();			/* set flagadr */
 		}
+#endif
 		if ((flags & intflg) && (flags & privflg) == 0) {
+#ifdef	DO_SHRCFILES
 			unsigned char	*env = envnod.namval;
 			BOOL		dosysrc = TRUE;
 
@@ -392,6 +473,7 @@ main(c, v, e)
 			else if (env[0] == '.' && env[1] == '/')
 				dosysrc = FALSE;
 
+			flags &= ~intflg;	/* rcfiles: non-interactive */
 			/* system rcfile */
 			if (dosysrc &&
 			    (input = pathopen((unsigned char *)nullstr,
@@ -404,15 +486,27 @@ main(c, v, e)
 				exfile(rflag);
 				flags &= ~ttyflg;
 			}
+			flags |= intflg;	/* restore interactive	*/
+			setopts();		/* and flagadr		*/
 			free(env);
-
-			if ((flags & globalaliasflg) && homenod.namval) {
+#endif
+#ifdef	DO_SYSALIAS
+#ifdef	__never__
+			/*
+			 * The only way to have the global and local alias flag
+			 * set is via the set(1) command and the set command
+			 * code already reads the global and local alias files
+			 * when the related flags are set.
+			 */
+			if ((flags2 & globalaliasflg) && homenod.namval) {
 				catpath(homenod.namval, UC globalname);
 				ab_use(GLOBAL_AB, (char *)make(curstak()));
 			}
-			if (flags & localaliasflg) {
+			if (flags2 & localaliasflg) {
 				ab_use(LOCAL_AB, (char *)localname);
 			}
+#endif
+#endif
 		}
 
 		/*
@@ -421,9 +515,7 @@ main(c, v, e)
 		if (comdiv) {		/* comdiv is -c arg */
 			estabf(comdiv);
 			input = -1;
-		}
-		else
-		{
+		} else {
 			if (flags & stdflg) {
 				input = 0;
 			} else {
@@ -447,7 +539,7 @@ main(c, v, e)
 			 */
 
 				flags |= forcexit;
-				input = chkopen(cmdadr, 0);
+				input = chkopen(cmdadr, O_RDONLY);
 				flags &= ~forcexit;
 			}
 
@@ -487,10 +579,18 @@ exfile(prof)
 
 	setmode(prof);
 
-	if (setjmp(errshell) && prof) {
-		close(input);
-		(void) endjobs(0);
-		return;
+	if (setjmp(errshell)) {
+#ifdef	DO_SYSLOCAL
+		if (localp) {
+			localp = NULL;
+			poplvars();
+		}
+#endif
+		if (prof) {
+			close(input);
+			(void) endjobs(0);
+			return;
+		}
 	}
 	/*
 	 * error return here
@@ -537,13 +637,14 @@ exfile(prof)
 			 * indirectly here.
 			 */
 #define	EDIT_RPOMPTS	2
-			{ char *prompts[EDIT_RPOMPTS];
-			prompts[0] = (char *)ps1nod.namval;
-			prompts[1] = (char *)ps2nod.namval;
-			shedit_setprompts(0, EDIT_RPOMPTS, prompts);
-			}
+			if (flags2 & vedflg) {
+				editpr(0);
+			} else
+#endif
+#ifdef	DO_PS34
+				prs(ps_macro(ps1nod.namval));
 #else
-			prs(ps1nod.namval);
+				prs(ps1nod.namval);	/* Ignores NULL ptr */
 #endif
 
 #ifdef TIME_OUT
@@ -564,13 +665,24 @@ exfile(prof)
 		alarm(0);
 #endif
 
+#ifdef	DO_HASHCMDS
+		if (peekc == '#' && (flags2 & hashcmdsflg)) {
+			peekc = 0;
+			hashcmd();
+		} else
+#endif
 		{
 			struct trenod *t;
-			t = cmd(NL, MTFLG);
-			if (t == NULL && flags & ttyflg)
+			t = cmd(NL, MTFLG | SEMIFLG);
+#ifdef	PARSE_DEBUG
+			prtree(t, "Commandline: ");
+#endif
+			if (t == NULL && flags & ttyflg) {
 				freejobs();
-			else
+			} else {
+				execbrk = 0;
 				execute(t, 0, eflag, no_pipe, no_pipe);
+			}
 		}
 
 		eof |= (flags & oneflg);
@@ -578,14 +690,45 @@ exfile(prof)
 	}
 }
 
+/*
+ * Print secondary prompt if not using the history editor.
+ */
 void
 chkpr()
 {
-#ifndef	INTERACTIVE
-	if ((flags & prompt) && standin->fstak == 0)
-		prs(ps2nod.namval);
+	if ((flags & prompt) && standin->fstak == 0) {
+#ifdef	INTERACTIVE
+		if (flags2 & vedflg) {
+			editpr(1);
+		} else
 #endif
+#ifdef	DO_PS34
+			prs(ps_macro(ps2nod.namval));
+#else
+			prs(ps2nod.namval);	/* Ignores NULL ptr */
+#endif
+	}
 }
+
+#ifdef	INTERACTIVE
+static void
+editpr(idx)
+	int	idx;
+{
+	if (flags2 & vedflg) {
+		char *prompts[EDIT_RPOMPTS];
+
+		if ((prompts[0] = C ps1nod.namval) == NULL)
+			prompts[0] = C nullstr;
+		if ((prompts[1] = C ps2nod.namval) == NULL)
+			prompts[1] = C nullstr;
+#ifdef	DO_PS34
+		prompts[idx] = C ps_macro(UC prompts[idx]);
+#endif
+		shedit_setprompts(idx, EDIT_RPOMPTS, prompts);
+	}
+}
+#endif
 
 void
 settmp()
@@ -731,9 +874,7 @@ setmode(prof)
 	if ((flags & intflg) ||
 	    ((flags&oneflg) == 0 &&
 	    isatty(output) &&
-	    isatty(input)))
-
-	{
+	    isatty(input))) {
 		dfault(&ps1nod, (unsigned char *)(geteuid() ?
 						stdprompt : supprompt));
 		dfault(&ps2nod, (unsigned char *)readmsg);
@@ -743,9 +884,7 @@ setmode(prof)
 		else
 			setmail(mailnod.namval);
 		startjobs();
-	}
-	else
-	{
+	} else {
 		flags |= prof;
 		flags &= ~prompt;
 	}

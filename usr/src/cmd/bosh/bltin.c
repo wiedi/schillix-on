@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)bltin.c	1.31 13/09/24 2008-2013 J. Schilling
+ * @(#)bltin.c	1.109 16/09/06 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)bltin.c	1.31 13/09/24 2008-2013 J. Schilling";
+	"@(#)bltin.c	1.109 16/09/06 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -58,27 +58,63 @@ static	UConst char sccsid[] =
 #include	<errno.h>
 #include	"sym.h"
 #include	"hash.h"
+#ifdef	DO_SYSALIAS
 #include	"abbrev.h"
+#endif
 #include	<sys/types.h>
 #include	<sys/stat.h>
 #include	<sys/times.h>
 
+#include	<schily/resource.h>
+
 	void	builtin	__PR((int type, int argc, unsigned char **argv,
-							struct trenod *t));
+					struct trenod *t, int xflags));
+#ifdef	DO_POSIX_CD
+static	int	opt_LP	__PR((int argc, unsigned char **argv,
+					int *opts, const char *use));
+#endif
+static	int	whatis	__PR((unsigned char *arg, int verbose));
+#ifdef	DO_SYSCOMMAND
+static	void	syscommand __PR((int argc, unsigned char **argv,
+					struct trenod *t, int xflags));
+#endif
 
 void
-builtin(type, argc, argv, t)
-int type;
-int argc;
-unsigned char **argv;
-struct trenod *t;
+builtin(type, argc, argv, t, xflags)
+	int		type;
+	int		argc;
+	unsigned char	**argv;
+	struct trenod	*t;
+	int		xflags;
 {
-	short fdindex = initio(t->treio, (type != SYSEXEC));
-	unsigned char *a1 = argv[1];
-	struct argnod *np = NULL;
+	short		fdindex;
+	unsigned char	*a0 = NULL;
+	unsigned char	*a1 = argv[1];
+	struct argnod	*np = NULL;
+	int		cdopt = 0;
+#if defined(DO_POSIX_CD) || defined(DO_SYSPUSHD) || defined(DO_SYSDOSH) || \
+	defined(DO_GETOPT_UTILS) || defined(DO_SYSERRSTR)
+	int		ind = 1;
+#endif
+#ifdef	DO_POSIX_FAILURE
+	unsigned long	oflags = flags;
+#endif
 
-	switch (type)
-	{
+	exitval = 0;
+	exval_clear();
+#ifdef	DO_POSIX_FAILURE
+	if ((type & SPC_BUILTIN) == 0)
+		flags |= noexit;
+#endif
+	type = hashdata(type);
+	fdindex = initio(t->treio, (type != SYSEXEC));
+#ifdef	DO_POSIX_FAILURE
+	flags = oflags;
+	if (exitval)
+		goto out;
+#endif
+
+	switch (type) {
 
 	case SYSSUSP:
 		syssusp(argc, (char **)argv);
@@ -97,82 +133,108 @@ struct trenod *t;
 		break;
 
 	case SYSJOBS:
-		sysjobs(argc, (char **)argv);
+		sysjobs(argc, argv);
 		break;
 
-	case SYSDOT:
-		if (a1)
-		{
+	case SYSDOT:			/* POSIX special builtin */
+		if (a1) {
 			int	f;
 
 			if ((f = pathopen(getpath(a1), a1)) < 0)
 				failed(a1, notfound);
 			else
-				execexp(0, (Intptr_t)f);
+				execexp(0, (Intptr_t)f, xflags);
 		}
 		break;
 
-	case SYSTIMES:
+	case SYSTIMES:			/* POSIX special builtin */
 		{
-			struct tms tms;
+			struct rusage	ru;
 
-			times(&tms);
-			prt(tms.tms_utime);
+			getrusage(RUSAGE_SELF, &ru);
+			prtv(&ru.ru_utime, 3, 'l');
 			prc_buff(SPACE);
-			prt(tms.tms_stime);
+			prtv(&ru.ru_stime, 3, 'l');
 			prc_buff(NL);
-			prt(tms.tms_cutime);
+			getrusage(RUSAGE_CHILDREN, &ru);
+			prtv(&ru.ru_utime, 3, 'l');
 			prc_buff(SPACE);
-			prt(tms.tms_cstime);
+			prtv(&ru.ru_stime, 3, 'l');
 			prc_buff(NL);
 		}
 		break;
 
-	case SYSEXIT:
+	case SYSEXIT:			/* POSIX special builtin */
 		if (tried_to_exit++ || endjobs(JOB_STOPPED)) {
 			flags |= forcexit;	/* force exit */
+#ifdef	DO_SIGNED_EXIT
+			exitsh(a1 ? stosi(a1) : retval);
+#else
 			exitsh(a1 ? stoi(a1) : retval);
+#endif
 		}
 		break;
 
-	case SYSNULL:
+	case SYSNULL:			/* POSIX special builtin */
 		break;
 
-	case SYSCONT:
-		if (loopcnt)
-		{
+	case SYSCONT:			/* POSIX special builtin */
+		if (loopcnt) {
 			execbrk = breakcnt = 1;
-			if (a1)
+			if (a1) {
 				breakcnt = stoi(a1);
+#ifdef	DO_CONT_BRK_POSIX
+				if (breakcnt == 0) {
+					exitval = ERROR;
+					break;
+				}
+#endif
+			}
 			if (breakcnt > loopcnt)
 				breakcnt = loopcnt;
+#ifndef	DO_CONT_BRK_FIX
 			else
-				breakcnt = -breakcnt;
+#endif
+			breakcnt = -breakcnt;
 		}
 		break;
 
-	case SYSBREAK:
-		if (loopcnt)
-		{
+	case SYSBREAK:			/* POSIX special builtin */
+		if (loopcnt) {
 			execbrk = breakcnt = 1;
-			if (a1)
+			if (a1) {
 				breakcnt = stoi(a1);
+#ifdef	DO_CONT_BRK_POSIX
+				if (breakcnt == 0) {
+					exitval = ERROR;
+					break;
+				}
+#endif
+			}
 			if (breakcnt > loopcnt)
 				breakcnt = loopcnt;
 		}
 		break;
 
-	case SYSTRAP:
+	case SYSTRAP:			/* POSIX special builtin */
 		systrap(argc, (char **)argv);
 		break;
 
-	case SYSEXEC:
+	case SYSEXEC:			/* POSIX special builtin */
 		argv++;
 		ioset = 0;
 		if (a1 == 0) {
 			setmode(0);
 			break;
 		}
+#ifdef	DO_EXEC_AC
+		if (eq(a1, "-a")) {
+			argv++;
+			if (*argv) {
+				a0 = *argv++;
+			}
+		}
+#endif
 		/* FALLTHROUGH */
 
 #ifdef RES	/* Research includes login as part of the shell */
@@ -180,8 +242,8 @@ struct trenod *t;
 	case SYSLOGIN:
 		if (!endjobs(JOB_STOPPED|JOB_RUNNING))
 			break;
-		oldsigs();
-		execa(argv, -1);
+		oldsigs(TRUE);
+		execa(argv, -1, FALSE, a0);
 		done(0);
 #else
 
@@ -190,43 +252,51 @@ struct trenod *t;
 			failed(argv[0], restricted);
 		else if (!endjobs(JOB_STOPPED|JOB_RUNNING))
 			break;
-		else
-		{
+		else {
 			flags |= forcexit; /* bad exec will terminate shell */
-			oldsigs();
+			oldsigs(TRUE);
 			rmtemp(0);
 			rmfunctmp();
 #ifdef ACCT
 			doacct();
 #endif
-			execa(argv, -1);
+			execa(argv, -1, FALSE, a0);
 			done(0);
 			/* NOTREACHED */
 		}
 
 #endif
 
+#ifdef	DO_SYSPUSHD
 	case SYSPOPD:
 		/* FALLTHROUGH */
 	case SYSPUSHD:
+#ifdef	DO_POSIX_CD
+		cdopt = -1;
+		ind = opt_LP(argc, argv, &cdopt,
+			type == SYSPOPD ?
+				"popd [ -L | -P ] [-offset]":
+				"pushd [ -L | -P ] [-offset | directory]");
+		if (ind < 0)
+			break;
+		a1 = argv[ind];
+#endif
 		init_dirs();
 		if (a1 && a1[0] == '-') {
-			if (a1[1] == '-' && a1[2] == '\0') {	/* "--" */
-				a1 = argv[2];
-			} else if (type == SYSPUSHD && a1[1] == '\0') {
+			if (type == SYSPUSHD && a1[1] == '\0') {
 				extern struct namnod opwdnod;
 
 				a1 = opwdnod.namval;
 				if (a1 == NULL || *a1 == '\0') {
 					free(np);
-					failed(a1, baddir);
+					failure(a1, baddir);
 					break;
 				}
 			} else {
 				int	off = stoi(&a1[1]);
 
 				if (!(np = pop_dir(off))) {
-					failed(a1, badoff);
+					failure(a1, badoff);
 					break;
 				}
 				a1 = np->argval;
@@ -238,28 +308,47 @@ struct trenod *t;
 			 * init_dirs() grants pop_dir(0) != NULL
 			 */
 			if (dnp->argnxt == NULL) {
-				error(emptystack);
+				/*
+				 * "dnp" is the static "dirs",
+				 * no need to free()
+				 */
+				gfailure(UC emptystack, NULL);
 				break;
 			}
 			a1 = dnp->argnxt->argval;
 			free(dnp);
 		}
+#endif	/* DO_SYSPUSHD */
+
 		/* FALLTHROUGH */
 	case SYSCD:
+#ifdef	DO_POSIX_CD
+		if (type == SYSCD) {
+			ind = opt_LP(argc, argv, &cdopt,
+						"cd [ -L | -P ] directory");
+			if (ind < 0)
+				break;
+			a1 = argv[ind];
+		}
+#endif
+
+#ifdef	DO_SYSPUSHD
+		/*
+		 * Enable cd - & cd -- ... only with DO_SYSPUSHD
+		 */
 		if (type == SYSCD && a1 && a1[0] == '-') {
-			if (a1[1] == '-' && a1[2] == '\0') {	/* "--" */
-				a1 = argv[2];
-			} else if (a1[1] == '\0') {
+			if (a1[1] == '\0') {
 				extern struct namnod opwdnod;
 
 				a1 = opwdnod.namval;
 				if (a1 == NULL || *a1 == '\0') {
 					free(np);
-					failed(a1, baddir);
+					failure(a1, baddir);
 					break;
 				}
 			}
 		}
+#endif
 		/*
 		 * A restricted Shell does not allow "cd" at all.
 		 */
@@ -285,12 +374,22 @@ struct trenod *t;
 			    (*(a1+1) == '.' && *(a1+2) == '/'))))
 				cdpath = UC nullstr;
 
-			do
-			{
+			do {
 				dir = cdpath;
 				cdpath = catpath(cdpath, a1);
-			}
-			while ((f = chdir((const char *) curstak())) < 0 &&
+#ifdef	DO_POSIX_CD
+				if ((cdopt & CHDIR_L) && *curstak() != '/') {
+					/*
+					 * Concatenate $PWD and curstak() and
+					 * normalize the resulting path.
+					 */
+					if (!cwdrel2abs()) {
+						Failure(a1, baddir);
+						goto out;
+					}
+				}
+#endif
+			} while ((f = chdir((const char *) curstak())) < 0 &&
 			    cdpath);
 
 			free(np);
@@ -298,39 +397,43 @@ struct trenod *t;
 				switch (errno) {
 #ifdef	EMULTIHOP
 				case EMULTIHOP:
-					failed(a1, emultihop);
+					Failure(a1, emultihop);
 					break;
 #endif
 				case ENOTDIR:
-					failed(a1, enotdir);
+					Failure(a1, enotdir);
 					break;
 				case ENOENT:
-					failed(a1, enoent);
+					Failure(a1, enoent);
 					break;
 				case EACCES:
-					failed(a1, eacces);
+					Failure(a1, eacces);
 					break;
 #ifdef	ENOLINK
 				case ENOLINK:
-					failed(a1, enolink);
+					Failure(a1, enolink);
 					break;
 #endif
 				default:
-					failed(a1, baddir);
+					Failure(a1, baddir);
 					break;
 				}
-			}
-			else
-			{
+				break;	/* No zapcd(), chdir() did not work */
+			} else {
 				unsigned char	*wd;
 
+				ocwdnod();		/* Update OLDPWD=    */
 				cwd(curstak());		/* Canonic from stak */
-				wd = cwdget();		/* Get reliable cwd  */
+				wd = cwdget(cdopt);	/* Get reliable cwd  */
+#ifdef	DO_SYSPUSHD
 				if (type != SYSPUSHD)
 					free(pop_dir(0));
 				push_dir(wd);		/* Update dir stack  */
-				if (pr_dirs(1))		/* If already printed */
+				if (pr_dirs(type ==	/* Print if len > 0  */
+				    SYSPOPD ?		/* or cmd was "popd" */
+				    0:1, cdopt))	/* If already printed */
 					wd = NULL;	/* don't do it again */
+#endif
 				if (cf(UC nullstr, dir) &&
 				    *dir != ':' &&
 				    any('/', curstak()) &&
@@ -340,14 +443,14 @@ struct trenod *t;
 						prc_buff(NL);
 					}
 				}
-				if (flags & localaliasflg) {
+#ifdef	DO_SYSALIAS
+				if (flags2 & localaliasflg) {
 					ab_use(LOCAL_AB, (char *)localname);
 				}
+#endif
 			}
 			zapcd();
-		}
-		else
-		{
+		} else {
 			free(np);
 			/*
 			 * cd "" is not permitted,
@@ -355,28 +458,25 @@ struct trenod *t;
 			 * but $HOME was not set.
 			 */
 			if (a1)
-				error(nulldir);
+				Error(nulldir);
 			else
-				error(nohome);
+				Error(nohome);
 		}
-
 		break;
 
-	case SYSSHFT:
+	case SYSSHFT:			/* POSIX special builtin */
 		{
 			int places;
 
 			places = a1 ? stoi(a1) : 1;
 
-			if ((dolc -= places) < 0)
-			{
+			if ((dolc -= places) < 0) {
 				dolc = 0;
 				error(badshift);
-			}
-			else
+			} else {
 				dolv += places;
+			}
 		}
-
 		break;
 
 	case SYSWAIT:
@@ -384,23 +484,29 @@ struct trenod *t;
 		break;
 
 	case SYSREAD:
-		if (argc < 2)
-			failed(argv[0], mssgargn);
+#ifndef	DO_READ_R
+		if (argc < 2) {
+			Failure(argv[0], mssgargn);
+			break;
+		}
+#endif
 		rwait = 1;
-		exitval = readvar(&argv[1]);
+		exitval = readvar(argc, argv);
 		rwait = 0;
 		break;
 
-	case SYSSET:
-		if (a1)
-		{
+	case SYSSET:			/* POSIX special builtin */
+		if (a1) {
 			int	cnt;
 
 			cnt = options(argc, argv);
+#ifdef	DO_POSIX_SET
+			if (cnt > 1 || dashdash)
+#else
 			if (cnt > 1)
+#endif
 				setargs(argv + argc - cnt);
-		} else if (comptr(t)->comset == 0)
-		{
+		} else if (comptr(t)->comset == 0) {
 			/*
 			 * scan name chain and print
 			 */
@@ -408,44 +514,131 @@ struct trenod *t;
 		}
 		break;
 
-	case SYSRDONLY:
-		exitval = 0;
-		if (a1)
+#ifdef	DO_SYSLOCAL
+	case SYSLOCAL:
 		{
-			while (*++argv)
-				attrib(lookup(*argv), N_RDONLY);
-		}
-		else
-			namscan(printro);
+			ind = optskip(argc, argv, "local [name[=value] ...]");
+			if (ind-- < 0)
+				break;
+			argv += ind;
 
+			if (localp == NULL)
+				error("local can only be used in a function");
+
+			if (argv[1]) {
+				while (*++argv) {
+					char *p = strchr((char *)*argv, '=');
+
+					if (p)
+						*p = '\0';
+					pushval(lookup(*argv), localp);
+					if (p) {
+						*p = '=';
+						setname(*argv, 0);
+					}
+					localcnt++;
+				}
+			} else {
+				namscan(printlocal);
+			}
+		}
+		break;
+#endif	/* DO_SYSLOCAL */
+
+	case SYSRDONLY:			/* POSIX special builtin */
+		{
+#ifdef	DO_POSIX_EXPORT
+			struct optv	optv;
+			int		c;
+			int		isp = 0;
+
+			optinit(&optv);
+			optv.optflag |= OPT_SPC;
+
+			while ((c = optnext(argc, argv, &optv, "p",
+				    "readonly [-p] [name[=value] ...]")) !=
+									-1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'p')
+					isp++;
+			}
+			argv += --optv.optind;
+#endif
+			if (argv[1]) {
+				while (*++argv) {
+#ifdef	DO_POSIX_EXPORT
+					if (strchr((char *)*argv, '=')) {
+						setname(*argv, N_RDONLY);
+						continue;
+					}
+#endif
+					attrib(lookup(*argv), N_RDONLY);
+				}
+			} else {
+#ifdef	DO_POSIX_EXPORT
+				namscan(isp?printpro:printro);
+#else
+				namscan(printro);
+#endif
+			}
+		}
 		break;
 
-	case SYSXPORT:
+	case SYSXPORT:			/* POSIX special builtin */
 		{
 			struct namnod	*n;
+#ifdef	DO_POSIX_EXPORT
+			struct optv	optv;
+			int		c;
+			int		isp = 0;
 
-			exitval = 0;
-			if (a1)
-			{
-				while (*++argv)
-				{
+			optinit(&optv);
+			optv.optflag |= OPT_SPC;
+
+			while ((c = optnext(argc, argv, &optv, "p",
+				    "export [-p] [name[=value] ...]")) != -1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'p')
+					isp++;
+			}
+			argv += --optv.optind;
+#endif
+			if (argv[1]) {
+				while (*++argv) {
+#ifdef	DO_POSIX_EXPORT
+					if (strchr((char *)*argv, '=')) {
+						setname(*argv, N_EXPORT);
+						continue;
+					}
+#endif
 					n = lookup(*argv);
+#ifndef	DO_POSIX_UNSET
 					if (n->namflg & N_FUNCTN)
 						error(badexport);
 					else
+#endif
 						attrib(n, N_EXPORT);
 				}
-			}
-			else
+			} else {
+#ifdef	DO_POSIX_EXPORT
+				namscan(isp?printpexp:printexp);
+#else
 				namscan(printexp);
+#endif
+			}
 		}
 		break;
 
-	case SYSEVAL:
-		if (a1)
-			execexp(a1, (Intptr_t)&argv[2]);
+	case SYSEVAL:			/* POSIX special builtin */
+		if (a1) {
+			flags &= ~noexit;
+			execexp(a1, (Intptr_t)&argv[2], xflags);
+		}
 		break;
 
+#ifdef	DO_SYSDOSH
 	case SYSDOSH:
 		if (a1 == NULL) {
 			break;
@@ -456,14 +649,21 @@ struct trenod *t;
 			struct ionod	*io = t->treio;
 			short		idx;
 
+			ind = optskip(argc, argv,
+					    "dosh command [commandname args]");
+			if (ind < 0)
+				break;
+			if (ind >= argc)
+				break;
+
 			/*
 			 * save current positional parameters
 			 */
 			olddolh = (struct dolnod *)savargs(funcnt);
 			funcnt++;
-			setargs(&argv[2]);
+			setargs(&argv[ind+1]);
 			idx = initio(io, 1);
-			execexp(a1, (Intptr_t)0);
+			execexp(argv[ind], (Intptr_t)0, xflags);
 			restore(idx);
 			(void) restorargs(olddolh, funcnt);
 			dolv = olddolv;
@@ -471,66 +671,59 @@ struct trenod *t;
 			funcnt--;
 		}
 		break;
+#endif	/* DO_SYSDOSH */
 
+#ifdef	DO_SYSREPEAT
 	case SYSREPEAT:
 		if (a1) {
-			extern int opterr, optind;
-			int	savopterr;
-			int	savoptind;
-			int	savsp;
-			char	*savoptarg;
+			struct optv optv;
 			int	c;
 			int	delay = 0;
 			int	count = -1;
+			int	err = 0;
 
-			savoptind = optind;
-			savopterr = opterr;
-			savsp = _sp;
-			savoptarg = optarg;
-			optind = 1;
-			_sp = 1;
-			opterr = 0;
+			optinit(&optv);
 
-			while ((c = getopt(argc, (char **)argv,
+			while ((c = optget(argc, argv, &optv,
 						"c:(count)d:(delay)")) != -1) {
 				switch (c) {
 				case 'c':
-					count = stoi(UC optarg);
+					count = stoi(UC optv.optarg);
 					break;
 				case 'd':
-					delay = stoi(UC optarg);
+					delay = stoi(UC optv.optarg);
 					break;
 				case '?':
 					gfailure(UC usage, repuse);
-					goto err;
+					err = 1;
 				}
 			}
+			if (err)
+				break;
+
 			while (count != 0) {
 				unsigned char		*sav = savstak();
 				struct ionod		*iosav = iotemp;
 
-				execexp(argv[optind],
-					(Intptr_t)&argv[optind+1]);
+				execexp(argv[optv.optind],
+					(Intptr_t)&argv[optv.optind+1], xflags);
 				tdystak(sav, iosav);
 
 				if (delay > 0)
 					sh_sleep(delay);
 				if (count > 0)
 					count--;
+				sigchk();
 			}
-err:
-			optind = savoptind;
-			opterr = savopterr;
-			_sp = savsp;
-			optarg = savoptarg;
 		} else {
 			gfailure(UC usage, repuse);
 		}
 		break;
+#endif	/* DO_SYSREPEAT */
 
 #ifndef RES
 	case SYSULIMIT:
-		sysulimit(argc, (char **)argv);
+		sysulimit(argc, argv);
 		break;
 
 	case SYSUMASK:
@@ -542,51 +735,77 @@ err:
 		exitval = test(argc, argv);
 		break;
 
+#ifdef	DO_SYSATEXPR
+	case SYSEXPR:
+		expr(argc, argv);
+		break;
+#endif
+
 	case SYSECHO:
 		exitval = echo(argc, argv);
 		break;
 
 	case SYSHASH:
-		exitval = 0;
-
-		if (a1)
 		{
-			if (a1[0] == '-')
-			{
+#ifdef	DO_GETOPT_UTILS
+			struct optv	optv;
+			int		c;
+
+			optinit(&optv);
+
+			while ((c = optnext(argc, argv, &optv, "r",
+				    "hash [-r] [name ...]")) != -1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'r') {
+					zaphash();
+					goto out;
+				}
+			}
+			argv += --optv.optind;
+#else
+			if (a1 && a1[0] == '-') {
 				if (a1[1] == 'r')
 					zaphash();
 				else
-					error(badopt);
+					Error(badopt);
+				break;
 			}
-			else
-			{
-				while (*++argv)
-				{
+#endif
+			if (argv[1]) {
+				while (*++argv) {
 					if (hashtype(hash_cmd(*argv)) ==
-							NOTFOUND) {
-						failed(*argv, notfound);
+						NOTFOUND) {
+						Failure(*argv, notfound);
 					}
 				}
+			} else {
+				hashpr();
 			}
 		}
-		else
-			hashpr();
-
 		break;
 
+#ifdef	DO_SYSPUSHD
 	case SYSDIRS:
-		exitval = 0;
-		pr_dirs(0);
+		ind = opt_LP(argc, argv, &cdopt, "dirs [ -L | -P ]");
+		if (ind < 0)
+			break;
+		pr_dirs(0, cdopt);
 		break;
+#endif
 
 	case SYSPWD:
 		{
-			exitval = 0;
-			cwdprint();
+#ifdef	DO_POSIX_CD
+			ind = opt_LP(argc, argv, &cdopt, "pwd [ -L | -P ]");
+			if (ind < 0)
+				break;
+#endif
+			cwdprint(cdopt);
 		}
 		break;
 
-	case SYSRETURN:
+	case SYSRETURN:			/* POSIX special builtin */
 		if (funcnt == 0)
 			error(badreturn);
 
@@ -595,43 +814,56 @@ err:
 		break;
 
 	case SYSTYPE:
-		exitval = 0;
-		if (a1)
-		{
+		if (a1) {
+#ifdef	DO_GETOPT_UTILS
+			struct optv	optv;
+			int		c;
+
+			optinit(&optv);
+			while ((c = optnext(argc, argv, &optv, "F",
+					"type [-F] [name ...]")) != -1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'F') {
+					if (argv[optv.optind] == NULL)
+						namscan(printfunc);
+					else
+						failure(argv[0], toomanyargs);
+					goto out;
+				}
+			}
+			argv += --optv.optind;
+#endif
 			/* return success only if all names are found */
 			while (*++argv) {
-				char *val;
-
-				if ((val = ab_value(LOCAL_AB,
-							(char *)*argv, NULL,
-							AB_BEGIN)) != NULL) {
-					prs_buff(*argv);
-					prs_buff(_gettext(
-						" is a local alias for '"));
-					prs_buff(UC val);
-					prs_buff(UC "'\n");
-					continue;
-				} else if ((val = ab_value(GLOBAL_AB,
-							(char *)*argv, NULL,
-							AB_BEGIN)) != NULL) {
-					prs_buff(*argv);
-					prs_buff(_gettext(
-						" is a global alias for '"));
-					prs_buff(UC val);
-					prs_buff(UC "'\n");
-					continue;
-				}
-				exitval |= what_is_path(*argv);
+				exitval |= whatis(*argv, 2);
 			}
 		}
 		break;
 
-	case SYSUNS:
-		exitval = 0;
-		if (a1)
-		{
+	case SYSUNS:			/* POSIX special builtin */
+		if (a1) {
+			int	uflg = 0;
+#ifdef	DO_POSIX_UNSET
+			struct optv	optv;
+			int		c;
+
+			optinit(&optv);
+			optv.optflag |= OPT_SPC;
+
+			while ((c = optnext(argc, argv, &optv, "fv",
+					"unset [-f | -v] [name ...]")) != -1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'f')
+					uflg = UNSET_FUNC;
+				else if (c == 'v')
+					uflg = UNSET_VAR;
+			}
+			argv += --optv.optind;
+#endif
 			while (*++argv)
-				unset_name(*argv);
+				unset_name(*argv, uflg);
 		}
 		break;
 
@@ -639,19 +871,31 @@ err:
 		int getoptval;
 		struct namnod *n;
 		extern unsigned char numbuf[];
-		unsigned char *varnam = argv[2];
+		unsigned char *varnam;
 		unsigned char c[2];
+		unsigned char *cmdp = *argv;
+
+#ifdef	DO_GETOPT_UTILS
+		ind = optskip(argc, argv,
+					"getopts optstring name [arg ...]");
+		if (ind-- < 0)
+			break;
+		argc -= ind;
+		argv += ind;
+#endif
 		if (argc < 3) {
-			failure(argv[0], mssgargn);
+			failure(cmdp, mssgargn);
 			break;
 		}
 		exitval = 0;
 		n = lookup(UC "OPTIND");
 		optind = stoi(n->namval);
+		varnam = argv[2];
 		if (argc > 3) {
 			argv[2] = dolv[0];
 			getoptval = getopt(argc-2,
 					(char **)&argv[2], (char *)argv[1]);
+			argv[2] = varnam;
 		} else {
 			getoptval = getopt(dolc+1,
 					(char **)dolv, (char *)argv[1]);
@@ -660,60 +904,113 @@ err:
 			itos(optind);
 			assign(n, numbuf);
 			n = lookup(varnam);
+#ifdef	DO_GETOPT_POSIX
+			assign(n, UC "?");
+#else
 			assign(n, UC nullstr);
+#endif
 			exitval = 1;
 			break;
 		}
-		argv[2] = varnam;
 		itos(optind);
 		assign(n, numbuf);
 		c[0] = (char)getoptval;
 		c[1] = '\0';
 		n = lookup(varnam);
-		assign(n, c);
+		if (getoptval > 256) {
+			/*
+			 * We should come here only with the Schily enhanced
+			 * getopt() from libgetopt.
+			 */
+#ifdef	DO_GETOPT_LONGONLY
+			itos(getoptval);
+			assign(n, numbuf);
+#else
+			assign(n, UC "?");	/* Pretend illegal option */
+#endif
+		} else
+			assign(n, c);
 		n = lookup(UC "OPTARG");
 		assign(n, UC optarg);
+#ifdef	DO_GETOPT_POSIX
+		if (optarg == NULL && argv[1][0] == ':' &&
+		    (getoptval == '?' || getoptval == ':')) {
+			c[0] = optopt;
+			assign(n, c);
+		}
+#endif
 		}
 		break;
 
 #ifdef	INTERACTIVE
 	case SYSHISTORY:
-		shedit_bhist();
+		shedit_bhist(&intrptr);
+		if (intrptr) {		/* Was set by shedit_bshist()?	*/
+			*intrptr = 0;	/* Clear interrupt counter	*/
+			intrptr = 0;	/* Disable intrptr for now	*/
+		}
 		break;
 
 	case SYSSAVEHIST:
 		shedit_bshist(&intrptr);
-		if (intrptr)
-			*intrptr = 0;
+		if (intrptr) {		/* Was set by shedit_bshist()?	*/
+			*intrptr = 0;	/* Clear interrupt counter	*/
+			intrptr = 0;	/* Disable intrptr for now	*/
+		}
 		break;
 
 	case SYSMAP:
 		{
-			int	f = 1;
+			int		f = STDOUT_FILENO;
+			struct optv	optv;
+			int		c;
+			int		rfl = 0;
+			int		ufl = 0;
+			unsigned char	*cmdp = *argv;
 
-			if (argc == 1) {
+			optinit(&optv);
+
+			while ((c = optnext(argc, argv, &optv, "ru",
+			    "map [-r | -u] [fromstr [tostr [comment]]]")) !=
+			    -1) {
+				if (c == 0)	/* Was -help */
+					goto out;
+				else if (c == 'r')
+					rfl++;
+				else if (c == 'u')
+					ufl++;
+			}
+			argv += --optv.optind;
+			argc -= optv.optind;
+
+			if (argc == 1 && (rfl+ufl) == 0) {
 				shedit_list_map(&f);
-			} else if (argc == 2 && eq(argv[1], "-r")) {
+			} else if (argc == 1 && rfl) {
 				shedit_remap();
-			} else if (argc == 3 && eq(argv[1], "-u")) {
-				shedit_del_map((char *)argv[2]);
+			} else if (argc == 2 && ufl) {
+				shedit_del_map((char *)argv[1]);
 			} else if (argc == 3 || argc == 4) {
+				/*
+				 * argv[1] is map from
+				 * argv[2] is map to
+				 * argv[3] is the optional comment
+				 */
 				if (!shedit_add_map((char *)argv[1],
 						(char *)argv[2],
 						(char *)argv[3])) {
-					prs(argv[1]);
+					prs(cmdp);
 					prs(UC ": ");
 					prs(UC "already defined\n");
-					error("bad map");
+					gfailure(UC "bad map", NULL);
 				}
 			} else if (argc > 4) {
-				error(arglist);
+				gfailure(UC arglist, NULL);
 			} else {
-				error(mssgargn);
+				gfailure(UC mssgargn, NULL);
 			}
 		}
 		break;
-#endif
+#endif	/* INTERACTIVE */
 
 #ifdef	DO_SYSALLOC
 	case SYSALLOC:
@@ -721,19 +1018,255 @@ err:
 		break;
 #endif
 
+#ifdef	DO_SYSALIAS
 	case SYSALIAS:
 		sysalias(argc, argv);
 		break;
 	case SYSUNALIAS:
 		sysunalias(argc, argv);
 		break;
+#endif
+
+#ifdef	DO_SYSTRUE
+	case SYSTRUE:
+		break;
+	case SYSFALSE:
+		exitval = 1;
+		if (flags & errflg)
+			done(0);
+		break;
+#endif
+
+#ifdef	DO_SYSBUILTIN
+	case SYSBUILTIN:
+		sysbuiltin(argc, argv);
+		break;
+#endif
+
+#ifdef	DO_SYSFIND
+	case SYSFIND:
+		sysfind(argc, argv);
+		break;
+#endif
+
+#ifdef	DO_SYSSYNC
+	case SYSSYNC:
+#ifdef	HAVE_SYNC
+		sync();
+#else
+		failure(*argv, unimplemented);
+#endif
+		break;
+#endif
+
+#ifdef	DO_SYSPGRP
+	case SYSPGRP:
+		syspgrp(argc, (char **)argv);
+		break;
+#endif
+
+#ifdef	DO_SYSERRSTR
+	case SYSERRSTR: {
+			int	err;
+			char	*msg;
+
+			ind = optskip(argc, argv, "errstr errno");
+#ifndef	HAVE_STRERROR
+#define	strerror(a)	errmsgstr(a)
+#endif
+			if (ind < 0)
+				break;
+
+			a1 = argv[ind];
+
+			if (a1 && (err = stoi(a1)) > 0) {
+				errno = 0;
+				msg = strerror(err);
+				if (errno == 0 && msg) {
+					prs_buff(UC msg);
+					prc_buff(NL);
+				}
+			}
+		}
+		break;
+#endif
+
+#ifdef	DO_SYSPRINTF
+	case SYSPRINTF:
+		sysprintf(argc, argv);
+		break;
+#endif
+
+#ifdef	DO_SYSCOMMAND
+	case SYSCOMMAND:
+		syscommand(argc, argv, t, xflags);
+		break;
+#endif
 
 	default:
 		prs_buff(_gettext("unknown builtin\n"));
 	}
-
-
-	flushb();
-	restore(fdindex);
-	chktrap();
+#if	defined(DO_POSIX_EXPORT) || defined(DO_POSIX_UNSET) || \
+	defined(DO_GETOPT_UTILS) || defined(INTERACTIVE) || \
+	defined(DO_POSIX_CD) || defined(DO_POSIX_FAILURE)
+out:
+#endif
+	flushb();		/* Flush print buffer */
+	restore(fdindex);	/* Restore file descriptors */
+	exval_set(exitval);	/* Prepare ${.sh.*} parameters */
+	chktrap();		/* Run installed traps */
 }
+
+#ifdef	DO_POSIX_CD
+static int
+opt_LP(argc, argv, opts, use)
+	int		argc;
+	unsigned char	**argv;
+	int		*opts;
+	const	 char	*use;
+{
+	struct optv	optv;
+	int		c;
+	int		opt = *opts;
+
+	optinit(&optv);
+	if (opt < 0) {
+		optv.optflag |= OPT_NOFAIL;
+		*opts = 0;
+	}
+	while ((c = optnext(argc, argv, &optv, "LP", use)) != -1) {
+		if (c == 0) {	/* Was -help or bad opt */
+			return (-1);
+		} else if (c == '?') {
+			if (opt < 0) {
+				c = argv[optv.ooptind][1];
+				if (c >= '0' && c <= '9')
+					return (optv.ooptind);
+				optbad(argc, argv, &optv);
+				gfailure((unsigned char *)usage, use);
+				return (-1);
+			}
+		} else if (c == 'L') {
+			*opts = CHDIR_L;
+		} else if (c == 'P') {
+			*opts = CHDIR_P;
+		}
+	}
+	return (optv.optind);
+}
+#endif	/* DO_POSIX_CD */
+
+static int
+whatis(arg, verbose)
+	unsigned char	*arg;
+	int		verbose;
+{
+#ifdef	DO_SYSALIAS
+	char		*val;
+
+	if ((val = ab_value(LOCAL_AB, (char *)arg, NULL,
+				AB_BEGIN)) != NULL) {
+		if (verbose) {
+			prs_buff(arg);
+			prs_buff(_gettext(" is a local alias for '"));
+		}
+		prs_buff(UC val);
+		if (verbose)
+			prs_buff(UC "'\n");
+		else
+			prs_buff(UC "\n");
+		return (0);
+	} else if ((val = ab_value(GLOBAL_AB, (char *)arg, NULL,
+				AB_BEGIN)) != NULL) {
+		if (verbose) {
+			prs_buff(arg);
+			prs_buff(_gettext(" is a global alias for '"));
+		}
+		prs_buff(UC val);
+		if (verbose)
+			prs_buff(UC "'\n");
+		else
+			prs_buff(UC "\n");
+		return (0);
+	}
+#endif	/* DO_SYSALIAS */
+	return (what_is_path(arg, verbose));
+}
+
+#ifdef	DO_SYSCOMMAND
+static void
+syscommand(argc, argv, t, xflags)
+	int		argc;
+	unsigned char	**argv;
+	struct trenod	*t;
+	int		xflags;
+{
+	struct optv	optv;
+	int		c;
+	int		pflg = 0;
+	int		vflg = 0;
+	int		Vflg = 0;
+	char		*cusage = "command [-p][-v | -V] [name [arg ...]]";
+
+	optinit(&optv);
+
+	while ((c = optnext(argc, argv, &optv, "pvV", cusage)) != -1) {
+		if (c == 0) {	/* Was -help */
+			return;
+		} else if (c == 'p') {
+			pflg++;
+		} else if (c == 'v') {
+			if (Vflg) {
+				optbad(argc, UCP argv, &optv);
+				gfailure((unsigned char *)usage, cusage);
+				return;
+			}
+			vflg++;
+		} else if (c == 'V') {
+			if (vflg) {
+				optbad(argc, UCP argv, &optv);
+				gfailure((unsigned char *)usage, cusage);
+				return;
+			}
+			Vflg++;
+		}
+	}
+	argc -= optv.optind;
+	argv += optv.optind;
+	if ((vflg + Vflg) && *argv == NULL) {
+		gfailure((unsigned char *)usage, cusage);
+		return;
+	}
+	if (pflg) {
+		flags |= ppath;
+	}
+	if (vflg) {
+		exitval = whatis(*argv, 0);
+	} else if (Vflg) {
+		exitval = whatis(*argv, 1);
+	} else if (*argv) {
+		short	cmdhash = pathlook(argv[0], 0, (struct argnod *)0);
+
+		if (hashtype(cmdhash) == BUILTIN) {
+			struct ionod	*iop = t->treio;
+
+			if (cmdhash & SPC_BUILTIN)
+				flags |= noexit;
+			t->treio = NULL;
+			builtin(cmdhash, argc, argv, t, xflags);
+			t->treio = iop;
+			flags &= ~(ppath | noexit);
+			return;
+		} else {
+			unsigned char		*sav = savstak();
+			struct ionod		*iosav = iotemp;
+
+			flags |= nofuncs;
+			execexp(argv[0], (Intptr_t)&argv[1], xflags);
+			flags &= ~nofuncs;
+			tdystak(sav, iosav);
+		}
+	}
+	flags &= ~ppath;
+}
+#endif	/* DO_SYSCOMMAND */

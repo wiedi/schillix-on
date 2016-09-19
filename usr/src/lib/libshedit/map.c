@@ -1,13 +1,13 @@
-/* @(#)map.c	1.32 13/09/25 Copyright 1986-2013 J. Schilling */
+/* @(#)map.c	1.36 15/12/15 Copyright 1986-2015 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)map.c	1.32 13/09/25 Copyright 1986-2013 J. Schilling";
+	"@(#)map.c	1.36 15/12/15 Copyright 1986-2015 J. Schilling";
 #endif
 /*
  *	The map package for BSH & VED
  *
- *	Copyright (c) 1986-2013 J. Schilling
+ *	Copyright (c) 1986-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -223,13 +223,15 @@ pushmap(sp, n)
 EXPORT void
 map_init()
 {
+#define	BUF_SIZE	8192
 	register FILE	*f;
 		char	mapfname[512];
-		char	linebuf[1024];
+		char	linebuf[BUF_SIZE+1];	/* + space for null byte */
 		char	*array[3];
 		char	*home;
 	register char	**ap;
 	register char	*lp;
+	register int	amt;
 
 	home = myhome();
 	if (home != NULL) {
@@ -265,7 +267,32 @@ map_init()
 
 	ap = array;
 	lp = linebuf;
-	while (fgetline(f, lp, sizeof (linebuf)) != EOF) {
+	amt = BUF_SIZE;
+	linebuf[amt] = '\0';			/* Final null byte after buf */
+
+	while ((amt = fileread(f, lp, amt)) > 0) {
+		register char	*ep;
+
+		amt += lp - linebuf;		/* Continue on whole rest */
+		lp = linebuf;
+
+	again:
+		ep = strchr(lp, '\n');
+		if (ep == NULL && lp > linebuf && amt >= BUF_SIZE) {
+			/*
+			 * If no '\n' could be found, we need to check whether
+			 * we are in the middle of a line. If the buffer was
+			 * not full, we are at EOF already.
+			 */
+			amt = amt - (lp - linebuf);	/* Unprocessed amt */
+			movebytes(lp, linebuf, amt);	/* Move to start   */
+			lp = &linebuf[amt];		/* Point past old  */
+			amt = BUF_SIZE - amt;		/* Compute remaining */
+			continue;			/* Fill up buf	   */
+		}
+		if (ep)					/* Buf contains '\n' */
+			*ep = '\0';			/* so clear it	   */
+
 		if (breakline(lp, ':', ap, 3) < 2)
 			continue;
 		if (!add_map(ap[0], ap[1], ap[2])) {
@@ -274,6 +301,18 @@ map_init()
 error("'%s' already defined.", pretty_string(ap[0]))
 #endif
 			;
+		}
+
+		if (ep) {			/* Found '\n', check rest */
+			lp = &ep[1];
+			if ((lp - linebuf) >= amt && amt < BUF_SIZE) /* EOF */
+				break;
+			goto again;
+		} else {
+			if (amt < BUF_SIZE)			    /* EOF */
+				break;
+			lp = linebuf;
+			amt = BUF_SIZE;
 		}
 	}
 	fclose(f);
@@ -397,8 +436,13 @@ _add_map(mn, ms, comment)
 	tn = (smap_t *)malloc(sizeof (*tn));
 	if (tn == (smap_t *)NULL)
 		return (FALSE);
+#ifdef	__support_null__
 	*movebytes((char *)mn, (char *)tn->m_from, M_NAMELEN) = '\0';
 	*movebytes((char *)ms, (char *)tn->m_to, M_STRINGLEN) = '\0';
+#else
+	strlcpy((char *)tn->m_from, (char *)mn, sizeof (tn->m_from));
+	strlcpy((char *)tn->m_to,   (char *)ms, sizeof (tn->m_to));
+#endif
 	if (comment) {
 		tn->m_comment = malloc(strlen(comment)+1);
 		if (tn->m_comment)
@@ -480,7 +524,10 @@ _del_map(mn)
 
 	if (streql(mn, np->m_from)) {
 		first_map = np->m_next;
+		if (np->m_comment)
+			free(np->m_comment);
 		free((char *)np);
+		maptab[(Uchar) *mn]--;
 		return (TRUE);
 	}
 	for (; ; np = np->m_next) {
@@ -500,8 +547,8 @@ _del_map(mn)
 		if (streql(mn, np->m_next->m_from)) {
 			tn = np->m_next;
 			np->m_next = np->m_next->m_next;
-			if (np->m_comment)
-				free(np->m_comment);
+			if (tn->m_comment)
+				free(tn->m_comment);
 			free((char *)tn);
 			maptab[(Uchar) *mn]--;
 			return (TRUE);
@@ -674,6 +721,7 @@ LOCAL struct fk_maps {
 
 	{ "kA", UC "",	"Insert line" },
 	{ "kD", UC "\177",	"Delete char" },
+	{ "kb", UC "\177",	"Key Backspace -> Delete char" },
 	{ "kE", UC "",	"Delete to eol" },
 	{ "@7", UC "",	"Go to eol" },
 	{ "kh", UC "",	"Go to sol" },
@@ -791,6 +839,7 @@ init_cursor_maps()
 		char	*kh;
 		char	*ke;
 		char	*kD;
+		char	*kb;
 		char	*tname;
 		char	**esav;
 	extern	char	**environ;
@@ -815,6 +864,7 @@ init_cursor_maps()
 		kh = tgetstr("kh", &sbp);		/* Cursor -> Home */
 		ke = tgetstr("@7", &sbp);		/* Cursor -> End */
 		kD = tgetstr("kD", &sbp);		/* Delete Character */
+		kb = tgetstr("kb", &sbp);		/* Key Backspace */
 
 		if (ku) {
 			_add_map(UC ku, UC "", "Cursor up");
@@ -853,6 +903,9 @@ init_cursor_maps()
 			_add_map(UC kD, UC "\177", "Delete Char");
 		else
 			_add_map(UC "\33[3~", UC "\177", "Delete Char");
+
+		if (kb)
+			_add_map(UC kb, UC "\177", "Key Backspace -> Delete Char");
 	} else {
 		/*
 		 * ANSI Cursor mapping in "edit mode".

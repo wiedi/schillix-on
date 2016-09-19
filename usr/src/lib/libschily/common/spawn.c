@@ -1,8 +1,8 @@
-/* @(#)spawn.c	1.28 10/10/21 Copyright 1985, 1989, 1995-2010 J. Schilling */
+/* @(#)spawn.c	1.30 15/07/06 Copyright 1985, 1989, 1995-2015 J. Schilling */
 /*
  *	Spawn another process/ wait for child process
  *
- *	Copyright (c) 1985, 1989, 1995-2010 J. Schilling
+ *	Copyright (c) 1985, 1989, 1995-2015 J. Schilling
  *
  *	This is an interface that exists in the public since 1982.
  *	The POSIX.1-2008 standard did ignore POSIX rules not to
@@ -16,6 +16,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -46,7 +48,15 @@
 #undef	fspawnv
 #undef	fspawnl
 #undef	fspawnv_nowait
-#ifdef	HAVE_PRAGMA_WEAK
+
+/*
+ * The Cygwin compile environment incorrectly implements #pragma weak.
+ * The weak symbols are only defined as local symbols making it impossible
+ * to use them from outside the scope of this source file.
+ * A platform that allows linking with global symbols has HAVE_LINK_WEAK
+ * defined.
+ */
+#if defined(HAVE_PRAGMA_WEAK) && defined(HAVE_LINK_WEAK)
 #pragma	weak fspawnv =	js_fspawnv
 #pragma	weak fspawnl =	js_fspawnl
 #pragma	weak fspawnv_nowait =	js_fspawnv_nowait
@@ -85,7 +95,7 @@ fspawnv_nowait(in, out, err, name, argc, argv)
 #undef	js_fspawnl
 #undef	__DO__FSPAWNL__
 
-#endif	/* HAVE_PRAGMA_WEAK */
+#endif	/* HAVE_PRAGMA_WEAK && HAVE_LINK_WEAK */
 #endif	/* NO_FSPAWN_COMPAT */
 
 EXPORT int
@@ -216,6 +226,8 @@ wait_chld(pid)
 	if (WCOREDUMP(status))
 		unlink("core");
 
-	return (WEXITSTATUS(status));
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (-WTERMSIG(status));
 }
 #endif	/* __DO__FSPAWNL__ */

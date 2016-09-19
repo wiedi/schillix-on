@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)service.c	1.29 13/09/26 2008-2013 J. Schilling
+ * @(#)service.c	1.49 16/07/31 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)service.c	1.29 13/09/26 2008-20013 J. Schilling";
+	"@(#)service.c	1.49 16/07/31 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -70,8 +70,12 @@ static	UConst char sccsid[] =
 	unsigned char *catpath	__PR((unsigned char *path,
 						unsigned char *name));
 	unsigned char *nextpath	__PR((unsigned char *path));
-	void		execa	__PR((unsigned char *at[], short pos));
-static unsigned char *execs	__PR((unsigned char *ap, unsigned char *t[]));
+	void		execa	__PR((unsigned char *at[], short pos,
+						int isvfork,
+						unsigned char *av0));
+static unsigned char *execs	__PR((unsigned char *ap, unsigned char *t[],
+						int isvfork,
+						unsigned char *av0));
 	void		trim	__PR((unsigned char *at));
 	void		trims	__PR((unsigned char *at));
 	unsigned char *mactrim	__PR((unsigned char *at));
@@ -113,7 +117,8 @@ initio(iop, save)
 			if (iof & IODOC_SUBST) {
 				struct tempblk tb;
 
-				subst(chkopen(ion, 0), (fd = tmpfil(&tb)));
+				subst(chkopen(ion, O_RDONLY),
+					    (fd = tmpfil(&tb)));
 
 				/*
 				 * pushed in tmpfil() --
@@ -122,7 +127,7 @@ initio(iop, save)
 				 */
 				poptemp();
 
-				fd = chkopen(tmpout, 0);
+				fd = chkopen(tmpout, O_RDONLY);
 				unlink((const char *)tmpout);
 			} else if (iof & IOMOV) {
 				if (eq(minus, ion)) {
@@ -130,21 +135,30 @@ initio(iop, save)
 					close(ioufd);
 				} else if ((fd = stoi(ion)) >= USERIO) {
 					failed(ion, badfile);
-				}
-				else
+				} else {
 					fd = dup(fd);
+#ifdef	DO_DUP_FAIL
+					if (fd < 0)
+						failed(ion, badfile);
+#endif
+				}
+
 			} else if (((iof & IOPUT) == 0) && ((iof & IORDW) == 0))
-				fd = chkopen(ion, 0);
+				fd = chkopen(ion, O_RDONLY);
 			else if (iof & IORDW) /* For <> */ {
 				newmode = O_RDWR|O_CREAT;
 				fd = chkopen(ion, newmode);
 			} else if (flags & rshflg) {
 				failed(ion, restricted);
 			} else if (iof & IOAPP &&
-			    (fd = open((char *)ion, 1)) >= 0) {
+#if defined(DO_O_APPEND) && defined(O_APPEND)
+			    (fd = open((char *)ion, O_WRONLY|O_APPEND)) >= 0) {
+#else
+			    (fd = open((char *)ion, O_WRONLY)) >= 0) {
+#endif
 				lseek(fd, (off_t)0, SEEK_END);
 			} else {
-				fd = create(ion);
+				fd = create(ion, iof);
 			}
 			if (fd >= 0)
 				renamef(fd, ioufd);
@@ -157,7 +171,7 @@ initio(iop, save)
 
 unsigned char *
 simple(s)
-unsigned char	*s;
+	unsigned char	*s;
 {
 	unsigned char	*sname;
 
@@ -181,16 +195,19 @@ getpath(s)
 	unsigned char	*path, *newpath;
 	int pathlen;
 
-	if (any('/', s))
-	{
+	if (any('/', s)) {
 		if (flags & rshflg) {
 			failed(s, restricted);
 			/* NOTREACHED */
 		} else
 			return ((unsigned char *)nullstr);
-	} else if ((path = pathnod.namval) == 0)
+#ifdef	DO_SYSCOMMAND
+	} else if (flags & ppath) {
+		return ((unsigned char *)defppath);
+#endif
+	} else if ((path = pathnod.namval) == 0) {
 		return ((unsigned char *)defpath);
-	else {
+	} else {
 		pathlen = length(path)-1;
 		/* Add extra ':' if PATH variable ends in ':' */
 		if (pathlen > 2 && path[pathlen - 1] == ':' &&
@@ -221,7 +238,7 @@ pathopen(path, name)
 	do {
 		do {
 			path = catpath(path, name);
-		} while ((f = open((char *)curstak(), 0)) < 0 && path);
+		} while ((f = open((char *)curstak(), O_RDONLY)) < 0 && path);
 		if (f >= 0) {
 			struct stat sb;
 
@@ -286,12 +303,14 @@ static unsigned char	**xecenv;
 
 #ifdef	PROTOTYPES
 void
-execa(unsigned char *at[], short pos)
+execa(unsigned char *at[], short pos, int isvfork, unsigned char *av0)
 #else
 void
-execa(at, pos)
+execa(at, pos, isvfork, av0)
 	unsigned char	*at[];
 	short		pos;
+	int		isvfork;
+	unsigned char	*av0;
 #endif
 {
 	unsigned char	*path;
@@ -301,7 +320,7 @@ execa(at, pos)
 	if ((flags & noexec) == 0) {
 		xecmsg = notfound;
 		path = getpath(*t);
-		xecenv = local_setenv();
+		xecenv = local_setenv(isvfork?ENV_NOFREE:0);
 
 		if (pos > 0) {
 			cnt = 1;
@@ -309,22 +328,28 @@ execa(at, pos)
 				++cnt;
 				path = nextpath(path);
 			}
-			execs(path, t);
+			execs(path, t, isvfork, av0);
 			path = getpath(*t);
 		}
-		while ((path = execs(path, t)) != NULL)
+		while ((path = execs(path, t, isvfork, av0)) != NULL)
 			/* LINTED */
 			;
-		failed(*t, xecmsg);
+		failedx(errno == ENOENT ? ERR_NOTFOUND : ERR_NOEXEC,
+			*t, xecmsg);
 	}
 }
 
 static unsigned char *
-execs(ap, t)
+execs(ap, t, isvfork, av0)
 	unsigned char	*ap;
 	unsigned char	*t[];
+	int		isvfork;
+	unsigned char	*av0;
 {
 	int		pfstatus = NOATTRS;
+	int		oexflag = exflag;
+	struct excode	oex;
+	int		e = ERR_NOEXEC;
 	unsigned char	*p, *prefix;
 #ifdef	EXECATTR_FILENAME
 	unsigned char	*savptr;
@@ -357,25 +382,44 @@ execs(ap, t)
 #endif
 
 	if (pfstatus == NOATTRS) {
+		unsigned char	*a0 = t[0];
+
+		if (av0)
+			t[0] = av0;
 		execve((const char *)p, (char *const *)&t[0],
 		    (char *const *)xecenv);
+		if (av0)
+			t[0] = a0;
 	}
+	oex = ex;
+	ex.ex_status =
+	ex.ex_code = ERR_NOEXEC;
+	ex.ex_pid = mypid;
 
+	if (isvfork)
+		exflag = TRUE;	/* Call _exit() instead of exit() */
 	switch (errno) {
 	case ENOEXEC:		/* could be a shell script */
-		funcnt = 0;
-		flags = 0;
-		*flagadr = 0;
-		comdiv = 0;
-		ioset = 0;
+		ex = oex;
+		if (isvfork) {
+			exflag = 2;
+			_exit(126);
+		}
+		funcnt = 0;	/* Reset to global argc/argv */
+		flags = 0;	/* Clear flags		*/
+		flags2 = 0;	/* Clear flags2		*/
+		*flagadr = 0;	/* Clear $-		*/
+		comdiv = 0;	/* Clear sh -c arg	*/
+		ioset = 0;	/* Clear /dev/null redirect */
 		clearup();	/* remove open files and for loop junk */
 		if (input)
 			close(input);
-		input = chkopen(p, 0);
+		input = chkopen(p, O_RDONLY);	/* Open script as stdin	*/
 
 #ifdef ACCT
 		preacct(p);	/* reset accounting */
 #endif
+		exflag = oexflag;
 
 		/*
 		 * set up new args
@@ -386,38 +430,38 @@ execs(ap, t)
 		/* NOTREACHED */
 
 	case ENOMEM:
-		failed(p, toobig);
+		failedx(e, p, toobig);
 		/* NOTREACHED */
 
 	case E2BIG:
-		failed(p, arglist);
+		failedx(e, p, arglist);
 		/* NOTREACHED */
 
 	case ETXTBSY:
-		failed(p, txtbsy);
+		failedx(e, p, txtbsy);
 		/* NOTREACHED */
 
 #ifdef	ELIBACC
 	case ELIBACC:
-		failed(p, libacc);
+		failedx(e, p, libacc);
 		/* NOTREACHED */
 #endif
 
 #ifdef	ELIBBAD
 	case ELIBBAD:
-		failed(p, libbad);
+		failedx(e, p, libbad);
 		/* NOTREACHED */
 #endif
 
 #ifdef	ELIBSCN
 	case ELIBSCN:
-		failed(p, libscn);
+		failedx(e, p, libscn);
 		/* NOTREACHED */
 #endif
 
 #ifdef	ELIBMAX
 	case ELIBMAX:
-		failed(p, libmax);
+		failedx(e, p, libmax);
 		/* NOTREACHED */
 #endif
 
@@ -426,6 +470,9 @@ execs(ap, t)
 		/* FALLTHROUGH */
 
 	case ENOENT:
+		if (errno == ENOENT)
+			ex.ex_status =
+			ex.ex_code = ERR_NOTFOUND;
 		return (prefix);
 	}
 }
@@ -456,9 +503,8 @@ trim(at)
 			}
 
 			if (wc != '\\') {
-				memmove(last, current, len);
-				last += len;
-				current += len;
+				while (--len >= 0)
+					*last++ = *current++;
 				continue;
 			}
 
@@ -473,9 +519,8 @@ trim(at)
 					current++;
 					continue;
 				}
-				memmove(last, current, len);
-				last += len;
-				current += len;
+				while (--len >= 0)
+					*last++ = *current++;
 			} else
 				current++;
 		}
@@ -487,7 +532,7 @@ trim(at)
 /* Same as trim, but only removes backlashes before slashes */
 void
 trims(at)
-unsigned char	*at;
+	unsigned char	*at;
 {
 	unsigned char	*last;
 	unsigned char	*current;
@@ -495,8 +540,7 @@ unsigned char	*at;
 	int	len;
 	wchar_t	wc;
 
-	if ((current = at) != NULL)
-	{
+	if ((current = at) != NULL) {
 		last = at;
 		(void) mbtowc(NULL, NULL, 0);
 		while ((c = *current) != 0) {
@@ -509,8 +553,8 @@ unsigned char	*at;
 			}
 
 			if (wc != '\\') {
-				memmove(last, current, len);
-				last += len; current += len;
+				while (--len >= 0)
+					*last++ = *current++;
 				continue;
 			}
 
@@ -535,8 +579,8 @@ unsigned char	*at;
 				current++;
 				continue;
 			}
-			memmove(last, current, len);
-			last += len; current += len;
+			while (--len >= 0)
+				*last++ = *current++;
 		}
 		*last = 0;
 	}
@@ -544,7 +588,7 @@ unsigned char	*at;
 
 unsigned char *
 mactrim(s)
-unsigned char	*s;
+	unsigned char	*s;
 {
 	unsigned char	*t = macro(s);
 
@@ -554,7 +598,7 @@ unsigned char	*s;
 
 unsigned char **
 scan(argn)
-int	argn;
+	int	argn;
 {
 	struct argnod *argp =
 			(struct argnod *)(Rcheat(gchain) & ~ARGMK);
@@ -564,15 +608,13 @@ int	argn;
 							BYTESPERWORD);
 	comargm = comargn += argn;
 	*comargn = ENDARGS;
-	while (argp)
-	{
+	while (argp) {
 		*--comargn = argp->argval;
 
 		trim(*comargn);
 		argp = argp->argnxt;
 
-		if (argp == 0 || Rcheat(argp) & ARGMK)
-		{
+		if (argp == 0 || Rcheat(argp) & ARGMK) {
 			gsort(comargn, comargm);
 			comargm = comargn;
 		}
@@ -583,7 +625,8 @@ int	argn;
 
 static void
 gsort(from, to)
-unsigned char	*from[], *to[];
+	unsigned char	*from[];
+	unsigned char	*to[];
 {
 	int	k, m, n;
 	int	i, j;
@@ -593,22 +636,16 @@ unsigned char	*from[], *to[];
 	for (j = 1; j <= n; j *= 2)
 		/* LINTED */
 		;
-	for (m = 2 * j - 1; m /= 2; )
-	{
+	for (m = 2 * j - 1; m /= 2; ) {
 		k = n - m;
-		for (j = 0; j < k; j++)
-		{
-			for (i = j; i >= 0; i -= m)
-			{
+		for (j = 0; j < k; j++) {
+			for (i = j; i >= 0; i -= m) {
 				unsigned char **fromi;
 
 				fromi = &from[i];
-				if (cf(fromi[m], fromi[0]) > 0)
-				{
+				if (cf(fromi[m], fromi[0]) > 0) {
 					break;
-				}
-				else
-				{
+				} else {
 					unsigned char *s;
 
 					s = fromi[m];
@@ -625,17 +662,15 @@ unsigned char	*from[], *to[];
  */
 int
 getarg(ac)
-struct comnod	*ac;
+	struct comnod	*ac;
 {
 	struct argnod	*argp;
 	int		count = 0;
 	struct comnod	*c;
 
-	if ((c = ac) != NULL)
-	{
+	if ((c = ac) != NULL) {
 		argp = c->comarg;
-		while (argp)
-		{
+		while (argp) {
 			count += split(macro(argp->argval));
 			argp = argp->argnxt;
 		}
@@ -645,20 +680,31 @@ struct comnod	*ac;
 
 static int
 split(s)		/* blank interpretation routine */
-unsigned char	*s;
+	unsigned char	*s;
 {
 	unsigned char	*argp;
 	int		c;
 	int		count = 0;
+	unsigned char	*ifs = ifsnod.namval;
+#ifdef	DO_IFS_HACK
+extern	int		macflag;
+
+	if (macflag & M_DOLAT)
+		ifs = (unsigned char *)sptbnl;
+	else if (macflag == 0)
+		ifs = (unsigned char *)nullstr;
+#endif
+	if (ifs == NULL)
+		ifs = (unsigned char *)sptbnl;
 
 	(void) mbtowc(NULL, NULL, 0);
-	for (;;)
-	{
+	for (;;) {
 		int clength;
 		sigchk();
 		argp = locstak() + BYTESPERWORD;
 		while ((c = *s) != 0) {
 			wchar_t wc;
+
 			if ((clength = mbtowc(&wc, (char *)s,
 					MB_LEN_MAX)) <= 0) {
 				(void) mbtowc(NULL, NULL, 0);
@@ -677,37 +723,28 @@ unsigned char	*s;
 					wc = (unsigned char)*s;
 					clength = 1;
 				}
-				GROWSTAK(argp);
-				*argp++ = *s++;
-				while (--clength > 0) {
-					GROWSTAK(argp);
+				GROWSTAKL(argp, clength);
+				while (--clength >= 0) {
 					*argp++ = *s++;
 				}
 				continue;
 			}
 
-			if (anys(s, ifsnod.namval)) {
+			if (*ifs && anys(s, ifs)) {
 				/* skip to next character position */
 				s += clength;
 				break;
 			}
 
-			GROWSTAK(argp);
-			*argp++ = c;
-			s++;
-			while (--clength > 0) {
-				GROWSTAK(argp);
+			GROWSTAKL(argp, clength);
+			while (--clength >= 0) {
 				*argp++ = *s++;
 			}
 		}
-		if (argp == staktop + BYTESPERWORD)
-		{
-			if (c)
-			{
+		if (argp == staktop + BYTESPERWORD) {
+			if (c) {
 				continue;
-			}
-			else
-			{
+			} else {
 				return (count);
 			}
 		}
@@ -720,8 +757,7 @@ unsigned char	*s;
 		if ((flags & nofngflg) == 0 &&
 			(c = expand(((struct argnod *)argp)->argval, 0)))
 			count += c;
-		else
-		{
+		else {
 			makearg((struct argnod *)argp);
 			count++;
 		}
@@ -768,7 +804,7 @@ preacct(cmdadrp)
 		sabuf.ac_uid = getuid();
 		sabuf.ac_gid = getgid();
 		movstrn(simple(cmdadrp), (unsigned char *)sabuf.ac_comm,
-			sizeof (sabuf.ac_comm));
+			    sizeof (sabuf.ac_comm));
 		shaccton = 1;
 	}
 }
@@ -786,7 +822,7 @@ doacct()
 		sabuf.ac_etime = compress(after - before);
 
 		if ((fd = open((char *)acctnod.namval,
-				O_WRONLY | O_APPEND | O_CREAT, 0666)) != -1) {
+		    O_WRONLY | O_APPEND | O_CREAT, 0666)) != -1) {
 			write(fd, &sabuf, sizeof (sabuf));
 			close(fd);
 		}

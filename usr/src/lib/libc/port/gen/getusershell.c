@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 1990, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 J. Schilling
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
@@ -39,18 +40,23 @@
  */
 const char *okshells[] = {
 	"/usr/bin/sh",
+	"/usr/bin/bosh",
 	"/usr/bin/csh",
 	"/usr/bin/ksh",
 	"/usr/bin/ksh93",
 	"/usr/bin/jsh",
 	"/bin/sh",
+	"/bin/bosh",
 	"/bin/csh",
 	"/bin/ksh",
 	"/bin/ksh93",
 	"/bin/jsh",
 	"/sbin/sh",
+	"/sbin/bosh",
 	"/sbin/jsh",
+	"/sbin/jbosh",
 	"/usr/bin/pfsh",
+	"/usr/bin/pfbosh",
 	"/usr/bin/pfcsh",
 	"/usr/bin/pfksh",
 	"/usr/bin/pfksh93",
@@ -61,6 +67,7 @@ const char *okshells[] = {
 	"/usr/bin/pftcsh",
 	"/usr/bin/pfzsh",
 	"/bin/pfsh",
+	"/bin/pfbosh",
 	"/bin/pfcsh",
 	"/bin/pfksh",
 	"/bin/pfksh93",

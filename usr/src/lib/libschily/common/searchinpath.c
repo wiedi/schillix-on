@@ -1,14 +1,14 @@
-/* @(#)searchinpath.c	1.3 10/11/18 Copyright 1999-2010 J. Schilling */
+/* @(#)searchinpath.c	1.5 16/08/01 Copyright 1999-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)searchinpath.c	1.3 10/11/18 Copyright 1999-2010 J. Schilling";
+	"@(#)searchinpath.c	1.5 16/08/01 Copyright 1999-2016 J. Schilling";
 #endif
 /*
  *	Search a file name in the PATH of the current exeecutable.
  *	Return the path to the file name in allocated space.
  *
- *	Copyright (c) 1999-2010 J. Schilling
+ *	Copyright (c) 1999-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -17,6 +17,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -78,9 +80,16 @@ searchfileinpath(name, mode, file_mode, path)
 	int	oerrno = geterrno();
 	int	err = 0;
 #ifdef	HAVE_GETEXECNAME
-	char	*pn = (char *)getexecname();
+	char	*pn = (char *)getexecname();	/* pn is on the stack */
 #else
-	char	*pn = getexecpath();
+	char	*pn = getexecpath();		/* pn is from strdup() */
+	char	ebuf[NAMEMAX];
+
+	if (pn) {
+		strlcpy(ebuf, pn, sizeof (ebuf));
+		free(pn);
+		pn = ebuf;
+	}
 #endif
 
 	if (pn == NULL)
@@ -97,7 +106,8 @@ searchfileinpath(name, mode, file_mode, path)
 	 * If getexecname() returns a path with slashes, try to search
 	 * first relatively to the known location of the current binary.
 	 */
-	if (pn != NULL && strchr(pn, '/') != NULL) {
+	if ((file_mode & SIP_ONLY_PATH) == 0 &&
+		pn != NULL && strchr(pn, '/') != NULL) {
 		strlcpy(nbuf, pn, sizeof (pbuf));
 		np = nbuf + strlen(nbuf);
 
@@ -105,9 +115,9 @@ searchfileinpath(name, mode, file_mode, path)
 			*--np = '\0';
 		pn = &nbuf[sizeof (pbuf) - 1];
 		if ((np = searchonefile(name, mode,
-					(file_mode & SIP_PLAIN_FILE) != 0,
-					xn,
-					nbuf, np, pn)) != NULL) {
+				file_mode & (SIP_PLAIN_FILE|SIP_NO_STRIPBIN),
+				xn,
+				nbuf, np, pn)) != NULL) {
 			seterrno(oerrno);
 			return (np);
 		}
@@ -144,9 +154,9 @@ searchfileinpath(name, mode, file_mode, path)
 				*np++ = *path++;
 		*np = '\0';
 		if ((np = searchonefile(name, mode,
-					(file_mode & SIP_PLAIN_FILE) != 0,
-					xn,
-					nbuf, np, ep)) != NULL) {
+				file_mode & (SIP_PLAIN_FILE|SIP_NO_STRIPBIN),
+				xn,
+				nbuf, np, ep)) != NULL) {
 #ifdef __DJGPP__
 			free(path);
 #endif
@@ -195,8 +205,11 @@ searchonefile(name, mode, plain_file, xn, nbuf, np, ep)
 			return (NULL);
 		*--np = '\0';
 	}
-	if (np >= &nbuf[4] && streql(&np[-4], "/bin"))
-		np = &np[-4];
+	if ((plain_file & SIP_NO_STRIPBIN) == 0) {
+		if (np >= &nbuf[4] && streql(&np[-4], "/bin"))
+			np = &np[-4];
+	}
+	plain_file &= SIP_PLAIN_FILE;
 	*np++ = '/';
 	*np   = '\0';
 	strlcpy(np, name, ep - np);
