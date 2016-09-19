@@ -1,14 +1,14 @@
-/* @(#)header.c	1.148 11/04/12 Copyright 1985, 1994-2011 J. Schilling */
+/* @(#)header.c	1.159 16/07/12 Copyright 1985, 1994-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)header.c	1.148 11/04/12 Copyright 1985, 1994-2011 J. Schilling";
+	"@(#)header.c	1.159 16/07/12 Copyright 1985, 1994-2016 J. Schilling";
 #endif
 /*
  *	Handling routines to read/write, parse/create
  *	archive headers
  *
- *	Copyright (c) 1985, 1994-2011 J. Schilling
+ *	Copyright (c) 1985, 1994-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -17,6 +17,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -87,7 +89,7 @@ LOCAL	htab_t	htab[] = {
  */
 LOCAL	char	*cnames[] = {
 	"unknown",		/*  0 C_NONE	*/
-	"pack",			/*  1 C_PACL	*/
+	"pack",			/*  1 C_PACK	*/
 	"gzip",			/*  2 C_GZIP	*/
 	"lzw",			/*  3 C_LZW	*/
 	"freeze",		/*  4 C_FREEZE	*/
@@ -207,8 +209,12 @@ checksum(ptb)
 		for (i = sizeof (*ptb)/8; --i >= 0; ) {
 			DO8(ssum += *ss++);
 		}
-		if (ssum == 0L)		/* Block containing 512 nul's */
-			return (0);
+		if (ssum == 0L) {	/* Block containing 512 nul's? */
+			signedcksum = FALSE;
+			sum = checksum(ptb);
+			signedcksum = TRUE;
+			return (sum);
+		}
 
 		ss = (char *)ptb->ustar_dbuf.t_chksum;
 		DO8(ssum -= *ss++);
@@ -247,8 +253,12 @@ bar_checksum(ptb)
 		ss = (char *)ptb;
 		for (i = sizeof (*ptb); --i >= 0; )
 			ssum += *ss++;
-		if (ssum == 0L)		/* Block containing 512 nul's */
-			return (0);
+		if (ssum == 0L) {	/* Block containing 512 nul's? */
+			signedcksum = FALSE;
+			sum = bar_checksum(ptb);
+			signedcksum = TRUE;
+			return (sum);
+		}
 
 		for (i = CHECKS, ss = (char *)ptb->bar_dbuf.t_chksum; --i >= 0; )
 			ssum -= *ss++;
@@ -1136,10 +1146,11 @@ extern	BOOL	use_fifo;
 			ptb = &tb;
 			info->f_flags &= ~F_TCB_BUF;
 		}
-		if ((info->f_xflags != 0) || ghdr)
+		if ((info->f_xflags != 0) || ghdr) {
 			info_to_xhdr(info, ptb);
-		else
+		} else {
 			write_longnames(info);
+		}
 	}
 	write_tcb(ptb, info);
 }
@@ -1295,13 +1306,15 @@ info_to_star(info, ptb)
 	ptb->dbuf.t_magic[1] = 'a';
 	ptb->dbuf.t_magic[2] = 'r';
 	if (!numeric) {
-		ic_nameuid(ptb->dbuf.t_uname, STUNMLEN, info->f_uid);
+		char	opfx0 = ptb->dbuf.t_prefix[0];
+
+		ic_nameuid(ptb->dbuf.t_uname, STUNMLEN+1, info->f_uid);
 		/* XXX Korrektes overflowchecking */
 		if (ptb->dbuf.t_uname[STUNMLEN-1] != '\0' &&
 		    props.pr_flags & PR_XHDR) {
 			info->f_xflags |= XF_UNAME;
 		}
-		ic_namegid(ptb->dbuf.t_gname, STGNMLEN, info->f_gid);
+		ic_namegid(ptb->dbuf.t_gname, STGNMLEN+1, info->f_gid);
 		/* XXX Korrektes overflowchecking */
 		if (ptb->dbuf.t_gname[STGNMLEN-1] != '\0' &&
 		    props.pr_flags & PR_XHDR) {
@@ -1315,6 +1328,7 @@ info_to_star(info, ptb)
 			info->f_gname = ptb->dbuf.t_gname;
 			info->f_gmaxlen = STGNMLEN;
 		}
+		ptb->dbuf.t_prefix[0] = opfx0;	/* Overwritten by strlcpy() */
 	}
 
 	if (is_sparse(info) || is_multivol(info)) {
@@ -1581,11 +1595,14 @@ static	BOOL	modewarn = FALSE;
 		 */
 		if ((info->f_flags & F_HAS_NAME) == 0 &&
 					props.pr_nflags & PR_LONG_NAMES) {
-			while (ptb->dbuf.t_linkflag == LF_LONGLINK ||
-				    ptb->dbuf.t_linkflag == LF_LONGNAME) {
+			while (ret == 0 &&
+				    (ptb->dbuf.t_linkflag == LF_LONGLINK ||
+				    ptb->dbuf.t_linkflag == LF_LONGNAME)) {
 				ret = tcb_to_longname(ptb, info);
 				info->f_flags &= ~F_DATA_SKIPPED;
 			}
+			if (ret)
+				return (ret);
 		}
 	}
 	if (!pr_validtype(ptb->dbuf.t_linkflag)) {
@@ -1774,8 +1791,13 @@ tar_to_info(ptb, info)
 	register FINFO	*info;
 {
 	register int	typeflag = ptb->ustar_dbuf.t_typeflag;
+		char	xname;
 
-	if (ptb->dbuf.t_name[strlen(ptb->dbuf.t_name) - 1] == '/') {
+	xname = ptb->ndbuf.t_name[NAMSIZ];
+	ptb->ndbuf.t_name[NAMSIZ] = '\0';	/* allow 100 chars in name */
+
+	if (ptb->ndbuf.t_name[0] != '\0' &&
+	    ptb->ndbuf.t_name[strlen(ptb->ndbuf.t_name) - 1] == '/') {
 		typeflag = DIRTYPE;
 		info->f_filetype = F_DIR;
 		info->f_rsize = (off_t)0;	/* XXX hier?? siehe oben */
@@ -1784,6 +1806,8 @@ tar_to_info(ptb, info)
 	} else if (typeflag != DIRTYPE) {
 		info->f_filetype = F_FILE;
 	}
+	ptb->ndbuf.t_name[NAMSIZ] = xname;	/* restore remembered value */
+
 	info->f_xftype = USTOXT(typeflag);
 	info->f_type = XTTOIF(info->f_xftype);
 	info->f_rdevmaj = info->f_rdevmin = info->f_rdev = 0;
@@ -1831,6 +1855,13 @@ star_to_info(ptb, info)
 	if ((info->f_xflags & (XF_DEVMAJOR|XF_DEVMINOR)) !=
 						(XF_DEVMAJOR|XF_DEVMINOR)) {
 		mbits = ptb->dbuf.t_devminorbits - '@';
+		if (((mbits + CHAR_BIT-1) / CHAR_BIT) > sizeof (info->f_rdev)) {
+			errmsgno(EX_BAD,
+			"WARNING: Too many (%d) minor bits in header at %lld.\n",
+				mbits,
+				tblocks());
+			mbits = -1;
+		}
 		if (mbits == 0) {
 			static	BOOL	dwarned = FALSE;
 			if (!dwarned) {
@@ -1885,10 +1916,15 @@ star_to_info(ptb, info)
 		}
 	}
 	if (info->f_uname) {
+		char	xname;
+
+		xname = ptb->dbuf.t_gname[0];
+		ptb->dbuf.t_gname[0] = '\0';
 		if (!numeric && ic_uidname(info->f_uname, info->f_umaxlen, &uid)) {
 			info->f_flags &= ~F_BAD_UID;
 			info->f_uid = uid;
 		}
+		ptb->dbuf.t_gname[0] = xname;
 	}
 	if ((info->f_xflags & XF_GNAME) == 0) {
 		if (*ptb->dbuf.t_gname) {
@@ -1897,10 +1933,15 @@ star_to_info(ptb, info)
 		}
 	}
 	if (info->f_gname) {
+		char	xname;
+
+		xname = ptb->dbuf.t_prefix[0];
+		ptb->dbuf.t_prefix[0] = '\0';
 		if (!numeric && ic_gidname(info->f_gname, info->f_gmaxlen, &gid)) {
 			info->f_flags &= ~F_BAD_GID;
 			info->f_gid = gid;
 		}
+		ptb->dbuf.t_prefix[0] = xname;
 	}
 
 	if (is_sparse(info) || is_multivol(info)) {
@@ -1942,10 +1983,15 @@ ustar_to_info(ptb, info)
 		}
 	}
 	if (info->f_uname) {
+		char	xname;
+
+		xname = ptb->ustar_dbuf.t_uname[TUNMLEN-1];
+		ptb->ustar_dbuf.t_uname[TUNMLEN-1] = '\0';
 		if (!numeric && ic_uidname(info->f_uname, info->f_umaxlen, &uid)) {
 			info->f_flags &= ~F_BAD_UID;
 			info->f_uid = uid;
 		}
+		ptb->ustar_dbuf.t_uname[TUNMLEN-1] = xname;
 	}
 	if ((info->f_xflags & XF_GNAME) == 0) {
 		if (*ptb->ustar_dbuf.t_gname) {
@@ -1954,10 +2000,15 @@ ustar_to_info(ptb, info)
 		}
 	}
 	if (info->f_gname) {
+		char	xname;
+
+		xname = ptb->ustar_dbuf.t_gname[TUNMLEN-1];
+		ptb->ustar_dbuf.t_gname[TUNMLEN-1] = '\0';
 		if (!numeric && ic_gidname(info->f_gname, info->f_gmaxlen, &gid)) {
 			info->f_flags &= ~F_BAD_GID;
 			info->f_gid = gid;
 		}
+		ptb->ustar_dbuf.t_gname[TUNMLEN-1] = xname;
 	}
 
 	if ((info->f_xflags & XF_DEVMAJOR) == 0) {
@@ -2178,20 +2229,30 @@ stoli(s, l)
 	register Ulong	ret = 0L;
 	register char	c;
 	register int	t;
+	register char	*ep = s + 11;
 
-	while (*s == ' ')
-		s++;
-
-	for (;;) {
-		c = *s++;
-		if (isoctal(c))
-			t = c - '0';
-		else
+	while (*s == ' ') {
+		if (s++ >= ep)
 			break;
+	}
+
+	for (; s <= ep; ) {
+		c = *s++;
+		if (isoctal(c)) {
+			t = c - '0';
+		} else {
+			--s;
+			break;
+		}
 		ret *= 8;
 		ret += t;
 	}
 	*l = ret;
+	if (s > ep) {
+		errmsgno(EX_BAD,
+			"WARNING: Unterminated octal number at %lld.\n",
+			tblocks());
+	}
 }
 
 /*
@@ -2205,25 +2266,35 @@ stolli(s, ull)
 	register Ullong	ret = (Ullong)0;
 	register char	c;
 	register int	t;
+	register char	*ep = s + 11;
 
 	if (*((Uchar*)s) & 0x80) {
 		stollb(s, ull, 11);
 		return;
 	}
 
-	while (*s == ' ')
-		s++;
-
-	for (;;) {
-		c = *s++;
-		if (isoctal(c))
-			t = c - '0';
-		else
+	while (*s == ' ') {
+		if (s++ >= ep)
 			break;
+	}
+
+	for (; s <= ep; ) {
+		c = *s++;
+		if (isoctal(c)) {
+			t = c - '0';
+		} else {
+			--s;
+			break;
+		}
 		ret *= 8;
 		ret += t;
 	}
 	*ull = ret;
+	if (s > ep) {
+		errmsgno(EX_BAD,
+			"WARNING: Unterminated octal number at %lld.\n",
+			tblocks());
+	}
 }
 
 /*

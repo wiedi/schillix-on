@@ -23,6 +23,7 @@ OBJECTS_STDIO=	cvmod.o dat.o fcons.o fdown.o fdup.o \
 		fileclose.o fileluopen.o fileopen.o filemopen.o \
 		filepos.o fileread.o filereopen.o fileseek.o filesize.o \
 		filestat.o filewrite.o flag.o flush.o fpipe.o \
+		getdelim.o \
 		niread.o niwrite.o nixread.o nixwrite.o openfd.o peekc.o \
 		fcons64.o fdup64.o fileluopen64.o fileopen64.o filemopen64.o \
 		filepos64.o filereopen64.o fileseek64.o filesize64.o \
@@ -34,50 +35,64 @@ OBJECTS_STDIO=	cvmod.o dat.o fcons.o fdown.o fdup.o \
 #
 
 OBJECTS_REST=	abspath.o \
-		astoi.o astoll.o astoull.o basename.o breakline.o \
+		astoi.o astoll.o astoul.o astoull.o \
+		basename.o breakline.o \
 		checkerr.o chown.o cmpbytes.o cmpmbytes.o cmpnullbytes.o \
 		comerr.o cvt.o dirent.o \
 		dirname.o diropen.o \
+		dlfcn.o \
 		eaccess.o error.o \
-		fchdir.o fcomerr.o \
-		fconv.o fexec.o \
+		faccessat.o \
+		fchdir.o fchmodat.o fchownat.o fcomerr.o \
+		fconv.o fdopendir.o fexec.o \
 		fillbytes.o findbytes.o findinpath.o \
 		findline.o fjmem.o fnmatch.o \
-		format.o fstream.o \
-		getfp.o \
+		format.o fprformat.o \
+		fstatat.o fstream.o \
+		futimens.o futimesat.o \
 		getargs.o getav0.o getdomainname.o getdtablesize.o \
 		geterrno.o getexecpath.o \
+		getfp.o \
 		getgrent.o gethostid.o gethostname.o getlogin.o \
+		getnstimeofday.o \
 		getnum.o getpagesize.o \
 		getperm.o getpwent.o \
-		getnstimeofday.o gettimeofday.o \
+		gettimeofday.o \
 		gettnum.o getxnum.o getxtnum.o \
 		gid.o \
 		handlecond.o \
 		jmem.o \
-		jsprintf.o jssnprintf.o jssprintf.o \
-		kill.o lxchdir.o \
+		jsdprintf.o jsprintf.o jssnprintf.o jssprintf.o \
+		kill.o \
+		lchmod.o linkat.o lutimens.o lxchdir.o \
 		match.o matchl.o matchw.o matchwl.o \
 		mem.o \
-		mkdirs.o mkgmtime.o mkstemp.o movebytes.o \
+		mkdirat.o mkdirs.o \
+		mkfifo.o mkfifoat.o \
+		mkgmtime.o mknodat.o mkstemp.o movebytes.o \
 		openat.o permtostr.o procnameat.o \
-		raisecond.o rename.o resolvepath.o \
+		raisecond.o readlinkat.o rename.o renameat.o resolvepath.o \
 		saveargs.o savewd.o searchinpath.o \
 		serrmsg.o seterrno.o setfp.o \
 		setnstimeofday.o \
 		sleep.o \
 		spawn.o \
 		strcasecmp.o strcasemap.o \
-		strcat.o strcatl.o strchr.o strcmp.o strcpy.o strdup.o \
-		streql.o strlcat.o strlcpy.o strlen.o strncasecmp.o \
+		strcat.o strcatl.o strchr.o strcmp.o strcpy.o strcspn.o \
+		strdup.o \
+		streql.o strlcat.o strlcatl.o strlcpy.o strlen.o \
+		strncasecmp.o \
 		strncat.o strncmp.o strncpy.o strndup.o strnlen.o strrchr.o \
-		strstr.o strtod.o \
-		swabbytes.o \
+		strspn.o strstr.o strtod.o \
+		swabbytes.o symlinkat.o \
 		timegm.o \
-		uid.o uname.o usleep.o \
-		wcscat.o wcscatl.o wcschr.o wcscmp.o wcscpy.o wcsdup.o \
-		wcseql.o wcslcat.o wcslcpy.o wcslen.o wcsncat.o wcsncmp.o \
-		wcsncpy.o wcsndup.o wcsnlen.o wcsrchr.o wcsstr.o \
+		uid.o uname.o unlinkat.o usleep.o \
+		utimens.o utimensat.o \
+		wcscat.o wcscatl.o wcschr.o wcscmp.o wcscpy.o wcscspn.o \
+		wcsdup.o \
+		wcseql.o wcslcat.o wcslcatl.o wcslcpy.o wcslen.o wcsncat.o \
+		wcsncmp.o \
+		wcsncpy.o wcsndup.o wcsnlen.o wcsrchr.o wcsspn.o wcsstr.o \
 		wdabort.o \
 		zerobytes.o
 

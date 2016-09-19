@@ -34,16 +34,16 @@
 #endif
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)print.c	1.20 13/09/24 2008-2013 J. Schilling
+ * @(#)print.c	1.37 16/05/09 2008-2016 J. Schilling
  */
 #ifdef	SCHILY_INCLUDES
 #include <schily/mconfig.h>
 #endif
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)print.c	1.20 13/09/24 2008-2013 J. Schilling";
+	"@(#)print.c	1.37 16/05/09 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -67,8 +67,8 @@ static	UConst char sccsid[] =
 #endif
 
 #define		BUFLEN		256
-
-unsigned char numbuf[21];	/* big enough for 64 bits */
+#define		NUMBUFLEN	21	/* big enough for 64 bits */
+unsigned char numbuf[NUMBUFLEN+1];	/* Add one for sign */
 
 static unsigned char buffer[BUFLEN];
 static unsigned char *bufp = buffer;
@@ -80,26 +80,25 @@ static int buffd = 1;
 	void	prc	__PR((unsigned char c));
 	void	prwc	__PR((wchar_t c));
 	void	prt	__PR((long t));
+	void	prtv	__PR((struct timeval *tp, int digs, int lf));
 	void	prn	__PR((int n));
+static	void	_itos	__PR((unsigned int n, char *out, size_t	outlen));
 	void	itos	__PR((int n));
+	void	sitos	__PR((int n));
 	int	stoi	__PR((unsigned char *icp));
 	int	ltos	__PR((long n));
 
 static int ulltos	__PR((UIntmax_t n));
 	void flushb	__PR((void));
+	void unprs_buff	__PR((int));
 	void prc_buff	__PR((unsigned char c));
-	void prs_buff	__PR((unsigned char *s));
+	int  prs_buff	__PR((unsigned char *s));
 static unsigned char *octal __PR((unsigned char c, unsigned char *ptr));
 	void prs_cntl	__PR((unsigned char *s));
 	void prull_buff	__PR((UIntmax_t lc));
 	void prn_buff	__PR((int n));
 	int setb	__PR((int fd));
 
-
-void	prc_buff	__PR((unsigned char c));
-void	prs_buff	__PR((unsigned char *s));
-void	prn_buff	__PR((int n));
-void	prs_cntl	__PR((unsigned char *s));
 
 /*
  * printing and io conversion
@@ -163,35 +162,81 @@ prwc(c)
 #endif
 
 void
+clock2tv(t, tp)
+	clock_t		t;
+	struct timeval	*tp;
+{
+	int _hz = HZ;	/* HZ may be a macro to a sysconf() call */
+
+	tp->tv_sec = t / _hz;
+	tp->tv_usec = t % _hz;
+	if (_hz <= 1000000)
+		tp->tv_usec *= 1000000 / _hz;
+	else
+		tp->tv_usec /= _hz / 1000000;
+}
+
+void
 prt(t)
 	long	t;	/* t is time in clock ticks, not seconds */
 {
-	int hr, min, sec, frac;
-	int _hz = HZ;
+	struct timeval	tv;
 
-	frac = t % _hz;
-	if (_hz > 1000)
-		frac %= 1000;
-	else
-		frac *= 1000 / _hz;
-	t += _hz / 2;	/* round to nearest second */
-	t /= _hz;
-	sec = t % 60;
-	t /= 60;
-	min = t % 60;
+	clock2tv(t, &tv);
+	prtv(&tv, 3, TRUE);
+}
 
-	if ((hr = t / 60) != 0) {
-		prn_buff(hr);
-		prc_buff('h');
+static int	divs[7] = { 1000000, 100000, 10000, 1000, 100, 10, 1 };
+
+void
+prtv(tp, digs, lf)
+	struct timeval	*tp;
+	int		digs;
+	int		lf;	/* Long format */
+{
+	int s, hr, min, sec, frac;
+
+	if (digs < 0)
+		digs = 3;
+	if (digs > 6)
+		digs = 6;
+	frac = tp->tv_usec / divs[digs];
+	s = tp->tv_sec;
+	if (lf) {
+		sec = s % 60;	/* Pure seconds		*/
+		s /= 60;	/* s now holds minutes	*/
+		min = s % 60;	/* Pure minutes		*/
+		if (lf == 'l')
+			min = s;
+		hr = 0;
+
+		if ((lf != 'l') && (hr = s / 60) != 0) {
+			prn_buff(hr);
+			prc_buff(lf == ':' ? ':':'h');
+		}
+		if (lf == 'l' || hr > 0 || min > 0) {
+			if (lf == ':' && min < 10 && hr > 0)
+				prc_buff('0');
+			prn_buff(min);
+			prc_buff(lf == ':' ? ':':'m');
+		}
+	} else {
+		sec = s;
 	}
-
-	prn_buff(min);
-	prc_buff('m');
+	if (lf == ':' && sec < 10 && tp->tv_sec >= 60)
+		prc_buff('0');
 	prn_buff(sec);
-	prc_buff('.');
-	itos(frac+1000);
-	prs_buff(numbuf+1);
-	prc_buff('s');
+	if (digs > 0) {
+#if defined(HAVE_LOCALECONV) && defined(USE_LOCALE)
+		prc_buff(*(localeconv()->decimal_point));
+#else
+		prc_buff('.');
+#endif
+		itos(frac+1000000);
+		prs_buff(numbuf+7-digs);
+	}
+	if (lf != FALSE && lf != ':')
+		prc_buff('s');
 }
 
 void
@@ -203,13 +248,18 @@ prn(n)
 	prs(numbuf);
 }
 
-void
-itos(n)
-	int	n;
+/*
+ * Convert unsigned int into "out" buffer.
+ */
+static void
+_itos(n, out, outlen)
+	unsigned int	n;
+	char	*out;
+	size_t	outlen;
 {
-	unsigned char buf[21];
-	unsigned char *abuf = &buf[20];
-	int d;
+	unsigned char buf[NUMBUFLEN];
+	unsigned char *abuf = &buf[NUMBUFLEN-1];
+	unsigned int d;
 
 	*--abuf = (unsigned char)'\0';
 
@@ -217,7 +267,34 @@ itos(n)
 		 *--abuf = (unsigned char)('0' + n - 10 * (d = n / 10));
 	} while ((n = d) != 0);
 
-	strncpy((char *)numbuf, (char *)abuf, sizeof (numbuf));
+	strncpy(out, (char *)abuf, outlen);
+}
+
+/*
+ * Convert int into numbuf as if it was an unsigned.
+ */
+void
+itos(n)
+	int	n;
+{
+	_itos(n, (char *)numbuf, sizeof (numbuf));
+}
+
+/*
+ * Convert signed int into numbuf.
+ */
+void
+sitos(n)
+	int	n;
+{
+	char *np = (char *)numbuf;
+
+	if (n < 0) {
+		*np++ = '-';
+		_itos(-n, np, sizeof (numbuf) -1);
+		return;
+	}
+	_itos(n, (char *)numbuf, sizeof (numbuf));
 }
 
 int
@@ -243,13 +320,62 @@ stoi(icp)
 }
 
 int
+stosi(icp)
+	unsigned char	*icp;
+{
+	int	sign = 1;
+
+	if (*icp == '-') {
+		sign = -1;
+		icp++;
+	}
+	return (sign * stoi(icp));
+}
+
+/*
+ * Convert signed long
+ */
+int
+sltos(n)
+	long	n;
+{
+	if (n < 0) {
+		int i;
+
+		i = ltos(-n);
+		numbuf[--i] = '-';
+		return (i);
+	}
+	return (ltos(n));
+}
+
+#ifdef	DO_DOL_PAREN
+/*
+ * Convert signed long long
+ */
+int
+slltos(n)
+	Intmax_t	n;
+{
+	if (n < 0) {
+		int i;
+
+		i = ulltos(-n);
+		numbuf[--i] = '-';
+		return (i);
+	}
+	return (ulltos(n));
+}
+#endif
+
+int
 ltos(n)
 	long	n;
 {
 	int i;
 
-	numbuf[20] = '\0';
-	for (i = 19; i >= 0; i--) {
+	numbuf[NUMBUFLEN-1] = '\0';
+	for (i = NUMBUFLEN-2; i >= 0; i--) {
 		numbuf[i] = n % 10 + '0';
 		if ((n /= 10) == 0) {
 			break;
@@ -265,8 +391,8 @@ ulltos(n)
 	int i;
 
 	/* The max unsigned long long is 20 characters (+1 for '\0') */
-	numbuf[20] = '\0';
-	for (i = 19; i >= 0; i--) {
+	numbuf[NUMBUFLEN-1] = '\0';
+	for (i = NUMBUFLEN-2; i >= 0; i--) {
 		numbuf[i] = n % 10 + '0';
 		if ((n /= 10) == 0) {
 			break;
@@ -285,6 +411,17 @@ flushb()
 	}
 }
 
+void
+unprs_buff(amt)
+	int	amt;
+{
+	if (!bindex)
+		return;
+	bindex -= amt;
+	if (bindex < 0)
+		bindex = 0;
+}
+
 #ifdef	PROTOTYPES
 void
 prc_buff(unsigned char c)
@@ -295,7 +432,12 @@ prc_buff(c)
 #endif
 {
 	if (c) {
-		if (buffd != -1 && bindex + 1 >= BUFLEN) {
+		if (buffd == -1) {
+			if (bufp+bindex+1 >= brkend) {
+				bufp = growstak(bufp+bindex+1);
+				bufp -= bindex + 1;
+			}
+		} else if (bindex + 1 >= BUFLEN) {
 			flushb();
 		}
 
@@ -306,21 +448,28 @@ prc_buff(c)
 	}
 }
 
-void
+int
 prs_buff(s)
 	unsigned char	*s;
 {
 	int len = length(s) - 1;
 
-	if (buffd != -1 && bindex + len >= BUFLEN) {
+	if (buffd == -1) {
+		if (bufp+bindex+len >= brkend) {
+			bufp = growstak(bufp+bindex+len);
+			bufp -= bindex + len;
+		}
+	} else if (bindex + len >= BUFLEN) {
 		flushb();
 	}
 
 	if (buffd != -1 && len >= BUFLEN) {
 		write(buffd, s, len);
+		return (0);
 	} else {
 		movstr(s, &bufp[bindex]);
 		bindex += len;
+		return (len);
 	}
 }
 
@@ -409,12 +558,90 @@ prs_cntl(s)
 	prs(bufp);
 }
 
+#ifdef	DO_POSIX_UNSET
+/*
+ * Quoted string printing as needed for the env(1) builtin when printing
+ * the list of shell variables in order to be POSIX compliant.
+ */
+void
+qprs_buff(s)
+	unsigned char	*s;
+{
+	int		n;
+	char		c;
+	wchar_t		wc = 0;
+	int		isq = *s == '\0';
+	unsigned char	*os = s;
+
+	(void) mbtowc(NULL, NULL, 0);
+	for (;;) {
+		if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) < 0) {
+			(void) mbtowc(NULL, NULL, 0);
+			n = 1;
+			wc = *s;
+		}
+		if (wc == 0)
+			break;
+		if (wc == '\'')
+			break;
+		if (!isq) {
+			isq = escmeta(wc);
+			if (!isq)
+				isq =   wc == '*' || wc == '?' ||
+					wc == '[' || wc == '~';
+		}
+		s += n;
+	}
+	if (wc != '\'') {
+		if (isq)
+			prc_buff('\'');
+		prs_buff(os);
+		if (isq)
+			prc_buff('\'');
+		return;
+	}
+	/*
+	 * String contains at least one single quote:
+	 */
+	s = os;
+	prc_buff('\'');
+	while (*s) {
+		if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) < 0) {
+			(void) mbtowc(NULL, NULL, 0);
+			n = 1;
+			wc = *s;
+		}
+		if (wc == 0)
+			break;
+		if (wc == '\'') {
+			c = *s;
+			*s = '\0';
+			prs_buff(os);
+			prs_buff(UC "'\\''");
+			*s = c;
+			os = s += n;
+		} else {
+			s += n;
+		}
+	}
+	if (*os)
+		prs_buff(os);
+	prc_buff('\'');
+}
+#endif
 
 void
 prull_buff(lc)
 	UIntmax_t	lc;
 {
 	prs_buff(&numbuf[ulltos(lc)]);
+}
+
+void
+prl_buff(l)
+	long	l;
+{
+	prs_buff(&numbuf[ltos(l)]);
 }
 
 void
@@ -426,6 +653,8 @@ prn_buff(n)
 	prs_buff(numbuf);
 }
 
+static unsigned char *locbufp;
+
 int
 setb(fd)
 	int	fd;
@@ -433,6 +662,10 @@ setb(fd)
 	int ofd;
 
 	if ((ofd = buffd) == -1) {
+		/*
+		 * Previous buffer was a growing buffer,
+		 * so make it semi-permanent and remember value.
+		 */
 		if (bufp+bindex+1 >= brkend) {
 			bufp = growstak(bufp+bindex+1);
 			bufp -= bindex + 1;
@@ -440,15 +673,31 @@ setb(fd)
 		if (bufp[bindex-1]) {
 			bufp[bindex++] = 0;
 		}
-		bufp = endstak(bufp+bindex);
+		locbufp = endstak(bufp+bindex);
 	} else {
+		/*
+		 * Previous buffer was static, so just flush it.
+		 */
+		locbufp = NULL;
 		flushb();
 	}
 	if ((buffd = fd) == -1) {
+		/*
+		 * Get new growing buffer
+		 */
 		bufp = locstak();
 	} else {
 		bufp = buffer;
 	}
 	bindex = 0;
 	return (ofd);
+}
+
+/*
+ * Hack to get the address of the semi-permanent buffer after setb(-1).
+ */
+unsigned char *
+endb()
+{
+	return (locbufp);
 }

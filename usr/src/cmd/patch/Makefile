@@ -15,10 +15,12 @@
 
 PROG= patch
 OPATCH=opatch
+SPATCH=spatch
+SCCSPATCH=sccspatch
 OBJS= patch.o pch.o inp.o util.o
 SRCS = $(OBJS:.o=.c)
 
-ROOTLINKS= $(ROOTBIN)/$(OPATCH)
+ROOTLINKS= $(ROOTBIN)/$(OPATCH) $(ROOTBIN)/$(SPATCH) $(ROOTBIN)/$(SCCSPATCH)
 
 include ../Makefile.cmd
 
@@ -33,6 +35,13 @@ CPPFLAGS +=	-DNO_PRINTFLIKE=1
 
 #XGETFLAGS += -a -x $(PROG).xcl
 
+#
+# Currently used from libschily:
+#	mklgmtime()
+#	js_malloc()
+#	js_mexval()
+#	makedirs()
+#
 LDLIBS += -lschily
 
 .KEEP_STATE:

@@ -1,6 +1,6 @@
-/* @(#)fprint.c	1.2 13/09/25 Copyright 1985, 1989, 1995-2013 J. Schilling */
+/* @(#)fprint.c	1.4 16/08/10 Copyright 1985, 1989, 1995-2016 J. Schilling */
 /*
- *	Copyright (c) 1985, 1989, 1995-2013 J. Schilling
+ *	Copyright (c) 1985, 1989, 1995-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -20,7 +20,7 @@
 #include <schily/unistd.h>	/* include <sys/types.h> try to get size_t */
 #include <schily/stdlib.h>	/* Try again for size_t	*/
 
-#include <stdio.h>
+#include <schily/stdio.h>
 #include <schily/varargs.h>
 #include <schily/standard.h>
 #include <schily/schily.h>
@@ -133,9 +133,11 @@ fprintf(file, form, va_alist)
 EXPORT	int sprintf __PR((char *, const char *, ...));
 
 #ifdef	PROTOTYPES
-static void _cput(char c, long ba)
+static void
+_cput(char c, long ba)
 #else
-static void _cput(c, ba)
+static void
+_cput(c, ba)
 	char	c;
 	long	ba;
 #endif
@@ -179,9 +181,11 @@ typedef struct {
 } *SBUF, _SBUF;
 
 #ifdef	PROTOTYPES
-static void _scput(char c, long l)
+static void
+_scput(char c, long l)
 #else
-static void _scput(c, l)
+static void
+_scput(c, l)
 	char	c;
 	long	l;
 #endif

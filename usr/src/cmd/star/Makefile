@@ -26,7 +26,7 @@ OBJS=		star.o header.o cpiohdr.o xheader.o xattr.o \
 		subst.o volhdr.o \
 		chdir.o match.o defaults.o dumpdate.o \
 		fifo.o device.o checkerr.o \
-		findinfo.o
+		findinfo.o pathname.o
 
 SRCS=	$(OBJS:%.o=%.c)
 

@@ -31,30 +31,49 @@
 #define	_NAME_H
 
 /*
- * This file contains modifications Copyright 2009-2012 J. Schilling
- * @(#)name.h	1.5 12/04/22 2009-2012 J. Schilling
+ * Copyright 2009-2016 J. Schilling
+ * @(#)name.h	1.9 16/07/06 2009-2016 J. Schilling
  */
 /*
  *	UNIX shell
  */
 
+#ifdef	DO_SYSLOCAL
+/*
+ * When implementing local shell variables, we need a separate "funcval" member
+ * to store the token to identify the scope of the local variable.
+ */
+#ifndef	DO_POSIX_UNSET
+#define	DO_POSIX_UNSET
+#endif
+#endif
 
-#define	N_ENVCHG 0020
-#define	N_RDONLY 0010
-#define	N_EXPORT 0004
-#define	N_ENVNAM 0002
-#define	N_FUNCTN 0001
+#define	N_LOCAL  0100			/* Local node has a pushed old value */
+#define	N_PUSHOV 0040			/* This node has a pushed old value  */
+#define	N_ENVCHG 0020			/* This was changed after env import */
+#define	N_RDONLY 0010			/* This node is read-only forever */
+#define	N_EXPORT 0004			/* This node will be exported to env */
+#define	N_ENVNAM 0002			/* This node was imported from env */
+#define	N_FUNCTN 0001			/* This is a function, not a param */
 
-#define	N_DEFAULT 0
+#define	N_DEFAULT 0			/* No attributes (yet) */
 
 struct namnod
 {
-	struct namnod	*namlft;
-	struct namnod	*namrgt;
-	unsigned char	*namid;
-	unsigned char	*namval;
-	unsigned char	*namenv;
-	int	namflg;
+	struct namnod	*namlft;	/* Left name tree */
+	struct namnod	*namrgt;	/* Right name tree */
+	struct namnod	*nampush;	/* Pushed old value */
+	unsigned char	*namid;		/* Node name, e.g. "HOME" */
+	unsigned char	*namval;	/* Node value, e.g. "/home/joe" */
+	unsigned char	*namenv;	/* Imported value or function node */
+#ifdef	DO_POSIX_UNSET
+	unsigned char	*funcval;	/* Function node when in POSIX mode */
+#endif
+	int		namflg;		/* Flags, see above */
 };
+
+#ifndef	DO_POSIX_UNSET
+#define	funcval	namenv
+#endif
 
 #endif /* _NAME_H */

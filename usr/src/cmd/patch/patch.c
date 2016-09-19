@@ -1,15 +1,30 @@
-/* @(#)patch.c	1.20 11/09/06 2011 J. Schilling */
+/* @(#)patch.c	1.42 16/09/17 2011-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)patch.c	1.20 11/09/06 2011 J. Schilling";
+	"@(#)patch.c	1.42 16/09/17 2011-2016 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1984-1988 Larry Wall
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
- *	This program may be copied as long as you don't try to make any
- *	money off of it, or pretend that you wrote it.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition is met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #define	EXT
@@ -19,7 +34,8 @@ static	UConst char sccsid[] =
 #include "util.h"
 #include "pch.h"
 #include "inp.h"
-#include "patchlevel.h"
+
+#define	PATCHVERSION	"3.1"
 
 /* procedures */
 
@@ -70,6 +86,7 @@ main(argc, argv)
 	int hunk = 0;
 	int failed = 0;
 	int failtotal = 0;
+	int reject_written = 0;
 	int i;
 #if	defined(USE_NLS) && defined(INS_BASE)
 	char *dir;
@@ -98,6 +115,9 @@ main(argc, argv)
 	(void) textdomain(TEXT_DOMAIN);
 #endif
 	time(&starttime);
+	bufsize = BUFFERSIZE;
+	___mexval(EXIT_FAIL);
+	buf = ___malloc(BUFFERSIZE, _("general purpose buffer"));
 
 	for (i = 0; i < MAXFILEC; i++)
 		filearg[i] = Nullch;
@@ -191,7 +211,18 @@ main(argc, argv)
 					where = locate_hunk(fuzz);
 					if (hunk == 1 && where == Nulline &&
 					    !force) {
-						/* dwim for reversed patch? */
+						/*
+						 * dwim for reversed patch?
+						 *
+						 * In case of a normal diff,
+						 * swapping a simple delete will
+						 * always work and this is not
+						 * what we like to do...
+						 */
+						if (diff_type == NORMAL_DIFF &&
+						    p_repl_lines == 0)
+							continue;
+
 						if (!pch_swap()) {
 							if (fuzz == Nulline)
 								say(
@@ -238,7 +269,8 @@ _("Apply anyway? [n] "));
 								if (*buf != 'y')
 									skip_rest_of_patch = TRUE;
 								where = Nulline;
-								reverse = !reverse;
+								reverse =
+								    !reverse;
 								/*
 								 * put it back
 								 * to normal
@@ -274,7 +306,8 @@ _("Lost hunk on alloc error!\n"));
 					    hunk, (Llong)newwhere);
 			} else {
 				apply_hunk(where);
-				if (verbose) {
+				if (verbose > TRUE ||
+				    (verbose && (fuzz || last_offset))) {
 					say(_("Hunk #%d succeeded at %lld"),
 					    hunk, (Llong)newwhere);
 					if (fuzz)
@@ -327,6 +360,9 @@ _("\n\nRan out of memory using Plan A--trying again...\n\n"));
 		rejfp = Nullfp;
 		if (failed) {
 			failtotal += failed;
+			if (failtotal <= 0)
+				failtotal = 1;
+
 			if (!*rejname) {
 				Strcpy(rejname, outname);
 #ifndef FLEXFILENAMES
@@ -356,17 +392,23 @@ _("%d out of %d hunks ignored--saving rejects to %s\n"),
 _("%d out of %d hunks failed--saving rejects to %s\n"),
 				    failed, hunk, rejname);
 			}
-			if (move_file(TMPREJNAME, rejname) < 0)
+			if (move_file(TMPREJNAME, rejname) < 0) {
 				trejkeep = TRUE;
+				reject_written = EXIT_FAIL;
+			} else {
+				reject_written = EXIT_REJECT;
+			}
 		}
 		set_signals(1);
 	}
+
+	if (reject_written)
+		my_exit(reject_written);
 	/*
-	 * Avoid to create a resulting virtual exit code of "0" in case of an
-	 * unfortunate failure counter.
+	 * Use POSIX exit code for erors if any failure happened.
 	 */
-	if (failtotal % 256 == 0)
-		failtotal--;
+	if (failtotal > 0)
+		failtotal = EXIT_FAIL;
 	my_exit(failtotal);
 	/* NOTREACHED */
 	return (failtotal);
@@ -424,8 +466,12 @@ init_defaults()
 			s = Argv[0];
 		else
 			s++;
-		if (!strEQ(s, "opatch") && !strEQ(s, "sccspatch"))
+		if (strEQ(s, "sccspatch")) {
 			do_posix = TRUE;
+			wall_plus = TRUE; /* POSIX + old patch options	*/
+		} else if (!strEQ(s, "opatch")) {
+			do_posix = TRUE;
+		}
 	}
 	if (getenv("POSIXLY_CORRECT") != Nullch) {
 		do_posix = TRUE; /* Do it similar to GNU patch	*/
@@ -506,13 +552,13 @@ get_some_switches()
 				if (!*++s)
 					s = nextarg();
 				if (chdir(s) < 0)
-					fatal(_("Can't cd to %s.\n"), s);
+					pfatal(_("Can't cd to %s.\n"), s);
 				break;
 			case 'D':			/* POSIX: ~..OK	*/
 				do_defines = TRUE;
 				if (!*++s)
 					s = nextarg();
-				if (!isalpha(*s) && '_' != *s)
+				if (!isalpha(UCH *s) && '_' != *s)
 					fatal(
 _("Argument to -D not an identifier.\n"));
 				Sprintf(if_defined, "#ifdef %s\n", s);
@@ -542,7 +588,7 @@ _("Argument to -D not an identifier.\n"));
 					goto unknown;
 				if (*++s == '=')
 					s++;
-				maxfuzz = atoi(s);
+				maxfuzz = atolnum(s);
 				break;
 			case 'i':			/* POSIX: only	*/
 				if (!*++s)
@@ -576,7 +622,7 @@ _("Argument to -D not an identifier.\n"));
 					s = nextarg();
 				else if (*s == '=')
 					s++;
-				strippath = atoi(s);
+				strippath = atoinum(s);
 				break;
 			case 'r':			/* POSIX: OK	*/
 				Strcpy(rejname, nextarg());
@@ -605,26 +651,56 @@ _("Argument to -D not an identifier.\n"));
 			case 'v':			/* Wall: all vers */
 				if (!wall_plus)
 					goto unknown;
+				if (s[1] == 'v') {
+					s++;
+					verbose = TRUE + 1;
+					break;
+				}
 
+			printvers:
 				printf(
-				_("patch 2.0 Patch level %s (%s-%s-%s)\n\n"),
-					PATCHLEVEL,
+				_("patch %s (%s-%s-%s)\n\n"),
+					PATCHVERSION,
 					HOST_CPU, HOST_VENDOR, HOST_OS);
 				printf(
+				_("Compatibility: %s%s%s\n\n"),
+					do_posix ? "POSIX ":"",
+					do_wall ? "Wall-2.0 ":"",
+					wall_plus ? "Wall+":"");
+				printf(
 				_("Copyright (C) 1984 - 1988 Larry Wall\n"));
-				printf(_("Copyright (C) 2011 %s\n"),
+				printf(_("Copyright (C) 2011 - 2016 %s\n"),
 					_("Joerg Schilling"));
-				printf(
-_("This is free software; see the source for copying conditions.  There is NO\n"));
-				printf(
-_("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"));
-				exit(0);
+				printf(_(
+"This is free software; see the source for copying conditions.  There is NO\n"
+));
+				printf(_(
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+));
+				exit(EXIT_OK);
+				break;
+			case 'W':			/* POSIX: vendor */
+				if (strEQ(s, "W+")) {	/* POSIX +old */
+					wall_plus = TRUE;
+				} else if (strEQ(s, "Wall")) {
+					do_wall = TRUE;	/* Larry 2.0 compat */
+				} else if (strEQ(s, "Wposix")) {
+					do_posix = TRUE;
+					wall_plus = FALSE;
+					do_wall = FALSE;
+				} else if (strEQ(s, "W-posix")) {
+					do_posix = FALSE;
+					do_wall = FALSE;
+				} else if (strEQ(s, "Wv") ||
+				    strEQ(s, "Wversion")) {
+					goto printvers;
+				}
 				break;
 #ifdef DEBUGGING
 			case 'x':			/* Wall: all vers */
 				if (!wall_plus)
 					goto unknown;
-				debug = atoi(s+1);
+				debug = atoinum(s+1);
 				break;
 #endif
 			case 'z':			/* GNU		*/
@@ -641,21 +717,23 @@ _("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
 			default:
 			unknown:
 				fprintf(stderr,
-				_("patch: unrecognized option `%s'\n"), Argv[0]);
-				if (do_posix) {
+				_("patch: unrecognized option `%s'\n"),
+					Argv[0]);
+				if (do_posix && !wall_plus) {
 					fprintf(stderr, _("\
-Usage: patch [-blNR] [-c|-e|-n] [-d dir] [-D define] [-i patchfile]\n\
-             [-o outfile] [-p num] [-r rejectfile] [file]\n\
+Usage: patch [-blNR] [-c|-e|-n|-u] [-d dir] [-D define] [-i patchfile]\n\
+\t[-o outfile] [-p num] [-r rejectfile] [file]\n\
 "));
 				} else {
 					fprintf(stderr, _("\
-Usage: patch [-bcEeflnNRsSuv] \n\
-       [-z backup-ext] [-B backup-prefix] [-d directory]\n\
-       [-D symbol] [-Fmax-fuzz] [-i patchfile] [-o out-file] [-p[strip-count]]\n\
-       [-r rej-name] [origfile] [patchfile] [[+] [options] [origfile]...]\n\
+Usage: patch [-bEflNRsSv] [-c|-e|-n|-u]\n\
+\t[-z backup-ext] [-B backup-prefix] [-d directory]\n\
+\t[-D symbol] [-Fmax-fuzz] [-i patchfile] [-o out-file] [-p[strip-count]]\n\
+\t[-r rej-name] [origfile] [patchfile] [[+] [options] [origfile]...]\n\
+\t[-Wv] [-Wversion] [-W+] [-Wall] [-Wposix] [-W-posix]\n\
 "));
 				}
-				my_exit(1);
+				my_exit(EXIT_FAIL);
 			}
 		}
 	}
@@ -826,7 +904,7 @@ _("Out-of-sync patch, lines %lld,%lld--mangled text or line numbers, maybe?\n"),
 			say("oldchar = '%c', newchar = '%c'\n",
 			    pch_char(old), pch_char(new));
 #endif
-			my_exit(1);
+			my_exit(EXIT_FAIL);
 		} else if (pch_char(new) == '!') {
 			copy_till(where + old - 1);
 			if (R_do_defines) {
@@ -887,7 +965,7 @@ init_output(name)
 {
 	ofp = fopen(name, "w");
 	if (ofp == Nullfp)
-		fatal(_("patch: can't create %s.\n"), name);
+		pfatal(_("can't create %s.\n"), name);
 }
 
 /* Open a file to put hunks we can't locate. */
@@ -898,7 +976,7 @@ init_reject(name)
 {
 	rejfp = fopen(name, "w");
 	if (rejfp == Nullfp)
-		fatal(_("patch: can't create %s.\n"), name);
+		pfatal(_("can't create %s.\n"), name);
 }
 
 /* Copy input file to output, up to wherever hunk is to be applied. */
@@ -964,6 +1042,13 @@ patch_match(base, offset, fuzz)
 	LINENUM iline;
 	LINENUM pat_lines = pch_ptrn_lines() - fuzz;
 
+	/*
+	 * If we never enter the for() loop, we cannot do any match attepmpt
+	 * and thus must assume a non-match.
+	 */
+	if (pline > pat_lines)
+		return (FALSE);
+
 	for (iline = base+offset+fuzz; pline <= pat_lines; pline++, iline++) {
 		if (canonicalize) {
 			if (!similar(ifetch(iline, (offset >= 0)),
@@ -988,12 +1073,12 @@ similar(a, b, len)
 	int len;
 {
 	while (len) {
-		if (isspace(*b)) {		/* whitespace or \n to match? */
-			if (!isspace(*a))	/* no correspond. whitespace? */
+		if (isspace(UCH *b)) {		/* whitespace or \n to match? */
+			if (!isspace(UCH *a))	/* no correspond. whitespace? */
 				return (FALSE);
-			while (len && isspace(*b) && *b != '\n')
+			while (len && isspace(UCH *b) && *b != '\n')
 				b++, len--;	/* skip pattern whitespace */
-			while (isspace(*a) && *a != '\n')
+			while (isspace(UCH *a) && *a != '\n')
 				a++;		/* skip target whitespace */
 			if (*a == '\n' || *b == '\n')
 				return (*a == *b); /* should end in sync */

@@ -17,7 +17,13 @@ include ../Makefile.com
 
 DATAFILES += depend
 
-LICENSEFILES = $(SCHILLIX) $(SCHILY) $(LIC_IN_HDRS) $(CDDL)
+LICENSEFILES = $(SCHILLIX) $(SCHILY) $(LIC_IN_HDRS) $(CDDL) \
+../../lib/libschily/THIRDPARTYLICENSE \
+../../lib/libschily/THIRDPARTYLICENSE.fnmatch \
+../../lib/libschily/THIRDPARTYLICENSE.pd \
+../../lib/libschily/THIRDPARTYLICENSE.rmd160 \
+../../lib/libschily/THIRDPARTYLICENSE.sha2 \
+../../lib/libschily/THIRDPARTYLICENSE.sha3
 
 .KEEP_STATE:
 

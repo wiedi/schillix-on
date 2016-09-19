@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)cmd.c	1.26 13/09/25 2008-2013 J. Schilling
+ * @(#)cmd.c	1.45 16/08/20 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)cmd.c	1.26 13/09/25 2008-2013 J. Schilling";
+	"@(#)cmd.c	1.45 16/08/20 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -60,7 +60,7 @@ static	struct trenod *list	__PR((int flg));
 static	struct trenod *term	__PR((int flg));
 static	struct regnod *syncase	__PR((int esym));
 static	struct trenod *item	__PR((BOOL flag));
-static	int	skipnl		__PR((void));
+static	int	skipnl		__PR((int flag));
 static	struct ionod *inout	__PR((struct ionod *lastio));
 static	void	chkword		__PR((void));
 static	void	chksym		__PR((int sym));
@@ -84,9 +84,6 @@ getstor(asize)
 
 /* ========	command line decoding	======== */
 
-
-
-
 struct trenod *
 makefork(flgs, i)
 	int	flgs;
@@ -108,10 +105,9 @@ makelist(type, i, r)
 {
 	struct lstnod *t = 0;
 
-	if (i == 0 || r == 0)
+	if (i == 0 || r == 0) {
 		synbad();
-	else
-	{
+	} else {
 		t = (struct lstnod *)getstor(sizeof (struct lstnod));
 		t->lsttyp = type;
 		t->lstlef = i;
@@ -122,10 +118,17 @@ makelist(type, i, r)
 
 /*
  * cmd
- *	empty
+ *	empty			(Only if called with MTFLG)
  *	list
  *	list & [ cmd ]
  *	list [ ; cmd ]
+ *
+ * This is the main parser entry point that is called as cmd(NL, MTFLG)
+ * from main.c::exfile(). MTFLG permits empty commands in the main loop.
+ *
+ * It cmd() is called with NLFLG in flg at top level, this causes the whole
+ * file to be read at once and a single treenode * to be constructed from that.
+ * This method is e.g. used by "eval" and ".".
  */
 struct trenod *
 cmd(sym, flg)
@@ -135,18 +138,15 @@ cmd(sym, flg)
 	struct trenod *i, *e;
 
 	i = list(flg);
-	if (wdval == NL)
-	{
-		if (flg & NLFLG)
-		{
+	if (wdval == NL) {
+		if (flg & NLFLG) {
 			wdval = ';';
 			chkpr();
 		}
-	} else if (i == 0 && (flg & MTFLG) == 0)
+	} else if (i == 0 && (flg & MTFLG) == 0) {
 		synbad();
-
-	switch (wdval)
-	{
+	}
+	switch (wdval) {
 	case '&':
 		if (i)
 			i = makefork(FAMP, i);
@@ -157,8 +157,9 @@ cmd(sym, flg)
 	case ';':
 		if ((e = cmd(sym, flg | MTFLG)) != NULL)
 			i = makelist(TLST, i, e);
-		else if (i == 0)
+		else if (i == 0) {
 			synbad();
+		}
 		break;
 
 	case EOFSYM:
@@ -205,45 +206,105 @@ term(flg)
 	abegin = 1;
 	reserv++;
 	if (flg & NLFLG)
-		skipnl();
+		skipnl(flg);
 	else
 		word();
+
+#if defined(DO_NOTSYM) || defined(DO_TIME)
+#if defined(DO_NOTSYM) && !defined(DO_TIME)
+	if (wdval == NOTSYM) {
+#else
+#if defined(DO_TIME) && !defined(DO_NOTSYM)
+	if (wdval == TIMSYM) {
+#else
+	if (wdval == NOTSYM || wdval == TIMSYM) {
+#endif
+#endif
+		struct parnod	*p;
+
+		p = (struct parnod *)getstor(sizeof (struct parnod));
+		p->partyp = TTIME;
+		if (wdval == NOTSYM)
+			p->partyp = TNOT;
+		p->partre = term(0);
+		t = treptr(p);
+	} else
+#endif
 
 	/*
 	 * ^ is a relic from the days of UPPER CASE ONLY tty model 33s
 	 */
-	if ((t = item(TRUE)) != 0 && (wdval == '^' || wdval == '|'))
-	{
+	if ((t = item(DOIOFLG | (flg&SEMIFLG))) != 0 &&
+	    (wdval == '^' || wdval == '|')) {
 		struct trenod	*left;
 		struct trenod	*right;
+		struct trenod	*tr;
+		int		pio = wdnum & IOUFD;
 
-		left = makefork(FPOU, t);
-		right = makefork(FPIN, term(NLFLG));
+		if (wdnum == 0)
+			pio = STDOUT_FILENO;
+		left = makefork(FPOU|pio, t);
+		tr = term(NLFLG);
+#if defined(DO_PIPE_SYNTAX_E) || defined(DO_PIPE_PARENT)
+		if (tr == NULL)
+			synbad();
+#endif
+#ifdef	DO_PIPE_PARENT
+		/*
+		 * Build a tree that allows us to make all pipe commands
+		 * children from the main shell process.
+		 *
+		 * Special right nodes:
+		 * -	TFORK	() Avoid to add another fork
+		 * -	TFIL	Pipe to right pipe, avoid fork
+		 */
+		switch (tr->tretyp & COMMSK) {
+		case TFORK:
+			tr->tretyp |= FPIN;
+			right = tr;
+			break;
+
+		case TFIL:
+		case TCOM:
+			right = makefork(FPIN, tr);
+			right->tretyp |= TNOFORK;
+			break;
+		default:
+			right = makefork(FPIN, tr);
+		}
+		if ((t->tretyp & COMMSK) == TCOM)
+			left->tretyp |= TNOFORK;
+		return (makelist(TFIL, left, right));
+#else	/* !DO_PIPE_PARENT */
+		right = makefork(FPIN, tr);
 		return (makefork(0, makelist(TFIL, left, right)));
+#endif
 	}
-	else
-		return (t);
+	return (t);
 }
 
-
+/*
+ * case statement, parse things after "case <word> in" here
+ */
 static struct regnod *
 syncase(esym)
-int	esym;
+	int	esym;
 {
-	skipnl();
+	skipnl(0);
 	if (wdval == esym)
 		return (0);
-	else
-	{
+	else {
 		struct regnod *r =
 		    (struct regnod *)getstor(sizeof (struct regnod));
 		struct argnod *argp;
 
 		r->regptr = 0;
-		for (;;)
-		{
-			if (fndef)
-			{
+#ifdef	DO_POSIX_CASE
+		if (wdval == '(')
+			skipnl(0);
+#endif
+		for (;;) {
+			if (fndef) {
 				argp = wdarg;
 				wdarg = (struct argnod *)
 						alloc(length(argp->argval) +
@@ -268,8 +329,7 @@ int	esym;
 		r->regcom = cmd(0, NLFLG | MTFLG);
 		if (wdval == ECSYM)
 			r->regnxt = syncase(esym);
-		else
-		{
+		else {
 			chksym(esym);
 			r->regnxt = 0;
 		}
@@ -299,13 +359,12 @@ item(flag)
 	struct trenod *r;
 	struct ionod *io;
 
-	if (flag)
+	if (flag & DOIOFLG)
 		io = inout((struct ionod *)0);
 	else
 		io = 0;
 	abegin--;
-	switch (wdval)
-	{
+	switch (wdval) {
 	case CASYM:
 		{
 			struct swnod *t;
@@ -318,7 +377,7 @@ item(flag)
 				t->swarg = make(wdarg->argval);
 			else
 				t->swarg = wdarg->argval;
-			skipnl();
+			skipnl(0);
 			chksym(INSYM | BRSYM);
 			t->swlst = syncase(wdval == INSYM ? ESSYM : KTSYM);
 			t->swtyp = TSW;
@@ -346,21 +405,21 @@ item(flag)
 		}
 
 	case FORSYM:
+	case SELSYM:
 		{
 			struct fornod *t;
 
 			t = (struct fornod *)getstor(sizeof (struct fornod));
 			r = (struct trenod *)t;
 
-			t->fortyp = TFOR;
+			t->fortyp = wdval == FORSYM ? TFOR : TSELECT;
 			t->forlst = 0;
 			chkword();
 			if (fndef)
 				t->fornam = make(wdarg->argval);
 			else
 				t->fornam = wdarg->argval;
-			if (skipnl() == INSYM)
-			{
+			if (skipnl(SEMIFLG) == INSYM) {
 				chkword();
 
 				nohash++;
@@ -371,9 +430,16 @@ item(flag)
 					synbad();
 				if (wdval == NL)
 					chkpr();
-				skipnl();
-			} else if (wdval == ';')
-				skipnl();
+				skipnl(0);
+#ifdef	DO_POSIX_FOR
+			} else if (wdval == ';') {
+				/*
+				 * "for i; do cmd ...; done" is valid syntax
+				 * see Austin bug #581
+				 */
+				skipnl(0);
+#endif
+			}
 			chksym(DOSYM | BRSYM);
 			t->fortre = cmd(wdval == DOSYM ? ODSYM : KTSYM, NLFLG);
 			break;
@@ -413,20 +479,30 @@ item(flag)
 			return (0);
 		/* FALLTHROUGH */
 
+#ifdef	DO_EMPTY_SEMI
+	case ';':
+		if (io == 0) {
+			if (!(flag&SEMIFLG))
+				return (0);
+
+			if (word() == ';')
+				synbad();
+		}
+		/* FALLTHROUGH */
+#endif
 	case 0:
 		{
 			struct comnod *t;
 			struct argnod *argp;
 			struct argnod **argtail;
-			struct argnod **argset = 0;
+			struct argnod *argset = 0;
 #ifndef	ARGS_RIGHT_TO_LEFT
-			struct argnod **argstail = (struct argnod **)&argset;
+			struct argnod **argstail = &argset;
 #endif
 			int	keywd = 1;
 			unsigned char	*com;
 
-			if ((wdval != NL) && ((peekn = skipwc()) == '('))
-			{
+			if ((wdval != NL) && ((peekn = skipwc()) == '(')) {
 				struct fndnod *f;
 				struct ionod  *saveio;
 
@@ -439,7 +515,7 @@ item(flag)
 				 * We increase fndef before calling getstor(),
 				 * so that getstor() uses malloc to allocate
 				 * memory instead of stack. This is necessary
-				 * since fndnod will be hung on np->namenv,
+				 * since fndnod will be hung on np->funcval,
 				 * which persists over command executions.
 				 */
 				fndef++;
@@ -454,12 +530,11 @@ item(flag)
 					f->fndnam = wdarg->argval;
 				f->fndref = 0;
 				reserv++;
-				skipnl();
+				skipnl(0);
 				f->fndval = (struct trenod *)item(0);
 				fndef--;
 
-				if (iotemp != saveio)
-				{
+				if (iotemp != saveio) {
 					struct ionod	*ioptr = iotemp;
 
 					while (ioptr->iolst != saveio)
@@ -470,9 +545,7 @@ item(flag)
 					iotemp = saveio;
 				}
 				return (r);
-			}
-			else
-			{
+			} else {
 				int envbeg = 0;
 
 				t = (struct comnod *)
@@ -482,10 +555,8 @@ item(flag)
 				t->comio = io; /* initial io chain */
 				argtail = &(t->comarg);
 
-				while (wdval == 0)
-				{
-					if (fndef)
-					{
+				while (wdval == 0) {
+					if (fndef) {
 						argp = wdarg;
 						wdarg = (struct argnod *)
 						    alloc(length(argp->argval) +
@@ -495,8 +566,7 @@ item(flag)
 					}
 
 					argp = wdarg;
-					if (wdset && keywd)
-					{
+					if (wdset && keywd) {
 						/*
 						 * Revert the effect of abegin--
 						 * at the begin of this function
@@ -508,18 +578,15 @@ item(flag)
 							envbeg++;
 						}
 #ifdef	ARGS_RIGHT_TO_LEFT		/* old order: var2=val2 var1=val1 */
-						argp->argnxt =
-							(struct argnod *)argset;
-						argset = (struct argnod **)argp;
+						argp->argnxt = argset;
+						argset = argp;
 #else
 						argp->argnxt =
 							(struct argnod *)0;
 						*argstail = argp;
 						argstail = &argp->argnxt;
 #endif
-					}
-					else
-					{
+					} else {
 						/*
 						 * If we had env= definitions,
 						 * make sure to decrement abegin
@@ -533,8 +600,7 @@ item(flag)
 						keywd = flags & keyflg;
 					}
 					word();
-					if (flag)
-					{
+					if (flag) {
 						if (io) {
 							while (io->ionxt)
 								io = io->ionxt;
@@ -548,7 +614,7 @@ item(flag)
 				}
 
 				t->comtyp = TCOM;
-				t->comset = (struct argnod *)argset;
+				t->comset = argset;
 				*argtail = 0;
 
 				if (nohash == 0 &&
@@ -569,20 +635,24 @@ item(flag)
 	}
 	reserv++;
 	word();
-	if ((io = inout(io)) != NULL)
-	{
+	if ((io = inout(io)) != NULL) {
 		r = makefork(0, r);
 		r->treio = io;
 	}
 	return (r);
 }
 
-
+/* ARGSUSED */
 static int
-skipnl()
+skipnl(flag)
+	int	flag;
 {
 	while ((reserv++, word() == NL))
 		chkpr();
+#ifdef	DO_PIPE_SEMI_SYNTAX_E
+	if (!(flag&SEMIFLG) && wdval == ';')
+		synbad();
+#endif
 	return (wdval);
 }
 
@@ -596,8 +666,7 @@ inout(lastio)
 	int	obegin = abegin;
 
 	iof = wdnum;
-	switch (wdval)
-	{
+	switch (wdval) {
 	case DOCSYM:	/*	<<	*/
 		iof |= IODOC|IODOC_SUBST;
 		break;
@@ -607,11 +676,18 @@ inout(lastio)
 		if (wdnum == 0)
 			iof |= 1;
 		iof |= IOPUT;
-		if (wdval == APPSYM)
-		{
+		if (wdval == APPSYM) {
 			iof |= IOAPP;
 			break;
 		}
+#ifdef	DO_NOCLOBBER
+		else {
+			if ((c = nextwc()) == '|')
+				iof |= IOCLOB;
+			else
+				peekn = c | MARK;
+		}
+#endif
 		/* FALLTHROUGH */
 
 	case '<':
@@ -639,8 +715,7 @@ inout(lastio)
 
 	iop->iolink = 0;
 	iop->iofile = iof;
-	if (iof & IODOC)
-	{
+	if (iof & IODOC) {
 		iop->iolst = iopend;
 		iopend = iop;
 	}
@@ -658,7 +733,7 @@ chkword()
 
 static void
 chksym(sym)
-int sym;
+	int	sym;
 {
 	int	x = sym & wdval;
 
@@ -668,7 +743,7 @@ int sym;
 
 static void
 prsym(sym)
-int sym;
+	int	sym;
 {
 	if (sym & SYMFLG) {
 		const struct sysnod *sp = reserved;

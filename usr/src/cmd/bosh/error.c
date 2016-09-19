@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)error.c	1.10 13/09/22 2008-2013 J. Schilling
+ * @(#)error.c	1.23 16/07/04 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)error.c	1.10 13/09/22 2008-2013 J. Schilling";
+	"@(#)error.c	1.23 16/07/04 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -55,21 +55,31 @@ static	UConst char sccsid[] =
 	void error	__PR((const char *s));
 static void failed_body	__PR((unsigned char *s1, const char *s2,
 				unsigned char *s3, int gflag));
-	void failed_real __PR((unsigned char *s1, const char *s2,
+	void failed_real __PR((int err, unsigned char *s1, const char *s2,
 				unsigned char *s3));
-	void failure_real __PR((unsigned char *s1, const char *s2, int gflag));
+	void failure_real __PR((int err, unsigned char *s1, const char *s2,
+				unsigned char *s3,
+				int gflag));
+	void exvalsh	__PR((int xno));
 	void exitsh	__PR((int xno));
+#ifdef	DO_DOT_SH_PARAMS
 	void rmtemp	__PR((struct ionod *base));
 	void rmfunctmp	__PR((void));
+#endif
 
+/*
+ * As error() finally calls exitsh(), it should only be called if scripts
+ * need to be aborted as a result of the error to report.
+ *
+ * error() used to have the __NORETURN tag, but since we support
+ * the "command" builtin, we need to be able to prevent the exit
+ * on error (or longjmp to prompt) behavior via (flags & noexit) != 0.
+ */
 void
 error(s)
 	const char	*s;
 {
-	prp();
-	prs(_gettext(s));
-	newline();
-	exitsh(ERROR);
+	failed_real(ERROR, _gettext(s), NULL, NULL);
 }
 
 static void
@@ -84,36 +94,68 @@ failed_body(s1, s2, s3, gflag)
 		prs(_gettext((const char *)s1));
 	else
 		prs_cntl(s1);
-	prs((unsigned char *)colon);
-	prs(_gettext(s2));
+	if (s2) {
+		prs((unsigned char *)colon);
+		prs(_gettext(s2));
+	}
 	if (s3)
 		prs(s3);
 	newline();
 }
 
+/*
+ * Called from "fatal errors", from locations where either a real exit() is
+ * expected or from an interactive command where a longjmp() to the next prompt
+ * is expected.
+ *
+ * failed_real() used to have the __NORETURN tag, but since we support
+ * the "command" builtin, we need to be able to prevent the exit
+ * on error (or longjmp to prompt) behavior via (flags & noexit) != 0.
+ */
 void
-failed_real(s1, s2, s3)
+failed_real(err, s1, s2, s3)
+	int		err;
 	unsigned char	*s1;
 	const char	*s2;
 	unsigned char	*s3;
 {
 	failed_body(s1, s2, s3, 0);
-	exitsh(ERROR);
+#if !defined(NO_VFORK) || defined(DO_POSIX_SPEC_BLTIN)
+	popvars();
+#endif
+	if ((flags & errflg) || !(flags & noexit))
+		exitsh(err);
+
+	exvalsh(err);
+}
+
+/*
+ * A normal error that usually does not cause an exit() of the shell.
+ * Except when "set -e" has been issued, we just set up $? and return.
+ */
+void
+failure_real(err, s1, s2, s3, gflag)
+	int		err;
+	unsigned char	*s1;
+	const char	*s2;
+	unsigned char	*s3;
+	int		gflag;
+{
+	failed_body(s1, s2, s3, gflag);
+
+	if (flags & errflg)
+		exitsh(err);
+
+	exvalsh(err);
 }
 
 void
-failure_real(s1, s2, gflag)
-	unsigned char	*s1;
-	const char	*s2;
-	int		gflag;
+exvalsh(xno)
+	int	xno;
 {
-	failed_body(s1, s2, NULL, gflag);
-
-	if (flags & errflg)
-		exitsh(ERROR);
-
 	flags |= eflag;
-	exitval = ERROR;
+	exitval = xno;
+	exval_set(xno);
 	exitset();
 }
 
@@ -129,19 +171,61 @@ exitsh(xno)
 	 *
 	 * Action is to return to command level or exit.
 	 */
-	exitval = xno;
-	flags |= eflag;
-	if ((flags & (forcexit | forked | errflg | ttyflg)) != ttyflg)
+	exvalsh(xno);
+	if ((flags & (forcexit | forked | errflg | ttyflg)) != ttyflg) {
+		/*
+		 * If not from a "tty" or when special flags are set,
+		 * do a real exit().
+		 */
 		done(0);
-	else
-	{
+	} else {
+		/*
+		 * The standard error case from "tty" causes a longjmp()
+		 * to the next prompt.
+		 */
 		clearup();
 		restore(0);
-		(void) setb(1);
+		(void) setb(STDOUT_FILENO);
 		execbrk = breakcnt = funcnt = 0;
 		longjmp(errshell, 1);
 	}
 }
+
+#ifdef	DO_DOT_SH_PARAMS
+void
+exval_clear()
+{
+	ex.ex_code = 0;
+	ex.ex_status = 0;
+	ex.ex_pid = mypid;
+	ex.ex_signo = 0;
+}
+
+void
+exval_sig()
+{
+	ex.ex_code = CLD_KILLED;
+	ex.ex_status = trapsig;
+	ex.ex_pid = mypid;
+	ex.ex_signo = 0;
+}
+
+void
+exval_set(xno)
+	int	xno;
+{
+	if (ex.ex_code == CLD_EXITED && xno != ex.ex_status) {
+		ex.ex_status = xno;
+		return;
+	} else if (ex.ex_code) {
+		return;
+	}
+	ex.ex_code = CLD_EXITED;
+	ex.ex_status = xno;
+	ex.ex_pid = mypid;
+	ex.ex_signo = 0;
+}
+#endif
 
 /*
  * Previous sbrk() based versions of the Bourne Shell fed this function
@@ -156,7 +240,7 @@ void
 rmtemp(base)
 	struct ionod	*base;
 {
-	while (iotemp != base) {
+	while (iotemp && iotemp != base) {
 		unlink(iotemp->ioname);
 		free(iotemp->iolink);
 		iotemp = iotemp->iolst;

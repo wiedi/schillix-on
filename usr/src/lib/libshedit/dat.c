@@ -1,8 +1,8 @@
-/* @(#)dat.c	1.3 13/09/20 Copyright 2006-2013 J. Schilling */
+/* @(#)dat.c	1.5 16/09/10 Copyright 2006-2016 J. Schilling */
 /*
  *	Global data
  *
- *	Copyright (c) 2006-2013 J. Schilling
+ *	Copyright (c) 2006-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -21,7 +21,7 @@
 #include <schily/mconfig.h>
 #include <schily/unistd.h>	/* STDIN_FILENO */
 
-#include <stdio.h>
+#include <schily/stdio.h>
 
 int	__in__	= STDIN_FILENO;
 int	__out__	= STDOUT_FILENO;

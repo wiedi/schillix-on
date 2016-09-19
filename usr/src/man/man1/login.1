@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (C) 2008, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2016, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Portions Copyright (c) 1982-2007 AT&T Knowledge Ventures
 .\" CDDL HEADER START
@@ -21,7 +21,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH login 1 "7 Jan 2008" "SunOS 5.11" "User Commands"
+.TH login 1 "12 Sept 2016" "SunOS 5.11" "User Commands"
 .SH NAME
 login \- sign on to the system
 .SH SYNOPSIS
@@ -186,11 +186,23 @@ TZ=\fItimezone-specification\fR
 
 .sp
 .LP
-For Bourne shell and Korn shell logins, the shell executes
+For Bourne shell, bosh and Korn shell logins, the shell executes
 .B /etc/profile
 and
 .BR $HOME/.profile ,
 if it exists.
+.sp
+.LP
+For
+.B bosh
+an interactive shell then executes
+.BR /etc/sh.shrc ,
+followed by the file specified by the
+.BR ENV
+environment variable. If
+.B $ENV
+is not set, this defaults to
+.BR $HOME/.shrc .
 .sp
 .LP
 For the
@@ -601,7 +613,7 @@ Error.
 .na
 .B $HOME/.cshrc
 .ad
-.RS 23n
+.RS 20n
 .rt
 Initial commands for each
 .BR csh .
@@ -613,7 +625,7 @@ Initial commands for each
 .na
 .B $HOME/.hushlogin
 .ad
-.RS 23n
+.RS 20n
 .rt
 Suppresses login messages.
 .RE
@@ -622,9 +634,23 @@ Suppresses login messages.
 .ne 2
 .mk
 .na
+.B $HOME/.history
+.ad
+.RS 20n
+.rt
+The saved interative command history used by
+.B bosh
+and
+.BR csh .
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 .B $HOME/.kshrc
 .ad
-.RS 23n
+.RS 20n
 .rt
 User's commands for interactive
 .BR ksh93 ,
@@ -641,7 +667,7 @@ after
 .na
 .B $HOME/.login
 .ad
-.RS 23n
+.RS 20n
 .rt
 User's login commands for
 .BR csh .
@@ -653,10 +679,11 @@ User's login commands for
 .na
 .B $HOME/.profile
 .ad
-.RS 23n
+.RS 20n
 .rt
 User's login commands for
 .BR sh ,
+.BR bosh ,
 .BR ksh ,
 and
 .BR ksh93 .
@@ -668,7 +695,7 @@ and
 .na
 .B $HOME/.rhosts
 .ad
-.RS 23n
+.RS 20n
 .rt
 Private list of trusted hostname/username combinations.
 .RE
@@ -677,9 +704,26 @@ Private list of trusted hostname/username combinations.
 .ne 2
 .mk
 .na
+.B $HOME/.shrc
+.ad
+.RS 20n
+.rt
+User's commands for interactive
+.BR bosh ,
+if
+.B $ENV
+is unset; executes
+after
+.BR /etc/sh.shrc .
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 .B /etc/.login
 .ad
-.RS 23n
+.RS 20n
 .rt
 System-wide
 .B csh
@@ -692,7 +736,7 @@ login commands.
 .na
 .B /etc/issue
 .ad
-.RS 23n
+.RS 20n
 .rt
 Issue or project identification.
 .RE
@@ -703,7 +747,7 @@ Issue or project identification.
 .na
 .B /etc/ksh.kshrc
 .ad
-.RS 23n
+.RS 20n
 .rt
 System-wide commands for interactive
 .BR ksh93 .
@@ -715,7 +759,7 @@ System-wide commands for interactive
 .na
 .B /etc/logindevperm
 .ad
-.RS 23n
+.RS 20n
 .rt
 Login-based device permissions.
 .RE
@@ -726,7 +770,7 @@ Login-based device permissions.
 .na
 .B /etc/motd
 .ad
-.RS 23n
+.RS 20n
 .rt
 Message-of-the-day.
 .RE
@@ -737,7 +781,7 @@ Message-of-the-day.
 .na
 .B /etc/nologin
 .ad
-.RS 23n
+.RS 20n
 .rt
 Message displayed to users attempting to login during machine shutdown.
 .RE
@@ -748,7 +792,7 @@ Message displayed to users attempting to login during machine shutdown.
 .na
 .B /etc/passwd
 .ad
-.RS 23n
+.RS 20n
 .rt
 Password file.
 .RE
@@ -759,10 +803,11 @@ Password file.
 .na
 .B /etc/profile
 .ad
-.RS 23n
+.RS 20n
 .rt
 System-wide
 .BR sh ,
+.BR bosh ,
 .BR ksh ,
 and
 .B ksh93
@@ -773,9 +818,21 @@ login commands.
 .ne 2
 .mk
 .na
+.B /etc/sh.shrc
+.ad
+.RS 20n
+.rt
+System-wide commands for interactive
+.BR bosh .
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 .B /etc/shadow
 .ad
-.RS 23n
+.RS 20n
 .rt
 List of users' encrypted passwords.
 .RE
@@ -786,7 +843,7 @@ List of users' encrypted passwords.
 .na
 .B /usr/bin/sh
 .ad
-.RS 23n
+.RS 20n
 .rt
 User's default command interpreter.
 .RE
@@ -797,7 +854,7 @@ User's default command interpreter.
 .na
 .B /var/adm/lastlog
 .ad
-.RS 23n
+.RS 20n
 .rt
 Time of last login.
 .RE
@@ -808,7 +865,7 @@ Time of last login.
 .na
 .B /var/adm/loginlog
 .ad
-.RS 23n
+.RS 20n
 .rt
 Record of failed login attempts.
 .RE
@@ -819,7 +876,7 @@ Record of failed login attempts.
 .na
 .B /var/adm/utmpx
 .ad
-.RS 23n
+.RS 20n
 .rt
 Accounting.
 .RE
@@ -830,7 +887,7 @@ Accounting.
 .na
 .B /var/adm/wtmpx
 .ad
-.RS 23n
+.RS 20n
 .rt
 Accounting.
 .RE
@@ -841,7 +898,7 @@ Accounting.
 .na
 .BI /var/mail/ your-name
 .ad
-.RS 23n
+.RS 20n
 .rt
 Mailbox for user
 .IR your-name .
@@ -853,7 +910,7 @@ Mailbox for user
 .na
 .B /etc/default/login
 .ad
-.RS 23n
+.RS 20n
 .rt
 Default value can be set for the following flags in
 .BR /etc/default/login .
@@ -868,7 +925,7 @@ for example,
 .na
 .B TIMEZONE
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the
 .B TZ
@@ -882,7 +939,7 @@ environment variable of the shell (see
 .na
 .B HZ
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the
 .B HZ
@@ -895,7 +952,7 @@ environment variable of the shell.
 .na
 .B ULIMIT
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the file size limit for the login. Units are disk blocks. Default is
 zero (no limit).
@@ -907,7 +964,7 @@ zero (no limit).
 .na
 .B CONSOLE
 .ad
-.RS 24n
+.RS 12n
 .rt
 If set, root can login on that device only. This does not prevent execution
 of remote commands with
@@ -922,7 +979,7 @@ root.
 .na
 .B PASSREQ
 .ad
-.RS 24n
+.RS 12n
 .rt
 Determines if login requires a non-null password.
 .RE
@@ -933,7 +990,7 @@ Determines if login requires a non-null password.
 .na
 .B ALTSHELL
 .ad
-.RS 24n
+.RS 12n
 .rt
 Determines if login should set the
 .B SHELL
@@ -946,7 +1003,7 @@ environment variable.
 .na
 .B PATH
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the initial shell
 .B PATH
@@ -959,7 +1016,7 @@ variable.
 .na
 .B SUPATH
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the initial shell
 .B PATH
@@ -972,7 +1029,7 @@ variable for root.
 .na
 .B TIMEOUT
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the number of seconds (between
 .B 0
@@ -988,7 +1045,7 @@ abandoning a login session.
 .na
 .B UMASK
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the initial shell file creation mode mask. See
 .BR umask (1).
@@ -1000,7 +1057,7 @@ Sets the initial shell file creation mode mask. See
 .na
 .B SYSLOG
 .ad
-.RS 24n
+.RS 12n
 .rt
 Determines whether the
 .BR syslog (3C)
@@ -1017,7 +1074,7 @@ login attempts at\fBLOG_CRIT\fR.
 .na
 .B DISABLETIME
 .ad
-.RS 24n
+.RS 12n
 .rt
 If present, and greater than zero, the number of seconds that
 .B login
@@ -1041,7 +1098,7 @@ maximum is imposed.
 .na
 .B SLEEPTIME
 .ad
-.RS 24n
+.RS 12n
 .rt
 If present, sets the number of seconds to wait before the login failure
 message is printed to the screen. This is for any login failure other than
@@ -1072,7 +1129,7 @@ and \fBsulogin\fR(1M) are affected by the value of
 .na
 .B RETRIES
 .ad
-.RS 24n
+.RS 12n
 .rt
 Sets the number of retries for logging in (see
 .BR pam (3PAM)).
@@ -1093,8 +1150,9 @@ exits without locking the account.
 .na
 .B SYSLOG_FAILED_LOGINS
 .ad
-.RS 24n
+.RS 12n
 .rt
+.sp
 Used to determine how many failed login attempts are allowed by the system
 before a failed login message is logged, using the
 .BR syslog (3C)
@@ -1133,6 +1191,7 @@ Interface StabilityCommitted
 .SH SEE ALSO
 .sp
 .LP
+.BR bosh (1),
 .BR csh (1),
 .BR exit (1),
 .BR ksh (1),

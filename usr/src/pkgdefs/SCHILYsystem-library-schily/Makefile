@@ -21,10 +21,7 @@ LICENSEFILES = $(SCHILY) \
 ../../lib/librmt/THIRDPARTYLICENSE \
 ../../lib/libschily/THIRDPARTYLICENSE \
 ../../lib/libschily/THIRDPARTYLICENSE.fnmatch \
-../../lib/libschily/THIRDPARTYLICENSE.pd \
 ../../lib/libschily/THIRDPARTYLICENSE.regex \
-../../lib/libschily/THIRDPARTYLICENSE.rmd160 \
-../../lib/libschily/THIRDPARTYLICENSE.sha2 \
 ../../lib/libschily/THIRDPARTYLICENSE.strtod \
 ../../lib/libschily/THIRDPARTYLICENSE.sysexits \
 ../../lib/libshedit/THIRDPARTYLICENSE \

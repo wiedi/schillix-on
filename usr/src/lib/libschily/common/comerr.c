@@ -1,8 +1,8 @@
-/* @(#)comerr.c	1.40 12/12/20 Copyright 1985-1989, 1995-2012 J. Schilling */
+/* @(#)comerr.c	1.43 15/07/01 Copyright 1985-1989, 1995-2015 J. Schilling */
 /*
  *	Routines for printing command errors
  *
- *	Copyright (c) 1985-1989, 1995-2012 J. Schilling
+ *	Copyright (c) 1985-1989, 1995-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -28,10 +30,14 @@
 
 EXPORT	int	on_comerr	__PR((void (*fun)(int, void *), void *arg));
 EXPORT	void	comerr		__PR((const char *, ...));
+EXPORT	void	xcomerr		__PR((int, const char *, ...));
 EXPORT	void	comerrno	__PR((int, const char *, ...));
+EXPORT	void	xcomerrno	__PR((int, int, const char *, ...));
 EXPORT	int	errmsg		__PR((const char *, ...));
 EXPORT	int	errmsgno	__PR((int, const char *, ...));
-EXPORT	int	_comerr		__PR((FILE *, int, int, const char *, va_list));
+EXPORT	int	_comerr		__PR((FILE *, int, int, int,
+						const char *, va_list));
+LOCAL	int	_ex_clash	__PR((int));
 EXPORT	void	comexit		__PR((int));
 EXPORT	char	*errmsgstr	__PR((int));
 
@@ -43,6 +49,11 @@ typedef	struct ex {
 
 LOCAL	ex_t	*exfuncs;
 
+/*
+ * Set list of callback functions to call with *comerr() and comexit().
+ * The function set up last with on_comerr() is called first on exit;
+ * in other words: call order is the reverse order of registration.
+ */
 EXPORT	int
 on_comerr(func, arg)
 	void	(*func) __PR((int, void *));
@@ -61,6 +72,9 @@ on_comerr(func, arg)
 	return (0);
 }
 
+/*
+ * Fetch current errno, print a related message and exit(errno).
+ */
 /* VARARGS1 */
 #ifdef	PROTOTYPES
 EXPORT void
@@ -79,11 +93,41 @@ comerr(msg, va_alist)
 #else
 	va_start(args);
 #endif
-	(void) _comerr(stderr, TRUE, geterrno(), msg, args);
+	(void) _comerr(stderr, COMERR_EXIT, 0, geterrno(), msg, args);
 	/* NOTREACHED */
 	va_end(args);
 }
 
+/*
+ * Fetch current errno, print a related message and exit(exc).
+ */
+/* VARARGS2 */
+#ifdef	PROTOTYPES
+EXPORT void
+xcomerr(int exc, const char *msg, ...)
+#else
+EXPORT void
+xcomerr(exc, msg, va_alist)
+	int	exc;
+	char	*msg;
+	va_dcl
+#endif
+{
+	va_list	args;
+
+#ifdef	PROTOTYPES
+	va_start(args, msg);
+#else
+	va_start(args);
+#endif
+	(void) _comerr(stderr, COMERR_EXCODE, exc, geterrno(), msg, args);
+	/* NOTREACHED */
+	va_end(args);
+}
+
+/*
+ * Print a message related to err and exit(err).
+ */
 /* VARARGS2 */
 #ifdef	PROTOTYPES
 EXPORT void
@@ -103,11 +147,42 @@ comerrno(err, msg, va_alist)
 #else
 	va_start(args);
 #endif
-	(void) _comerr(stderr, TRUE, err, msg, args);
+	(void) _comerr(stderr, COMERR_EXIT, 0, err, msg, args);
 	/* NOTREACHED */
 	va_end(args);
 }
 
+/*
+ * Print a message related to err and exit(exc).
+ */
+/* VARARGS3 */
+#ifdef	PROTOTYPES
+EXPORT void
+xcomerrno(int exc, int err, const char *msg, ...)
+#else
+EXPORT void
+xcomerrno(exc, err, msg, va_alist)
+	int	exc;
+	int	err;
+	char	*msg;
+	va_dcl
+#endif
+{
+	va_list	args;
+
+#ifdef	PROTOTYPES
+	va_start(args, msg);
+#else
+	va_start(args);
+#endif
+	(void) _comerr(stderr, COMERR_EXCODE, exc, err, msg, args);
+	/* NOTREACHED */
+	va_end(args);
+}
+
+/*
+ * Fetch current errno, print a related message and return(errno).
+ */
 /* VARARGS1 */
 #ifdef	PROTOTYPES
 EXPORT int
@@ -127,11 +202,14 @@ errmsg(msg, va_alist)
 #else
 	va_start(args);
 #endif
-	ret = _comerr(stderr, FALSE, geterrno(), msg, args);
+	ret = _comerr(stderr, COMERR_RETURN, 0, geterrno(), msg, args);
 	va_end(args);
 	return (ret);
 }
 
+/*
+ * Print a message related to err and return(err).
+ */
 /* VARARGS2 */
 #ifdef	PROTOTYPES
 EXPORT int
@@ -152,7 +230,7 @@ errmsgno(err, msg, va_alist)
 #else
 	va_start(args);
 #endif
-	ret = _comerr(stderr, FALSE, err, msg, args);
+	ret = _comerr(stderr, COMERR_RETURN, 0, err, msg, args);
 	va_end(args);
 	return (ret);
 }
@@ -178,12 +256,13 @@ errmsgno(err, msg, va_alist)
 #define	silent_error(e)		((e) < 0)
 #endif
 EXPORT int
-_comerr(f, exflg, err, msg, args)
-	FILE		*f;
-	int		exflg;
-	int		err;
-	const char	*msg;
-	va_list		args;
+_comerr(f, exflg, exc, err, msg, args)
+	FILE		*f;	/* FILE * to print to */
+	int		exflg;	/* COMERR_RETURN, COMERR_EXIT, COMERR_EXCODE */
+	int		exc;	/* Use for exit() if exflg & COMERR_EXCODE */
+	int		err;	/* Errno for text, exit(err) if !COMERR_EXIT*/
+	const char	*msg;	/* printf() format */
+	va_list		args;	/* printf() args for format */
 {
 	char	errbuf[20];
 	char	*errnam;
@@ -201,22 +280,22 @@ _comerr(f, exflg, err, msg, args)
 		js_fprintf(f, "%s: %s. %r", prognam, errnam, msg, args);
 	}
 	if (exflg) {
+		if (exflg & COMERR_EXCODE)
+			err = exc;
+		else
+			err = _ex_clash(err);
 		comexit(err);
 		/* NOTREACHED */
 	}
 	return (err);
 }
 
-EXPORT void
-comexit(err)
-	int	err;
+LOCAL int
+_ex_clash(exc)
+	int	exc;
 {
-	int	exmod = err % 256;
+	int	exmod = exc % 256;
 
-	while (exfuncs) {
-		(*exfuncs->func)(err, exfuncs->arg);
-		exfuncs = exfuncs->next;
-	}
 	/*
 	 * On a recent POSIX System that supports waitid(), siginfo.si_status
 	 * holds the exit(2) value as an int. So if waitid() is used to wait
@@ -239,12 +318,32 @@ comexit(err)
 	 * We map all other negative exit codes to EX_CLASH if they would fold
 	 * to -2..-63.
 	 */
-	if (err != exmod && exmod <= 0 && exmod >= EX_CLASH)
-		err = EX_CLASH;
+	if (exc != exmod && exmod <= 0 && exmod >= EX_CLASH)
+		exc = EX_CLASH;
+	return (exc);
+}
+
+/*
+ * Do a program exit() with previously calling functions registered via
+ * on_comerr().
+ */
+EXPORT void
+comexit(err)
+	int	err;
+{
+	while (exfuncs) {
+		(*exfuncs->func)(err, exfuncs->arg);
+		exfuncs = exfuncs->next;
+	}
 	exit(err);
 	/* NOTREACHED */
 }
 
+/*
+ * Wrapper around the strange POSIX strerror().
+ * If there is a problem with retrieving the correct error text,
+ * return NULL.
+ */
 EXPORT char *
 errmsgstr(err)
 	int	err;

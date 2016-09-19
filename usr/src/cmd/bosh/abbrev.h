@@ -1,6 +1,6 @@
-/* @(#)abbrev.h	1.18 13/07/28 Copyright 1985-2013 J. Schilling */
+/* @(#)abbrev.h	1.19 15/10/23 Copyright 1985-2015 J. Schilling */
 /*
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -9,6 +9,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -52,14 +54,14 @@ extern	void	ab_sname	__PR((abidx_t tab, char *fname));
 extern	char	*ab_gname	__PR((abidx_t tab));
 extern	void	ab_use		__PR((abidx_t tab, char *fname));
 extern	void	ab_close	__PR((abidx_t tab));
-extern	void	ab_insert	__PR((abidx_t tab, char *name, char *val,
+extern	BOOL	ab_insert	__PR((abidx_t tab, char *name, char *val,
 								int aflags));
-extern	void	ab_push		__PR((abidx_t tab, char *name, char *val,
+extern	BOOL	ab_push		__PR((abidx_t tab, char *name, char *val,
 								int aflags));
-extern	void	ab_delete	__PR((abidx_t tab, char *name, int aflags));
+extern	BOOL	ab_delete	__PR((abidx_t tab, char *name, int aflags));
 extern	void	ab_deleteall	__PR((abidx_t tab, int aflags));
 extern	char	*ab_value	__PR((abidx_t tab, char *name, void **seen,
 								int aflags));
 extern	void	ab_dump		__PR((abidx_t tab, FILE_p file, int aflags));
-extern	void	ab_list		__PR((abidx_t tab, char *pattern, FILE_p file,
+extern	BOOL	ab_list		__PR((abidx_t tab, char *pattern, FILE_p file,
 								int aflags));

@@ -1,6 +1,6 @@
 /*
  * This file has been generated automatically
- * by @(#)align_test.c	1.30 13/04/25 Copyright 1995-2013 J. Schilling
+ * by @(#)align_test.c	1.31 15/11/30 Copyright 1995-2015 J. Schilling
  * do not edit by hand.
  */
 #ifndef	__ALIGN_H

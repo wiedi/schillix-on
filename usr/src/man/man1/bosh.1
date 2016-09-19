@@ -1,5 +1,5 @@
 '\" te
-.\" @(#)sh.1	1.37 13/09/26 Copyright 2012-2013 J. Schilling
+.\" @(#)sh.1	1.187 16/09/15 Copyright 2012-2016 J. Schilling
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved.
 .\" Portions Copyright (c) 1992, X/Open Company Limited All Rights Reserved
@@ -47,14 +47,33 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH sh 1 "2013/09/26" "Schily Bourne Shell" "User Commands"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH sh 1 "2016/09/15" "Schily Bourne Shell" "User Commands"
 .SH NAME
-sh, jsh \- standard and job control shell and command interpreter
+sh, bosh, jsh \- standard and job control shell and command interpreter
 .SH SYNOPSIS
 .LP
 .nf
 .B /usr/bin/sh\c
 .RB "   [" \(miacefhikmnprstuvxP "] ["\c
+.IR argument ]...
+.fi
+
+.LP
+.nf
+.B /usr/bin/bosh\c
+.RB " [" \(miacefhikmnprstuvxP "] ["\c
 .IR argument ]...
 .fi
 
@@ -72,7 +91,12 @@ The
 .B /usr/bin/sh
 utility is a command programming language that
 executes commands read from a terminal or a file.
-.sp
+.LP
+The name
+.B bosh
+permits to call this implementaton even when
+.B /usr/bin/sh
+has been linked to another shell.
 .LP
 The
 .B jsh
@@ -82,6 +106,11 @@ functionality of
 and enables job control (see
 .B Job Control
 section below).
+Job control may also be enabled by calling the shell via the standard name
+and then calling
+.B set\ \-m
+or
+.BR "set\ \-o\ monitor" .
 .sp
 .LP
 Arguments to the shell are listed in the
@@ -255,6 +284,20 @@ but the last is connected by a
 .BR pipe (2)
 to the standard input of the next
 .IR command .
+If the
+.B extended pipe syntax
+is enabled via
+.BR "set\ \-o\ fdpipe" ,
+the pipe symbol
+.RB ( | )
+may be preceded by a digit that specifies the file descriptor
+which should be associated to the command from the left side
+instead of the default
+.BR stdout ,
+e.g.
+.B 2|
+for a pipe from
+.BR stderr .
 Each
 .I command
 is run as a separate process. The shell waits for the last
@@ -263,6 +306,16 @@ to terminate. The exit status of a
 .I pipeline
 is the exit status of the last command in the
 .IR pipeline .
+Each pipeline can be preceded by the reserved word
+.BR ! .
+This causes the exit status of the pipeline to become
+.B 0
+if the exit status of the last command is
+.BR non-zero ,
+and
+.B 1
+if the exit status of the last command is
+.BR 0 .
 .sp
 .LP
 A
@@ -299,7 +352,7 @@ that is, the shell waits for the
 .I pipeline
 to finish before executing any commands
 following the semicolon. An ampersand
-.RB  ( & )
+.RB ( & )
 causes asynchronous
 execution of the preceding pipeline, that is, the shell does
 .B not
@@ -357,6 +410,59 @@ once for each positional parameter that is set (see
 .B Parameter Substitution
 section below). Execution ends when there are no more words
 in the list.
+.sp
+.ne 3
+.HP
+.B select
+.I name
+[
+.B in
+.I word
+\&.\|.\|. ]
+.B do
+.I list
+.B done
+.br
+The select command prints on standard error (file descriptor\ 2),
+the set of
+.IR words ,
+each preceded by a number.
+If
+.BI in " word
+\&... is omitted, then the positional parameters are used instead.
+See
+.BR "Parameter Substitution" .
+The
+.B PS3
+prompt is printed and a line is read from the standard input.
+If this line consists of the number of one of the listed
+.IR words ,
+then the value of the variable
+.I name
+is set to the
+.I word
+corresponding to this number.
+If this line is empty. the selection list is printed again.
+Otherwise the value of the variable
+.I name
+is set to
+.BR NULL .
+.RB (See " Blank Interpretation " about " NULL" ). 
+The contents of the line read from standard input is saved in the shell variable
+.BR REPLY .
+The list is executed for each selection until a
+.B break
+or
+.B EOF
+is encountered. If the
+.B REPLY
+variable is set to
+.B NULL
+by the execution of list, then the selection list is printed before
+displaying the
+.B PS3
+prompt for the next selection.
+
 .br
 .ne 3
 .HP
@@ -364,6 +470,7 @@ in the list.
 .I word
 .B in
 [
+.RB [ ( ]
 .I pattern
 [ |
 .I pattern
@@ -387,6 +494,9 @@ as that used for file-name generation (see
 .B File Name Generation
 section), except that a slash, a leading dot, or a dot immediately following
 a slash need not be matched explicitly.
+.sp
+The optional opening parenthesis was not supported by older versions of
+.BR sh .
 .br
 .ne 3
 .HP
@@ -515,12 +625,53 @@ if the body of the function is a
 .I command
 as defined above, under
 .BR Commands .
+.br
+.ne 3
+.HP
+.BI time " pipeline
+.br
+The
+.I pipeline
+is executed and the elapsed time as well as the user and system time
+are printed to standard error.
+The
+.B TIMEFORMAT
+variable can be set to a format string that specifies how the
+timing information should be displayed.
+Command based timing from
+.B "set\ \-o\ time"
+is temporarily disabled while pipeline based timing is in effect.
+If
+.B time
+is followed by white space and a
+.RB ' \- ',
+it is interpreted as a normal command in order to permit
+.BR "time\ \-p" ,
+as required by POSIX.
 .LP
 The following words are only recognized as the first word of a command and
 when not quoted:
 .sp
 .LP
-.B "if  then  else  elif  fi  case  esac  for  while  until  do  done  { }
+.in +2
+.nf
+.B
+!          if       then     else    elif    fi      case
+.B
+esac       for      while    until   do      done    {   }
+.B
+select     time
+.\"function   [[  ]]
+.fi
+.in -2
+.LP
+The reserved words
+.BR ! ,
+.B select
+and
+.B time
+were not supported in older versions of
+.BR sh .
 .SS "Comments Lines"
 .sp
 .LP
@@ -528,16 +679,177 @@ A word beginning with
 .B #
 causes that word and all the following
 characters up to a newline to be ignored.
+.SS "# commands"
+.sp
+.LP
+If the hash character
+.B #
+is the first character in a command line and hash commands
+have been enabled via
+.BR "set\ \-o\ hashcmds" ,
+the whole line is processed by the hash command interpreter.
+This allows to have an alternate entry to the
+.B alias
+definitions that avoids complex quoting by working on
+the raw alias definitions.
+.LP
+Hash commands are frequently used to edit alias definitions using the
+command line history editor.
+.LP
+.B No I/O redirection
+is possible for hash commands.
+.B No exit code
+is created for hash commands,
+.B $?
+is left intact from the last regular command.
+Quoting is not possible for hash commands.
+For all hash commands, there is a built in help text that is printed
+when 
+.BI # c "\ -help
+is called, where
+.I c
+is one of the command letters.
+.LP
+When hash commands are enabled, the character that immediately follows the
+.B #
+is the
+.BR "command character" .
+The command character may be followed by one or more
+.BR "command modifier characters" .
+The following commands are supported:
+
+.br
+.ne 3
+.TP
+.BI "#a[g|l]" " name value
+Add a new
+.B all expand
+alias. Such an alias is expanded regardless where it
+occurs on the command line.
+Without modifier, the alias
+is entered into the current default table.
+.sp
+The first word surrounded by spaces is taken as the
+.B alias
+.IR name ,
+after skipping spaces, all text up to the end of the line is taken as
+the
+.B alias
+.IR value .
+.sp
+When using the
+.RB ' g '
+modifier, the command works on
+.BR "global aliases" ,
+regardless of the current default.
+.sp
+When using the
+.RB ' l '
+modifier, the command works on
+.BR "local aliases" ,
+regardless of the current default.
+.sp
+At startup, the default is to use
+the
+.BR "global aliases" .
+.br
+.ne 3
+.TP
+.BI "#b[g|l]" " name value
+Add a new
+.BR "begin alias" .
+Such an alias is only expanded for the first word
+in a command.
+Without modifier, the alias
+is entered into the current default table.
+.br
+.ne 3
+.TP
+.BI "#d[g|l]" " name
+Removes the alias
+.I name
+from the list of known aliases.
+Without modifier, the alias
+is removed from the current default table.
+.br
+.ne 5
+.TP
+.B #h
+.PD 0
+.TP
+.B #?
+.PD
+Print an overview help for all
+.B #
+commands.
+.br
+.ne 3
+.TP
+.BI "#l[g|l][h] [" "name" ]
+Lists aliases from the table.
+Without modifier, the aliases
+from the current default table are printed.
+Without
+.IR name ,
+all aliases are listed. With
+.IR name ,
+only matching aliases are listed. Wildcards may be used.
+.sp
+When using the
+.RB ' h '
+modifier, the alias is also entered into the command history.
+This permits to edit existing aliases with the history
+editor and to re-enter the modified entries into the
+list of aliases.
+.br
+.ne 3
+.TP
+.BI "#p[g|l][a|b]" " name value
+With the
+.B #p
+command, an alias may be pushed on top of an existing alias
+without writing to the related file. When a pushed value
+is removed, the old definition reappears.
+.sp
+When using the
+.RB ' a '
+modifier, an
+.B all expand
+alias is pushed.
+.sp
+When using the
+.RB ' b '
+modifier, a
+.B begin
+alias is pushed.
+.br
+.ne 3
+.TP
+.B #s[g|l]
+Set or list the default table for other 
+.B #
+command alias operations.
+If no modifier letter is used, the current default is printed
+otherwise the new default is set.
+.br
+.ne 3
+.TP
+.B #
+When entered on the command line, this prints the shell version.
+When seen inside a shell script and a space follows, the rest of
+the line is interpreted as comment.
+
 .SS "Alias Substitution"
 .LP
 After a token has been recognized, but before applying the grammatical rules,
 a resulting word that is identified as the command name of a simple command
 is examined whether it is an unquoted valid alias name.
 A valid alias name is replaced by the value of the alias.
-The shell prevents infinite alias loops by not expanding the same alias name more
-than once for the same word.
+The shell prevents infinite alias loops by not expanding the same alias 
+more than once for the same word.
 .LP
-Alias expansion is performed when the commands are read, not when they are executed.
+Alias expansion is performed when the commands are read, not when they
+are executed.
 .LP
 Aliases can be used to redefine
 .B built-in
@@ -578,25 +890,179 @@ Local aliases are specific to the current working directory. The local
 aliases definitions from the previous working directory are automatically
 disabled when the working directory is changed to a different directory.
 Local aliases have higher precedence than global aliases.
+
+.br
+.ne 4
+.SS "Tilde Expansion"
+.sp
+.LP
+A
+.I tilde-prefix
+consists of an unquoted tilde character at the beginning of a word,
+followed by all of the characters preceding the first
+unquoted slash in the word, or all the characters in the word if there is no
+slash. In an assignment, multiple tilde-prefixes can be used: at the
+beginning of the word (that is, following the equal sign of the assignment),
+following any unquoted colon or both. A tilde-prefix in an assignment is
+terminated by the first unquoted colon or slash. If none of the characters
+in the tilde-prefix are quoted, the characters in the tilde-prefix following
+the tilde are treated as a possible login name from the user database.
+.sp
+.LP
+A portable login name cannot contain characters outside the set given in
+the description of the
+.B LOGNAME
+environment variable. If the login name
+is null (that is, the tilde-prefix contains only the tilde), the
+tilde-prefix is replaced by the value of the variable
+.BR HOME .
+If
+\fBHOME\fR is unset, the results are unspecified. Otherwise, the
+tilde-prefix is replaced by a pathname of the home directory associated with
+the login name obtained using the
+.B getpwnam
+function. If the system
+does not recognize the login name, the results are undefined.
+.sp
+.LP
+Tilde expansion generally occurs only at the beginning of words, but an
+exception based on historical practice has been included:
+.sp
+.in +2
+.nf
+.B
+PATH=/usr/xpg4/bin:~joerg/bin
+.fi
+.in -2
+
+.sp
+.LP
+is eligible for tilde expansion because tilde follows a colon and none of
+the relevant characters is quoted. Consideration was given to prohibiting
+this behavior because any of the following are reasonable substitutes:
+.sp
+.in +2
+.nf
+.B
+PATH=$(printf %s ~karels/bin : ~bostic/bin)
+.B
+for Dir in ~maart/bin ~srb/bin .
+.B
+do
+.B
+     PATH=${PATH:+$PATH:}$Dir
+.B
+done
+.fi
+.in -2
+
+.sp
+.LP
+With the first command, explicit colons are used for each directory. In all
+cases, the shell performs tilde expansion on each directory because all are
+separate words to the shell.
+.sp
+.LP
+Expressions in operands such as:
+.sp
+.in +2
+.nf
+.B
+make -k mumble LIBDIR=~chet/lib
+.fi
+.in -2
+
+.sp
+.LP
+do not qualify as shell variable assignments and tilde expansion is not
+performed (unless the command does so itself, which
+.B make
+does not).
+.sp
+.LP
+Because of the requirement that the word not be quoted, the following are
+not equivalent; only the last causes tilde expansion:
+.sp
+.in +2
+.nf
+\fB\e~hlj/   ~h\elj/   ~"hlj"/   ~hlj\e/   ~hlj/\fR
+.fi
+.in -2
+.sp
+
+.sp
+.LP
+The results of giving tilde with an unknown login name are undefined by
+.B POSIX
+because the
+.B Bourne Shell
+.B ~+
+and
+.B ~\-
+constructs make use of this condition, but in general it is an error to
+give an incorrect login name with tilde. The results of having
+.B HOME
+unset are unspecified because
+some historical shells treat this as an error.
+.sp
+.LP
+If a tilde that matches the criteria is found,
+the word up to a
+.B /
+(or up to a
+.B :
+in case of a variable assignment)
+is checked to see if it matches a user
+name in the password database. If a match is found, the
+.B ~
+and the
+matched login name are replaced by the login directory of the matched user.
+If no match is found, the original text is left unchanged. A
+.B ~
+by
+itself, or in front of a
+.BR / ,
+is replaced by
+.BR $HOME .
+A
+.BR ~
+followed by a
+.B +
+or
+.B -
+is replaced by the value of
+.B $PWD
+and
+.B $OLDPWD
+respectively.
+
 .SS "Command Substitution"
 .sp
 .LP
-The shell reads commands from the string between two grave accents
+The shell reads
+.I commands
+enclosed in parenthesis preceded by a dollar sign (that is,
+.BI $( command)\c
+) or from the string between two grave accents
 .RB ( `` )
 and the standard output from these commands can be used as all or
 part of a word. Trailing newlines from the standard output are removed.
 .sp
 .LP
-No interpretation is done on the string before the string is read, except
-to remove backslashes
+No interpretation is done on the string before the string is read,
+except when using the second (obsolete) form using the backquoted syntax,
+where backslashes
 .RB ( \e )
-used to escape other characters.
-Backslashes can be used to escape a grave accent
+are used to escape other characters.
+.LP
+When using the backquoted syntax,
+backslashes can be used to escape a grave accent
 .RB ( ` )
 or another backslash
 .RB ( \e )
 and are removed before the command string is read.
-Escaping grave accents allows nested command substitution. If the command
+Escaping grave accents allows nested command substitution in this form.
+If the command
 substitution lies within a pair of double quotes (\c
 .B
 " .\|.\|.\|` .\|.\|.\|` \&.\|.\|.\| "\c
@@ -620,6 +1086,193 @@ sign has no effect. Backslashes that precede characters other than
 and
 .B $
 are left intact when the command string is read.
+.LP
+In the
+.B $()
+form, nested command substitutions do not need special quoting.
+.LP
+Command substitution allows the output of a command to be substituted 
+in place of the command name itself. Command substitution occurs when
+the command is enclosed as follows:
+.LP
+.in +2
+.BI $( command )
+.in -2
+.LP
+or (backquoted version):
+.LP
+.in +2
+.BI ` command `
+.in -2
+.LP
+The shell expands the command substitution by executing
+.I command
+in a subshell environment and replacing the command substitution
+(the text of command plus the enclosing
+.B $()
+or backquotes) with the standard output of the command, removing
+sequences of one or more newline characters at the end of the
+substitution. Embedded newline characters before the end of the 
+output is not be removed; however, they can be treated as field
+delimiters and eliminated during field splitting, depending on 
+the value of
+.B IFS
+and quoting that is in effect.
+.LP
+With the
+.BI $( command )
+form, all characters following the open parenthesis to the matching
+closing parenthesis constitute the command. Any valid shell script
+can be used for
+.IR command .
+.LP
+The results of command substitution are not field splitting and pathname
+expansion processed for further tilde expansion, parameter expansion,
+command substitution or arithmetic  expansion. If a command substitution
+occurs inside double-quotes, it is not be performed on the results of the
+substitution.
+.LP
+The
+.B $()
+form of command substitution solves a problem of inconsistent behavior when
+using backquotes. For example:
+.TS
+tab() box;
+cw(2.75i) cw(2.75i)
+lw(2.75i) lw(2.75i)
+.
+CommandOutput
+_
+echo '\e$x'\e$x
+echo `echo '\e$x'`$x
+echo $(echo '\e$x')\e$x
+.TE
+.LP
+Additionally, the backquoted syntax has historical restrictions on the
+contents of the embedded command. While the new
+.B $()
+form can process
+any kind of valid embedded script, the backquoted form cannot handle some
+valid scripts that include backquotes. For example, these otherwise valid
+embedded scripts do not work in the left column, but do work on the right:
+.TS
+tab() box;
+lw(2.75i) lw(2.75i)
+lw(2.75i) lw(2.75i)
+.
+echo `echo $(
+cat <<eofcat <<eof
+a here-doc with `a here-doc with )
+eofeof
+`)
+echo `echo $(
+echo abc # a comment with `echo abc # a comment with )
+`)
+echo `echo $(
+echo '`'echo ')'
+`)
+.TE
+.LP
+Because of these inconsistent behaviors, the backquoted variety of command
+substitution is not recommended for new applications that nest command
+substitutions or attempt to embed complex scripts.
+.LP
+If the command substitution consists of a single subshell, such as:
+.LP
+.in +2
+.BI "$( (" command ") )
+.in -2
+.LP
+a portable application must separate the
+.B $(
+and
+.B (
+into two tokens (that is, separate them with white space). This is
+required to avoid any ambiguities with arithmetic expansion.
+
+.SS "Arithmetic Expansion"
+.sp
+.LP
+An arithmetic expression enclosed in double parentheses preceded by a
+dollar sign is replaced by
+the value of the arithmetic expression within the double parenthesis.
+.B Arithmetic expansion
+provides a mechanism for evaluating an arithmetic
+expression and substituting its value. The format for arithmetic expansion
+is as follows:
+.sp
+.in +2
+.nf
+.BI $(( arithmetic-expression ))
+.fi
+.in -2
+.sp
+.LP
+The expression is treated as if it were in double-quotes, except that a
+double-quote inside the expression is not treated specially. The shell
+expands all tokens in the expression for parameter expansion, command
+substitution and quote removal.
+.sp
+.LP
+Next, the shell treats this as an arithmetic expression and substitutes the
+value of the expression. The arithmetic expression is processed according to
+the rules of the ISO C with the following exceptions:
+.RS
+.TP
+.B
+.ie t \(bu
+.el o
+Only
+.B signed long long integer
+arithmetic is supported.
+.TP
+.B
+.ie t \(bu
+.el o
+The
+.B sizeof()
+operator is not supported.
+.TP
+.B
+.ie t \(bu
+.el o
+Selection, iteration, and jump statements are not supported.
+.RE
+.LP
+If the expression is invalid, the expansion fails and the
+shell writes a message to standard error indicating the failure.
+.LP
+.B POSIX
+does not require to support the prefix and postfix
+.B ++
+and
+.B \(mi\|\(mi
+operators, so avoid them in portable shell scripts.
+.LP
+.B POSIX
+does not require to support more than
+.B signed long
+arithmetic, so avoid arithmetic that requires more in portable scripts.
+.LP
+In older versions of
+.BR sh ,
+.B arithmetic expansion
+was not supported.
+.LP
+A simple example using arithmetic expansion:
+.sp
+.in +2
+.nf
+# repeat a command 100 times
+x=100
+while [ $x \(migt 0 ]
+do
+     command
+     x=$((x\(mi1))
+done
+.fi
+.in -2
+
 .SS "Parameter Substitution"
 .sp
 .LP
@@ -642,7 +1295,8 @@ known as variables) can be assigned values by writing:
 ] .\|.\|.
 .sp
 .LP
-The evaluation of the assignments is done from the left to the right in this shell.
+The evaluation of the assignments is done from the left to the right
+in this shell.
 .LP
 Pattern-matching is not performed on
 .IR value .
@@ -652,11 +1306,15 @@ There cannot be a function and a variable with the same
 .ne 3
 .TP 25n
 .BI ${ parameter }
-The value, if any, of the parameter is substituted. The braces are required
+.BR "The value" ,
+if any, of the parameter is substituted. The braces are required
 only when
 .I parameter
 is followed by a letter, digit, or underscore that
-is not to be interpreted as part of its name. If
+is not to be interpreted as part of its name, or when the
+parameter name contains a dot
+.RB ( . ).
+If
 .I parameter
 is
 .B *
@@ -671,8 +1329,9 @@ is set from argument zero when the shell is invoked.
 .br
 .ne 3
 .TP
-.BI ${ parameter :\(mi word  }
-Use Default Values. If
+.BI ${ parameter :\(mi word }
+.BR "Use Default Values" .
+If
 .I parameter
 is unset or null, the expansion of
 .I word
@@ -683,8 +1342,22 @@ is substituted.
 .br
 .ne 3
 .TP
+.BI ${ parameter \(mi word }
+.BR "Use Default Values" .
+If
+.I parameter
+is unset, the expansion of
+.I word
+is substituted; otherwise, the value of
+.I parameter
+is substituted.
+
+.br
+.ne 3
+.TP
 .BI ${ parameter := word }
-Assign Default Values. If
+.BR "Assign Default Values" .
+If
 .I parameter
 is unset or null, the expansion of
 .I word
@@ -698,7 +1371,24 @@ or special parameters, can be assigned in this way.
 .br
 .ne 3
 .TP
+.BI ${ parameter = word }
+.BR "Assign Default Values" .
+If
+.I parameter
+is unset, the expansion of
+.I word
+is assigned to
+.IR parameter .
+In all cases, the final value of
+.I parameter
+is substituted. Only variables, not positional parameters
+or special parameters, can be assigned in this way.
+
+.br
+.ne 3
+.TP
 .BI ${ parameter  :? word }
+.BR "Indicate Error if Null or Unset" .
 If
 .I parameter
 is set and is non-null, substitute its value; otherwise, print
@@ -710,13 +1400,75 @@ is omitted, the message "parameter null or not set" is printed.
 .br
 .ne 3
 .TP
+.BI ${ parameter  ? word }
+.BR "Indicate Error if Null or Unset" .
+If
+.I parameter
+is set, substitute its value; otherwise, print
+.I word
+and exit from the shell. If
+.I word
+is omitted, the message "parameter null or not set" is printed.
+
+.br
+.ne 3
+.TP
 .BI ${ parameter :+ word }
+.BR "Use Alternative Value" .
 If
 .I parameter
 is set and is non-null, substitute
 .IR word ;
 otherwise substitute nothing.
 
+.br
+.ne 3
+.TP
+.BI ${ parameter + word }
+.BR "Use Alternative Value" .
+If
+.I parameter
+is set, substitute
+.IR word ;
+otherwise substitute nothing.
+
+.LP
+If the colon
+.RB ( : )
+is omitted from the above expressions, the shell
+only checks whether
+.I parameter
+is set or not.
+The following table summarizes the effect of the <colon>:
+.LP
+.br
+.ne 19
+.TS
+tab();
+cw(1.83i) |cw(1.6i) |cw(1.5i) |cw(1.5i)
+lw(1.83i) |lw(1.6i) |lw(1.5i) |lw(1.5i)
+.
+parameter nonnullparameter nullparameter unset
+_
+\fB${\fIparameter\fB:-\fIword\fB}\fRsubst. \fIparameter\fRsubst. \fIword\fRsubst. \fIword\fR
+_
+\fB${\fIparameter\fB\(mi\fIword\fB}\fRsubst. \fIparameter\fRsubst. nullsubst. \fIword\fR
+_
+\fB${\fIparameter\fB:=\fIword\fB}\fRsubst. \fIparameter\fRassign \fIword\fRassign \fIword\fR
+_
+\fB${\fIparameter\fB=\fIword\fB}\fRsubst. \fIparameter\fRsubst. nullassign \fIword\fR
+_
+\fB${\fIparameter\fB:?\fIword\fB}\fRsubst. \fIparameter\fRerror, exiterror, exit
+_
+\fB${\fIparameter\fB?\fIword\fB}\fRsubst. \fIparameter\fRsubst. nullerror, exit
+_
+\fB${\fIparameter\fB:+\fIword\fB}\fRsubst. \fIword\fRsubst. nullsubst. null
+_
+\fB${\fIparameter\fB+\fIword\fB}\fRsubst. \fIword\fRsubst. \fIword\fRsubst. null
+_
+.TE
+.LP
+In all cases shown with "assign", parameter is assigned that value, which also replaces the expression.
 .sp
 .LP
 In the above,
@@ -734,16 +1486,104 @@ is not set or is null:
 .fi
 .in -2
 .sp
-
-.sp
 .LP
-If the colon
-.RB ( : )
-is omitted from the above expressions, the shell
-only checks whether
+.br
+.ne 3
+.TP 25n
+.BI ${# parameter }
+.BR "String Length" .
+The length in characters of the value of
+.IR parameter .
+If
 .I parameter
-is set or not.
-.sp
+is
+.B *
+or
+.BR @ ,
+the results are unspecified.
+
+.LP
+The following four varieties of parameter expansion provide for
+substring processing. In each case, pattern matching notation,
+rather than regular expression notation, is used to evaluate the patterns.
+If
+.I parameter
+is
+.B *
+or
+.BR @ ,
+the results are unspecified.
+Enclosing the full parameter expansion string in double-quotes 
+does not cause the following four varieties of
+pattern characters to be quoted, whereas quoting characters
+within the braces has this effect.
+
+.br
+.ne 3
+.TP 25n
+.BI ${ parameter % word }
+.BR "Remove Smallest Suffix Pattern" .
+The
+.I word
+is expanded to produce a pattern.
+The parameter expansion then results in 
+.IR parameter , 
+with the smallest portion of the suffix matched by the
+.I pattern
+deleted.
+If
+.I word
+begins with a
+.RB ' % ',
+the character needs to be quoted.
+
+.br
+.ne 3
+.TP
+.BI ${ parameter %% word }
+.BR "Remove Largest Suffix Pattern" . 
+The
+.I word
+is expanded to produce a pattern.
+The parameter expansion then results in
+.IR parameter ,
+with the largest portion of the suffix matched by the
+.I pattern
+deleted.
+
+.br
+.ne 3
+.TP
+.BI ${ parameter # word }
+.BR "Remove Smallest Prefix Pattern". 
+The
+.I word
+is expanded to produce a pattern.
+The parameter expansion then results in
+.IR parameter ,
+with the smallest portion of the prefix matched by the
+.I pattern
+deleted.
+If
+.I word
+begins with a
+.RB ' # ',
+the character needs to be quoted.
+
+.br
+.ne 3
+.TP
+.BI ${ parameter ## word }
+.BR "Remove Largest Prefix Pattern" . 
+The
+.I word
+is expanded to produce a pattern.
+The parameter expansion then results in
+.IR parameter ,
+with the largest portion of the prefix matched by the
+.I pattern
+deleted.
+
 .LP
 The following parameters are automatically set by the shell.
 .br
@@ -780,7 +1620,23 @@ All positional parameters starting from
 .BR $1 .
 \fB"$*"\fR
 expands to one argument that contains
-all positional parameters separated by spaces.
+all positional parameters separated by the first character in the
+.B IFS
+variable or by a space, in case
+.B IFS
+is unset.
+If
+.B IFS
+is set to a null string,
+its first character does not exist, so the parameter values are concatenated.
+.br
+In older versions of
+.BR sh ,
+.B IFS
+was not evaluated for
+.B
+"$*"
+and the separator was always a space character.
 .br
 .ne 3
 .TP
@@ -803,6 +1659,22 @@ command.
 .TP
 .B ?
 The decimal value returned by the last synchronously executed command.
+Only the low 8 bits of the exit code from the command are visible
+unless exit code masking is switched off by
+.RB `` "set\ \-o\ fullexitcode" ''.
+The ability to see all 32 bits from the exit code requires a
+modern operating system with support for
+.BR waitid (2)
+in addition.
+If the executable file could not be found, the returned value is 127.
+If the file exists but could not be executed, the returned value is 126.
+If a command's exit code modulo 256 is zero and
+.RB `` "set\ \-o\ fullexitcode" ''
+is not in effect, the returned value is 128 except when the operating
+system does not support
+.BR waitid (2).
+If the command was killed by a signal, the returned value is 128 +
+the signal number.
 .br
 .ne 3
 .TP
@@ -813,6 +1685,164 @@ The process number of this shell.
 .TP
 .B !
 The process number of the last background command invoked.
+
+.br
+.ne 3
+.TP
+.B .sh.code
+The numerical reason
+.BR waitid (2)
+returned for the child status change. It matches the
+.B CLD_*
+definitions from
+.BR signal.h .
+Note that the numbers are usually in the range 1..6 but this
+is not guaranteed.
+Use
+.B ${.sh.codename}
+for portability.
+.br
+.ne 3
+.TP
+.B .sh.codename
+The reason
+.BR waitid (2)
+returned for the child status change
+as text that is generated by stripping off
+.B CLD_
+from the related definitions from
+.BR signal.h .
+Possible values are:
+.RS
+.TP 12
+.B EXITED
+The program had a normal termination and the
+.BR exit (2)
+code is in
+.BR ${.sh.status} .
+.TP
+.B KILLED
+The program was killed by a signal, the signal number
+is in
+.B ${.sh.status}
+the signal name is in
+.BR ${.sh.termsig} .
+.TP
+.B DUMPED
+The program was killed by a signal, similar to
+.B KILLED
+above, but the program in addition created a core dump.
+.TP
+.B TRAPPED
+A traced child has trapped.
+.TP
+.B STOPPED
+The program was stopped by a signal, the signal number
+is in
+.B ${.sh.status}
+the signal name is in
+.BR ${.sh.termsig} .
+.TP
+.B CONTINUED
+A stopped child was continued.
+.TP
+.B NOEXEC
+An existing file could not be executed. This can happen when
+e.g. either the type of the file is not
+.B plain file
+or when the file does not have execute permission, or when
+the argument list is too long.
+.sp
+This is not a result from
+.BR waitid (2)
+but from
+.BR execve (2).
+.TP
+.B NOTFOUND
+A file was not found and thus could not be executed.
+.sp
+This is not a result from
+.BR waitid (2)
+but from
+.BR execve (2).
+.LP
+The child codes
+.B NOEXEC
+and
+.B NOTFOUND
+in
+.B ${.sh.codename}
+need shared memory (e.g. from
+.BR vfork (2))
+to allow a reliable reporting.
+.RE
+.br
+.ne 3
+.TP
+.B .sh.pid
+The process number of the process that caused the current
+.BR waitid (2)
+status.
+.br
+.ne 3
+.TP
+.B .sh.shell
+The name of the shell. This shell returns:
+.sp
+.in +.5i
+.B "sh (Schily Bourne Shell)"
+.br
+.ne 3
+.TP
+.B .sh.signame
+The name of the causing signal.
+If the status is related to a set of
+.BR waitid (2)
+return values, this is
+.B CHLD
+or
+.BR CLD ,
+depending on the os.
+When a
+.BR trap (1)
+command is executed, 
+.B ${.sh.signame}
+holds the signal that caused the trap.
+.br
+.ne 3
+.TP
+.B .sh.signo
+The signal number related to
+.BR ${.sh.signame} .
+.br
+.ne 3
+.TP
+.B .sh.status
+The decimal value returned by the last synchronously
+executed command.
+The value is unaltered and contains the full int from the
+.BR exit (2)
+call in the child in case the shell is run on a modern os.
+.br
+.ne 3
+.TP
+.B .sh.termsig
+The signal name related to the numerical
+.B ${.sh.status} 
+value. The translation to signal names takes place
+regardless of whether the
+child was terminated by a signal or terminated normally.
+.br
+.ne 3
+.TP
+.B .sh.version
+A string that identifies the version of this shell.
+.LP
+Note that trying to use the
+.BI ${.sh. xxx }
+parameters on older shells will cause the older shells to exit with a
+.B bad substitution
+message unless the shell is an interactive shell.
 .LP
 The following parameters are used by the shell. The parameters in this
 section are also referred to as environment variables.
@@ -838,6 +1868,20 @@ If
 .B PATH
 is not set, it defaults to
 .BR /usr/bin: .
+
+.br
+.ne 3
+.TP
+.B BEEP
+If set to
+.BR off ,
+the history editor will not beep in case of an error.
+Use this to allow e.g. silent working in meetings.
+.sp
+The variable
+.B BEEP
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -870,6 +1914,92 @@ or
 the file
 .B /etc/sh.shrc
 is not executed.
+.sp
+The variable
+.B ENV
+was not supported in older versions of
+.BR sh .
+.sp
+.ne 8
+The recommended content of the file
+.B ${ENV}
+is:
+.sp
+.B set -o globalaliases
+.br
+.B set -o localaliases
+.br
+.B set -o fdpipe
+.br
+.B set -o hashcmds
+.br
+.B set -o hostprompt
+.br
+.B set -o time
+.sp
+Make sure
+.B set -o time
+is the last entry to avoid timing the commands from the
+.B .shrc
+file.
+
+.br
+.ne 3
+.TP
+.B HISTFILE
+The name of the file to use in order to read or save the command history.
+If
+.B HISTFILE
+is not set before the shell reads the initial history at startup, the name
+.B $HOME/.history
+is used.
+.B HISTFILE
+is only supported if
+.B sh
+was compiled with support for history editing.
+.sp
+The variable
+.B HISTFILE
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B HISTORY
+The maximum number of lines to keep in the command history editor.
+The default is to keep 128 lines of command history.
+.B HISTORY
+is only supported if
+.B sh
+was compiled with support for history editing.
+This is the historic name that is in use since 1984, it is used as a
+fallback, when the POSIX variable
+.B HISTSIZE
+(introduced 1992) was not set.
+.sp
+The variable
+.B HISTORY
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B HISTSIZE
+The maximum number of lines to keep in the command history editor.
+The default is to keep 128 lines of command history.
+.B HISTSIZE
+is only supported if
+.B sh
+was compiled with support for history editing.
+This is the POSIX variable name that has precedence over
+.BR HISTORY .
+.sp
+The variable
+.B HISTSIZE
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -879,23 +2009,35 @@ If set to
 .BR on ,
 the shell will not exit if a
 .B ^D
-is typed and the cursor is on an empty command line.
+is typed and the cursor is on an empty command line;
+the command
+.B exit
+must be used instead.
 The default is not to ignore EOF.
+See also the command
+.B set -o ignoreeof
+below.
 .B IGNOREEOF
 is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
+The variable
+.B IGNOREEOF
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
 .TP
-.B HISTORY
-The maximum number of lines to keep in the command history editor.
-The default is to keep 100 lines of command history.
-.B HISTORY
-is only supported if
-.B sh
-was compiled with support for history editing.
+.B LINENO
+The line number of the current line within the script.
+This variable currently does not have all POSIX features.
+.sp
+The variable
+.B LINENO
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -950,6 +2092,11 @@ is not set before the first
 or
 .B popd
 command.
+.sp
+The variable
+.B OLDPWD
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -970,44 +2117,108 @@ as the index of the next argument to be processed.
 .br
 .ne 3
 .TP
+.B PPID
+The process number of the parent of the shell.
+The variable is setup once at program start and then set readonly.
+.sp
+The variable
+.B PPID
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
 .B PS1
-Primary prompt string, by default " $ \|".
+Primary prompt string, by default "$\ \|" for normal users and "\#\ \|" for
+privileged users.
+Each time an interactive shell is ready to read a command, the value of this
+variable is subject to parameter expansion and written to standard error.
+See the description for
+.B "set\ \-o\ promptcmdsubst"
+below for more information.
+.sp
+The variable
+.B PS1
+was not subject to parameter expansion in older versions of
+.BR sh .
 
 .br
 .ne 3
 .TP
 .B PS2
-Secondary prompt string, by default " > \|".
+Secondary prompt string, by default ">\ \|".
+Each time, the user enters a
+.B <newline>
+prior to completing a command line in an interactive shell, the value of this
+variable is subject to parameter expansion and written to standard error.
+See the description for
+.B "set\ \-o\ promptcmdsubst"
+below for more information.
+.sp
+The variable
+.B PS2
+was not subject to parameter expansion in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B PS3
+Selection prompt string, by default "#?\ \|".
+.sp
+The variable
+.B PS3
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B PS4
+Execution trace prompt string, by default "+\ \|".
+If unset, "+\ \|" is used.
+The value of this variable is subject to parameter expansion
+and written to standard error.
+See the description for
+.B "set\ \-o\ promptcmdsubst"
+below for more information.
+.sp
+The variable
+.B PS4
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
 .TP
 .B PWD
-The present working directory set by the
+The present working directory, set by the
 .BR cd ,
 the
 .B pushd
 and the
 .B popd
 command.
-For efficiency and to avoid NFS based hangs,
+POSIX requires
 .B PWD
-is not set before the first
-.BR cd ,
-.BR dirs ,
-.BR pushd ,
-.BR popd ,
-or
-.B pwd
-command.
-As it may have been imported with invalid content from the
-environment of the calling process, it is recommended to
-call
-.B pwd
-or
-.B cd .
-before depending on the content of
-.BR PWD .
+to be set and verified at program startup. This may prevent a login for users
+with a networked home directory in case of a NFS based hang.
+.sp
+The variable
+.B PWD
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B REPLY
+This variable is set by the
+.B select
+statement and by the
+.B read
+special builtin command when no arguments are supplied.
 
 .br
 .ne 3
@@ -1036,6 +2247,11 @@ The default is not to save the history.
 is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
+The variable
+.B SAVEHISTORY
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -1052,6 +2268,25 @@ executed.
 When the shell is invoked, it scans the environment (see
 .B Environment
 section below) for this name.
+If the past pathname component equals to
+.B rsh
+or
+.BR rbosh ,
+the shell is swichted into a restricted shell.
+
+.br
+.ne 3
+.TP
+.B SYSV3
+When the
+.B SYSV3 Environment
+is set, the builtin
+.B echo
+command is switched into
+.B SYSV3
+mode and supports escape sequences and the
+.B BSD \-n
+option to suppress the newline character at the end of the output.
 
 .br
 .ne 3
@@ -1063,6 +2298,11 @@ If this variable is unset or null, an unspecified default terminal type is used.
 is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
+The variable
+.B TERM
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -1073,7 +2313,7 @@ or the pathname to be used to find a termcap database file.
 If it holds a precompiled entry that does not match the
 .B TERM
 environment, the termcap database is parsed as if the
-.B TERMCAP 
+.B TERMCAP
 environment is not set.
 .B TERMCAP
 is automatically exported after filling it with a precompiled
@@ -1084,6 +2324,11 @@ based applications.
 is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
+The variable
+.B TERMCAP
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -1096,7 +2341,7 @@ is empty or not set, then the
 environment is scanned for pathnames of files that contain a
 .B termcap
 database.
-It holds a list of filenames separated by colons or spaces (i.e.,  ":" or " ").
+It holds a list of filenames separated by colons or spaces (i.e., ":" or " ").
 If the
 .B TERMPATH
 symbol is not set, the files
@@ -1113,6 +2358,221 @@ environment is prepended to the name.
 is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
+The variable
+.B TERMPATH
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B TIMEFORMAT
+Controls the output format for command timing.
+The
+.B %
+character introduces a format sequence that is
+expanded to a time value or other information.
+.sp
+The meaning of format sequences are as follows:
+.RS
+.TP 10
+.B %%
+Prints a literal
+.BR % .
+.TP
+.BI % p T
+Set the threshold to
+.I p
+seconds,
+.I p
+is a single digit.
+If the number of seconds computed from adding the user and
+system cpu time is less than the threshold, the rest of
+the format string is not processed,
+except when the timing is a result of using the
+.B time
+reserved word;
+if this format appears at the beginning of
+.BR TIMEFORMAT ,
+the whole output is suppressed.
+.TP
+.B %P
+Prints the cpu percentage computed as 100*(U\ +\ S)\ /\ R.
+On multi-cpu systems, this value may be larger than 100.
+.TP
+.BR % [\fIp\fP][\fIf\fP] E
+Prints the elapsed (real) wallclock time in seconds.
+.TP
+.BR % [\fIp\fP][\fIf\fP] S
+Prints the number of cpu seconds spend in system mode.
+.TP
+.BR % [\fIp\fP][\fIf\fP] U
+Prints the number of cpu seconds spend in user mode.
+.TP
+.B %W
+Number of times the process was swapped.
+.TP
+.B %X
+The average amount in shared text space used in Kbytes.
+This field is currently not supported.
+.TP
+.B %D
+The average amount in unshared data space used in Kbytes.
+This field is currently not supported.
+.TP
+.B %K
+The average amount of unshared stack space used in Kbytes.
+This field is currently not supported.
+.TP
+.B %M
+The maximum memory the process had in use at any time in Kbytes.
+This field is currently not supported.
+.TP
+.B %F
+The number of major page faults (page faults that caused physical I/O).
+.TP
+.B %R
+The number of minor page faults (page faults that did not caused physical I/O).
+.TP
+.B %I
+The number of input operations
+.TP
+.B %O
+The number of output operations.
+.TP
+.B %r
+The number of socket messages received.
+.TP
+.B %s
+The number of socket messages sent.
+.TP
+.B %k
+The number of signals received.
+.TP
+.B %w
+Number of voluntary context switches (waits).
+.TP
+.B %c
+Number of involuntary context switches.
+.TP
+.B %J
+The name of this job. This string is only available when in
+.B job control
+mode.
+.LP
+On some minimal
+.B POSIX
+systems and on
+.B BeOS
+and
+.B Haiku
+only the times are supported.
+.LP
+The optional
+.I p
+is a digit specifying the
+.IR precision ,
+the number of fractional digits after a decimal point.
+A value of
+.B 0
+causes no decimal point to be printed.
+A value larger than
+.B 6
+is treated as
+.BR 6 .
+If
+.I p
+is not specified, the value
+.B 3
+is used.
+.LP
+The optional
+.I f
+is a letter specifying the format to be used.
+If it is missing, a plain floating point number
+based on seconds is used.
+The following characters are supported to specify
+a different format:
+.TP
+.B l
+The
+.BR l -format
+is the POSIX output format for
+.BR times (1).
+It always prints minutes and seconds in the following form:
+.IB dd m dd.ppp s\fR.
+.TP
+.B L
+The
+.BR L -format
+is similar to the
+.BR l -format
+but it prints hours and minutes where the
+.BR l -format
+prints just minutes regardless of
+whether there are more than 59 minutes.
+Minutes and hours are only printed if the value is more
+than 59 seconds or 59 minutes.
+The format is:
+.IB dd h dd m dd.ppp s\fR.
+.TP
+.B :
+The
+.BR : -format
+is similar to the
+.BR L -format
+but it prints no
+.B s
+after the seconds and it
+replaces
+.B m
+and
+.B h
+by
+.BR : .
+The format is:
+.IB dd : dd : dd.ppp\fR.
+.LP
+The value of the decimal point in the floating point formats
+above is subject to locale specific adoptions based on
+.B LC_NUMERIC
+or
+.BR LC_ALL .
+.LP
+If
+.B TIMEFORMAT
+is unset, the value:
+.sp
+.B "  '%:E\ real\ %U\ user\ %S\ sys\ %\&P%%\ cpu'
+.sp
+is used for automatic timing with
+.B set\ \-o\ time
+and:
+.sp
+.B "  '\enreal\ \ \ %6:E\enuser\ \ \ %6U\ensys\ \ \ \ %6S'
+.sp
+is used for pipelines prefixed with the
+.B time
+reserved word.
+If
+.B TIMEFORMAT
+is empty, no timing information is printed.
+A recommended format that is similar to what
+.BR csh(1)
+prints by default,
+but with the available precision from
+modern operating systems is:
+.sp
+.B "  '%6:Er\ %6Uu\ %6Ss\ %\&P%%\ %I+%Oio\ %Fpf+%Ww'
+.LP
+A trailing newline is added when the format string is displayed.
+.LP
+The variable
+.B TIMEFORMAT
+was not supported in older versions of
+.BR sh .
+.RE
 
 .sp
 .LP
@@ -1123,13 +2583,14 @@ variables that affect the execution of
 .BR sh :
 .BR LANG ,
 .BR LC_ALL ,
-.B LC_CTYPE
+.B LC_CTYPE ,
+.B LC_MESSAGES
 and
-.BR LC_MESSAGES .
+.BR LC_NUMERIC .
 .sp
 .LP
 The shell gives default values to
-.BR PATH , 
+.BR PATH ,
 .BR PS1 ,
 .BR PS2 ,
 .BR MAILCHECK ,
@@ -1160,7 +2621,7 @@ removed.
 The
 .B IFS
 parameter is applied to any unquoted word. Thus.
-.RS 
+.RS
 .sp
 .nf
 .B IFS=X
@@ -1202,7 +2663,23 @@ as standard input (file descriptor 0).
 Use file
 .I word
 as standard output (file descriptor 1). If the file
-does not exist, it is created; otherwise, it is truncated to zero length.
+does not exist, it is created.
+If the file exists, and the
+.B noclobber
+option is on, this causes an error.
+Otherwise, it is truncated to zero length.
+
+.br
+.ne 3
+.TP
+.BI >| word
+Same as
+.BR > ,
+except that it overrides the
+.B noclobber
+option.
+This feature was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -1312,7 +2789,7 @@ Similarly for the standard output using
 .br
 .ne 3
 .TP
-.B  <&\(mi
+.B <&\(mi
 The standard input is closed. Similarly for the standard output using
 .BR >&\(mi .
 
@@ -1389,7 +2866,7 @@ within each
 .sp
 .LP
 If a command is followed by
-.B & 
+.B &
 and job control (see
 .BR "set \-m" )
 is not active, the default standard input for the
@@ -1572,7 +3049,7 @@ and
 .sp
 .in +2
 .nf
-.BI "(export TERM; TERM=450;"  " command" )
+.BI "(export TERM; TERM=450;" " command" )
 .fi
 .in -2
 .sp
@@ -1589,7 +3066,7 @@ is a Special Command, then
 .sp
 .in +2
 .nf
-.BI TERM=450  " command
+.BI TERM=450 " command
 .fi
 .in -2
 .sp
@@ -1699,27 +3176,56 @@ whenever the
 variable is changed or the
 .B hash \-r
 command is executed (see below).
-.SS "Special Commands"
+.SS "Built-in Commands"
 .sp
 .LP
-Input/output redirection is now permitted for these commands. File
+The following commands are executed in the shell process.
+Input/output redirection is permitted for these commands. File
 descriptor 1 is the default output location. When Job Control is enabled,
 additional
-.B Special Commands
+.B Built-in Commands
 are added to the shell's environment (see
 .B Job Control
 section below).
+.LP
+Commands marked with a
+.B +
+are treated specially in the following ways:
+.RS
+.br
+.ne 4
+.TP 7
+.B 1.
+Parameter assignments that precede a special builtin command
+affect the shell itself.
+.br
+.ne 4
+.TP
+.B 2.
+I/O redirections are processed after variable assignments for variables
+that precede the builtin command.
+.br
+.ne 4
+.TP
+.B 3.
+Errors may cause a script that contains them to abort.
+.RE
+.sp
+In older versions of
+.BR sh ,
+parameter assignments that precede any builtin command did
+affect the shell itself.
 .br
 .ne 3
 .TP 4n
-.B :
+.B + :
 .sp .6
 No effect; the command does nothing. A zero exit code is returned.
 
 .br
 .ne 3
 .TP
-.BI \&. " filename
+.BI "+ \&." " filename
 .sp
 Read and execute commands from
 .I filename
@@ -1729,8 +3235,77 @@ specified by
 is used to find the directory containing
 .IR filename .
 
+.if 0 \{
 .br
-.ne 3
+.ne 5
+.PD 0
+.TP
+.BI @ " name = expr
+.TP
+.BI @ " name" ++
+.TP
+.BI @ " name" --
+.PD
+.sp
+Set the variable
+.I name
+to the value that
+.I expr
+evaluates to.
+.sp
+.I Expr
+may contain
+.B test
+expressions.
+See
+.B test
+builtin below.
+
+.sp
+If the expression contains the characters
+.BR * ,
+.BR > ,
+.BR < ,
+.BR & ,
+.BR | ,
+.BR ( ,
+or
+.BR ) ,
+then at least this part of expr must be quoted.
+.sp
+The operators
+.BR *= ,
+.BR += ,
+and so forth, are available and may be used instead of the
+assignment operator.
+Spaces are mandatory in separating
+.IR name ,
+the assignment operator and
+.I expr
+to make them separate words.
+
+The second and third form increment
+.B ++
+and decrement
+.BR -- ,
+.IR name ,
+respectively.
+No spaces are allowed between
+.I name
+and the operator.
+.sp
+In case of a syntax error or a division by zero,
+a non-zero result is returned and
+.I name
+is not changed.
+.sp
+The
+.B @
+command was not supported in older versions of
+.BR sh .
+\}
+.br
+.ne 4
 .HP
 .B [
 .RI [ expr "] ]
@@ -1766,12 +3341,27 @@ An argument in the form
 .IR alias-name = value
 causes
 .B alias
-to define or redefine an alias or to push an alias definition on top of an old one.
+to define or redefine an alias or to push an alias definition on top of
+an old one.
 If no argument was given,
 .B alias
 lists all current alias definitions.
 .sp
-Alias definitions must be written with appropriate quoting.
+Alias definitions using the 
+.B alias
+shell built-in must be written with appropriate quoting so that it is
+suitable for reinput to the shell parser.
+.sp
+The
+.B # commands
+provide an alternate interface to define aliases that does not use the
+standard shell parser. It thus does not require quoting that goes beyond
+the quoting needed for the final command line in the expanded command.
+.sp
+The
+.B alias
+command was not supported in older versions of
+.BR sh .
 .sp
 When operating on temporary aliases (i.e. when neither
 .B \-g
@@ -1786,8 +3376,8 @@ The following options may be used to modify operation:
 .RS
 .TP
 .B \-a
-Define an alias definition that is expanded on all arguments of a command line and
-not only for command names. Use with care.
+Define an alias definition that is expanded on all arguments of a
+command line and not only for command names. Use with care.
 .TP
 .B \-e
 List the everlasting version of the persistent alias definitions instead of
@@ -1857,7 +3447,13 @@ calling
 .BR "unalias \-a" .
 No arguments are allowed with this option.
 .TP
+.B \-R
+.PD 0
+.TP
+.B \-raw
+.TP
 .B \-\-raw
+.PD
 Output the listing in the raw format that is used in the persistent
 definition files
 .B $HOME/.globals
@@ -1867,10 +3463,20 @@ This increases readability as the quoting needed for defining an alias
 with the
 .B alias
 command is omitted.
+.sp
+Aliases can be edited in the raw format using
+.BR "#\ commands" ,
+see the related section above.
 .LP
 Aliases are often used together with the
 .B dosh
-builtin in order to run small parameterized shell scripts.
+builtin in order to run small parameterized pseudo shell scripts.
+An alias to list files in the long format and to pipe the result into
+.BR more (1)
+could be implemented this way:
+.LP
+.B
+    alias lm='dosh '\e''ls -l "$@" | more'\e'' lm-alias'
 .RE
 
 .br
@@ -1886,6 +3492,7 @@ command prints information about the curren state of the storage
 subsystem; otherwise
 .B alloc
 is a dummy command.
+.sp
 The
 .B alloc
 command was not supported in older versions of
@@ -1910,7 +3517,50 @@ section below for more detail.)
 .br
 .ne 3
 .TP
-\fBbreak\fR [ \fIn\fR ]
+\fBbuiltin\fR [ \fB\-dis\fR ] [ \fB\-f\fI lib\fR ] [ \fIname ...\fR ]
+.sp .6
+The
+.B builtin
+command allows to manage builtin commands.
+.sp
+When no
+.I name
+parameter and neither 
+.B \-d
+nor
+.B \-f
+are specified, the list of builtin commands is printed.
+When
+.B \-i
+is specified, only shell intrinsic commands are listed.
+When
+.B \-s
+is specified, only special builtin commands are listed.
+.sp
+When
+.B \-d
+is specified, each named builtin command is deleted.
+Special builtin commands cannot be deleted.
+.sp
+On platforms that allow to load dynamic libraries,
+.B \-f
+allows to load a dynamic library that contains builtin commands.
+.sp
+Without
+.B \-d
+all
+.B name
+parameters are added as builtins.
+.sp
+The
+.B builtin
+command was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fB+ break\fR [ \fIn\fR ]
 .sp .6
 Exit from the enclosing
 .B for
@@ -1925,10 +3575,13 @@ levels.
 .br
 .ne 3
 .TP
-\fBcd\fR [ \fIargument\fR ]
+\fBcd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIargument\fR ]
 .sp .6
 Change the current directory to
 .IR argument .
+If arg is
+.B \-
+the directory is changed to the previous directory.
 The shell parameter
 .B HOME
 is the default
@@ -1958,11 +3611,63 @@ The previous working directory is kept in the shell parameter
 the new working directory is kept in the shell parameter
 .BR PWD .
 The top of the directory stack is replaced by the new working directory.
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation
+.B dot-dot
+.RB ( .. )
+logically.
+Symbolic link components are
+.B not
+resolved before
+.B dot-dot
+components are processed.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation
+.B dot-dot
+physically.
+Symbolic link components
+.B are
+resolved before
+.B dot-dot
+components are processed.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B cd
+behaves as if
+.B \-P
+had been specified.
+.sp
+The options
+.B \-L
+and
+.B \-P
+and the special parameter
+.B \-
+were not recognised by older versions of
+.BR sh .
+.RE
 
 .br
 .ne 3
 .TP
-\fBchdir\fR [ \fIdir\fR ]
+\fBchdir\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIdir\fR ]
 .sp .6
 .B chdir
 changes the shell's working directory to directory
@@ -1981,7 +3686,63 @@ change to the directory named by that value.
 .br
 .ne 3
 .TP
-\fBcontinue\fR [ \fIn\fR ]
+\fBcommand\fR [ \fP\-p\fR ] [ \fB\-v\fR | \fB\-V\fR ] \fIname\fR [\fIarg\fR ...]
+.sp .6
+Without the option
+.B \-v
+or
+.BR \-V , 
+.B command
+executes
+.I name
+with the arguments specified by
+.IR arg .
+.sp
+With
+.B \-v
+or
+.BR \-V ,
+.I name
+is not executed but a description of
+.I name
+is printed.
+With
+.BR \-V ,
+the output is like the output from the
+.B type
+built-in command but function definitions are not listed. With
+.BR -v ,
+the output is less verbose.
+.sp
+The option
+.B \-p
+causes a default path to be searched that grants all POSIX commands to be found,
+rather than using the search path defined by the value of
+.BR PATH .
+.sp
+Functions are not searched when trying to execute
+.IR name .
+In addition, if
+.I name
+refers to a special built-in, none of the special properties
+associated with the built-in commands marked with
+leading daggers are honored.
+For example, using
+.B command\ exec
+instead of
+.B exec
+prevents a script from terminating when an
+invalid redirection is specified.
+.sp
+The
+.B command
+built-in command was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fB+ continue\fR [ \fIn\fR ]
 .sp .6
 Resume the next iteration of the enclosing
 .B for
@@ -1996,7 +3757,7 @@ enclosing loop.
 .br
 .ne 3
 .TP
-.B dirs
+.BR dirs " [ " \-L " | " \-P " ]
 .sp .6
 Print the content of the directory stack.
 The top of the stack is the leftmost element which has the logical offset
@@ -2010,10 +3771,55 @@ and the
 command.
 If there is no directory stack, the result is the same as with calling
 .BR pwd .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+If the
+.B PWD
+shell parameter contains an absolute pathname of the current
+directory that does not contain the filenames 
+.B dot 
+or
+.BR dot-dot , 
+.B pwd
+writes this pathname to standard output,
+regardless of whether it contains filename components
+that refer to symbolic links.
+Otherwise, the
+.B \-L
+option behaves like the
+.B \-P
+option.
+.br
+.ne 3
+.TP
+.B \-P
+The absolute pathname written does not contain
+filename components that refer to files of type symbolic link.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B pwd
+behaves as if
+.B \-P
+had been specified.
+.sp
 The
 .B dirs
 command was not supported in older versions of
 .BR sh .
+.RE
 
 .br
 .ne 3
@@ -2051,7 +3857,9 @@ does not exit the shell but returns from the
 .IR command_string .
 The
 .B dosh
-command is often used together with aliases.
+command is often used together with aliases
+in order to implement parameterized aliases.
+.sp
 The
 .B dosh
 command was not supported in older versions of
@@ -2135,7 +3943,19 @@ code is the 1-, 2- or 3-digit octal number representing that character.
 .br
 .ne 3
 .TP
-\fBeval\fR [ \fIargument\fR .\|.\|. ]
+\fBerrstr\fR [ \fIerrno\fR ]
+.sp .6
+Print the error message for errno on stdout.
+.sp
+The
+.B errstr
+command was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fB+ eval\fR [ \fIargument\fR .\|.\|. ]
 .sp .6
 The arguments are read as input to the shell and the resulting command(s)
 executed.
@@ -2143,16 +3963,23 @@ executed.
 .br
 .ne 3
 .TP
-\fBexec\fR [ \fIargument\fR .\|.\|. ]
+\fB+ exec\fR [\fB-a \fIname\fR] [ \fIargument\fR .\|.\|. ]
 .sp .6
 The command specified by the arguments is executed in place of this shell
 without creating a new process. Input/output arguments can appear and, if no
 other arguments are given, cause the shell input/output to be modified.
+The
+.B \-a
+option causes
+.I name
+rather than the first arg, to become
+.B argv[0]
+for the new process. 
 
 .br
 .ne 3
 .TP
-\fBexit\fR [ \fIn\fR ]
+\fB+ exit\fR [ \fIn\fR ]
 .sp .6
 Causes the calling shell or shell script to exit with the exit status
 specified by
@@ -2167,7 +3994,7 @@ also causes the shell to exit.)
 .br
 .ne 3
 .TP
-\fBexport\fR [ \fIname\fR .\|.\|. ]
+\fB+ export\fR [ \fB\-p\fR ] [ \fIname\fR[\fB=\fIvalue\fR] .\|.\|. ]
 .sp .6
 The given
 .IR name s
@@ -2175,11 +4002,47 @@ are marked for automatic export to the
 .I environment
 of subsequently executed commands. If no arguments are
 given, variable names that have been marked for export during the current
-shell's execution are listed. (Variable names exported from a parent shell
+shell's execution are listed.
+The
+.B \-p
+option causes the word
+.B export
+to be inserted before each name.
+(Variable names exported from a parent shell
 are listed only if they have been exported again during the current shell's
 execution.) Function names are
 .B not
 exported.
+.sp
+The option
+.B \-p
+was not supported in older versions of
+.BR sh .
+.br
+Specifying a
+.I value
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fBfalse\fR
+.sp .6
+The
+.B false
+builtin
+does nothing. A non-zero exit code
+.RB ( 1 )
+is returned.
+Used with
+.B until
+for infinite loops.
+.sp
+The
+.B false
+command was not a builtin command in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -2220,7 +4083,7 @@ or the global
 of the current shell, using
 .I optstring
 as option definition.
-Each time it is invoked, it places the next option into the variable
+Each time it is invoked, it places the next option character into the variable
 .I name
 and the index of the next argument to be processed into
 .BR OPTIND .
@@ -2284,6 +4147,71 @@ and
 .B \-\-output\-file
 is the equivalent of
 .BR \-o .
+.LP
+If
+.B optstring
+starts with "\c
+.B ()\c
+",
+.B getopts
+supports long options with a single dash.
+Long options with a single dash have been introduced with
+.B Multics
+and appeared on
+.B UNIX
+around 1980, see e.g.
+.BR kill (1).
+.LP
+If a long name argument follows a single dash and cannot be identified as
+a long option, it is retried as a combination of single character
+letters.
+To suppress error messages, the optional initial colon in
+.B optstring
+must precede the "\c
+.B ()\c
+":
+.LP
+  getopts ":()f:(file)(input-file)o:(output-file)"
+.LP
+In the above example,
+.BR \-file ,
+.BR \-\-file ,
+.BR \-input\-file ,
+.B \-\-input\-file
+are the equivalent of
+.BR \-f ,
+and
+.B \-output\-file
+and
+.B \-\-output\-file
+is the equivalent of
+.BR \-o .
+Error messages from
+.B getopts
+are suppressed and a colon is placed in
+.I name
+when an option argument for an option like
+.B \-f
+is missing.
+.LP
+.B getopts
+also supports one or more long options with no related short option.
+You must set up a decimal numerical value >= 256 between two question mark
+signs in place of an option letter in
+.IR optstring :
+.LP
+  getopts "f:(file)(input-file)?900?:(output-file)"
+.LP
+In the above example, the long option
+.B \-\-output\-file
+is associated to the integer value
+.B 900
+and in case the option
+.B \-\-output\-file
+was specified, string
+.B 900
+is set up as the value for
+.IR name .
 .RE
 
 .br
@@ -2326,6 +4254,7 @@ The
 command is only supported if
 .B sh
 was compiled with support for history editing.
+.sp
 The
 .B history
 command was not supported in older versions of
@@ -2350,10 +4279,10 @@ section below for more detail.)
 .br
 .ne 3
 .TP
-\fBkill\fR [ \fB\-\fIsig\fR ] \fB%\fIjob\fR .\|.\|.
+\fBkill\fR [ \fB\-\fIsig\fR | \fB\-s\ \fIsig\fR ] [ \fIpid\fR ] [ \fB%\fIjob\fR ] .\|.\|.
 .PD 0
 .TP
-.B kill \-l
+.B kill \-l\fR [ \fIsig\fR ] .\|.\|. 
 .PD
 .sp .6
 Sends either the
@@ -2383,8 +4312,77 @@ section below for a description of the format of
 .IR job .
 In the second form,
 .BR "kill \-l" ,
-the signal numbers and names are listed. (See
+the signal numbers and names are listed.
+The optional
+.I sig
+argument list may contain signal numbers or
+.B $?
+exit values that refer to a program terminated by a signal.
+(See
 .BR kill (1)).
+.sp
+The
+.B kill
+option
+.B \-s
+and
+.B "kill \-l"
+with arguments was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fBkillpg\fR [ \fB\-\fIsig\fR | \fB\-s\ \fIsig\fR ] [ \fIpgrp\fR ] [ \fB%\fIjob\fR ] .\|.\|.
+.PD 0
+.TP
+.B killpg \-l\fR [ \fIsig\fR ] .\|.\|. 
+.PD
+.sp .6
+Sends either the
+.B TERM
+(terminate) signal or the specified signal to
+the specified jobs or processgroups. See
+.B kill
+for more information.
+.sp
+The
+.B killpg
+command was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fBlocal\fR [ \fIname\fR[\fB=\fIvalue\fR] .\|.\|. ]
+.sp .6
+The given
+.IR name s
+are marked for local scope to the
+.B function
+from where
+.B local
+is called.
+The scope is effective for the rest of the
+.B function
+and its children or until
+.B local
+is called again with the same variable
+.IR name .
+The local variable is created with the same content and attributes as the
+current variable.
+If the local variable is exported, it's local value is seen by child
+processes called from a function.
+If no arguments are given, variable names that have been marked
+for local scope are listed.
+It is an error to use
+.B local
+when not within a function.
+.sp
+The
+.B local
+command was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -2463,6 +4461,7 @@ For more information and for escape sequences known by the mapper
 see the section
 .B "History Editing Input Mappings
 below.
+.sp
 The
 .B map
 command was not supported in older versions of
@@ -2483,7 +4482,40 @@ for usage and description.
 .br
 .ne 3
 .TP
-\fBpopd\fR [ \fI\-offset\fR ]
+\fBpgrp\fR [\fB%\fIjobid ...\fR]
+.sp .6
+Print the process groups and session groups for the
+specified processes or jobs.
+The argument
+.I job
+can be the process id of a process that is not a member
+of one of the active jobs. See
+.B Job Control
+section below for a description of the format of
+.IR job .
+If
+.BI % jobid
+is omitted, the process group for the current shell
+and the process group for the tty connected to
+.B stdin
+of the
+.B pgrp
+command is printed.
+.sp
+If the process group id equals the process id, the process
+ia a progrss group leader.
+If the session group id equals the process id, the process
+ia a session group leader.
+.sp
+The
+.B pgrp
+command was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+\fBpopd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fI\-offset\fR ]
 .sp .6
 Calling
 .B popd
@@ -2496,30 +4528,161 @@ Calling
 with an
 .I offset
 argument removes the current the top directory stack element
-from the directory stack, them removes the directory stack element
+from the directory stack, then removes the directory stack element
 named by
 .I offset
-from the current directory stack, makes it
+from the current directory stack and then makes it
 the new top directory stack element and performs a
 .B cd
 to this directory.
-If the new directory stack has more than one element, it is printed.
+The new directory name is always printed as it was not given as an argument.
 See
 .B dirs
 for an explanation of
 .IR offset .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation logically.
+Symbolic link components are
+.B not
+resolved before the
+.B PWD
+shell parameter is assigned the new value.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation physically.
+Symbolic link components
+.B are
+resolved before the
+.B PWD
+shell parameter is assigned the new value.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B cd
+behaves as if
+.B \-P
+had been specified.
+.sp
 The
 .B popd
 command was not supported in older versions of
+.BR sh .
+.RE
+
+.br
+.ne 3
+.TP
+\fBprintf\fR \fIformat\fR [\fIargument ...\fR]
+.sp .6
+The
+.B printf
+command writes formatted operands to the standard output.
+The
+.I argument
+operands are formatted under control of the
+.I format
+operand.
+The
+.I format
+operand is treated like a
+.BR printf (3)
+format string and the escape sequences
+.BR '\ea' ,
+.BR '\eb' ,
+.BR '\ef' ,
+.BR '\en' ,
+.BR '\er' ,
+.BR '\et' ,
+.BR '\ev' ,
+.B '\e\e'
+and
+.BR '\eddd' ,
+where
+.I ddd
+is one to three octal digits, are expanded as if they were in a C string.
+.sp
+In addition to the format specifiers
+.BR %c ,
+.BR %s ,
+.BR %d ,
+.BR %i ,
+.BR %o ,
+.BR %u ,
+.BR %x ,
+.BR %X ,
+the format
+.BR %b 
+is supported.
+The integers are handled internally as
+.B intmax_t
+to avoid range problems
+even though only the standard int type specifiers are supported in the
+.I format
+operand.
+The format
+.BR %b 
+is treated like
+.BR %s 
+except that escape sequences in the argument string are expanded as with the
+.B echo
+command.
+.sp
+Field width and precision may be specified either numerically in the
+.I format
+operand
+or via the
+.B '*'
+format specifier and related arguments.
+.sp
+The
+.BR printf (3)
+flag characters
+.BR '+' ,
+.BR '\ ' ,
+.B '#'
+and
+.BR '0'
+are supported.
+.sp
+The
+.I format
+operand is reused as often as necessary to satisfy the
+.I argument
+operands.
+If the
+.I format
+operand contains more format specifiers than
+.I argument
+operands have been specified, string formats are treated as if an empty string
+has been supplied and integer arguments are treated as if a 0 has been supplied.
+.sp
+The
+.B printf
+command was not a builtin command in older versions of
 .BR sh .
 
 .br
 .ne 3
 .TP
-\fBpushd\fR [ \fIname\fR ]
+\fBpushd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIname\fR ]
 .PD 0
 .TP
-\fBpushd\fR [ \fI\-offset\fR ]
+\fBpushd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fI\-offset\fR ]
 .PD
 .sp .6
 The
@@ -2542,26 +4705,129 @@ See
 .B dirs
 for an explanation of
 .IR offset .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation
+.B dot-dot
+.RB ( .. )
+logically.
+Symbolic link components are
+.B not
+resolved before
+.B dot-dot
+components are processed.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation
+.B dot-dot
+physically.
+Symbolic link components
+.B are
+resolved before
+.B dot-dot
+components are processed.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B pushd
+behaves as if
+.B \-P
+had been specified.
+.sp
 The
 .B pushd
 command was not supported in older versions of
 .BR sh .
+.RE
 
 .br
 .ne 3
 .TP
-.B pwd
+.BR pwd " [ " \-L " | " \-P " ]
 .sp .6
-Print the current working directory. See
+Print the current working directory as absolute pathname that does not contain
+the filenames
+.B dot
+.RB ( . )
+or
+.B dot-dot
+.RB ( .. ).
+See
 .BR pwd (1)
 for usage and description.
 The current working directory is kept in the shell parameter
 .BR PWD .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+If the
+.B PWD
+shell parameter contains an absolute pathname of the current
+directory that does not contain the filenames 
+.B dot 
+or
+.BR dot-dot , 
+.B pwd
+writes this pathname to standard output,
+regardless of whether it contains filename components
+that refer to symbolic links.
+Otherwise, the
+.B \-L
+option behaves like the
+.B \-P
+option.
+.br
+.ne 3
+.TP
+.B \-P
+The absolute pathname written does not contain
+filename components that refer to files of type symbolic link.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B pwd
+behaves as if
+.B \-P
+had been specified.
+.sp
+The options
+.B \-L
+and
+.B \-P
+.B \-
+were not recognised by older versions of
+.BR sh .
+.RE
 
 .br
 .ne 3
 .TP
-\fBread\fR [ \fB\-r\fR ] \fIname\fR .\|.\|.
+\fBread\fR [ \fB\-r\fR ] [ \fIname\fR .\|.\|. ]
 .sp .6
 One line is read from the standard input and, using the internal field
 separator,
@@ -2580,8 +4846,14 @@ Characters other than
 can be quoted by preceding them with a backslash. These
 backslashes are removed before words are assigned to
 .IR names ,
-and no interpretation is done on the character that follows the backslash. The
-return code is
+and no interpretation is done on the character that follows the backslash.
+If
+.I name
+is omitted then
+.B REPLY
+is used as the default
+.IR name .
+The exit code is
 .BR 0 ,
 unless an
 .B EOF
@@ -2599,12 +4871,19 @@ The option
 .B \-r
 was not supported in older versions of
 .BR sh .
+.LP
+Omiting the
+.I name
+parameter of the
+.B read
+command was not supported in older versions of
+.BR sh .
 .RE
 
 .br
 .ne 3
 .TP
-\fBreadonly\fR [ \fIname\fR .\|.\|. ]
+\fB+ readonly\fR [ \fB\-p\fR ] [ \fIname\fR[\fB=\fIvalue\fR] .\|.\|. ]
 .sp .6
 The given
 .IR name s
@@ -2616,11 +4895,26 @@ can not be changed by subsequent assignment. If no arguments are
 given, a list of all
 .B readonly
 names is printed.
+The
+.B \-p
+option causes the word
+.B readonly
+to be inserted before each name.
+.sp
+The option
+.B \-p
+was not supported in older versions of
+.BR sh .
+.br
+Specifying a
+.I value
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
 .TP
-\fBrepeat\fR [ \fB\-c \fIcount\fR ]\fR [ \fB\-d \fIdelay\fR ]\fR \fIcommand\fR [ \fIargs\fR ]
+\fBrepeat\fR [ \fB\-c \fIcount\fR ] [ \fB\-d \fIdelay\fR ] \fIcommand\fR [ \fIargs\fR ]
 .sp .6
 The command
 .I command
@@ -2642,6 +4936,7 @@ waits
 seconds before
 .I command
 is executed again, otherwise there is no delay between executions.
+.sp
 The
 .B repeat
 command was not supported in older versions of
@@ -2650,7 +4945,7 @@ command was not supported in older versions of
 .br
 .ne 3
 .TP
-\fBreturn\fR [ \fIn\fR ]
+\fB+ return\fR [ \fIn\fR ]
 .sp .6
 Causes a function to exit with the return value specified by
 .IR n .
@@ -2666,6 +4961,7 @@ executed.
 .sp .6
 Save the current history in the file
 .BR $HOME/.history .
+.sp
 The
 .B savehistory
 command was not supported in older versions of
@@ -2674,14 +4970,47 @@ command was not supported in older versions of
 .br
 .ne 3
 .TP
-\fBset\fR [ \fB\-aefhkmntuvxP\fR [ \fIargument\fR .\|.\|. ] ]
+\fB+ set\fR [ \fB\-abCefhkmntuvxP\fR [ \fB-o \fR[ \fIoption\fR ]] [ \fIargument\fR .\|.\|. ] ]
 .sp .6
 .RS
+.br
+The
+.B set
+commands supports the following options:
 .br
 .ne 3
 .TP 6n
 .B \-a
 Mark variables which are modified or created for export.
+
+.br
+.ne 3
+.TP
+.B \-b
+Prints job completion messages as soon as a background job
+changes state rather than waiting for the next prompt.
+This options is currently without effect.
+The option
+.B \-b
+was not supported in older versions of
+.BR sh .
+
+.br
+.ne 3
+.TP
+.B \-C
+Prevents redirection
+.RB ( > )
+from truncating existing files.
+Files that are created are opened with the
+.B O_EXCL
+mode. Requires
+.B >|
+to truncate a file when turned on.
+The option
+.B \-C
+was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -2720,13 +5049,10 @@ Switch job control mode on.
 .TP
 .B \-n
 Read commands but do not execute them.
-Note that this cannot be undone as after setting
-.BR \-n ,
-commands are no longer executed.
 Setting
 .B \-n
-in an interactive shell removes the ability to
-leave this shell.
+in an interactive shell is ignored as this could not be undone and the shell
+could not even be terminated anymore.
 
 .br
 .ne 3
@@ -2775,9 +5101,38 @@ owned by the current shell user. This option allows to set up
 an alternate file owner that is accepted. Setting the alternate
 owner to the empty string disables the feature.
 .TP
+.B bgnice
+All background jobs are run at a lower priority.
+This is the default in interactive mode.
+.TP
 .B errexit
 Equivalent to
 .BR \-e .
+.TP
+.B fdpipe
+Enables the
+.B extended pipe syntax
+that allows to have a pipe output
+file descriptor number in front of the pipe sign
+.RB ( | ),
+e.g.
+.B 2|
+for a pipe from
+.BR stderr .
+It is recommended to put
+.RB ` "set\ \-o\ fdpipe" '
+into the file
+.B $HOME/.shrc
+to enable the extended pipe syntax for interactive shells by default.
+Scripts that like to use this feature, need to enable it.
+.TP
+.B fullexitcode
+Do not mask the exit code with 0xFF when expanding 
+.BR $? .
+This gives access to the full 32 bits from the child's exit code via
+.B $?
+on all modern operating systems that support
+.BR waitid (2).
 .TP
 .B globalaliases
 Enables/disables persistent global aliases that are read from the file
@@ -2790,6 +5145,37 @@ the persistent global aliases are loaded.
 .B hashall
 Equivalent to
 .BR \-h .
+.TP
+.B hashcmds
+Enable hash commands, see section
+.B #\ commands
+above.
+.TP
+.B hostprompt
+Set the
+.B PS1
+value to
+.BI \fR`` "hostname\ uname" ">\ " \fR''
+if it was not yet changed from the default value.
+.TP
+.B ignoreeof
+The POSIX variant of telling the shell not to exit on EOF;
+the command
+.B exit
+must be used instead.
+The original method of the history editor introduced in 1984
+is to set
+.B IGNOREEOF=on
+see section
+.B Parameter Substitution
+for more information.
+If the parameter
+.B IGNOREEOF=on
+was set and
+.B ignoreeof
+is
+.BR off ,
+EOF is still ignored.
 .TP
 .B interactive
 Equivalent to
@@ -2813,6 +5199,10 @@ the persistent local aliases are loaded from the current directory.
 Equivalent to
 .BR \-m .
 .TP
+.B noclobber
+Equivalent to
+.BR \-C .
+.TP
 .B noexec
 Equivalent to
 .BR \-n .
@@ -2820,6 +5210,10 @@ Equivalent to
 .B noglob
 Equivalent to
 .BR \-f .
+.TP
+.B notify
+Equivalent to
+.BR \-b .
 .TP
 .B nounset
 Equivalent to
@@ -2833,9 +5227,51 @@ Equivalent to
 Equivalent to
 .BR \-P .
 .TP
+.B posix
+Set the behavior of the Bourne Shell to POSIX mode
+where its default differs from the POSIX standard.
+.br
+This currently disallows to use
+.RB `` ^ ''
+as the pipe symbol and switches off support for
+.B test \-t
+without a parameter.
+.br
+POSIX mode is enabled by default if the executable path of the
+shell equals a compiled in value, e.g.
+.BR /usr/xpg4/bin/sh .
+.TP
 .B privileged
 Equivalent to
 .BR \-p .
+.TP
+.B promptcmdsubst
+Apply 
+.B command substitution
+and
+.B arithmetic substitution
+to the variables
+.BR PS1 ,
+.BR PS2
+and
+.BR PS4 .
+By default,
+.B promptcmdsubst
+is switched off to avoid security problems caused by imported variables.
+If
+.B promptcmdsubst
+is switched on, the variables
+.BR PS1 ,
+.BR PS2
+and
+.B PS4
+are reset to their default values for security reasons.
+Note that POSIX only requires parameter substitution, but no
+command substitution or arithmetic substitution for 
+.BR PS1 ,
+.BR PS2
+and
+.BR PS4 .
 .TP
 .B restricted
 Equivalent to
@@ -2845,14 +5281,37 @@ Equivalent to
 Equivalent to
 .BR \-s .
 .TP
+.B time
+Switch on automatic timing for commands.
+The variable
+.B TIMEFORMAT
+may be used to control the output format.
+.TP
 .B verbose
 Equivalent to
 .BR \-v .
+.TP
+.B ved
+Allow shell command line editing using the built in
+.BR ved (1)
+editor.
+.TP
+.B vi
+Allow shell command line editing using the built in
+.B vi
+editor.
+The Bourne Shell currently does not allow to set the vi mode
+for any type of terminal.
 .TP
 .B xtrace
 Equivalent to
 .BR \-x .
 .PD
+.LP
+The option
+.B \-o
+was not supported in older versions of
+.BR sh .
 .RE
 
 .br
@@ -2906,6 +5365,12 @@ option.
 Stop option processing.
 Further parameters are handled as normal args even when they start with a
 .BR \- .
+If no arguments follow this delimiter, then the positional parameters are unset.
+.sp
+Older versions of
+.B sh
+did not allow to unset the positional parameters with
+.RB `` "set \-\-" ''.
 .LP
 Using
 .B +
@@ -2930,13 +5395,19 @@ The remaining arguments are positional
 parameters and are assigned, in order, to
 .BR $1 ,
 .BR $2 ,
-\&.\|.\|. If no arguments are given, the values of all names are printed.
+\&.\|.\|.
+.sp
+If no arguments are given, the names and values of all variables are printed.
+When is POSIX mode
+.RB "(via " "set\ \-o\ posix" ),
+only shell variables are printed; otherwise functions are listed amongst the
+shell variables.
 .RE
 
 .br
 .ne 3
 .TP
-\fBshift\fR [ \fIn\fR ]
+\fB+ shift\fR [ \fIn\fR ]
 .sp .6
 The positional parameters from
 .BI $ n +1
@@ -3005,11 +5476,47 @@ exists and is a character special file.
 .br
 .ne 3
 .TP
+.BI \-C " file
+.B True
+if
+.I file
+exists and is a contiguous file.
+The option
+.B \-C
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
 .BI \-d " file
 .B True
 if
-.I file 
+.I file
 exists and is a directory.
+.br
+.ne 3
+.TP
+.BI \-D " file
+.B True
+if
+.I file
+exists and is a door.
+The option
+.B \-D
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
+.BI \-e " file
+.B True
+if
+.I file
+exists.
+The option
+.B \-e
+was not supported in older versions of
+.BR sh .
 .br
 .ne 3
 .TP
@@ -3042,6 +5549,20 @@ if
 exists and its
 .B set group ID
 flag is set.
+.br
+.ne 3
+.TP
+.BI \-G " file
+.B True
+if
+.I file
+exists and its
+.B group
+matches the effective group id of this process.
+The option
+.B \-G
+was not supported in older versions of
+.BR sh .
 .br
 .ne 3
 .TP
@@ -3079,12 +5600,73 @@ is non-zero.
 .br
 .ne 3
 .TP
+.BI \-N " file
+.B True
+if
+.I file
+exists and its
+.B modification time
+is greater than its
+.B "access time" .
+The option
+.B \-N
+was not supported in older versions of
+.BR sh .
+.br
+.ne 5
+.TP
+.BI \-o " option
+.B True
+if the option named
+.I option
+is on.
+.br
+.ne 3
+.TP
+.BI "\-o ?" option
+.B True
+if the option named
+.I option
+is a valid option name.
+The option
+.B \-o
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
+.BI \-O " file
+.B True
+if
+.I file
+exists and its
+.B owner
+matches the effective user id of this process.
+The option
+.B \-O
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
 .BI \-p " file
 .B True
 if
 .I file
 exists and is a named pipe
 .RB ( FIFO ).
+.br
+.ne 3
+.TP
+.BI \-P " file
+.B True
+if
+.I file
+exists and is an event port.
+The option
+.B \-P
+was not supported in older versions of
+.BR sh .
 .br
 .ne 3
 .TP
@@ -3104,6 +5686,18 @@ exists and has a size greater then zero.
 .br
 .ne 3
 .TP
+.BI \-S " file
+.B True
+if
+.I file
+exists and is a socket.
+The option
+.B \-S
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
 .BI \-t " [file-descriptor]
 .B True
 if the file whose file descriptor number is
@@ -3114,6 +5708,10 @@ If
 is not specified,
 .B 1
 is used as a default value.
+When is POSIX mode
+.RB "(via " "set\ \-o\ posix" ),
+.I file-descriptor
+must always be specified.
 .br
 .ne 3
 .TP
@@ -3150,6 +5748,54 @@ If file is a directory, true indicates that file can be searched.
 if the length of
 .I string
 is zero.
+.sp
+.ne 3
+.TP
+.IB file1 " \-ef " file2
+.B True
+if
+.I file1
+and
+.I file2
+exists and refer to the same file.
+The option
+.B \-ef
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
+.IB file1 " \-nt " file2
+.B True
+if
+.I file1
+exists and
+.I file2
+does not or
+.I file1
+is newer than
+.IR file2 .
+The option
+.B \-nt
+was not supported in older versions of
+.BR sh .
+.br
+.ne 3
+.TP
+.IB file1 " \-ot " file2
+.B True
+if
+.I file2
+exists and
+.I file1
+does not or
+.I file1
+is older than
+.IR file2 .
+The option
+.B \-ot
+was not supported in older versions of
+.BR sh .
 .sp
 .ne 3
 .TP
@@ -3271,20 +5917,210 @@ The
 .B \-o
 binary primary is left associative.
 .PD
+.LP
+The algorithm for determining the precedence of the operators and the
+return value that is generated is based on the number of arguments presented
+to
+.BR test .
+(However, when using the \fB[.\|.\|.]\fR form, the right-bracket
+final argument is not counted in this algorithm.)
+.sp
+.LP
+In the following list,
+.BR $1 ,
+.BR $2 ,
+.B $3
+and
+.B $4
+represent
+the arguments presented to
+.B test
+as a
+.IR condition ,
+.IR condition1 ,
+or
+.IR condition2 .
+.sp
+.RS +4
+.br
+.ne 3
+.TP 14
+.I 0 arguments:
+Exit false (1).
+.br
+.ne 3
+.TP
+.I 1 argument:
+Exit true (0) if
+.B $1
+is not null. Otherwise, exit false.
+.br
+.ne 3
+.TP
+.I 2 arguments:
+.RS +14
+.TP
+.ie t \(bu
+.el o
+If
+.B $1
+is
+.BR ! ,
+exit true if
+.B $2
+is null, false if
+.B $2
+is
+not null.
+.TP
+.ie t \(bu
+.el o
+If
+.B $1
+is a unary primary, exit true if the unary test is true, false
+if the unary test is false.
+.TP
+.ie t \(bu
+.el o
+Otherwise, produce unspecified results.
 .RE
+.br
+.ne 3
+.TP
+.I 3 arguments:
+.RS +14
+.TP
+.ie t \(bu
+.el o
+If
+.B $2
+is a binary primary, perform the binary test of
+.B $1
+and
+.BR $3 .
+.TP
+.ie t \(bu
+.el o
+If
+.B $1
+is
+.BR ! ,
+negate the two-argument test of
+.B $2
+and
+.BR $3 .
+.TP
+.ie t \(bu
+.el o
+If
+.B $1 is
+.B (
+and
+.B $3
+is
+.BR ) ,
+perform the unary test of
+.BR $2 .
+.TP
+.ie t \(bu
+.el o
+Otherwise, produce unspecified results.
+.RE
+.br
+.ne 3
+.TP
+.I 4 arguments:
+.RS +14
+.TP
+.ie t \(bu
+.el o
+If
+.B $1
+is
+.BR ! ,
+negate the three-argument test of
+.BR $2 ,
+.BR $3 ,
+and
+.BR $4 .
+.TP
+.ie t \(bu
+.el o
+If
+.B $1
+is
+.B (
+and
+.B $4
+is
+.BR ) ,
+perform the two-argument test of
+.B $2
+and
+.BR $3 .
+.TP
+.ie t \(bu
+.el o
+Otherwise, the results are unspecified.
+.RE
+.RE
+.LP
+Scripts should be careful when dealing with user-supplied input that could
+be confused with primaries and operators. Unless the application writer
+knows all the cases that produce input to the script, invocations like
+.B
+test "$1" -a "$2"
+should be written as
+.B
+test "$1" && test "$2"
+to avoid problems if a user supplied values such as
+.B $1
+set to
+.B !
+and
+.B $2
+set to the null string. That is, in cases where maximal portability
+is of concern, replace
+.B "test expr1 -a expr2"
+with
+.B
+test expr1 && test expr2\c
+, and replace
+.B
+test expr1 -o expr2
+with
+.B
+test expr1 || test expr2\c
+\&. But notice that, in
+.BR test ,
+.B -a
+has
+.BR higher
+precedence than
+.BR -o ,
+while
+.B &&
+and
+.B ||
+have
+.BR equal
+precedence in the shell.
 
 .br
 .ne 3
 .TP
-.B times
+.B + times
 .sp .6
 Print the accumulated user and system times for processes run from the
 shell.
+.sp
+The first line lists the shell's user and system times, the second line
+lists the children's user and system times.
 
 .br
 .ne 3
 .TP
-\fBtrap\fR [ \fIargument\fR \fIn\fR [ \fIn2\fR .\|.\|. ]]
+\fB+ trap\fR [ [\fIargument\fR] \fIn\fR [ \fIn2\fR .\|.\|. ]]
 .sp .6
 The command
 .I argument
@@ -3296,41 +6132,132 @@ receives numeric or symbolic signal(s)
 is scanned once when the trap is set and once when the trap
 is taken.) Trap commands are executed in order of signal number or
 corresponding symbolic names. Any attempt to set a trap on a signal that was
-ignored on entry to the current shell is ineffective. An attempt to trap on
-signal 11 (memory fault) produces an error. If
+ignored on entry to the current shell is ineffective.
+.sp
+If
 .I argument
 is absent, all trap(s)
-.I n 
+.I n
 are reset to their original values. If
 .I argument
 is the
 null string, this signal is ignored by the shell and by the commands it
 invokes. If
 .I n
-is 0, the command
+is
+.B 0
+or
+.BR EXIT ,
+the command
 .I argument
 is executed on exit
 from the shell. The
 .B trap
 command with no arguments prints a list of
 commands associated with each signal number.
-
-.br
-.ne 4
-.TP
-\fBtype\fR [ \fIname\fR .\|.\|. ]
-.sp .6
-For each
-.IR name ,
-indicate how it would be interpreted if used as a command name.
+.sp
+If
+.I argument
+is
+.BR - ,
+all trap(s)
+.I n
+are reset to their original values.
+.sp
+The
+.B -
+argument was not supported in older versions of
+.BR sh .
 
 .br
 .ne 3
 .TP
-\fBulimit\fR [ [\fB\-HS\fR] [\fB\-a\fR | \fB\-cdflmnstuv\fR] ]
+\fBtrue\fR
+.sp .6
+The
+.B true
+builtin
+does nothing. A zero exit code is returned.
+Used with
+.B while
+for infinite loops.
+.sp
+The
+.B true
+command was not a builtin command in older versions of
+.BR sh .
+
+.br
+.ne 4
+.TP
+\fBtype\fR [ \fB\-F\fR ] [ \fIname\fR .\|.\|. ]
+.sp .6
+For each
+.IR name ,
+indicate how it would be interpreted if used as a command name.
+If the option
+.B \-F
+is specified with no arguments, all defined
+.B functions
+are listed.
+.B type
+displays information about each operand identifying the operand
+as a
+.BR "shell built-in" ,
+.BR "shell intrinsic" ,
+.BR function ,
+.BR alias ,
+.BR "hashed command" ,
+or
+.BR keyword ,
+and where applicable, may display the operand's path name.
+The meaning is as follows:
+.RS
+.TP 18
+.B shell built-in
+A normal command built into the shell.
+Some of these commands do not need to be built into the shell.
+A command usually is in this group because it was built into the
+shell for historical reasons or because it is an extension to the
+current POSIX standard.
+.TP
+.B special shell built-in
+A command built into the shell that is subject to special treatment.
+This type of commands needs to be built into the shell in order
+to be able to have the desired result.
+.TP
+.B shell intrinsic
+A command built into the shell.
+This type of commands needs to be built into the shell in order
+to be able to have the desired result.
+.TP
+.B global alias
+A global alias that is expanded in any directory.
+.TP
+.B local alias
+A local alias that is bound to the current directory
+and expanded in the current directory only.
+.TP
+.B function
+A function defined in this shell.
+.TP
+.B keyword
+A keyword in the syntax of this shell.
+.TP
+.B command
+An external command identified by it's path name.
+.TP
+.B hashed command
+An external command that was already subject to a path name search
+and hashing.
+.RE
+.br
+.ne 3
+.TP
+\fBulimit\fR [ [\fB\-HS\fR] [\fB\-a\fR | \fB\-McdefilLmnPqrRsStuv\fR] ]
 .PD 0
 .TP
-\fBulimit\fR [ [\fB\-HS\fR] [\fB\-c\fR|\fB\-d\fR|\fB\-f\fR|\fB\-l\fR|\fB\-m\fR|\fB\-n\fR|\fB\-s\fR|\fB\-t\fR|\fB\-u\fR|\fB\-v\fR] ] \fBlimit\fR
+\fBulimit\fR [ [\fB\-HS\fR] [\fIresource-option\fR] ] \fBlimit\fR
 .PD
 .sp .6
 .B ulimit
@@ -3376,6 +6303,14 @@ or set. If no option is specified, the file size limit is printed or set.
 .br
 .ne 3
 .TP
+.B \-M
+address space limit (in kbytes), usually 
+.B \-v
+alias
+.br
+.ne 3
+.PD 0
+.TP
 .B \-c
 maximum core file size (in 512-byte blocks)
 .br
@@ -3386,13 +6321,28 @@ maximum size of data segment or heap (in kbytes)
 .br
 .ne 3
 .TP
+.B \-e
+maximum scheduling priority
+.br
+.ne 3
+.TP
 .B \-f
 maximum file size (in 512-byte blocks)
 .br
 .ne 3
 .TP
+.B \-i
+maximum number of pending signals
+.br
+.ne 3
+.TP
 .B \-l
 maximum size of locked memory (in kbytes)
+.br
+.ne 3
+.TP
+.B \-L
+maximum number of file locks
 .br
 .ne 3
 .TP
@@ -3406,8 +6356,33 @@ maximum file descriptor plus 1
 .br
 .ne 3
 .TP
+.B \-P
+maximum number of pseudo ttys
+.br
+.ne 3
+.TP
+.B \-q
+maximum number of POSIX message queues
+.br
+.ne 3
+.TP
+.B \-r
+maximum realtime priority
+.br
+.ne 3
+.TP
+.B \-R
+maximum realtime quantum (in usec)
+.br
+.ne 3
+.TP
 .B \-s
 maximum size of stack segment (in kbytes)
+.br
+.ne 3
+.TP
+.B \-S
+maximum size of swap (in kbytes)
 .br
 .ne 3
 .TP
@@ -3423,6 +6398,7 @@ maximum number of child processes
 .TP
 .B \-v
 maximum size of virtual memory (in kbytes)
+.PD
 .LP
 Not all resources are supported on all platforms.
 .LP
@@ -3488,6 +6464,7 @@ Print the current file-creation mask in symbolic form.
 The output is suitable as argument for the
 .B umask
 command.
+.sp
 .LP
 The symbolic mode was not supported in older versions of
 .BR sh .
@@ -3509,6 +6486,10 @@ that affect only the current execution environment as well as
 persistent aliases that affect all interactive shells that are called after a
 persistent alias definition was entered or modified.
 .sp
+The
+.B unalias
+command was not supported in older versions of
+.BR sh .
 .sp
 When operating on temporary aliases (i.e. when neither
 .B \-g
@@ -3582,11 +6563,13 @@ remains active, but the file with persistent alias definitions is not touched.
 .br
 .ne 3
 .TP
-\fBunset\fR [ \fIname\fR .\|.\|. ]
+\fB+ unset\fR [ \fB\-f\fR | \fB\-v\fR ] [ \fIname\fR .\|.\|. ]
 .sp .6
 For each
 .IR name ,
-remove the corresponding variable or function value. The variables
+remove the corresponding variable or function value.
+.de ..
+The variables
 .BR PATH ,
 .BR PS1 ,
 .BR PS2 ,
@@ -3594,6 +6577,25 @@ remove the corresponding variable or function value. The variables
 and
 .B IFS
 cannot be unset.
+..
+Readonly variables cannot be unset.
+If the option
+.B \-v
+is used, only
+.B variables
+will be unset.
+If the option
+.B \-f
+is used, only
+.B functions
+will be unset.
+.sp
+The options
+.B \-f
+and
+.B \-v
+have not been supported in older versions of
+.BR sh .
 
 .br
 .ne 3
@@ -3612,7 +6614,10 @@ background processes are waited for and the return code is zero.
 .sp
 .LP
 When the shell is invoked as
-.BR jsh ,
+.B jsh 
+or after
+.B set -m
+was called,
 Job Control is enabled in addition
 to all of the functionality described previously for
 .BR sh .
@@ -3678,19 +6683,19 @@ can be specified in any of the following formats:
 .br
 .ne 3
 .TP 13n
-\fB%\fR or \fB+\fR
+.BR "% " or " +"
 For the current job.
 
 .br
 .ne 3
 .TP
-\fB\(mi\fR
+.B \(mi
 For the previous job.
 
 .br
 .ne 3
 .TP
-\fB?\fI<string>\fR
+.BI ? <string>
 Specify the job for which the command line uniquely contains
 .IR string .
 
@@ -3786,7 +6791,7 @@ passing it
 .br
 .ne 3
 .TP
-\fBkill\fR [ \fB\-signal\fR ] \fB%\fIjobid\fR
+\fBkill\fR [ \fB\-\fIsignal\fR | \fB\-s\ \fIsignal\fR ] \fB%\fIjobid\fR
 .sp .6
 Builtin version of
 .B kill
@@ -3794,6 +6799,25 @@ to provide the functionality of the
 .B kill
 command for processes identified with a
 .IR jobid .
+
+.br
+.ne 3
+.TP
+\fBkillpg\fR [ \fB\-\fIsignal\fR | \fB\-s\ \fIsignal\fR ] \fB%\fIjobid\fR
+.sp .6
+Builtin version of
+.B killpg
+to provide the functionality of the
+.B killpg
+command for processes groups identified with a
+.IR jobid .
+
+.br
+.ne 3
+.TP
+\fBpgrp\fR [\fB%\fIjobid ...\fR]
+.sp .6
+Print process group id's for jobs.
 
 .br
 .ne 3
@@ -3830,14 +6854,35 @@ If compiled with
 the
 .B Bourne Shell
 includes a command line history and a command line editor.
-The behavior of the command line editor is the same as introduced in 1984 with
-.BR bsh (1)
-and has been inspired by the behavior of the editor
-.BR ved (1).
 .LP
-The history is implemented as limited ring buffer.
+The behavior of the command line editor was defined with a prototype
+implementation in 1982 and has unique characteristics compared to other
+implementations. The basic editing functions have been inspired by the
+behavior of the editor
+.BR ved (1).
+The command history editor in the Bourne Shell
+is using the same code that was introduced in 1984 with
+.BR bsh (1).
+.LP
+The history is implemented as limited
+.BR "ring buffer" .
+The
+.B last recently used
+command line is always moved from it's previous
+position in the history list to the most recent entry.
 The size of the ring buffer is in
 .BR HISTORY .
+If
+.B HISTORY
+is unset or set to 
+.BR 0 ,
+the current command line history is lost and
+command line editing is only supported on the current line and
+this line is not kept in the history.
+Command line editing may be turned off completely by issuing the command
+.RB ` "set +o ved" '.
+The existing history is not affected by turning off the command line editor.
+.LP
 Command lines from the existing history may be retrieved with the cursor keys
 .RB ( "Cursor up " and " Cursor down" ).
 Typing
@@ -3855,23 +6900,58 @@ end of the history.
 .LP
 The following commands allow to edit a command line:
 .TP 10
-.B ^H
-Move cursor one character to the left.
+.B ^A
+Move the cursor to the beginning of the current command line.
 .TP
-.B ^F
-Move cursor one character to the right.
+.B ^C
+Interrupt command line reading and parsing.
+The current command line is discarded and the next
+prompt is displayed. This helps to escape from the parser when it is in
+an unknown state.
 .TP
 .B ^D
-Erase the character under the cursor.
+Erase the character under the cursor
+and then move the cursor to the next character.
 .TP
 .B DEL
 Erase one character to the left of the cursor.
 .TP
+.B ^E
+Move the cursor to the end of the current command line.
+.TP
+.B ^F
+Move cursor one character to the right.
+.TP
+.B ^H
+Move cursor one character to the left.
+.sp
+.B Warning:
+On terminals that offer a large backspace key for deleting characters,
+.B ^H
+does not work directly as it is mapped to
+.BR DEL .
+Use the
+.B Cursor left
+key instead in such a case.
+.TP
+.B ^N
+Move cursor to the next history line.
+See below for history navigation.
+.TP
+.B ^P
+Move cursor to the previous history line.
+See below for history navigation.
+.TP
 .B ^U
 Erase the whole line.
 .TP
+.B ^V
+Literal next, the next typed character is inserted into
+the command line without special meaning.
+.TP
 .B ^^
-Quote next character.
+Get next character, convert it into a control character and insert it into
+the command line.
 .TP
 .B CR
 Finish current line and execute it.
@@ -3888,35 +6968,39 @@ Typing a second
 .B TAB
 displays a list of matching names.
 .TP
-.B ESC- ^H
-Move cursor one word to the left.
+.B ESC- ^D
+Erase the word to the right starting with the character under the cursor.
+.TP
+.B ESC- DEL
+Erase the word to the left of the cursor.
 .TP
 .B ESC- ^F
 Move cursor one word to the right.
 .TP
-.B ESC- ^D
-Erase the word under the cursor to the right.
-.TP
-.B ESC- DEL
-Erase the word to the left of the cursor.
+.B ESC- ^H
+Move cursor one word to the left.
 .LP
 The following commands are available to navigate within the history:
 .TP 10
-.B ^P
-Move cursor to the previous history line.
-.TP
 .B ^N
 Move cursor to the next history line.
+When the cursor has been on the last line of the history, move the cursor
+to the first line of the history.
 .TP
-.B ESC- ^P
-Search backwards in the history.
+.B ^P
+Move cursor to the previous history line.
+When the cursor has been on the first line of the history, move the cursor
+to the last line of the history.
+.TP
+.B ESC- ^N
+Search forwards in the history.
 The user is prompted for a search pattern.
 The previous search string is kept and may be edited.
 To enter a new search string, first type
 .BR ^U .
 .TP
-.B ESC- ^N
-Search forwards in the history.
+.B ESC- ^P
+Search backwards in the history.
 The user is prompted for a search pattern.
 The previous search string is kept and may be edited.
 To enter a new search string, first type
@@ -3956,6 +7040,13 @@ A mapping may be prevented by typing the map quote character which is the
 character
 .RB ( ^@ ),
 directly before the matching text is entered.
+If this text is usually interpreted by the history editor, you first need to
+type the history editing quoting character
+.BR ^^ .
+To be sure that you are able to literarily enter some text, type
+.BR ^^^@
+.RB ( "control up-arrow" " followed by " "Nul" " and the text).
+
 .LP
 At startup (directly before the first shell command prompt is shown),
 the command line history editor first tries to initialize the
@@ -3965,14 +7056,99 @@ terminal setup using the variables
 .B TERMCAP
 and
 .BR TERMPATH .
-Then it tries to read the file
-.B $HOME/.bshmap
-to retrieve additional mappings.
 .LP
 If
 .B TERM
 is not set, the mapper establishes standard mappings for the cursor keys
 assuming an ANSI-compatible terminal.
+.LP
+.B TERM
+is set, the mapper establishes mappings for the following
+.B termcap
+capabilities:
+.TP
+.PD
+.B ku
+.BR "Key cursor up" ,
+mapped to
+.BR ^P .
+.br
+The previous command line from the history is displayed.
+.TP
+.B kd
+.BR "Key cursor down" ,
+mapped to
+.BR ^N .
+.br
+The next command line from the history is displayed.
+.TP
+.B kr
+.BR "Key cursor forward (right)" ,
+mapped to
+.BR ^F .
+.br
+Move cursor one character to the right.
+.TP
+.B kl
+.BR "Key cursor left" ,
+mapped to
+.BR ^H .
+.br
+Move cursor one character to the left.
+.TP
+.B kh
+.BR "Key cursor -> Home" ,
+mapped to
+.BR ^A .
+.br
+The Cursor is moved to the beginning of the current command line.
+.TP
+.B @7
+.BR "Key cursor -> End" ,
+mapped to
+.BR ^E .
+.br
+The Cursor is moved to the end of the current command line.
+.TP
+.B kD
+.BR "Key Delete Character" ,
+mapped to
+.BR \e177 " (" DEL ).
+.br
+Erase one character to the left of the cursor.
+.TP
+.B kb
+.BR "Key Backspace" ,
+mapped to
+.BR \e177 " (" DEL ).
+.br
+Erase one character to the left of the cursor.
+.sp
+Note that the
+.B Backspace Key
+is the larger key that is just above the
+.BR "Carriage Return Key" .
+In former times, this key was called
+.B Delete
+and send the 
+.BR \e177 " (" DEL )
+character.
+Since companies followed the design of the IBM PC keyboard layout,
+the related key usually sends
+.BR \e010 .
+If you like to literarily enter a backspace into the command line, type
+.BR ^^^@^H
+.RB ( "control up-arrow" " followed by " "Nul"
+.RB "followed by " ^H ).
+.PD
+
+.LP
+After the mappings from the
+.B termcap
+entry for the current terminal type
+have been established, the shell tries to read the file
+.B $HOME/.bshmap
+to retrieve additional mappings.
 .LP
 Each line in the file
 .B $HOME/.bshmap
@@ -4025,16 +7201,16 @@ to get one
 .B nul character
 in the edit input.
 To enter a mapped string (such as cursor key output), first enter the
-quote character of the command line history editor
-.RB ( ^ ),
-then enter
+quote character of the command line history editor control ^
+.RB ( ^^ ") octal 036,
+then enter a
 .B nul character
 and finally the otherwise mapped text.
 
 .SS Termcap
 .LP
 The
-.B termcap 
+.B termcap
 data base is used to make the command history editor independent
 from the terminal capabilities. Cursor key output is retrieved from
 the data base and mapped to the cursor movement commands of the
@@ -4343,7 +7519,10 @@ _
 CSIEnabled
 .TE
 
+.br
+.ne 7
 .SH SEE ALSO
+.nh
 .sp
 .LP
 .BR Intro (1),
@@ -4354,10 +7533,12 @@ CSIEnabled
 .BR bsh (1),
 .BR ved (1),
 .BR ksh (1),
+.BR ksh93 (1),
 .BR login (1),
 .BR newgrp (1),
 .BR pfsh (1),
 .BR pfexec (1),
+.BR privileges (5),
 .BR ps (1),
 .BR pwd (1),
 .BR set (1),
@@ -4366,11 +7547,13 @@ CSIEnabled
 .BR test (1),
 .BR umask (1),
 .BR wait (1),
+.BR waitid (2),
 .BR rsh (1M),
 .BR su (1M),
 .BR swap (1M),
 .BR sysdef (1M),
 .BR termcap (1),
+.BR ved (1),
 .BR dup (2),
 .BR exec (2),
 .BR fork (2),
@@ -4386,6 +7569,7 @@ CSIEnabled
 .BR environ (5),
 .BR largefile (5),
 .BR XPG4 (5)
+.hy 1
 .SH WARNINGS
 .sp
 .LP
@@ -4513,12 +7697,289 @@ mode via
 .B set \-m
 in an interactive environment.
 .LP
-There is only one namespace for both functions and parameters.
-A function definition will delete a parameter with the same name and vice-versa.
-.LP
-Parameter assignments that precede a special command affect the shell itself.
+Parameter assignments that precede a special builtin command
+affect the shell itself.
 Parameter assignments that precede the call of a function are ignored.
 .LP
 When the shell executes a shell script that attempts to execute a
 non-existent command interpreter, the shell returns an erroneous diagnostic
 message that the shell script file does not exist.
+
+.br
+.ne 5
+.SH COMPATIBILITY
+This Bourne Shell started with the source state from OpenSolaris
+build 51 from October 2006.
+It was later changed to the equivalent state of build 144 from July 2010.
+The changes up to build 147 have not been applied because these 
+later versions from Sun reduced the functionality.
+.LP
+Most changes fixed bugs or added functionality without changing the expected
+previous behavior.
+.LP
+The following incompatible changes have been introduced in order to follow the
+.B POSIX
+standard.
+.br
+.ne 4
+.TP
+.B parameter assignment
+This version of the Bourne Shell fixed the order of evaluation for
+parameter assignements to be left to right instead of right to left (as
+implemented in previous versions). This may cause scripts to fail if they
+expect the old non-standard behavior.
+.br
+.ne 4
+.TP
+.B parameter assignment preceding builtin commands
+With this version of the Bourne Shell, parameter assignment preceding
+builtin commands only affects the shell itself if this is related to a
+.BR "special builtin command" . 
+In previous versions, this affected the shell itself for any builtin command.
+.TP
+.B syntax errors in builtin commands
+With this version of the Bourne Shell, only special builtin commands may
+terminate the whole shell in case that shell is not an interactive shell.
+In previous versions, all builtin commands could terminate a non-ineractive
+shell if a utility syntax error or a fatal utility error was encountered.
+.sp
+The most prominent result of this change is that the builtin
+.B cd
+command no longer terminates a shell script in case that the
+.B cd
+command did not work for whatever reason. So be careful and always check the
+exit code in shell scripts.
+.br
+.ne 4
+.TP
+.B continue
+With SVr2 (1986), a parameter was introduced for
+.BR continue .
+Unfortunately, at the same time a bug was introduced and a big number did not
+.B continue
+the outermost loop, but rather did
+.B break
+the outermost loop.
+This shell fixes this bug.
+.br
+.ne 4
+.TP
+.B functions
+There is now a separate name space for functions and shell variables.
+This is not expected to cause problems.
+.br
+.ne 4
+.TP
+.B getopts
+POSIX requires
+.B getopts
+to set
+.B OPTARG
+to the failing option character in case that
+.B optstring
+starts with a
+.BR : .
+Previous versions of the shell did unset
+.B OPTARG
+in case of a failure.
+POSIX also requires the shell variable related to the
+.I name
+argument from
+.B getopts
+to be set to
+.RB `` ? ''
+when
+.B getopts
+returns a non-zero exit code.
+Previous versions of the shell did set
+.I name
+to the null string in this case.
+.br
+.ne 4
+.TP
+.B kill
+The option parsing of the
+.B kill
+command was modified to be compatible to the POSIX standard.
+This is not expected to cause problems as the change only affects
+marginal cases with negative process id's that caused problems before as well.
+.br
+.ne 4
+.TP
+.B read
+.br
+The field splitting required by the POSIX standard does not skip multiple
+field separators but rather assigns empty values to variables in such a case.
+This is a significant change in the behavior, but the historic behavior is not
+useful.
+.br
+.ne 4
+.TP
+.BR pipes " and " words
+.br
+When in POSIX mode, the
+.RB `` ^ ''
+character is not accepted as an alternate pipe
+.RB `` | ''
+symbol.
+This results in different word delimiting rules, words that contain
+.RB `` ^ ''
+do not need to be quoted.
+.br
+.ne 4
+.TP
+.B set
+.br
+The output of the
+.B set
+command with no arguments was modified to include the quoting
+required by the POSIX standard.
+This is not expected to cause problems but the new output may be used as shell.
+.sp
+When in full POSIX mode
+.RB "(via " "set\ \-o\ posix" ),
+functions are not listed amongst shell variables.
+This is expected to cause problems as POSIX does not include a method to
+list shell functions.
+.sp
+Calling
+.RB `` "set \-\-" ''
+now causes the positional parameters to be unset. Previous versions of the shell
+left the positional parameters untouched in this case.
+A portable method to clear the positional parameters is to call
+.RB `` "shift $#" ''.
+.ne 4
+.TP
+.B test
+The behavior of the builtin
+.B test
+utility was changed by POSIX.
+POSIX requires
+.B test
+to select it's behavior from the number of arguments in case that the number
+of arguments is in the range from 0..4.
+This results e.g. in
+.RB `` "test\ \-r" ''
+to return a zero exit code because
+.RB `` \-r ''
+is a non-empty string, while previous versions of the shell did return
+an error because
+.RB `` \-r ''
+is an unary operator that misses an argument.
+Correctly written scripts do not suffer from this change.
+.sp
+When not in POSIX mode
+.RB ( "set\ \-o\ posix" " not set),
+.B test
+still understands
+.B test \-t
+without a parameter for compatibility with UNIX scripts.
+.ne 4
+.TP
+.B times
+The output of the
+.B times
+command was modified to be compatible to the POSIX standard.
+This is not expected to cause problems.
+.br
+.ne 4
+.TP
+.B trap
+The output of the
+.B trap
+command was modified to be compatible to the POSIX standard.
+Scripts that depend on the output of the trap command,
+when listing existing trap state,
+should be converted to be portable by
+checking whether the output starts with
+.B trap --
+and then use a POSIX compliant parser.
+.LP
+The following other incompatible changes have been introduced:
+.br
+.ne 4
+.TP
+.B pipes
+While in the original Bourne Shell none of the commands from a pipeline
+command was a child of the original shell, this version of the Bourne Shell
+tries to make all simple commands in a pipeline children from the original
+shell.
+In addition, if a builtin command is the rightmost command of a pipeline,
+it will now be run in the original shell.
+This permits commands like:
+.sp
+.BI " echo foo | read " var
+.sp
+to set the variable
+.I var
+in the main shell.
+.br
+.ne 4
+.TP
+.B time
+The
+.B time
+token is now a reserved word. This permits to time pipelines as a whole
+but may cause problems when people assume that it is a command.
+When in doubt, call
+.B
+"time\ \-p"
+instead as the fact that the next word is an option disables the
+.B time
+token to be recognized as a reserved word.
+
+.br
+.ne 5
+.SH AUTHORS
+The
+.B Bourne Shell
+was initially written by Stephen Richard Bourne at Bell Labs in 1976.
+The SVr4 release was written by various authors at AT&T in 1989.
+The
+.B Bourne Shell
+was later maintained by various people at AT&T and Sun Microsystems.
+Since 2006, the
+.B Bourne Shell
+is maintained by J\*org Schilling.
+.LP
+The
+.B history editor
+has been added to the Bourne Shell in 2006.
+It was designed and implemented as a prototype in 1982
+by J\*org Schilling on
+.BR UNOS ,
+the first UNIX clone.
+The current version of the
+.B history editor
+is compatible to
+.BR ved (1).
+It was written in August 1984 by
+J\*org Schilling and P. Teuchert for the shell
+.BR bsh (1)
+and is maintained
+by J\*org Schilling since 1985.
+.SH "SOURCE DOWNLOAD"
+The source code for the
+.B Bourne Shell
+is included in the
+.B schilytools
+project and may be retrieved from the
+.B schilytools
+project at Sourceforge at:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/
+.LP
+The download directory is:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/files/
+.LP
+Check for the
+.B schily\-*.tar.bz2
+archives.
+.LP
+Separate project informations for the Schily Bourne Shell project may be retrieved from:
+.LP
+.B
+    http://schilytools.sourceforge.net/bosh.html

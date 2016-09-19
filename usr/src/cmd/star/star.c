@@ -1,11 +1,11 @@
-/* @(#)star.c	1.343 13/10/07 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2013 J. Schilling */
+/* @(#)star.c	1.352 16/07/20 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)star.c	1.343 13/10/07 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2013 J. Schilling";
+	"@(#)star.c	1.352 16/07/20 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2016 J. Schilling";
 #endif
 /*
- *	Copyright (c) 1985, 88-90, 92-96, 98, 99, 2000-2013 J. Schilling
+ *	Copyright (c) 1985, 88-90, 92-96, 98, 99, 2000-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -45,6 +45,9 @@ static	UConst char sccsid[] =
 #include <schily/walk.h>
 #include <schily/find.h>
 #endif
+
+#include <schily/nlsdefs.h>
+
 #include "starsubs.h"
 #include "checkerr.h"
 
@@ -106,7 +109,7 @@ LOCAL	void	docompat	__PR((int *pac, char *const **pav));
 #define	QIC_525_TSIZE	1025000		/* 512500 kBytes */
 #define	TSIZE(s)	((s)*TBLOCK)
 
-char	strvers[] = "1.5.3a01";		/* The pure version string	*/
+char	strvers[] = "1.5.3";		/* The pure version string	*/
 char	*vers;				/* the full version string	*/
 
 struct star_stats	xstats;		/* for printing statistics	*/
@@ -350,6 +353,28 @@ main(ac, av)
 
 	save_args(ac, av);
 
+#ifdef  USE_NLS
+	setlocale(LC_ALL, "");
+
+#if !defined(TEXT_DOMAIN)	/* Should be defined by cc -D */
+#define	TEXT_DOMAIN "star"	/* Use this only if it weren't */
+#endif
+	{ char	*dir;
+	dir = searchfileinpath("share/locale", F_OK,
+					SIP_ANY_FILE|SIP_NO_PATH, NULL);
+	if (dir)
+		(void) bindtextdomain(TEXT_DOMAIN, dir);
+	else
+#if defined(PROTOTYPES) && defined(INS_BASE)
+	(void) bindtextdomain(TEXT_DOMAIN, INS_BASE "/share/locale");
+#else
+	(void) bindtextdomain(TEXT_DOMAIN, "/usr/share/locale");
+#endif
+	(void) textdomain(TEXT_DOMAIN);
+	}
+
+#endif 	/* USE_NLS */
+
 	my_uid = geteuid();
 	my_uid = getuid();
 
@@ -551,6 +576,7 @@ main(ac, av)
 #ifdef	USE_FIND
 	find_plusflush(plusp, &walkstate);
 #endif
+	fflush(vpr);	/* Avoid output mix with checklinks() from 2>&1 | tee */
 	if (!nolinkerr)
 		checklinks();
 	if (!use_fifo)
@@ -656,6 +682,8 @@ star_create(ac, av)
 		walkstate.err		= 0;
 		walkstate.pflags	= 0;
 
+		if ((currdir = dir_flags) != NULL)
+			dochdir(currdir, TRUE);
 		nodesc = TRUE;
 		for (av = find_av; av != find_pav; av++) {
 			treewalk(*av, walkfunc, &walkstate);
@@ -1548,11 +1576,13 @@ BOOL	Ointeractive	 = FALSE;
 		char *const * cav = find_av;
 		finda_t	fa;
 
+		if (copyflag)
+			cac--;
 		find_firstprim(&cac, &cav);
 		find_pac = cac;
 		find_pav = cav;
 		files = find_ac - cac;
-		if (!cflag && files > 0)
+		if (!copyflag && !cflag && files > 0)
 			comerrno(EX_BAD, "Path arguments not yet supported in extract mode.\n");
 
 		if (cac > 0) {
@@ -1652,7 +1682,7 @@ star_helpvers(name, help, xhelp, prvers)
 		opt_xattr();
 #endif
 		printf("\n\n");
-		printf("Copyright (C) 1985, 88-90, 92-96, 98, 99, 2000-2013 Jörg Schilling\n");
+		printf("Copyright (C) 1985, 88-90, 92-96, 98, 99, 2000-2016 Jörg Schilling\n");
 		printf("This is free software; see the source for copying conditions.  There is NO\n");
 		printf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 		exit(0);
@@ -1984,7 +2014,7 @@ star_verifyopts()
 		/*
 		 * Check properties for archive format.
 		 */
-		if ((props.pr_xhmask & (XF_ACL_ACCESS|XF_ACL_DEFAULT)) == 0) {
+		if ((props.pr_xhmask & (XF_ACL_ACCESS|XF_ACL_DEFAULT|XF_ACL_ACE)) == 0) {
 			errmsgno(EX_BAD,
 				"Archive format '%s' does not support -acl.\n",
 							hdr_name(chdrtype));

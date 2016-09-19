@@ -1,12 +1,12 @@
-/* @(#)getargs.c	2.65 10/11/06 Copyright 1985, 1988, 1994-2010 J. Schilling */
+/* @(#)getargs.c	2.68 16/02/12 Copyright 1985, 1988, 1994-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)getargs.c	2.65 10/11/06 Copyright 1985, 1988, 1994-2010 J. Schilling";
+	"@(#)getargs.c	2.68 16/02/12 Copyright 1985, 1988, 1994-2016 J. Schilling";
 #endif
 #define	NEW
 /*
- *	Copyright (c) 1985, 1988, 1994-2010 J. Schilling
+ *	Copyright (c) 1985, 1988, 1994-2016 J. Schilling
  *
  *	1.3.88	 Start implementation of release 2
  */
@@ -49,6 +49,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -1039,7 +1041,13 @@ dosflags(argp, vfmt, pac, pav, flags, oargs)
 			curfun = flagp->ga_funcp;
 		}
 	} else if (flags & SETARGS) {
+		/*
+		 * We set curfun to curarg. We later get the real
+		 * curarg in case that we see a function callback
+		 * but we need curfun first in this case.
+		 */
 		curarg = va_arg(args, void *);
+		curfun = (getpargfun)curarg;
 	}
 
 	for (i = 0; i < sizeof (fl); i++) {
@@ -1129,7 +1137,7 @@ again:
 						fmt += 2;
 						rsf[i].fmt = '~';
 						rsf[i].type = '~';
-						rsf[i].curfun = curarg;
+						rsf[i].curfun = (void *)curfun;
 						if ((flags & (SETARGS|ARGVECTOR)) == SETARGS)
 							curarg = va_arg(args, void *);
 					} else {
@@ -1144,7 +1152,10 @@ again:
 			}
 		}
 		while (*fmt != ',' && *fmt != '\0') {
-			/* function has extra arg on stack */
+			/*
+			 * function has extra arg on stack. The code above
+			 * prevents us from fetching this arg twice.
+			 */
 			if ((*fmt == '&' || *fmt == '~') &&
 			    (flags & (SETARGS|ARGVECTOR)) == SETARGS) {
 				curarg = va_arg(args, void *);
@@ -1153,9 +1164,18 @@ again:
 		}
 		if (*fmt != '\0')
 			fmt++;
+		else
+			break;
 
-		if ((flags & (SETARGS|ARGVECTOR)) == SETARGS)
+		if ((flags & (SETARGS|ARGVECTOR)) == SETARGS) {
+			/*
+			 * We set curfun to curarg. We later get the real
+			 * curarg in case that we see a function callback
+			 * but we need curfun first in this case.
+			 */
 			curarg = va_arg(args, void *);
+			curfun = (getpargfun)curarg;
+		}
 	}
 	if ((flags & ARGVECTOR) && flagp[1].ga_format != NULL) {
 		flagp++;

@@ -1,8 +1,8 @@
-/* @(#)cpp.c	1.28 12/08/08 2010-2012 J. Schilling */
+/* @(#)cpp.c	1.37 15/04/01 2010-2015 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)cpp.c	1.28 12/08/08 2010-2012 J. Schilling";
+	"@(#)cpp.c	1.37 15/04/01 2010-2015 J. Schilling";
 #endif
 /*
  * C command
@@ -13,7 +13,7 @@ static	UConst char sccsid[] =
  * This implementation is based on the UNIX 32V release from 1978
  * with permission from Caldera Inc.
  *
- * Copyright (c) 2010-2012 J. Schilling
+ * Copyright (c) 2010-2015 J. Schilling
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -193,12 +193,12 @@ STATIC	char *ptrtab;
 STATIC	char buffer[SYMLEN+BUFFERSIZ+BUFFERSIZ+SYMLEN];
 
 /*
- * SBSIZE was 12000 in 1978, we need to have a way to
+ * SBSIZE was static 12000 chars in 1978, we now have a method to
  * malloc more space.
  */
-# define SBSIZE 240000
-STATIC	char	sbf[SBSIZE];
-STATIC	char	*savch	= sbf;
+# define SBSIZE 65536
+STATIC	char	*sbf;
+STATIC	char	*savch;
 
 # define DROP 0xFE	/* special character not legal ASCII or EBCDIC */
 # define WARN DROP
@@ -233,6 +233,8 @@ STATIC	char	*fnames[MAXINC];
 STATIC	char	*dirnams[MAXINC];	/* actual directory of #include files */
 STATIC	int	fins[MAXINC];
 STATIC	int	lineno[MAXINC];
+STATIC	char	*input;
+STATIC	char	*target;
 
 /*
  * We need:
@@ -244,12 +246,17 @@ STATIC	int	lineno[MAXINC];
 STATIC	char	*dirs[MAXIDIRS+3];	/* -I and <> directories */
 STATIC	int	fin	= STDIN_FILENO;
 STATIC	FILE	*fout;			/* Init in main(), Mac OS is nonPOSIX */
+STATIC	FILE	*mout;			/* Output for -M */
+STATIC	FILE	*dout;			/* Output for "SUNPRO_DEPENDENCIES" */
 STATIC	int	nd	= 1;
 STATIC	int	pflag;	/* don't put out lines "# 12 foo.c" */
 STATIC	int	passcom;	/* don't delete comments */
 STATIC	int rflag;	/* allow macro recursion */
 STATIC	int	hflag;	/* Print included filenames */
+STATIC	int	mflag;	/* Generate make dependencies */
+STATIC	int	noinclude;	/* -noinclude /usr/include */
 STATIC	int	nopredef;	/* -undef all */
+	int	char_is_signed = -1;	/* for -xuc -xsc */
 STATIC	int	ifno;
 # define NPREDEF 64
 STATIC	char *prespc[NPREDEF];
@@ -269,7 +276,7 @@ LOCAL	char		*unfill	__PR((char *));
 LOCAL	char		*doincl	__PR((char *));
 LOCAL	int		equfrm	__PR((char *, char *, char *));
 LOCAL	char		*dodef	__PR((char *));
-LOCAL	char		*control __PR((char *));
+LOCAL	void		control __PR((char *));
 LOCAL	struct symtab	*stsym	__PR((char *));
 LOCAL	struct symtab	*ppsym	__PR((char *));
 EXPORT	void		pperror	__PR((char *fmt, ...));
@@ -283,6 +290,8 @@ LOCAL	char		*copy	__PR((char *));
 LOCAL	char		*strdex	__PR((char *, int));
 EXPORT	int		yywrap	__PR((void));
 EXPORT	int		main	__PR((int argc, char **argav));
+LOCAL	void		newsbf	__PR((void));
+LOCAL	struct symtab	*newsym	__PR((void));
 
 
 # if gcos
@@ -296,9 +305,10 @@ static jmp_buf env;
 extern FILE *_f[];
 # define symsiz 500
 # else
-# define symsiz 4000
+# define symsiz 500
 # endif
-STATIC	struct symtab stab[symsiz];
+#define	SYMINCR	340	/* Number of symtab entries to allocate as a block */
+STATIC	struct symtab *stab[symsiz];
 
 STATIC	struct symtab *defloc;
 STATIC	struct symtab *udfloc;
@@ -674,12 +684,22 @@ unfill(p) register char *p; {
 	}
 	if (fretop>0) np=bufstack[--fretop];
 	else {
-		np=savch; savch+=BUFFERSIZ;
-		if (savch>=sbf+SBSIZE) {pperror("no space"); exit(exfail);}
+		np = savch;
+		savch += BUFFERSIZ;
+		if (savch >= sbf+SBSIZE) {
+			newsbf(); 
+			np = savch;
+			savch += BUFFERSIZ;
+		}
 		*savch++='\0';
 	}
 	instack[mactop]=np; op=pend-BUFFERSIZ; if (op<p) op=p;
-	for (;;) {while ((*np++= *op++) != '\0'); if (eob(op)) break;} /* out with old */
+	for (;;) {				/* out with old */
+		while ((*np++= *op++) != '\0')
+			;
+		if (eob(op))
+			break;
+	}
 	endbuf[mactop++]=np;	/* mark end of saved text */
 	np=pbuf+BUFFERSIZ; op=pend-BUFFERSIZ; pend=np; if (op<p) op=p;
 	while (outptr<op) *--np= *--op; /* slide over new */
@@ -721,7 +741,10 @@ doincl(p) register char *p; {
 	if (ifno+1 >=MAXINC) {
 		pperror("Unreasonable include nesting",0); return(p);
 	}
-	if((nfil=savch)>sbf+SBSIZE-BUFFERSIZ) {pperror("no space"); exit(exfail);}
+	if ((nfil = savch) > sbf+SBSIZE-BUFFERSIZ) {
+		newsbf();
+		nfil = savch;
+	}
 	filok=0;
 	for (dirp=dirs+inctype; *dirp; ++dirp) {
 		if (
@@ -747,13 +770,22 @@ doincl(p) register char *p; {
 			filok=1; fin=fins[++ifno]; break;
 		}
 	}
-	if (filok==0) pperror("Can't find include file %s",filname);
-	else {
-		lineno[ifno]=1; fnames[ifno]=cp=nfil; while (*cp++); savch=cp;
+	if (filok==0) {
+		pperror("Can't find include file %s",filname);
+	} else {
+		lineno[ifno]=1;
+		fnames[ifno]=cp=nfil;
+		while (*cp++)
+			;
+		savch=cp;
 		dirnams[ifno]=dirs[0]=trmdir(copy(nfil));
 		sayline(ENTERINCLUDE);
 		if (hflag)
 			fprintf(stderr, "%s\n", nfil);
+		if (mflag)
+			fprintf(mout, "%s: %s\n", input, fnames[ifno]);
+		if (dout)
+			fprintf(dout, "%s: %s\n", target, fnames[ifno]);
 		/* save current contents of buffer */
 		while (!eob(p)) p=unfill(p);
 		inctop[ifno]=mactop;
@@ -778,7 +810,9 @@ dodef(p) char *p; {/* process '#define' */
 
 	formtxt[0] = '\0';	/* Make lint quiet */
 
-	if (savch>sbf+SBSIZE-BUFFERSIZ) {pperror("too much defining"); return(p);}
+	if (savch > sbf+SBSIZE-BUFFERSIZ) {
+		newsbf();
+	}
 	oldsavch=savch; /* to reclaim space if redefinition */
 	++flslvl; /* prevent macro expansion during 'define' */
 	p=skipbl(p); pin=inptr;
@@ -869,7 +903,7 @@ dodef(p) char *p; {/* process '#define' */
 #define fasscan() ptrtab=fastab+COFF
 #define sloscan() ptrtab=slotab+COFF
 
-STATIC char *
+STATIC void
 control(p) register char *p; {/* find and handle preprocessor control lines */
 	register struct symtab *np;
 for (;;) {
@@ -1094,27 +1128,55 @@ char *namep;
 int enterf;
 {
 	register char *np, *snp;
-	register int c, i; int around;
+	register int c, i;
 	register struct symtab *sp;
+	struct symtab *prev;
+static struct symtab nsym;		/* Hack: Dummy nulled symtab */
 
 	/* namep had better not be too long (currently, <=symlen chars) */
-	np=namep; around=0; i=cinit;
-	while ((c = *np++) != '\0') i += i+c; c=i;	/* c=i for register usage on pdp11 */
-	c %= symsiz; if (c<0) c += symsiz;
-	sp = &stab[c];
-	while ((snp=sp->name) != NULL) {
+	np = namep;
+	i = cinit;
+	while ((c = *np++) != '\0')
+		i += i+c;
+	c = i;				/* c = i for register usage on pdp11 */
+	c %= symsiz;
+	if (c < 0)
+		c += symsiz;
+	sp = stab[c];
+	prev = sp;
+	while (sp != NULL) {
+		snp = sp->name;
 		np = namep;
-		while (*snp++ == *np) if (*np++ == '\0') {
-				if (enterf==DROP) {sp->name[0]= DROP; sp->value=0;}
-				return(lastsym=sp);
+		while (*snp++ == *np) {
+			if (*np++ == '\0') {
+				if (enterf == DROP) {
+					sp->name[0] = DROP;
+					sp->value = 0;
+				}
+				return (lastsym = sp);
 			}
-		if (--sp < &stab[0]) {
-			if (around) {pperror("too many defines", 0); exit(exfail);}
-			else {++around; sp = &stab[symsiz-1];}
 		}
+		prev = sp;
+		sp = sp->next;
 	}
-	if (enterf>0) sp->name=namep;
-	return(lastsym=sp);
+	if (enterf > 0) {
+		sp = newsym();
+		sp->name = namep;
+		sp->value = NULL;
+		sp->next = NULL;
+		if (prev)
+			prev->next = sp;
+		else
+			stab[c] = sp;
+	}
+	/*
+	 * Hack: emulate the behavior of the old code with static stab[], where
+	 * a non-matching request returns a zeroed (because previously empty)
+	 * struct symtab.
+	 */
+	if (sp == NULL)
+		sp = &nsym;
+	return (lastsym = sp);
 }
 
 STATIC struct symtab *
@@ -1219,9 +1281,15 @@ subst(p,sp) register char *p; struct symtab *sp; {
 STATIC char *
 trmdir(s) register char *s; {
 	register char *p = s;
-	while (*p++); --p; while (p>s && *--p!='/');
+
+	while (*p++)
+		;
+	--p;
+	while (p>s && *--p!='/')
+		;
 # if unix
-	if (p==s) *p++='.';
+	if (p==s)
+		*p++='.';
 # endif
 	*p='\0';
 	return(s);
@@ -1297,6 +1365,9 @@ main(argc,argv)
 		if (((t23+COFF)[i]=(t23+COFF+1)[i]<<1)==0) (t23+COFF)[i]=1;
 #endif
 
+	fnames[ifno=0] = "";	/* Allow pperror() to work correctly	  */
+	newsbf();		/* Must be called before copy() / ppsym() */
+
 # if unix
 	fnames[ifno=0] = "";
 	dirs[0]=dirnams[0]= ".";
@@ -1340,9 +1411,23 @@ main(argc,argv)
 					}
 					*prund++ = argv[i]+2;
 					continue;
+				case 'n':
+					if (strcmp(argv[i], "-noinclude") == 0)
+						noinclude = 1;
+					else
+						goto unknown;
+					continue;
 				case 'u':
 					if (strcmp(argv[i], "-undef") == 0)
 						nopredef = 1;
+					else
+						goto unknown;
+					continue;
+				case 'x':
+					if (strcmp(argv[i], "-xsc") == 0)
+						char_is_signed = 1;
+					else if (strcmp(argv[i], "-xuc") == 0)
+						char_is_signed = 0;
 					else
 						goto unknown;
 					continue;
@@ -1355,6 +1440,9 @@ main(argc,argv)
 					continue;
 				case 'H':		/* Print included filenames */
 					hflag++;
+					continue;
+				case 'M':		/* Generate make dependencies */
+					mflag++;
 					continue;
 				case 'Y':		/* Replace system include dir */
 					sysdir = argv[i]+2;
@@ -1370,8 +1458,9 @@ main(argc,argv)
 					if (0>(fin=open(argv[i], O_RDONLY))) {
 						pperror("No source file %s",argv[i]); exit(8);
 					}
-					fnames[ifno]=copy(argv[i]);
-					dirs[0]=dirnams[ifno]=trmdir(argv[i]);
+					fnames[ifno] = copy(argv[i]);
+					input = copy(argv[i]);
+					dirs[0] = dirnams[ifno] = trmdir(argv[i]);
 # ifndef gcos
 /* too dangerous to have file name in same syntactic position
    be input or outptrut file depending on file redirections,
@@ -1388,12 +1477,40 @@ main(argc,argv)
 			}
 		}
 
+	if (mflag) {
+		if (input == NULL) {
+			pperror("cpp: no input file specified with -M flag");
+			exit(8);
+		}
+		p = strrchr(input, '.');
+		if (p == NULL || p[1] == '\0') {
+			pperror("cpp: no filename suffix");
+			exit(8);
+		}
+		p[1] = 'o';
+		p = strrchr(input, '/');
+		if (p != NULL)
+			input = &p[1];
+		mout = fout;
+		if (NULL == (fout = fopen("/dev/null", "w"))) {
+			pperror("Can't create /dev/null");
+			exit(8);
+		}
+	}
+	if ((p = getenv("SUNPRO_DEPENDENCIES")) != NULL) {
+		if ((target = strchr(p, ' ')) != NULL) {
+			*target++ = '\0';
+			if (NULL == (dout = fopen(p, "a"))) {
+				pperror("Can't create %s", p); exit(8);
+			}
+		}
+	}
 	fins[ifno]=fin;
 	exfail = 0;
 		/* after user -I files here are the standard include libraries */
 	if (sysdir != NULL) {
 		dirs[nd++] = sysdir;
-	} else {
+	} else if (!noinclude) {
 # if unix
 	dirs[nd++] = "/usr/include";
 # endif
@@ -1427,6 +1544,7 @@ main(argc,argv)
 	for (i=sizeof(macbit)/sizeof(macbit[0]); --i>=0; ) macbit[i]=0;
 
 	if (! nopredef) {
+		varloc = 0;
 # if unix
 	ysysloc=stsym("unix");
 # endif
@@ -1505,6 +1623,51 @@ main(argc,argv)
 # if __arm__
 	varloc=stsym ("__arm__");
 # endif
+
+#ifdef	__hp9000s200
+	varloc=stsym ("__hp9000s200");
+#endif
+#ifdef	__hp9000s300
+	varloc=stsym ("__hp9000s300");
+#endif
+#ifdef	__hp9000s400
+	varloc=stsym ("__hp9000s400");
+#endif
+#ifdef	__hp9000s500
+	varloc=stsym ("__hp9000s500");
+#endif
+#ifdef	__hp9000s600
+	varloc=stsym ("__hp9000s600");
+#endif
+#ifdef	__hp9000s700
+	varloc=stsym ("__hp9000s700");
+#endif
+#ifdef	__hp9000s800
+	varloc=stsym ("__hp9000s800");
+#endif
+#ifdef	hppa
+	varloc=stsym ("hppa");
+#endif
+#ifdef	__hppa
+	varloc=stsym ("__hppa");
+#endif
+#ifdef	hpux
+	varloc=stsym ("hpux");
+#endif
+#ifdef	__hpux
+	varloc=stsym ("__hpux");
+#endif
+#ifdef	HFS
+	varloc=stsym ("HFS");	/* HP-UX only? */
+#endif
+#ifdef	PWB
+	varloc=stsym ("PWB");	/* HP-UX only? */
+#endif
+#ifdef	_PWB
+	varloc=stsym ("_PWB");	/* HP-UX only? */
+#endif
+
+
 /*
  * This is defined on Sun systems starting with SunOS-4.0.
  * As GCC does not define __BUILTIN_VA_ARG_INCR, we need
@@ -1539,6 +1702,42 @@ main(argc,argv)
 	trulvl = 0; flslvl = 0;
 	lineno[0] = 1; sayline(NOINCLUDE);
 	outptr=inptr=pend;
+	if (mflag)
+		fprintf(mout, "%s: %s\n", input, fnames[ifno]);
 	control(pend);
 	return (exfail);
+}
+
+STATIC void
+newsbf()
+{
+	/*
+	 * All name space in symbols is obtained from sbf[] via copy(), so we
+	 * cannot use realloc() here as this might relocate sbf[]. We instead
+	 * throw away the last part of the current sbf[] and allocate new space
+	 * for new symbols.
+	 */
+	if ((sbf = malloc(SBSIZE)) == NULL) {
+		pperror("no buffer space");
+		exit(exfail);
+	}
+	savch = sbf;		/* Start at new buffer space */
+}
+
+STATIC struct symtab *
+newsym()
+{
+	static	int		nelem = 0;
+	static struct symtab	*syms = NULL;
+
+	if (nelem <= 0) {
+		syms = malloc(SYMINCR * sizeof (struct symtab));
+		if (syms == NULL) {
+			pperror("too many defines");
+			exit(exfail);
+		}
+		nelem = SYMINCR;
+	}
+	nelem--;
+	return (syms++);
 }

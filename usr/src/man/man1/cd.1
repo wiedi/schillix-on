@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2016, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Portions Copyright (c) 1992, X/Open Company Limited All Rights Reserved
 .\" Portions Copyright (c) 1982-2007 AT&T Knowledge Ventures
@@ -49,7 +49,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH cd 1 "8 Apr 2008" "SunOS 5.11" "User Commands"
+.TH cd 1 "12 Sept 20016" "SunOS 5.11" "User Commands"
 .SH NAME
 cd, chdir, pushd, popd, dirs \- change working directory
 .SH SYNOPSIS
@@ -67,6 +67,34 @@ cd, chdir, pushd, popd, dirs \- change working directory
 .LP
 .nf
 \fBchdir\fR [\fIargument\fR]
+.fi
+
+.SS "bosh"
+.LP
+.nf
+\fBcd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIargument\fR ]
+.fi
+
+.LP
+.nf
+\fBchdir\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIargument\fR ]
+.fi
+
+.LP
+.nf
+\fBpushd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fIname\fR ]
+.sp
+\fBpushd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fI\-offset\fR ]
+.fi
+
+.LP
+.nf
+\fBpopd\fR [ \fB\-L\fR | \fB\-P\fR ] [ \fI\-offset\fR ]
+.fi
+
+.LP
+.nf
+\fBdirs\fR
 .fi
 
 .SS "csh"
@@ -172,6 +200,223 @@ and
 .B chdir
 is just another way to call
 .BR cd .
+
+.SS "bosh"
+The
+.B bosh
+built-in
+.B cd
+changes the current directory to
+.IR argument .
+If arg is
+.B \-
+the directory is changed to the previous directory.
+The shell parameter
+.B HOME
+is the default
+.IR argument .
+The shell parameter
+.B CDPATH
+defines the search path for the directory containing
+.IR argument .
+Alternative directory names are separated by a colon
+.RB ( : ).
+The default path is
+.B <null>
+(specifying the current directory).
+.B Note:
+The current directory is specified by a null path name, which can appear
+immediately after the equal sign or between the colon delimiters anywhere
+else in the path list. If
+.I argument
+begins with a
+.B /
+the search
+path is not used. Otherwise, each directory in the path is searched for
+.IR argument .
+.sp
+The previous working directory is kept in the shell parameter
+.BR OLDPWD ,
+the new working directory is kept in the shell parameter
+.BR PWD .
+The top of the directory stack is replaced by the new working directory.
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation
+.B dot-dot
+.RB ( .. )
+logically.
+Symbolic link components are
+.B not
+resolved before
+.B dot-dot
+components are processed.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation
+.B dot-dot
+physically.
+Symbolic link components
+.B are
+resolved before
+.B dot-dot
+components are processed.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B cd
+behaves as if
+.B \-P
+had been specified.
+.RE
+.sp
+.LP
+.B chdir
+is just another way to call
+.BR cd .
+.sp
+.LP
+The
+.B pushd
+command is similar to the
+.B cd
+command, but it keeps the previous working directory on the directory stack.
+If
+.I \-offset
+is used instead of a directory
+.IR name ,
+it exchanges the content of the
+top directory stack element with the directory stack element named by
+.I offset
+and then performs a
+.B cd
+to the new top directory stack element.
+If the new directory stack has more than one element, it is printed.
+See
+.B dirs
+for an explanation of
+.IR offset .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation
+.B dot-dot
+.RB ( .. )
+logically.
+Symbolic link components are
+.B not
+resolved before
+.B dot-dot
+components are processed.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation
+.B dot-dot
+physically.
+Symbolic link components
+.B are
+resolved before
+.B dot-dot
+components are processed.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B pushd
+behaves as if
+.B \-P
+had been specified.
+.RE
+.sp
+.LP
+Calling
+.B popd
+without argument removes the current top directory stack element
+from the directory stack and then performs a
+.B cd
+to the new top directory stack element.
+Calling
+.B popd
+with an
+.I offset
+argument removes the current the top directory stack element
+from the directory stack, then removes the directory stack element
+named by
+.I offset
+from the current directory stack and then makes it
+the new top directory stack element and performs a
+.B cd
+to this directory.
+The new directory name is always printed as it was not given as an argument.
+See
+.B dirs
+for an explanation of
+.IR offset .
+.RS
+.br
+.ne 3
+.TP
+.B \-L
+Handles the operation logically.
+Symbolic link components are
+.B not
+resolved before the
+.B PWD
+shell parameter is assigned the new value.
+.br
+.ne 3
+.TP
+.B \-P
+Handles the operation physically.
+Symbolic link components
+.B are
+resolved before the
+.B PWD
+shell parameter is assigned the new value.
+.LP
+.ne 3
+If both
+.B \-L
+and
+.B \-P
+are specified, the last one applies.
+If neither
+.B \-L
+nor
+.B \-P
+is specified,
+.B cd
+behaves as if
+.B \-P
+had been specified.
+.RE
+
 .SS "csh"
 .sp
 .LP
@@ -506,7 +751,7 @@ specified.
 .RS 10n
 .rt
 A pathname of the previous working directory, used by
-.BR cd- .
+.BR "cd -" .
 .RE
 
 .sp
@@ -556,7 +801,7 @@ An error occurred.
 See
 .BR attributes (5)
 for descriptions of the following attributes:
-.SS "csh, ksh, sh"
+.SS "bosh, csh, ksh, sh"
 .sp
 
 .sp
@@ -593,6 +838,7 @@ Interface StabilityUncommitted
 .SH SEE ALSO
 .sp
 .LP
+.BR bosh (1),
 .BR csh (1),
 .BR ksh (1),
 .BR ksh93 (1),

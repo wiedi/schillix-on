@@ -1,13 +1,13 @@
-/* @(#)list.c	1.74 10/08/23 Copyright 1985, 1995, 2000-2010 J. Schilling */
+/* @(#)list.c	1.76 16/07/08 Copyright 1985, 1995, 2000-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)list.c	1.74 10/08/23 Copyright 1985, 1995, 2000-2010 J. Schilling";
+	"@(#)list.c	1.76 16/07/08 Copyright 1985, 1995, 2000-2016 J. Schilling";
 #endif
 /*
  *	List the content of an archive
  *
- *	Copyright (c) 1985, 1995, 2000-2010 J. Schilling
+ *	Copyright (c) 1985, 1995, 2000-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -254,7 +256,7 @@ modstr(info, s, mode)
 	}
 	i = 9;
 #ifdef	USE_ACL
-	if ((info->f_xflags & (XF_ACL_ACCESS|XF_ACL_DEFAULT)) != 0)
+	if ((info->f_xflags & (XF_ACL_ACCESS|XF_ACL_DEFAULT|XF_ACL_ACE)) != 0)
 		str[i++] = '+';
 #endif
 #ifdef	USE_XATTR
@@ -272,9 +274,9 @@ list_file(info)
 		time_t	*tp;
 		char	*tstr;
 		char	mstr[12]; /* 9 UNIX chars + ACL '+' XATTR '@' + nul */
-		char	lstr[11]; /* contains link count as string */
-	static	char	nuid[11]; /* XXXX 64 bit longs??? */
-	static	char	ngid[11]; /* XXXX 64 bit longs??? */
+		char	lstr[22]; /* ' ' + link count as string - 64 bits */
+	static	char	nuid[21]; /* uid as 64 bit long */
+	static	char	ngid[21]; /* gid as 64 bit long */
 		char	*add = "";
 
 	f = vpr;

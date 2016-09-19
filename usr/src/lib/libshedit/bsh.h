@@ -1,8 +1,8 @@
-/* @(#)bsh.h	1.59 13/09/25 Copyright 1985-2013 J. Schilling */
+/* @(#)bsh.h	1.65 16/08/14 Copyright 1985-2016 J. Schilling */
 /*
  *	Bsh general definitions
  *
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2016 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -276,7 +276,12 @@ extern	void	pushline	__PR((char *s));
 extern	void	quote		__PR((void));
 extern	void	unquote		__PR((void));
 extern	int	quoting		__PR((void));
-extern	void	begina		__PR((int flg));
+extern	void	dquote		__PR((void));
+extern	void	undquote	__PR((void));
+extern	int	dquoting	__PR((void));
+extern	int	begina		__PR((int flg));
+extern	int	getbegina	__PR((void));
+extern	int	setbegina	__PR((void));
 
 /*
  * limit.c
@@ -403,11 +408,17 @@ extern	void	*get_heapend	__PR((void));
  */
 #ifndef	_LFS64_ASYNCHRONOUS_IO		/* Hack for Solaris >= 2.6 */
 #ifndef	HAVE_WAIT3
+#ifdef	HAVE_WAITID
 #ifdef	RUSAGE_SELF
 #ifdef	_SCHILY_WAIT_H			/* Needed for WAIT_T */
 
-extern	int	wait3	__PR((WAIT_T *status, int options,
+/*
+ * XXX if this no longer compiles on UnixWare, change back pid_t to int
+ * XXX here and in wait3.c
+ */
+extern	pid_t	wait3	__PR((WAIT_T *status, int options,
 						struct rusage *rusage));
+#endif
 #endif
 #endif
 #endif

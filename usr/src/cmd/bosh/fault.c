@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * This file contains modifications Copyright 2008-2013 J. Schilling
+ * Copyright 2008-2016 J. Schilling
  *
- * @(#)fault.c	1.23 13/09/24 2008-2013 J. Schilling
+ * @(#)fault.c	1.33 16/08/02 2008-2016 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)fault.c	1.23 13/09/24 2008-2013 J. Schilling";
+	"@(#)fault.c	1.33 16/08/02 2008-2016 J. Schilling";
 #endif
 
 /*
@@ -95,6 +95,11 @@ static	UConst char sccsid[] =
 	int	intrcnt;
 
 /*
+ * Whether to use _exit() because we did call vfork()
+ */
+	int	exflag;
+
+/*
  * previous signal handler for signal 0
  */
 static	void (*psig0_func) __PR((int)) = SIG_ERR;
@@ -104,12 +109,15 @@ static	char sigsegv_stack[SIGSTKSZ];
 #endif
 
 static int	ignoring	__PR((int i));
-static void	clrsig		__PR((int i));
+static void	clrsig		__PR((int i, int dofree));
 	void	done		__PR((int sig));
 static void	fault		__PR((int sig));
 	int	handle		__PR((int sig, sigtype func));
 	void	stdsigs		__PR((void));
-	void	oldsigs		__PR((void));
+	void	oldsigs		__PR((int dofree));
+#ifdef	HAVE_VFORK
+	void	restoresigs	__PR((void));
+#endif
 	void	chktrap		__PR((void));
 	void	systrap		__PR((int argc, char **argv));
 	void	sh_sleep	__PR((unsigned int ticks));
@@ -126,13 +134,13 @@ static BOOL trapflg[MAXTRAP] =
 	0,	/* hangup */
 	0,	/* interrupt */
 	0,	/* quit */
+#ifdef	__never__ /* For portability, we cannot asume > 3 signals */
 	0,	/* illegal instr */
 	0,	/* trace trap */
 	0,	/* IOT */
 	0,	/* EMT */
 	0,	/* float pt. exp */
 	0,	/* kill */
-#ifdef	__never__ /* For portability, we cannot asume > 9 signals */
 	0,	/* bus error */
 	0,	/* memory faults */
 	0,	/* bad sys call */
@@ -162,6 +170,10 @@ static BOOL trapflg[MAXTRAP] =
 #endif
 };
 
+/*
+ * NOTE: Signal numbers other then 1, 2, 3, 6, 9, 14, and 15 are not portable.
+ *	 We thus cannot use a pre-initialized table for signal numbers > 3.
+ */
 static void (*(
 sigval[MAXTRAP])) __PR((int)) =
 {
@@ -169,13 +181,13 @@ sigval[MAXTRAP])) __PR((int)) =
 	done,	/* hangup */
 	fault,	/* interrupt */
 	fault,	/* quit */
+#ifdef	__never__ /* For portability, we cannot asume > 3 signals */
 	done,	/* illegal instr */
 	done,	/* trace trap */
-	done,	/* IOT */
+	done,	/* IOT / ABRT */
 	done,	/* EMT */
 	done,	/* floating pt. exp */
 	0,	/* kill */
-#ifdef	__never__ /* For portability, we cannot asume > 9 signals */
 	done,	/* bus error */
 	sigsegv,	/* memory faults */
 	done,	/* bad sys call */
@@ -221,10 +233,11 @@ ignoring(i)
 }
 
 static void
-clrsig(i)
-int	i;
+clrsig(i, dofree)
+	int	i;
+	int	dofree;
 {
-	if (trapcom[i] != 0) {
+	if (dofree && trapcom[i] != 0) {
 		free(trapcom[i]);
 		trapcom[i] = 0;
 	}
@@ -252,19 +265,24 @@ done(sig)
 {
 	unsigned char	*t;
 	int	savxit;
+	struct excode savex;
+	struct excode savrex;
 
-	if ((t = trapcom[0]) != NULL)
-	{
+	if ((t = trapcom[0]) != NULL) {
 		trapcom[0] = 0;
 		/* Save exit value so trap handler will not change its val */
 		savxit = exitval;
-		execexp(t, (Intptr_t)0);
+		savex = ex;
+		savrex = retex;
+		retex.ex_signo = 0;
+		execexp(t, (Intptr_t)0, 0);
 		exitval = savxit;		/* Restore exit value */
+		ex = savex;
+		retex = savrex;
 		free(t);
-	}
-	else
+	} else {
 		chktrap();
-
+	}
 	rmtemp(0);
 	rmfunctmp();
 
@@ -293,6 +311,8 @@ done(sig)
 		handle(sig, SIG_DFL);
 		kill(mypid, sig);
 	}
+	if (exflag)
+		_exit(exitval);
 	exit(exitval);
 }
 
@@ -327,6 +347,7 @@ fault(sig)
 
 	trapnote |= flag;
 	trapflg[sig] |= flag;
+	trapsig = sig;
 }
 
 int
@@ -343,8 +364,9 @@ handle(sig, func)
 	/*
 	 * Ensure that sigaction is only called with valid signal numbers,
 	 * we can get random values back for oact.sa_handler if the signal
-	 * number is invalid
+	 * number is invalid.
 	 *
+	 * XXX Should we enable SA_SIGINFO for SIGCHLD as well?
 	 */
 	if (sig > MINTRAP && sig < MAXTRAP) {
 		sigemptyset(&act.sa_mask);
@@ -417,21 +439,63 @@ stdsigs()
 	}
 }
 
+/*
+ * This function is called just before execve() is called.
+ * It resets the signal handlers to their defaults if the
+ * signals that are either not set (trapcom[i] == NULL) or
+ * set to catch the signal ((trapcom[i][0] != '\0'). Note
+ * that clrsig() only affects signals that have the SIGMOD
+ * flag set in trapflg[i].
+ */
 void
-oldsigs()
+oldsigs(dofree)
+	int	dofree;
 {
 	int	i;
+	int	f;
 	unsigned char	*t;
 
 	i = MAXTRAP;
 	while (i--) {
 		t = trapcom[i];
+		f = trapflg[i];
 		if (t == 0 || *t)
-			clrsig(i);
-		trapflg[i] = 0;
+			clrsig(i, dofree);
+		if (dofree)
+			trapflg[i] = 0;
+		else
+			trapflg[i] = f;		/* Remember for restoresigs */
 	}
-	trapnote = 0;
+	if (dofree)
+		trapnote = 0;
 }
+
+#ifdef	HAVE_VFORK
+void
+restoresigs()
+{
+	int	i;
+	int	f;
+	unsigned char	*t;
+
+	i = MAXTRAP;
+	while (i--) {
+		t = trapcom[i];
+		f = trapflg[i];
+		if ((f & SIGMOD) == 0)		/* If not modified before */
+			continue;		/* skip this signal	  */
+		if (t) {
+			if (*t)
+				handle(i, fault);
+			else
+				handle(i, SIG_IGN);
+		} else {
+			handle(i, sigval[i]);
+		}
+		trapflg[i] = f;
+	}
+}
+#endif
 
 /*
  * check for traps
@@ -449,8 +513,16 @@ chktrap()
 			trapflg[i] &= ~TRAPSET;
 			if ((t = trapcom[i]) != NULL) {
 				int	savxit = exitval;
-				execexp(t, (Intptr_t)0);
+				struct excode savex;
+				struct excode savrex;
+
+				savex = ex;
+				savrex = retex;
+				retex.ex_signo = i;
+				execexp(t, (Intptr_t)0, 0);
 				exitval = savxit;
+				ex = savex;
+				retex = savrex;
 				exitset();
 			}
 		}
@@ -472,9 +544,21 @@ systrap(argc, argv)
 		 */
 		for (sig = 0; sig < MAXTRAP; sig++) {
 			if (trapcom[sig]) {
+#ifdef	DO_POSIX_TRAP
+				char	buf[12];
+
+				prs_buff(UC "trap -- '");
+				prs_buff(trapcom[sig]);
+				prs_buff(UC "' ");
+				if (sig2str(sig, buf) < 0)
+					prn_buff(sig);
+				else
+					prs_buff(UC buf);
+#else
 				prn_buff(sig);
 				prs_buff((unsigned char *)colon);
 				prs_buff(trapcom[sig]);
+#endif
 				prc_buff(NL);
 			}
 		}
@@ -482,24 +566,45 @@ systrap(argc, argv)
 		/*
 		 * set the action for the list of signals
 		 *
+		 * a1 is guaranteed to be != NULL here
 		 */
 		char *cmdp = *argv, *a1 = *(argv+1);
-		BOOL noa1;
-		noa1 = (str2sig(a1, &sig) == 0);
-		if (noa1 == 0)
+		BOOL noa1 = FALSE;
+
+#ifdef	DO_POSIX_TRAP
+		if (a1[0] == '-') {
+			if (a1[1] == '\0') {
+				noa1++;
+			} else if (a1[1] == '-' && a1[2] == '\0') {
+				a1 = *(++argv + 1);
+			} else {
+				gfailure(UC usage, trapuse);
+				return;
+			}
 			++argv;
+		} else
+#endif
+		{
+			noa1 = (str2sig(a1, &sig) == 0);
+			if (noa1 == 0)
+				++argv;
+		}
 		while (*++argv) {
 			if (str2sig(*argv, &sig) < 0 ||
 			    sig >= MAXTRAP || sig < MINTRAP ||
+#ifndef	DO_POSIX_TRAP
 			    sig == SIGSEGV) {
+#else
+			    0) {
+#endif
 				failure((unsigned char *)cmdp, badtrap);
 			} else if (noa1) {
 				/*
-				 * no action specifed so reset the siganl
+				 * no action specifed so reset the signal
 				 * to its default disposition
 				 *
 				 */
-				clrsig(sig);
+				clrsig(sig, TRUE);
 			} else if (*a1) {
 				/*
 				 * set the action associated with the signal
@@ -689,17 +794,13 @@ init_sigval()
 	set_sigval(SIGUSR2, done);
 #endif
 #ifdef	SIGCHLD
-#ifdef	__set_nullsig__
 	set_sigval(SIGCHLD, 0);
-#endif
 #endif
 #ifdef	SIGPWR
 	set_sigval(SIGPWR, done);
 #endif
 #ifdef	SIGWINCH
-#ifdef	__set_nullsig__
 	set_sigval(SIGWINCH, 0);
-#endif
 #endif
 #ifdef	SIGURG
 	set_sigval(SIGURG, done);
@@ -708,29 +809,19 @@ init_sigval()
 	set_sigval(SIGPOLL, done);
 #endif
 #ifdef	SIGSTOP
-#ifdef	__set_nullsig__
 	set_sigval(SIGSTOP, 0);
 #endif
-#endif
 #ifdef	SIGTSTP
-#ifdef	__set_nullsig__
 	set_sigval(SIGTSTP, 0);
 #endif
-#endif
 #ifdef	SIGCONT
-#ifdef	__set_nullsig__
 	set_sigval(SIGCONT, 0);
 #endif
-#endif
 #ifdef	SIGTTIN
-#ifdef	__set_nullsig__
 	set_sigval(SIGTTIN, 0);
 #endif
-#endif
 #ifdef	SIGTTOU
-#ifdef	__set_nullsig__
 	set_sigval(SIGTTOU, 0);
-#endif
 #endif
 #ifdef	SIGVTALRM
 	set_sigval(SIGVTALRM, done);
@@ -743,6 +834,18 @@ init_sigval()
 #endif
 #ifdef	SIGXFSZ
 	set_sigval(SIGXFSZ, done);
+#endif
+#ifdef	SIGWAITING
+	set_sigval(SIGWAITING, 0);
+#endif
+#ifdef	SIGLWP
+	set_sigval(SIGLWP, 0);
+#endif
+#ifdef	SIGFREEZE
+	set_sigval(SIGFREEZE, 0);
+#endif
+#ifdef	SIGTHAW
+	set_sigval(SIGTHAW, 0);
 #endif
 
 #ifdef	SIGSTKFLT
