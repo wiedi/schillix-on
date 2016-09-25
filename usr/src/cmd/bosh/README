@@ -41,17 +41,18 @@ This version of the Bourne Shell adds the following features:
 -	converted to use ANSI C prototypes to ensure type correctness.
 
 -	Enhanced to support full POSIX shell compliance. This includes many
-	features like $(cmd), $((arith-expr)), PS4, more shell parameter
-	expressions and the ability to support functions and shell variables
-	with the same name.
+	new features like $(cmd), $((arith-expr)), PS4, more shell parameter
+	expressions, the ability to support functions and shell variables
+	with the same name and many other smaller changes.
 
 -	converted from using sbrk(2) to malloc(3) to achieve portability
 	and allows to use libc routines that depend on malloc().
 
--	fixes some previously unknown bugs in string handling that have been a
-	result from removing a dependency on SIGSEV to auto-expand memory for 
-	automatic string management as implemented in the original version
-	from 1977.
+-	fixes some previously unknown bugs in string handling that have been
+	introduced while removing a dependency on SIGSEV to auto-expand memory
+	for string management. SIGSEGV expanded memory in the original version
+	from 1977; this was changed in 1982 when UNIX has been ported to the
+	buggy MC-68000 processor and introduced the bugs in question.
 
 -	Adds the Commandline History Editor developed in 1982 and implemented 
 	in 1984 by J. Schilling for "bsh" (Berthold Shell from the UNOS based
@@ -73,10 +74,16 @@ This version of the Bourne Shell adds the following features:
 	directory.
 
 	Type "alias -raw" to list aliases in "raw" mode without quoting to
-	verify complex aliases.
+	verify how complex aliases will later be run.
 
 -	Adds a new builtin "dosh" that allows to write intrinsic "shell scripts"
-	via aliases.
+	and that allows to have parameterizable alises, e.g.
+
+		alias lm='dosh '\''ls -l "$@" | more'\'' lm-alias'
+
+	or as "raw" alias:
+
+		#b lm       dosh 'ls -l "$@" | more' lm-alias
 
 -	Adds "hash commands" (commands that start with a '#' at column 1 of
 	a command line). This helps to manage aliases, that need quoting,
@@ -121,11 +128,11 @@ This version of the Bourne Shell adds the following features:
 -	Implements a runtime switch to switch between the "pf" version behavior
 	and the standard behavior. This allows to decide whether privileged
 	commands should be enabled or not. Use "set -P" or "set -o pfsh" to
-	enable the "pf" shell behavior and "set +P" or "set +o pfsh". Note that
-	the behavior implemented in "bosh" avoids the serurity problems that
-	the original Sun implementation suffers from which are caused by the
-	fact that calling "pfsh" from a user privileged to raise privileges
-	runs all typed commands as root.
+	enable the "pf" shell behavior and "set +P" or "set +o pfsh" to disable
+	the "pf" shell behavior. Note that the behavior implemented in "bosh"
+	avoids the serurity problems that the original Sun implementation
+	suffers from which are caused by the fact that calling "pfsh" from a
+	user privileged to raise privileges runs all typed commands as root.
 
 -	The parser has been rewritten to avoid fork() calls and to make the
 	shell the parent of all children of a pipeline.
@@ -140,8 +147,8 @@ This version of the Bourne Shell adds the following features:
 
 		cmd 2| more
 
--	The getopts(1) built-in now supports "--long" options that are not just
-	aliases for short options.
+-	The getopts(1) built-in now supports GNU-stype "--long" options that
+	are not just aliases for existing short options.
 
 -	The getopts(1) built-in now permits to enable Multics/UNIX-style 
 	"-long" options.
@@ -181,7 +188,8 @@ with this shell.
 As these libraries are lazyloaded, they are not used in case the Bourne Shell
 just interprets shell scripts but is not in interactive mode. As a result,
 the Schily Bourne Shell (bosh) does not need more shared libraries than the
-historic Bourne Shell seen on Sun Solaris.
+historic Bourne Shell seen on Sun Solaris needs in case it is used to run
+shell scripts.
 
 Note that a file /root/.shrc is delivered together with this shell. This file
 contains code to enable persistent shell aliases in interactive mode. Persistent
