@@ -2,14 +2,14 @@
 #
 # CDDL HEADER START
 #
-# The contents of this file are subject to the terms of the
-# Common Development and Distribution License (the "License").
-# You may not use this file except in compliance with the License.
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
 #
 # When distributing Covered Code, include this CDDL HEADER in each
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -22,8 +22,8 @@
 #
 # Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
 #
-# Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T.
-# All rights reserved.
+# Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T. All rights reserved.
+# Copyright 2016 Jörg Schilling.  All rights reserved.
 #
 
 . /lib/svc/share/smf_include.sh
@@ -314,7 +314,7 @@ for showif_output in `/sbin/ipadm show-if -p -o ifname,state,current`; do
 	intf=`echo $showif_output | /usr/bin/cut -f1 -d:`
 	state=`echo $showif_output | /usr/bin/cut -f2 -d:`
 	current=`echo $showif_output | /usr/bin/cut -f3 -d:`
-	if  [[ "$state" != "disabled" && $current != *Z* ]]; then
+	if  [ "$state" != "disabled" ] && smf_strmatch "$current" != "*Z*"; then
 		#
 		# skip if not a persistent interface, or if it should get IP
 		# configuration from the global zone ('Z' flag is set)
@@ -324,7 +324,7 @@ for showif_output in `/sbin/ipadm show-if -p -o ifname,state,current`; do
 		# skip IP tunnel interfaces plumbed by net-iptun
 		continue;
 	elif [ -f /etc/hostname.$intf ] || [ -f /etc/hostname6.$intf ]; then
-		if [[ $current != *Z* ]]; then
+		if smf_strmatch "$current" != "*Z*"; then
 			echo "found /etc/hostname.$intf "\
 			    "or /etc/hostname6.$intf, "\
 			    "ignoring ipadm configuration" > /dev/msglog

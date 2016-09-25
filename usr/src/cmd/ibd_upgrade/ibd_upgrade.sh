@@ -2,14 +2,14 @@
 #
 # CDDL HEADER START
 #
-# The contents of this file are subject to the terms of the
-# Common Development and Distribution License (the "License").
-# You may not use this file except in compliance with the License.
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.opensource.org/licenses/cddl1.txt
 #
 # When distributing Covered Code, include this CDDL HEADER in each
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -21,6 +21,7 @@
 #
 #
 # Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+# Copyright 2016 Jörg Schilling.  All rights reserved.
 #
 #
 
@@ -90,7 +91,7 @@ process_rc_mode()
 	IFS="${ORIGIFS}"
 
 	if [ ${inst} -lt $# ]; then
-		(( inst = $inst + 1 ))
+		inst=$(($inst + 1))
 		eval "linkmode=\$${inst}"
 	else
 		linkmode=0
