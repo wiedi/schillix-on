@@ -2,13 +2,13 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may only use this file in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
- * See the License for the specific language governing permissions
- * and limitations under the License.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -21,6 +21,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 J. Schilling
  */
 
 #include "lint.h"
@@ -44,8 +45,9 @@ getdelim(char **_RESTRICT_KYWD lineptr, size_t *_RESTRICT_KYWD n,
 {
 	rmutex_t *lk;
 	char *ptr;
+	Uchar *bufend;
+	char *p;
 	size_t size;
-	int c;
 	size_t cnt;
 
 	if (lineptr == NULL || n == NULL ||
@@ -69,12 +71,35 @@ getdelim(char **_RESTRICT_KYWD lineptr, size_t *_RESTRICT_KYWD n,
 
 	_SET_ORIENTATION_BYTE(iop);
 
+	if (!(iop->_flag & (_IOREAD | _IORW))) {
+		errno = EBADF;
+		FUNLOCKFILE(lk);
+		return (-1);
+	}
+
+	if (iop->_base == NULL) {
+		if ((bufend = _findbuf(iop)) == NULL) {
+			FUNLOCKFILE(lk);
+			return (-1);
+		}
+	} else {
+		bufend = _bufend(iop);
+	}
+
+	size--;					/* room for '\0' */
 	do {
-		c = (--iop->_cnt < 0) ? __filbuf(iop) : *iop->_ptr++;
-		if (c == EOF)
-			break;
-		*ptr++ = c;
-		if (++cnt == size) {	/* must reallocate */
+		size_t	nn;
+
+		if (iop->_cnt <= 0) {		/* empty buffer */
+			if (__filbuf(iop) != EOF) {
+				iop->_ptr--;	/* put back the character */
+				iop->_cnt++;
+			} else {
+				break;		/* nothing left to read */
+			}
+		}
+		if (cnt >= size) {		/* must reallocate */
+			size++;
 			if ((ptr = realloc(*lineptr, 2 * size)) == NULL) {
 				FUNLOCKFILE(lk);
 				ptr = *lineptr + size - 1;
@@ -83,10 +108,21 @@ getdelim(char **_RESTRICT_KYWD lineptr, size_t *_RESTRICT_KYWD n,
 				return (-1);
 			}
 			*lineptr = ptr;
-			ptr += size;
-			*n = size = 2 * size;
+			ptr += size - 1;
+			size = (*n = 2 * size) - 1;
 		}
-	} while (c != delimiter);
+
+		nn = size - cnt;
+		nn = (nn < iop->_cnt ? nn : iop->_cnt);
+		if ((p = memccpy(ptr, iop->_ptr, delimiter, nn)) != NULL)
+			nn = (p - ptr);
+		cnt += nn;
+		ptr += nn;
+		iop->_cnt -= nn;
+		iop->_ptr += nn;
+		if (_needsync(iop, bufend))
+			_bufsync(iop, bufend);
+	} while (p == NULL);
 
 	*ptr = '\0';
 

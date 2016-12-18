@@ -1,20 +1,20 @@
-/* @(#)pch.c	1.29 15/06/03 2011-2015 J. Schilling */
+/* @(#)pch.c	1.32 16/12/18 2011-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)pch.c	1.29 15/06/03 2011-2015 J. Schilling";
+	"@(#)pch.c	1.32 16/12/18 2011-2016 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986-1988 Larry Wall
  *	Copyright (c) 1990 Wayne Davison
- *	Copyright (c) 2011-2015 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following condition is met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  * this condition and the following disclaimer.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -937,7 +937,7 @@ _("Replacement text or line numbers mangled in hunk at line %lld\n"),
 		fillsrc = 1;
 		filldst = fillsrc + p_ptrn_lines;
 		p_end = filldst + p_repl_lines;
-		Sprintf(buf, "*** %lld,%lld ****\n",
+		Snprintf(buf, bufsize, "*** %lld,%lld ****\n",
 			(Llong)p_first, (Llong)(p_first + p_ptrn_lines - 1));
 		p_line[0] = savestr(buf);
 		if (out_of_mem) {
@@ -945,7 +945,7 @@ _("Replacement text or line numbers mangled in hunk at line %lld\n"),
 			return (FALSE);
 		}
 		p_char[0] = '*';
-		Sprintf(buf, "--- %lld,%lld ----\n",
+		Snprintf(buf, bufsize, "--- %lld,%lld ----\n",
 			(Llong)p_newfirst, (Llong)(p_newfirst+p_repl_lines-1));
 		p_line[filldst] = savestr(buf);
 		if (out_of_mem) {
@@ -1087,7 +1087,7 @@ _("Unexpected end of file in patch.\n"));
 		}
 		p_newfirst = min;
 		p_repl_lines = max - min + 1;
-		Sprintf(buf, "*** %lld,%lld\n",
+		Snprintf(buf, bufsize, "*** %lld,%lld\n",
 			(Llong)p_first, (Llong)(p_first + p_ptrn_lines - 1));
 		p_line[0] = savestr(buf);
 		if (out_of_mem) {
@@ -1124,7 +1124,7 @@ _("Unexpected end of file in patch at line %lld.\n"),
 				fatal(_("--- expected at line %lld of patch.\n"),
 				(Llong)p_input_line);
 		}
-		Sprintf(buf, "--- %lld,%lld\n", (Llong)min, (Llong)max);
+		Snprintf(buf, bufsize, "--- %lld,%lld\n", (Llong)min, (Llong)max);
 		p_line[i] = savestr(buf);
 		if (out_of_mem) {
 			p_end = i-1;
@@ -1413,9 +1413,9 @@ do_ed_script()
 		Unlink(TMPOUTNAME);
 		copy_file(filearg[0], TMPOUTNAME);
 		if (verbose)
-			Sprintf(buf, "/bin/ed %s", TMPOUTNAME);
+			Snprintf(buf, bufsize, "/bin/ed %s", TMPOUTNAME);
 		else
-			Sprintf(buf, "/bin/ed - %s", TMPOUTNAME);
+			Snprintf(buf, bufsize, "/bin/ed - %s", TMPOUTNAME);
 		pipefp = popen(buf, "w");
 	}
 	for (;;) {
@@ -1431,10 +1431,20 @@ do_ed_script()
 		}
 		this_line_is_command = (isdigit(UCH *buf) &&
 		    (*t == 'd' || *t == 'c' || *t == 'a'));
+		if (!this_line_is_command) {
+			/*
+			 * Check for the diff workaround for "." in a line
+			 * that inserts ".." and then substitites the result.
+			 * Most diff programs emit "s/.//\na\a", but diff from
+			 * OpenBSD emits the substitute program with address.
+			 */
+			if (strEQ(buf, "a\n") || strEQ(t, "s/.//\n"))
+				this_line_is_command = 1;
+		}
 		if (this_line_is_command) {
 			if (!skip_rest_of_patch)
 				fputs(buf, pipefp);
-			if (*t != 'd') {
+			if (*t != 'd' && *t != 's') {
 				while (pgets(&buf, &bufsize, pfp) > 0) {
 					p_input_line++;
 					if (!skip_rest_of_patch)

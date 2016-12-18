@@ -1,14 +1,14 @@
-/* @(#)util.h	1.11 15/06/02 2011-2015 J. Schilling */
+/* @(#)util.h	1.13 16/12/18 2011-2016 J. Schilling */
 /*
  *	Copyright (c) 1986 Larry Wall
- *	Copyright (c) 2011-2015 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following condition is met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  * this condition and the following disclaimer.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,3 +43,4 @@ extern	int	makedirs __PR((register char *filename, mode_t mode,
 extern	char	*fetchname __PR((char *at, int strip_leading,
 						int assume_exists,
 						bool *isnulldate));
+extern	int	pspawn	__PR((char *av[]));

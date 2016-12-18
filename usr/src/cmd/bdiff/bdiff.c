@@ -27,9 +27,44 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2006-2016 J. Schilling
+ *
+ * @(#)bdiff.c	1.21 16/12/09 J. Schilling
+ */
+#if defined(sun)
+#pragma ident "@(#)bdiff.c 1.21 16/12/09 J. Schilling"
+#endif
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+#if defined(sun)
+#pragma ident	"@(#)bdiff.c	1.15	05/06/08 SMI"
+#endif
 
+#ifdef	SCHILY_BUILD
+#include <schily/mconfig.h>
+#include <fatal.h>
+#include <schily/signal.h>
+#include <schily/types.h>
+#include <schily/unistd.h>
+#include <schily/fcntl.h>
+#include <schily/stdio.h>
+#include <schily/ctype.h>
+#include <schily/string.h>
+#include <schily/stdlib.h>
+#include <schily/wait.h>
+#include <schily/utypes.h>	/* For Llong */
+#include <schily/schily.h>
+#include <schily/errno.h>
+#define	VMS_VFORK_OK
+#include <schily/vfork.h>
+#include <schily/io.h>		/* for setmode() prototype */
+#ifndef	HAVE_PRINTF_LL
+#undef	printf
+#define	printf	js_printf	/* Use libschily::printf() for %lld */
+#endif
+#else	/* non-portable SunOS -only definitions BEGIN */
+#define	_FILE_OFFSET_BITS	64
+#define	_LARGEFILE_SOURCE
 #include <fatal.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -39,6 +74,24 @@
 #include <string.h>
 #include <stdlib.h>
 #include <wait.h>
+#include <errno.h>
+
+#define	PROTOTYPES
+#define	__PR(a)	a
+#define	EXPORT
+#define	LOCAL	static
+#define	setmode(fd, mode)
+#define	FTLVFORK	010000
+
+typedef long long	Llong;
+
+#define	HAVE_LARGEFILES
+#define	HAVE_SETVBUF
+#define	HAVE_VFORK
+#endif	/* non-portable SunOS -only definitions END */
+
+#undef	offset_t
+#define	offset_t	Llong
 
 #define	ONSIG	16
 
@@ -64,6 +117,12 @@ static char Error[128];
 
 static int seglim;	/* limit of size of file segment to be generated */
 
+#if	defined(PROTOTYPES) && defined(INS_BASE)
+static char diffp[]  =  INS_BASE "/ccs/bin/" "diff";
+#else
+#define	diffp		diff
+#define	INS_BASE	""
+#endif
 static char diff[]  =  "/usr/bin/diff";
 static char tempskel[] = "/tmp/bdXXXXXX"; /* used to generate temp file names */
 static char tempfile[32];
@@ -72,24 +131,32 @@ static int	fflags;
 static int	fatal_num = 1;		/* exit number for fatal exit */
 static offset_t	linenum;
 static size_t obufsiz, nbufsiz, dbufsiz;
-static char *readline(char **, size_t *, FILE *);
-static void addgen(char **, size_t *, FILE *);
-static void delgen(char **, size_t *, FILE *);
-static void fixnum(char *);
-static void fatal(char *);
-static void setsig(void);
-static void setsig1(int);
-static char *satoi(char *, offset_t *);
-static FILE *maket(char *);
+	int main __PR((int argc, char *argv[]));
+static void saverest __PR((char **linep, size_t *bufsizp,
+			ssize_t ll, FILE *iptr));
+static void putsave __PR((char **linep, size_t *bufsizp, int type));
+static ssize_t readline __PR((char **, size_t *, FILE *));
+static void addgen __PR((char **, size_t *, ssize_t ll, FILE *));
+static void delgen __PR((char **, size_t *, ssize_t ll, FILE *));
+static void clean_up __PR((void));
+static void fixnum __PR((char *));
+static void fatal __PR((char *));
+static void setsig __PR((void));
+static void setsig1 __PR((int));
+static char *satoi __PR((char *, offset_t *));
+static FILE *maket __PR((char *));
 
 static char *prognam;
 
 int
-main(int argc, char *argv[])
+main(argc, argv)
+	int argc;
+	char *argv[];
 {
 	FILE *poldfile, *pnewfile;
 	char *oline, *nline, *diffline;
-	char *olp, *nlp, *dp;
+	ssize_t	oll;
+	ssize_t	nll;
 	int otcnt, ntcnt;
 	pid_t i;
 	int pfd[2];
@@ -113,7 +180,7 @@ main(int argc, char *argv[])
 	if (strcmp(argv[1], "-") == 0)
 		poldfile = stdin;
 	else
-		if ((poldfile = fopen(argv[1], "r")) == NULL) {
+		if ((poldfile = fopen(argv[1], "rb")) == NULL) {
 			(void) snprintf(Error, sizeof (Error),
 				"Can not open '%s'", argv[1]);
 			fatal(Error);
@@ -121,7 +188,7 @@ main(int argc, char *argv[])
 	if (strcmp(argv[2], "-") == 0)
 		pnewfile = stdin;
 	else
-		if ((pnewfile = fopen(argv[2], "r")) == NULL) {
+		if ((pnewfile = fopen(argv[2], "rb")) == NULL) {
 			(void) snprintf(Error, sizeof (Error),
 				"Can not open '%s'", argv[2]);
 			fatal(Error);
@@ -145,6 +212,10 @@ main(int argc, char *argv[])
 
 	/* Allocate the buffers and initialize their lengths */
 
+#ifdef	HAVE_SETVBUF
+	setvbuf(poldfile, NULL, _IOFBF, 32*1024);
+	setvbuf(pnewfile, NULL, _IOFBF, 32*1024);
+#endif
 	obufsiz = BUFSIZ;
 	nbufsiz = BUFSIZ;
 	dbufsiz = BUFSIZ;
@@ -167,13 +238,13 @@ main(int argc, char *argv[])
 	 * avoid executing 'diff' completely.
 	 */
 	for (;;) {
-		olp = readline(&oline, &obufsiz, poldfile);
-		nlp = readline(&nline, &nbufsiz, pnewfile);
+		oll = readline(&oline, &obufsiz, poldfile);
+		nll = readline(&nline, &nbufsiz, pnewfile);
 
-		if (!olp && !nlp)	/* EOF found on both:  files equal */
+		if (oll < 0 && nll < 0)	/* EOF found on both:  files equal */
 			return (0);
 
-		if (!olp) {
+		if (oll < 0) {
 			/*
 			 * The entire old file is a prefix of the
 			 * new file. Generate the appropriate "append"
@@ -181,10 +252,10 @@ main(int argc, char *argv[])
 			 * 		nan, n
 			 * where 'n' represents a line-number.
 			 */
-			addgen(&nline, &nbufsiz, pnewfile);
+			addgen(&nline, &nbufsiz, nll, pnewfile);
 		}
 
-		if (!nlp) {
+		if (nll < 0) {
 			/*
 			 * The entire new file is a prefix of the
 			 * old file. Generate the appropriate "delete"
@@ -192,10 +263,12 @@ main(int argc, char *argv[])
 			 * 		n, ndn
 			 * where 'n' represents a line-number.
 			 */
-			delgen(&oline, &obufsiz, poldfile);
+			delgen(&oline, &obufsiz, oll, poldfile);
 		}
 
-		if (strcmp(olp, nlp) == 0)
+		if (oll != nll)
+			break;
+		if (memcmp(oline, nline, oll) == 0)
 			linenum++;
 		else
 			break;
@@ -210,23 +283,23 @@ main(int argc, char *argv[])
 	 */
 	for (;;) {
 		/* If both files are at EOF, everything is done. */
-		if (!olp && !nlp)	/* finished */
+		if (oll < 0 && nll < 0)	/* finished */
 			return (0);
 
-		if (!olp) {
+		if (oll < 0) {
 			/*
 			 * Generate appropriate "append"
 			 * output without executing 'diff'.
 			 */
-			addgen(&nline, &nbufsiz, pnewfile);
+			addgen(&nline, &nbufsiz, nll, pnewfile);
 		}
 
-		if (!nlp) {
+		if (nll < 0) {
 			/*
 			 * Generate appropriate "delete"
 			 * output without executing 'diff'.
 			 */
-			delgen(&oline, &obufsiz, poldfile);
+			delgen(&oline, &obufsiz, oll, poldfile);
 		}
 
 		/*
@@ -235,13 +308,13 @@ main(int argc, char *argv[])
 		 */
 		poldtemp = maket(otmp);
 		otcnt = 0;
-		while (olp && otcnt < seglim) {
-			(void) fputs(oline, poldtemp);
+		while (oll > 0 && otcnt < seglim) {
+			(void) fwrite(oline, oll, (size_t)1, poldtemp);
 			if (ferror(poldtemp) != 0) {
 				fflags |= FTLMSG;
 				fatal("Can not write to temporary file");
 			}
-			olp = readline(&oline, &obufsiz, poldfile);
+			oll = readline(&oline, &obufsiz, poldfile);
 			otcnt++;
 		}
 		(void) fclose(poldtemp);
@@ -252,13 +325,13 @@ main(int argc, char *argv[])
 		 */
 		pnewtemp = maket(ntmp);
 		ntcnt = 0;
-		while (nlp && ntcnt < seglim) {
-			(void) fputs(nline, pnewtemp);
+		while (nll > 0 && ntcnt < seglim) {
+			(void) fwrite(nline, nll, (size_t)1, pnewtemp);
 			if (ferror(pnewtemp) != 0) {
 				fflags |= FTLMSG;
 				fatal("Can not write to temporary file");
 			}
-			nlp = readline(&nline, &nbufsiz, pnewfile);
+			nll = readline(&nline, &nbufsiz, pnewfile);
 			ntcnt++;
 		}
 		(void) fclose(pnewtemp);
@@ -266,18 +339,37 @@ main(int argc, char *argv[])
 		/* Create pipes and fork.  */
 		if ((pipe(pfd)) == -1)
 			fatal("Can not create pipe");
-		if ((i = fork()) < (pid_t)0) {
+		setmode(pfd[0], O_BINARY);
+		setmode(pfd[1], O_BINARY);
+		if ((i = vfork()) < (pid_t)0) {
 			(void) close(pfd[0]);
 			(void) close(pfd[1]);
 			fatal("Can not fork, try again");
 		} else if (i == (pid_t)0) {	/* child process */
+#ifdef	set_child_standard_fds	/* VMS */
+			set_child_standard_fds(STDIN_FILENO,
+						pfd[1],
+						STDERR_FILENO);
+#ifdef	F_SETFD
+			fcntl(pfd[0], F_SETFD, 1);
+#endif
+#else			/* ! VMS, below is the code for UNIX */
 			(void) close(pfd[0]);
-			(void) close(1);
-			(void) dup(pfd[1]);
+			(void) dup2(pfd[1], STDOUT_FILENO);
 			(void) close(pfd[1]);
+#endif
 
 			/* Execute 'diff' on the segment files. */
-			(void) execlp(diff, diff, otmp, ntmp, 0);
+#if	defined(PROTOTYPES) && defined(INS_BASE)
+			(void) execlp(diffp, diffp,
+					"-a", otmp, ntmp, (char *)0);
+#endif
+#ifndef	diffp
+			/*
+			 * The fallback diff may not support -a.
+			 */
+			(void) execlp(diff, diff, otmp, ntmp, (char *)0);
+#endif
 
 			/*
 			 * Exit code here must be > 1.
@@ -291,24 +383,32 @@ main(int argc, char *argv[])
 			(void) snprintf(Error, sizeof (Error),
 			    "Can not execute '%s'", diff);
 			fatal_num = 2;
+#ifdef	HAVE_VFORK
+			fflags |= FTLVFORK;
+#endif
 			fatal(Error);
 		} else {			/* parent process */
+			ssize_t	dl;
+
 			(void) close(pfd[1]);
-			pipeinp = fdopen(pfd[0], "r");
+			pipeinp = fdopen(pfd[0], "rb");
 
 			/* Process 'diff' output. */
-			while ((dp = readline(&diffline, &dbufsiz, pipeinp))) {
-				if (isdigit(*dp))
+			while ((dl = readline(&diffline, &dbufsiz,
+							pipeinp)) > 0) {
+				if (isdigit(* (unsigned char *)diffline))
 					fixnum(diffline);
 				else
-					(void) printf("%s", diffline);
+					(void) fwrite(diffline, dl, (size_t)1,
+						    stdout);
+
 			}
 
 			(void) fclose(pipeinp);
 
 			/* EOF on pipe. */
 			(void) wait(&status);
-			if (status&~0x100) {
+			if (!WIFEXITED(status) || (WEXITSTATUS(status) & ~1)) {
 				(void) snprintf(Error, sizeof (Error),
 				    "'%s' failed", diff);
 				fatal(Error);
@@ -324,36 +424,50 @@ main(int argc, char *argv[])
 
 /* Routine to save remainder of a file. */
 static void
-saverest(char **linep, size_t *bufsizp, FILE *iptr)
+saverest(linep, bufsizp, ll, iptr)
+	char **linep;
+	size_t *bufsizp;
+	ssize_t ll;
+	FILE *iptr;
 {
-	char *lp;
 	FILE *temptr;
 
 	temptr = maket(tempfile);
 
-	lp = *linep;
-
-	while (lp) {
-		(void) fputs(*linep, temptr);
+	while (ll > 0) {
+		(void) fwrite(*linep, ll, (size_t)1, temptr);
 		linenum++;
-		lp = readline(linep, bufsizp, iptr);
+		ll = readline(linep, bufsizp, iptr);
 	}
 	(void) fclose(temptr);
 }
 
 /* Routine to write out data saved by 'saverest' and to remove the file. */
 static void
-putsave(char **linep, size_t *bufsizp, char type)
+putsave(linep, bufsizp, type)
+	char **linep;
+	size_t *bufsizp;
+	char type;
 {
 	FILE *temptr;
+	ssize_t	len;
 
-	if ((temptr = fopen(tempfile, "r")) == NULL) {
+	if ((temptr = fopen(tempfile, "rb")) == NULL) {
 		(void) snprintf(Error, sizeof (Error),
 		    "Can not open tempfile ('%s')", tempfile); fatal(Error);
 	}
 
-	while (readline(linep, bufsizp, temptr))
-		(void) printf("%c %s", type, *linep);
+	while ((len = readline(linep, bufsizp, temptr)) > 0) {
+		(void) printf("%c ", type);
+		(void) fwrite(*linep, len, (size_t)1, stdout);
+	}
+
+	/*
+	 * JS: make bdiff compatible to diff as claimed in the man page.
+	 */
+	len = strlen(*linep);
+	if (len == 0 || (*linep)[len-1] != '\n')
+		(void) printf("\n");
 
 	(void) fclose(temptr);
 
@@ -361,7 +475,8 @@ putsave(char **linep, size_t *bufsizp, char type)
 }
 
 static void
-fixnum(char *lp)
+fixnum(lp)
+	char *lp;
 {
 	offset_t num;
 
@@ -386,14 +501,18 @@ fixnum(char *lp)
 }
 
 static void
-addgen(char **lpp, size_t *bufsizp, FILE *fp)
+addgen(lpp, bufsizp, ll, fp)
+	char **lpp;
+	size_t *bufsizp;
+	ssize_t ll;
+	FILE *fp;
 {
 	offset_t oldline;
 	(void) printf("%llda%lld", linenum, linenum+1);
 
 	/* Save lines of new file. */
 	oldline = linenum + 1;
-	saverest(lpp, bufsizp, fp);
+	saverest(lpp, bufsizp, ll, fp);
 
 	if (oldline < linenum)
 		(void) printf(",%lld\n", linenum);
@@ -407,7 +526,11 @@ addgen(char **lpp, size_t *bufsizp, FILE *fp)
 }
 
 static void
-delgen(char **lpp, size_t *bufsizp, FILE *fp)
+delgen(lpp, bufsizp, ll, fp)
+	char **lpp;
+	size_t *bufsizp;
+	ssize_t ll;
+	FILE *fp;
 {
 	offset_t savenum;
 
@@ -415,7 +538,7 @@ delgen(char **lpp, size_t *bufsizp, FILE *fp)
 	savenum = linenum;
 
 	/* Save lines of old file. */
-	saverest(lpp, bufsizp, fp);
+	saverest(lpp, bufsizp, ll, fp);
 
 	if (savenum +1 != linenum)
 		(void) printf(",%lldd%lld\n", linenum, savenum);
@@ -437,23 +560,26 @@ clean_up()
 }
 
 static FILE *
-maket(char *file)
+maket(file)
+	char *file;
 {
-	FILE *iop;
+	FILE *iop = NULL;
 	int fd;
 
 	(void) strcpy(file, tempskel);
 	if ((fd = mkstemp(file)) == -1 ||
-		(iop = fdopen(fd, "w+")) == NULL) {
+		(iop = fdopen(fd, "wb+")) == NULL) {
 		(void) snprintf(Error, sizeof (Error),
 		    "Can not open/create temp file ('%s')", file);
 		fatal(Error);
 	}
+	setmode(fileno(iop), O_BINARY);
 	return (iop);
 }
 
 static void
-fatal(char *msg)
+fatal(msg)
+	char *msg;
 /*
  *	General purpose error handler.
  *
@@ -468,12 +594,21 @@ fatal(char *msg)
  *	If the FTLCLN bit is on, clean_up is called.
  */
 {
-	if (fflags & FTLMSG)
+	if (fflags & FTLMSG) {
+		if (fflags & FTLVFORK) {
+			write(STDERR_FILENO, prognam, strlen(prognam));
+			write(STDERR_FILENO, ": ", 2);
+			write(STDERR_FILENO, msg, strlen(msg));
+		}
 		(void) fprintf(stderr, "%s: %s\n", prognam, msg);
+	}
 	if (fflags & FTLCLN)
 		clean_up();
-	if (fflags & FTLEXIT)
+	if (fflags & FTLEXIT) {
+		if (fflags & FTLVFORK)
+			_exit(fatal_num);
 		exit(fatal_num);
+	}
 }
 
 static void
@@ -489,7 +624,7 @@ setsig()
  *	via "clean_up()"
  */
 {
-	void (*act)(int);
+	void (*act) __PR((int));
 	int j;
 
 	for (j = 1; j < ONSIG; j++) {
@@ -503,7 +638,8 @@ setsig()
 }
 
 static void
-setsig1(int sig)
+setsig1(sig)
+	int sig;
 {
 
 	(void) signal(sig, SIG_IGN);
@@ -512,12 +648,14 @@ setsig1(int sig)
 }
 
 static char *
-satoi(char *p, offset_t *ip)
+satoi(p, ip)
+	char *p;
+	offset_t *ip;
 {
 	offset_t sum;
 
 	sum = 0;
-	while (isdigit(*p))
+	while (isdigit(* (unsigned char *)p))
 		sum = sum * 10 + (*p++ - '0');
 	*ip = sum;
 	return (p);
@@ -525,44 +663,29 @@ satoi(char *p, offset_t *ip)
 
 /*
  * Read a line of data from a file.  If the current buffer is not large enough
- * to contain the line, double the size of the buffer and continue reading.
- * Loop until either the entire line is read or until there is no more space
- * to be malloc'd.
+ * to contain the line, the size of the buffer is increased.
  */
-
-static char *
-readline(char **bufferp, size_t *bufsizp, FILE *filep)
+static ssize_t
+readline(bufferp, bufsizp, filep)
+	char **bufferp;
+	size_t *bufsizp;
+	FILE *filep;
 {
-	char *bufp;
-	size_t newsize;		/* number of bytes to make buffer */
-	size_t oldsize;
+	ssize_t	ret;
+	char	c = (*bufferp)[0];	/* Hack for last newline in putsave() */
 
-	(*bufferp)[*bufsizp - 1] = '\t'; /* arbitrary non-zero character */
-	(*bufferp)[*bufsizp - 2] = ' ';	/* arbitrary non-newline char */
-	bufp = fgets(*bufferp, *bufsizp, filep);
-	if (bufp == NULL)
-		return (bufp);
-	while ((*bufferp)[*bufsizp -1] == '\0' &&
-	    (*bufferp)[*bufsizp - 2] != '\n' &&
-	    strlen(*bufferp) == *bufsizp - 1) {
-		newsize = 2 * (*bufsizp);
-		bufp = (char *)realloc((void *)*bufferp, newsize);
-		if (bufp == NULL)
+	errno = 0;
+	ret = getdelim(bufferp, bufsizp, '\n', filep);
+	if (ret < 0) {
+		if (errno == ENOMEM)
 			fatal("Out of memory");
-		oldsize = *bufsizp;
-		*bufsizp = newsize;
-		*bufferp = bufp;
-		(*bufferp)[*bufsizp - 1] = '\t';
-		(*bufferp)[*bufsizp - 2] = ' ';
-		bufp = fgets(*bufferp + oldsize -1, oldsize + 1, filep);
-		if (bufp == NULL) {
-			if (filep->_flag & _IOEOF) {
-				bufp = *bufferp;
-				break;
-			} else
-				fatal("Read error");
-		} else
-			bufp = *bufferp;
+
+		if (feof(filep)) {
+			(*bufferp)[0] = c;	/* Restore first char in buf */
+			return (ret);
+		} else {
+			fatal("Read error");
+		}
 	}
-	return (bufp);
+	return (ret);
 }

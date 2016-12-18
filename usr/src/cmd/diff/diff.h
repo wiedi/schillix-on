@@ -39,8 +39,18 @@
 
 #ifndef	_DIFF_H
 #define	_DIFF_H
+/*
+ * Copyright 2006-2016 J. Schilling
+ *
+ * @(#)diff.h	1.17 16/10/22 J. Schilling
+ */
+#if defined(sun)
+#pragma ident "@(#)diff.h 1.17 16/10/22 J. Schilling"
+#endif
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+#if defined(sun)
+#pragma ident	"@(#)diff.h	1.12	05/06/08 SMI"
+#endif
 
 
 #ifdef	__cplusplus
@@ -60,6 +70,7 @@ int	opt;
 #define	D_IFDEF		3	/* Diff with merged #ifdef's */
 #define	D_NREVERSE	4	/* Reverse ed script with numbered */
 				/* lines and no trailing . */
+#define	D_BRIEF		5	/* Say if the files differ */
 
 /*
  * Constant declarations
@@ -73,20 +84,31 @@ int	opt;
 /*
  * diff - directory comparison
  */
-#define	d_flags	d_ino
-
 #define	ONLY	1		/* Only in this directory */
 #define	SAME	2		/* Both places and same */
 #define	DIFFER	4		/* Both places and different */
 #define	DIRECT	8		/* Directory */
+#define	XDIRECT	16		/* Directory present only at right side */
 
 struct dir {
-	ulong_t		d_ino;
-	int16_t		d_reclen;
-	int16_t		d_namlen;
+	char		d_flags;
+	dev_t		d_dev1;
+	dev_t		d_dev2;
+	ino_t		d_ino1;
+	ino_t		d_ino2;
 	char		*d_entry;
 };
 
+/*
+ * Structure used to check for directory loops.
+ */
+struct pdirs {
+	struct pdirs	*p_last;
+	dev_t		p_dev1;
+	dev_t		p_dev2;
+	ino_t		p_ino1;
+	ino_t		p_ino2;
+};
 
 /*
  * type definitions
@@ -119,7 +141,9 @@ struct context_vec {
 /*
  * Algorithm related options
  */
+int aflag = 0;
 int bflag = 0;
+int Bflag = 0;
 int tflag = 0;
 int wflag = 0;
 int iflag = 0;
@@ -128,6 +152,8 @@ int lflag = 0;
 int sflag = 0;
 int hflag = 0;
 int uflag = 0;
+int Nflag = 0;
+int pflag = 0;
 
 /*
  * Variables for D_IFDEF option.
@@ -146,14 +172,12 @@ char *empty = "";	/* the empty string */
 
 char **diffargv;	/* keep track of argv for diffdir */
 
-char start[256];	/* specify where to start, used with -S */
+char *start;		/* specify where to start, used with -S */
 
 FILE *input[2];		/* two input files */
 int  len[2];
 struct line *sfile[2];  /* shortened by pruning common prefix and suffix */
 int  slen[2];
-
-struct stat stb1;
 
 /*
  * Input file names.
@@ -163,6 +187,8 @@ struct stat stb1;
  */
 char	*file1, *file2, *efile1, *efile2;
 struct	stat stb1, stb2;
+int	file1ok;
+int	file2ok;
 
 /*
  * input_file1 and input_file2 are to display
@@ -171,8 +197,19 @@ struct	stat stb1, stb2;
 char	*input_file1, *input_file2;
 
 char pr[] = "/usr/bin/pr";
+
+#if	defined(INS_BASE)
+#ifdef __STDC__
+char diff[] = INS_BASE "/ccs/bin/diff";
+char diffh[] = INS_BASE "/ccs/lib/diffh";
+#else
+char diff[] = "/usr/ccs//bin/diff";
+char diffh[] = "/usr/ccs/lib/diffh";
+#endif
+#else
 char diff[] = "/usr/bin/diff";
 char diffh[] = "/usr/lib/diffh";
+#endif
 int status = 2;
 int anychange = 0;
 

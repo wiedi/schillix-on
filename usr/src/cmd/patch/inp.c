@@ -1,19 +1,19 @@
-/* @(#)inp.c	1.17 15/06/02 2011-2015 J. Schilling */
+/* @(#)inp.c	1.19 16/12/18 2011-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)inp.c	1.17 15/06/02 2011-2015 J. Schilling";
+	"@(#)inp.c	1.19 16/12/18 2011-2016 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986, 1988 Larry Wall
- *	Copyright (c) 2011-2015 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following condition is met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  * this condition and the following disclaimer.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -99,6 +99,7 @@ plan_a(filename)
 	int ifd;
 	char *s;
 	LINENUM iline;
+	char	*argv[4];
 
 	if (ok_to_create_file && stat(filename, &file_stat) < 0) {
 		if (verbose)
@@ -109,26 +110,40 @@ plan_a(filename)
 		close(creat(filename, 0666));
 	}
 	if (stat(filename, &file_stat) < 0) {
-		Sprintf(buf, "RCS/%s%s", filename, RCSSUFFIX);
+		Snprintf(buf, bufsize, "RCS/%s%s", filename, RCSSUFFIX);
 		if (stat(buf, &file_stat) >= 0 ||
 		    stat(buf+4, &file_stat) >= 0) {
-			Sprintf(buf, CHECKOUT, filename);
 			if (verbose)
 				say(
 _("Can't find %s--attempting to check it out from RCS.\n"),
 				    filename);
-			if (system(buf) || stat(filename, &file_stat))
+
+			argv[0] = CHECKOUT;
+			argv[1] = COEDIT;
+			argv[2] = filename;
+			argv[3] = NULL;
+			if (pspawn(argv) || stat(filename, &file_stat))
 				fatal(_("Can't check out %s.\n"), filename);
 		} else {
-			Sprintf(buf+20, "SCCS/%s%s", SCCSPREFIX, filename);
-			if (stat(s = buf+20, &file_stat) >= 0 ||
-			    stat(s = buf+25, &file_stat) >= 0) {
-				Sprintf(buf, GET, s);
+			Snprintf(buf, bufsize, "SCCS/%s%s",
+			    SCCSPREFIX, filename);
+			if (stat(s = buf, &file_stat) >= 0 ||
+			    stat(s = buf+5, &file_stat) >= 0) {
 				if (verbose)
 					say(
 _("Can't find %s--attempting to get it from SCCS.\n"),
 					    filename);
-				if (system(buf) || stat(filename, &file_stat))
+
+				/*
+				 * XXX It may be better to call "sccs get" to
+				 * XXX support modern sccs implementations that
+				 * XXX use different locations for history files
+				 */
+				argv[0] = GET;
+				argv[1] = GETEDIT;
+				argv[2] = s;
+				argv[3] = NULL;
+				if (pspawn(argv) || stat(filename, &file_stat))
 					fatal(_("Can't get %s.\n"), filename);
 			} else {
 				fatal(_("Can't find %s.\n"), filename);
