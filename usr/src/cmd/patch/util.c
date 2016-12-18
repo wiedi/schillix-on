@@ -1,19 +1,19 @@
-/* @(#)util.c	1.30 15/06/02 2011-2015 J. Schilling */
+/* @(#)util.c	1.33 16/12/18 2011-2016 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)util.c	1.30 15/06/02 2011-2015 J. Schilling";
+	"@(#)util.c	1.33 16/12/18 2011-2016 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986 Larry Wall
- *	Copyright (c) 2011-2015 J. Schilling
+ *	Copyright (c) 2011-2016 J. Schilling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following condition is met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  * this condition and the following disclaimer.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,6 +34,9 @@ static	UConst char sccsid[] =
 #include "util.h"
 #include <schily/varargs.h>
 #include <schily/errno.h>
+#include <schily/wait.h>
+#define	VMS_VFORK_OK
+#include <schily/vfork.h>
 
 #ifndef	HAVE_STRERROR
 #define	strerror	errmsgstr
@@ -528,7 +531,7 @@ fetchname(at, strip_leading, assume_exists, isnulldate)
 	char *s;
 	char *name;
 	char *t;
-	char tmpbuf[200];
+	char tmpbuf[512];
 
 	if (isnulldate)
 		*isnulldate = FALSE;
@@ -566,13 +569,14 @@ fetchname(at, strip_leading, assume_exists, isnulldate)
 		}
 	}
 	name = savestr(name);
-	Sprintf(tmpbuf, "RCS/%s", name);
+	Snprintf(tmpbuf, sizeof (tmpbuf), "RCS/%s", name);
 	free(s);
 	if (stat(name, &file_stat) < 0 && !assume_exists) {
 		Strcat(tmpbuf, RCSSUFFIX);
 		if (stat(tmpbuf, &file_stat) < 0 &&
 		    stat(tmpbuf+4, &file_stat) < 0) {
-			Sprintf(tmpbuf, "SCCS/%s%s", SCCSPREFIX, name);
+			Snprintf(tmpbuf, sizeof (tmpbuf), "SCCS/%s%s",
+			    SCCSPREFIX, name);
 			if (stat(tmpbuf, &file_stat) < 0 &&
 			    stat(tmpbuf+5, &file_stat) < 0) {
 				free(name);
@@ -718,4 +722,36 @@ fetchtime(t)
 	m *= 60;
 	d -= m;			/* Add timezone offset */
 	return (d);
+}
+
+typedef	RETSIGTYPE	(*sigtype) __PR((int));
+
+int
+pspawn(av)
+	char	*av[];
+{
+	pid_t	pid;
+	pid_t	p;
+	int	status;
+	sigtype	sint;
+	sigtype	squit;
+	sigtype	schld;
+
+	if ((pid = vfork()) == 0) {
+		execvp(av[0], av);
+		_exit(127);
+	}
+
+	sint = signal(SIGINT, SIG_IGN);
+	squit = signal(SIGQUIT, SIG_IGN);
+	schld = signal(SIGCHLD, SIG_DFL);
+	while ((p = wait(&status)) != pid && p != (pid_t)-1)
+		;
+	(void) signal(SIGINT, sint);
+	(void) signal(SIGQUIT, squit);
+	(void) signal(SIGCHLD, schld);
+
+	if (p == (pid_t)-1)
+		return (-1);
+	return (status);
 }

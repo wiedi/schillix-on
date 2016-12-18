@@ -1,8 +1,7 @@
 '\" te
+.\" @(#)diff.1	1.19 16/10/19 Copyright (c) 2011-2015 J. Schilling
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2004, Sun Microsystems, Inc.  All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
-.\" Copyright (c) 2013, Andreas Roehler
 .\" Portions Copyright (c) 1992, X/Open Company Limited  All Rights Reserved
 .\"
 .\" Sun Microsystems, Inc. gratefully acknowledges The Open Group for
@@ -48,36 +47,71 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH diff 1 "22 Sep 2004" "SunOS 5.11" "User Commands"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH diff 1 "2016/10/19" "SunOS 5.11" "User Commands"
 .SH NAME
 diff \- compare two files
 .SH SYNOPSIS
 .LP
 .nf
-\fBdiff\fR [\fB-bitw\fR] [\fB-c\fR | \fB-e\fR | \fB-f\fR | \fB-h\fR | \fB-n\fR | \fB-u\fR] \fIfile1\fR \fIfile2\fR
+.B diff \c
+.RB [ -abBiNptw "] [" "-c \c
+.RB "| " -e " | " "-f \c
+.RB "| " -h " | " "-n \c
+.RB "| " -q " | " -u "] \c
+.I file1 file2
 .fi
 
 .LP
 .nf
-\fBdiff\fR [\fB-bitw\fR] [\fB-C\fR \fInumber\fR | \fB-U\fR \fInumber\fR] \fIfile1\fR \fIfile2\fR
+.B diff \c
+.RB [ -abBiNptw "] [" "-C \c
+.I number \c
+.RB "| " "-U \c
+.I number\c
+] \c
+.I file1 file2
 .fi
 
 .LP
 .nf
-\fBdiff\fR [\fB-bitw\fR] [\fB-D\fR \fIstring\fR] \fIfile1\fR \fIfile2\fR
+.B diff \c
+.RB [ -abBiNptw "] [" "-D \c
+.IR string "] \c
+.I file1 file2
 .fi
 
 .LP
 .nf
-\fBdiff\fR [\fB-bitw\fR] [\fB-c\fR | \fB-e\fR | \fB-f\fR | \fB-h\fR | \fB-n\fR | \fB-u\fR] [\fB-l\fR] [\fB-r\fR] [\fB-s\fR]
-     [\fB-S\fR \fIname\fR] \fIdirectory1\fR \fIdirectory2\fR
+.B diff \c
+.RB [ -abBiNptw "] [" "-c \c
+.RB "| " -e " | " "-f \c
+.RB "| " -h " | " "-n \c
+.RB "| " -q " | " -u "] \c
+.RB [ -l "] [" -r "] \c
+.RB [ -s ]
+.RB "     [" "-S \c
+.IR name "] \c
+.I directory1 directory2
 .fi
 
 .SH DESCRIPTION
 .sp
 .LP
 The
-.BR diff " utility will compare the contents of "
+.B diff
+utility will compare the contents of
 .I file1
 and
 .I file2
@@ -97,9 +131,15 @@ The normal output contains lines of these forms:
 .sp
 .in +2
 .nf
-\fIn1\fR \fBa\fR \fIn3,n4\fR
-\fIn1,n2\fR \fBd\fR \fIn3\fR
-\fIn1,n2\fR \fBc\fR \fIn3,n4\fR
+.I n1\c
+.B " a \c
+.IR n3 , n4
+.IR n1 , n2\c
+.B " d \c
+.I n3
+.IR n1 , n2\c
+.B " c \c
+.IR n3 , n4
 .fi
 .in -2
 .sp
@@ -135,83 +175,109 @@ can be converted to
 As
 in
 .BR ed ,
-identical pairs, where \fIn1\fR=\fIn2\fR or \fIn3\fR=\fIn4\fR,
+identical pairs, where
+.IR n1 = n2
+or
+.IR n3 = n4 ,
 are abbreviated as a single number.
 .sp
 .LP
 Following each of these lines come all the lines that are affected in the
-first file flagged by `\|\fB<\fR\|', then all the lines that are affected in
-the second file flagged by `\|\fB>\fR\|'.
+first file flagged by
+.RB ` \|<\| ',
+then all the lines that are affected in
+the second file flagged by
+.RB ` \|\>\| '.
 .SH OPTIONS
 .sp
 .LP
 The following options are supported:
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -b
-.ad
-.RS 7n
-.rt
+.TP
+.B \-a
+Treat all files as
+.B ASCII
+text.
+Normally
+.B diff
+will simply print
+.B `Binary files ... and ... differ'
+if files contain binary characters.
+Use of this option forces
+.B diff
+to produce a diff.
+
+.br
+.ne 2
+.TP
+.B \-b
 Ignores trailing blanks (spaces and tabs) and treats other strings of blanks
 as equivalent.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -i
-.ad
-.RS 7n
-.rt
+.TP
+.B \-B
+Ignores changes that just inserted or deleted blank (empty) lines.
+
+.br
+.ne 2
+.TP
+.B \-i
 Ignores the case of letters. For example,
 .RB ` A '
 will compare equal to
-`\fBa\fR'.
-.RE
+.RB ` a '.
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -t
-.ad
-.RS 7n
-.rt
+.TP
+.B \-N
+New file mode, treat absent files as empty.
+If 
+.BR diff (1)
+prints time stamps for files, the time stamp for missing files will refer
+to January 1 1970 00:00:00 GMT.
+
+.br
+.ne 2
+.TP
+.B \-p
+With unified and context diffs, show with each change the first
+40 characters of the last line before the context beginning with
+a letter, an underscore or a dollar sign.
+For C source code following standard layout conventions,
+this will show the prototype of the function the change applies to.
+
+.br
+.ne 2
+.TP
+.B \-t
 Expands TAB characters in output lines. Normal or
-.B -c
+.B \-c
 output adds
 character(s) to the front of each line that may adversely affect the
 indentation of the original source lines and make the output lines difficult
 to interpret. This option will preserve the original source's indentation.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -w
-.ad
-.RS 7n
-.rt
+.TP
+.B \-w
 Ignores all blanks (SPACE and TAB characters) and treats all other strings
-of blanks as equivalent. For example, `\fBif ( a =\|= b )\fR' will compare
-equal to `\fBif(a=\|=b)\fR'.
-.RE
+of blanks as equivalent. For example,
+.RB ` "if ( a =\|= b )" '
+will compare
+equal to
+.RB ` if(a=\|=b) '.
 
-.sp
 .LP
 The following options are mutually exclusive:
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -c
-.ad
-.RS 14n
-.rt
+.TP 12n
+.B \-c
 Produces a listing of differences with three lines of context. With this
 option, output format is modified slightly. That is, output begins with
 identification of the files involved and their creation dates, then each
@@ -224,35 +290,24 @@ are marked with '\(em'. The lines added to
 are marked
 \&'\|+\|'. Lines that are changed from one file to the other are marked in
 both files with '\|!\|'.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -C
-.I number
-.ad
-.RS 14n
-.rt
+.TP
+.BI \-C " number
 Produces a listing of differences identical to that produced by
-.BR -c
+.BR \-c
 with
 .I number
 lines of context.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -D
-.I string
-.ad
-.RS 14n
-.rt
+.TP
+.BI \-D " string
 Creates a merged version of
-.IR file1 " and "
+.I file1
+and
 .I file2
 with C preprocessor
 controls included so that a compilation of the result without defining
@@ -263,16 +318,11 @@ while defining
 .I string
 will yield
 .IR file2 .
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -e
-.ad
-.RS 14n
-.rt
+.TP
+.B \-e
 Produces a script of only
 .BR a ,
 .BR c ,
@@ -287,7 +337,7 @@ from
 .IR file1 .
 In
 connection with the
-.B -e
+.B \-e
 option, the following shell program may help
 maintain multiple versions of a file. Only an ancestral file ($1) and a chain
 of version-to-version
@@ -304,122 +354,106 @@ on hand. A ``latest version'' appears on the standard output.
 .in -2
 .sp
 
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -f
-.ad
-.RS 13n
-.rt
+.TP
+.B \-f
 Produces a similar script, not useful with
 .BR ed ,
 in the opposite
 order.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -h
-.ad
-.RS 13n
-.rt
+.TP
+.B \-h
 Does a fast, half-hearted job. It works only when changed stretches are
 short and well separated, but does work on files of unlimited length. Options
-.BR -c ,
-.BR -C ,
-.BR -D ,
-.BR -e ,
-.BR -f ,
+.BR \-c ,
+.BR \-C ,
+.BR \-D ,
+.BR \-e ,
+.BR \-f ,
+.BR \-q ,
+.BR \-u ,
 and
-.B -n
+.B \-n
 are
 unavailable with
-.BR -h .
+.BR \-h .
 .B diff
 does not descend into directories with
 this option.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -n
-.ad
-.RS 13n
-.rt
+.TP
+.B \-n
 Produces a script similar to
-.BR -e ,
+.BR \-e ,
 but in the opposite order and with a
 count of changed lines on each insert or delete command.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -u
-.ad
-.RS 13n
-.rt
+.TP
+.B \-q
+Just print a single line message when the files differ. 
+Does not output a list of changes.
+
+.br
+.ne 2
+.TP
+.B \-u
 Produces a listing of differences with three lines of context. The output is
-similar to that of the \fB-c\fR option, except that the context is "unified".
+similar to that of the
+.B -c
+option, except that the context is "unified".
 Removed and changed lines in
 .I file1
-are marked by a '\fB-\fR' while
-lines added or changed in
+are marked by a
+.RB ' \(mi '
+while lines added or changed in
 .I file2
-are marked by a '\fB+\fR'. Both
-versions of changed lines appear in the output, while added, removed, and
+are marked by a
+.RB ' + '.
+Both versions of changed lines appear in the output, while added, removed, and
 context lines appear only once. The identification of
 .I file1
 and
-\fIfile2\fR is different, with "\fB\(mi\(mi\(mi\fR" and "\fB+++\fR" being
+.I file2
+is different, with "\fB\(mi\(mi\(mi\fR" and "\fB+++\fR" being
 printed where "\fB***\fR" and "\fB\(mi\(mi\(mi\fR" would appear with the
-.B -c
+.B \-c
 option. Each change is separated by a line of the form
 .sp
 .in +2
 .nf
-\fB@@ -\fIn1\fR,\fIn2\fR +\fIn3\fR,\fIn4\fR @@\fR
+.B @@ \c
+.IR -n1 , "n2 \c
+.IR +n3 , n4 " @@
 .fi
 .in -2
 .sp
 
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -U
-.I number
-.ad
-.RS 13n
-.rt
+.TP
+.BI \-U " number
 Produces a listing of differences identical to that produced by
-.BR -u
+.BR \-u
 with
 .I number
 lines of context.
-.RE
 
-.sp
 .LP
 The following options are used for comparing directories:
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -l
-.ad
-.RS 12n
-.rt
+.TP 12n
+.B \-l
 Produces output in long format. Before the
 .BR diff ,
 each text file is
@@ -427,89 +461,68 @@ piped through
 .BR pr (1)
 to paginate it. Other differences are remembered
 and summarized after all text file differences are reported.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -r
-.ad
-.RS 12n
-.rt
+.TP
+.B \-r
 Applies
 .B diff
 recursively to common subdirectories encountered.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -s
-.ad
-.RS 12n
-.rt
+.TP
+.B \-s
 Reports files that are identical. These identical files would not otherwise
 be mentioned.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -S
-.I name
-.ad
-.RS 12n
-.rt
+.TP
+.BI \-S " name
 Starts a directory
 .B diff
 in the middle, beginning with the file
 .IR name .
-.RE
 
 .SH OPERANDS
 .sp
 .LP
 The following operands are supported:
-.sp
-.ne 2
-.mk
-.na
-.I file1
-.ad
 .br
-.na
+.ne 4
+.PD 0
+.TP 12n
+.I file1
+.TP
 .I file2
-.ad
-.RS 15n
-.rt
 A path name of a file or directory to be compared. If either
 .I file1
 or
 .I file2
-is \fB\(mi\fR, the standard input will be used in its place.
-.RE
+is
+.BR \(mi ,
+the standard input will be used in its place.
+.PD
 
-.sp
-.ne 2
-.mk
-.na
-.I directory1
-.ad
 .br
-.na
+.ne 4
+.PD 0
+.TP
+.I directory1
+.TP
 .I directory2
-.ad
-.RS 15n
-.rt
 A path name of a directory to be compared.
-.RE
+.PD
 
 .sp
 .LP
-If only one of \fIfile1\fR and \fIfile2\fR is a directory,
+If only one of
+.I file1
+and
+.I file2
+is a directory,
 .B diff
 will
 be applied to the non-directory file and the file contained in the directory
@@ -548,9 +561,11 @@ contains a file named
 .BR y :
 
 .sp
+.ne 4
 .in +2
 .nf
-example% \fBdiff -r dir1 dir2\fR
+example% \c
+.B "diff -r dir1 dir2
 Common subdirectories: dir1/x and dir2/x
 
 Only in dir2/x: y
@@ -583,83 +598,53 @@ that affect the execution of
 .BR LC_TIME ,
 and
 .BR NLSPATH .
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP
 .B TZ
-.ad
-.RS 7n
-.rt
 Determines the locale for affecting the timezone used for calculating file
 timestamps written with the
-.B -C
+.B \-C
 and
-.B -c
+.B \-c
 options.
-.RE
 
 .SH EXIT STATUS
 .sp
 .LP
 The following exit values are returned:
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP
 .B 0
-.ad
-.RS 7n
-.rt
 No differences were found.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP
 .B 1
-.ad
-.RS 7n
-.rt
 Differences were found.
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP
 .B >1
-.ad
-.RS 7n
-.rt
 An error occurred.
-.RE
 
 .SH FILES
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP 17n
 .B /tmp/d?????
-.ad
-.RS 19n
-.rt
 temporary file used for comparison
-.RE
 
-.sp
+.br
 .ne 2
-.mk
-.na
+.TP
 .B /usr/lib/diffh
-.ad
-.RS 19n
-.rt
 executable file for
-.B -h
+.B \-h
 option
-.RE
 
 .SH ATTRIBUTES
 .sp
@@ -685,32 +670,58 @@ Interface StabilityStandard
 .TE
 
 .SH SEE ALSO
-.sp
+.nh
 .LP
 .BR bdiff (1),
 .BR cmp (1),
 .BR comm (1),
 .BR dircmp (1),
 .BR ed (1),
+.BR patch (1),
 .BR pr (1),
 .BR sdiff (1),
 .BR attributes (5),
 .BR environ (5),
 .BR largefile (5),
 .BR standards (5)
+.hy 14
+.LP
+James W. Hunt
+and
+M. Douglas McIlroy,
+"An Algorithm for Differential File Comparison",
+.I Computing Science Technical Report,
+Bell Laboratories 41,
+June 1976
+
 .SH NOTES
 .sp
 .LP
 Editing scripts produced under the
-.B -e
-or
-.B -f
-options are naive
+.B \-f
+option are naive
 about creating lines consisting of a single period
 .RB ( \&. ).
+Editing scripts produced under the
+.B \-e
+option contain a workaround for the problem that is understood by
+.BR patch (1).
 .sp
 .LP
 Missing NEWLINE at end of file indicates that the last line of the file in
 question did not have a NEWLINE. If the lines are different, they will be
 flagged and output, although the output will seem to indicate they are the
 same.
+
+.br
+.ne 5
+.SH AUTHORS
+The
+.BR diff (1)
+program was initially written by Douglas McIlroy at Bell Labs in 1974.
+The SVr4 release was written by various authors at AT&T in 1989.
+The
+.BR diff (1)
+programm was later maintained by various people at AT&T and Sun Microsystems.
+Since 2006, it
+is maintained by J\*org Schilling.
