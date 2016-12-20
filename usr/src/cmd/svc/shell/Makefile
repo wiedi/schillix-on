@@ -32,6 +32,7 @@ SRCS = \
 	routing_include.sh \
 	sendmail_include.sh \
 	smf_include.sh \
+	string_include.sh \
 	mfsthistory
 
 SCRIPTS = $(SRCS:%=$(ROOT)/lib/svc/share/%)
