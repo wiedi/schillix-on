@@ -3,6 +3,7 @@
  * util_helper.c - HAL utilities for helper (as e.g. prober/addons) et al. 
  *
  * Copyright (C) 2006 David Zeuthen, <david@fubar.dk>
+ * Copyright (C) 2017 Joerg Schilling, <joerg@schily.net>
  *
  * Licensed under the Academic Free License version 2.1
  *
@@ -75,6 +76,9 @@ drop_privileges(int keep_auxgroups)
 
 	/* for sysevent need to be root and have this privilege */
 	(void) priv_addset(pPrivSet, PRIV_SYS_CONFIG);
+
+	/* for devfsadmd need to be root and have this privilege */
+	(void) priv_addset(pPrivSet, PRIV_SYS_DEVICES);
 
 	/* need proc_audit privilege */
 	(void) priv_addset(pPrivSet, PRIV_PROC_AUDIT);
