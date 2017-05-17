@@ -1,13 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License, Version 1.0 only
- * (the "License").  You may not use this file except in compliance
- * with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may only use this file in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -22,6 +23,7 @@
 /*
  * ISO 9660 System Use Sharing Protocol extension filesystem specifications
  * Copyright (c) 1991,2000,2001 by Sun Microsystems, Inc.
+ * Copyright 2006-2007 J. Schilling, Inc.  All rights reserved.
  * All rights reserved.
  */
 
