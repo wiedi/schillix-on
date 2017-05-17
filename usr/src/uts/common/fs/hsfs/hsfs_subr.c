@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may only use this file in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -22,6 +24,7 @@
  * Miscellaneous support subroutines for High Sierra filesystem
  *
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2006-2007,2017 J. Schilling, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -55,8 +58,6 @@
 #include <sys/fs/hsfs_node.h>
 #include <sys/fs/hsfs_impl.h>
 
-#define	THE_EPOCH	1970
-#define	END_OF_TIME	2099
 extern int hsfs_lostpage;
 
 #ifdef __STDC__
@@ -172,17 +173,14 @@ hs_parse_dirdate(dp, tvp)
 	gmtoff = HDE_DATE_GMTOFF(dp);
 
 	tvp->tv_usec = 0;
-	if (year < THE_EPOCH) {
+
+	if ((month < 1) || (month > 12) ||
+	    (day < 1) || (day > 31)) {
 		tvp->tv_sec = 0;
 	} else {
 		tvp->tv_sec = hs_date_to_gmtime(year, month, day, gmtoff);
-		if (tvp->tv_sec != -1) {
-			tvp->tv_sec += ((hour * 60) + minute) * 60 + sec;
-		}
+		tvp->tv_sec += ((hour * 60) + minute) * 60 + sec;
 	}
-
-	return;
-
 }
 
 /*
@@ -208,17 +206,15 @@ hs_parse_longdate(dp, tvp)
 	sec = HSV_DATE_SEC(dp);
 	gmtoff = HSV_DATE_GMTOFF(dp);
 
-	tvp->tv_usec = 0;
-	if (year < THE_EPOCH) {
+	if ((month < 1) || (month > 12) ||
+	    (day < 1) || (day > 31)) {
 		tvp->tv_sec = 0;
+		tvp->tv_usec = 0;
 	} else {
 		tvp->tv_sec = hs_date_to_gmtime(year, month, day, gmtoff);
-		if (tvp->tv_sec != -1) {
-			tvp->tv_sec += ((hour * 60) + minute) * 60 + sec;
-			tvp->tv_usec = HSV_DATE_HSEC(dp) * 10000;
-		}
+		tvp->tv_sec += ((hour * 60) + minute) * 60 + sec;
+		tvp->tv_usec = HSV_DATE_HSEC(dp) * 10000;
 	}
-
 }
 
 /* cumulative number of seconds per month,  non-leap and leap-year versions */
@@ -230,15 +226,33 @@ static time_t cum_sec_leap[] = {
 	0x0, 0x28de80, 0x4f1a00, 0x77f880, 0x9f8580, 0xc86400,
 	0xeff100, 0x118cf80, 0x141ae00, 0x1693b00, 0x1921980, 0x1b9a680
 };
+
 #define	SEC_PER_DAY	0x15180
-#define	SEC_PER_YEAR	0x1e13380
+#define	SEC_PER_YEAR	0x1e13380L
+
+/*
+ * The Gregorian leap year formula
+ */
+#define	isleap(A) (((A)%4)? 0   : (((A)%100) == 0 && ((A)%400)) ? 0   : 1)
+/*
+ * Return the number of leap years since 0 AD assuming that the Gregorian
+ * calendar applies to all years.
+ */
+#define	LEAPS(Y) 	((Y) / 4 - (Y) / 100 + (Y) / 400)
+/*
+ * Return the number of days since 0 AD
+ */
+#define	YRDAYS(Y)	(((Y) * 365L) + LEAPS(Y))
+/*
+ * Return the number of days between Januar 1 1970 and the end of the year
+ * before the the year used as argument.
+ */
+#define	DAYS_SINCE_70(Y) (YRDAYS((Y)-1) - YRDAYS(1970-1))
 
 /*
  * hs_date_to_gmtime
  *
- * Convert year(1970-2099)/month(1-12)/day(1-31) to seconds-since-1970/1/1.
- *
- * Returns -1 if the date is out of range.
+ * Convert year(0-9999)/month(1-12)/day(1-31) to seconds-since-1970/1/1.
  */
 static time_t
 hs_date_to_gmtime(year, mon, day, gmtoff)
@@ -249,25 +263,18 @@ hs_date_to_gmtime(year, mon, day, gmtoff)
 {
 	time_t sum;
 	time_t *cp;
-	int y;
-
-	if ((year < THE_EPOCH) || (year > END_OF_TIME) ||
-	    (mon < 1) || (mon > 12) ||
-	    (day < 1) || (day > 31))
-		return (-1);
 
 	/*
 	 * Figure seconds until this year and correct for leap years.
-	 * Note: 2000 is a leap year but not 2100.
 	 */
-	y = year - THE_EPOCH;
-	sum = y * SEC_PER_YEAR;
-	sum += ((y + 1) / 4) * SEC_PER_DAY;
+	sum = DAYS_SINCE_70(year);
+	sum *= SEC_PER_DAY;
+
 	/*
 	 * Point to the correct table for this year and
 	 * add in seconds until this month.
 	 */
-	cp = ((y + 2) % 4) ? cum_sec : cum_sec_leap;
+	cp = (mon >= 3 && isleap(year)) ? cum_sec_leap : cum_sec;
 	sum += cp[mon - 1];
 	/*
 	 * Add in seconds until 0:00 of this day.
