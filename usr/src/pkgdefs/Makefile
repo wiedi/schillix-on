@@ -197,6 +197,8 @@ i386_XMODS= \
 COMMON_SUBDIRS= \
 	SCHILYcpp \
 	SCHILYcppr \
+	SCHILYdeveloper-build-make \
+	SCHILYdeveloper-build-make-xcu4 \
 	SCHILYsystem-header-hdr-schily \
 	SCHILYsystem-library-schily \
 	SCHILYsystem-library-schily-root \

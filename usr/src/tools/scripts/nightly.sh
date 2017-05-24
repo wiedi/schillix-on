@@ -1646,14 +1646,21 @@ DMAKE_VERSION=${DMAKE_VERSION#*: }
 # focus in on just the dotted version number alone
 DMAKE_MAJOR=$( echo $DMAKE_VERSION | \
 	sed -e 's/.*\<\([^.]*\.[^   ]*\).*$/\1/' )
+# Strip off the platform string (something like: "solaris2.11-i386")
+DMAKE_VERSION=$( echo $DMAKE_VERSION | \
+	sed -e 's/\([0-9]\) .*-.* 20/\1 20/' -e 's/ derived from SunPro Make sources//' )
 # extract the second (or final) integer
 DMAKE_MINOR=${DMAKE_MAJOR#*.}
 DMAKE_MINOR=${DMAKE_MINOR%%.*}
 # extract the first integer
 DMAKE_MAJOR=${DMAKE_MAJOR%%.*}
 CHECK_DMAKE=${CHECK_DMAKE:-y}
-# x86 was built on the 12th, sparc on the 13th.
 if [ "$CHECK_DMAKE" = "y" -a \
+     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2017/04/23" -o \
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2017/04/23" ]; then
+	:
+# x86 was built on the 12th, sparc on the 13th.
+elif [ "$CHECK_DMAKE" = "y" -a \
      "$DMAKE_VERSION" != "Sun Distributed Make 7.3 2003/03/12" -a \
      "$DMAKE_VERSION" != "Sun Distributed Make 7.3 2003/03/13" -a \( \
      "$DMAKE_MAJOR" -lt 7 -o \
