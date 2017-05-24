@@ -1,10 +1,10 @@
 /* xconfig.h.  Generated automatically by configure.  */
-/* @(#)xconfig.h.in	1.254 16/09/03 Copyright 1998-2016 J. Schilling */
+/* @(#)xconfig.h.in	1.269 17/05/20 Copyright 1998-2017 J. Schilling */
 /*
  *	Dynamic autoconf C-include code.
  *	Do not edit, this file has been created automatically.
  *
- *	Copyright (c) 1998-2016 J. Schilling
+ *	Copyright (c) 1998-2017 J. Schilling
  *
  *	The layout for this file is controlled by "configure".
  *	Switch off cstyle(1) checks for now.
@@ -18,7 +18,8 @@
  */
 #define PROTOTYPES 1	/* if Compiler supports ANSI C prototypes */
 #define HAVE_INLINE 1	/* if Compiler supports "inline" keyword */
-#define HAVE_ASSERT_H 1	/* to use stdio.h */
+#define HAVE_AR_H 1	/* to use ar.h */
+#define HAVE_ASSERT_H 1	/* to use assert.h */
 #define HAVE_STDIO_H 1	/* to use stdio.h */
 #define HAVE_STDARG_H 1	/* to use stdarg.h, else use varargs.h NOTE: SaberC on a Sun has prototypes but no stdarg.h */
 #define HAVE_VARARGS_H 1	/* to use use varargs.h NOTE: The free HP-UX C-compiler has stdarg.h but no PROTOTYPES */
@@ -75,7 +76,7 @@
 #define HAVE_UTIME_H 1		/* to use utime.h for the utimbuf structure declaration, else declare struct utimbuf yourself */
 #define HAVE_SYS_UTIME_H 1		/* to use sys/utime.h if utime.h does not exist */
 #define HAVE_SYS_IOCTL_H 1		/* if sys/ioctl.h is present */
-#define HAVE_SYS_FILIO_H 1		/* if sys/ioctl.h is present */
+#define HAVE_SYS_FILIO_H 1		/* if sys/filio.h is present */
 #define HAVE_SYS_PARAM_H 1		/* if sys/param.h is present */
 /* #undef HAVE_MACH_MACHINE_H */	/* if mach/machine.h is present */
 /* #undef HAVE_MNTENT_H */		/* if mntent.h is present */
@@ -96,6 +97,7 @@
 #define HAVE_SYS_PRIOCNTL_H 1	/* to use SVr4 priocntl() instead of nice()/setpriority() */
 #define HAVE_SYS_RTPRIOCNTL_H 1	/* if the system supports SVr4 real time classes */
 #define HAVE_SYS_PROCSET_H 1	/* if the system supports SVr4 process sets */
+#define HAVE_SYS_LOADAVG_H 1	/* to use getloadavg() */
 #define HAVE_SYS_SYSCALL_H 1	/* to use syscall() */
 #define HAVE_SYS_MTIO_H 1		/* to use mtio definitions from sys/mtio.h */
 /* #undef HAVE_SYS_TAPE_H */		/* to use mtio definitions from AIX sys/tape.h */
@@ -103,6 +105,7 @@
 #define HAVE_SYS_SHM_H 1		/* to use definitions for shmget() ... from sys/shm.h */
 #define HAVE_SYS_SEM_H 1		/* to use definitions for semget() ... from sys/sem.h */
 #define HAVE_SYS_IPC_H 1		/* to use definitions for ftok() ... from sys/ipc.h */
+#define HAVE_SEMAPHORE_H 1		/* to use definitions for sema_init() ... from semaphore.h */
 #define MAJOR_IN_MKDEV 1		/* if we should include sys/mkdev.h to get major()/minor()/makedev() */
 /* #undef MAJOR_IN_SYSMACROS */	/* if we should include sys/sysmacros.h to get major()/minor()/makedev() */
 #define HAVE_SYS_DKIO_H 1		/* if we may include sys/dkio.h for disk ioctls */
@@ -143,6 +146,7 @@
 /* #undef HAVE_VFORK_H */		/* if we should include vfork.h for vfork() definitions */
 #define HAVE_ARPA_INET_H 1		/* if we have arpa/inet.h (missing on BeOS) */
 				/* BeOS has inet_ntoa() in <netdb.h> */
+#define HAVE_RPC_RPC_H 1		/* if we may include rpc/rpc.h */
 /* #undef HAVE_BSD_DEV_SCSIREG_H */	/* if we have a NeXT Step compatible sg driver */
 /* #undef HAVE_SCSI_SCSI_H */		/* if we may include scsi/scsi.h */
 /* #undef HAVE_SCSI_SG_H */		/* if we may include scsi/sg.h */
@@ -188,6 +192,9 @@
 #define HAVE_DLFCN_H 1		/* if we may include dlfcn.h */
 #define HAVE_LINK_H 1		/* if we may include link.h */
 /* #undef HAVE_DL_H */		/* if we may include dl.h */
+#define HAVE_LIBELF_H 1		/* if we may include libelf.h */
+
+/* #undef HAVE_RANLIB_H */		/* if we may include ranlib.h */
 
 #define HAVE_EXPAT_H 1		/* if we may include expat.h */
 
@@ -276,6 +283,7 @@
 #define HAVE_PCLOSE 1		/* pclose() is present in libc */
 #define HAVE__POPEN 1		/* _popen() is present in libc */
 #define HAVE__PCLOSE 1		/* _pclose() is present in libc */
+#define HAVE_CLOSEFROM 1		/* closefrom() is present in libc */
 #define HAVE_STATVFS 1		/* statvfs() is present in libc */
 /* #undef HAVE_QUOTACTL */		/* quotactl() is present in libc */
 #define HAVE_QUOTAIOCTL 1		/* use ioctl(f, Q_QUOTACTL, &q) instead of quotactl() */
@@ -449,6 +457,10 @@
 #define HAVE_UNSETENV 1		/* unsetenv() is present in libc */
 #define HAVE_UNAME 1		/* uname() is present in libc */
 #define HAVE_SNPRINTF 1		/* snprintf() is present in libc */
+#define HAVE_VPRINTF 1		/* vprintf() is present in libc */
+#define HAVE_VFPRINTF 1		/* vfprintf() is present in libc */
+#define HAVE_VSPRINTF 1		/* vsprintf() is present in libc */
+#define HAVE_VSNPRINTF 1		/* vsnprintf() is present in libc */
 #define HAVE_STRCAT 1		/* strcat() is present in libc */
 #define HAVE_STRNCAT 1		/* strncat() is present in libc */
 #define HAVE_STRCMP 1		/* strcmp() is present in libc */
@@ -519,12 +531,15 @@
 /* #undef HAVE_SPAWNVE */		/* spawnve() is present in libc */
 /* #undef HAVE_SPAWNVP */		/* spawnvp() is present in libc */
 /* #undef HAVE_SPAWNVPE */		/* spawnvpe() is present in libc */
+#define HAVE_ATEXIT 1		/* atexit() is present in libc */
+/* #undef HAVE_ON_EXIT */		/* on_exit() (SunOS-4.x) is present in libc */
 #define HAVE_GETEXECNAME 1		/* getexecname() is present in libc */
 #define HAVE_GETPROGNAME 1		/* getprogname() is present in libc */
 #define HAVE_SETPROGNAME 1		/* setprogname() is present in libc */
 /* #undef HAVE_PROC_PIDPATH */	/* proc_pidpath() is present in libc */
 /* #undef HAVE_VAR_PROGNAME */	/* extern char *__progname is present in libc */
 /* #undef HAVE_VAR_PROGNAME_FULL */	/* extern char *__progname_full is present in libc */
+#define HAVE_GETLOADAVG 1		/* getloadavg() is present in libc */
 #define HAVE_ALLOCA 1		/* alloca() is present (else use malloc())*/
 #define HAVE_MALLOC 1		/* malloc() is present in libc */
 #define HAVE_CALLOC 1		/* calloc() is present in libc */
@@ -602,6 +617,8 @@
 #define HAVE_GETPROFATTR 1		/* getprofattr() is present in -lsecdb */
 
 #define HAVE_GMATCH 1		/* gmatch() is present in -lgen */
+
+#define HAVE_ELF_BEGIN 1		/* elf_begin() is present in -lelf */
 
 /* #undef HAVE_CLONE_AREA */		/* clone_area() is present in libc */
 /* #undef HAVE_CREATE_AREA */		/* create_area() is present in libc */
@@ -749,6 +766,9 @@
 #define HAVE_INET_NTOA 1		/* inet_ntoa() is present in libc/libsocket */
 #define HAVE_GETADDRINFO 1		/* getaddrinfo() is present in libc/libsocket */
 #define HAVE_GETNAMEINFO 1		/* getnameinfo() is present in libc/libsocket */
+#define HAVE_HOST2NETNAME 1	/* host2netname() is present in libc/libsocket */
+#define HAVE_NETNAME2HOST 1	/* netname2host() is present in libc/libsocket */
+
 
 #if	defined(HAVE_QUOTACTL) || defined(HAVE_QUOTAIOCTL)
 #	define HAVE_QUOTA	/* The system inludes quota */
@@ -967,6 +987,8 @@
 /* #undef wctype_t */			/* To be used if wctype_t is not in wchar.h */
 /* #undef mbstate_t */		/* To be used if mbstate_t is not in wchar.h */
 
+/* #undef timestruc_t */		/* To be used if timestruc_t is not in sys/stat.h */
+
 /*#undef HAVE_SIZE_T*/
 /*#undef NO_SIZE_T*/
 /* #undef VA_LIST_IS_ARRAY */		/* va_list is an array */
@@ -1009,7 +1031,9 @@
 
 #ifdef USE_ACL			/* Enable/disable ACL support */
 /*
- * The withdrawn POSIX.1e ACL draft support
+ * The withdrawn POSIX.1e ACL draft support.
+ * It has been written in 1993 and withdrawn in 1997.
+ * Linux started to implement it in 2001.
  */
 /* #undef HAVE_ACL_GET_FILE */	/* acl_get_file() function */
 /* #undef HAVE_ACL_SET_FILE */	/* acl_set_file() function */
@@ -1051,10 +1075,18 @@
 #define HAVE_ACL_FROMTEXT 1	/* acl_fromtext() function */
 #define HAVE_ACL_TOTEXT 1		/* acl_totext() function */
 
+#if !defined(HAVE_POSIX_ACL)
+/*
+ * Cygwin used to implement the Sun UFS ACL interface but in 2016
+ * moved towards the withdrawn POSIX draft.
+ * Make sure that we do not #define HAVE_POSIX_ACL and HAVE_SUN_ACL
+ * at the same time.
+ */
 #if defined(HAVE_ACL) && defined(HAVE_FACL) && \
     defined(HAVE_ACLFROMTEXT) && defined(HAVE_ACLTOTEXT)
 #	define	HAVE_SUN_ACL	1 /* Sun UFS ACL's present */
 #endif
+#endif /* !defined(HAVE_POSIX_ACL) */
 
 #if defined(HAVE_ACL_GET) && defined(HAVE_ACL_SET) && \
     defined(HAVE_FACL_GET) && defined(HAVE_FACL_SET) && \

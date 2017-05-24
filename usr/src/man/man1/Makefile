@@ -114,6 +114,7 @@ MANFILES=				\
 	disown.1			\
 	dispgid.1			\
 	dispuid.1			\
+	dmake.1				\
 	dos2unix.1			\
 	dosh.1				\
 	download.1			\

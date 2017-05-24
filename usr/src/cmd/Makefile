@@ -393,6 +393,7 @@ COMMON_SUBDIRS=		\
 	su		\
 	sulogin		\
 	sunpc		\
+	sunpro		\
 	svc		\
 	svr4pkg		\
 	swap		\
@@ -709,6 +710,7 @@ MSGSUBDIRS=		\
 	stmsboot	\
 	strings		\
 	su		\
+	sunpro		\
 	svc		\
 	svr4pkg		\
 	swap		\
