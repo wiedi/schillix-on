@@ -29,6 +29,7 @@ CPPFLAGS +=	-DREDIRECT_ERR		# Support env "__DMAKE_SEPARATE_STDERR"
 CPPFLAGS +=	-DDO_MAKE_NAME		# Set up rule "MAKE_NAME=sunpro"
 
 CFLAGS +=	$(INCS)
+CCFLAGS +=	$(INCS)
 
 CFLAGS +=	$(CCVERBOSE)
 
@@ -43,4 +44,4 @@ $(POFILE): $(POFILES)
 #
 # Overwrite rule as we are using C++
 #
-COMPILE.cpp= $(CCC) -E $(CPPFLAGS)
+COMPILE.cpp= $(CCC) -E $(CCFLAGS) $(CPPFLAGS)
