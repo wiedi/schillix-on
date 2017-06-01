@@ -28,7 +28,7 @@ all:
 
 include $(SRC)/lib/Makefile.lib
 
-POFILE =	libmksh.po
+POFILE =	sunpromakelibmksh.po
 POFILES =	$(OBJECTS:%.o=%.po)
 
 include ../../../../Makefile.com
