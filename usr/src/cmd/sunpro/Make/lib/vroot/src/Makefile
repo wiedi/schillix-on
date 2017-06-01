@@ -51,7 +51,7 @@ all:
 
 include $(SRC)/lib/Makefile.lib
 
-POFILE =	libvroot.po
+POFILE =	sunpromakelibvroot.po
 POFILES =	$(OBJECTS:%.o=%.po)
 
 include ../../../../Makefile.com
