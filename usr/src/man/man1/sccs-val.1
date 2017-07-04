@@ -1,7 +1,6 @@
 '\" te
-.\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
-.\" Copyright (c) 2013, Andreas Roehler
+.\" @(#)sccs-val.1	1.22 16/11/27 Copyright 2007-2016 J. Schilling
+.\" Copyright (c) 2002, Sun Microsystems, Inc. All Rights Reserved
 .\" CDDL HEADER START
 .\"
 .\" The contents of this file are subject to the terms of the
@@ -20,186 +19,301 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH sccs-val 1 "17 Jan 2008" "SunOS 5.11" "User Commands"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH sccs-val 1 "2016/11/27" "SunOS 5.11" "User Commands"
 .SH NAME
 sccs-val, val \- validate an SCCS file
 .SH SYNOPSIS
 .LP
 .nf
-\fBval\fR [\fB-s\fR] [\fB-m\fR \fIname\fR] [\fB-r\fIsid\fR] [\fB-y\fR \fItype\fR] \fIs.filename\fR...
+.BR /usr/ccs/bin/val " -
+.fi
+.LP
+.nf
+.B /usr/ccs/bin/val \c
+.RB [ -T "] [" -s\c
+.RB "] [" "-m \c
+.I name\c
+.RB "] [" -r\c
+.I sid\c
+.RB "] [" "-y \c
+.IR type "] " s.filename ...
 .fi
 
 .SH DESCRIPTION
-.sp
 .LP
 The
 .B val
 utility determines if the specified
 .BR s. files
-meet the
-characteristics specified by the indicated arguments.
-.B val
-can process
-up to 50 files on a single command line.
-.sp
+meet the characteristics specified by the indicated arguments.
 .LP
 .B val
-.RB "has a special argument, `" \(mi \&',
-which reads the standard
-input until the end-of-file condition is detected. Each line read is
-independently processed as if it were a command line argument list.
-.sp
+has a special argument,
+.RB ` \(mi ',
+which reads the standard input until the end-of-file condition is detected.
+Each line read is independently processed as if it were a command line
+argument list.
+.LP
+If a directory name is used in place of the
+.I s.filename
+command line argument,
+the
+.B val
+command applies to all
+.BR s. files
+in that directory. Unreadable
+.BR s. files
+produce an error; processing continues with the next file (if any).
 .LP
 .B val
-generates diagnostic messages on the standard output for each
-command line and file processed and also returns a single 8\(mibit code upon
-exit as described below.
-.sp
+generates diagnostic messages on the standard output for each command line
+and file processed and also returns a single 8\(mibit code upon exit
+as described below.
 .LP
 The 8-bit code returned by
 .B val
-is a disjunction of the possible
-errors, that is, it can be interpreted as a bit string where (moving from
-left to right) the bits set are interpreted as follows:
-.sp
+is a disjunction of the possible errors, that is, it can be interpreted
+as a bit string where (moving from left to right) the bits set are
+interpreted as follows:
+.LP
 .in +2
 .nf
-bit 0 = missing file argument
-bit 1 = unknown or duplicate option
-bit 2 = corrupted s.file
-bit 3 = can not open file or file not in s.file format
-bit 4 = the SCCS delta ID (SID) is invalid or ambiguous
-bit 5 = the SID does not exist
-bit 6 = mismatch between Y% and -y argument
-bit 7 = mismatch between sccs-val.1 and -m argument
+bit 0 (value 128) = missing file argument
+bit 1 (value  64) = unknown or duplicate option
+bit 2 (value  32) = corrupted s.file
+bit 3 (value  16) = can not open file or file not in s.file format
+bit 4 (value   8) = the SCCS delta ID (SID) is invalid or ambiguous
+bit 5 (value   4) = the SID does not exist
+bit 6 (value   2) = mismatch between %\&Y% and -y argument
+bit 7 (value   1) = mismatch between %\&M% and -m argument
 .fi
 .in -2
-.sp
-
-.sp
 .LP
 .B val
-can process two or more files on a given command line, and in
-turn can process multiple command lines (when reading the standard input).
-.RB "In these cases, an aggregate code is returned which is the logical" " OR"
+can process two or more files on a given command line, and in turn can
+process multiple command lines (when reading the standard input).
+In these cases, an aggregate code is returned which is the logical
+.B OR
 of the codes generated for each command line and file processed.
+
 .SH OPTIONS
-.sp
 .LP
 The following options are supported:
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -s
-.ad
-.RS 11n
-.rt
-Silent.  Suppresses the normal error or warning messages.
-.RE
-
-.sp
+.TP
+.B \-h
+Check 
+SID specific checksums that are available with
+.B "SCCS v6"
+history files.
+This may slow down the process significantly in case that
+there are many deltas in a SCCS history file.
+.br
 .ne 2
-.mk
-.na
-.B -m
-.I name
-.ad
-.RS 11n
-.rt
+.TP
+.BI \-m " name
 Compares
 .I name
-with the
-.B %M%
+with the 
+.B "%\&M%"
 ID keyword in the
 .BR s. file.
-.RE
-
-.sp
+.br
 .ne 2
-.mk
-.na
-.BI -r sid
-.ad
-.RS 11n
-.rt
+.TP
+.BI \-r sid
 Checks to see if the indicated
 .B SID
-is ambiguous, invalid, or absent
-from the
+is ambiguous, invalid, or absent from the
 .BR s. file.
-.RE
-
-.sp
+.br
 .ne 2
-.mk
-.na
-.B -y
-.I type
-.ad
-.RS 11n
-.rt
+.TP 9
+.B \-s
+Silent.  Suppresses the normal error or warning messages.
+.br
+.ne 2
+.TP
+.BI \-y " type
 Compares
 .I type
-with the
-.B %Y%
+with the 
+.B "%\&Y%"
 ID keyword.
+.br
+.ne 2
+.TP
+.B \-T
+Trace. Print extra debug messages.
+This disables the silent mode.
+When in debug mode, extra tests are enabled for:
+.RS
+.TP 12
+.B statistics
+The statistics line in the SCCS history file is written but not used.
+This is why this test is only enabled in debug mode and why a defective
+statistics line does not affect the exit code.
+The test still only checks for semantical correctness but not for correct
+values (e.g. whether the number of inserted lines is correct).
+.TP
+.B time stamps
+The time stamps in the SCCS history file are only used when a cut-off time
+was specified. This test checks for monotonic growing time stamps. A warning
+is issued if time stamps go backwards, but this does not affect the exit code.
+.LP
+For a complete consistency check, it is recommended to run
+.B val
+in debug mode to check for all problems.
 .RE
+
+.ne 3
+.TP
+.B \-V
+Prints the
+.B val
+version number string and exists.
 
 .SH ENVIRONMENT VARIABLES
 .sp
 .LP
 See
 .BR environ (5)
-for descriptions of the following environment
-variables that affect the execution of
-.BR val :
+for descriptions of the following environment variables that affect the
+execution of
+.BR val (1):
 .BR LANG ,
 .BR LC_ALL ,
 .BR LC_CTYPE ,
 .BR LC_MESSAGES ,
 and
 .BR NLSPATH .
-.SH ATTRIBUTES
+
+.br
+.ne 4
+.TP
+.B SCCS_NO_HELP
+If set,
+.BR val (1)
+will not automatically call
+.BR help (1)
+with the SCCS error code in order to print a more helpful
+error message. Scripts that depend on the exact error messages
+of SCCS commands should set the environment variable
+.B SCCS_NO_HELP
+and set
+.BR LC_ALL=C .
+
+.SH EXIT STATUS
 .sp
 .LP
-See
+The following exit values are returned:
+.sp
+.ne 2
+.TP 5
+.B 0
+Successful completion.
+.sp
+.ne 2
+.TP
+.B 1
+An error occurred.
+
+.SH FILES
+.sp
+.ne 2
+.TP 12
+.BI s. file
+.B SCCS
+history file, see
+.BR sccsfile (4).
+
+.SH ATTRIBUTES
+.LP
+See 
 .BR attributes (5)
 for descriptions of the following attributes:
-.sp
-
-.sp
+.LP
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i)
-lw(2.75i) |lw(2.75i)
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
 AvailabilitySUNWsprot
 _
-Interface StabilityCommitted
-_
-StandardSee \fBstandards\fR(5).
+Interface StabilityStandard
 .TE
 
 .SH SEE ALSO
-.sp
+.nh
 .LP
 .BR sccs (1),
-.BR sccs-admin (1),
-.BR sccs-delta (1),
-.BR sccs-get (1),
-.BR sccs-help (1),
+.BR sccs\-admin (1),
+.BR sccs\-cdc (1),
+.BR sccs\-comb (1),
+.BR sccs\-cvt (1),
+.BR sccs\-delta (1),
+.BR sccs\-get (1),
+.BR sccs\-help (1),
+.BR sccs\-log (1),
+.BR sccs\-prs (1),
+.BR sccs\-prt (1),
+.BR sccs\-rmdel (1),
+.BR sccs\-sact (1),
+.BR sccs\-sccsdiff (1),
+.BR sccs\-unget (1),
+.BR bdiff (1), 
+.BR diff (1), 
 .BR what (1),
+.BR sccschangeset (4),
 .BR sccsfile (4),
 .BR attributes (5),
 .BR environ (5),
-.BR standards (5)
+.BR standards (5).
+.hy 14
+
 .SH DIAGNOSTICS
-.sp
 .LP
 Use the SCCS
 .B help
-command for explanations (see
+command for explanations (see 
 .BR sccs-help (1)).
+
+.SH AUTHORS
+The
+.B SCCS
+suite was origininally written by Marc J. Rochkind at Bell Labs in 1972.
+Release 4.0 of
+.BR SCCS ,
+introducing new versions of the programs
+.BR admin (1),
+.BR get (1),
+.BR prt (1),
+and
+.BR delta (1)
+was published on February 18, 1977; it introduced the new text based
+.B SCCS\ v4
+history file format (previous
+.B SCCS
+releases used a binary history file format).
+The
+.B SCCS
+suite
+was later maintained by various people at AT&T and Sun Microsystems.
+Since 2006, the
+.B SCCS
+suite is maintained by J\*org Schilling.

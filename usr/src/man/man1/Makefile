@@ -387,11 +387,14 @@ MANFILES=				\
 	sccs-admin.1			\
 	sccs-cdc.1			\
 	sccs-comb.1			\
+	sccs-cvt.1			\
 	sccs-delta.1			\
 	sccs-get.1			\
 	sccs-help.1			\
+	sccs-log.1			\
 	sccs-prs.1			\
 	sccs-prt.1			\
+	sccs-rcs2sccs.1			\
 	sccs-rmdel.1			\
 	sccs-sact.1			\
 	sccs-sccsdiff.1			\
@@ -595,6 +598,7 @@ MANSO=					\
 	pushd.1				\
 	pwait.1				\
 	pwdx.1				\
+	rcs2sccs.1			\
 	red.1				\
 	rehash.1			\
 	remote_shell.1			\
@@ -608,7 +612,9 @@ MANSO=					\
 	rmdir.1				\
 	rmumount.1			\
 	sact.1				\
+	sccscvt.1			\
 	sccsdiff.1			\
+	sccslog.1			\
 	select.1			\
 	setenv.1			\
 	settime.1			\
@@ -748,6 +754,7 @@ ptime.1			:= SOFILE = man1/proc.1
 pushd.1			:= SOFILE = man1/cd.1
 pwait.1			:= SOFILE = man1/proc.1
 pwdx.1			:= SOFILE = man1/proc.1
+rcs2sccs.1		:= SOFILE = man1/sccs-rcs2sccs.1
 red.1			:= SOFILE = man1/ed.1
 rehash.1		:= SOFILE = man1/hash.1
 remote_shell.1		:= SOFILE = man1/rsh.1
@@ -761,7 +768,9 @@ rmdel.1			:= SOFILE = man1/sccs-rmdel.1
 rmdir.1			:= SOFILE = man1/rm.1
 rmumount.1		:= SOFILE = man1/rmmount.1
 sact.1			:= SOFILE = man1/sccs-sact.1
+sccscvt.1		:= SOFILE = man1/sccs-cvt.1
 sccsdiff.1		:= SOFILE = man1/sccs-sccsdiff.1
+sccslog.1		:= SOFILE = man1/sccs-log.1
 select.1		:= SOFILE = man1/shell_builtins.1
 setenv.1		:= SOFILE = man1/set.1
 settime.1		:= SOFILE = man1/touch.1

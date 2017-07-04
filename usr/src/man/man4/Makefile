@@ -184,6 +184,7 @@ MANFILES=				\
 	rt_dptbl.4			\
 	sasl_appname.conf.4		\
 	sbus.4				\
+	sccschangeset.4			\
 	sccsfile.4			\
 	scsi.4				\
 	securenets.4			\
@@ -238,6 +239,7 @@ MANFILES=				\
 
 MANSO=					\
 	addresses.4			\
+	changeset.4			\
 	devid_cache.4			\
 	devname_cache.4			\
 	dir.4				\
@@ -262,6 +264,7 @@ MANSO=					\
 	wtmpx.4
 
 addresses.4				:= SOFILE = man4/aliases.4
+changeset.4				:= SOFILE = man4/sccschangeset.4
 devid_cache.4				:= SOFILE = man4/devices.4
 devname_cache.4				:= SOFILE = man4/devices.4
 dir.4					:= SOFILE = man4/dir_ufs.4

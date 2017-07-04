@@ -199,6 +199,8 @@ COMMON_SUBDIRS= \
 	SCHILYcppr \
 	SCHILYdeveloper-build-make \
 	SCHILYdeveloper-build-make-xcu4 \
+	SCHILYdeveloper-build-sccs \
+	SCHILYdeveloper-build-sccs-xcu4 \
 	SCHILYsystem-header-hdr-schily \
 	SCHILYsystem-library-schily \
 	SCHILYsystem-library-schily-root \
@@ -513,6 +515,7 @@ COMMON_SUBDIRS= \
 	SUNWsndmr  \
 	SUNWsndmu  \
 	SUNWspnego \
+	SUNWsprot \
 	SUNWspsvr \
 	SUNWspsvu \
 	SUNWsrptr  \
@@ -575,6 +578,7 @@ COMMON_SUBDIRS= \
 	SUNWwpau  \
 	SUNWwsr2  \
 	SUNWxcu4  \
+	SUNWxcu4t \
 	SUNWxcu6  \
 	SUNWxwdv \
 	SUNWxge \

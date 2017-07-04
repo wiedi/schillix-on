@@ -358,6 +358,7 @@ COMMON_SUBDIRS=		\
 	sasinfo		\
 	savecore	\
 	sbdadm		\
+	sccs		\
 	script		\
 	scsi		\
 	sdiff		\
@@ -693,6 +694,7 @@ MSGSUBDIRS=		\
 	sasinfo		\
 	sbdadm		\
 	scadm		\
+	sccs		\
 	script		\
 	scsi		\
 	sdiff		\
