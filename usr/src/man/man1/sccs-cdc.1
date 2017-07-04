@@ -1,7 +1,6 @@
 '\" te
-.\" Copyright (c) 2007, Sun Microsystems, Inc.
-.\" Copyright (c) 2012-2013, J. Schilling
-.\" Copyright (c) 2013, Andreas Roehler
+.\" @(#)sccs-cdc.1	1.19 16/11/27 Copyright 2007-2016 J. Schilling
+.\" Copyright (c) 1999, Sun Microsystems, Inc.
 .\" CDDL HEADER START
 .\"
 .\" The contents of this file are subject to the terms of the
@@ -20,121 +19,131 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH sccs-cdc 1 "30 Jun 2007" "SunOS 5.11" "User Commands"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH sccs-cdc 1 "2016/11/27" "SunOS 5.11" "User Commands"
 .SH NAME
 sccs-cdc, cdc \- change the delta commentary of an SCCS delta
 .SH SYNOPSIS
 .LP
 .nf
-\fBcdc\fR \fB-r\fIsid\fR [\fB-m\fImr-list\fR] [\fB-y\fR [\fIcomment\fR]] \fIs.filename\fR...
+.B "/usr/ccs/bin/cdc \c
+.BI -r "sid \c"
+.RB [ -m\c
+.IR mr-list "] \c
+.RB [ -q\c
+.RI [ nsedelim "]] \c
+.br
+.RB "    [" -y [\c
+.IR comment "]] \c
+.RB [ -z "] \c
+.IR s.filename ...
 .fi
 
 .SH DESCRIPTION
-.sp
+
 .LP
 .B cdc
 annotates the delta commentary for the
 .B SCCS
-delta ID (SID)
-specified by the
+delta ID (SID) specified by the
 .B -r
 option in each named
 .BR s. file.
-.sp
+
 .LP
 If the
 .B v
 flag is set in the
 .BR s. file,
 you can also use
-.B
-cdc
-to update the Modification Request (MR) list.
-.sp
+.B cdc
+to update the Modification Request
+(MR) list.
+
 .LP
-If you checked in the delta, or, if you own the file and directory and have
-write permission, you can use
+If you checked in the delta, or, if you own the file and directory
+and have write permission, you can use
 .B cdc
 to annotate the commentary.
-.sp
+
 .LP
 Rather than replacing the existing commentary,
 .B cdc
-inserts the new
-comment you supply, followed by a line of the form:
-.sp
+inserts the new comment you supply, followed by a line of the form:
+
 .LP
-.B
-*** CHANGED *** \c
-.IB yy / mm /dd
-\fIhh\fB/\fImm\fB/\fIss username\fR
-.sp
+.B *** CHANGED ***
+.IB yy / mm / dd
+.IB hh / mm / ss
+.I username
+
 .LP
 above the existing commentary.
-.sp
+
 .LP
 If a directory is named as the
 .I s.filename
 argument, the
-.B
-cdc
+.B cdc
 command applies to all
 .BR s. files
 in that directory. Unreadable
 .BR s. files
-produce an error; processing continues with the next file (if
-any). If
-.RB ` \(mi \&'
+produce an error; processing continues with the next file (if any). If
+.RB ` \(mi '
 is given as the
 .I s.filename
-argument, each line
-of the standard input is taken as the name of an
+argument, each line of the standard input is taken as the name of an
 .B SCCS
-history file to
-be processed, and the
+history file to be processed, and the
 .B -m
 and
 .B -y
 options must be used.
+
 .SH OPTIONS
-.sp
-.ne 2
-.mk
-.na
-.BI -r sid
-.ad
-.RS 15n
-.rt
+.br
+.ne 3
+.TP 13
+.BI \-r sid
 Specify the
 .B SID
 of the delta to change.
-.RE
 
-.sp
-.ne 2
-.mk
-.na
-.BI -m mr-list
-.ad
-.RS 15n
-.rt
-Specify one or more MR numbers to add or delete. When specifying more than
-one MR on the command line,
+.br
+.ne 3
+.TP
+.BI \-m mr-list
+Specify one or more MR numbers to add or delete. When specifying
+more than one MR on the command line,
 .I mr-list
-takes the form of a quoted,
-.RB "space-separated list. To delete an MR number, precede it with a" " !"
+takes the form of a quoted, space-separated list. To delete an MR number,
+precede it with a
+.B !
 character (an empty
 .B MR
 list has no effect). A list of deleted
 .B MRs
-is placed in the comment section of the delta commentary. If
+is placed in the comment section of the delta commentary.
+If
 .B -m
 is not used and the standard input is a terminal,
 .B cdc
-prompts
-with
+prompts with
 .B MRs?
-for the list (before issuing the
+for the list (before
+issuing the
 .B comments?
 prompt).
 .B -m
@@ -142,66 +151,100 @@ is only useful when the
 .B v
 flag is set in the
 .BR s. file.
-If
-that flag has a value, it is taken to be the name of a program to validate
-the MR numbers.  If that validation program returns a non-zero exit status,
+If that flag has a value, it is taken to be the name of
+a program to validate the MR numbers.  If that validation program returns
+a non-zero exit status,
 .B cdc
-terminates and the delta commentary remains unchanged.
-.RE
+terminates and the delta
+commentary remains unchanged.
 
-.sp
-.ne 2
-.mk
-.na
-\fB-y\fR[\fIcomment\fR]\fR
-.ad
-.RS 15n
-.rt
+.br
+.ne 3
+.TP
+.B \-V
+Prints the
+.B cdc
+version number string and exists.
+
+.br
+.ne 3
+.TP
+.BI \-y [comment]
 Use
 .I comment
-as the annotation in the delta commentary. The previous
-comments are retained; the
+as the annotation
+in the delta commentary. The previous comments are retained; the
 .I comment
-is added along with a notation that
-the commentary was changed. A  null
+is added along with a notation that the commentary
+was changed. A null
 .I comment
 leaves the commentary
 unaffected. If
 .B -y
-is not specified and the standard input is a
-terminal,
+is not specified and the standard input
+is a terminal,
 .B cdc
 prompts with
 .B comments?
-for the text of the
-notation to be added.  An unescaped
+for the text of the notation to be added.  An unescaped
 .B NEWLINE
-character terminates the
-annotation text.
-.RE
+character terminates the annotation text.
+
+.nr
+.ne 3
+.TP
+.BI -q\fR[ nsedelim\fR]
+Enable
+.B NSE
+mode.
+If
+.B NSE
+mode is enabled, several
+.B NSE
+related extensions may be used.
+In this release, the value of
+.I nsedelim
+is ignored.
+.sp
+This option is an undocumented
+.B \s-1SUN\s+1
+extension that does not exist in historic
+.B sccs 
+implementations.
+
+.br
+.ne 3
+.TP
+.B \-z
+.ne 3
+Enable CMF extensions for MR number handling.
+.sp
+This option is an undocumented
+.B \s-1SUN\s+1
+extension that does not exist in historic
+.B sccs 
+implementations.
 
 .SH EXAMPLES
 .LP
 .B Example 1
 Changing the annotated commentary
-.sp
+
 .LP
 The following command:
 
-.sp
+.LP
 .in +2
 .nf
 example% \fBcdc -r1.6 -y"corrected commentary" s.program.c\fR
 .fi
 .in -2
-.sp
 
-.sp
 .LP
 produces the following annotated commentary for delta 1.6 in
 .BR s.program.c :
 
-.sp
+.LP
 .in +2
 .nf
 D 1.6 88/07/05 23:21:07 username 9 0 00001/00000/00000
@@ -212,33 +255,106 @@ corrected commentary
 performance enhancements in main()
 .fi
 .in -2
-.sp
 
-.SH FILES
-.sp
-.ne 2
-.mk
-.na
-.B z.file
-.ad
-.RS 10n
-.rt
-temporary lock file
-.RE
-
-.SH ATTRIBUTES
+.SH ENVIRONMENT VARIABLES
 .sp
 .LP
 See
+.BR environ (5)
+for descriptions of the following environment variables that affect the
+execution of
+.BR cdc (1):
+.BR LANG ,
+.BR LC_ALL ,
+.BR LC_COLLATE ,
+.BR LC_CTYPE ,
+.BR LC_MESSAGES ,
+and
+.BR NLSPATH .
+
+.LP
+.br
+.ne 4
+.TP
+.B SCCS_NO_HELP
+If set,
+.BR cdc (1)
+will not automatically call
+.BR help (1)
+with the SCCS error code in order to print a more helpful
+error message. Scripts that depend on the exact error messages
+of SCCS commands should set the environment variable
+.B SCCS_NO_HELP
+and set
+.BR LC_ALL=C .
+
+.SH EXIT STATUS
+.sp
+.LP
+The following exit values are returned:
+.sp
+.ne 2
+.TP 5
+.B 0
+Successful completion.
+.sp
+.ne 2
+.TP
+.B 1
+An error occurred.
+
+.SH FILES
+
+.sp
+.ne 2
+.TP 12
+.BI s. file
+.B SCCS
+history file, see
+.BR sccsfile (4).
+
+.sp
+.ne 2
+.TP
+.BI x. file
+temporary copy of the
+.BR s. file;
+renamed to the
+.BR s. file
+after completion
+
+.sp
+.ne 2
+.TP
+.BI z. file
+temporary lock file contains the binary process id in host byte order
+followed by the host name
+
+.br
+.ne 3
+.TP
+.B dump.core
+If the file
+.B dump.core
+exists in the current directory and a fatal signal is received, a coredump
+is initiated via
+.BR abort (3).
+
+.SH ATTRIBUTES
+
+.LP
+See 
 .BR attributes (5)
 for descriptions of the following attributes:
 .sp
 
+.LP
+
 .sp
 .TS
 tab() box;
-cw(2.75i) |cw(2.75i)
-lw(2.75i) |lw(2.75i)
+cw(2.75i) |cw(2.75i) 
+lw(2.75i) |lw(2.75i) 
 .
 ATTRIBUTE TYPEATTRIBUTE VALUE
 _
@@ -246,23 +362,61 @@ AvailabilitySUNWsprot
 .TE
 
 .SH SEE ALSO
-.sp
+.nh
 .LP
 .BR sccs (1),
-.BR sccs-admin (1),
-.BR sccs-comb (1),
-.BR sccs-delta (1),
-.BR sccs-help (1),
-.BR sccs-prs (1),
-.BR sccs-prt (1),
-.BR sccs-rmdel (1),
+.BR sccs\-admin (1),
+.BR sccs\-comb (1),
+.BR sccs\-cvt (1),
+.BR sccs\-delta (1),
+.BR sccs\-get (1),
+.BR sccs\-help (1),
+.BR sccs\-log (1),
+.BR sccs\-prs (1),
+.BR sccs\-prt (1),
+.BR sccs\-rmdel (1),
+.BR sccs\-sact (1),
+.BR sccs\-sccsdiff (1),
+.BR sccs\-unget (1),
+.BR sccs\-val (1),
+.BR bdiff (1), 
+.BR diff (1), 
 .BR what (1),
+.BR sccschangeset (4),
 .BR sccsfile (4),
-.BR attributes (5)
+.BR attributes (5),
+.BR environ (5),
+.BR standards (5).
+.hy 14
+
 .SH DIAGNOSTICS
-.sp
 .LP
-Use the
-.B "SCCS help"
-command for explanations (see
+Use the SCCS
+.B help
+command for explanations (see 
 .BR sccs-help (1)).
+
+.SH AUTHORS
+The
+.B SCCS
+suite was origininally written by Marc J. Rochkind at Bell Labs in 1972.
+Release 4.0 of
+.BR SCCS ,
+introducing new versions of the programs
+.BR admin (1),
+.BR get (1),
+.BR prt (1),
+and
+.BR delta (1)
+was published on February 18, 1977; it introduced the new text based
+.B SCCS\ v4
+history file format (previous
+.B SCCS
+releases used a binary history file format).
+The
+.B SCCS
+suite
+was later maintained by various people at AT&T and Sun Microsystems.
+Since 2006, the
+.B SCCS
+suite is maintained by J\*org Schilling.
