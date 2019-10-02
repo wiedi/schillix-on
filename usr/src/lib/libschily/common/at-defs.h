@@ -1,9 +1,9 @@
-/* @(#)at-defs.h	1.1 11/10/21 Copyright 2011 J. Schilling */
+/* @(#)at-defs.h	1.3 18/07/23 Copyright 2011-2018 J. Schilling */
 /*
  *	Libschily internal definitions for openat() emulation
  *	and related functions.
  *
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -12,6 +12,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -27,14 +29,20 @@
 #ifdef	ENOSYS
 #define	__ENOSYS	ENOSYS
 #else
-#define	__ENOSYS	ENOENT
+#define	__ENOSYS	EPERM
 #endif
 #ifdef	EOPNOTSUPP
 #define	__EOPNOTSUPP	EOPNOTSUPP
 #else
-#define	__EOPNOTSUPP	ENOENT
+#define	__EOPNOTSUPP	EPERM
 #endif
 
+/*
+ * XXX: Should we include ENOENT here as our emulation needs
+ * XXX: to be able to emulate openat(fd, name, O_CREAT, 666) or
+ * XXX: mknodat(fd, name, mode, dev).
+ * XXX: Since /proc uses symlinks, it should be safe.
+ */
 #define	NON_PROCFS_ERRNO(e)					\
 			((e) == ENOENT || (e) == ENOTDIR ||	\
 			(e) == EACCES || (e) == EPERM ||	\
@@ -67,5 +75,10 @@ extern char	*proc_fd2name	__PR((char *buf, int fd, const char *name));
 extern	void	savewd_abort	__PR((int err));
 extern	void	fchdir_abort	__PR((int err));
 extern	void	restorewd_abort	__PR((int err));
+
+#ifdef	HAVE_LARGEFILES
+#define	fstatat	fstatat64
+#define	openat	openat64
+#endif
 
 #endif	/* _AT_DEFS_H */

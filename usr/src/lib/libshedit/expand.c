@@ -1,13 +1,13 @@
-/* @(#)expand.c	1.44 13/09/25 Copyright 1985-2013 J. Schilling */
+/* @(#)expand.c	1.58 19/06/26 Copyright 1985-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)expand.c	1.44 13/09/25 Copyright 1985-2013 J. Schilling";
+	"@(#)expand.c	1.58 19/06/26 Copyright 1985-2019 J. Schilling";
 #endif
 /*
  *	Expand a pattern (do shell name globbing)
  *
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -23,15 +23,16 @@ static	UConst char sccsid[] =
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
 
+#include <schily/fcntl.h>
 #include <schily/stdio.h>
+#include <schily/string.h>
+#include <schily/stdlib.h>
+#include <schily/dirent.h>	/* Must be before bsh.h/schily.h/libport.h */
+#include <schily/patmatch.h>
 #include "bsh.h"
 #include "node.h"
 #include "str.h"
 #include "strsubs.h"
-#include <schily/string.h>
-#include <schily/stdlib.h>
-#include <schily/dirent.h>
-#include <schily/patmatch.h>
 
 #ifdef	DEBUG
 #define	EDEBUG(a)	printf a
@@ -49,8 +50,11 @@ EXPORT	BOOL	any_match	__PR((char *s));
 LOCAL	Tnode	*mklist		__PR((Tnode *l));
 LOCAL	int	xcmp		__PR((char *s1, char *s2));
 LOCAL	void	xsort		__PR((char **from, char **to));
-LOCAL	Tnode	*exp		__PR((char *n, int i, Tnode * l));
+LOCAL	Tnode	*exp		__PR((char *n, int i, Tnode * l, BOOL patm));
 EXPORT	Tnode	*expand		__PR((char *s));
+EXPORT	Tnode	*bexpand	__PR((char *s));
+EXPORT	int	bsh_hop_dirs	__PR((char *name, char **np));
+LOCAL	DIR	*lopendir	__PR((char *name));
 
 LOCAL int
 dncmp(s1, s2)
@@ -75,6 +79,8 @@ save_base(s, endptr)
 	register char	*r;
 
 	tmp = malloc((size_t)(endptr-s+1));
+	if (tmp == (char *)NULL)
+		return (tmp);
 	for (r = tmp; s < endptr; )
 		*r++ = *s++;
 	*r = '\0';
@@ -89,7 +95,7 @@ any_match(s)
 
 	while (*s && !strchr(rm, *s))
 		s++;
-	return ((BOOL) *s);
+	return ((BOOL)*s);
 }
 
 LOCAL Tnode *
@@ -106,6 +112,10 @@ mklist(l)
 
 	ac = listlen(l);
 	vp = allocvec(ac);
+	if (vp == (Argvec *)NULL) {
+		freetree(l);
+		return ((Tnode *)NULL);
+	}
 	vp->av_ac = ac;
 	for (l1 = l, p = &vp->av_av[0]; --ac >= 0; ) {
 		*p++ = l1->tn_left.tn_str;
@@ -269,14 +279,15 @@ xsort(from, to)
 #endif
 
 LOCAL Tnode *
-exp(n, i, l)
+exp(n, i, l, patm)
 		char	*n;		/* name to rescan */
 		int	i;		/* index in name to start rescan */
 		Tnode	*l;		/* list of Tnodes already found */
+		BOOL	patm;		/* use pattern matching not strbeg */
 {
 	register char	*cp;
 	register char	*dp;		/* pointer past end of current dir */
-		char	*dir;
+		char	*dir	= NULL;
 		char	*tmp;
 	register char	*cname;		/* concatenated name dir+d_ent */
 		DIR	*dirp;
@@ -292,59 +303,106 @@ exp(n, i, l)
 
 	EDEBUG(("name: '%s' i: %d dp: '%s'\n", n, i, dp));
 
-	while (*cp && !strchr(mchars, *cp)) /* go past non glob parts */
-		if (*cp++ == '/')
-			dp = cp;
+	if (patm) {
+		while (*cp && !strchr(mchars, *cp)) /* go past non glob parts */
+			if (*cp++ == '/')
+				dp = cp;
 
-	while (*cp && *cp != '/')	/* find end of name component */
-		cp++;
+		while (*cp && *cp != '/') /* find end of name component */
+			cp++;
 
-	patlen = cp-dp;
-	i = dp - n;			/* make &n[i] == dp (pattern start) */
+		patlen = cp-dp;
+		i = dp - n;		/* make &n[i] == dp (pattern start) */
 
-	/*
-	 * Prepare to use the pattern matcher.
-	 */
-	EDEBUG(("patlen: %d pattern: '%.*s'\n", patlen, patlen, dp));
+		/*
+		 * Prepare to use the pattern matcher.
+		 */
+		EDEBUG(("patlen: %d pattern: '%.*s'\n", patlen, patlen, dp));
 
-	aux = malloc((size_t)patlen*(sizeof (int)));
-	state = malloc((size_t)(patlen+1)*(sizeof (int)));
-	if ((alt = patcompile((unsigned char *)dp, patlen, aux)) == 0 &&
-	    patlen != 0) {
-		EDEBUG(("Bad pattern\n"));
-		free((char *)aux);
-		free((char *)state);
-		return (l1);
+		aux = malloc((size_t)patlen*(sizeof (int)));
+		state = malloc((size_t)(patlen+1)*(sizeof (int)));
+		if (aux == (int *)NULL || state == (int *)NULL)
+			goto cannot;
+		if ((alt = patcompile((unsigned char *)dp, patlen, aux)) == 0 &&
+		    patlen != 0) {
+			EDEBUG(("Bad pattern\n"));
+			free((char *)aux);
+			free((char *)state);
+			return (l1);
+		}
+	} else {			/* Non-pattern matching variant */
+		alt = 0;
+		aux = NULL;
+		state = NULL;
+
+		while (*cp) {		/* go past directory parts */
+			if (*cp++ == '/')
+				dp = cp;
+		}
+
+		patlen = cp-dp;
+		i = dp - n;		/* make &n[i] == dp (pattern start) */
 	}
 
 	dir = save_base(n, dp);		/* get dirname part */
-	if ((dirp = opendir(dp == n ? "." : dir)) == (DIR *) NULL)
+	if (dir == (char *)NULL ||
+	    (dirp = lopendir(dp == n ? "." : dir)) == (DIR *)NULL)
 		goto cannot;
 
 	EDEBUG(("dir: '%s' match: '%.*s'\n", dp == n?".":dir, patlen, dp));
-	if (patlen == 0) {
+	if (patlen == 0 && patm) {
 		/*
 		 * match auf /pattern/ Daher kein Match wenn keine
 		 * Directory! opendir() Test ist daher notwendig.
+		 * Fuer libshedit (ohne patm) wird aber die Directory
+		 * komplett expandiert.
 		 */
 		l1 = allocnode(STRING, (Tnode *)makestr(dir), l1);
 
 	} else while ((dent = readdir(dirp)) != 0 && !ctlc) {
 		int	namlen;
+		char	*name = dent->d_name;
+
+		/*
+		 * Skip the following names: "", ".", "..".
+		 */
+		if (name[name[0] != '.' ? 0 : name[1] != '.' ? 1 : 2] == '\0') {
+			/*
+			 * Do not skip . and .. if there is a plain match.
+			 * We need this to let ..TAB expand to ../ in the
+			 * command line editor.
+			 */
+			if ((name[0] == '.' && dp[0] == '.') &&
+			    ((name[1] == '\0' && dp[1] == '\0') ||
+			    ((name[1] == '.' && dp[1] == '.') &&
+			     (name[2] == '\0' && dp[2] =='\0')))) {
+				/* EMPTY */;
+			} else {
+				continue;
+			}
+		}
 
 		/*
 		 * Are we interested in files starting with '.'?
 		 */
-		if (dent->d_name[0] == '.' && *dp != '.')
+		if (name[0] == '.' && *dp != '.')
 			continue;
 		namlen = DIR_NAMELEN(dent);
-		tmp = (char *)patmatch((unsigned char *)dp, aux,
-			(unsigned char *)dent->d_name, 0, namlen, alt, state);
+		if (patm) {
+			tmp = (char *)patmatch((unsigned char *)dp, aux,
+				(unsigned char *)name, 0, namlen,
+				alt, state);
+		} else {
+			if (strstr(name, dp) == name)
+				tmp = "";
+			else
+				tmp = NULL;
+		}
 
 #ifdef	DEBUG
-		if (tmp != NULL || (dent->d_name[0] == dp[0] &&
+		if (tmp != NULL || (name[0] == dp[0] &&
 		    patlen == namlen))
-			EDEBUG(("match? '%s' end: '%s'\n", dent->d_name, tmp));
+			EDEBUG(("match? '%s' end: '%s'\n", name, tmp));
 #endif
 		/*
 		 * *tmp == '\0' is a result of an exact pattern match.
@@ -358,29 +416,39 @@ exp(n, i, l)
 
 		if ((tmp != NULL && *tmp == '\0') ||
 		    (patlen == namlen &&
-		    dent->d_name[0] == dp[0] &&
-		    dncmp(dent->d_name, dp) == 0)) {
-			EDEBUG(("found: '%s'\n", dent->d_name));
+		    name[0] == dp[0] &&
+		    dncmp(name, dp) == 0)) {
+			EDEBUG(("found: '%s'\n", name));
 
-			cname = concat(dir, dent->d_name, cp, (char *)NULL);
+			cname = concat(dir, name, cp, (char *)NULL);
 			if (*cp == '/') {
 				EDEBUG(("rescan: '%s'\n", cname));
 				rescan++;
 			}
-			l1 = allocnode(sxnlen(i+namlen), (Tnode *)cname, l1);
+			if (cname) {
+				l1 = allocnode(sxnlen(i+namlen),
+						(Tnode *)cname, l1);
+			} else {
+				EDEBUG(("cannot concat: '%s%s%s'\n",
+				/* EDEBUG */	dir, name, cp));
+				break;
+			}
 		}
 	}
 	closedir(dirp);
 cannot:
-	free(dir);
-	free((char *)aux);
-	free((char *)state);
+	if (dir)
+		free(dir);
+	if (aux)
+		free((char *)aux);
+	if (state)
+		free((char *)state);
 
-	if (rescan > 0) {
+	if (rescan > 0 && l1 != (Tnode *)NULL) {
 		for (alt = rescan; --alt >= 0; ) {
 			register Tnode	*l2;
 
-			l = exp(l1->tn_left.tn_str, nlen(l1), l);
+			l = exp(l1->tn_left.tn_str, nlen(l1), l, patm);
 			free(l1->tn_left.tn_str);
 			l2 = l1->tn_right.tn_node;
 			free(l1);
@@ -392,12 +460,104 @@ cannot:
 	return (l1);
 }
 
+/*
+ * The expand function used for globbing
+ */
 EXPORT Tnode *
 expand(s)
 	char	*s;
 {
 	if (!any_match(s))
-		return ((Tnode *) NULL);
+		return ((Tnode *)NULL);
 	else
-		return (mklist(exp(s, 0, (Tnode *)NULL)));
+		return (mklist(exp(s, 0, (Tnode *)NULL, TRUE)));
+}
+
+/*
+ * Begin expand, used for file name completion
+ */
+EXPORT Tnode *
+bexpand(s)
+	char	*s;
+{
+	return (mklist(exp(s, 0, (Tnode *)NULL, FALSE)));
+}
+
+#ifdef	HAVE_FCHDIR
+EXPORT int
+bsh_hop_dirs(name, np)
+	char	*name;
+	char	**np;
+{
+	char	*p;
+	char	*p2;
+	int	fd;
+	int	dfd;
+	int	err;
+
+	p = name;
+	fd = AT_FDCWD;
+	if (*p == '/') {
+		fd = openat(fd, "/", O_SEARCH|O_DIRECTORY|O_NDELAY);
+		while (*p == '/')
+			p++;
+	}
+	while (*p) {
+		if ((p2 = strchr(p, '/')) != NULL) {
+			if (p2[1] == '\0')
+				break;
+			*p2 = '\0';
+		} else {
+			break;	/* No slash remains, return the prefix fd */
+		}
+		if ((dfd = openat(fd, p, O_SEARCH|O_DIRECTORY|O_NDELAY)) < 0) {
+			err = geterrno();
+
+			close(fd);
+			if (err == EMFILE)
+				seterrno(err);
+			else
+				seterrno(ENAMETOOLONG);
+			*p2 = '/';
+			return (dfd);
+		}
+		close(fd);	/* Don't care about AT_FDCWD, it is negative */
+		fd = dfd;
+		*p2++ = '/';	/* p2 is always != NULL here */
+		while (*p2 == '/')
+			p2++;
+		p = p2;
+	}
+	*np = p;
+	return (fd);
+}
+#endif
+
+LOCAL DIR *
+lopendir(name)
+	char	*name;
+{
+#ifdef	HAVE_FCHDIR
+	char	*p;
+	int	fd;
+	int	dfd;
+#endif
+	DIR	*ret = NULL;
+
+	if ((ret = opendir(name)) == NULL && geterrno() != ENAMETOOLONG)
+		return ((DIR *)NULL);
+
+#ifdef	HAVE_FCHDIR
+	if (ret)
+		return (ret);
+
+	fd = bsh_hop_dirs(name, &p);
+	if ((dfd = openat(fd, p, O_RDONLY|O_DIRECTORY|O_NDELAY)) < 0) {
+		close(fd);
+		return ((DIR *)NULL);
+	}
+	close(fd);
+	ret = fdopendir(dfd);
+#endif
+	return (ret);
 }

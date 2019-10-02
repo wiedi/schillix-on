@@ -1,8 +1,8 @@
-/* @(#)stdint.h	1.37 15/12/10 Copyright 1997-2015 J. Schilling */
+/* @(#)stdint.h	1.41 19/02/28 Copyright 1997-2019 J. Schilling */
 /*
  *	Abstraction from stdint.h
  *
- *	Copyright (c) 1997-2015 J. Schilling
+ *	Copyright (c) 1997-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -33,60 +33,11 @@
 #endif
 
 /*
- * Include sys/param.h for NBBY - needed in case that CHAR_BIT is missing
+ * For definitions of TYPE_MINVAL() ...
  */
-#ifndef	_SCHILY_PARAM_H
-#include <schily/param.h>	/* Must be before limits.h */
+#ifndef	_SCHILY_TYPE_VAL_H
+#include <schily/type_val.h>
 #endif
-
-/*
- * Include limits.h for CHAR_BIT - needed by TYPE_MINVAL(t) and  TYPE_MAXVAL(t)
- */
-#ifndef	_SCHILY_LIMITS_H
-#include <schily/limits.h>
-#endif
-
-#ifndef	CHAR_BIT
-#ifdef	NBBY
-#define	CHAR_BIT	NBBY
-#endif
-#endif
-
-/*
- * Last resort: define CHAR_BIT by hand
- */
-#ifndef	CHAR_BIT
-#define	CHAR_BIT	8
-#endif
-
-/*
- * These macros may not work on all platforms but as we depend
- * on two's complement in many places, they do not reduce portability.
- * The macros below work with 2s complement and ones complement machines.
- * Verify with this table...
- *
- *	Bits	1's c.	2's complement.
- * 	100	-3	-4
- * 	101	-2	-3
- * 	110	-1	-2
- * 	111	-0	-1
- * 	000	+0	 0
- * 	001	+1	+1
- * 	010	+2	+2
- * 	011	+3	+3
- *
- * Computing -TYPE_MINVAL(type) will not work on 2's complement machines
- * if 'type' is int or more. Use:
- *		((unsigned type)(-1 * (TYPE_MINVAL(type)+1))) + 1;
- * it works for both 1's complement and 2's complement machines.
- */
-#define	TYPE_ISSIGNED(t)	(((t)-1) < ((t)0))
-#define	TYPE_ISUNSIGNED(t)	(!TYPE_ISSIGNED(t))
-#define	TYPE_MSBVAL(t)		((t)(~((t)0) << (sizeof (t)*CHAR_BIT - 1)))
-#define	TYPE_MINVAL(t)		(TYPE_ISSIGNED(t)			\
-				    ? TYPE_MSBVAL(t)			\
-				    : ((t)0))
-#define	TYPE_MAXVAL(t)		((t)(~((t)0) - TYPE_MINVAL(t)))
 
 /*
  * MSVC has size_t in stddef.h
@@ -104,6 +55,24 @@
 #ifdef	__CHAR_UNSIGNED__	/* GNU GCC define (dynamic)	*/
 #ifndef CHAR_IS_UNSIGNED
 #define	CHAR_IS_UNSIGNED	/* Sing Schily define (static)	*/
+#endif
+#endif
+
+/*
+ * limits.h on Solaris is broken and always #defines _CHAR_IS_SIGNED
+ * SunPro c #defines _CHAR_IS_UNSIGNED in case it was called with -xchar=u
+ *
+ * Note that this still does not fix the values for CHAR_MIN and CHAR_MAX
+ * retrived from limits.h since these constants are #defined in an #ifdef
+ * that is evaluated before we fix _CHAR_IS_SIGNED / _CHAR_IS_UNSIGNED.
+ */
+#if	defined(CHAR_IS_UNSIGNED) || defined(_CHAR_IS_UNSIGNED)
+#ifdef	_CHAR_IS_SIGNED
+#define	__BAD_CHAR_SIGNED__
+#undef	_CHAR_IS_SIGNED
+#endif
+#ifndef	_CHAR_IS_UNSIGNED
+#define	_CHAR_IS_UNSIGNED
 #endif
 #endif
 

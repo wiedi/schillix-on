@@ -10,7 +10,7 @@
 #
 
 #
-# Copyright 2010-2011 Jörg Schilling.  All rights reserved.
+# Copyright 2010-2019 Jörg Schilling.  All rights reserved.
 #
 
 include ../Makefile.lib
@@ -90,6 +90,7 @@ HDRS=	\
 	fstream.h  \
 	getargs.h  \
 	getcwd.h  \
+	getopt.h  \
 	grp.h  \
 	hostname.h  \
 	iconv.h  \
@@ -151,6 +152,7 @@ HDRS=	\
 	stdio.h  \
 	stdlib.h  \
 	stkframe.h  \
+	strar.h  \
 	string.h  \
 	sysexits.h  \
 	syslog.h  \
@@ -160,11 +162,13 @@ HDRS=	\
 	time.h  \
 	timeb.h  \
 	times.h  \
+	type_val.h  \
 	types.h  \
 	unistd.h  \
 	utime.h  \
 	utsname.h  \
 	utypes.h  \
+	values.h  \
 	varargs.h  \
 	vfork.h  \
 	wait.h  \

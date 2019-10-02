@@ -1,8 +1,8 @@
-/* @(#)wctype.h	1.8 13/07/08 Copyright 2009-2013 J. Schilling */
+/* @(#)wctype.h	1.14 19/08/17 Copyright 2009-2019 J. Schilling */
 /*
  *	Abstraction from wctype.h
  *
- *	Copyright (c) 2009-2013 J. Schilling
+ *	Copyright (c) 2009-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -46,11 +46,16 @@
 
 #if	defined(HAVE_ISWPRINT) && defined(USE_WCHAR)
 #ifndef	USE_WCTYPE
-#undef	USE_WCTYPE
+#define	USE_WCTYPE
 #endif
 #endif
 
-#if	!defined(HAVE_WCTYPE_H) && !defined(HAVE_ISWPRINT)
+/*
+ * DJGPP has wctype.h but no iswprint()...
+ * HP-UX-10.x has iswprint()... in wchar.h
+ */
+#if	(!defined(HAVE_WCTYPE_H) && !defined(HAVE_WCHAR_H)) || \
+	!defined(HAVE_ISWPRINT)
 #undef	USE_WCTYPE
 #endif
 
@@ -68,6 +73,10 @@
 #define	iswalnum(c)	isalnum(c)
 #undef	iswalpha
 #define	iswalpha(c)	isalpha(c)
+#ifdef	HAVE_ISBLANK
+#undef	iswblank
+#define	iswblank(c)	isblank(c)
+#endif
 #undef	iswcntrl
 #define	iswcntrl(c)	iscntrl(c)
 #undef	iswcntrl
@@ -95,5 +104,20 @@
 #define	towupper(c)	toupper(c)
 
 #endif	/* !USE_WCTYPE */
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+#ifndef	HAVE_WCTYPE
+extern	wctype_t	wctype		__PR((const char *));
+#endif
+#ifndef	HAVE_ISWCTYPE
+extern	int		iswctype	__PR((wint_t, wctype_t));
+#endif
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif	/* _SCHILY_WCTYPE_H */

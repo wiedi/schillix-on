@@ -1,13 +1,13 @@
-/* @(#)tgetent.c	1.42 15/12/26 Copyright 1986-2015 J. Schilling */
+/* @(#)tgetent.c	1.47 18/11/21 Copyright 1986-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)tgetent.c	1.42 15/12/26 Copyright 1986-2015 J. Schilling";
+	"@(#)tgetent.c	1.47 18/11/21 Copyright 1986-2018 J. Schilling";
 #endif
 /*
  *	Access routines for TERMCAP database.
  *
- *	Copyright (c) 1986-2015 J. Schilling
+ *	Copyright (c) 1986-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -107,7 +107,10 @@ LOCAL	char	*tinsint	__PR((char *ep, int i));
 LOCAL	void	tstrip		__PR((void));
 LOCAL	char	*tmalloc	__PR((int size));
 LOCAL	char	*trealloc	__PR((char *p, int size));
-LOCAL	void	ovstrcpy	__PR((char *p2, char *p1));
+#ifdef	NO_LIBSCHILY
+#define	ovstrcpy	_ovstrcpy
+LOCAL	char	*ovstrcpy	__PR((char *p2, const char *p1));
+#endif
 LOCAL	void	e_tcname	__PR((char *name));
 
 EXPORT int
@@ -612,7 +615,8 @@ tgetstr(ent, array)
 	char	*array[];
 {
 	register	char	*ep = tbuf;
-			char	*np;
+			char	*np = NULL;
+			char	*ap = NULL;
 			char	buf[TMAX];
 
 	if (tbuf == NULL)
@@ -627,11 +631,20 @@ tgetstr(ent, array)
 		if (!ep || *ep == '@')
 			return ((char *)NULL);
 		if (*ep == '=') {
+			if (np && strlen(ep) >= sizeof (buf)) {
+				ap = np = tmalloc(strlen(ep));
+				if (np == NULL)
+					return (np);
+				array = &np;
+			}
 			ep = tdecode(++ep, array);
-			if (ep == buf) {
+			if (ep && np) {
+				np = ep;
 				ep = tmalloc(strlen(ep)+1);
 				if (ep != NULL)
-					strcpy(ep, buf);
+					strcpy(ep, np);
+				if (ap)
+					free(ap);
 			}
 			return (ep);
 		}
@@ -662,10 +675,13 @@ tdecode(pp, array)
 
 	for (; (c = *ep++) && c != ':'; *bp++ = c) {
 		if (c == '^') {
-			if (*ep == '?')
-				c = *ep++ | 0x40;
+			c = *ep++;
+			if (c == '\0')
+				break;
+			else if (c == '?')
+				c |= 0x40;
 			else
-				c = *ep++ & 0x1f;
+				c &= 0x1f;
 			continue;
 		} else if (c != '\\') {
 			continue;
@@ -674,11 +690,16 @@ tdecode(pp, array)
 		 * Handle the \xxx and \C escape sequences here:
 		 */
 		c = *ep++;
+		if (c == '\0')
+			break;
 		if (isoctal(c)) {
-			for (c -= '0', i = 3; --i > 0 && isoctal(*ep); ) {
+			for (c -= '0', i = 3; --i > 0 &&
+			    *ep && isoctal(*ep); ) {
 				c <<= 3;
 				c |= *ep++ - '0';
 			}
+			if (*ep == '\0')
+				break;
 			/*
 			 * Terminfo maps NULL chars to 0200
 			 */
@@ -894,17 +915,23 @@ trealloc(p, size)
 	return ((char *)NULL);
 }
 
+#ifdef	NO_LIBSCHILY
 /*
  * A strcpy() that works with overlapping buffers
  */
-LOCAL void
+LOCAL char *
 ovstrcpy(p2, p1)
-	register char	*p2;
-	register char	*p1;
+	register char		*p2;
+	register const char	*p1;
 {
+	char	*ret = p2;
+
 	while ((*p2++ = *p1++) != '\0')
 		;
+
+	return (ret);
 }
+#endif
 
 LOCAL void
 e_tcname(name)

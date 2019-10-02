@@ -1,14 +1,14 @@
 /*#define	NO_LIBSCHILY*/
-/* @(#)remote.c	1.76 13/04/21 Copyright 1990-2013 J. Schilling */
+/* @(#)remote.c	1.78 18/06/09 Copyright 1990-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)remote.c	1.76 13/04/21 Copyright 1990-2013 J. Schilling";
+	"@(#)remote.c	1.78 18/06/09 Copyright 1990-2018 J. Schilling";
 #endif
 /*
  *	Remote tape client interface code
  *
- *	Copyright (c) 1990-2013 J. Schilling
+ *	Copyright (c) 1990-2018 J. Schilling
  *
  *	TOTO:
  *		Signal handler for SIGPIPE
@@ -21,6 +21,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -187,12 +189,16 @@ errmsgno(err, msg, va_alist)
 #define	CMD_SIZE	80
 
 LOCAL	BOOL	rmt_debug;
+LOCAL	const char *rmt_program;
+LOCAL	const char *rsh_program;
 LOCAL	int	(*rmt_errmsgno)		__PR((int, const char *, ...))	= errmsgno;
 LOCAL	void	(*rmt_exit)		__PR((int))			= exit;
 
 EXPORT	void	rmtinit			__PR((int (*errmsgn)(int, const char *, ...),
 						void (*eexit)(int)));
 EXPORT	int	rmtdebug		__PR((int dlevel));
+EXPORT	const char *rmtrmt		__PR((const char *rmt_name));
+EXPORT	const char *rmtrsh		__PR((const char *rsh_name));
 EXPORT	char	*rmtfilename		__PR((char *name));
 EXPORT	char	*rmthostname		__PR((char *hostname, int hnsize, char *rmtspec));
 EXPORT	int	rmtgetconn		__PR((char *host, int trsize, int excode));
@@ -261,6 +267,32 @@ rmtdebug(dlevel)
 	return (odebug);
 }
 
+EXPORT const char *
+rmtrmt(rmt_name)
+	const char	*rmt_name;
+{
+	const char	*ormt = rmt_program;
+
+	rmt_program = rmt_name;
+
+	if (ormt && *ormt == '\0')
+		return ((const char *)NULL);
+	return (ormt);
+}
+
+EXPORT const char *
+rmtrsh(rsh_name)
+	const char	*rsh_name;
+{
+	const char	*orsh = rsh_program;
+
+	rsh_program = rsh_name;
+
+	if (orsh && *orsh == '\0')
+		return ((const char *)NULL);
+	return (orsh);
+}
+
 EXPORT char *
 rmtfilename(name)
 	char	*name;
@@ -322,8 +354,8 @@ rmtgetconn(host, trsize, excode)
 	static	struct passwd	*pw = 0;
 		char		*name = "root";
 		char		*p;
-		char		*rmt;
-		char		*rsh;
+		const char	*rmt = NULL;
+		const char	*rsh = NULL;
 		int		rmtsock;
 		char		*rmtpeer;
 		char		rmtuser[128];
@@ -372,12 +404,21 @@ rmtgetconn(host, trsize, excode)
 						pw->pw_name, name, host);
 	rmtpeer = host;
 
-	if ((rmt = getenv("RMT")) == NULL)
+	if (rmt_program && *rmt_program)
+		rmt = rmt_program;
+	p = getenv("RMT");
+	if (p != NULL)
+		rmt = p;
+	if (rmt == NULL || *rmt == '\0')
 		rmt = "/etc/rmt";
-	rsh = getenv("RSH");
+	if (rsh_program && *rsh_program)
+		rsh = rsh_program;
+	p = getenv("RSH");
+	if (p != NULL)
+		rsh = p;
 
 #ifdef	USE_RCMD_RSH
-	if (!privport_ok() || rsh != NULL)
+	if (!privport_ok() || (rsh != NULL && *rsh != '\0'))
 		rmtsock = _rcmdrsh(&rmtpeer, (unsigned short)sp->s_port,
 					pw->pw_name, name, rmt, rsh);
 	else

@@ -1,11 +1,11 @@
-/* @(#)edit.c	1.22 16/09/10 Copyright 2006-2016 J. Schilling */
+/* @(#)edit.c	1.40 19/04/27 Copyright 2006-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)edit.c	1.22 16/09/10 Copyright 2006-2016 J. Schilling";
+	"@(#)edit.c	1.40 19/04/27 Copyright 2006-2019 J. Schilling";
 #endif
 /*
- *	Copyright (c) 2006-2016 J. Schilling
+ *	Copyright (c) 2006-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -23,6 +23,7 @@ static	UConst char sccsid[] =
 
 #include <schily/unistd.h>
 #include <schily/varargs.h>
+#include <schily/fcntl.h>
 #include <schily/stat.h>
 #include <schily/stdio.h>
 #include "bsh.h"
@@ -41,6 +42,7 @@ EXPORT	int	shedit_getdelim	__PR((void));
 EXPORT	void	shedit_treset	__PR((void));
 EXPORT	void	shedit_bhist	__PR((int **ctlcpp));
 EXPORT	void	shedit_bshist	__PR((int **ctlcpp));
+LOCAL	int	lstatat	__PR((char *name, struct stat *buf, int flag));
 
 /*
  * Set up file from where the inout should be read,
@@ -84,6 +86,7 @@ LOCAL void
 einit()
 {
 	char	*p;
+	FILE	*f;
 
 	gstd[0] = stdin;
 	gstd[1] = stdout;
@@ -94,7 +97,12 @@ einit()
 	if (p)
 		inithome = p;
 
-	setinput(stdin);
+	/*
+	 * Use stdin only as a fallback if the input was not yet set.
+	 */
+	f = setinput(stdin);
+	if (f != stdin)
+		setinput(f);
 	init_input();
 	read_init_history();
 	__init = TRUE;
@@ -105,6 +113,10 @@ readchar(fsp)
 	register fstream	*fsp;
 {
 #ifdef	INTERACTIVE
+extern	int	ttyflg;
+extern	int	prflg;
+
+	prflg = ttyflg = isatty(fdown(fsp->fstr_file));
 	pushline(get_line(prompt++, fsp->fstr_file));
 	return (fsgetc(fsp));
 #else
@@ -118,6 +130,14 @@ shedit_egetc()
 	if (!__init)
 		einit();
 	return (fsgetc(rawstrm));
+}
+
+EXPORT size_t
+shedit_getlen()
+{
+	if (!__init)
+		einit();
+	return (fsgetlen(rawstrm));
 }
 
 EXPORT int
@@ -251,8 +271,9 @@ is_dir(name)
 {
 	struct	stat	buf;
 
-	if (stat(name, &buf) < 0)
+	if (lstatat(name, &buf, 0) < 0)
 		return (FALSE);
+
 	return ((buf.st_mode & S_IFMT) == S_IFDIR);
 }
 
@@ -267,8 +288,7 @@ int	sflg = 1;
 						/* see if its a top level */
 						/* run final file */
 #ifdef	INTERACTIVE
-		if (ev_eql("SAVEHISTORY", "on"))
-			save_history(FALSE);
+		save_history(HI_NOINTR);
 #endif
 	}
 
@@ -283,8 +303,7 @@ int	sflg = 1;
 EXPORT void
 shedit_treset()
 {
-	if (ev_eql("SAVEHISTORY", "on"))
-		save_history(FALSE);
+	save_history(HI_NOINTR);
 	reset_tty_modes();
 	reset_line_disc();		/* Line discipline */
 	reset_tty_pgrp();
@@ -297,7 +316,61 @@ shedit_bhist(ctlcpp)
 	if (ctlcpp)
 		*ctlcpp = &ctlc;
 	ctlc = 0;
-	put_history(gstd[1], TRUE);
+	put_history(gstd[1], HI_INTR, 0, 0, NULL);
+}
+
+EXPORT int
+shedit_history(f, ctlcpp, flags, first, last, subst)
+	FILE	*f;
+	int	**ctlcpp;
+	int	flags;
+	int	first;
+	int	last;
+	char	*subst;
+{
+	if (ctlcpp)
+		*ctlcpp = &ctlc;
+	ctlc = 0;
+	return (put_history(f?f:gstd[1], flags, first, last, subst));
+}
+
+EXPORT int
+shedit_search_history(ctlcpp, flags, first, pat)
+	int	**ctlcpp;
+	int	flags;
+	int	first;
+	char	*pat;
+{
+	if (ctlcpp)
+		*ctlcpp = &ctlc;
+	ctlc = 0;
+	return (search_history(flags, first, pat));
+}
+
+EXPORT int
+shedit_remove_history(ctlcpp, flags, first, pat)
+	int	**ctlcpp;
+	int	flags;
+	int	first;
+	char	*pat;
+{
+	if (ctlcpp)
+		*ctlcpp = &ctlc;
+	ctlc = 0;
+	return (remove_history(flags, first, pat));
+}
+
+EXPORT int
+shedit_read_history(f, ctlcpp, flags)
+	FILE	*f;
+	int	**ctlcpp;
+	int	flags;
+{
+	if (ctlcpp)
+		*ctlcpp = &ctlc;
+	ctlc = 0;
+	shell_readhistory(f);
+	return (0);
 }
 
 EXPORT void
@@ -307,7 +380,7 @@ shedit_bshist(ctlcpp)
 	if (ctlcpp)
 		*ctlcpp = &ctlc;
 	ctlc = 0;
-	save_history(1);
+	save_history(HI_INTR);
 }
 
 EXPORT char *
@@ -316,6 +389,8 @@ shell_getenv(name)
 {
 	extern	char	*(*__get_env)	__PR((char *__name));
 
+	if (name == NULL)
+		return ((char *)NULL);
 	if (__get_env != NULL)
 		return (__get_env(name));
 	return (getenv(name));
@@ -327,6 +402,8 @@ shell_putenv(name)
 {
 	extern	void	(*__put_env)	__PR((char *__name));
 
+	if (name == NULL)
+		return;
 	if (__put_env != NULL)
 		__put_env(name);
 	else
@@ -370,6 +447,56 @@ shedit_setprompts(promptidx, nprompts, newprompts)
 
 	prompt = promptidx;
 
+	if (nprompts > SHEDIT_NPROMPTS)
+		nprompts = SHEDIT_NPROMPTS;
+
 	for (i = 0; i < nprompts; i++)
 		prompts[i] = newprompts[i];
+}
+
+EXPORT void
+shedit_spromptidx(promptidx)
+	int	promptidx;
+{
+	prompt = promptidx;
+
+	if (prompt >= SHEDIT_NPROMPTS)
+		prompt = SHEDIT_NPROMPTS-1;
+}
+
+EXPORT int
+shedit_gpromptidx()
+{
+	return (prompt);
+}
+
+LOCAL int
+lstatat(name, buf, flag)
+	char		*name;
+	struct stat	*buf;
+	int		flag;
+{
+#ifdef	HAVE_FCHDIR
+	char	*p;
+	int	fd;
+	int	err;
+#endif
+	int	ret;
+
+	if ((ret = fstatat(AT_FDCWD, name, buf, flag)) < 0 &&
+	    geterrno() != ENAMETOOLONG) {
+		return (ret);
+	}
+
+#ifdef	HAVE_FCHDIR
+	if (ret >= 0)
+		return (ret);
+
+	fd = bsh_hop_dirs(name, &p);
+	ret = fstatat(fd, p, buf, flag);
+	err = geterrno();
+	close(fd);
+	seterrno(err);
+#endif
+	return (ret);
 }

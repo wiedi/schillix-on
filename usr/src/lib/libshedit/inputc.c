@@ -1,8 +1,8 @@
-/* @(#)inputc.c	1.82 16/09/15 Copyright 1982, 1984-2016 J. Schilling */
+/* @(#)inputc.c	1.110 19/04/07 Copyright 1982, 1984-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)inputc.c	1.82 16/09/15 Copyright 1982, 1984-2016 J. Schilling";
+	"@(#)inputc.c	1.110 19/04/07 Copyright 1982, 1984-2019 J. Schilling";
 #endif
 /*
  *	inputc.c
@@ -20,7 +20,7 @@ static	UConst char sccsid[] =
  *	in 1982 and 1983. This prototype only contained the editor and called
  *	shell commands via system().
  *
- *	Copyright (c) 1982, 1984-2016 J. Schilling
+ *	Copyright (c) 1982, 1984-2019 J. Schilling
  *	This version was first coded August 1984 and rewritten 01/22/85
  *
  *	Exported functions:
@@ -35,7 +35,7 @@ static	UConst char sccsid[] =
  *		space()		Output n spaces
  *		append_line()	Append a line into history (for hashcmd.c #lh)
  *		match_hist()	Return matched history line for csh: !line
- *		make_line()	Read a line from a file anr return allocated
+ *		make_line()	Read a line from a file and return allocated
  *				string
  *		get_line()	-> Write Prompt, then return edited line
  *		put_history()	Put out history to FILE *
@@ -112,6 +112,7 @@ static	UConst char sccsid[] =
 #define	towupper	toupper
 #define	wcsrchr		strchr
 #define	wcscmp		strcmp
+#define	wcsncmp		strncmp
 #define	wcscpy		strcpy
 #define	wcslen		strlen
 #define	wcsncpy		strncpy
@@ -127,7 +128,7 @@ static	UConst char sccsid[] =
  * The output buffer for the line editor.
  * It uses multi byte characters.
  */
-#define	BUFSIZE	133
+#define	BUFSIZE	256
 
 typedef struct {
 	int b_index;			/* Index in b_buf	*/
@@ -172,6 +173,7 @@ typedef struct histptr {
 	wchar_t		*h_line;	/* Space to store the line	    */
 	unsigned	h_len;		/* Number of wchar_t elements in line */
 	unsigned	h_pos;		/* wchar_t based offset in line	    */
+	unsigned	h_number;	/* Number used for POSIX "fc"	    */
 	unsigned char	h_flags;	/* Flags, see below		    */
 } _HISTPTR, *HISTPTR;
 
@@ -189,7 +191,9 @@ EXPORT	int	getnextc	__PR((void));
 EXPORT	int	nextc		__PR((void));
 EXPORT	int	_nextwc		__PR((void));
 LOCAL	void	writec		__PR((int c));
+LOCAL	void	_writes		__PR((char *p));
 LOCAL	void	writes		__PR((char *p));
+LOCAL	void	_writews	__PR((wchar_t *p));
 LOCAL	void	writews		__PR((wchar_t *p));
 LOCAL	void	prettyp		__PR((int c, BUF * b));
 LOCAL	void	bflush		__PR((void));
@@ -232,7 +236,7 @@ LOCAL	wchar_t	*insert		__PR((wchar_t *cp, wchar_t *s,
 LOCAL	wchar_t	*undo_del	__PR((wchar_t *lp, wchar_t *cp,
 						unsigned int *lenp));
 LOCAL	char	*strwchr	__PR((char *s, wchar_t c));
-LOCAL	wchar_t	*xpwcs		__PR((wchar_t *cp));
+LOCAL	wchar_t	*xpwcs		__PR((wchar_t *cp, int qoff));
 LOCAL	wchar_t *xp_tilde	__PR((char *ns, int *delp));
 LOCAL	wchar_t	*xp_files	__PR((wchar_t *lp, wchar_t *cp, BOOL show,
 						int *multip, int *delp));
@@ -249,8 +253,14 @@ LOCAL	wchar_t	*iget_line	__PR((void));
 EXPORT	char	*make_line	__PR((int (*f)(MYFILE *), MYFILE *arg));
 LOCAL	char	*fread_line	__PR((MYFILE *f));
 EXPORT	char	*get_line	__PR((int n, MYFILE *f));
-EXPORT	void	put_history	__PR((MYFILE *f, int intrflg));
-EXPORT	void	save_history	__PR((int intrflg));
+EXPORT	int	put_history	__PR((MYFILE *f, int flg,
+					int first, int last, char *subst));
+EXPORT	HISTPTR	_search_history	__PR((int flg,
+					int first, char *pat));
+EXPORT	int	search_history	__PR((int flg,
+					int first, char *pat));
+LOCAL	char	*get_histfname	__PR((int flag));
+EXPORT	void	save_history	__PR((int flg));
 EXPORT	void	read_init_history	__PR((void));
 EXPORT	void	readhistory	__PR((MYFILE *f));
 LOCAL	void	term_init	__PR((void));
@@ -283,6 +293,7 @@ LOCAL	int	histlen		= 0;			/* Max allowed h len */
 LOCAL	int	no_lines	= 0;			/* Current hist len  */
 LOCAL	BUF	buf		= {0};			/* BUF to optimize   */
 LOCAL	char	mapesc		= '\0';			/* ESC char for map  */
+LOCAL	unsigned hnumber	= 0;			/* For POSIX numbers */
 #ifdef	notneeded
 LOCAL	int	eof;
 #endif
@@ -467,6 +478,23 @@ changehistory(n)
 	histlen = n;
 }
 
+EXPORT void
+histrange(firstp, lastp, nextp)
+	unsigned	*firstp;
+	unsigned	*lastp;
+	unsigned	*nextp;
+{
+	/*
+	 * Make it safe against a state where the history is not yet initialized
+	 * and first_line or last_line are still NULL pointers.
+	 */
+	if (firstp)
+		*firstp = first_line == 0 ? 0 : first_line->h_number;
+	if (lastp)
+		*lastp = last_line == 0 ? 0 : last_line->h_number;
+	if (nextp)					/* XXX */
+		*nextp = (hnumber + 1) ? hnumber + 1 : hnumber + 2;
+}
 
 /*
  * Init the history to the default size.
@@ -611,13 +639,20 @@ writec(c)
  * Needed for internal string output like "<EOF>"
  */
 LOCAL void
-writes(p)
+_writes(p)
 	register char	*p;
 {
 	register BUF	*rb = &buf;
 
 	while (*p)
 		prettyp(*p++, rb);
+}
+
+LOCAL void
+writes(p)
+	char	*p;
+{
+	_writes(p);
 	bflush();
 }
 
@@ -625,13 +660,20 @@ writes(p)
  * Write a wide character string
  */
 LOCAL void
-writews(p)
+_writews(p)
 	register wchar_t	*p;
 {
 	register BUF	*rb = &buf;
 
 	while (*p)
 		prettyp(*p++, rb);
+}
+
+LOCAL void
+writews(p)
+	wchar_t	*p;
+{
+	_writews(p);
 	bflush();
 }
 
@@ -676,6 +718,8 @@ bflush()
 {
 	register BUF *bp = &buf;
 
+	if (bp->b_index <= 0)
+		return;
 	(void) filewrite(stdout, bp->b_buf, bp->b_index);
 	(void) fflush(stdout);
 	bp->b_index = 0;
@@ -997,10 +1041,17 @@ mktmp()
 	register HISTPTR	tmp;
 
 	tmp = (HISTPTR)malloc(sizeof (_HISTPTR));
+	if (tmp == NULL)
+		return (tmp);
 	tmp->h_prev = tmp->h_next = NULL;
 	tmp->h_line = malloc(LINEQUANT * sizeof (*tmp->h_line));
+	if (tmp->h_line == NULL) {
+		free(tmp);
+		return ((HISTPTR) NULL);
+	}
 	tmp->h_len = LINEQUANT;
 	tmp->h_pos = 0;
+	tmp->h_number = 0;
 	tmp->h_flags = F_TMP;		/* Mark it temporary */
 	tmp->h_line[0] = '\0';
 	return (tmp);
@@ -1016,11 +1067,18 @@ hold_line(p)
 	register HISTPTR	tmp;
 
 	tmp = (HISTPTR)malloc(sizeof (_HISTPTR));
+	if (tmp == NULL)
+		return (tmp);
 	tmp->h_prev = p->h_prev;
 	tmp->h_next = p->h_next;
 	tmp->h_line = malloc(p->h_len * sizeof (*tmp->h_line));
+	if (tmp->h_line == NULL) {
+		free(tmp);
+		return ((HISTPTR) NULL);
+	}
 	tmp->h_len = p->h_len;
 	tmp->h_pos = p->h_pos;
+	tmp->h_number = 0;
 	tmp->h_flags = F_TMP;		/* Mark it temporary */
 	movebytes(p->h_line, tmp->h_line, p->h_len * sizeof (*tmp->h_line));
 	return (tmp);
@@ -1146,12 +1204,21 @@ append_wline(linep, len, pos)
 	if (no_lines == histlen)
 		remove_line(first_line);
 	p = (HISTPTR)malloc(sizeof (_HISTPTR));
+	if (p == NULL)
+		return;
 	lp = malloc(len * sizeof (*lp));
+	if (lp == NULL) {		/* Do nothing if malloc() fails */
+		free(p);
+		return;
+	}
 	wcscpy(lp, linep);
 	p->h_prev = last_line;
 	p->h_line = lp;
 	p->h_len  = len;
 	p->h_pos  = pos;
+	p->h_number = ++hnumber;		/* XXX */
+	if (p->h_number == 0)
+		p->h_number = ++hnumber;
 	p->h_flags = 0;
 	p->h_next = (HISTPTR) NULL;
 	if (last_line)
@@ -1182,6 +1249,8 @@ append_hline(linep, len)
 
 	len += p->h_len;
 	lp = malloc(len * sizeof (*lp));
+	if (lp == NULL)		/* Do nothing if malloc() fails */
+		return;
 #ifdef	USE_ANSI_NL_SEPARATOR
 	anl[0] = '\205';
 #else
@@ -1222,6 +1291,9 @@ move_to_end(p)
 		last_line->h_next = p;
 		p->h_prev = last_line;
 		p->h_next = (HISTPTR) NULL;
+		p->h_number = ++hnumber;	/* XXX */
+		if (p->h_number == 0)
+			p->h_number = ++hnumber;
 		p->h_flags &= ~F_TMP;
 		last_line = p;
 	}
@@ -1278,6 +1350,13 @@ match_input(cur_line, tmp_line, up)
 
 	if (!match_line)
 		match_line = mktmp();
+	if (!match_line) {
+		(void) fprintf(stderr, "\r\n");
+		(void) fflush(stderr);
+		beep();
+		hp = tmp_line;
+		goto fail;
+	}
 	oldprompt = iprompt;
 	iprompt = up ? "search up: " : "search down: ";
 	(void) fprintf(stderr, "\r\n%s", iprompt);
@@ -1291,6 +1370,7 @@ match_input(cur_line, tmp_line, up)
 	if ((hp = match(cur_line, pattern, up)) == (HISTPTR) NULL)
 		hp = tmp_line;
 	iprompt = oldprompt;
+fail:
 	(void) fprintf(stderr, "%s", iprompt);
 	(void) fflush(stderr);
 	return (hp);
@@ -1360,7 +1440,13 @@ match(cur_line, pattern, up)
 	if (pattern) {
 		patlen = wcslen(pattern);
 		aux = (int *)malloc((size_t)patlen * sizeof (int));
+		if (aux == NULL)
+			return ((HISTPTR) NULL);
 		state = (int *)malloc((size_t)(patlen+1) * sizeof (int));
+		if (state == NULL) {
+			free(aux);
+			return ((HISTPTR) NULL);
+		}
 		if ((alt = patwcompile(pattern, patlen, aux)) != 0) {
 			for (hp = cur_line; hp; ) {
 				lp = hp->h_line;
@@ -1453,6 +1539,8 @@ edit_line(cur_line)
 			}
 			lpp = lp;
 			cp = exp_files(&lpp, cp, &llen, &maxlen, &multi);
+			if (lpp == NULL)
+				return ('\0');
 			lp = lpp;
 			break;
 		case BACKSPACE:
@@ -1580,6 +1668,7 @@ edit_line(cur_line)
 			    (towupper(c) < 0140) && c >= '@')
 				c &= 037;
 			}
+			/* FALLTHROUGH */
 		default:
 			multi = 0;
 			if (i_should_echo || !iswprint(c))
@@ -1589,6 +1678,8 @@ edit_line(cur_line)
 				maxlen += LINEQUANT;
 				diff = cp - lp;
 				lp = new_line(lp, llen, maxlen);
+				if (lp == NULL)
+					return ('\0');
 				cp = lp + diff;
 			}
 			ins_char(cp, c);
@@ -1671,21 +1762,26 @@ strwchr(s, c)
  * the characters '!' ... '$' are pattern matcher meta characters.
  * The complete pattern matcher meta characters are "!#%*?\\{}[]^$", but
  * the '%' has been checked before in the shell parser charracter set.
+ * The string quoting charcters '"' and '\''.
  */
-LOCAL char xchars[] = " \t<>%|;()&!#*?\\{}[]^$"; /* Chars that need quoting */
+LOCAL char xchars[] = " \t\"'<>%|;()&-!#*?\\{}[]^$"; /* Chars that need quoting */
 
 /*
  * Expand a wide char string and return a malloc()ed copy.
  * Any character that needs quoting is prepended with a '\\'.
  */
 LOCAL wchar_t *
-xpwcs(cp)
+xpwcs(cp, qoff)
 	wchar_t	*cp;
+	int	qoff;
 {
 	wchar_t	*ret;
-	wchar_t	*p = cp;
-	int	len = 0;
+	wchar_t	*p = &cp[qoff];
+	int	len = qoff;
 
+	/*
+	 * Count characters past "qoff" twice if they need quoting.
+	 */
 	while (*p) {
 		len++;
 		if (strwchr(xchars, *p++))
@@ -1694,7 +1790,16 @@ xpwcs(cp)
 	ret = malloc((len+1) * sizeof (wchar_t));
 	if (ret == NULL)
 		return (ret);
-	for (p = ret; *cp; ) {
+	/*
+	 * First copy over the pre quoting offset characters literarily.
+	 */
+	for (p = ret; --qoff >= 0; ) {
+		*p++ = *cp++;
+	}
+	/*
+	 * Now qoute all needed characters from the input string.
+	 */
+	while (*cp) {
 		if (strwchr(xchars, *cp))
 			*p++ = '\\';
 		*p++ = *cp++;
@@ -1828,8 +1933,16 @@ again:
 	wcsncpy(tp, wp, len);
 	tp[len] = '\0';
 	if (tp[0] != '~') {
-		tp[len] = '*';
-		tp[len+1] = '\0';
+		for (wp = tp; *wp; wp++) {
+			if (wp[0] == '\\' && wp[1] != '\0') {
+				wchar_t	*w1 = wp++;
+				wchar_t	*w2 = wp;
+				while (*w2)
+					*w1++ = *w2++;
+				*w1 = '\0';
+				len--;
+			}
+		}
 	}
 	ns = tombs(NULL, 0, tp, -1);
 	free(tp);
@@ -1841,8 +1954,11 @@ again:
 
 	/*
 	 * Call path name expand routing from bsh
+	 *
+	 * XXX: If the characters to the left of the cursor contain pattern meta
+	 * XXX: characters that are not escaped, this will cause false matches.
 	 */
-	np = expand(ns);
+	np = bexpand(ns);
 	free(ns);
 	if (np == NULL) {
 #ifdef	__do_beep_when_expand_to_null__
@@ -1861,7 +1977,7 @@ again:
 	if (wp == NULL)
 		goto out;
 	p2 = wp;
-	wp = xpwcs(wp);			/* Insert '\\' if needed */
+	wp = xpwcs(wp, len);		/* Insert '\\' if needed */
 	free(p2);
 	p2 = NULL;
 	if (wp == NULL)
@@ -1895,7 +2011,7 @@ again:
 	if (multi) {
 		if (p2 == NULL)	/* towcs() in for() loop returned NULL */
 			goto out;
-		wp2 = xpwcs(p2);
+		wp2 = xpwcs(p2, len);
 		free(p2);
 		p2 = NULL;
 		if (wp2 == NULL)
@@ -1935,7 +2051,13 @@ again:
 				*multip = multi;
 		}
 	}
-	if (!show && p2) {
+	/*
+	 * xlen-len may be negative in case that there was a false match
+	 * that results in directory entries that do not start with
+	 * the last word in the line. This happens when there are unescaped
+	 * pattern meta characters in the last word on the line.
+	 */
+	if (!show && p2 && (xlen-len) >= 0) {
 		wcsncpy(p2, &wp[len], xlen-len);
 		if (p1) {
 			if ((xlen - len) == 0)
@@ -1982,6 +2104,10 @@ exp_files(lpp, cp, lenp, maxlenp, multip)
 			*maxlenp += diff;
 			diff = cp - *lpp;
 			*lpp = new_line(*lpp, *lenp, *maxlenp);
+			if (*lpp == NULL) {
+				free(p);
+				return ((wchar_t *)NULL);
+			}
 			cp = *lpp + diff;
 		}
 		while (--del >= 0 && cp > *lpp) {
@@ -2126,6 +2252,8 @@ sget_line()
 	register HISTPTR	tmp_line;
 
 	tmp_line = mktmp();
+	if (tmp_line == NULL)
+		return (NULL);
 	while (edit) {
 		cmd = edit_line(tmp_line);
 		switch (cmd) {
@@ -2137,6 +2265,7 @@ sget_line()
 		case RESTORE:
 				beep();
 				break;
+		case '\0':
 		case EOF:
 				return (NULL);
 		case '\r':
@@ -2169,6 +2298,9 @@ iget_line()
 	register HISTPTR	orig_line = (HISTPTR) NULL;	/* tmp orig */
 
 	save_line = cur_line = tmp_line = mktmp();
+	if (cur_line == NULL)
+		return (NULL);
+
 	lp = cur_line->h_line;
 	cur_line->h_prev = last_line;
 	cur_line->h_next = first_line;
@@ -2213,6 +2345,8 @@ iget_line()
 			}
 			orig_line = cur_line;
 			etmp_line = cur_line = hold_line(cur_line);
+			if (etmp_line == NULL)
+				cur_line = orig_line;
 			break;
 		case RESTORE:
 			if (etmp_line) {
@@ -2223,6 +2357,7 @@ iget_line()
 			}
 			cur_line = save_line;
 			break;
+		case '\0':
 		case EOF:
 			return (NULL);
 		case '\r':
@@ -2282,6 +2417,8 @@ make_line(f, arg)
 	printf("        make_line\r\n");
 #endif
 	lp = p = malloc((maxl = LINEQUANT) * sizeof (*lp));
+	if (lp == NULL)
+		return (lp);
 	llen = 0;
 	for (;;) {
 		if ((c = (*f)(arg)) == EOF || c == '\n' || c == '\205') {
@@ -2296,6 +2433,8 @@ make_line(f, arg)
 		if (++llen == maxl) {
 			maxl += LINEQUANT;
 			lp = new_line(lp, llen, maxl);
+			if (lp == NULL)
+				return (lp);
 			p = lp + llen;
 		}
 	}
@@ -2368,70 +2507,257 @@ get_line(n, f)
 	return (line_pointer?line_pointer:nullstr);
 }
 
-
 /*
  * Write current content of the history to an open file.
- * Add {} brackets if we are writing to stdout.
+ * If we like to be compatible to what was used by "#v on" on UNOS,
+ * add {} brackets if we are writing to stdout.
  */
-EXPORT void
-put_history(f, intrflg)
+EXPORT int
+put_history(f, flg, first, last, subst)
 	register MYFILE	*f;
-	register int	intrflg;
+	register int	flg;
+		int	first;
+		int	last;
+		char	*subst;
 {
 	register HISTPTR p;
+	register HISTPTR pe = last_line;
+		size_t	oldlen = 0;	/* make silly GCC happy */
+		char	*eqp = NULL;	/* make silly GCC happy */
 
-	for (p = first_line; p; p = p->h_next) {
-		if (ctlc && intrflg)
+	if (f == NULL)
+		f = gstd[1];
+
+	if (subst) {
+		eqp = strchr(subst, '=');
+		oldlen = eqp++ - subst;
+	}
+
+	if (first < 0) {
+		register int	i;
+
+		for (i = 0, p = last_line; p; p = p->h_prev) {
+			if (--i == first)
+				break;
+		}
+		if (p == NULL)
+			p = first_line;
+	} else if (first > 0) {
+		for (p = last_line; p; p = p->h_prev) {
+			if (p->h_number == first)
+				break;
+		}
+		if (p == NULL)
+			return (-1);
+	} else {
+		p = first_line;
+	}
+	if (last) {
+		for (pe = last_line; pe; pe = pe->h_prev) {
+			if (pe->h_number == last)
+				break;
+		}
+		if (pe == NULL)
+			pe = last_line;
+	}
+	if (flg & HI_REVERSE) {
+		HISTPTR pt;
+		pt = p;
+		p = pe;
+		pe = pt;
+	}
+	for (; p; p = (flg & HI_REVERSE) ? p->h_prev : p->h_next) {
+		if (ctlc && (flg & HI_INTR))
 			break;
-		if (f == stdout) {
-			writes("{ ");
-			writews(p->h_line);
-			writes(" }");
+		if (f == stdout) {	/* Used to print history */
+			register wchar_t	*cp;
+			register wchar_t	wc;
+				char		s[16];
+#ifdef	JOS_VERBOSE			/* Make output similar to JOS #v on */
+			_writes("{ ");
+#endif
+
+			if ((flg & HI_NONUM) == 0) {
+				js_snprintf(s, sizeof (s), "%d", p->h_number);
+				_writes(s);
+			}
+			if (flg & HI_TAB)
+				putch('\t');
+			for (cp = p->h_line; (wc = *cp++) != '\0'; ) {
+				(flg & HI_PRETTYP) ?
+					prettyp(wc, &buf) :
+					putch(wc);
+				if (wc == '\n')
+					putch('\t');
+			}
+
+#ifdef	JOS_VERBOSE			/* Make output similar to JOS #v on */
+			_writes(" }");
+#endif
 			putch('\n');
-		} else {
+		} else {		/* This is the save_history() variant */
 			char	line[512];
 			char	*lp;
+			char	*lp2;
 #ifndef	USE_ANSI_NL_SEPARATOR
 			char	*cp;
 #endif
 
-			lp = tombs(line, sizeof (line), p->h_line, -1);
+			lp2 = lp = tombs(line, sizeof (line), p->h_line, -1);
 			if (lp == NULL)
 				continue;
 
+			if (subst && strncmp(lp, subst, oldlen) == 0) {
+				lp2 += oldlen;
+				fprintf(f, "%s", eqp);
+			}
 #ifndef	USE_ANSI_NL_SEPARATOR
-			for (cp = lp; *cp; cp++) {
-				if (*cp == '\n')
-					*cp = '\205';
+			if (flg & HI_ANSI_NL) {
+				for (cp = lp2; *cp; cp++) {
+					if (*cp == '\n')
+						*cp = '\205';
+				}
 			}
 #endif
 			/*
-			 * XXX could be fprintf(f, "%ws\n", p->h_line);
+			 * XXX could be fprintf(f, "%ls\n", p->h_line);
 			 */
-			fprintf(f, "%s\n", lp);
+			fprintf(f, "%s\n", lp2);
 			if (lp != line)
 				free(lp);
 		}
+		if (p == pe)
+			break;
 	}
 	if (f == stdout)
 		bflush();
+
+	return (0);
 }
 
+EXPORT HISTPTR
+_search_history(flg, first, pat)
+	register int	flg;
+		int	first;
+		char	*pat;
+{
+	register HISTPTR p;
+	wchar_t		wline[512];
+	wchar_t		*wp = NULL;
+	size_t		wlen = 0;	/* make silly GCC happy */
+
+	if (pat) {
+		wp = towcs(wline, sizeof (wline) / sizeof (wline[0]), pat, -1);
+		if (wp == NULL)
+			return ((HISTPTR)NULL);
+		wlen = wcslen(wp);
+	}
+	if (first < 0) {
+		register int	i;
+
+		for (i = 0, p = last_line; p; p = p->h_prev) {
+			if (--i == first)
+				break;
+		}
+		if (p == NULL)
+			p = first_line;
+	} else if (first > 0) {
+		for (p = last_line; p; p = p->h_prev) {
+			if (p->h_number == first)
+				break;
+		}
+		if (p == NULL)
+			return (p);
+	} else {
+		p = first_line;
+	}
+	if (pat) {
+		for (; p; p = p->h_next) {
+			if (ctlc && (flg & HI_INTR)) {
+				p = NULL;
+				break;
+			}
+			if (wcsncmp(wp, p->h_line, wlen) == 0)
+				break;
+		}
+		if (wp != wline)
+			free(wp);
+	}
+	return (p);
+}
+
+EXPORT int
+search_history(flg, first, pat)
+	register int	flg;
+		int	first;
+		char	*pat;
+{
+	register HISTPTR p = _search_history(flg, first, pat);
+
+	if (p == NULL)
+		return (-1);
+	return (p->h_number);
+}
+
+EXPORT int
+remove_history(flg, first, pat)
+	register int	flg;
+		int	first;
+		char	*pat;
+{
+	register HISTPTR p = _search_history(flg, first, pat);
+
+	if (p == NULL)
+		return (-1);
+
+	remove_line(p);
+	return (0);
+}
+
+#define	HF_READ	0
+#define	HF_SAVE	1
+
+LOCAL char *
+get_histfname(flag)
+	int	flag;
+{
+	if (hfilename)
+		free(hfilename);
+	/*
+	 * First check for "HISTFILE" as this is required by POSIX.
+	 */
+	if ((hfilename = getcurenv(histfilename)) != NULL) {
+		hfilename = concat(hfilename, (char *)NULL);
+	} else {
+		/*
+		 * Our historic name is "$HOME/.history", use it whenever
+		 * "HISTFILE" is not present.
+		 */
+		hfilename = concat(inithome, slash, historyname, (char *)NULL);
+		if (flag == HF_SAVE && !ev_eql(savehistname, on))
+			return (NULL);
+	}
+	return (hfilename);
+}
 
 /*
  * Save the history by writing to ~/.history
  */
 EXPORT void
-save_history(intrflg)
-	int intrflg;
+save_history(flg)
+	int flg;
 {
 	MYFILE	*f;
+	char	*hfname;
 
 	if (no_lines == 0)	/* don't damage history File */
 		return;
-	f = fileopen(hfilename, for_wct);
+	hfname = get_histfname(HF_SAVE);
+	if (hfname == NULL)
+		return;
+	f = fileopen(hfname, for_wct);
 	if (f) {
-		put_history(f, intrflg);
+		put_history(f, flg | HI_ANSI_NL, 0, 0, NULL);
 		fclose(f);
 	}
 }
@@ -2444,20 +2770,12 @@ EXPORT void
 read_init_history()
 {
 	MYFILE	*f;
+	char	*hfname;
 
-	/*
-	 * First check for "HISTFILE" as this is required by POSIX.
-	 */
-	if ((hfilename = getcurenv(histfilename)) != NULL) {
-		hfilename = concat(hfilename, (char *)NULL);
-	} else {
-		/*
-		 * Our historic name is "$HOME/.history", use it whenever
-		 * "HISTFILE" is not present.
-		 */
-		hfilename = concat(inithome, slash, historyname, (char *)NULL);
-	}
-	f = fileopen(hfilename, for_read);
+	hfname = get_histfname(HF_READ);
+	if (hfname == NULL)
+		return;
+	f = fileopen(hfname, for_read);
 	if (f) {
 		readhistory(f);
 		fclose(f);
@@ -2502,7 +2820,6 @@ readhistory(f)
 		if (ep)				/* Current line ends in '\n' */
 			*ep = '\0';		/* so clear it		    */
 
-#ifdef	__skip__bash_timestamps__
 		/*
 		 * Skip bash timestamps
 		 */
@@ -2513,10 +2830,8 @@ readhistory(f)
 				if (!_isdigit((unsigned char)*p))
 					break;
 			if (*p == '\0')
-				continue;
-			s = p;
+				goto endline;
 		}
-#endif	/* __skip__bash_timestamps__ */
 
 #ifdef	USE_ANSI_NL_SEPARATOR
 		len = strlen(s);
@@ -2534,6 +2849,7 @@ readhistory(f)
 #endif
 		append_line(s, (unsigned)len+1, len);
 
+	endline:
 		if (ep) {			/* Found '\n', check rest */
 			s = &ep[1];
 			if ((s - rbuf) >= amt && amt < BUF_SIZE) /* EOF */
@@ -2618,7 +2934,11 @@ cdbg(fmt, va_alist)
 #else
 	va_start(args);
 #endif
+#ifdef	HAVE_VSNPRINTF
+	len = vsnprintf(lbuf, sizeof (lbuf), fmt, args);
+#else
 	len = snprintf(lbuf, sizeof (lbuf), "%r", fmt, args);
+#endif
 	va_end(args);
 
 	if (f == 0) {

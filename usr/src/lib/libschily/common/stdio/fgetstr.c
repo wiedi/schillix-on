@@ -1,6 +1,6 @@
-/* @(#)fgetstr.c	1.11 14/03/27 Copyright 1986, 1996-2014 J. Schilling */
+/* @(#)fgetstr.c	1.14 18/10/10 Copyright 1986, 1996-2018 J. Schilling */
 /*
- *	Copyright (c) 1986, 1996-2014 J. Schilling
+ *	Copyright (c) 1986, 1996-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,18 +16,15 @@
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
 
+#define	FAST_GETC_PUTC		/* Will be reset if not possible */
 #include "schilyio.h"
-
-/*
- * XXX should we check if HAVE_USG_STDIO is defined and
- * XXX use something line memccpy to speed things up ???
- * XXX On Solaris 64 bits, we may use #define FAST_GETC_PUTC
- * XXX and getc_unlocked()
- */
 
 #if !defined(getc) && defined(USE_FGETS_FOR_FGETSTR)
 #include <schily/string.h>
 
+/*
+ * Warning: this prevents us from being able to have embedded null chars.
+ */
 EXPORT int
 fgetstr(f, buf, len)
 	register	FILE	*f;
@@ -51,26 +48,68 @@ fgetstr(f, buf, len)
 			char	*buf;
 	register	int	len;
 {
-	register int	c	= '\0';
 	register char	*bp	= buf;
+#if	defined(HAVE_USG_STDIO) || defined(FAST_GETC_PUTC)
+	register char	*p;
+#else
+	register int	c	= '\0';
 	register int	nl	= '\n';
+#endif
 
 	down2(f, _IOREAD, _IORW);
 
+	if (len <= 0)
+		return (0);
+
+	*bp = '\0';
 	for (;;) {
-		if ((c = getc(f)) < 0)
+#if	defined(HAVE_USG_STDIO) || defined(FAST_GETC_PUTC)
+		size_t	n;
+
+		if ((__js_fp f)->_cnt <= 0) {
+			if (usg_filbuf(f) == EOF) {
+				/*
+				 * If buffer is empty and we hit EOF, return EOF
+				 */
+				if (bp == buf)
+					return (EOF);
+				break;
+			}
+			(__js_fp f)->_cnt++;
+			(__js_fp f)->_ptr--;
+		}
+
+		n = len;
+		if (n > (__js_fp f)->_cnt)
+			n = (__js_fp f)->_cnt;
+		p = movecbytes((__js_fp f)->_ptr, bp, '\n', n);
+		if (p) {
+			n = p - bp;
+		}
+		(__js_fp f)->_ptr += n;
+		(__js_fp f)->_cnt -= n;
+		bp += n;
+		len -= n;
+		if (p != NULL || len == 0)
 			break;
+#else
+		if ((c = getc(f)) < 0) {
+			/*
+			 * If buffer is empty and we hit EOF, return EOF
+			 */
+			if (bp == buf)
+				return (c);
+			break;
+		}
 		if (--len > 0)
 			*bp++ = (char)c;
+		else
+			break;
 		if (c == nl)
 			break;
+#endif
 	}
 	*bp = '\0';
-	/*
-	 * If buffer is empty and we hit EOF, return EOF
-	 */
-	if (c < 0 && bp == buf)
-		return (c);
 
 	return (bp - buf);
 }

@@ -1,9 +1,9 @@
-/* @(#)lutimens.c	1.2 13/10/30 Copyright 2013 J. Schilling */
+/* @(#)lutimens.c	1.4 19/07/31 Copyright 2013-2019 J. Schilling */
 /*
  *	Emulate the behavior of lutimens(const char *name,
  *					const struct timespec times[2])
  *
- *	Copyright (c) 2013 J. Schilling
+ *	Copyright (c) 2013-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -18,6 +18,13 @@
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
+
+/*
+ * If we neither have utimensat() nor lutimes()/lutime(), we need to call
+ * lstat() and since this is not a predictable call, we always compile this
+ * module in largefile mode.
+ */
+#define	USE_LARGEFILES
 
 #include <schily/unistd.h>
 #include <schily/types.h>
@@ -65,11 +72,19 @@ lutimens(name, times)
 
 	return (lutime(name, &ut));
 #else
+	/*
+	 * Without lstat(), we expect that there are no symlinks either.
+	 */
 	struct stat	sb;
 
 	if (lstat(name, &sb) >= 0) {
 		if (!S_ISLNK(sb.st_mode))
 			return (utimens(name, times));
+	} else {
+		/*
+		 * Keep errno (e.g. ENAMETOOLONG)
+		 */
+		return (-1);
 	}
 #ifdef	ENOSYS
 	seterrno(ENOSYS);

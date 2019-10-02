@@ -1,4 +1,4 @@
-/* @(#)breakline.c	1.11 06/09/13 Copyright 1985, 1995-2003 J. Schilling */
+/* @(#)breakline.c	1.12 18/06/03 Copyright 1985, 1995-2018 J. Schilling */
 /*
  *	break a line pointed to by *buf into fields
  *	returns the number of tokens, the line was broken into (>= 1)
@@ -8,7 +8,7 @@
  *	array[found ... len] point to '\0'
  *	len is the size of the array
  *
- *	Copyright (c) 1985, 1995-2003 J. Schilling
+ *	Copyright (c) 1985, 1995-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -17,6 +17,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -58,5 +60,7 @@ breakline(buf, delim, array, len)
 		}
 		bp = dp;
 	}
+	if (found > len)
+		found = len;
 	return (found);
 }

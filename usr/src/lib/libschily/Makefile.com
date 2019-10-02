@@ -10,11 +10,11 @@
 #
 
 #
-# Copyright 2010-2011 Jörg Schilling.  All rights reserved.
+# Copyright 2010-2019 Jörg Schilling.  All rights reserved.
 #
 
 LIBRARY=	libschily.a
-VERS=		.1
+VERS=		.2
 
 OBJECTS_STDIO=	cvmod.o dat.o fcons.o fdown.o fdup.o \
 		ffileread.o ffilewrite.o \
@@ -29,72 +29,72 @@ OBJECTS_STDIO=	cvmod.o dat.o fcons.o fdown.o fdup.o \
 		filepos64.o filereopen64.o fileseek64.o filesize64.o \
 		filestat64.o openfd64.o
 
-#
-# Note: getfp.o must be before getav0.o
-# Otherwise getfp.o would be made as dependency of avoffset
-#
-
 OBJECTS_REST=	abspath.o \
-		astoi.o astoll.o astoul.o astoull.o \
-		basename.o breakline.o \
-		checkerr.o chown.o cmpbytes.o cmpmbytes.o cmpnullbytes.o \
-		comerr.o cvt.o dirent.o \
-		dirname.o diropen.o \
+		astoi.o astoll.o astoul.o astoull.o basename.o breakline.o \
+		checkerr.o comerr.o fcomerr.o gtcomerr.o fgtcomerr.o \
+		chown.o \
+		cmpbytes.o cmpmbytes.o cmpnullbytes.o \
+		dirent.o dirname.o diropen.o \
 		dlfcn.o \
-		eaccess.o error.o \
-		faccessat.o \
-		fchdir.o fchmodat.o fchownat.o fcomerr.o \
-		fconv.o fdopendir.o fexec.o \
-		fillbytes.o findbytes.o findinpath.o \
-		findline.o fjmem.o fnmatch.o \
-		format.o fprformat.o \
-		fstatat.o fstream.o \
+		eaccess.o error.o gterror.o \
+		faccessat.o fchdir.o \
+		fchmodat.o fchownat.o fconv.o fdopendir.o fexec.o fillbytes.o \
+		findinpath.o \
+		findbytes.o findline.o fnmatch.o format.o \
+		fpoff.o fprformat.o \
+		fstatat.o fstatat64.o fstream.o \
 		futimens.o futimesat.o \
-		getargs.o getav0.o getdomainname.o getdtablesize.o \
-		geterrno.o getexecpath.o \
-		getfp.o \
-		getgrent.o gethostid.o gethostname.o getlogin.o \
-		getnstimeofday.o \
-		getnum.o getpagesize.o \
-		getperm.o getpwent.o \
-		gettimeofday.o \
-		gettnum.o getxnum.o getxtnum.o \
+		getargs.o getav0.o geterrno.o getexecpath.o getfp.o \
+		getgrent.o \
+		getdtablesize.o \
+		getdomainname.o gethostid.o gethostname.o getpagesize.o \
+		getlogin.o \
+		getnum.o getxnum.o \
+		gettnum.o getxtnum.o \
+		getperm.o \
+		getpwent.o \
+		getnstimeofday.o gettimeofday.o \
 		gid.o \
 		handlecond.o \
-		jmem.o \
-		jsdprintf.o jsprintf.o jssnprintf.o jssprintf.o \
+		jsdprintf.o jsprintf.o jssnprintf.o jssprintf.o gtprintf.o \
 		kill.o \
-		lchmod.o linkat.o lutimens.o lxchdir.o \
-		match.o matchl.o matchw.o matchwl.o \
-		mem.o \
-		mkdirat.o mkdirs.o \
-		mkfifo.o mkfifoat.o \
-		mkgmtime.o mknodat.o mkstemp.o movebytes.o \
-		openat.o permtostr.o procnameat.o \
+		lchmod.o linkat.o lutimens.o \
+		lxchdir.o \
+		match.o matchl.o matchmb.o matchmbl.o matchw.o matchwl.o \
+		movebytes.o movecbytes.o \
+		mkdirat.o mkdirs.o mkfifo.o mkfifoat.o mkgmtime.o mknodat.o \
+		mkstemp.o \
+		mem.o jmem.o fjmem.o \
+		openat.o openat64.o \
+		ovstrcpy.o \
+		permtostr.o \
+		procnameat.o putenv.o \
 		raisecond.o readlinkat.o rename.o renameat.o resolvepath.o \
-		saveargs.o savewd.o searchinpath.o \
-		serrmsg.o seterrno.o setfp.o \
+		saveargs.o savewd.o \
+		searchinpath.o serrmsg.o seterrno.o setfp.o \
 		setnstimeofday.o \
 		sleep.o \
+		snprintf.o \
 		spawn.o \
-		strcasecmp.o strcasemap.o \
+		strcasecmp.o strncasecmp.o strcasemap.o \
 		strcat.o strcatl.o strchr.o strcmp.o strcpy.o strcspn.o \
-		strdup.o \
-		streql.o strlcat.o strlcatl.o strlcpy.o strlen.o \
-		strncasecmp.o \
-		strncat.o strncmp.o strncpy.o strndup.o strnlen.o strrchr.o \
-		strspn.o strstr.o strtod.o \
-		swabbytes.o symlinkat.o \
+		strdup.o streql.o strlen.o \
+		strlcat.o strlcatl.o strlcpy.o strncat.o strncmp.o \
+		strncpy.o strndup.o strnlen.o strrchr.o strspn.o strstr.o \
+		swabbytes.o \
+		symlinkat.o \
 		timegm.o \
-		uid.o uname.o unlinkat.o usleep.o \
-		utimens.o utimensat.o \
+		uid.o unlinkat.o uname.o unsetenv.o \
+		usleep.o utimens.o utimensat.o \
+		waitid.o \
 		wcscat.o wcscatl.o wcschr.o wcscmp.o wcscpy.o wcscspn.o \
-		wcsdup.o \
-		wcseql.o wcslcat.o wcslcatl.o wcslcpy.o wcslen.o wcsncat.o \
-		wcsncmp.o \
+		wcsdup.o wcseql.o wcslen.o \
+		wcslcat.o wcslcatl.o wcslcpy.o wcsncat.o wcsncmp.o \
 		wcsncpy.o wcsndup.o wcsnlen.o wcsrchr.o wcsspn.o wcsstr.o \
+		wctype.o \
 		wdabort.o \
 		zerobytes.o
+
 
 OOO_OBJECTS_REST=	astoi.o astoll.o astoull.o basename.o breakline.o \
 		checkerr.o comerr.o fcomerr.o cmpbytes.o cmpnullbytes.o \

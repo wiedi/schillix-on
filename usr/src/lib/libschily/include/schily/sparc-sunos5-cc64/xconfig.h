@@ -1,10 +1,10 @@
 /* xconfig.h.  Generated automatically by configure.  */
-/* @(#)xconfig.h.in	1.269 17/05/20 Copyright 1998-2017 J. Schilling */
+/* @(#)xconfig.h.in	1.276 19/05/15 Copyright 1998-2019 J. Schilling */
 /*
  *	Dynamic autoconf C-include code.
  *	Do not edit, this file has been created automatically.
  *
- *	Copyright (c) 1998-2017 J. Schilling
+ *	Copyright (c) 1998-2019 J. Schilling
  *
  *	The layout for this file is controlled by "configure".
  *	Switch off cstyle(1) checks for now.
@@ -156,12 +156,15 @@
 /* #undef HAVE_LINUX_GFP_H */		/* if we may include linux/gfp.h */
 /* #undef HAVE_ASM_TYPES_H */		/* if we may include asm/types.h */
 /* #undef HAVE_SYS_CAPABILITY_H */	/* if we may include sys/capability.h */
+/* #undef HAVE_SELINUX_SELINUX_H */	/* if we may include selinux/selinux.h */
 /* #undef HAVE_SYS_BSDTTY_H */	/* if we have sys/bsdtty.h on HP-UX for TIOCGPGRP */
 /* #undef HAVE_OS_H */		/* if we have the BeOS kernel definitions in OS.h */
 /* #undef HAVE_OS2_H */		/* if we have the OS/2 definitions in os2.h */
 /* #undef HAVE_OS2ME_H */		/* if we have the OS/2 definitions in os2me.h */
 /* #undef HAVE_WINDOWS_H */		/* if we have the MS-Win definitions in windows.h */
+/* #undef HAVE_LINUX_FS_H */		/* if we have the Linux moving target linux/fs.h */
 /* #undef HAVE_EXT2FS_EXT2_FS_H */	/* if we have the Linux moving target ext2fs/ext2_fs.h */
+/* #undef HAVE_SYS_XATTR_H */		/* if we have the Linux Extended File Attr definitions in sys/xattr.h */
 /* #undef HAVE_ATTR_XATTR_H */	/* if we have the Linux Extended File Attr definitions in attr/xattr.h */
 /* #undef HAVE_CRT_EXTERNS_H */	/* if we have the Mac OS X env definitions in crt_externs.h */
 #define HAVE_FNMATCH_H 1		/* if we may include fnmatch.h */
@@ -668,9 +671,15 @@
 /* #undef HAVE_CAP_SET_FLAG */	/* cap_set_flag() is present in libcap */
 /* #undef HAVE_CAP_CLEAR_FLAG */	/* cap_clear_flag() is present in libcap */
 
+/*
+ * SELinux support
+ */
+/* #undef HAVE_IS_SELINUX_ENABLED */	/* is_selinux_enabled() is present in libselinux */
 
 #define HAVE_DIRFD 1		/* dirfd() is present in libc */
 #define HAVE_ISWPRINT 1		/* iswprint() is present in libc */
+#define HAVE_ISWBLANK 1		/* iswblank() is present in libc */
+#define HAVE_ISBLANK 1		/* isblank() is present in libc */
 #define HAVE_MBSINIT 1		/* mbsinit() is present in libc */
 #define HAVE_MBTOWC 1		/* mbtowc() is present in libc */
 #define HAVE_WCTOMB 1		/* wctomb() is present in libc */
@@ -713,6 +722,8 @@
 #define HAVE__DEV_FD_1 1		/* /dev/fd/1 present */
 #define HAVE__DEV_FD_2 1		/* /dev/fd/2 present */
 /* #undef HAVE__USR_SRC_LINUX_INCLUDE */	/* /usr/src/linux/include present */
+#define HAVE__USR_XPG4_BIN_SH 1	/* /usr/xpg4/bin/sh present */
+/* #undef HAVE__OPT_SCHILY_XPG4_BIN_SH */	/* /opt/schily/xpg4/bin/sh present */
 #endif
 
 /*
@@ -724,6 +735,8 @@
 /* #undef	BIN_SHELL_CE_IS_BROKEN */	/* /bin/sh -ce is broken */
 /* #undef	BIN_SHELL_BOSH */		/* /bin/bosh is a working Bourne Shell */
 /* #undef	OPT_SCHILY_BIN_SHELL_BOSH */ /* /opt/schily/bin/bosh is a working Bourne Shell */
+#define	CNF_PATH_ED "/usr/bin/ed"		/* e.g. "/bin/ed" */
+#define	CNF_PATH_RED "/usr/bin/red"		/* e.g. "/bin/red" */
 
 /*
  * OS madness
@@ -985,6 +998,7 @@
 /* #undef u_long */			/* To be used if u_long is not present	*/
 
 /* #undef wctype_t */			/* To be used if wctype_t is not in wchar.h */
+/* #undef wint_t */			/* To be used if wint_t is not in wchar.h */
 /* #undef mbstate_t */		/* To be used if mbstate_t is not in wchar.h */
 
 /* #undef timestruc_t */		/* To be used if timestruc_t is not in sys/stat.h */

@@ -1,10 +1,19 @@
-/* @(#)match.c	1.24 10/08/21 Copyright 1985, 1995-2010 J. Schilling */
+/* @(#)match.c	1.36 19/09/21 Copyright 1985, 1995-2019 J. Schilling */
+#include <schily/utypes.h>	/* For Uchar			*/
 #include <schily/standard.h>
 #include <schily/patmatch.h>
+#define	POSIX_CLASS		/* Support [[:alpha:]] by default */
+#ifdef	NO_POSIX_CLASS		/* Allow to disable [[:alpha:]]	  */
+#undef	POSIX_CLASS
+#endif
+#ifdef	POSIX_CLASS
+#include <schily/wchar.h>	/* With [[:alpha:]], we need wctype()	*/
+#include <schily/wctype.h>	/* and thus wchar.h and wctype.h	*/
+#endif
 /*
  *	Pattern matching functions
  *
- *	Copyright (c) 1985, 1995-2010 J. Schilling
+ *	Copyright (c) 1985, 1995-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -13,6 +22,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -33,6 +44,7 @@
  *
  *	Character classes have been added to allow "[<character list>]"
  *	to be used.
+ *	POSIX features like [[:alpha:]] have been added.
  *	Start of line '^' and end of line '$' have been added.
  */
 
@@ -53,14 +65,30 @@
 #define	patmatch	patwmatch
 #endif
 #define	CHAR		wchar_t
+#define	PCHAR		wchar_t
+#endif
+
+#ifdef	__MB_CHAR
+#undef	patmatch
+#ifdef	__LINE_MATCH
+#define	patmatch	patmblmatch
+#else
+#define	patmatch	patmbmatch
+#endif
+#define	PCHAR		wchar_t
 #endif
 
 #ifndef	CHAR
-typedef	unsigned char	Uchar;
 #define	CHAR		Uchar
 #endif
 
+#ifndef	PCHAR
+#define	PCHAR		Uchar
+#endif
+
 #define	ENDSTATE	(-1)
+
+#define	CL_SIZE		32	/* Max size for '[: :]'			*/
 
 /*
  *	The Interpreter
@@ -91,24 +119,67 @@ typedef	unsigned char	Uchar;
 
 /*
  *	match a character in class
+ *
+ *	Syntax errors do not appear here, they are handled by the compiler,
+ *	so in theory we could remove the "return (0)" statements from the
+ *	the POSIX class code.
  */
+#ifdef	POSIX_CLASS
+#define	CHK_POSIX_CLASS					\
+	if (*lpat == LCLASS && lpat[1] == ':') {	\
+		char	class[CL_SIZE+1];		\
+		char	*pc = class;			\
+							\
+		lpat += 2;	/* Eat ':' */		\
+		for (;;) {				\
+			if (*lpat == '\0') {		\
+				ok = FALSE;		\
+				goto out;		\
+			}				\
+			if (*lpat == ':' && lpat[1] == RCLASS) \
+				break;			\
+			if (pc >= &class[CL_SIZE]) {	\
+				ok = FALSE;		\
+				goto out;		\
+			}				\
+			*pc++ = *lpat++;		\
+		}					\
+		if (pc == class) {			\
+			ok = FALSE;			\
+			goto out;			\
+		}					\
+		*pc = '\0';				\
+		lpat += 2;	/* Skip ":]" */		\
+		if (iswctype(lc, wctype(class))) {	\
+			ok = !ok;			\
+			goto out;			\
+		}					\
+		continue;				\
+	} else
+#else
+#define	CHK_POSIX_CLASS
+#endif
 #define	in_class(found, pat, c)	{			\
-	register const CHAR	*lpat	= pat;		\
+	register const PCHAR	*lpat	= pat;		\
 	register int		lc	= c;		\
 	int	lo_bound;				\
 	int	hi_bound;				\
-							\
-	found = FALSE;					\
+	BOOL	ok			= FALSE;	\
 							\
 	if (*lpat == NOT) {				\
 		lpat++;					\
-		found = TRUE;				\
+		ok = TRUE;				\
 	}						\
-	while (*lpat != RCLASS) {			\
+	do {						\
+		if (*lpat == '\0') {			\
+			ok = FALSE;			\
+			goto out;			\
+		}					\
+		CHK_POSIX_CLASS				\
 		if (*lpat == QUOTE)			\
 			lpat++;				\
 		lo_bound = *lpat++;			\
-		if (*lpat == RANGE) {			\
+		if (*lpat == RANGE && lpat[1] != RCLASS) { \
 			lpat++;				\
 			if (*lpat == QUOTE)		\
 				lpat++;			\
@@ -117,10 +188,12 @@ typedef	unsigned char	Uchar;
 			hi_bound = lo_bound;		\
 		}					\
 		if (lo_bound <= lc && lc <= hi_bound) {	\
-			found = !found;			\
-			break;				\
+			ok = !ok;			\
+			goto out;			\
 		}					\
-	}						\
+	} while (*lpat != RCLASS);			\
+out:							\
+	found = ok;					\
 }
 
 /*
@@ -129,10 +202,10 @@ typedef	unsigned char	Uchar;
  *	Trys to match a string beginning at offset
  *	against the compiled pattern.
  */
-#ifndef	__WIDE_CHAR
+#if !defined(__WIDE_CHAR) && !defined(__MB_CHAR)
 EXPORT CHAR
 *opatmatch(pat, aux, str, soff, slen, alt)
-	const CHAR	*pat;
+	const PCHAR	*pat;
 	const int	*aux;
 	const CHAR	*str;
 	int		soff;
@@ -153,7 +226,7 @@ EXPORT CHAR
  */
 EXPORT CHAR *
 patmatch(pat, aux, str, soff, slen, alt, state)
-	const CHAR	*pat;
+	const PCHAR	*pat;
 	const int	*aux;
 	const CHAR	*str;
 	int		soff;
@@ -166,7 +239,12 @@ patmatch(pat, aux, str, soff, slen, alt, state)
 	register int	*i;
 	register int	p;
 	register int	q, s, k;
+#ifdef	__MB_CHAR
+	wchar_t		c;
+	int		mlen = 1;
+#else
 	int		c;
+#endif
 	const CHAR	*lastp = (CHAR *)NULL;
 
 #ifdef	__LINE_MATCH
@@ -178,14 +256,29 @@ for (; soff <= slen; soff++) {
 	if (alt != ENDSTATE)
 		put(sp, state, sp, alt);
 
+#ifdef	__MB_CHAR
+	mbtowc(NULL, NULL, 0);
+	for (s = soff; ; s += mlen) {
+#else
 	for (s = soff; ; s++) {
+#endif
 		/*
 		 * next char from input string
 		 */
-		if (s >= slen)
+		if (s >= slen) {
 			c = 0;
-		else
+		} else {
+#ifdef	__MB_CHAR
+			mlen = mbtowc(&c, (char *)&str[s], slen - s);
+			if (mlen < 0) {
+				mbtowc(NULL, NULL, 0);
+				c = str[s];
+				mlen = 1;
+			}
+#else
 			c = str[s];
+#endif
+		}
 		/*
 		 * first complete the closure
 		 */
@@ -259,6 +352,7 @@ for (; soff <= slen; soff++) {
 				continue;
 			case QUOTE:
 				k = pat[p+1];
+				/* FALLTHRU */
 			default:
 				if (k != c)
 					continue;
@@ -287,17 +381,17 @@ return ((CHAR *)lastp);
 }
 
 
-#ifndef	__LINE_MATCH
+#if !defined(__LINE_MATCH) && !defined(__MB_CHAR)
 /*
  *	The Compiler
  */
 
 typedef	struct args {
-	const CHAR	*pattern;
+	const PCHAR	*pattern;
 	int		*aux;
 	int		patp;
 	int		length;
-	CHAR		Ch;
+	PCHAR		Ch;
 } arg_t;
 
 LOCAL	void	nextitem __PR((arg_t *));
@@ -316,6 +410,15 @@ LOCAL	int	join	 __PR((int *, int, int));
 	else						\
 		(ap)->Ch = (ap)->pattern[(ap)->patp];	\
 }
+
+/*
+ *	'peek' the next character from pattern
+ */
+#define	pch(ap)						\
+	((((ap)->patp + 1) >= (ap)->length) ?		\
+		0					\
+	:						\
+		(ap)->pattern[(ap)->patp+1])		\
 
 /*
  *	get the next item from pattern
@@ -340,7 +443,7 @@ prim(ap)
 	int	op = ap->Ch;
 	int	t;
 
-	nextitem(ap);
+	nextitem(ap);			/* Eat '[' */
 	switch (op) {
 
 	case '\0':
@@ -348,8 +451,51 @@ prim(ap)
 	case RBRACK:
 		return (ENDSTATE);
 	case LCLASS:
-		while (ap->Ch != RCLASS && ap->Ch != '\0')
+		if (ap->Ch == NOT)
+			nextitem(ap);	/* Eat '^' at first position */
+
+		t = TRUE;		/* Allow ] as first character */
+		while ((t || ap->Ch != RCLASS) && ap->Ch != '\0') {
+			t = FALSE;
+#ifdef	POSIX_CLASS
+			if (ap->Ch == LCLASS) {
+				if (pch(ap) == ':') {	/* [:alpha:] */
+					char	class[CL_SIZE+1];
+					char	*pc = class;
+
+					nextitem(ap);		/* eat '[' */
+					nextitem(ap);		/* eat ':' */
+					while (ap->Ch != ':' &&
+					    ap->Ch != '\0') {
+						if (pc >= &class[CL_SIZE])
+							return (ENDSTATE);
+						*pc = ap->Ch;
+						if (*pc++ != ap->Ch)
+							return (ENDSTATE);
+						nextitem(ap);
+					}
+					if (pc == class)
+						return (ENDSTATE);
+					*pc = '\0';
+					if (ap->Ch == '\0')
+						return (ENDSTATE);
+					if (wctype(class) == 0)
+						return (ENDSTATE);
+					nextitem(ap);
+					if (ap->Ch != RCLASS)
+						return (ENDSTATE);
+				}
+			}
+#endif
+			/*
+			 * A '-' before the ending ']' does not have the
+			 * special range meaning.
+			 */
+			if (ap->Ch == RANGE &&
+			    pch(ap) != RCLASS)	/* One more char required */
+				nextitem(ap);	/* so get char past '-'	  */
 			nextitem(ap);
+		}
 		if (ap->Ch == '\0')
 			return (ENDSTATE);
 		nextitem(ap);
@@ -381,10 +527,12 @@ expr(ap, altp)
 	int	exits = ENDSTATE;
 	int	a;
 	int	*aux = ap->aux;
-	CHAR	Ch;
+	PCHAR	Ch;
 
 	for (;;) {
 		a = prim(ap);
+		if (a == ENDSTATE)
+			return (ENDSTATE);
 		Ch = ap->Ch;
 		if (Ch == ALT || Ch == RBRACK || Ch == '\0') {
 			exits = join(aux, exits, a);
@@ -445,7 +593,7 @@ join(aux, a, b)
  */
 EXPORT int
 patcompile(pat, len, aux)
-	const CHAR	*pat;
+	const PCHAR	*pat;
 	int		len;
 	int		*aux;
 {
@@ -467,4 +615,4 @@ patcompile(pat, len, aux)
 	setexits(aux, i, ENDSTATE);
 	return (alt);
 }
-#endif	/* LMATCH */
+#endif /* !defined(__LINE_MATCH) && !defined(__MB_CHAR) */

@@ -1,8 +1,8 @@
-/* @(#)bsh.h	1.65 16/08/14 Copyright 1985-2016 J. Schilling */
+/* @(#)bsh.h	1.75 19/04/07 Copyright 1985-2019 J. Schilling */
 /*
  *	Bsh general definitions
  *
- *	Copyright (c) 1985-2016 J. Schilling
+ *	Copyright (c) 1985-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -279,6 +279,8 @@ extern	int	quoting		__PR((void));
 extern	void	dquote		__PR((void));
 extern	void	undquote	__PR((void));
 extern	int	dquoting	__PR((void));
+extern	void	xquote		__PR((void));
+extern	void	unxquote	__PR((void));
 extern	int	begina		__PR((int flg));
 extern	int	getbegina	__PR((void));
 extern	int	setbegina	__PR((void));
@@ -307,6 +309,8 @@ extern	void	rusageadd	__PR((struct rusage *pru1,
  */
 extern	BOOL	any_match	__PR((char *s));
 extern	Tnode	*expand		__PR((char *s));
+extern	Tnode	*bexpand	__PR((char *s));
+extern	int	bsh_hop_dirs	__PR((char *name, char **np));
 
 /*
  * inputc.c
@@ -314,6 +318,9 @@ extern	Tnode	*expand		__PR((char *s));
 extern	FILE	*getinfile	__PR((void));
 extern	int	get_histlen	__PR((void));
 extern	void	chghistory	__PR((char *cp));
+extern	void	histrange	__PR((unsigned *firstp,
+					unsigned *lastp,
+					unsigned *nextp));
 extern	void	init_input	__PR((void));
 extern	int	getnextc	__PR((void));
 extern	int	nextc		__PR((void));
@@ -323,8 +330,24 @@ extern	void	append_line	__PR((char *linep, unsigned int len,
 extern	char	*match_hist	__PR((char *pattern));
 extern	char	*make_line	__PR((int (*f)(FILE *), FILE *arg));
 extern	char	*get_line	__PR((int n, FILE *f));
-extern	void	put_history	__PR((FILE *f, int intrflg));
-extern	void	save_history	__PR((int intrflg));
+
+/*
+ * Keep #defines in sync with include/schily/shedit.h
+ */
+#define	HI_NOINTR	0	/* History traversal noninterruptable	*/
+#define	HI_INTR		1	/* History traversal is interruptable	*/
+#define	HI_NONUM	2	/* Do not print numbers			*/
+#define	HI_TAB		4	/* Print TABs				*/
+#define	HI_REVERSE	8	/* Print in reverse order		*/
+#define	HI_PRETTYP	16	/* Pretty Type non-printable chars	*/
+#define	HI_ANSI_NL	32	/* Convert ASCII newlines to ANSI nl	*/
+extern	int	put_history	__PR((FILE *f, int flg,
+					int _first, int _last, char *_subst));
+extern	int	search_history	__PR((int flg,
+					int _first, char *_pat));
+extern	int	remove_history	__PR((int flg,
+					int _first, char *_pat));
+extern	void	save_history	__PR((int flg));
 extern	void	read_init_history	__PR((void));
 extern	void	readhistory	__PR((FILE *f));
 
@@ -380,6 +403,7 @@ extern	BOOL	ev_set_locked	__PR((char *val));
  * alloc.c
  */
 extern	void	*Jfree		__PR((void *t, void *chain));
+#ifndef	_SCHILY_DBGMALLOC_H
 #ifdef	D_MALLOC
 extern	void	*dbg_malloc		__PR((size_t size,
 							char *file, int line));
@@ -391,12 +415,13 @@ extern	void	*dbg_realloc		__PR((void *t, size_t size,
 #define	calloc(n, s)			dbg_calloc(n, s, __FILE__, __LINE__)
 #define	realloc(t, s)			dbg_realloc(t, s, __FILE__, __LINE__)
 #endif
-extern	int	psize		__PR((char *t));
+extern	size_t	apsize		__PR((char *t));
 extern	void	freechecking	__PR((BOOL val));
 extern	void	nomemraising	__PR((BOOL val));
 extern	void	aprintfree	__PR((FILE *f));
 extern	void	aprintlist	__PR((FILE *f, long l));
 extern	void	aprintchunk	__PR((FILE *f, long l));
+#endif	/* _SCHILY_DBGMALLOC_H */
 
 extern	void	balloc		__PR((Argvec *vp, FILE **std, int flag));
 
