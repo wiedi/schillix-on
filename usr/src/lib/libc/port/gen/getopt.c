@@ -24,12 +24,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2016 J. Schilling
+ * Copyright 2006-2017 J. Schilling
  *
- * @(#)getopt.c	1.16 16/04/26 J. Schilling
+ * @(#)getopt.c	1.19 19/02/21 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)getopt.c 1.16 16/04/26 J. Schilling"
+#pragma ident "@(#)getopt.c 1.19 19/02/21 J. Schilling"
 #endif
 
 #if defined(sun)
@@ -58,6 +58,7 @@
 
 
 #pragma weak _getopt = getopt
+#pragma weak opt_sp = _sp	/* Needed by newer sources		*/
 
 #include "lint.h"
 #include "_libc_gettext.h"
@@ -98,6 +99,13 @@ static char *parselong(const char *optstring, const char *opt,
  *
  * So, why isn't this "static" you ask?  Because the historical Bourne
  * shell has actually latched on to this little piece of private data.
+ */
+/*
+ * The name of the variable on SVr4 was _sp, but we enhanced the features
+ * of getopt() to support long options and since recent versions of the
+ * Bourne Shell rely on long option support, the easiest way to signal the
+ * enhanced features of this getopt() implementation is to change the name
+ * of the state variable to opt_sp. See #pragma weak above.
  */
 int _sp = 1;
 
@@ -206,6 +214,8 @@ parselong(const char *optstring, const char *opt, char **longoptarg)
 
 	cp = ip = (char *)optstring;
 	do {
+		if (*ip == '\0')
+			break;
 		if (*ip != '(' && *++ip == '\0')
 			break;
 		if (*ip == ':' && *++ip == '\0')
