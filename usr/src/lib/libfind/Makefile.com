@@ -10,12 +10,13 @@
 #
 
 #
-# Copyright 2010-2011 Jörg Schilling.  All rights reserved.
+# Copyright 2010-2019 Jörg Schilling.  All rights reserved.
 #
 
 LIBRARY=	libfind.a
-VERS=		.1
-OBJECTS=	find.o walk.o fetchdir.o cmpdir.o find_misc.o find_list.o find_main.o idcache.o
+VERS=		.3
+OBJECTS=	find.o walk.o fetchdir.o cmpdir.o find_misc.o find_list.o \
+		find_main.o idcache.o ptime.o
 
 include ../../Makefile.lib
 #

@@ -1,14 +1,14 @@
 /*#define	PLUS_DEBUG*/
-/* @(#)find.c	1.102 15/10/27 Copyright 2004-2015 J. Schilling */
+/* @(#)find.c	1.119 19/09/07 Copyright 2004-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)find.c	1.102 15/10/27 Copyright 2004-2015 J. Schilling";
+	"@(#)find.c	1.119 19/09/07 Copyright 2004-2019 J. Schilling";
 #endif
 /*
  *	Another find implementation...
  *
- *	Copyright (c) 2004-2015 J. Schilling
+ *	Copyright (c) 2004-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -49,6 +49,8 @@ static	UConst char sccsid[] =
 #include <schily/grp.h>
 #define	VMS_VFORK_OK
 #include <schily/vfork.h>
+#include <schily/errno.h>
+#include <schily/libgen.h>	/* Past string.h, avoid Linux basename() bug */
 
 #include <schily/nlsdefs.h>
 
@@ -56,33 +58,37 @@ static	UConst char sccsid[] =
 #define	MULTI_ARG_MAX		/* SunOS only ?			*/
 #endif
 
-#ifdef	__FIND__
-char	strvers[] = "1.4";	/* The pure version string	*/
-#endif
+#include "version.h"
+LOCAL char strvers[] = VERSION;	/* The pure version string	*/
 
-typedef struct {
+typedef struct find_node findn_t;
+
+#include <schily/walk.h>
+#define	FIND_NODE
+#include <schily/find.h>
+
+struct find_node {
 	char	*left;
 	char	*right;
 	char	*this;
 	int	op;
 	union {
-		int	i;
-		long	l;
-		dev_t	dev;
-		ino_t	ino;
-		mode_t	mode;
-		nlink_t	nlink;
-		uid_t	uid;
-		gid_t	gid;
-		size_t	size;
-		time_t	time;
-		FILE	*fp;
+		int		i;
+		long		l;
+		dev_t		dev;
+		ino_t		ino;
+		mode_t		mode;
+		nlink_t		nlink;
+		uid_t		uid;
+		gid_t		gid;
+		size_t		size;
+		time_t		time;
+		struct timespec	ts;
+		FILE		*fp;
+		cbfun_t		callfun;
 	} val, val2;
-} findn_t;
+};
 
-#include <schily/walk.h>
-#define	FIND_NODE
-#include <schily/find.h>
 #include "find_list.h"
 #include "find_misc.h"
 #define	TOKEN_NAMES
@@ -126,6 +132,10 @@ typedef struct {
  *	If a 64 bit libfind calls a 32 bit program, the arg vector and the
  *	environment array in the called program needs less space than in the
  *	calling libfind code.
+ *
+ *	Note that the "avx" entry is only needed in case we have no vfork()
+ *	since we aways need to create an arg vector copy in the vfork() case.
+ *	This copy is created in doexec() and takes care of the extra space.
  */
 struct plusargs {
 	struct plusargs	*next;		/* Next in list for flushing	*/
@@ -134,6 +144,7 @@ struct plusargs {
 	char		*laststr;	/* points to last used string	*/
 	int		nenv;		/* Number of entries in env	*/
 	int		ac;		/* The argc for our command	*/
+	char		*avx;		/* Space for "sh" for scripts	*/
 	char		*av[1];		/* The argv for our command	*/
 };
 
@@ -153,6 +164,7 @@ LOCAL	time_t	find_xnow;		/* The exact start time		*/
 LOCAL	findn_t	Printnode = { 0, 0, 0, PRINT };
 
 EXPORT	void	find_argsinit	__PR((finda_t *fap));
+EXPORT	void	find_sqinit	__PR((squit_t *quit));
 EXPORT	void	find_timeinit	__PR((time_t now));
 EXPORT	findn_t	*find_printnode	__PR((void));
 EXPORT	findn_t	*find_addprint	__PR((findn_t *np, finda_t *fap));
@@ -161,6 +173,7 @@ EXPORT	void	find_free	__PR((findn_t *t, finda_t *fap));
 LOCAL	void	find_freenode	__PR((findn_t *t));
 LOCAL	void	nexttoken	__PR((finda_t *fap));
 LOCAL	BOOL	_nexttoken	__PR((finda_t *fap));
+LOCAL	void	badopt		__PR((finda_t *fap, char *word));
 LOCAL	void	errjmp		__PR((finda_t *fap, int err));
 EXPORT	int	find_token	__PR((char *word));
 EXPORT	char	*find_tname	__PR((int op));
@@ -182,11 +195,12 @@ LOCAL	inline BOOL find_expr	__PR((char *f, char *ff, struct stat *fs, struct WAL
 #else
 EXPORT	BOOL	find_expr	__PR((char *f, char *ff, struct stat *fs, struct WALK *state, findn_t *t));
 #endif
+LOCAL	BOOL	docall		__PR((char *f, findn_t *t, int ac, char **av, struct WALK *state));
 #ifdef	HAVE_FORK
 LOCAL	BOOL	doexec		__PR((char *f, findn_t *t, int ac, char **av, struct WALK *state));
 #endif
 LOCAL	int	countenv	__PR((void));
-LOCAL	int	argsize		__PR((int xtype));
+LOCAL	int	argsize		__PR((finda_t *fap, int xtype));
 LOCAL	int	extype		__PR((char *name));
 #ifdef	MULTI_ARG_MAX
 LOCAL	int	xargsize	__PR((int xtype, int maxarg));
@@ -197,6 +211,8 @@ LOCAL	BOOL	plusexec	__PR((char *f, findn_t *t, struct WALK *state));
 #endif
 EXPORT	int	find_plusflush	__PR((void *p, struct WALK *state));
 EXPORT	void	find_usage	__PR((FILE *f));
+EXPORT	char	*find_strvers	__PR((void));
+EXPORT	int	find_vers	__PR((void));
 #ifdef	FIND_MAIN
 LOCAL	int	getflg		__PR((char *optstr, long *argp));
 EXPORT	int	main		__PR((int ac, char **av));
@@ -212,6 +228,8 @@ find_argsinit(fap)
 	fap->std[0] = stdin;
 	fap->std[1] = stdout;
 	fap->std[2] = stderr;
+	fap->primarg = NULL;
+	fap->primname = NULL;
 	fap->primtype = 0;
 	fap->found_action = FALSE;
 	fap->patlen = 0;
@@ -221,6 +239,16 @@ find_argsinit(fap)
 	fap->plusp = (struct plusargs *)NULL;
 	fap->jmp = NULL;
 	fap->error = 0;
+	fap->argsize = 0;
+	fap->callfun = NULL;
+	zerobytes(&fap->__reserved, sizeof (fap->__reserved));
+}
+
+EXPORT void
+find_sqinit(quit)
+	squit_t	*quit;
+{
+	zerobytes(quit, sizeof (*quit));
 }
 
 EXPORT void
@@ -358,24 +386,36 @@ _nexttoken(fap)
 		fap->primtype = FIND_ENDARGS;
 		return (TRUE);
 	}
-	word = *fap->Argv;
+	if (fap->primarg)
+		fap->primname = word = fap->primarg;
+	else
+		fap->primname = word = *fap->Argv;
 	if ((tail = strchr(word, '=')) != NULL) {
 #ifdef	XXX
 		if (*tail == '\0') {
 			fap->Argv++; fap->Argc--;
 		} else
 #endif
-			*fap->Argv = ++tail;
+			fap->primarg = ++tail;
 	} else {
+		fap->primarg = NULL;
 		fap->Argv++; fap->Argc--;
 	}
 	if ((fap->primtype = find_token(word)) >= 0)
 		return (TRUE);
 
+	badopt(fap, word);
+	return (FALSE);
+}
+
+LOCAL void
+badopt(fap, word)
+	finda_t	*fap;
+	char	*word;
+{
 	ferrmsgno(fap->std[2], EX_BAD, _("Bad Option: '%s'.\n"), word);
 	find_usage(fap->std[2]);
 	fap->primtype = FIND_ERRARG;	/* Mark as "parse aborted"	*/
-	return (FALSE);
 }
 
 LOCAL void
@@ -460,6 +500,13 @@ nextarg(fap, t)
 		/* NOTREACHED */
 		return ((char *)0);
 	} else {
+		if (fap->primarg) {
+			char	*arg = fap->primarg;
+
+			fap->primarg = NULL;
+			fap->Argv++;
+			return (arg);
+		}
 		return (*fap->Argv++);
 	}
 }
@@ -746,6 +793,7 @@ parseprim(fap)
 	case CMIN:
 	case MMIN:
 		n->val2.i = 1;
+		/* FALLTHROUGH */
 	case TIME:
 	case ATIME:
 	case CTIME:
@@ -799,7 +847,12 @@ parseprim(fap)
 			errjmp(fap, geterrno());
 			/* NOTREACHED */
 		}
+#if	defined(_FOUND_STAT_NSECS_)
+		n->val.ts.tv_sec = ns.st_atime;
+		n->val.ts.tv_nsec = stat_ansecs(&ns);
+#else
 		n->val.time = ns.st_atime;
+#endif
 		nexttoken(fap);
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
@@ -818,7 +871,12 @@ parseprim(fap)
 			errjmp(fap, geterrno());
 			/* NOTREACHED */
 		}
+#if	defined(_FOUND_STAT_NSECS_)
+		n->val.ts.tv_sec = ns.st_ctime;
+		n->val.ts.tv_nsec = stat_cnsecs(&ns);
+#else
 		n->val.time = ns.st_ctime;
+#endif
 		nexttoken(fap);
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
@@ -838,7 +896,42 @@ parseprim(fap)
 			errjmp(fap, geterrno());
 			/* NOTREACHED */
 		}
+#if	defined(_FOUND_STAT_NSECS_)
+		n->val.ts.tv_sec = ns.st_mtime;
+		n->val.ts.tv_nsec = stat_mnsecs(&ns);
+#else
 		n->val.time = ns.st_mtime;
+#endif
+		nexttoken(fap);
+		fap->jmp = ojmp;		/* Restore old jump target */
+		return (n);
+	}
+
+	case CHATIME:
+	case CHCTIME:
+	case CHMTIME:
+
+	case NEWERAT:
+	case NEWERCT:
+	case NEWERMT: {
+		struct timespec ts;
+		const char	*te;
+
+		fap->walkflags &= ~WALK_NOSTAT;
+
+		te = parsetime(n->left = nextarg(fap, n), &ts);
+		if (te == NULL || *te != '\0') {
+			ferrmsgno(fap->std[2], EX_BAD,
+				_("Cannot use '%s' as timestamp.\n"), n->left);
+			errjmp(fap, EX_BAD);
+			/* NOTREACHED */
+		}
+#if	defined(_FOUND_STAT_NSECS_)
+		n->val.ts.tv_sec = ts.tv_sec;
+		n->val.ts.tv_nsec = ts.tv_nsec;
+#else
+		n->val.time = ts.tv_sec;
+#endif
 		nexttoken(fap);
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
@@ -964,12 +1057,18 @@ parseprim(fap)
 		fap->walkflags &= ~WALK_NOSTAT;
 
 		p = n->left = nextarg(fap, n);
-		if (p[0] == '+') {
-			if (p[1] == '0' ||
-			    p[1] == 'u' || p[1] == 'g' || p[1] == 'o' || p[1] == 'a')
+		if (n->op == PERM) {
+			if (p[0] == '+') {
+				if (p[1] == '0' || /* +0777 is not in POSIX  */
+				    p[1] == 'a') { /* +a=rwx is not in POSIX */
+					p[0] = '/';
+					p++;
+				} else {
+					n->left = "";
+				}
+			} else if (p[0] == '/') {
 				p++;
-			else
-				n->left = "";
+			}
 		}
 		if (getperm(fap->std[2], p, tokennames[n->op],
 				&n->val.mode, (mode_t)0,
@@ -992,10 +1091,16 @@ parseprim(fap)
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
 
-	case XDEV:
 	case MOUNT:
 		fap->walkflags &= ~WALK_NOSTAT;
 		fap->walkflags |= WALK_MOUNT;
+		nexttoken(fap);
+		fap->jmp = ojmp;		/* Restore old jump target */
+		return (n);
+	case XDEV:				/* POSIX alias set up on */
+	case MOUNTPLUS:				/* 27.9.2018		 */
+		fap->walkflags &= ~WALK_NOSTAT;
+		fap->walkflags |= WALK_XDEV;
 		nexttoken(fap);
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
@@ -1044,31 +1149,50 @@ parseprim(fap)
 	case READABLE:
 	case WRITABLE:
 	case EXECUTABLE:
+	case CHFILE:
 		nexttoken(fap);
 		fap->jmp = ojmp;		/* Restore old jump target */
 		return (n);
 
 	case OK_EXEC:
 	case OK_EXECDIR:
+	case CALL:
+	case CALLDIR:
 	case EXEC:
 	case EXECDIR: {
 		int	i = 1;
+		char	**Cargv = NULL;
+		char	*arg0 = NULL;
 
+		if (fap->primarg) {
+			/*
+			 * Create a contiguous arg vector
+			 */
+			Cargv = fap->Argv;
+			arg0 = *Cargv;
+			*Cargv = fap->primarg;
+		}
+		fap->argsize = 0;
 		n->this = (char *)fap->Argv;	/* Cheat: Pointer is pointer */
 		nextarg(fap, n);		/* Eat up cmd name	    */
 		while ((p = nextarg(fap, n)) != NULL) {
 			if (streql(p, ";"))
 				break;
 			else if (streql(p, "+") && streql(fap->Argv[-2], "{}")) {
-				if (n->op == OK_EXECDIR || n->op == EXECDIR) {
+				if (n->op == OK_EXECDIR || n->op == EXECDIR ||
+				    n->op == CALL || n->op == CALLDIR) {
 					ferrmsgno(fap->std[2], EX_BAD,
 					_("'-%s' does not yet work with '+'.\n"),
 						tokennames[n->op]);
+					if (Cargv)
+						*Cargv = arg0;
 					errjmp(fap, EX_BAD);
 					/* NOTREACHED */
 				}
 				n->op = fap->primtype = EXECPLUS;
 				if (!pluscreate(fap->std[2], --i, (char **)n->this, fap)) {
+					if (Cargv)
+						*Cargv = arg0;
 					errjmp(fap, EX_BAD);
 					/* NOTREACHED */
 				}
@@ -1078,6 +1202,15 @@ parseprim(fap)
 			i++;
 		}
 		n->val.i = i;
+		if (n->op == CALL || n->op == CALLDIR) {
+			if (fap->callfun == NULL) {
+				badopt(fap, tokennames[n->op]);
+				errjmp(fap, EX_BAD);
+			}
+			n->val2.callfun = fap->callfun;
+		}
+		if (Cargv)
+			*Cargv = arg0;
 #ifdef	PLUS_DEBUG
 		if (0) {
 			char **pp = (char **)n->this;
@@ -1093,6 +1226,7 @@ parseprim(fap)
 		goto found_action;
 	case FLS:
 		fap->walkflags &= ~WALK_NOSTAT;
+		/* FALLTHROUGH */
 	case FPRINT:
 	case FPRINT0:
 	case FPRINTNNL:
@@ -1288,6 +1422,8 @@ find_hasexec(t)
 		return (TRUE);
 	if (find_primary(t, OK_EXEC) || find_primary(t, OK_EXECDIR))
 		return (TRUE);
+	if (find_primary(t, CALL) || find_primary(t, CALLDIR))
+		return (TRUE);
 	return (FALSE);
 }
 
@@ -1354,6 +1490,7 @@ find_expr(f, ff, fs, state, t)
 #ifdef	FNM_IGNORECASE
 		fnflags = FNM_IGNORECASE;
 #endif
+		/* FALLTHROUGH */
 	case LNAME: {
 		int	lsize;
 
@@ -1385,6 +1522,7 @@ find_expr(f, ff, fs, state, t)
 #ifdef	FNM_IGNORECASE
 		fnflags = FNM_IGNORECASE;
 #endif
+		/* FALLTHROUGH */
 	case PATH:
 		p = f;
 		goto nmatch;
@@ -1392,8 +1530,16 @@ find_expr(f, ff, fs, state, t)
 #ifdef	FNM_IGNORECASE
 		fnflags = FNM_IGNORECASE;
 #endif
+		/* FALLTHROUGH */
 	case NAME:
 		p = ff;
+		if (p[walknlen(state)-1] == '/') {
+			/*
+			 * Remove trailing slashes
+			 */
+			strlcpy(lname, p, sizeof (lname));
+			p = basename(lname);
+		}
 	nmatch:
 #if	defined(HAVE_FNMATCH)
 		return (!fnmatch(t->this, p, fnflags));
@@ -1433,6 +1579,13 @@ find_expr(f, ff, fs, state, t)
 		goto pattern;
 	case PAT:
 		p = ff;
+		if (p[walknlen(state)-1] == '/') {
+			/*
+			 * Remove trailing slashes
+			 */
+			strlcpy(lname, p, sizeof (lname));
+			p = basename(lname);
+		}
 	pattern: {
 		Uchar	*pr;		/* patmatch() return */
 
@@ -1568,18 +1721,42 @@ find_expr(f, ff, fs, state, t)
 	case NEWERAA:
 	case NEWERAC:
 	case NEWERAM:
+	case NEWERAT:
+#if	defined(_FOUND_STAT_NSECS_)
+		if (t->val.ts.tv_sec < fs->st_atime)
+			return (TRUE);
+		return ((t->val.ts.tv_sec == fs->st_atime) &&
+			(t->val.ts.tv_nsec < stat_ansecs(fs)));
+#else
 		return (t->val.time < fs->st_atime);
+#endif
 
 	case NEWERCA:
 	case NEWERCC:
 	case NEWERCM:
+	case NEWERCT:
+#if	defined(_FOUND_STAT_NSECS_)
+		if (t->val.ts.tv_sec < fs->st_ctime)
+			return (TRUE);
+		return ((t->val.ts.tv_sec == fs->st_ctime) &&
+			(t->val.ts.tv_nsec < stat_cnsecs(fs)));
+#else
 		return (t->val.time < fs->st_ctime);
+#endif
 
 	case NEWER:
 	case NEWERMA:
 	case NEWERMC:
 	case NEWERMM:
+	case NEWERMT:
+#if	defined(_FOUND_STAT_NSECS_)
+		if (t->val.ts.tv_sec < fs->st_mtime)
+			return (TRUE);
+		return ((t->val.ts.tv_sec == fs->st_mtime) &&
+			(t->val.ts.tv_nsec < stat_mnsecs(fs)));
+#else
 		return (t->val.time < fs->st_mtime);
+#endif
 
 	case TYPE:
 		switch (*(t->this)) {
@@ -1623,8 +1800,40 @@ find_expr(f, ff, fs, state, t)
 #endif
 		return (TRUE);
 
+	case CHATIME:
+#if	defined(_FOUND_STAT_NSECS_)
+		fs->st_atime = t->val.ts.tv_sec;
+		stat_set_ansecs(fs, t->val.ts.tv_nsec);
+#else
+		fs->st_atime = t->val.time;
+#endif
+		state->flags |= WALK_WF_CHTIME;	/* Impossible to keep old */
+		return (TRUE);
+
+	case CHCTIME:
+#if	defined(_FOUND_STAT_NSECS_)
+		fs->st_ctime = t->val.ts.tv_sec;
+		stat_set_cnsecs(fs, t->val.ts.tv_nsec);
+#else
+		fs->st_ctime = t->val.time;
+#endif
+		state->flags |= WALK_WF_CHTIME;	/* Impossible to keep old */
+		return (TRUE);
+
+	case CHMTIME:
+#if	defined(_FOUND_STAT_NSECS_)
+		fs->st_mtime = t->val.ts.tv_sec;
+		stat_set_mnsecs(fs, t->val.ts.tv_nsec);
+#else
+		fs->st_mtime = t->val.time;
+#endif
+		state->flags |= WALK_WF_CHTIME;	/* Impossible to keep old */
+		return (TRUE);
+
 #ifdef	CHOWN
 	case CHOWN:
+		if (fs->st_uid != t->val.uid)
+			state->flags |= WALK_WF_CHOWN;
 		fs->st_uid = t->val.uid;
 		return (TRUE);
 #endif
@@ -1641,6 +1850,8 @@ find_expr(f, ff, fs, state, t)
 
 #ifdef	CHGRP
 	case CHGRP:
+		if (fs->st_gid != t->val.gid)
+			state->flags |= WALK_WF_CHOWN;
 		fs->st_gid = t->val.gid;
 		return (TRUE);
 #endif
@@ -1662,13 +1873,84 @@ find_expr(f, ff, fs, state, t)
 			(S_ISDIR(fs->st_mode) ||
 			(fs->st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)) != 0) ?
 								GP_DOX:GP_NOX);
+		if ((fs->st_mode & S_ALLMODES) != t->val.mode)
+			state->flags |= WALK_WF_CHMOD;
 		fs->st_mode &= ~S_ALLMODES;
 		fs->st_mode |= t->val.mode;
 		return (TRUE);
 #endif
 
+	case CHFILE: {
+		BOOL	ret = TRUE;
+
+		if (state->flags & WALK_WF_CHMOD) {
+#ifdef	HAVE_CHMOD
+#ifndef	HAVE_LCHMOD
+#undef	lchmod
+#define	lchmod	chmod
+			if (!S_ISLNK(fs->st_mode))
+#endif
+			if (lchmod(state->level ? ff : f, fs->st_mode) < 0) {
+				ferrmsg(state->std[2], _("Cannot chmod '%s'.\n"), ff);
+				ret = FALSE;
+			}
+#else
+			ferrmsg(state->std[2], _("Cannot chmod: unsupported.\n"));
+			ret = FALSE;
+#endif
+		}
+		if (state->flags & WALK_WF_CHOWN) {
+#ifdef	HAVE_CHOWN
+#ifndef	HAVE_LCHOWN
+#undef	lchown
+#define	lchown	chown
+			if (!S_ISLNK(fs->st_mode))
+#endif
+			if (lchown(state->level ? ff : f, fs->st_uid, fs->st_gid) < 0) {
+				ferrmsg(state->std[2], _("Cannot chown '%s'.\n"), ff);
+				ret = FALSE;
+			}
+#else
+			ferrmsg(state->std[2], _("Cannot chown: unsupported.\n"));
+			ret = FALSE;
+#endif
+		}
+		if (state->flags & WALK_WF_CHTIME) {
+#if	defined(HAVE_UTIMENSAT) || defined(HAVE_LUTIMES) || defined(HAVE_LUTIME) || defined(HAVE_UTIMES)
+			struct  timespec tp[3];
+
+			tp[0].tv_sec = fs->st_atime;
+#if	defined(_FOUND_STAT_NSECS_)
+			tp[0].tv_nsec = stat_ansecs(fs);
+#else
+			tp[0].tv_nsec = 0;
+#endif
+			tp[1].tv_sec = fs->st_mtime;
+#if	defined(_FOUND_STAT_NSECS_)
+			tp[1].tv_nsec = stat_mnsecs(fs);
+#else
+			tp[1].tv_nsec = 0;
+#endif
+#if	defined(HAVE_UTIMENSAT) || defined(HAVE_LUTIMES) || defined(HAVE_LUTIME)
+#define	NOFOLLOW	AT_SYMLINK_NOFOLLOW
+#else
+#define	NOFOLLOW	0
+			if (!S_ISLNK(fs->st_mode))
+#endif
+			if (utimensat(AT_FDCWD, state->level ? ff : f, tp, NOFOLLOW) < 0) {
+				ferrmsg(state->std[2], _("Cannot set time on '%s'.\n"), ff);
+				ret = FALSE;
+			}
+#else
+			ferrmsg(state->std[2], _("Cannot set time: unsupported.\n"));
+			ret = FALSE;
+#endif
+		}
+		return (ret);
+		}
+
 	case PERM:
-		if (t->left[0] == '+')
+		if (t->left[0] == '/')
 			return ((fs->st_mode & t->val.mode) != 0);
 		else if (t->left[0] == '-')
 			return ((fs->st_mode & t->val.mode) == t->val.mode);
@@ -1680,6 +1962,7 @@ find_expr(f, ff, fs, state, t)
 
 	case XDEV:
 	case MOUNT:
+	case MOUNTPLUS:
 	case DEPTH:
 	case FOLLOW:
 	case DOSTAT:
@@ -1762,6 +2045,13 @@ find_expr(f, ff, fs, state, t)
 		return (FALSE);
 #endif
 
+	case CALL:
+	case CALLDIR:
+		return (docall(
+			state->level && (t->op == CALLDIR)?
+			ff:f,
+			t, t->val.i, (char **)t->this, state));
+
 	case FPRINT:
 		fp = t->val.fp;
 		/* FALLTHRU */
@@ -1831,6 +2121,68 @@ find_expr(f, ff, fs, state, t)
 	return (FALSE);		/* Unknown operator ??? */
 }
 
+LOCAL BOOL
+docall(f, t, ac, av, state)
+	char	*f;
+	findn_t	*t;
+	int	ac;
+	char	**av;
+	struct WALK *state;
+{
+		char	*xav[32];
+	register char	**pp = av;
+	register char	**pp2 = xav;
+		char	** volatile aav = NULL;
+	register int	i;
+		int	retval = 0;
+		BOOL	didhome = FALSE;
+
+	if (f && ac >= 32) {
+		aav = malloc((ac+1) * sizeof (char **));
+		if (aav == NULL) {
+			ferrmsg(state->std[2], _("Cannot malloc arg vector for -call.\n"));
+			return (FALSE);
+		}
+		pp2 = aav;
+	}
+
+	if (t != NULL &&	/* Not called from find_plusflush() */
+	    t->op != CALLDIR) {
+		if (walkhome(state) < 0)
+			ferrmsg(state->std[2], _("Cannot chdir to '.'.\n"));
+		else
+			didhome = TRUE;
+	}
+
+#define	iscurlypair(p)	((p)[0] == '{' && (p)[1] == '}' && (p)[2] == '\0')
+
+	if (f) {				/* NULL for -call+ */
+		for (i = 0; i < ac; i++, pp++) {
+			register char	*p = *pp;
+
+			if (iscurlypair(p))	/* streql(p, "{}") */
+				*pp2++ = f;
+			else
+				*pp2++ = p;
+		}
+		if (aav)
+			pp = aav;
+		else
+			pp = xav;
+		pp[ac] = NULL;	/* -call {} \; is not NULL terminated */
+
+		retval = t->val2.callfun(ac, pp);
+
+	}
+
+	if (didhome)
+		walkcwd(state);
+
+	if (aav != NULL)
+		free(aav);
+	return (retval == 0);
+}
+
 #ifdef	HAVE_FORK
 LOCAL BOOL
 doexec(f, t, ac, av, state)
@@ -1847,8 +2199,11 @@ doexec(f, t, ac, av, state)
 	int	retval;
 
 #ifdef	HAVE_VFORK
-	if (f && ac >= 32) {
-		aav = malloc((ac+1) * sizeof (char **));
+	if (f && ac >= 32) {			/* This is not exec + */
+		/*
+		 * One NULL pointer and one index for "sh".
+		 */
+		aav = malloc((ac+1+1) * sizeof (char **));
 		if (aav == NULL) {
 			ferrmsg(state->std[2], _("Cannot malloc arg vector for -exec.\n"));
 			return (FALSE);
@@ -1898,8 +2253,8 @@ doexec(f, t, ac, av, state)
 		return (retval == 0);
 	} else {
 #ifdef	HAVE_VFORK
-			char	*xav[32];
-		register char	**pp2 = xav;
+			char	*xav[32+1];
+		register char	**pp2 = &xav[1];
 #endif
 		register int	i;
 		register char	**pp = av;
@@ -1923,7 +2278,7 @@ doexec(f, t, ac, av, state)
 
 #ifdef	HAVE_VFORK
 		if (aav)
-			pp2 = aav;
+			pp2 = &aav[1];			/* Room for "sh"   */
 #endif
 		if (f) {				/* NULL for -exec+ */
 			for (i = 0; i < ac; i++, pp++) {
@@ -1940,17 +2295,20 @@ doexec(f, t, ac, av, state)
 #endif
 			}
 #ifdef	HAVE_VFORK
+			*pp2 = NULL;			/* NULL terminate */
 			if (aav)
-				pp = aav;
+				pp = &aav[1];
 			else
-				pp = xav;
+				pp = &xav[1];
+#else
+			/*
+			 * "pp" is already NULL terminated.
+			 */
+			pp = av;
 #endif
 		} else {
 			pp = av;
 		}
-#ifndef	HAVE_VFORK
-		pp = av;
-#endif
 #ifdef	PLUS_DEBUG
 		error("argsize %d\n",
 			(plusp->endp - (char *)&plusp->nextargp[0]) -
@@ -1966,10 +2324,42 @@ doexec(f, t, ac, av, state)
 			(plusp->endp - (char *)&plusp->nextargp[0]) -
 			(plusp->laststr - (char *)&plusp->nextargp[1]));
 #endif
+		if (err == ENOEXEC) {
+			char	**ps = &pp[-1];
+
+#ifndef	HAVE_VFORK
+			if (f && ac >= 32) {	/* This is not exec + */
+				register char	**pp2;
+
+				/*
+				 * One NULL pointer and one index for "sh".
+				 */
+				ps = malloc((ac+1+1) * sizeof (char **));
+				if (ps == NULL) {
+					ferrmsg(state->std[2],
+					_("Cannot malloc arg vector for -exec.\n"));
+					goto exerr;
+				}
+				pp2 = &ps[1];
+				for (i = 0; i < ac; i++, pp++) {
+					*pp2++ = *pp;
+				}
+				*pp2 = NULL;
+			}
+#endif
+			ps[0] = "sh";
+			fexecve(ps[0], state->std[0],
+					state->std[1],
+					state->std[2],
+					ps, state->env);
+		}
 		/*
 		 * This is the forked process and for this reason, we may
 		 * call _exit() here without problems.
 		 */
+#ifndef	HAVE_VFORK
+exerr:
+#endif
 		ferrmsgno(state->std[2], err,
 			_("Cannot execute '%s'.\n"), av[0]);
 		_exit(err);
@@ -2017,14 +2407,14 @@ countenv()
  * program to do own exec(2) calls with slightly increased arg size.
  */
 LOCAL int
-argsize(xtype)
+argsize(fap, xtype)
+	finda_t	*fap;
 	int	xtype;
 {
-	static int	ret = 0;
-
-	if (ret == 0) {
+	if (fap->argsize == 0) {
 		register int	evs = 0;
 		register char	**ep;
+			int	ret = 0;
 
 		for (ep = environ; *ep; ep++) {
 			evs += strlen(*ep) + 1 + sizeof (ep);
@@ -2071,8 +2461,9 @@ argsize(xtype)
 			ret -= LINE_MAX;
 		else
 			ret -= 100;
+		fap->argsize = ret;
 	}
-	return (ret);
+	return (fap->argsize);
 }
 
 /*
@@ -2173,7 +2564,7 @@ pluscreate(f, ac, av, fap)
 		int	nenv;
 
 	xtype  = extype(av[0]);		/* Get -exec executable type	*/
-	maxarg = argsize(xtype);	/* Get ARG_MAX for executable	*/
+	maxarg = argsize(fap, xtype);	/* Get ARG_MAX for executable	*/
 	nenv   = countenv();		/* # of ents in current env	*/
 
 	mxtype = sizeof (char *) * CHAR_BIT;
@@ -2349,6 +2740,17 @@ find_usage(f)
 	fprintf(f, _("Primaries:\n"));
 	fprintf(f, _("*	-acl	      TRUE if the file has additional ACLs defined\n"));
 	fprintf(f, _("	-atime #      TRUE if st_atime is in specified range\n"));
+	fprintf(f, _("*	-call command [argument ...] \\;\n"));
+	fprintf(f, _("*	-calldir command [argument ...] \\;\n"));
+#ifdef	CHATIME
+	fprintf(f, _("*	-chatime tspec always TRUE, sets st_atime to tspec\n"));
+#endif
+#ifdef	CHCTIME
+	fprintf(f, _("*	-chctime tspec always TRUE, sets st_ctime to tspec\n"));
+#endif
+#ifdef	CHMTIME
+	fprintf(f, _("*	-chmtime tspec always TRUE, sets st_mtime to tspec\n"));
+#endif
 #ifdef	CHGRP
 	fprintf(f, _("*	-chgrp gname/gid always TRUE, sets st_gid to gname/gid\n"));
 #endif
@@ -2357,6 +2759,9 @@ find_usage(f)
 #endif
 #ifdef	CHOWN
 	fprintf(f, _("*	-chown uname/uid always TRUE, sets st_uid to uname/uid\n"));
+#endif
+#ifdef	CHFILE
+	fprintf(f, _("*	-chfile	      sets st_uid/st_gid, st_mode, st_?time in file\n"));
 #endif
 	fprintf(f, _("	-ctime #      TRUE if st_ctime is in specified range\n"));
 	fprintf(f, _("	-depth	      evaluate directory content before directory (always TRUE)\n"));
@@ -2389,10 +2794,12 @@ find_usage(f)
 	fprintf(f, _("*	-ls	      list files similar to 'ls -ilds' (always TRUE)\n"));
 	fprintf(f, _("*	-maxdepth #   descend at most # directory levels (always TRUE)\n"));
 	fprintf(f, _("*	-mindepth #   start tests at directory level # (always TRUE)\n"));
+	fprintf(f, _("	-mount        restrict search to current filesystem (always TRUE)\n"));
+	fprintf(f, _("*	-mount+       do not descend into mounted directories (always TRUE)\n"));
 	fprintf(f, _("	-mtime #      TRUE if st_mtime is in specified range\n"));
 	fprintf(f, _("	-name glob    TRUE if path component matches shell glob\n"));
 	fprintf(f, _("	-newer file   TRUE if st_mtime newer then mtime of file\n"));
-	fprintf(f, _("*	-newerXY file TRUE if [acm]time (X) newer then [acm]time (Y) of file\n"));
+	fprintf(f, _("*	-newerXY file TRUE if [acm]time (X) newer then [acmt]time (Y) of file\n"));
 	fprintf(f, _("	-nogroup      TRUE if not in group database\n"));
 	fprintf(f, _("	-nouser       TRUE if not in user database\n"));
 	fprintf(f, _("	-ok program [argument ...] \\;\n"));
@@ -2413,9 +2820,21 @@ find_usage(f)
 	fprintf(f, _("	-user uname/uid TRUE if st_uid matches uname/uid\n"));
 	fprintf(f, _("*	-writable     TRUE if file is writable by real user id\n"));
 	fprintf(f, _("*	-xattr	      TRUE if the file has extended attributes\n"));
-	fprintf(f, _("	-xdev, -mount restrict search to current filesystem (always TRUE)\n"));
+	fprintf(f, _("	-xdev	      do not descend into mounted directories (always TRUE)\n"));
 	fprintf(f, _("Primaries marked with '*' are POSIX extensions, avoid them in portable scripts.\n"));
 	fprintf(f, _("If path is omitted, '.' is used. If expression is omitted, -print is used.\n"));
+}
+
+EXPORT char *
+find_strvers()
+{
+	return (strvers);
+}
+
+EXPORT int
+find_vers()
+{
+	return (VERSION_NUM);
 }
 
 #ifdef FIND_MAIN

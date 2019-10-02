@@ -1,8 +1,8 @@
-/* @(#)librmt.h	1.22 10/08/27 Copyright 1995,1996,2000-2010 J. Schilling */
+/* @(#)librmt.h	1.24 18/06/09 Copyright 1995,1996,2000-2018 J. Schilling */
 /*
  *	Prototypes for rmt client subroutines
  *
- *	Copyright (c) 1995,1996,2000-2010 J. Schilling
+ *	Copyright (c) 1995,1996,2000-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -39,6 +41,8 @@ extern	void		rmtinit		__PR((int (*errmsgn)
 						(int, const char *, ...),
 						void (*eexit)(int)));
 extern	int		rmtdebug	__PR((int dlevel));
+extern	const char	*rmtrmt		__PR((const char *rmt_name));
+extern	const char	*rmtrsh		__PR((const char *rsh_name));
 extern	char		*rmtfilename	__PR((char *name));
 extern	char		*rmthostname	__PR((char *hostname, int hnsize,
 						char *rmtspec));

@@ -1,9 +1,9 @@
-/* @(#)libport.h	1.45 17/05/02 Copyright 1995-2017 J. Schilling */
+/* @(#)libport.h	1.49 18/07/23 Copyright 1995-2018 J. Schilling */
 /*
  *	Prototypes for POSIX standard functions that may be missing on the
  *	local platform and thus are implemented inside libschily.
  *
- *	Copyright (c) 1995-2017 J. Schilling
+ *	Copyright (c) 1995-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -303,6 +303,9 @@ extern	void		endgrent __PR((void));
 extern	int		fchdir __PR((int fd));
 #endif
 #ifndef	HAVE_OPENAT
+#if	defined(HAVE_LARGEFILES)
+#	define	openat		openat64
+#endif
 extern	int		openat __PR((int fd, const char *name, int oflag, ...));
 #endif
 
@@ -338,6 +341,9 @@ extern	DIR		*fdopendir __PR((int fd));
 
 #ifdef	_SCHILY_STAT_H
 #ifndef	HAVE_FSTATAT
+#if	defined(HAVE_LARGEFILES)
+#	define	fstatat		fstatat64
+#endif
 extern	int		fstatat __PR((int fd, const char *name,
 					struct stat *sbuf, int flag));
 #endif
@@ -399,6 +405,21 @@ extern	int		utimensat __PR((int fd, const char *name,
 					int flag));
 #endif
 #endif	/* _SCHILY_TIME_H */
+
+#ifndef	HAVE_PUTENV
+extern	int		putenv		__PR((char *new));
+#endif
+#ifndef	HAVE_UNSETENV
+extern	int		unsetenv	__PR((const char *name));
+#endif
+
+#ifndef	HAVE_WAITID
+#ifdef	_SCHILY_WAIT_H
+#define	waitid		js_waitid
+extern	int		waitid		__PR((idtype_t idtype, id_t id,
+						siginfo_t *infop, int opts));
+#endif
+#endif
 
 #ifdef	__SUNOS4
 /*

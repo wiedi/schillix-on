@@ -1,14 +1,15 @@
-/* @(#)searchinpath.c	1.5 16/08/01 Copyright 1999-2016 J. Schilling */
+/* @(#)searchinpath.c	1.7 19/07/31 Copyright 1999-2019 J. Schilling */
+#define	USE_LARGEFILES
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)searchinpath.c	1.5 16/08/01 Copyright 1999-2016 J. Schilling";
+	"@(#)searchinpath.c	1.7 19/07/31 Copyright 1999-2019 J. Schilling";
 #endif
 /*
  *	Search a file name in the PATH of the current exeecutable.
  *	Return the path to the file name in allocated space.
  *
- *	Copyright (c) 1999-2016 J. Schilling
+ *	Copyright (c) 1999-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -22,6 +23,12 @@ static	UConst char sccsid[] =
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
+ */
+
+/*
+ * Since we need to call stat() and since this is not a predictable call,
+ * we always compile this module in largefile mode.
+ * See #define USE_LARGEFILES before #include <schily/mconfig.h>
  */
 
 #include <schily/mconfig.h>
@@ -137,6 +144,7 @@ searchfileinpath(name, mode, file_mode, path)
 	if (path == NULL)
 		return (NULL);
 	strbs2s(path);	/* PATH under DJGPP can contain both slashes */
+	pn = path;	/* Remember PATH to be able to free() it */
 #endif
 
 	/*
@@ -158,7 +166,7 @@ searchfileinpath(name, mode, file_mode, path)
 				xn,
 				nbuf, np, ep)) != NULL) {
 #ifdef __DJGPP__
-			free(path);
+			free(pn);
 #endif
 			seterrno(oerrno);
 			return (np);
@@ -173,7 +181,7 @@ searchfileinpath(name, mode, file_mode, path)
 		path++;
 	}
 #ifdef __DJGPP__
-	free(path);
+	free(pn);
 #endif
 	if (err)
 		seterrno(err);

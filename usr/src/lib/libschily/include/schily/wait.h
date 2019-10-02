@@ -1,8 +1,8 @@
-/* @(#)wait.h	1.26 16/04/02 Copyright 1995-2016 J. Schilling */
+/* @(#)wait.h	1.29 19/09/20 Copyright 1995-2019 J. Schilling */
 /*
  *	Definitions to deal with various kinds of wait flavour
  *
- *	Copyright (c) 1995-2016 J. Schilling
+ *	Copyright (c) 1995-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -69,10 +69,16 @@
 #	endif
 #endif
 
-#if !defined(HAVE_TYPE_SIGINFO_T) && defined(HAVE_SIGINFO_T)
+/*
+ * Since some platforms need to include <signal.h> in order to make
+ * <wait.h> usable, we now always include <schily/signal.h> in special
+ * since this way supply a siginfo_t emulation.
+ *
+ * In former times, we had:
+ * #if !defined(HAVE_TYPE_SIGINFO_T) && defined(HAVE_SIGINFO_T)
+ */
 #ifndef	_SCHILY_SIGNAL_H
 #include <schily/signal.h>
-#endif
 #endif
 
 #ifdef	__cplusplus
@@ -115,10 +121,10 @@ typedef enum {
 	P_UID,		/* A user identifier.			*/
 	P_GID,		/* A group identifier.			*/
 	P_ALL,		/* All processes.			*/
-} my_idtype_t;
+} js_idtype_t;
 
 #undef	idtype_t
-#define	idtype_t	my_idtype_t
+#define	idtype_t	js_idtype_t
 
 #endif	/* HAVE_TYPE_IDTYPE_T */
 
@@ -199,6 +205,24 @@ typedef enum {
 #define	CLD_CONTINUED	6	/* stopped child has continued */
 #define	NO_CLD_EXITED
 #endif	/* CLD_EXITED */
+
+#ifdef	ultrix
+/*
+ * The W*() macros on Ultrix do not work and this is a result of
+ * an incorrect definition for union wait. The kernel uses the
+ * right bits in the status, so we #undef USE_UNION_WAIT and all
+ * W*() macros. This results in #defining our working versions.
+ */
+#undef	USE_UNION_WAIT
+#undef	WTERMSIG
+#undef	WCOREDUMP
+#undef	WEXITSTATUS
+#undef	WSTOPSIG
+#undef	WIFCONTINUED
+#undef	WIFSTOPPED
+#undef	WIFSIGNALED
+#undef	WIFEXITED
+#endif	/* ultrix */
 
 #if defined(HAVE_UNION_WAIT) && defined(USE_UNION_WAIT)
 #	define WAIT_T union wait

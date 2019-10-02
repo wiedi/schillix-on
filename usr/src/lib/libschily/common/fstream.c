@@ -1,13 +1,13 @@
-/* @(#)fstream.c	1.31 14/04/14 Copyright 1985-2014 J. Schilling */
+/* @(#)fstream.c	1.35 19/01/16 Copyright 1985-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)fstream.c	1.31 14/04/14 Copyright 1985-2014 J. Schilling";
+	"@(#)fstream.c	1.35 19/01/16 Copyright 1985-2019 J. Schilling";
 #endif
 /*
  *	Stream filter module
  *
- *	Copyright (c) 1985-2014 J. Schilling
+ *	Copyright (c) 1985-2019 J. Schilling
  *
  *	Exported functions:
  *		mkfstream(f, fun, rfun, efun)	Construct new fstream
@@ -77,6 +77,7 @@ mkfstream(f, sfun, rfun, efun)
 	fsp->fstr_pushed = (fstream *)0;
 	fsp->fstr_func = sfun;
 	fsp->fstr_rfunc = rfun;
+	fsp->fstr_auxp = 0;
 	return (fsp);
 }
 
@@ -154,7 +155,7 @@ fssetfile(fsp, f)
 }
 
 /*
- * get nect character from stream
+ * get next character from stream
  */
 EXPORT int
 fsgetc(fsp)
@@ -170,11 +171,16 @@ fsgetc(fsp)
 	 */
 	while (*fsp->fstr_bp == '\0') {			/* buffer is empty  */
 		if (fsp->fstr_func != (fstr_fun)0) {	/* call function    */
+			int	ret;
+
 			/*
 			 * We have a filter function, so call it.
 			 */
-			if ((*fsp->fstr_func)(fsp, fsp->fstr_file) == EOF)
-				return (EOF);
+#ifdef DEBUG
+			printf("filter via function %p\n", fsp->fstr_func);
+#endif
+			if ((ret = (*fsp->fstr_func)(fsp, fsp->fstr_file)) < 0)
+				return (ret);
 		} else if (fsp->fstr_file == (FILE *)NULL) { /* no file	    */
 			/*
 			 * If we have no input, return EOF.
@@ -193,6 +199,27 @@ fsgetc(fsp)
 	printf("character '%c' from buffer\n", *fsp->fstr_bp);
 #endif
 	return (*fsp->fstr_bp++);			/* char from buffer  */
+}
+
+/*
+ * get # of characters in stream
+ */
+EXPORT size_t
+fsgetlen(fsp)
+	register fstream	*fsp;
+{
+	CHAR	*bp;
+
+	/*
+	 * If there are pushed streams, refer to the top of pushed streams.
+	 */
+	if (fsp->fstr_pushed != NULL)
+		fsp = fsp->fstr_pushed;
+
+	bp = fsp->fstr_bp;
+	while (*bp++ != '\0')
+		;
+	return (--bp - fsp->fstr_bp);
 }
 
 /*
@@ -217,8 +244,10 @@ fspushstr(fsp, ss)
 	for (tp = fsp->fstr_bp; *tp; tp++);	/* Wide char strlen() */
 	len = tp - fsp->fstr_bp + strlen(ss);
 	if (len > STR_SBUF_SIZE) {			/* realloc !!! */
-		if ((ts = (CHAR *)malloc(sizeof (*ts)*(len+1))) == NULL)
+		if ((ts = (CHAR *)malloc(sizeof (*ts)*(len+1))) == NULL) {
 			raisecond("fspushstr", (long)NULL);
+			/* NOTREACHED */
+		}
 #ifdef	WSTRINGS
 		s_ccpy(ts, (unsigned char *)ss);
 		s_scat(ts, fsp->fstr_bp);
@@ -258,7 +287,11 @@ fspushcha(fsp, c)
 {
 	char t[2];
 
+#ifdef	WSTRINGS
+	t[0] = (char)1;		/* Nonzero placeholder */
+#else
 	t[0] = (char)c;
+#endif
 	t[1] = 0;
 	fspushstr(fsp, t);
 #ifdef	WSTRINGS
@@ -266,6 +299,8 @@ fspushcha(fsp, c)
 	 * Solange es kein fspushstr mit SHORT * gibt, wird zuerst Platz
 	 * geschafft und dann der korrekte Buchstabe eingetragen.
 	 */
+	if (fsp->fstr_pushed != NULL)
+		fsp = fsp->fstr_pushed;
 	*fsp->fstr_bp = c;
 #endif
 }

@@ -1,13 +1,13 @@
-/* @(#)walk.c	1.46 16/03/10 Copyright 2004-2016 J. Schilling */
+/* @(#)walk.c	1.62 19/09/08 Copyright 2004-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)walk.c	1.46 16/03/10 Copyright 2004-2016 J. Schilling";
+	"@(#)walk.c	1.62 19/09/08 Copyright 2004-2019 J. Schilling";
 #endif
 /*
  *	Walk a directory tree
  *
- *	Copyright (c) 2004-2016 J. Schilling
+ *	Copyright (c) 2004-2019 J. Schilling
  *
  *	In order to make treewalk() thread safe, we need to make it to not use
  *	chdir(2)/fchdir(2) which is process global.
@@ -22,6 +22,13 @@ static	UConst char sccsid[] =
  *				dir = fdopendir(dd);
  *
  *	Similar changes need to be introduced in fetchdir().
+ *
+ *	For an optimized version, we need to have:
+ *
+ *	dirfd() or DIR->dd_fd	To fetch a fd from a DIR *
+ *	and opendir()
+ *
+ *	fchdir()		To change towards and backdwards directories
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -40,9 +47,8 @@ static	UConst char sccsid[] =
 #include <schily/stdio.h>
 #include <schily/unistd.h>
 #include <schily/stdlib.h>
-#ifdef	HAVE_FCHDIR
-#include <schily/fcntl.h>
-#else
+#include <schily/fcntl.h>	/* AT_FDCWD */
+#ifndef	HAVE_FCHDIR
 #include <schily/maxpath.h>
 #endif
 #include <schily/param.h>	/* NODEV */
@@ -52,10 +58,23 @@ static	UConst char sccsid[] =
 #include <schily/standard.h>
 #include <schily/getcwd.h>
 #include <schily/jmpdefs.h>
-#include <schily/schily.h>
 #include <schily/nlsdefs.h>
 #include <schily/walk.h>
+#include <schily/dirent.h>
 #include <schily/fetchdir.h>
+#include <schily/schily.h>
+
+#if (defined(HAVE_DIRFD) || defined(HAVE_DIR_DD_FD)) && defined(HAVE_FCHDIR)
+#define	USE_DIRFD		/* Use fchdir() to traverse the tree */
+#endif
+
+#ifndef	_AT_TRIGGER
+#define	_AT_TRIGGER	0
+#endif
+
+#ifndef	ENAMETOOLONG
+#define	ENAMETOOLONG	EINVAL
+#endif
 
 #if	defined(IS_MACOS_X) && defined(HAVE_CRT_EXTERNS_H)
 /*
@@ -94,8 +113,10 @@ struct twvars {
 	int		Curdtail;	/* Where to append to Curdir	*/
 	int		Curdlen;	/* Current size of 'Curdir'	*/
 	int		Flags;		/* Flags related to this struct	*/
+	int		Snmlen;		/* Short nm len for walk()	*/
 	struct WALK	*Walk;		/* Backpointer to struct WALK	*/
 	struct stat	Sb;		/* stat(2) buffer for start dir	*/
+	struct pdirs	*pdirs;		/* Previous dirs for walkcwd()	*/
 #ifdef	HAVE_FCHDIR
 	int		Home;		/* open fd to start CWD		*/
 #else
@@ -105,6 +126,8 @@ struct twvars {
 
 struct pdirs {
 	struct pdirs	*p_last; /* Previous node in list	*/
+	DIR		*p_dir;	/* Open directory for this one	*/
+	struct twvars	*p_varp; /* Pointer to "Curdir" path	*/
 	dev_t		p_dev;	/* st_dev for this dir		*/
 	ino_t		p_ino;	/* st_ino for this dir		*/
 	BOOL		p_stat;	/* Need to call stat always	*/
@@ -112,7 +135,9 @@ struct pdirs {
 };
 
 
-typedef	int	(*statfun)	__PR((const char *_nm, struct stat *_fs));
+typedef	int	(*statfun)	__PR((const char *_nm, struct stat *_fs,
+						struct pdirs *_pd));
+typedef	DIR	*(*opendirfun)	__PR((const char *_nm, struct pdirs *_pd));
 
 EXPORT	int	treewalk	__PR((char *nm, walkfun fn,
 						struct WALK *_state));
@@ -125,9 +150,25 @@ EXPORT	void	*walkopen	__PR((struct WALK *_state));
 EXPORT	int	walkgethome	__PR((struct WALK *_state));
 EXPORT	int	walkhome	__PR((struct WALK *_state));
 EXPORT	int	walkclose	__PR((struct WALK *_state));
+EXPORT	int	walknlen	__PR((struct WALK *_state));
 LOCAL	int	xchdotdot	__PR((struct pdirs *last, int tail,
 						struct WALK *_state));
 LOCAL	int	xchdir		__PR((char *p));
+
+LOCAL	int	wstat		__PR((const char *nm, struct stat *sp,
+					struct pdirs *pd));
+LOCAL	int	wlstat		__PR((const char *nm, struct stat *sp,
+					struct pdirs *pd));
+
+LOCAL	int	wdstat		__PR((const char *nm, struct stat *sp,
+					struct pdirs *pd));
+LOCAL	int	wdlstat		__PR((const char *nm, struct stat *sp,
+					struct pdirs *pd));
+
+#ifdef	USE_DIRFD
+LOCAL	DIR	*nopendir	__PR((const char *name, struct pdirs *pd));
+LOCAL	DIR	*dopendir	__PR((const char *name, struct pdirs *pd));
+#endif
 
 EXPORT int
 treewalk(nm, fn, state)
@@ -136,13 +177,19 @@ treewalk(nm, fn, state)
 	struct WALK	*state; /* Walk state				*/
 {
 	struct twvars	vars;
-	statfun		statf = stat;
+	statfun		statf = wstat;
 	int		nlen;
 
+#ifndef	USE_DIRFD
+	/*
+	 * If we have no dirfd(), we currently cannot implement
+	 * the walk mode without chdir(). This mainly excludes DOS.
+	 */
 	if ((state->walkflags & WALK_CHDIR) == 0) {
 		seterrno(EINVAL);
 		return (-1);
 	}
+#endif
 
 	vars.Curdir  = NULL;
 	vars.Curdlen = 0;
@@ -161,11 +208,13 @@ treewalk(nm, fn, state)
 	if (nm == NULL || nm[0] == '\0') {
 		nm = ".";
 	} else if (state->walkflags & WALK_STRIPLDOT) {
-		if (nm[0] == '.' && nm[1] == '/') {
+		while (nm[0] == '.' && nm[1] == '/') {
 			for (nm++; nm[0] == '/'; nm++)
 				/* LINTED */
 				;
 		}
+		if (nm[0] == '\0')
+			nm = ".";
 	}
 
 	vars.Curdir = __fjmalloc(state->std[2],
@@ -178,6 +227,7 @@ treewalk(nm, fn, state)
 	 * If initial Curdir space is not sufficient, expand it.
 	 */
 	nlen = strlen(nm);
+	vars.Snmlen = nlen;
 	if ((vars.Curdlen - 2) < nlen)
 		if (incr_dspace(state->std[2], &vars, nlen + 2) < 0)
 			return (-1);
@@ -189,11 +239,20 @@ treewalk(nm, fn, state)
 	state->base = 0;
 	state->level = 0;
 
-	if (state->walkflags & WALK_PHYS)
-		statf = lstat;
+	if ((state->walkflags & WALK_CHDIR) == 0) {
+		statf = wdstat;
+		if (state->walkflags & WALK_PHYS)
+			statf = wdlstat;
 
-	if (state->walkflags & (WALK_ARGFOLLOW|WALK_ALLFOLLOW))
-		statf = stat;
+		if (state->walkflags & (WALK_ARGFOLLOW|WALK_ALLFOLLOW))
+			statf = wdstat;
+	} else {
+		if (state->walkflags & WALK_PHYS)
+			statf = wlstat;
+
+		if (state->walkflags & (WALK_ARGFOLLOW|WALK_ALLFOLLOW))
+			statf = wstat;
+	}
 
 	nlen = walk(nm, statf, fn, state, (struct pdirs *)0);
 	walkhome(state);
@@ -217,9 +276,13 @@ walk(nm, sf, fn, state, last)
 	int		type;
 	int		ret;
 	int		otail;
-	char		*p;
 	struct twvars	*varp = state->twprivate;
 
+	varp->pdirs = last;
+#ifdef	USE_DIRFD
+	thisd.p_dir  = (DIR *)NULL;
+#endif
+	thisd.p_varp = varp;
 	otail = varp->Curdtail;
 	state->base = otail;
 	if (varp->Curdtail == 0 || varp->Curdir[varp->Curdtail-1] == '/') {
@@ -229,11 +292,35 @@ walk(nm, sf, fn, state, last)
 			varp->Curdir[0] = '.';
 			varp->Curdir[1] = '\0';
 		} else {
+			char	*p;
+
 			p = strcatl(&varp->Curdir[varp->Curdtail], nm,
 								(char *)0);
 			varp->Curdtail = p - varp->Curdir;
+			/*
+			 * Let state->base point to the last component for
+			 * command line arguments indicated by otail == 0.
+			 */
+			if (otail == 0) {
+				char		*e = p;
+				register char	*c = varp->Curdir;
+
+				while (--p > c) {	/* Skip trailing '/' */
+					if (*p != '/')
+						break;
+				}
+				if (*p != '/') {	/* Not only '/'s */
+					while (p >= c && *p != '/')
+						p--;
+					p++;		/* To first non '/' */
+				}
+				state->base = p - varp->Curdir;
+				varp->Snmlen = e-p;
+			}
 		}
 	} else {
+		char	*p;
+
 		p = strcatl(&varp->Curdir[varp->Curdtail], "/", nm, (char *)0);
 		varp->Curdtail = p - varp->Curdir;
 		state->base++;
@@ -242,7 +329,8 @@ walk(nm, sf, fn, state, last)
 	if ((state->walkflags & WALK_NOSTAT) &&
 	    (
 #ifdef	HAVE_DIRENT_D_TYPE
-	    (state->flags & WALK_WF_NOTDIR) ||
+	    ((state->flags & (WALK_WF_NOTDIR|WALK_WF_ISLNK)) ==
+		WALK_WF_NOTDIR) ||
 #endif
 	    (last != NULL && !last->p_stat && last->p_nlink <= 0))) {
 		/*
@@ -260,7 +348,7 @@ walk(nm, sf, fn, state, last)
 
 		goto type_known;
 	} else {
-		while ((ret = (*sf)(nm, &fs)) < 0 && geterrno() == EINTR)
+		while ((ret = (*sf)(nm, &fs, last)) < 0 && geterrno() == EINTR)
 			;
 	}
 	state->flags = 0;
@@ -291,7 +379,13 @@ walk(nm, sf, fn, state, last)
 			type = WALK_F;
 	} else {
 		int	err = geterrno();
-		while ((ret = lstat(nm, &fs)) < 0 && geterrno() == EINTR)
+		statfun	sp;	/* lstat() or fstatat(AT_SYMLINK_NOFOLLOW) */
+
+		if ((state->walkflags & WALK_CHDIR) == 0)
+			sp = wdlstat;
+		else
+			sp = wlstat;
+		while ((ret = (*sp)(nm, &fs, last)) < 0 && geterrno() == EINTR)
 			;
 		if (ret >= 0 &&
 		    S_ISLNK(fs.st_mode)) {
@@ -317,12 +411,26 @@ walk(nm, sf, fn, state, last)
 
 type_known:
 	if (type == WALK_D) {
-		BOOL		isdot = (nm[0] == '.' && nm[1] == '\0');
+		BOOL		need_cd = !(nm[0] == '.' && nm[1] == '\0');
 		struct pdirs	*pd = last;
+#ifdef	USE_DIRFD
+		opendirfun	opendirp = nopendir;
+#endif
 
 		ret = 0;
-		if ((state->walkflags & (WALK_PHYS|WALK_ALLFOLLOW)) == WALK_PHYS)
-			sf = lstat;
+		if ((state->walkflags & WALK_CHDIR) == 0) {
+			if ((state->walkflags & (WALK_PHYS|WALK_ALLFOLLOW)) ==
+			    WALK_PHYS) {
+				sf = wdlstat;
+			}
+			need_cd = FALSE;
+#ifdef	USE_DIRFD
+			opendirp = dopendir;
+#endif
+		} else if ((state->walkflags & (WALK_PHYS|WALK_ALLFOLLOW)) ==
+			    WALK_PHYS) {
+			sf = wlstat;
+		}
 
 		/*
 		 * Search parent dir structure for possible loops.
@@ -338,6 +446,11 @@ type_known:
 			if (!IS_UFS(fs.st_fstype) &&
 			    !IS_ZFS(fs.st_fstype))
 				thisd.p_stat  = TRUE;
+#ifndef	HAVE_DIRENT_D_TYPE
+			else if (state->walkflags &
+					(WALK_ARGFOLLOW|WALK_ALLFOLLOW))
+				thisd.p_stat  = TRUE;
+#endif
 #else
 			thisd.p_stat  = TRUE;	/* Safe fallback */
 #endif
@@ -361,6 +474,14 @@ type_known:
 			pd = pd->p_last;
 		}
 
+		if ((state->walkflags & WALK_XDEV) != 0 &&
+		    varp->Sb.st_dev != fs.st_dev) {
+			/*
+			 * A directory that is a mount point. Report and return.
+			 */
+			ret = (*fn)(varp->Curdir, &fs, type, state);
+			goto out;
+		}
 		if ((state->walkflags & WALK_DEPTH) == 0) {
 			/*
 			 * Found a directory, check the content past this dir.
@@ -371,7 +492,38 @@ type_known:
 				goto out;
 		}
 
-		if (!isdot && chdir(nm) < 0) {
+#ifdef	USE_DIRFD
+		thisd.p_dir = (*opendirp)(nm, last);
+		/*
+		 * If we are out of fd's, close the directory above and
+		 * try again.
+		 */
+		if (thisd.p_dir == (DIR *)NULL && geterrno() == EMFILE) {
+			if (last != NULL && last->p_dir) {
+				closedir(last->p_dir);
+				last->p_dir = (DIR *)NULL;
+			}
+			thisd.p_dir = (*opendirp)(nm, last);
+		}
+		/*
+		 * Check whether we opened the same file as we expect.
+		 */
+		if ((state->walkflags & WALK_NOSTAT) == 0) {
+			struct stat	fs2;
+			if (thisd.p_dir &&
+			    (fstat(dirfd(thisd.p_dir), &fs2) < 0 ||
+			    fs2.st_ino != fs.st_ino ||
+			    fs2.st_dev != fs.st_dev)) {
+				seterrno(EAGAIN);
+				ret = -1;
+				goto out;
+			}
+		}
+		if (need_cd &&
+		    thisd.p_dir != NULL && fchdir(dirfd(thisd.p_dir)) < 0) {
+#else
+		if (need_cd && chdir(nm) < 0) {
+#endif
 			state->flags |= WALK_WF_NOCHDIR;
 			/*
 			 * Found a directory that does not allow chdir() into.
@@ -384,13 +536,20 @@ type_known:
 			char	*odp;
 			int	nents;
 			int	Dspace;
+			int	olen = varp->Snmlen;
 
 			/*
 			 * Add space for '/' & '\0'
 			 */
 			Dspace = varp->Curdlen - varp->Curdtail - 2;
 
+#ifdef	USE_DIRFD
+			if (thisd.p_dir == NULL ||
+			    (dp = dfetchdir(thisd.p_dir, ".",
+						&nents, NULL, NULL)) == NULL) {
+#else
 			if ((dp = fetchdir(".", &nents, NULL, NULL)) == NULL) {
+#endif
 				/*
 				 * Found a directory that cannot be read.
 				 */
@@ -416,10 +575,16 @@ type_known:
 					Dspace += incr;
 				}
 #ifdef	HAVE_DIRENT_D_TYPE
-				if (dp[0] != FDT_DIR && dp[0] != FDT_UNKN)
+				if (dp[0] == FDT_LNK) {
+					state->flags |=
+					    WALK_WF_NOTDIR|WALK_WF_ISLNK;
+
+				} else if (dp[0] != FDT_DIR && dp[0] != FDT_UNKN) {
 					state->flags |= WALK_WF_NOTDIR;
+				}
 #endif
 				state->level++;
+				varp->Snmlen = nlen;
 				ret = walk(name, sf, fn, state, &thisd);
 				state->level--;
 
@@ -428,9 +593,16 @@ type_known:
 				nents--;
 				dp += nlen +2;
 			}
+			varp->Snmlen = olen;
 			free(odp);
 		skip:
-			if (!isdot && state->level > 0 && xchdotdot(last,
+#ifdef	USE_DIRFD
+			if (thisd.p_dir) {
+				closedir(thisd.p_dir);
+				thisd.p_dir = (DIR *)NULL;
+			}
+#endif
+			if (need_cd && state->level > 0 && xchdotdot(last,
 							otail, state) < 0) {
 				ret = geterrno();
 				state->flags |= WALK_WF_NOHOME;
@@ -464,6 +636,10 @@ type_known:
 		ret = (*fn)(varp->Curdir, &fs, type, state);
 	}
 out:
+#ifdef	USE_DIRFD
+	if (thisd.p_dir)
+		closedir(thisd.p_dir);
+#endif
 	varp->Curdir[otail] = '\0';
 	varp->Curdtail = otail;
 	return (ret);
@@ -558,7 +734,11 @@ walkgethome(state)
 #ifdef	HAVE_FCHDIR
 	if (varp->Home >= 0)
 		close(varp->Home);
-	if ((varp->Home = open(".", O_SEARCH|O_NDELAY)) < 0) {
+	/*
+	 * Note that we do not need O_RDONLY as we do not like to
+	 * run readdir() on that directory but just fchdir().
+	 */
+	if ((varp->Home = open(".", O_SEARCH|O_DIRECTORY|O_NDELAY)) < 0) {
 		err = geterrno();
 		state->flags |= WALK_WF_NOCWD;
 		if ((state->walkflags & WALK_NOMSG) == 0)
@@ -586,6 +766,9 @@ walkgethome(state)
 	return (0);
 }
 
+/*
+ * Walk back to the directory from where treewalk() has been started.
+ */
 EXPORT int
 walkhome(state)
 	struct WALK	*state;
@@ -601,6 +784,45 @@ walkhome(state)
 	if (varp->Home[0] != '\0')
 		return (chdir(varp->Home));
 #endif
+	return (0);
+}
+
+/*
+ * Walk back to the previous "cwd".
+ * This always works with fchdir() and low directory nesting.
+ * In the other case, it is assumed that walkcwd() is called after walkhome().
+ */
+EXPORT int
+walkcwd(state)
+	struct WALK	*state;
+{
+	struct twvars	*varp = state->twprivate;
+	char		c;
+
+	if (varp == NULL)
+		return (0);
+
+	if (varp->pdirs == NULL)
+		return (0);
+
+#if	defined(HAVE_FCHDIR) && defined(USE_DIRFD)
+	if (varp->pdirs->p_dir)
+		return (fchdir(dirfd(varp->pdirs->p_dir)));
+#endif
+	c = varp->Curdir[state->base];
+	varp->Curdir[state->base] = '\0';
+
+	if (chdir(varp->Curdir) < 0) {
+		if (geterrno() != ENAMETOOLONG) {
+			varp->Curdir[state->base] = c;
+			return (-1);
+		}
+		if (xchdir(varp->Curdir) < 0) {
+			varp->Curdir[state->base] = c;
+			return (-1);
+		}
+	}
+	varp->Curdir[state->base] = c;
 	return (0);
 }
 
@@ -627,6 +849,22 @@ walkclose(state)
 	return (ret);
 }
 
+/*
+ * Return length of last pathnmame component.
+ */
+EXPORT int
+walknlen(state)
+	struct WALK	*state;
+{
+	struct twvars	*varp = state->twprivate;
+
+	return (varp->Snmlen);
+}
+
+/*
+ * We only call xchdotdot() with state->level > 0,
+ * so "last" is known to be != NULL.
+ */
 LOCAL int
 xchdotdot(last, tail, state)
 	struct pdirs	*last;
@@ -636,6 +874,13 @@ xchdotdot(last, tail, state)
 	struct twvars	*varp = state->twprivate;
 	char	c;
 	struct stat sb;
+
+#ifdef	USE_DIRFD
+	if (last->p_dir) {
+		if (fchdir(dirfd(last->p_dir)) >= 0)
+			return (0);
+	}
+#endif
 
 	if (chdir("..") >= 0) {
 		seterrno(0);
@@ -689,3 +934,178 @@ xchdir(p)
 	}
 	return (0);
 }
+
+/*
+ * Get stat() info when WALK_CHDIR is set.
+ * Use vanilla stat()
+ */
+LOCAL int
+wstat(nm, sp, pd)
+	const char	*nm;
+	struct stat	*sp;
+	struct pdirs	*pd;
+{
+#ifdef	HAVE_FSTATAT
+	return (fstatat(AT_FDCWD, nm, sp, _AT_TRIGGER));
+#else
+	return (stat(nm, sp));
+#endif
+}
+
+/*
+ * Get lstat() info when WALK_CHDIR is set.
+ * Use vanilla lstat()
+ */
+LOCAL int
+wlstat(nm, sp, pd)
+	const char	*nm;
+	struct stat	*sp;
+	struct pdirs	*pd;
+{
+#ifdef	HAVE_FSTATAT
+	return (fstatat(AT_FDCWD, nm, sp, AT_SYMLINK_NOFOLLOW|_AT_TRIGGER));
+#else
+	return (lstat(nm, sp));
+#endif
+}
+
+/*
+ * Get stat() info when WALK_CHDIR is not set.
+ * Use vanilla stat()/statat() based on the directory fd.
+ */
+LOCAL int
+wdstat(nm, sp, pd)
+	const char	*nm;
+	struct stat	*sp;
+	struct pdirs	*pd;
+{
+	int	fd;
+
+#ifdef	USE_DIRFD
+	if (pd && pd->p_dir) {
+		fd = dirfd(pd->p_dir);
+	} else {
+#endif
+		fd = AT_FDCWD;
+		if (pd)
+			nm = pd->p_varp->Curdir;
+#ifdef	USE_DIRFD
+	}
+#endif
+	return (fstatat(fd, nm, sp, _AT_TRIGGER));
+}
+
+/*
+ * Get lstat() info when WALK_CHDIR is not set.
+ * Use vanilla lstat()/statat() based on the directory fd.
+ */
+LOCAL int
+wdlstat(nm, sp, pd)
+	const char	*nm;
+	struct stat	*sp;
+	struct pdirs	*pd;
+{
+	int	fd;
+
+#ifdef	USE_DIRFD
+	if (pd && pd->p_dir) {
+		fd = dirfd(pd->p_dir);
+	} else {
+#endif
+		fd = AT_FDCWD;
+		if (pd)
+			nm = pd->p_varp->Curdir;
+#ifdef	USE_DIRFD
+	}
+#endif
+	return (fstatat(fd, nm, sp, AT_SYMLINK_NOFOLLOW|_AT_TRIGGER));
+}
+
+#ifdef	USE_DIRFD
+/*
+ * Open directory WALK_CHDIR is set.
+ */
+/* ARGSUSED */
+LOCAL DIR *
+nopendir(name, pd)
+	const char	*name;
+	struct pdirs	*pd;
+{
+	return (opendir(name));
+}
+
+/*
+ * Open directory WALK_CHDIR is not set.
+ */
+LOCAL DIR *
+dopendir(name, pd)
+	const char	*name;
+	struct pdirs	*pd;
+{
+	char	*nm;
+	char	*p;
+	char	*p2;
+	DIR	*ret = NULL;
+	int	fd;
+	int	dfd;
+
+	if (pd && pd->p_dir) {
+		fd = dirfd(pd->p_dir);
+	} else {
+		fd = AT_FDCWD;
+		if (pd)
+			name = pd->p_varp->Curdir;
+	}
+	if (((dfd = openat(fd, name, O_RDONLY|O_DIRECTORY|O_NDELAY)) < 0 &&
+	    geterrno() != ENAMETOOLONG) || (ret = fdopendir(dfd)) == NULL) {
+		return (NULL);
+	}
+	if (ret)
+		return (ret);
+	if (pd)
+		name = pd->p_varp->Curdir;
+	if ((nm = strdup(name)) == NULL) {
+		seterrno(ENAMETOOLONG);
+		return ((DIR *)NULL);
+	}
+
+	p = nm;
+	fd = AT_FDCWD;
+	if (*p == '/') {
+		fd = openat(fd, "/", O_SEARCH|O_DIRECTORY|O_NDELAY);
+		while (*p == '/')
+			p++;
+	}
+	while (*p) {
+		if ((p2 = strchr(p, '/')) != NULL) {
+			if (p2[1] == '\0')
+				p2 = NULL;
+			else
+				*p2++ = '\0';
+		}
+		if ((dfd = openat(fd, p,
+				p2 ? O_SEARCH|O_DIRECTORY|O_NDELAY :
+					O_RDONLY|O_DIRECTORY|O_NDELAY)) < 0) {
+			int err = geterrno();
+
+			free(nm);
+			close(fd);
+			if (err == EMFILE)
+				seterrno(err);
+			else
+				seterrno(ENAMETOOLONG);
+			return ((DIR *)NULL);
+		}
+		close(fd);
+		fd = dfd;
+		if (p2 == NULL)
+			break;
+		while (*p2 == '/')
+			p2++;
+		p = p2;
+	}
+	free(nm);
+	ret = fdopendir(fd);
+	return (ret);
+}
+#endif	/* USE_DIRFD */

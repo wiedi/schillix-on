@@ -1,8 +1,8 @@
-/* @(#)fcntl.h	1.19 11/10/19 Copyright 1996-2011 J. Schilling */
+/* @(#)fcntl.h	1.21 18/07/15 Copyright 1996-2018 J. Schilling */
 /*
  *	Generic header for users of open(), creat() and chmod()
  *
- *	Copyright (c) 1996-2011 J. Schilling
+ *	Copyright (c) 1996-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -77,7 +79,15 @@
 #	define	O_EXEC		O_RDONLY
 #endif
 #ifndef	O_SEARCH			/* Open for search only. */
+/*
+ * O_SEARCH is in POSIX.1-2008, but Linux added O_PATH in 2011
+ * so Linux people do not seem to read the standard.
+ */
+#ifdef	O_PATH
+#	define	O_SEARCH	O_PATH	/* Linux O_PATH is similar */
+#else
 #	define	O_SEARCH	O_RDONLY
+#endif
 #endif
 #ifndef	O_DIRECTORY			/* Fail if not a directory */
 #	define	O_DIRECTORY	0

@@ -1,8 +1,8 @@
-/* @(#)diropen.c	1.2 12/12/02 Copyright 2011-2012 J. Schilling */
+/* @(#)diropen.c	1.3 19/07/31 Copyright 2011-2019 J. Schilling */
 /*
  *	open a directory and call fdsetname() if needed
  *
- *	Copyright (c) 2011-2012 J. Schilling
+ *	Copyright (c) 2011-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,10 +11,19 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
+
+/*
+ * If we do not have support for O_DIRECTORY, we need to call fstat()
+ * and since this is not a predictable call, we always compile this module in
+ * largefile mode.
+ */
+#define	USE_LARGEFILES
 
 #include <schily/unistd.h>
 #include <schily/types.h>

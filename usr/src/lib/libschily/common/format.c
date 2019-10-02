@@ -1,4 +1,4 @@
-/* @(#)format.c	1.61 16/08/10 Copyright 1985-2016 J. Schilling */
+/* @(#)format.c	1.74 19/09/12 Copyright 1985-2019 J. Schilling */
 /*
  *	format
  *	common code for printf fprintf & sprintf
@@ -6,7 +6,7 @@
  *	allows recursive printf with "%r", used in:
  *	error, comerr, comerrno, errmsg, errmsgno and the like
  *
- *	Copyright (c) 1985-2016 J. Schilling
+ *	Copyright (c) 1985-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -35,6 +35,8 @@ extern	char	*gcvt __PR((double, int, char *));
 #include <schily/standard.h>
 #include <schily/utypes.h>
 #include <schily/schily.h>
+#include <schily/ctype.h>
+#include "format.h"
 
 /*
  * As Llong is currently a 'best effort' long long, we usually need to
@@ -138,9 +140,9 @@ typedef struct f_args {
 	char	*ptr;			/* Current ptr in buf		*/
 	int	cnt;			/* Free char count in buf	*/
 #else
-	void  (*outf)__PR((char, long)); /* Func from format(fun, arg)	*/
+	void  (*outf)__PR((char, void *)); /* Func from format(fun, arg)	*/
 #endif
-	long	farg;			/* Arg from format (fun, arg)	*/
+	void	*farg;			/* Arg from format (fun, arg)	*/
 	int	minusflag;		/* Fieldwidth is negative	*/
 	int	flags;			/* General flags (+-#)		*/
 	int	fldwidth;		/* Field width as in %3d	*/
@@ -151,6 +153,7 @@ typedef struct f_args {
 	char	fillc;			/* Left fill char (' ' or '0')	*/
 	char	*prefix;		/* Prefix to print before buf	*/
 	int	prefixlen;		/* Len of prefix ('+','-','0x')	*/
+	ssize_t	maxlen;
 #ifdef	FORMAT_BUFFER
 					/* rarely used members last:	*/
 	char	iobuf[BFSIZ];		/* buffer for stdio		*/
@@ -158,14 +161,6 @@ typedef struct f_args {
 	int	err;			/* FILE * I/O error		*/
 #endif
 } f_args;
-
-#define	MINUSFLG	1	/* '-' flag */
-#define	PLUSFLG		2	/* '+' flag */
-#define	SPACEFLG	4	/* ' ' flag */
-#define	HASHFLG		8	/* '#' flag */
-#define	APOFLG		16	/* '\'' flag */
-#define	GOTDOT		32	/* '.' found */
-#define	GOTSTAR		64	/* '*' found */
 
 #define	FMT_ARGMAX	30	/* Number of fast args */
 
@@ -227,7 +222,7 @@ xflsbuf(c, ap)
 #define	FORMAT_FUNC_NAME	format
 #define	FORMAT_FUNC_PARM
 
-#define	FORMAT_FUNC_PROTO_DECL	void (*fun)(char, long),
+#define	FORMAT_FUNC_PROTO_DECL	void (*fun)(char, void *),
 #define	FORMAT_FUNC_KR_DECL	register void (*fun)();
 #define	FORMAT_FUNC_KR_ARGS	fun,
 
@@ -235,7 +230,7 @@ xflsbuf(c, ap)
 #endif
 
 #ifdef	FORMAT_BUFFER
-#define	FARG		(farg|1)
+#define	FARG		((void *)((UIntptr_t)farg|1))
 #else
 #define	FARG		farg
 #endif
@@ -243,22 +238,24 @@ xflsbuf(c, ap)
 #ifdef	PROTOTYPES
 EXPORT int
 FORMAT_FUNC_NAME(FORMAT_FUNC_PROTO_DECL
-			long farg,
+			void *farg,
 			const char *fmt,
 			va_list oargs)
 #else
 EXPORT int
 FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 	FORMAT_FUNC_KR_DECL
-	register long	farg;
+	register void	*farg;
 	register char	*fmt;
 	va_list		oargs;
 #endif
 {
 #ifdef	FORMAT_LOW_MEM
-	char buf[512];
+#define	FORMAT_BSIZE	512
+	char buf[512+1];
 #else
-	char buf[8192];
+#define	FORMAT_BSIZE	8192
+	char buf[8192+1];
 #endif
 	const char *sfmt;
 	register int unsflag;
@@ -287,14 +284,14 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 #endif
 
 #ifdef	FORMAT_BUFFER
-	if ((farg & 1) == 0) {		/* Called externally	*/
+	if (((UIntptr_t)farg & 1) == 0) { /* Called externally	*/
 		fa.cnt	= BFSIZ;
 		fa.ptr	= fa.iobuf;
 		fa.fp	= (FILE *)farg;
 		fa.err	= 0;
-		farg	= fa.farg = (long)&fa;
+		farg	= fa.farg = &fa;
 	} else {			/* recursion		*/
-		farg &= ~1;
+		farg = (void *)((UIntptr_t)farg & ~(UIntptr_t)1);
 	}
 #endif
 #ifdef	FORMAT_FUNC_PARM
@@ -334,6 +331,7 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 		fa.lzero = 0;
 		fa.fillc = ' ';
 		fa.prefixlen = 0;
+		fa.maxlen = -1;
 		sfmt = fmt;
 		unsflag = FALSE;
 		type = '\0';
@@ -399,6 +397,7 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 				if (fa.fldwidth < 0) {
 					fa.fldwidth = -fa.fldwidth;
 					fa.minusflag = 1;
+					fa.flags |= MINUSFLG;
 				}
 			} else {
 				/*
@@ -415,8 +414,10 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 			/*
 			 * '0' may be a flag.
 			 */
-			if (!(fa.flags & (GOTDOT | GOTSTAR | MINUSFLG)))
+			if (!(fa.flags & (GOTDOT | GOTSTAR | MINUSFLG))) {
 				fa.fillc = '0';
+				fa.flags |= PADZERO;
+			}
 			/* FALLTHRU */
 		case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -468,6 +469,7 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 					if (fa.fldwidth < 0) {
 						fa.fldwidth = -fa.fldwidth;
 						fa.minusflag = 1;
+						fa.flags |= MINUSFLG;
 					}
 				} else {
 					/*
@@ -490,6 +492,18 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 			continue;
 #endif
 		}
+		/*
+		 * If the space and the + flag are present,
+		 * the space flag will be ignored.
+		 */
+		if ((fa.flags & (PLUSFLG|SPACEFLG)) == (PLUSFLG|SPACEFLG))
+			fa.flags &= ~SPACEFLG;
+		/*
+		 * If the 0 and the - flag are present,
+		 * the 0 flag will be ignored.
+		 */
+		if ((fa.flags & (MINUSFLG|PADZERO)) == (MINUSFLG|PADZERO))
+			fa.flags &= ~PADZERO;
 
 		if (strchr("UCSIL", *fmt)) {
 			/*
@@ -527,9 +541,9 @@ FORMAT_FUNC_NAME(FORMAT_FUNC_KR_ARGS farg, fmt, oargs)
 					 * Check long double "Le", "Lf" or "Lg"
 					 */
 					if (type == 'L' &&
-					    (mode == 'e' ||
-					    mode == 'f' ||
-					    mode == 'g'))
+					    (mode == 'e' || mode == 'E' ||
+					    mode == 'f' || mode == 'F' ||
+					    mode == 'g' || mode == 'G'))
 						goto checkfmt;
 					fmt--;
 					mode = 'D'; /* default mode */
@@ -680,76 +694,114 @@ error sizeof (ptrdiff_t) is unknown
 
 #ifndef	NO_FLOATINGPOINT
 		case 'e':
+		case 'E': {
+			int	signific;
+			int	fwidth = 0;
+
 			if (fa.signific == -1)
 				fa.signific = 6;
+			signific = fa.signific;
+			if (!fa.minusflag)
+				fwidth = fa.fldwidth;
+			if (*fmt == 'E')
+				fa.flags |= UPPERFLG;
 			if (type == 'L') {
 #ifdef	HAVE_LONGDOUBLE
 				long double ldval = va_arg(args, long double);
 
 #if	(defined(HAVE_QECVT) || defined(HAVE__LDECVT))
-				qftoes(buf, ldval, 0, fa.signific);
+				_qftoes(buf, ldval, fwidth, signific, fa.flags);
+				fa.fillc = ' ';
 				count += prbuf(buf, &fa);
 				continue;
 #else
 				dval = ldval;
 #endif
 #endif
+			} else {
+				dval = va_arg(args, double);
 			}
-			dval = va_arg(args, double);
-			ftoes(buf, dval, 0, fa.signific);
+			_ftoes(buf, dval, fwidth, signific, fa.flags);
+			fa.fillc = ' ';
 			count += prbuf(buf, &fa);
 			continue;
+			}
 		case 'f':
+		case 'F': {
+			int	signific;
+			int	fwidth = 0;
+
 			if (fa.signific == -1)
 				fa.signific = 6;
+			signific = fa.signific;
+			if (!fa.minusflag)
+				fwidth = fa.fldwidth;
+			if (*fmt == 'F')
+				fa.flags |= UPPERFLG;
 			if (type == 'L') {
 #ifdef	HAVE_LONGDOUBLE
 				long double ldval = va_arg(args, long double);
 
 #if	(defined(HAVE_QFCVT) || defined(HAVE__LDFCVT))
-				qftofs(buf, ldval, 0, fa.signific);
+				_qftofs(buf, ldval, fwidth, signific, fa.flags);
+				fa.fillc = ' ';
 				count += prbuf(buf, &fa);
 				continue;
 #else
 				dval = ldval;
 #endif
 #endif
+			} else {
+				dval = va_arg(args, double);
 			}
-			dval = va_arg(args, double);
-			ftofs(buf, dval, 0, fa.signific);
+			_ftofs(buf, dval, fwidth, signific, fa.flags);
+			fa.fillc = ' ';
 			count += prbuf(buf, &fa);
 			continue;
+			}
 		case 'g':
+		case 'G': {
+			int	signific;
+			int	fwidth = 0;
+
 			if (fa.signific == -1)
 				fa.signific = 6;
 			if (fa.signific == 0)
 				fa.signific = 1;
+			signific = fa.signific;
+			if (!fa.minusflag)
+				fwidth = fa.fldwidth;
+			if (*fmt == 'G')
+				fa.flags |= UPPERFLG;
 			if (type == 'L') {
 #ifdef	HAVE_LONGDOUBLE
 				long double ldval = va_arg(args, long double);
 
-#if	(defined(HAVE_QGCVT) || defined(HAVE__LDGCVT))
-
-#ifdef	HAVE__LDGCVT
-#define	qgcvt(ld, n, b)	_ldgcvt(*(long_double *)&ld, n, b)
-#endif
-				(void) qgcvt(ldval, fa.signific, buf);
+#if	(defined(HAVE_QECVT) || defined(HAVE__LDECVT))
+				_qftogs(buf, ldval, fwidth, signific, fa.flags);
+				fa.fillc = ' ';
 				count += prbuf(buf, &fa);
 				continue;
 #else
 				dval = ldval;
 #endif
 #endif
+			} else {
+				dval = va_arg(args, double);
 			}
-			dval = va_arg(args, double);
-			(void) gcvt(dval, fa.signific, buf);
+			_ftogs(buf, dval, fwidth, signific, fa.flags);
+			fa.fillc = ' ';
 			count += prbuf(buf, &fa);
 			continue;
+			}
 #else
 #	ifdef	USE_FLOATINGARGS
 		case 'e':
+		case 'E':
 		case 'f':
+		case 'F':
 		case 'g':
+		case 'G':
 			dval = va_arg(args, double);
 			continue;
 #	endif
@@ -946,23 +998,32 @@ error sizeof (ptrdiff_t) is unknown
 #endif
 			prdnum(val, &fa);
 			break;
-		case 'O':
+		case 'O': {
 			/* output a long octal number */
-			if (fa.flags & HASHFLG) {
-				fa.prefix = "0";
-				fa.prefixlen = 1;
-			}
+
+			char	*p = fa.bufp;
 #ifdef	USE_LONGLONG
 			if (type == 'Q') {
 				prlonum(llval, &fa);
 			} else
 #endif
 			{
+
 				pronum(val & 07, &fa);
 				if ((res = (val>>3) & rshiftmask(long, 3)) != 0)
 					pronum(res, &fa);
 			}
+			if ((fa.flags & HASHFLG) &&
+			    (p - fa.bufp) >= fa.signific) {
+				/*
+				 * Add '0' only if not left zero filled
+				 * otherwise.
+				 */
+				fa.prefix = "0";
+				fa.prefixlen = 1;
+			}
 			break;
+		}
 		case 'p':
 		case 'x':
 			/* output a hex long */
@@ -1023,7 +1084,7 @@ error sizeof (ptrdiff_t) is unknown
 	}
 out:
 #ifdef	FORMAT_BUFFER
-	if (farg == (long)&fa) {	/* Top level call, flush buffer */
+	if (farg == &fa) {		/* Top level call, flush buffer */
 		if (fa.err)
 			return (EOF);
 		if ((fa.ptr != fa.iobuf) &&
@@ -1208,14 +1269,17 @@ prbuf(s, fa)
 {
 	register int diff;
 	register int rfillc;
-	register long arg			= fa->farg;
+	register void *arg				= fa->farg;
 #ifdef	FORMAT_FUNC_PARM
-	register void (*fun) __PR((char, long))	= fa->outf;
+	register void (*fun) __PR((char, void *))	= fa->outf;
 #endif
 	register int count;
 	register int lzero = 0;
 
-	count = strlen(s);
+	if (fa->maxlen < 0)
+		count = strlen(s);
+	else
+		count = fa->maxlen;
 
 	/*
 	 * lzero becomes the number of left fill chars needed to reach signific
@@ -1245,8 +1309,18 @@ prbuf(s, fa)
 		while (--lzero >= 0)
 			ofun(rfillc, arg);
 	}
-	while (*s != '\0')
-		ofun(*s++, arg);
+	if (fa->maxlen < 0) {
+		while (*s != '\0')
+			ofun(*s++, arg);
+	} else {
+		register	size_t	len = fa->maxlen;
+
+		if (len > 0) {
+			len++;
+			while (--len > 0)
+				ofun(*s++, arg);
+		}
+	}
 	if (fa->minusflag) {
 		rfillc = ' ';
 		while (--diff >= 0)
@@ -1274,9 +1348,9 @@ prc(c, fa)
 {
 	register int diff;
 	register int rfillc;
-	register long arg			= fa->farg;
+	register void *arg				= fa->farg;
 #ifdef	FORMAT_FUNC_PARM
-	register void (*fun) __PR((char, long))	= fa->outf;
+	register void (*fun) __PR((char, void *))	= fa->outf;
 #endif
 	register int count;
 
@@ -1309,23 +1383,14 @@ prstring(s, fa)
 	register const char	*s;
 	f_args *fa;
 {
-	register char	*bp;
-	register int	signific;
-
 	if (s == NULL)
 		return (prbuf("(NULL POINTER)", fa));
 
 	if (fa->signific < 0)
 		return (prbuf(s, fa));
 
-	bp = fa->buf;
-	signific = fa->signific;
-
-	while (--signific >= 0 && *s != '\0')
-		*bp++ = *s++;
-	*bp = '\0';
-
-	return (prbuf(fa->buf, fa));
+	fa->maxlen = strnlen(s, fa->signific);
+	return (prbuf(s, fa));
 }
 
 #ifdef	DEBUG

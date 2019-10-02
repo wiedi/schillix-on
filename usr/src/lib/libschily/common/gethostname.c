@@ -1,11 +1,11 @@
-/* @(#)gethostname.c	1.21 11/08/04 Copyright 1995-2011 J. Schilling */
+/* @(#)gethostname.c	1.23 19/09/01 Copyright 1995-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)gethostname.c	1.21 11/08/04 Copyright 1995-2011 J. Schilling";
+	"@(#)gethostname.c	1.23 19/09/01 Copyright 1995-2019 J. Schilling";
 #endif
 /*
- *	Copyright (c) 1995-2011 J. Schilling
+ *	Copyright (c) 1995-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -14,6 +14,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -72,15 +74,11 @@ gethostname(name, namelen)
 	char	*name;
 	int	namelen;
 {
-	uint32_t	len = namelen;
+	UInt32_t	len = namelen;
 	char		nbuf[MAX_COMPUTERNAME_LENGTH+1];
 
 	if (namelen < 0) {
-#ifdef	ENOSYS
-		seterrno(ENOSYS);
-#else
 		seterrno(EINVAL);
-#endif
 		return (-1);
 	}
 	if (namelen == 0)
@@ -109,11 +107,7 @@ gethostname(name, namelen)
 	int	namelen;
 {
 	if (namelen < 0) {
-#ifdef	ENOSYS
-		seterrno(ENOSYS);
-#else
 		seterrno(EINVAL);
-#endif
 		return (-1);
 	}
 	if (namelen > 0)

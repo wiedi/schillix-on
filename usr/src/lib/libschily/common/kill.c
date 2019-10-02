@@ -1,11 +1,11 @@
-/* @(#)kill.c	1.1 11/08/05 Copyright 2011 J. Schilling */
+/* @(#)kill.c	1.2 19/09/01 Copyright 2011-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)kill.c	1.1 11/08/05 Copyright 2011 J. Schilling";
+	"@(#)kill.c	1.2 19/09/01 Copyright 2011-2019 J. Schilling";
 #endif
 /*
- *	Copyright (c) 2011 J. Schilling
+ *	Copyright (c) 2011-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -14,6 +14,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -43,8 +45,8 @@ LOCAL int
 have_pid(pid)
 	pid_t	pid;
 {
-	uint32_t	procs[MAX_PIDS];
-	uint32_t	nents;
+	UInt32_t	procs[MAX_PIDS];
+	UInt32_t	nents;
 	int		i;
 
 	if (pid == 0)
@@ -54,7 +56,7 @@ have_pid(pid)
 		seterrno(ESRCH);
 		return (-1);
 	}
-	nents /= sizeof (uint32_t);
+	nents /= sizeof (UInt32_t);
 
 	for (i = 0; i < nents; i++) {
 		if (pid == procs[i])

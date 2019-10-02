@@ -1,8 +1,8 @@
-/* @(#)comerr.c	1.43 15/07/01 Copyright 1985-1989, 1995-2015 J. Schilling */
+/* @(#)comerr.c	1.46 17/11/03 Copyright 1985-1989, 1995-2017 J. Schilling */
 /*
  *	Routines for printing command errors
  *
- *	Copyright (c) 1985-1989, 1995-2015 J. Schilling
+ *	Copyright (c) 1985-1989, 1995-2017 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -260,7 +260,7 @@ _comerr(f, exflg, exc, err, msg, args)
 	FILE		*f;	/* FILE * to print to */
 	int		exflg;	/* COMERR_RETURN, COMERR_EXIT, COMERR_EXCODE */
 	int		exc;	/* Use for exit() if exflg & COMERR_EXCODE */
-	int		err;	/* Errno for text, exit(err) if !COMERR_EXIT*/
+	int		err;	/* Errno for text, exit(err) if !COMERR_EXIT */
 	const char	*msg;	/* printf() format */
 	va_list		args;	/* printf() args for format */
 {
@@ -317,7 +317,12 @@ _ex_clash(exc)
 	 * complement) are available as software specific exit codes.
 	 * We map all other negative exit codes to EX_CLASH if they would fold
 	 * to -2..-63.
+	 *
+	 * Do not map exit codes in case that the "COMERR_EXCODE" environment
+	 * is present.
 	 */
+	if (getenv("COMERR_EXCODE"))
+		return (exc);
 	if (exc != exmod && exmod <= 0 && exmod >= EX_CLASH)
 		exc = EX_CLASH;
 	return (exc);
@@ -332,8 +337,12 @@ comexit(err)
 	int	err;
 {
 	while (exfuncs) {
+		ex_t	*fp;
+
 		(*exfuncs->func)(err, exfuncs->arg);
+		fp = exfuncs;
 		exfuncs = exfuncs->next;
+		free(fp);
 	}
 	exit(err);
 	/* NOTREACHED */

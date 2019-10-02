@@ -1,12 +1,12 @@
-/* @(#)getargs.c	2.68 16/02/12 Copyright 1985, 1988, 1994-2016 J. Schilling */
+/* @(#)getargs.c	2.78 18/04/21 Copyright 1985, 1988, 1994-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)getargs.c	2.68 16/02/12 Copyright 1985, 1988, 1994-2016 J. Schilling";
+	"@(#)getargs.c	2.78 18/04/21 Copyright 1985, 1988, 1994-2018 J. Schilling";
 #endif
 #define	NEW
 /*
- *	Copyright (c) 1985, 1988, 1994-2016 J. Schilling
+ *	Copyright (c) 1985, 1988, 1994-2018 J. Schilling
  *
  *	1.3.88	 Start implementation of release 2
  */
@@ -89,8 +89,12 @@ LOCAL char	*retnames[] =  {
 
 #define	SCANONLY	0	/* Do not try to set argument values	*/
 #define	SETARGS		1	/* Set argument values from cmdline	*/
-#define	ARGVECTOR	2	/* Use vector instead of list interface	*/
-#define	NOEQUAL		4	/* -opt=val not allowed for -opt val	*/
+#define	CHECKARGS	2	/* To not update argv and argc		*/
+#define	ARGVECTOR	4	/* Use vector instead of list interface	*/
+#define	NOEQUAL		8	/* -opt=val not allowed for -opt val	*/
+#define	SINGLEARG	16	/* Last singlechar opt may have arg	*/
+
+LOCAL	struct ga_props *_getprops __PR((struct ga_props *));
 
 	int	_getargs __PR((int *, char *const **, void *,
 							int,
@@ -113,6 +117,7 @@ LOCAL	char	fmtspecs[] = "#?*&~+%";
 #define	isfmtspec(c)		(strchr(fmtspecs, c) != NULL)
 
 LOCAL	struct ga_props	props_default = { 0, 0, sizeof (struct ga_props) };
+LOCAL	struct ga_props	props_posix = { GAF_POSIX_DEFAULT, 0, sizeof (struct ga_props) };
 
 EXPORT int
 _getarginit(props, size, flags)
@@ -123,10 +128,36 @@ _getarginit(props, size, flags)
 	if (size > sizeof (struct ga_props))
 		return (-1);
 
+	/*
+	 * GAF_POSIX may be used as an alias for the flags that currently
+	 * define POSIX behavior.
+	 */
+	if (flags == GAF_POSIX)
+		flags = GAF_POSIX_DEFAULT;
+
 	props->ga_flags = flags;
 	props->ga_oflags = 0;
 	props->ga_size = size;
 	return (0);
+}
+
+LOCAL struct ga_props *
+_getprops(props)
+	struct ga_props	*props;
+{
+	if (props == GA_NO_PROPS)
+		props = &props_default;
+	else if (props == GA_POSIX_PROPS)
+		props = &props_posix;
+	props->ga_oflags = 0;
+	/*
+	 * GAF_POSIX may be used as an alias for the flags that currently
+	 * define POSIX behavior.
+	 */
+	if (props->ga_flags == GAF_POSIX)
+		props->ga_flags = GAF_POSIX_DEFAULT;
+
+	return (props);
 }
 
 /*
@@ -194,11 +225,11 @@ getlargs(pac, pav, props, fmt, va_alist)
  *	get flags until a non flag type argument is reached (vector version)
  */
 EXPORT int
-getvargs(pac, pav, vfmt, props)
+getvargs(pac, pav, props, vfmt)
 	int	*pac;
 	char	* const *pav[];
-	struct ga_flags *vfmt;
 	struct ga_props	*props;
+	struct ga_flags *vfmt;
 {
 	return (_getargs(pac, pav, vfmt, SETARGS | ARGVECTOR, props, va_dummy));
 }
@@ -262,10 +293,15 @@ getlallargs(pac, pav, props, fmt, va_alist)
 #else
 	va_start(args);
 #endif
+	props = _getprops(props);
 	for (; ; (*pac)--, (*pav)++) {
 		if ((ret = _getargs(pac, pav, (void *)fmt, SETARGS, props, args)) < NOTAFLAG)
 			break;
-		if (ret == FLAGDELIM && props && (props->ga_flags & GAF_DELIM_DASHDASH))
+		/*
+		 * The default is to parse all options on the command line and
+		 * to let "--" only make the next argument a non-option.
+		 */
+		if (ret == FLAGDELIM &&	(props->ga_flags & GAF_DELIM_DASHDASH))
 			break;
 	}
 	va_end(args);
@@ -277,18 +313,23 @@ getlallargs(pac, pav, props, fmt, va_alist)
  *	get all flags on the command line, do not stop on files (vector version)
  */
 EXPORT int
-getvallargs(pac, pav, vfmt, props)
+getvallargs(pac, pav, props, vfmt)
 	int	*pac;
 	char	* const *pav[];
-	struct ga_flags *vfmt;
 	struct ga_props	*props;
+	struct ga_flags *vfmt;
 {
 	int	ret;
 
+	props = _getprops(props);
 	for (; ; (*pac)--, (*pav)++) {
 		if ((ret = _getargs(pac, pav, vfmt, SETARGS | ARGVECTOR, props, va_dummy)) < NOTAFLAG)
 			break;
-		if (ret == FLAGDELIM && props && (props->ga_flags & GAF_DELIM_DASHDASH))
+		/*
+		 * The default is to parse all options on the command line and
+		 * to let "--" only make the next argument a non-option.
+		 */
+		if (ret == FLAGDELIM &&	(props->ga_flags & GAF_DELIM_DASHDASH))
 			break;
 	}
 	return (ret);
@@ -329,11 +370,11 @@ getlfiles(pac, pav, props, fmt)
  *	getvfiles() is a dry run getvargs()
  */
 EXPORT int
-getvfiles(pac, pav, vfmt, props)
+getvfiles(pac, pav, props, vfmt)
 	int		*pac;
 	char *const	*pav[];
-	struct ga_flags	*vfmt;
 	struct ga_props	*props;
+	struct ga_flags	*vfmt;
 {
 	return (_getargs(pac, pav, vfmt, SCANONLY | ARGVECTOR, props, va_dummy));
 }
@@ -365,11 +406,12 @@ _getargs(pac, pav, vfmt, flags, props, args)
 		int	ret;
 
 
-	if (props == GA_NO_PROPS)
-		props = &props_default;
-	props->ga_oflags = 0;
+	props = _getprops(props);
+
 	if (props->ga_flags & GAF_NO_EQUAL)
 		flags |= NOEQUAL;
+	if (props->ga_flags & GAF_SINGLEARG)
+		flags |= SINGLEARG;
 
 	for (; *pac > 0; (*pac)--, (*pav)++) {
 		argp = **pav;
@@ -644,6 +686,8 @@ again:
 				 */
 				break;
 			} else if (*fmt == *argp) {
+				char	c;
+
 				if (argp[1] == '\0' &&
 				    (fmt[1] == '\0' || fmt[1] == ',')) {
 
@@ -653,6 +697,14 @@ again:
 
 					return (checkfmt(fmt)); /* XXX */
 				}
+				/*
+				 * Check whether the current program argument
+				 * contains characters that are not allowd in
+				 * option names. Check current character.
+				 */
+				c = *fmt;
+				if (c == ',' || (!isalnum(c) && isfmtspec(c)))
+					goto nextarg;
 			} else {
 				/*
 				 * skip over to next format identifier
@@ -689,7 +741,8 @@ again:
 			}
 			if (singlecharflag && !doubledash &&
 			    (val = dosflags(sargp, vfmt, pac, pav,
-							flags & ~SETARGS,
+							CHECKARGS |
+							(flags & ~SETARGS),
 							va_dummy)) == BADFLAG) {
 				return (val);
 			}
@@ -1058,8 +1111,10 @@ dosflags(argp, vfmt, pac, pav, flags, oargs)
 			if (rsf[i].c == *p)
 				break;
 		}
-		if (i >= MAXSF)
+		if (i >= MAXSF) {
+			va_end(args);
 			return (BADFLAG);
+		}
 		if (i == nsf) {
 			rsf[i].curarg = (void *)0;
 			rsf[i].curfun = (void *)0;
@@ -1075,14 +1130,18 @@ dosflags(argp, vfmt, pac, pav, flags, oargs)
 
 again:
 	while (*fmt) {
-		if (!isfmtspec(*fmt) &&
+		if ((((flags & SINGLEARG) &&
+		    ((fmt[1] == '*' || fmt[1] == '?' ||
+		    fmt[1] == '&' || fmt[1] == '#'))) ||
+		    (!isfmtspec(*fmt) &&
 		    (fmt[1] == ',' || fmt[1] == '+' ||
-		    fmt[1] == '~' || fmt[1] == '%' || fmt[1] == '\0') &&
+		    fmt[1] == '~' || fmt[1] == '%' || fmt[1] == '\0'))) &&
 		    strchr(argp, *fmt)) {
 			for (i = 0; i < nsf; i++) {
 				if (rsf[i].c == *fmt) {
-					if (fmt[1] == '+') {
-						rsf[i].fmt = '+';
+					if ((fmt[1] == '+') ||
+					    (fmt[1] == '#' && (flags & SINGLEARG))) {
+						rsf[i].fmt = fmt[1];
 						fmt++;
 						if (fmt[1] == ',' ||
 						    fmt[1] == '\0') {
@@ -1128,15 +1187,27 @@ again:
 							 */
 							rsf[i].type = fmt[1];
 						}
-					} else if (fmt[1] == '~') {
+					} else if ((fmt[1] == '*' ||
+						   fmt[1] == '?') &&
+						    (flags & SINGLEARG)) {
+						fmt++;
+						rsf[i].fmt = fmt[0];
+						rsf[i].type = fmt[0];
+						if (fmt[1] == ' ' || fmt[1] == '_')
+							rsf[i].type = fmt[1];
+					} else if ((fmt[1] == '~') ||
+						    (fmt[1] == '&' && (flags & SINGLEARG))) {
+						rsf[i].fmt = fmt[1];
+						rsf[i].type = fmt[1];
 						/*
 						 * Let fmt point to ',' to
 						 * prevent to fetch the
 						 * func arg twice.
 						 */
 						fmt += 2;
-						rsf[i].fmt = '~';
-						rsf[i].type = '~';
+						if ((rsf[i].fmt == '&') &&
+						    (fmt[0] == ' ' || fmt[0] == '_'))
+							rsf[i].type = fmt[0];
 						rsf[i].curfun = (void *)curfun;
 						if ((flags & (SETARGS|ARGVECTOR)) == SETARGS)
 							curarg = va_arg(args, void *);
@@ -1197,36 +1268,99 @@ again:
 			return (BADFLAG);
 		}
 
+		if ((flags & SETARGS) == 0 &&
+		    (tfmt == '*' || tfmt == '?' || tfmt == '&' || tfmt == '#')) {
+			/*
+			 * POSIX 12.2 Guideline 5 requires that any number of
+			 * options without argument may be followed by a
+			 * single option with parameter. So all characters
+			 * past this one belong to the argument of this option.
+			 */
+			if (flags & CHECKARGS)
+				break;
+			if (*++p == '\0' && type != '_') {
+				if (*pac > 1) {
+					(*pac)--;
+					(*pav)++;
+					p = **pav;
+				} else {
+					return (BADFLAG);
+				}
+			}
+			break;
+		}
 		if ((flags & SETARGS) &&
 		    (rsf[i].curfun || rsf[i].curarg)) {
+			Llong	llval = 0;
+			long	val = 0;
+
+			if (tfmt == '*' || tfmt == '?' ||
+			    tfmt == '&' || tfmt == '#') {
+				/*
+				 * If type is '_', then -f ... results in an
+				 * empty argument. This is because we disallow
+				 * -f foo for f* in this case.
+				 */
+				if (*++p == '\0' && type != '_') {
+					if (*pac > 1) {
+						(*pac)--;
+						(*pav)++;
+						p = **pav;
+					} else {
+						return (BADFLAG);
+					}
+				}
+			}
+
+			if (tfmt == '#' && *astoll(p, &llval) != '\0') {
+				return (BADFLAG);
+			}
+			val = (long)llval;
+
 			if (type == ',' || type == '\0') {
 				*((int *)rsf[i].curarg) = TRUE;
 			} else if (type == 'i' || type == 'I') {
 				if (tfmt == '+')
 					*((int *)rsf[i].curarg) += 1;
+				else if (tfmt == '#')
+					*((int *)rsf[i].curarg) = (int)val;
 				else
 					*((int *)rsf[i].curarg) = rsf[i].val;
 			} else if (type == 'l' || type == 'L') {
 				if (tfmt == '+')
 					*((long *)rsf[i].curarg) += 1;
+				else if (tfmt == '#')
+					*((long *)rsf[i].curarg) = val;
 				else
 					*((long *)rsf[i].curarg) = rsf[i].val;
 			} else if (type == 'Q') {
 				if (tfmt == '+')
 					*((Llong *)rsf[i].curarg) += 1;
+				else if (tfmt == '#')
+					*((Llong *)rsf[i].curarg) = llval;
 				else
 					*((Llong *)rsf[i].curarg) = rsf[i].val;
 			} else if (type == 's' || type == 'S') {
 				if (tfmt == '+')
 					*((short *)rsf[i].curarg) += 1;
+				else if (tfmt == '#')
+					*((short *)rsf[i].curarg) = (short)val;
 				else
 					*((short *)rsf[i].curarg) = rsf[i].val;
 			} else if (type == 'c' || type == 'C') {
 				if (tfmt == '+')
 					*((char *)rsf[i].curarg) += 1;
+				else if (tfmt == '#')
+					*((char *)rsf[i].curarg) = (char)val;
 				else
 					*((char *)rsf[i].curarg) = rsf[i].val;
-			} else if (type == '~') {
+			} else if (tfmt == '*' || tfmt == '?') {
+				if (tfmt == '*')
+					*((const char **)rsf[i].curarg) = p;
+				else
+					*((char *)rsf[i].curarg) = *p;
+				break;
+			} else if (tfmt == '~' || tfmt == '&') {
 				int	ret;
 				char	cfmt[3];
 
@@ -1236,13 +1370,19 @@ again:
 
 				if (rsf[i].curfun == NULL)
 					return (BADFMT);
-				ret = ((*(getpargfun)rsf[i].curfun) ("",
+				ret = ((*(getpargfun)rsf[i].curfun) (tfmt == '&'
+								?p:"",
 								rsf[i].curarg,
 								pac, pav, cfmt));
+				if (ret != NOTAFLAG)
 					return (ret);
+				if (tfmt == '&')
+					break;
 			} else {
 				return (BADFLAG);
 			}
+			if (tfmt == '#')
+				break;
 		}
 	}
 	return (NOTAFLAG);
