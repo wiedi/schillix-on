@@ -73,9 +73,9 @@ LINTTAGS	+= -erroff=E_STATIC_UNUSED
 #
 .KEEP_STATE:
 
-def:		$(DEF_DEPS) $(FWOBJ)
-
 all:		$(ALL_DEPS)
+
+def:		$(DEF_DEPS) $(FWOBJ)
 
 clean:		$(CLEAN_DEPS)
 		$(RM) $(WARLOCK_OUT) $(WARLOCK_OK)

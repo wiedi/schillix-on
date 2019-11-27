@@ -39,6 +39,8 @@ $(ROOTMIBS) :=	FILEMODE = 644
 $(MIBDIR)/%: %
 	$(INS.file)
 
+all:
+
 install: $(ROOTMIBS)
 
 clean:
