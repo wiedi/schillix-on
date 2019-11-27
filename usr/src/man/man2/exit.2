@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved.
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2016, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Copyright 1989 AT&T
 .\" Portions Copyright (c) 1992, X/Open Company Limited.  All Rights Reserved.
@@ -48,7 +48,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH exit 2 "5 Feb 2008" "SunOS 5.11" "System Calls"
+.TH exit 2 "18 Sep 2019" "SunOS 5.11" "System Calls"
 .SH NAME
 exit, _Exit, _exit \- terminate process
 .SH SYNOPSIS
@@ -106,6 +106,28 @@ buffered data, closes all open streams, and removes all files created by
 .BR tmpfile (3C).
 .sp
 .LP
+The value of
+.I status
+may be
+.BR 0 ,
+.BR EXIT_SUCCESS ,
+.BR EXIT_FAILURE ,
+or any other value, though only the least significant
+8 bits (that is,
+.IB status " & 0377\c
+) is available from
+.BR wait() ,
+.B wait3()
+and
+.BR waitpid() ;
+the full value is available from
+.B waitid()
+and in the
+.B siginfo_t
+passed to a signal handler for
+.BR SIGCHLD .
+.sp
+.LP
 The
 .B _Exit()
 and
@@ -148,11 +170,12 @@ flag nor set
 to
 .BR SIG_IGN ,
 it is
-notified of the calling process's termination and the low-order eight bits
-(that is, bits 0377) of
+notified of the calling process's termination and
 .I status
-are made available to it.  If the
-parent is not waiting, the child's status will be made available to it when
+is made available to it.  If the
+parent is not waiting, the child's
+.I status
+will be made available to it when
 the parent subsequently executes
 .BR wait() ,
 .BR wait3() ,
