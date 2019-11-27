@@ -43,7 +43,7 @@ ACTION_SCHILYsystem-library-schily=grep 'SCHILYsystem-library-schily	' depend > 
 
 .KEEP_STATE:
 
-LICENSEFILES += $(ATT) $(OSBL)
+LICENSEFILES += $(ATT) $(OSBL) ../../cmd/hdump/THIRDPARTYLICENSE
 
 all: $(FILES) action
 install: all pkg
