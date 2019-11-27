@@ -35,9 +35,9 @@
 #define	_MODE_H
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2018 J. Schilling
  *
- * @(#)mode.h	1.24 16/08/21 2008-2016 J. Schilling
+ * @(#)mode.h	1.28 18/10/07 2008-2018 J. Schilling
  */
 
 /*
@@ -49,6 +49,8 @@
 #else
 #include <unistd.h>
 #endif
+
+#include "bosh.h"
 
 #ifdef pdp11
 typedef char BOOL;
@@ -106,20 +108,22 @@ typedef union
 #endif
 struct fileblk
 {
-	int		fdes;
-	unsigned	flin;
-	BOOL		feof;
+	int		fdes;		/* file descr. or < 0 for string */
+	unsigned	flin;		/* current line */
+	int		peekn;		/* saved peekn for aliases */
+	BOOL		feof;		/* EOF marker */
 #if BUFFERSIZE > 128
-	unsigned int	fsiz;
+	unsigned int	fsiz;		/* buffer size to use */
 #else
 	unsigned char	fsiz;
 #endif
-	unsigned char	*fnxt;
-	unsigned char	*fend;
+	unsigned char	*fnxt;		/* ptr. to next char in buffer */
+	unsigned char	*fend;		/* ptr. past end of buffer */
 	off_t		nxtoff;		/* file offset */
 	off_t		endoff;		/* file offset */
-	unsigned char	**feval;
-	struct fileblk	*fstak;
+	unsigned char	**feval;	/* arg vector for eval */
+	struct fileblk	*fstak;		/* previous input if stacked */
+	void		*alias;		/* active aliases */
 	unsigned char	fbuf[BUFFERSIZE];
 };
 
@@ -130,19 +134,29 @@ struct tempblk
 };
 
 
-/* for files not used with file descriptors */
+/*
+ * for files not used with file descriptors
+ *
+ * fsiz is 1 in this case
+ */
 struct filehdr
 {
-	int		fdes;
-	unsigned	flin;
-	BOOL		feof;
+	int		fdes;		/* file descr. or < 0 for string */
+	unsigned	flin;		/* current line */
+	int		peekn;		/* saved peekn for aliases */
+	BOOL		feof;		/* EOF marker */
+#if BUFFERSIZE > 128
+	unsigned int	fsiz;		/* buffer size to use */
+#else
 	unsigned char	fsiz;
-	unsigned char	*fnxt;
-	unsigned char	*fend;
+#endif
+	unsigned char	*fnxt;		/* ptr. to next char in buffer */
+	unsigned char	*fend;		/* ptr. past end of buffer */
 	off_t		nxtoff;		/* file offset */
 	off_t		endoff;		/* file offset */
-	unsigned char	**feval;
-	struct fileblk	*fstak;
+	unsigned char	**feval;	/* arg vector for eval */
+	struct fileblk	*fstak;		/* previous input if stacked */
+	void		*alias;		/* active aliases */
 	unsigned char	_fbuf[1];
 };
 
@@ -163,7 +177,7 @@ struct sysnod
 	UInt16_t sysflg;	/* Flag for builtins		*/
 };
 
-typedef  void    (*bftype) __PR((int argc, char *argv[]));
+typedef  int    (*bftype) __PR((int argc, Uchar *argv[], bosh_t *__bp));
 
 struct sysnod2
 {
@@ -171,6 +185,7 @@ struct sysnod2
 	UInt16_t sysval;	/* Value to identify above	*/
 	UInt16_t sysflg;	/* Flag for builtins		*/
 	bftype	sysptr;		/* Ptr to function		*/
+	struct sysnod2 *snext;	/* Allow a chain of entries	*/
 };
 
 /*

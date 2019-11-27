@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)word.c	1.77 16/09/01 2008-2016 J. Schilling
+ * @(#)word.c	1.102 19/10/04 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)word.c	1.77 16/09/01 2008-2016 J. Schilling";
+	"@(#)word.c	1.102 19/10/04 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -86,27 +86,28 @@ static	unsigned char	*match_block __PR((unsigned char *argp,
 	unsigned char	*readw	__PR((wchar_t d));
 	unsigned int	readwc	__PR((void));
 static int		readb	__PR((struct fileblk *, int, int));
+	int		isbinary __PR((struct fileblk *f));
 #ifdef	INTERACTIVE
 static	BOOL		chk_igneof __PR((void));
 static	int		xread	__PR((int f, char *buf, int n));
 #endif
 #ifdef	DO_TILDE
-static unsigned char	*do_tilde __PR((unsigned char *arg));
+	unsigned char	*do_tilde __PR((unsigned char *arg));
 #endif
 
 /* ========	character handling for command lines	======== */
 
-#ifdef	DO_SYSALIAS
-static	void		*seen;	/* Structure to track recursive alias calls */
-#endif
 
 int
 word()
 {
 	unsigned int	c, d;
+#ifdef	DO_SYSALIAS
+	void		*seen;
+#endif
 
 	wdnum = 0;
-	wdset = 0;
+	wdset &= ~KEYFLAG;
 
 	/*
 	 * We first call readwc() in order to make sure that the history editor
@@ -130,6 +131,18 @@ word()
 			break;	/* out of comment - white space loop */
 		}
 	}
+
+#ifdef	DO_SYSALIAS
+	/*
+	 * We skipped the white space...
+	 * Now remember the alias state from the beginning of this word as we
+	 * later need to check whether there might be a loop for this word. We
+	 * need to do it here since parsing the word may cause the pushed macro
+	 * replacement to be popped already at the end of the word.
+	 */
+	seen = standin->alias;
+#endif
+
 	if (!eofmeta(c) || (c == '^' && (flags2 & posixflg))) {
 		struct argnod	*arg = (struct argnod *)locstak();
 		unsigned char	*argp = arg->argval;
@@ -142,7 +155,7 @@ word()
 		argp = match_word(argp, c, MARK, &wordc);
 		arg = (struct argnod *)endstak(argp);
 		if (!letter(arg->argval[0]))
-			wdset = 0;
+			wdset &= ~KEYFLAG;
 
 		c = wordc;		/* Last c from inside match_word() */
 		if (arg->argval[1] == 0 &&
@@ -167,6 +180,7 @@ word()
 #endif
 		} else { /* check for reserved words */
 			if (reserv == FALSE ||
+			    (wdset & IN_CASE) ||
 			    (wdval = syslook(arg->argval,
 			    reserved, no_reserved)) == 0) {
 				wdval = 0;
@@ -216,10 +230,11 @@ word()
 
 #ifdef	DO_SYSALIAS
 	/*
-	 * Aliases only expand on plain words and
-	 * not when in an eval(1) call.
+	 * We previously did not expand aliases while in an eval(1) call.
+	 * Since all other shells expand aliases inside an eval call, we
+	 * now do it as well.
 	 */
-	if (wdval == 0 && standin->feval == 0) {
+	if (wdval == 0) {
 			char	*val;
 		extern	int	abegin;
 			int	aflags = abegin > 0 ? AB_BEGIN:0;
@@ -232,15 +247,12 @@ word()
 		if (val) {
 			struct filehdr *fb = alloc(sizeof (struct filehdr));
 
-			if (peekn &&
-			    (peekn & 0x7fffffff) == standin->fnxt[-1]) {
-				peekn = 0;
-				standin->fnxt--;
-				standin->nxtoff--;
-			}
 			push((struct fileblk *)fb);	/* Push tmp filehdr */
 			estabf(UC val);			/* Install value    */
 			standin->fdes = -2;		/* Make it auto-pop */
+			standin->peekn = peekn;		/* Remember peekn   */
+			standin->alias = seen;		/* Curr. alias list */
+			peekn = 0;			/* for later use    */
 
 			if (abegin > 0) {		/* Was a begin alias */
 				size_t	len = strlen(val);
@@ -253,7 +265,6 @@ word()
 			return (word());		/* Parse replacement */
 		}
 	}
-	seen = NULL;
 #endif
 	reserv = FALSE;
 	return (wdval);
@@ -289,6 +300,7 @@ extern	int		abegin;
 			if (c == 0) {
 				GROWSTAK(argp);
 				*argp++ = 0;
+				parm = 0;	/* EOF -> abort ${..} scan */
 			} else {
 				pc = readw(c);
 				while (*pc) {
@@ -347,6 +359,7 @@ extern	int		abegin;
 				if (c == '/' || c == ':' || eofmeta(c)) {
 					unsigned char	*val;
 
+					GROWSTAK(argp);
 					*argp = '\0';
 					val = do_tilde(stakbot+tilde);
 					if (val)
@@ -458,6 +471,7 @@ match_arith(argp)
 	int		nest = 2;
 	unsigned int	c;
 	unsigned char	*pc;
+	UIntptr_t	p = relstakp(argp);
 
 	/*
 	 * Add the "((".
@@ -469,10 +483,6 @@ match_arith(argp)
 	*argp++ = '(';
 	*argp = 0;
 	while ((c = nextwc()) != '\0') {
-		if (c == '`') {
-			argp = match_block(argp, c, c);
-			continue;
-		}
 		/*
 		 * quote each character within
 		 * single quotes
@@ -481,6 +491,10 @@ match_arith(argp)
 		while (*pc) {
 			GROWSTAK(argp);
 			*argp++ = *pc++;
+		}
+		if (c == '`') {
+			argp = match_block(argp, c, c);
+			continue;
 		}
 		if (c == NL) {
 			chkpr();
@@ -494,7 +508,10 @@ match_arith(argp)
 			continue;
 		}
 	}
+	GROWSTAK(argp);
 	*argp = 0;
+	if (nest != 0)		/* Need a generalized syntax error function */
+		failed(absstak(p), synmsg); /* instead if calling failed()  */
 	return (argp);
 }
 #endif
@@ -549,6 +566,7 @@ match_literal(argp)
 		GROWSTAK(argp);
 		*argp++ = '"';
 	}
+	GROWSTAK(argp);
 	*argp = '\0';
 	return (argp);
 }
@@ -609,6 +627,7 @@ match_block(argp, c, d)
 		}
 #endif
 	}
+	GROWSTAK(argp);
 	*argp = '\0';
 #ifdef	MATCH_BLOCK_DEBUG
 	fprintf(stderr, "match_block(%c) '%s'\n", d, absstak(p));
@@ -631,7 +650,7 @@ skipwc()
 unsigned int
 nextwc()
 {
-	unsigned int	c, d;
+	register unsigned int	c, d;
 
 retry:
 	if ((d = readwc()) == ESCAPE) {
@@ -669,12 +688,13 @@ readw(d)
 unsigned int
 readwc()
 {
-	wchar_t	c;
+	register wchar_t	c;
 	int	len;
-	struct fileblk	*f;
+	register struct fileblk	*f;
 	int	mbmax;
 	int	i, mlen;
 
+top:
 	if (peekn) {
 		c = peekn & 0x7fffffff;
 		peekn = 0;
@@ -704,8 +724,6 @@ retry:
 				c = SPACE;
 			if ((flags & readpr) && standin->fstak == 0)
 				prc(c);
-			if (c == NL)
-				f->flin++;
 			return (c);
 		}
 
@@ -724,6 +742,8 @@ retry:
 		mlen = 0;
 		for (i = 1; i <= mbmax; i++) {
 			int	rest;
+			wchar_t	cc;
+
 			if ((rest = f->fend - f->fnxt) < i) {
 				/*
 				 * not enough bytes available
@@ -734,10 +754,11 @@ retry:
 				len = readb(f,
 				    (f->fsiz == 1) ? 1 : (f->fsiz - rest),
 				    rest);
-				if (len == 0)
+				if (len <= 0)
 					break;
 			}
-			mlen = mbtowc(&c, (char *)f->fnxt, i);
+			mlen = mbtowc(&cc, (char *)f->fnxt, i);
+			c = cc;
 			if (mlen > 0)
 				break;
 			(void) mbtowc(NULL, NULL, 0);
@@ -766,10 +787,14 @@ retry:
 		extern	int	abegin;
 
 			if (f->fdes == -3) /* Continue with begin alias */
-				abegin++;
+				if (abegin == 0)
+					abegin++;
+			peekn = f->peekn;
 			pop();
 			free(f);
 			f = standin;
+			if (peekn)
+				goto top;
 			goto retry;
 		}
 		c = EOF;
@@ -795,7 +820,7 @@ readb(f, toread, rest)
 	int		toread;
 	int		rest;
 {
-	int	len;
+	int	len = 0;
 	int	fflags;
 
 	if (rest) {
@@ -811,21 +836,44 @@ readb(f, toread, rest)
 		if (f->fbuf[rest - 1] == '\n') {
 			/*
 			 * if '\n' found, it should be
-			 * a bondary of multibyte char.
+			 * a boundary of multibyte char.
 			 */
 			return (rest);
 		}
 	}
 
 retry:
+	errno = 0;
 	do {
+		if (len < 0 && errno != EINTR) {
+			/*
+			 * Avoid a loop on EIO and similar read errors.
+			 * This may happen afte a shut down TCP/IP connection.
+			 */
+			break;
+		}
 		if (trapnote & SIGSET) {
 			newline();
 			sigchk();
-		} else if ((trapnote & TRAPSET) && (rwait > 0)) {
+		} else if ((trapnote & SIGINP) ||
+			    ((trapnote & TRAPSET) && (rwait > 0))) {
+#ifdef	INTERACTIVE
+			int	inp = trapnote & SIGINP; /* Reset by chktrap */
+#endif
+
 			newline();
 			chktrap();
 			clearup();
+#ifdef	INTERACTIVE
+			if (inp) {
+				/*
+				 * Do a longjmp() to the next prompt, similar
+				 * to sigchk().
+				 */
+				exval_sig();
+				exitsh(exitval ? exitval : SIGFAIL);
+			}
+#endif
 		}
 #ifdef	INTERACTIVE
 	} while ((len = xread(f->fdes,
@@ -845,14 +893,14 @@ retry:
 		    (flags & stdflg))) &&
 		    ((fflags = fcntl(f->fdes, F_GETFL, 0)) & O_NDELAY)) {
 			fflags &= ~O_NDELAY;
-			fcntl(f->fdes, F_SETFL, fflags);
+			(void) fcntl(f->fdes, F_SETFL, fflags);
 			goto retry;
 		}
 	} else if (len < 0) {
 		if (errno == EAGAIN) {
 			fflags = fcntl(f->fdes, F_GETFL, 0);
 			fflags &= ~O_NONBLOCK;
-			fcntl(f->fdes, F_SETFL, fflags);
+			(void) fcntl(f->fdes, F_SETFL, fflags);
 			goto retry;
 		}
 		len = 0;
@@ -863,6 +911,51 @@ retry:
 	f->endoff = len + rest;
 	return (len + rest);
 }
+
+#ifdef	DO_CHECKBINARY
+/*
+ * Check wether a script may be a binary file, e.g. from a different
+ * architecture and caused a ENOEXEC error.
+ * We only check for a binary file if the fileblk seems to be just
+ * initialized as we do not want to repeat the test in case that
+ * exfile() is called again with the same file. Since a shut down TCP/IP
+ * conection first sends a SIGTERM and then causes EIO on stdin, we need
+ * to be careful not to go into a longjmp() loop from inside readb() to
+ * exfile().
+ */
+int
+isbinary(f)
+	struct fileblk	*f;
+{
+	unsigned char	*p;
+	unsigned char	c;
+	BOOL		trapsav;
+
+	if (f->fend > f->fnxt)		/* The buffer is not empty */
+		return (FALSE);		/* so this is not the first read */
+	if (f->feof || f->fdes < 0)	/* Not a fresh new fileblk */
+		return (FALSE);
+	if (isatty(f->fdes))		/* Not a plain file */
+		return (FALSE);
+
+	trapsav = trapnote;
+	trapnote = 0;			/* Avoid endless longjmp() loop */
+	readb(f, f->fsiz, 0);		/* Fill buffer */
+	trapnote |= trapsav;		/* Keep signals just seen */
+
+	/*
+	 * Scan the buffer but keep it intcact.
+	 */
+	for (p = f->fnxt; p < f->fend; p++) {
+		c = *p;
+		if (c == '\0')
+			return (TRUE);
+		if (c == '\n')
+			return (FALSE);
+	}
+	return (FALSE);
+}
+#endif	/* DO_CHECKBINARY */
 
 #ifdef	INTERACTIVE
 static BOOL
@@ -877,9 +970,15 @@ xread(f, buf, n)
 	char	*buf;
 	int	n;
 {
-	if (f == 0 && isatty(f) && (flags2 & vedflg)) {
+	/*
+	 * If we like to call shedit_egetc() for files other than STDIN_FILENO
+	 * we would need to set up the file descriptor for libshedit.
+	 */
+	if ((f == STDIN_FILENO) &&
+	    (flags2 & vedflg)) {
 		static	int	init = 0;
 			int	c;
+			int	amt = 0;
 
 		if (!init) {
 			init = 1;
@@ -887,24 +986,47 @@ xread(f, buf, n)
 			shedit_putenv(ev_insert);
 			shedit_igneof(chk_igneof);
 		}
-		c = shedit_egetc();
-		*buf = c;
-		if (c == -1 && shedit_getdelim() == -1) {	/* EOF */
-			shedit_treset();
-			return (0);
+		/*
+		 * In order to be able to flush the last line data from the
+		 * input when synbad() and others cause a longjmp() to the next
+		 * prompt, we need to get the whole line from the editor here.
+		 *
+		 * Note: calling shedit_egetc() with an empty libshedit buffer
+		 * triggers the history editor, so we need to be careful not
+		 * to buffer too much.
+		 */
+		while (--n >= 0) {
+			c = shedit_egetc();
+			if (c == -1 && shedit_getdelim() == -1) { /* EOF */
+				shedit_treset();	/* Writes ~/.history */
+				return (0);
+			}
+			if (c == CTLC && shedit_getdelim() == CTLC) {
+				fault(SIGINT);
+				trapnote |= SIGINP;
+				errno = EINTR;		/* Mark for readb() */
+				return (-1);
+			}
+			*buf++ = c;
+			if (amt++ == 0) {
+				size_t	l = shedit_getlen();
+
+				/*
+				 * Copy no more than what's currently in the
+				 * "line" returned from the history editor.
+				 */
+				if (l < n)
+					n = l;
+			}
 		}
-		if (c == CTLC && shedit_getdelim() == CTLC) {
-			trapnote |= SIGSET;
-			return (-1);
-		}
-		return (1);
+		return (amt);
 	}
 	return (read(f, buf, n));
 }
 #endif
 
 #ifdef	DO_TILDE
-static unsigned char *
+unsigned char *
 do_tilde(arg)
 	unsigned char	*arg;
 {
@@ -914,7 +1036,7 @@ do_tilde(arg)
 
 	if (*u++ != '~')
 		return (NULL);
-	for (p = u; *p && *p != '/'; p++)
+	for (p = u; *p && *p != '/' && *p != ':'; p++)
 		;
 	if (p == u) {
 		val = homenod.namval;

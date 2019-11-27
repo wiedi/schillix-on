@@ -35,13 +35,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)macro.c	1.61 16/08/28 2008-2016 J. Schilling
+ * @(#)macro.c	1.95 19/10/04 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)macro.c	1.61 16/08/28 2008-2016 J. Schilling";
+	"@(#)macro.c	1.95 19/10/04 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -55,6 +55,8 @@ static	UConst char sccsid[] =
 #include	"sym.h"
 #include	<wait.h>
 #endif
+
+#define	no_pipe	(int *)0
 
 		int	macflag;
 static unsigned char	quote;	/* used locally */
@@ -72,7 +74,7 @@ static unsigned int dolname	__PR((unsigned char **argpp,
 					unsigned int c, unsigned int addc));
 static int	getch		__PR((unsigned char endch, int trimflag));
 	unsigned char *macro	__PR((unsigned char *as));
-static	unsigned char *_macro	__PR((unsigned char *as));
+	unsigned char *_macro	__PR((unsigned char *as));
 static void	comsubst	__PR((int, int));
 	void	subst		__PR((int in, int ot));
 static void	flush		__PR((int));
@@ -84,6 +86,9 @@ static unsigned char	*prefsubstr __PR((unsigned char *v, unsigned char *pat,
 static unsigned char	*mbdecr	__PR((unsigned char *s, unsigned char *sp));
 static int		suffsubstr __PR((unsigned char *v, unsigned char *pat,
 					int largest));
+#ifdef	__needed__
+static Uchar	*globesc	__PR((Uchar *argp));
+#endif
 #endif
 static void	sizecpy		__PR((int vsize, Uchar *v, int trimflag));
 static Uchar	*trimcpy	__PR((Uchar *argp, int trimflag));
@@ -119,27 +124,20 @@ copyto(endch, trimflag)
 					pushstak('\\');
 					GROWSTAKTOP();
 					pushstak('\\');
-					pc = readw(d);
-					/* push entire multibyte char */
+				}
+				pc = readw(d);
+				/*
+				 * d might be NULL
+				 * Even if d is NULL, we have to save it
+				 */
+				if (*pc) {
 					while (*pc) {
 						GROWSTAKTOP();
 						pushstak(*pc++);
 					}
 				} else {
-					pc = readw(d);
-					/*
-					 * d might be NULL
-					 * Even if d is NULL, we have to save it
-					 */
-					if (*pc) {
-						while (*pc) {
-							GROWSTAKTOP();
-							pushstak(*pc++);
-						}
-					} else {
-						GROWSTAKTOP();
-						pushstak(*pc);
-					}
+					GROWSTAKTOP();
+					pushstak(*pc);
 				}
 			} else { /* push escapes onto stack to quote chars */
 				pc = readw(c);
@@ -289,7 +287,7 @@ dolname(argpp, c, addc)
 	}
 	GROWSTAKTOP();
 	zerostak();
-	*argpp = argp;
+	*argpp = argp;		/* Return start offset against stakbot */
 	return (c);
 }
 
@@ -326,6 +324,9 @@ retry:
 #ifdef	DO_U_DOLAT_NOFAIL
 			int		isg = 0;
 #endif
+#ifdef	DO_SUBSTRING
+			int		largest = 0;
+#endif
 			int		vsize = -1;
 			BOOL		bra;
 			BOOL		nulflg;
@@ -346,8 +347,10 @@ getname:
 				n = lookup(absstak(argp));
 				setstak(argp);
 #ifndef	DO_POSIX_UNSET
-				if (n->namflg & N_FUNCTN)
+				if (n->namflg & N_FUNCTN) {
 					error(badsub);
+					return (EOF);
+				}
 #endif
 #ifdef	DO_LINENO
 				if (n == &linenonod) {
@@ -376,11 +379,22 @@ getname:
 #ifdef	DO_POSIX_PARAM
 					if (bra) {
 						int	dd;
+						int	overflow = 0;
+						int	maxmult = INT_MAX / 10;
 
 						while ((dd = readwc(),
-							digit(dd)))
-							c = 10 * c + (dd - '0');
+							digit(dd))) {
+							dd -= '0';
+							if (c > maxmult)
+								overflow = 1;
+							c *= 10;
+							if (INT_MAX - c < dd)
+								overflow = 1;
+							c += dd;
+						}
 						peekc = dd | MARK;
+						if (overflow)
+							c = INT_MAX;
 					}
 #endif
 				}
@@ -401,7 +415,27 @@ getname:
 #ifdef	DO_SUBSTRING
 				if (bra == 1) {
 					c = readwc();
-					if (c != '}') {
+					if (c == ':' ||
+					    c == '-' ||
+					    c == '+' ||
+					    c == '?' ||
+					    c == '=') {
+						/*
+						 * Check for corner case ${#?}
+						 */
+						if (c == '?') {
+							int nc = readwc();
+
+							peekc = nc|MARK;
+							if (nc == '}') {
+								bra++;
+								goto getname;
+							}
+						}
+						itos(dolc);
+						v = numbuf;
+						goto docolon;
+					} else if (c != '}') {
 						bra++;
 						goto getname;
 					} else {
@@ -418,6 +452,20 @@ getname:
 				itos(retval);
 #endif
 				v = numbuf;
+#ifdef	DO_DOL_SLASH
+			} else if (c == '/') {
+				if (retex.ex_code == CLD_EXITED) {
+					sitos(retex.ex_status);
+					v = numbuf;
+				} else if (retex.ex_code == C_NOEXEC ||
+					    retex.ex_code == C_NOTFOUND) {
+					v = UC code2str(retex.ex_code);
+				} else {
+					sig2str(retex.ex_status,
+						    (char *)numbuf);
+					v = numbuf;
+				}
+#endif
 			} else if (c == '-') {
 				v = flagadr;
 #ifdef	DO_DOT_SH_PARAMS
@@ -440,10 +488,14 @@ getname:
 #endif
 			} else if (bra) {
 				error(badsub);
+				return (EOF);
 			} else {
 				goto retry;
 			}
 			c = readwc();
+#ifdef	DO_SUBSTRING
+docolon:
+#endif
 			if (c == ':' && bra == 1) { /* null and unset fix */
 				nulflg = 1;
 				c = readwc();	/* c now holds char past ':' */
@@ -452,9 +504,17 @@ getname:
 			}
 			if (!defchar(c) && bra) {	/* check "}=-+?#%" */
 				error(badsub);
+				return (EOF);
 			}
 			argp = 0;
 			if (bra) {		/* ${...} */
+				/*
+				 * This place is probably the wrong place to
+				 * mark the word as expanded, but before, we
+				 * did not mark a substitution to word in
+				 * ${var-word} if "var" is unset.
+				 */
+				macflag |= M_PARM;
 
 				if (c != '}') {	/* word follows parameter */
 					/*
@@ -467,8 +527,21 @@ getname:
 					    (setchar(c))) {
 						int	ntrim = trimflag;
 #ifdef	DO_SUBSTRING
-						if (c == '#' || c == '%')
+						if (c == '#' || c == '%') {
+							int	nc = readwc();
+
+#ifdef	__needed__
+							/*
+							 * See globesc() below.
+							 */
 							ntrim = 0;
+#endif
+							if (nc == c) {
+								largest++;
+							} else {
+								peekc = nc|MARK;
+							}
+						}
 #endif
 						copyto('}', ntrim);
 					} else {
@@ -486,6 +559,7 @@ getname:
 
 				if (c != '}' || argp) {
 					error(badsub);
+					return (EOF);
 				}
 				if (v)
 					l = mbschars(v);
@@ -494,12 +568,12 @@ getname:
 			}
 			if ((c == '#' || c == '%')) {
 				if (v) {
-					int		largest = 0;
-					UIntptr_t	a;
 					UIntptr_t	b = relstakp(argp);
 
-					if (dolg)
+					if (dolg) {
 						error(badsub);
+						return (EOF);
+					}
 					if (quote) {
 						/*
 						 * This is a copy that we may
@@ -507,15 +581,16 @@ getname:
 						 */
 						trim(argp);
 					}
-					if (*argp == c) {
-						largest++;
-						argp++;
-					}
 
-					staktop++;
-					a = relstak();
-					_macro(argp);
-					argp = absstak(a);
+					/*
+					 * Treat double quotes in glob pattern.
+					 */
+#ifdef	__needed__
+					/*
+					 * See ntrim = 0 above.
+					 */
+					argp = globesc(argp);
+#endif
 					if (c == '#') {
 						v = prefsubstr(v, argp,
 								largest);
@@ -588,7 +663,8 @@ getname:
 								GROWSTAKTOP();
 								pushstak(sep);
 							} else {
-								macflag |=
+								if (*id == '@')
+								    macflag |=
 									M_DOLAT;
 								GROWSTAKTOP();
 								pushstak(' ');
@@ -602,9 +678,11 @@ getname:
 						trim(argp);
 					failed(id, *argp ? (const char *)argp :
 					    badparam);
+					return (EOF);
 				} else if (c == '=') {
 					if (n) {
 						int slength = staktop - stakbot;
+						UIntptr_t aoff = argp - stakbot;
 						unsigned char *savp = fixstak();
 						struct ionod *iosav = iotemp;
 						unsigned char *newargp;
@@ -614,7 +692,7 @@ getname:
 						 * will relocate the last item
 						 * if we call fixstak();
 						 */
-						argp = savp;
+						argp = savp + aoff;
 
 						/*
 						 * copy word onto stack, trim
@@ -631,6 +709,7 @@ getname:
 						staktop = stakbot + slength;
 					} else {
 						error(badsub);
+						return (EOF);
 					}
 				}
 #ifdef	DO_U_DOLAT_NOFAIL
@@ -639,6 +718,7 @@ getname:
 			} else if (flags & setflg) {
 #endif
 				failed(id, unset);
+				return (EOF);
 			}
 			goto retry;
 #ifdef		DO_DOL_PAREN
@@ -676,7 +756,7 @@ macro(as)
 	return (fixstak());
 }
 
-static unsigned char *
+unsigned char *
 _macro(as)
 	unsigned char	*as;
 {
@@ -702,6 +782,7 @@ _macro(as)
 		pushstak('\\');
 		GROWSTAKTOP();
 		pushstak('\0');
+		zerostak();
 /*
  * above is the fix for *'.c' bug
  */
@@ -728,9 +809,21 @@ comsubst(trimflag, type)
 	unsigned char *oldstaktop;
 	unsigned char *savptr = fixstak();
 	struct ionod *iosav = iotemp;
+	struct ionod *fiosav = fiotemp;
+	int		oiof = 0;
+	int		ofiof = 0;
 	unsigned char	*pc;
 	struct trenod	*tc = NULL;
 	int		omacflag = macflag;
+
+	if (iosav) {
+		oiof = iosav->iofile;
+		iosav->iofile |= IOBARRIER;
+	}
+	if (fiosav) {
+		ofiof = fiosav->iofile;
+		fiosav->iofile |= IOBARRIER;
+	}
 
 	if (type == COM_BACKQUOTE) {  /* `command`  type command substitution */
 
@@ -777,6 +870,7 @@ comsubst(trimflag, type)
 			unsigned char	*argc;
 			struct argnod	*arg = (struct argnod *)locstak();
 			unsigned char	*argp = arg->argval;
+			int		err;
 
 			/*
 			 * savptr holds strlngth bytes in a saved area
@@ -803,8 +897,18 @@ comsubst(trimflag, type)
 			/*
 			 * First implementation: just return the expanded string
 			 */
-			i = strexpr(argc);
-			staktop = movstrstak(&numbuf[slltos(i)], staktop);
+			i = strexpr(argc, &err);
+			if (err == 0) {
+				staktop = movstrstak(&numbuf[slltos(i)],
+								staktop);
+			} else {
+				exitval = err;
+			}
+			macflag = omacflag | M_ARITH;
+			if (iosav)
+				iosav->iofile = oiof;
+			if (fiosav)
+				fiosav->iofile = ofiof;
 			return;
 		}
 		peekc = d | MARK;
@@ -814,6 +918,12 @@ comsubst(trimflag, type)
 	{
 		struct trenod	*t;
 		int		pv[2];
+#ifdef	DO_POSIX_E
+		int		oret = retval;
+		struct excode	oex;
+
+		oex = retex;
+#endif
 
 		/*
 		 * this is done like this so that the pipe
@@ -832,11 +942,35 @@ comsubst(trimflag, type)
 #ifdef	PARSE_DEBUG
 		prtree(t, "Command Substitution: ");
 #endif
-		execute(t, XEC_NOSTOP, (int)(flags & errflg), 0, pv);
+		/*
+		 * The SVr4 version of the shell did not allocate a job
+		 * slot when XEC_NOSTOP was specified. Since we use vfork()
+		 * and optiomized pipes (-DDO_PIPE_PARENT) we also need to
+		 * specify XEC_ALLOCJOB to avoid that we overwrite the
+		 * existing job slot with command substitution.
+		 */
+		execute(t, XEC_NOSTOP|XEC_ALLOCJOB, (int)(flags & errflg),
+			no_pipe, pv);
+#ifdef	DO_POSIX_E
+		retval = oret;	/* Restore old retval for $? */
+		retex = oex;
+#endif
 		close(pv[OTPIPE]);
 		savpipe = -1;
 	}
+#if 0
+	/*
+	 * Do we really need to call this here?
+	 * execute() calls it already and if we leave this call here, we may
+	 * end up with accessing already free()d memory later.
+	 *
+	 * Calling tdystak() would free only the space that was allocated by
+	 * the parser (cmd()) and this seems to be of limited size. Given that
+	 * comsubst() is called as part of another command execution, it seems
+	 * that the lifetime of that space is not significantly enhanced.
+	 */
 	tdystak(savptr, iosav);
+#endif
 	(void) memcpystak(stakbot, savptr, strlngth);
 	oldstaktop = staktop = stakbot + strlngth;
 	while ((d = readwc()) != '\0') {
@@ -885,15 +1019,23 @@ comsubst(trimflag, type)
 		else if (wstatus != 0 && rc == 0)
 			rc = SIGFLG;	/* Use special value 128 */
 #endif
+#ifndef	DO_POSIX_E
 		if (rc && (flags & errflg))
 			exitsh(rc);
+#endif
 		exitval = rc;
 		ex.ex_status = wstatus;
 		ex.ex_code = wcode;
 		ex.ex_pid = parent;
 		flags |= eflag;
-		exitset();
+#ifndef	DO_POSIX_E
+		exitset();	/* Set retval from exitval for $? */
+#endif
 	}
+	if (iosav)
+		iosav->iofile = oiof;
+	if (fiosav)
+		fiosav->iofile = ofiof;
 	while (oldstaktop != staktop) {
 		/*
 		 * strip off trailing newlines from command substitution only
@@ -920,12 +1062,18 @@ subst(in, ot)
 	struct fileblk	fb;
 	int	count = CPYSIZ;
 	unsigned char	*pc;
+#ifdef	DO_POSIX_HERE
+	int	oquote = quote;
+#endif
 
 	push(&fb);
 	initf(in);
 	/*
 	 * DQUOTE used to stop it from quoting
 	 */
+#ifdef	DO_POSIX_HERE
+	quote = 0;
+#endif
 	while ((c = (getch(DQUOTE, 0))) != '\0') {
 		/*
 		 * read characters from here document and interpret them
@@ -956,6 +1104,9 @@ subst(in, ot)
 			count = CPYSIZ;
 		}
 	}
+#ifdef	DO_POSIX_HERE
+	quote = oquote;
+#endif
 	flush(ot);
 	pop();
 }
@@ -991,11 +1142,16 @@ mbschars(v)
 	return (chars);
 }
 
+/*
+ * Prefix substring matcher for ${var#pat} and ${var##pat}
+ *
+ * Returns pointer to first non-matching character in the string.
+ */
 static unsigned char *
 prefsubstr(v, pat, largest)
-	unsigned char	*v;
-	unsigned char	*pat;
-	int		largest;
+	unsigned char	*v;		/* The data value to check	*/
+	unsigned char	*pat;		/* The pattern to match against */
+	int		largest;	/* Whether to match largest str	*/
 {
 	register unsigned char	*s = v;
 	register unsigned char	*r = v;
@@ -1024,6 +1180,10 @@ prefsubstr(v, pat, largest)
 	return (r);
 }
 
+/*
+ * Return a pointer to the last multi byte character before "sp".
+ * Currently always called after gmatch() and thus from an intact mbstate.
+ */
 static unsigned char *
 mbdecr(s, sp)
 	unsigned char	*s;
@@ -1044,11 +1204,16 @@ mbdecr(s, sp)
 	return (sp-1);
 }
 
+/*
+ * Suffix substring matcher for ${var%pat} and ${var%%pat}
+ *
+ * Returns size of non-matching initial part in the string.
+ */
 static int
 suffsubstr(v, pat, largest)
-	unsigned char	*v;
-	unsigned char	*pat;
-	int		largest;
+	unsigned char	*v;		/* The data value to check	*/
+	unsigned char	*pat;		/* The pattern to match against */
+	int		largest;	/* Whether to match largest str	*/
 {
 	register unsigned char	*s = v;
 	register int		size = strlen(C v);
@@ -1064,10 +1229,65 @@ suffsubstr(v, pat, largest)
 	}
 	return (size);
 }
+
+/*
+ * Convert prefix and suffix pattern into something that is
+ * accepted by glob().
+ */
+#ifdef	__needed__
+static Uchar *
+globesc(argp)
+	Uchar	*argp;
+{
+	int		c;
+	int		escflag = FALSE;
+	UIntptr_t	b = relstak();
+
+	pushstak('\0');			/* Terminate current argp */
+	(void) mbtowc(NULL, NULL, 0);
+	while ((c = *argp) != '\0') {
+		wchar_t		wc;
+		int		len;
+
+		if ((len = mbtowc(&wc, C argp, MB_LEN_MAX)) <= 0) {
+			(void) mbtowc(NULL, NULL, 0);
+			len = 1;
+		}
+		if (c == '"') {
+			escflag = !escflag;
+			argp += len;
+			continue;
+		}
+		if (escflag) {
+			switch (c) {
+
+			case '\\':
+			case '*':
+			case '?':
+			case '[':
+				GROWSTAKTOP();
+				pushstak('\\');
+				break;
+			default:
+				;
+			}
+		}
+		while (len-- > 0) {
+			GROWSTAKTOP();
+			pushstak(*argp++);
+		}
+	}
+	zerostak();
+	staktop = (absstak(b));
+	return (&staktop[1]);	/* Point past first added null byte */
+}
+#endif
 #endif
 
 /*
  * If vsize is >= 0, copy vsize characters, else copy all.
+ * The mbstate is reset from our caller, thus we do not need to
+ * call mbtowc(NULL, NULL, 0)
  */
 static void
 sizecpy(vsize, v, trimflag)

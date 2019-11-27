@@ -1,12 +1,12 @@
-/* @(#)strexpr.c	1.21 16/06/07 Copyright 2016 J. Schilling */
+/* @(#)strexpr.c	1.31 18/07/16 Copyright 2016-2018 J. Schilling */
 #include <schily/mconfig.h>
 static	UConst char sccsid[] =
-	"@(#)strexpr.c	1.21 16/06/07 Copyright 2016 J. Schilling";
+	"@(#)strexpr.c	1.31 18/07/16 Copyright 2016-2018 J. Schilling";
 #ifdef	DO_DOL_PAREN
 /*
  *	Arithmetic expansion
  *
- *	Copyright (c) 2016 J. Schilling
+ *	Copyright (c) 2016-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -28,7 +28,9 @@ static	UConst char sccsid[] =
 #define	ARITH_DEBUG
 #else
 #ifdef	PROTOTYPES
+#ifdef	__problem__	/* Varadic macros have been introduced with C99 */
 #define	fprintf(...)
+#endif
 #else
 #define	fprintf()
 #endif
@@ -53,9 +55,10 @@ struct expr {
 
 LOCAL	const char	nolvalue[] = "lvalue required";
 LOCAL	const char	badexpr[]  = "bad expression";
+LOCAL	jmp_buf		exprsyntax;
 
 
-	Intmax_t	strexpr		__PR((unsigned char *arg));
+	Intmax_t	strexpr		__PR((unsigned char *arg, int *errp));
 #ifdef	NEED_PEEKTOK
 LOCAL	int		peektok		__PR((struct expr *ep));
 #endif
@@ -68,6 +71,8 @@ LOCAL	int		getop		__PR((struct expr *ep));
 LOCAL	UIntmax_t	number		__PR((struct expr *ep,
 						unsigned char *str,
 						unsigned char **endptr));
+LOCAL	void		efailed		__PR((unsigned char *s1,
+						const char *s2));
 #ifdef	ARITH_DEBUG
 LOCAL	char		*tokname	__PR((int t));
 #endif
@@ -148,7 +153,7 @@ LOCAL	char		*tokname	__PR((int t));
 /*
  * Operators, longer strings need to be before shorter sub-strings.
  */
-struct ops {
+LOCAL struct ops {
 	char	name[4];
 	char	nlen;
 	char	val;
@@ -200,8 +205,9 @@ struct ops {
  * Returns the result.
  */
 Intmax_t
-strexpr(arg)
+strexpr(arg, errp)
 	unsigned char	*arg;
+	int		*errp;
 {
 	struct expr	exp;
 	Intmax_t	ret;
@@ -212,6 +218,11 @@ strexpr(arg)
 	memset(&exp, 0, sizeof (exp));
 	exp.expr = exp.subexpr = exp.tokenp = arg;
 
+	*errp = 0;
+	if (setjmp(exprsyntax)) {
+		*errp = ERROR;
+		return (0);		/* Does not matter */
+	}
 	exprtok(&exp);
 	ret = expreval(&exp, PR_MAXPREC);
 	return (ret);
@@ -233,7 +244,7 @@ peektok(ep)
 /*
  * Returns the next token.
  * If the next token is a variable or a constant, then the variable is put
- * ino ep->val.
+ * into ep->val.
  */
 LOCAL int
 exprtok(ep)
@@ -258,6 +269,9 @@ exprtok(ep)
 		unsigned char	*np;
 
 		i = number(ep, ep->tokenp, &np);
+		if (alphanum(*np)) {
+			efailed(ep->expr, badnum);
+		}
 		ep->val = unary(ep, i, ep->unop);
 		ep->var = NULL;
 		ep->tokenp = np;
@@ -279,11 +293,15 @@ exprtok(ep)
 			GROWSTAKTOP();
 			pushstak(c);
 		}
+		GROWSTAKTOP();
 		zerostak();
 		staktop = absstak(b);
 		ep->tokenp = --np;
 		n = lookup(staktop);
-		if (n->namval == NULL || *n->namval == '\0') {
+		np = NULL;
+		if (n->namval == NULL) {
+			ep->val = i;
+		} else if (*n->namval == '\0') {
 			ep->val = i;
 		} else {
 			unsigned char	*nv = n->namval;
@@ -293,12 +311,24 @@ exprtok(ep)
 				nv++;
 			}
 			i = number(ep, nv, &np);
+			/*
+			 * Avoid the need to check *np later as it is
+			 * invalidated by unary().
+			 */
+			if (*np == '\0')
+				np = NULL;
 		}
 		ep->var = n;
 		ep->val = unary(ep, neg?-i:i, ep->unop);
 		otokenp = ep->tokenp;
 		otoken = ep->token;
 		xtok = getop(ep);
+
+		if (xtok != TK_ASSIGN && np)
+			efailed(ep->expr, badnum);
+
+		if ((flags & setflg) && xtok != TK_ASSIGN && n->namval == NULL)
+			efailed(n->namid, unset);
 		if (xtok == TK_PLUSPLUS || xtok == TK_MINUSMINUS) {
 			unary(ep, ep->val, xtok);
 			ep->token = otoken;
@@ -338,7 +368,7 @@ expreval(ep, precedence)
 	} else if (tok > TK_EOF &&
 		    tok < TK_NUM &&
 		    tok != TK_CLPAREN) {
-		failed(ep->expr, synmsg);
+		efailed(ep->expr, synmsg);
 	}
 	v = ep->val;
 	n = ep->var;
@@ -348,6 +378,10 @@ expreval(ep, precedence)
 	tok = exprtok(ep);		/* get next token (operator) */
 	prec = ep->precedence;
 
+	if (precedence == PR_QUEST && tok == TK_COMMA && prec > precedence) {
+		ep->token = tok;
+		return (ep->val);
+	}
 	/*
 	 * If there is no next token, then we return the previous value.
 	 */
@@ -378,12 +412,12 @@ expreval(ep, precedence)
 		ep->flags = oflags;
 	}
 
-	if (ntok == TK_EOF)
-		failed(ep->expr, "missing token");
-
 	do {
 		int	otok = tok;
 
+		if (ntok == TK_EOF) {
+			efailed(ep->expr, "missing token");
+		}
 		if (ntok == TK_OPAREN || tok == TK_QUEST) {
 			int	oflags = ep->flags;
 
@@ -429,7 +463,7 @@ expreval(ep, precedence)
 		}
 
 		if (n == NULL && TK_ISASSIGN(tok)) {
-			failed(ep->expr, nolvalue);
+			efailed(ep->expr, nolvalue);
 		}
 		if (ep->flags & EX_NOEVAL) {
 			if (tok == TK_QUEST)
@@ -442,7 +476,7 @@ expreval(ep, precedence)
 		case TK_MOD:
 		case TK_MODASN:
 			if (ep->val == 0) {
-				failed(ep->expr, divzero);
+				efailed(ep->expr, divzero);
 				ep->val = 1;
 			}
 		}
@@ -509,6 +543,11 @@ expreval(ep, precedence)
 						nprec = PR_MAXPREC +1;
 					}
 					ntok = ep->token;
+					if (ntok == TK_COMMA) {
+						ep->token = TK_NONE;
+						return (expreval(ep,
+							    PR_MAXPREC));
+					}
 					if (v)
 						ep->val = oval;
 				}
@@ -517,7 +556,7 @@ expreval(ep, precedence)
 				break;
 
 		case TK_COLON:
-				failed(ep->expr, synmsg);
+				efailed(ep->expr, synmsg);
 				break;
 
 		}
@@ -557,7 +596,7 @@ unary(ep, v, op)
 {
 	if (op == TK_PLUSPLUS || op == TK_MINUSMINUS) {
 		if (ep->var == NULL) {
-			failed(ep->expr, nolvalue);
+			efailed(ep->expr, nolvalue);
 			return (0);
 		}
 		if ((ep->flags & EX_NOEVAL) == 0) {
@@ -577,7 +616,7 @@ unary(ep, v, op)
 	case TK_BNOT:		return (~v);
 	case TK_LNOT:		return (!v);
 
-	default:		failed(ep->expr, badexpr);
+	default:		efailed(ep->expr, badexpr);
 				return (0);
 	}
 }
@@ -603,7 +642,7 @@ again:
 	--p;
 	if (digit(c)) {
 		if (val == TK_PLUSPLUS || val == TK_MINUSMINUS) {
-			failed(ep->expr, nolvalue);
+			efailed(ep->expr, nolvalue);
 			return (ep->token = val);
 		}
 
@@ -655,7 +694,7 @@ again:
 			}
 		}
 	}
-	failed(ep->expr, badexpr);
+	efailed(ep->expr, badexpr);
 	ep->flags &= ~EX_OP;
 	return (ep->token = TK_ERROR);
 }
@@ -667,17 +706,22 @@ number(ep, str, endptr)
 	unsigned char	**endptr;
 {
 	UIntmax_t	i;
-	int		c;
 
 #ifdef	HAVE_STRTOULL
 	i = strtoull(C str, CP endptr, 0);
 #else
 	*endptr = UC astoull(C str, &i);
 #endif
-	c = **endptr;
-	if (alphanum(c))
-		failed(ep->expr, badnum);
 	return (i);
+}
+
+static void
+efailed(s1, s2)
+	unsigned char	*s1;
+	const char	*s2;
+{
+	failed_real(ERROR, s1, s2, NULL);
+	longjmp(exprsyntax, 1);
 }
 
 #ifdef	ARITH_DEBUG

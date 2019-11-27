@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)hashserv.c	1.30 16/06/19 2008-2016 J. Schilling
+ * @(#)hashserv.c	1.38 19/01/09 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)hashserv.c	1.30 16/06/19 2008-2016 J. Schilling";
+	"@(#)hashserv.c	1.38 19/01/09 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -92,6 +92,9 @@ pathlook(com, flg, arg)
 
 	ENTRY		hentry;
 	const struct sysnod	*sn;
+#ifdef	HAVE_LOADABLE_LIBS
+	const struct sysnod2	*sn2;
+#endif
 	int		count = 0;
 	int		i;
 	int		pathset = 0;
@@ -140,16 +143,37 @@ pathlook(com, flg, arg)
 			return (h->data);
 		}
 
-		h->data = 0;
-		h->cost = 0;
+		/*
+		 * If we are called from "command", do not modify the hashes
+		 * as we may retrieve different results from what we usually
+		 * expexct.
+		 */
+		if (!(flags & nofuncs)) {
+			h->data = 0;
+			h->cost = 0;
+		}
 	}
 
-	if ((sn = sysnlook(name, commands, no_commands)) != 0) {
+#ifdef	HAVE_LOADABLE_LIBS
+	if ((sn2 = sh_findbuiltin(name)) != NULL) {
+		i = SYSLOADABLE;
+		hentry.data = (BUILTIN | i);
+		if ((flags & (ppath|nofuncs)))
+			return (hentry.data);
+		count = 1;
+	} else
+#endif
+	if ((sn = sysnlook(name, commands, no_commands)) != NULL) {
 		i = sn->sysval;
 		if (sn->sysflg & BLT_SPC)
 			i |= SPC_BUILTIN;
 		hentry.data = (BUILTIN | i);
-		if ((flags & ppath))
+		/*
+		 * If we are called from "command", do not modify the hashes
+		 * as we may retrieve different results from what we usually
+		 * expexct.
+		 */
+		if ((flags & (ppath|nofuncs)))
 			return (hentry.data);
 		count = 1;
 	} else {
@@ -157,7 +181,12 @@ pathlook(com, flg, arg)
 			return (PATH_COMMAND);
 pathsrch:
 		count = findpath(name, oldpath);
-		if ((flags & ppath)) {
+		/*
+		 * If we are called from "command", do not modify the hashes
+		 * as we may retrieve different results from what we usually
+		 * expexct.
+		 */
+		if ((flags & (ppath|nofuncs))) {
 			if (count > 0)
 				return (COMMAND | count);
 			else
@@ -310,6 +339,7 @@ hash_func(name)
 		hentry.key = make(name);
 		hentry.cost = 0;
 		hentry.hits = 0;
+		hentry.next = NULL;
 		henter(hentry);
 	}
 }
@@ -322,16 +352,34 @@ void
 func_unhash(name)
 	unsigned char	*name;
 {
-	ENTRY	*h;
-	int i;
+	const struct sysnod	*sn;
+#ifdef	HAVE_LOADABLE_LIBS
+	const struct sysnod2	*sn2;
+#endif
+	ENTRY			*h;
 
 	h = hfind(name);
 
 	if (h && (h->data & FUNCTION)) {
-		if ((i = syslook(name, commands, no_commands)) != 0)
-			h->data = (BUILTIN|i);
-		else
+
+#ifdef	HAVE_LOADABLE_LIBS
+		if ((sn2 = sh_findbuiltin(name)) != NULL) {
+			int	i;
+
+			i = SYSLOADABLE;
+			h->data = (BUILTIN | i);
+		} else
+#endif
+		if ((sn = sysnlook(name, commands, no_commands)) != NULL) {
+			int	i;
+
+			i = sn->sysval;
+			if (sn->sysflg & BLT_SPC)
+				i |= SPC_BUILTIN;
+			h->data = (BUILTIN | i);
+		} else {
 			h->data = NOTFOUND;
+		}
 	}
 }
 
@@ -382,6 +430,10 @@ what_is_path(name, verbose)
 	int	amt;
 	short	hashval;
 	const struct sysnod	*sp;
+#ifdef	HAVE_LOADABLE_LIBS
+	const struct sysnod2	*sp2;
+	struct sysnod		sn;
+#endif
 
 	h = hfind(name);
 	if (h && (flags & ppath)) {
@@ -403,8 +455,16 @@ what_is_path(name, verbose)
 				prc_buff(NL);
 				return (0);
 			}
+#ifdef DO_POSIX_TYPE
+			/*
+			 * In POSIX mode, we distinct three different types of
+			 * builtins and thus need to check explicitly.
+			 */
+			goto checkbuiltin;
+#else
 			prs_buff(_gettext(" is a shell builtin\n"));
 			return (0);
+#endif
 
 		case FUNCTION: {
 			struct namnod *n = lookup(name);
@@ -467,9 +527,21 @@ what_is_path(name, verbose)
 		prs_buff(_gettext(" is a keyword\n"));
 		return (0);
 	}
+
+checkbuiltin:
 #endif
 
+#if	defined(HAVE_LOADABLE_LIBS) && defined(DO_SYSBUILTIN)
+	if ((sp2 = sh_findbuiltin(name)) != NULL) {
+		sn.sysflg = 0;
+		sp = &sn;
+		goto isbltin;
+	} else
+#endif
 	if ((sp = sysnlook(name, commands, no_commands)) != NULL) {
+#if	defined(HAVE_LOADABLE_LIBS) && defined(DO_SYSBUILTIN)
+	isbltin:
+#endif
 		if (!verbose) {
 			prc_buff(NL);
 			return (0);
@@ -527,10 +599,10 @@ findpath(name, oldpath)
 
 	if (oldpath) {
 		count = dotpath;
-		while (--count)
+		while (--count && path)
 			path = nextpath(path);
 
-		if (oldpath > dotpath) {
+		if (oldpath > dotpath && path) {
 			catpath(path, name);
 			p = curstak();
 			cost = 1;
@@ -650,6 +722,9 @@ pr_path(name, count)
 
 	while (--count && path)
 		path = nextpath(path);
+
+	if (path == NULL)	/* Paranoia for Coverity */
+		return;
 
 	catpath(path, name);
 	prs_buff(curstak());

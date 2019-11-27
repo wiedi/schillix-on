@@ -35,14 +35,16 @@
 
 #include "defs.h"
 
+#include	<schily/wait.h>		/* Needed for CLD_EXITED */
+
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2018 J. Schilling
  *
- * @(#)error.c	1.23 16/07/04 2008-2016 J. Schilling
+ * @(#)error.c	1.28 18/05/26 2008-2018 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)error.c	1.23 16/07/04 2008-2016 J. Schilling";
+	"@(#)error.c	1.28 18/05/26 2008-2018 J. Schilling";
 #endif
 
 /*
@@ -64,7 +66,7 @@ static void failed_body	__PR((unsigned char *s1, const char *s2,
 	void exitsh	__PR((int xno));
 #ifdef	DO_DOT_SH_PARAMS
 	void rmtemp	__PR((struct ionod *base));
-	void rmfunctmp	__PR((void));
+	void rmfunctmp	__PR((struct ionod *base));
 #endif
 
 /*
@@ -186,7 +188,7 @@ exitsh(xno)
 		clearup();
 		restore(0);
 		(void) setb(STDOUT_FILENO);
-		execbrk = breakcnt = funcnt = 0;
+		execbrk = dotbrk = breakcnt = funcnt = dotcnt = 0;
 		longjmp(errshell, 1);
 	}
 }
@@ -241,6 +243,8 @@ rmtemp(base)
 	struct ionod	*base;
 {
 	while (iotemp && iotemp != base) {
+		if (iotemp->iofile & IOBARRIER)
+			break;
 		unlink(iotemp->ioname);
 		free(iotemp->iolink);
 		iotemp = iotemp->iolst;
@@ -248,9 +252,12 @@ rmtemp(base)
 }
 
 void
-rmfunctmp()
+rmfunctmp(base)
+	struct ionod	*base;
 {
-	while (fiotemp) {
+	while (fiotemp && fiotemp != base) {
+		if (fiotemp->iofile & IOBARRIER)
+			break;
 		unlink(fiotemp->ioname);
 		fiotemp = fiotemp->iolst;
 	}

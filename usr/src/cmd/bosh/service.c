@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2018 J. Schilling
  *
- * @(#)service.c	1.49 16/07/31 2008-2016 J. Schilling
+ * @(#)service.c	1.59 19/10/05 2008-2018 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)service.c	1.49 16/07/31 2008-2016 J. Schilling";
+	"@(#)service.c	1.59 19/10/05 2008-2018 J. Schilling";
 #endif
 
 /*
@@ -125,9 +125,8 @@ initio(iop, save)
 				 * bug fix for problem with
 				 * in-line scripts
 				 */
-				poptemp();
-
-				fd = chkopen(tmpout, O_RDONLY);
+				fd = gpoptemp();
+				lseek(fd, (off_t)0, SEEK_SET);
 				unlink((const char *)tmpout);
 			} else if (iof & IOMOV) {
 				if (eq(minus, ion)) {
@@ -280,6 +279,13 @@ catpath(path, name)
 	do {
 		GROWSTAK(argp);
 	} while ((*argp++ = *scanp++) != '\0');
+	/*
+	 * "\\\0" is skipped in trims(), so add another Nul byte in that case.
+	 */
+	if ((argp - stakbot) > 1 && argp[-2] == '\\') {
+		GROWSTAK(argp);
+		*argp = '\0';
+	}
 	return (path);
 }
 
@@ -395,6 +401,9 @@ execs(ap, t, isvfork, av0)
 	ex.ex_status =
 	ex.ex_code = ERR_NOEXEC;
 	ex.ex_pid = mypid;
+#ifdef	DO_DOL_SLASH
+	*excausep = C_NOEXEC;
+#endif
 
 	if (isvfork)
 		exflag = TRUE;	/* Call _exit() instead of exit() */
@@ -406,6 +415,7 @@ execs(ap, t, isvfork, av0)
 			_exit(126);
 		}
 		funcnt = 0;	/* Reset to global argc/argv */
+		dotcnt = 0;	/* Reset dot script counter */
 		flags = 0;	/* Clear flags		*/
 		flags2 = 0;	/* Clear flags2		*/
 		*flagadr = 0;	/* Clear $-		*/
@@ -437,9 +447,11 @@ execs(ap, t, isvfork, av0)
 		failedx(e, p, arglist);
 		/* NOTREACHED */
 
+#ifdef	ETXTBSY
 	case ETXTBSY:
 		failedx(e, p, txtbsy);
 		/* NOTREACHED */
+#endif
 
 #ifdef	ELIBACC
 	case ELIBACC:
@@ -470,9 +482,13 @@ execs(ap, t, isvfork, av0)
 		/* FALLTHROUGH */
 
 	case ENOENT:
-		if (errno == ENOENT)
+		if (errno == ENOENT) {
 			ex.ex_status =
 			ex.ex_code = ERR_NOTFOUND;
+#ifdef	DO_DOL_SLASH
+			*excausep = C_NOTFOUND;
+#endif
+		}
 		return (prefix);
 	}
 }
@@ -521,8 +537,9 @@ trim(at)
 				}
 				while (--len >= 0)
 					*last++ = *current++;
-			} else
+			} else {
 				current++;
+			}
 		}
 
 		*last = 0;
@@ -701,7 +718,21 @@ extern	int		macflag;
 	for (;;) {
 		int clength;
 		sigchk();
+		/*
+		 * Point past argnext ptr (&argval[0]).
+		 */
 		argp = locstak() + BYTESPERWORD;
+#ifdef	DO_POSIX_FIELD_SPLIT
+		/*
+		 * Skip initial whitespace
+		 */
+		if (*ifs && *s != '\0') {
+			while (white(*s) && anys(s, ifs)) {
+				if (*++s == '\0')
+					break;
+			}
+		}
+#endif
 		while ((c = *s) != 0) {
 			wchar_t wc;
 
@@ -715,7 +746,7 @@ extern	int		macflag;
 			if (c == '\\') { /* skip over quoted characters */
 				GROWSTAK(argp);
 				*argp++ = (char)c;
-				s++;
+				s++;	/* First skip '\\' */
 				/* get rest of multibyte character */
 				if ((clength = mbtowc(&wc, (char *)s,
 						MB_LEN_MAX)) <= 0) {
@@ -733,6 +764,28 @@ extern	int		macflag;
 			if (*ifs && anys(s, ifs)) {
 				/* skip to next character position */
 				s += clength;
+#ifdef	DO_POSIX_FIELD_SPLIT
+				/*
+				 * Skip trailing white space
+				 */
+				if (*ifs && white(wc)) {
+					while (*s && anys(s, ifs)) {
+						if ((clength = mbtowc(&wc,
+							    (char *)s,
+							    MB_LEN_MAX)) <= 0) {
+							(void) mbtowc(NULL,
+								    NULL, 0);
+							wc = (unsigned char)*s;
+							clength = 1;
+						}
+						s += clength;
+						if (!white(wc))
+							break;
+					}
+				}
+				if (wc != ' ' && wc != '\t' && wc != '\n')
+					goto newname;
+#endif
 				break;
 			}
 
@@ -742,6 +795,9 @@ extern	int		macflag;
 			}
 		}
 		if (argp == staktop + BYTESPERWORD) {
+			/*
+			 * Empty argument
+			 */
 			if (c) {
 				continue;
 			} else {
@@ -751,7 +807,12 @@ extern	int		macflag;
 		/*
 		 * file name generation
 		 */
-
+#ifdef	DO_POSIX_FIELD_SPLIT
+	newname:
+#endif
+		/*
+		 * endstak() terminates string as side effect
+		 */
 		argp = endstak(argp);
 		trims(((struct argnod *)argp)->argval);
 		if ((flags & nofngflg) == 0 &&

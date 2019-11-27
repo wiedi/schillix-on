@@ -39,13 +39,13 @@
 #include "version.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)args.c	1.76 16/08/28 2008-2016 J. Schilling
+ * @(#)args.c	1.92 19/06/10 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)args.c	1.76 16/08/28 2008-2016 J. Schilling";
+	"@(#)args.c	1.92 19/06/10 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -53,6 +53,11 @@ static	UConst char sccsid[] =
  */
 
 #include	"sh_policy.h"
+
+#if !defined(DO_SET_O)
+#undef	DO_GLOBALALIASES
+#undef	DO_LOCALALIASES
+#endif
 
 	void		prversion	__PR((void));
 	int		options		__PR((int argc, unsigned char **argv));
@@ -68,12 +73,15 @@ static	struct dolnod	*clean_args	__PR((struct dolnod *blk));
 							int funcntp));
 	struct dolnod	*useargs	__PR((void));
 static	unsigned char	*lookcopt	__PR((int wc));
-#if defined(DO_SET_O) && defined(DO_SYSALIAS)
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 static	void		listaliasowner	__PR((int parse, int flagidx));
 #endif
 #ifdef	DO_SET_O
 static	void		listopts	__PR((int parse));
+#ifdef	DO_HOSTPROMPT
 static	void		hostprompt	__PR((int on));
+#endif
 #ifdef	DO_PS34
 static	void		ps_reset	__PR((void));
 #endif
@@ -90,7 +98,8 @@ unsigned char	flagadr[20];
 
 unsigned char	flagchar[] =
 {
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 	0,			/* set -o aliasowner= */
 #endif
 	'a',			/* -a / -o allexport */
@@ -102,10 +111,13 @@ unsigned char	flagchar[] =
 	0,			/* set -o fdpipe */
 #endif
 #ifdef	DO_FULLEXCODE
-	0,			/* set -o fullexcode */
+	0,			/* set -o fullexitcode */
 #endif
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_GLOBALALIASES)
 	0,			/* set -o globalaliases */
+#endif
+#ifdef	DO_GLOBSKIPDOT
+	0,			/* set -o globskipdot */
 #endif
 	'h',
 #ifdef	DO_HASHCMDS
@@ -119,7 +131,7 @@ unsigned char	flagchar[] =
 #endif
 	'i',
 	'k',			/* -k / -o keyword */
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_LOCALALIASES)
 	0,			/* set -o localaliases */
 #endif
 	'm',
@@ -162,7 +174,8 @@ unsigned char	flagchar[] =
 #ifdef	DO_SET_O
 char	*flagname[] =
 {
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 	"aliasowner",
 #endif
 	"allexport",		/* -a POSIX */
@@ -176,8 +189,11 @@ char	*flagname[] =
 #ifdef	DO_FULLEXCODE
 	"fullexitcode",		/* -o fullexitcode, do not mask $? */
 #endif
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_GLOBALALIASES)
 	"globalaliases",
+#endif
+#ifdef	DO_GLOBSKIPDOT
+	"globskipdot",
 #endif
 	"hashall",		/* -h bash name (ksh93 uses "trackall") */
 #ifdef	DO_HASHCMDS
@@ -191,7 +207,7 @@ char	*flagname[] =
 #endif
 	"interactive",		/* -i ksh93 name */
 	"keyword",		/* -k bash/ksh93 name */
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_LOCALALIASES)
 	"localaliases",
 #endif
 	"monitor",		/* -m POSIX */
@@ -233,7 +249,8 @@ char	*flagname[] =
 
 unsigned long	flagval[]  =
 {
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 	fl2 | aliasownerflg,	/* -o aliasowner= */
 #endif
 	exportflg,		/* -a / -o allexport */
@@ -247,8 +264,11 @@ unsigned long	flagval[]  =
 #ifdef	DO_FULLEXCODE
 	fl2 | fullexitcodeflg,	/* -o fullexitcode */
 #endif
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_GLOBALALIASES)
 	fl2 | globalaliasflg,	/* -o globalaliases */
+#endif
+#ifdef	DO_GLOBSKIPDOT
+	fl2 | globskipdot,	/* -o globskipdot */
 #endif
 	hashflg,		/* -h / -o hashall */
 #ifdef	DO_HASHCMDS
@@ -262,7 +282,7 @@ unsigned long	flagval[]  =
 #endif
 	intflg,			/* -i / -o interactive */
 	keyflg,			/* -k / -o keyword */
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_LOCALALIASES)
 	fl2 | localaliasflg,	/* -o localaliases */
 #endif
 	monitorflg,		/* -m / -o monitor */
@@ -305,6 +325,10 @@ unsigned char *shvers;
 
 /* ========	option handling	======== */
 
+#ifndef	VSHNAME
+#define	VSHNAME	"sh"
+#endif
+
 void
 prversion()
 {
@@ -323,9 +347,9 @@ prversion()
 		prs(UC "Copyright (C) 1984-1989 AT&T\n");
 		prs(UC "Copyright (C) 1989-2009 Sun Microsystems\n");
 #ifdef	INTERACTIVE
-		prs(UC "Copyright (C) 1982-2016 Joerg Schilling\n");
+		prs(UC "Copyright (C) 1982-2019 Joerg Schilling\n");
 #else
-		prs(UC "Copyright (C) 1985-2016 Joerg Schilling\n");
+		prs(UC "Copyright (C) 1985-2019 Joerg Schilling\n");
 #endif
 		exitsh(0);
 	}
@@ -348,7 +372,8 @@ options(argc, argv)
 		size_t	vlen;
 
 		vlen = snprintf(vbuf, sizeof (vbuf),
-			    "version %s %s (%s-%s-%s)",
+			    "version %s %s %s (%s-%s-%s)",
+			    VSHNAME,
 			    VERSION_DATE, VERSION_STR,
 			    HOST_CPU, HOST_VENDOR, HOST_OS);
 		shvers = alloc(vlen + 1);
@@ -378,6 +403,18 @@ again:
 			argp[1] = argp[0];
 			argc--;
 #ifdef	DO_POSIX_SET
+			if (comdiv == cp) {
+				/*
+				 * Support sh -c -- command
+				 */
+				if ((comdiv = argp[2]) == NULL) {
+					failed(argv[1], mssgargn);
+					return (-1);
+				} else {
+					argp[2] = argp[3]?argp[3]:argp[0];
+					argc--;
+				}
+			}
 			dashdash++;
 #endif
 #ifdef	DO_MULTI_OPT
@@ -385,6 +422,13 @@ again:
 #endif
 			return (argc);
 		}
+#ifdef	DO_MULTI_OPT
+		/*
+		 * Mark that we will later need to correct comdiv.
+		 */
+		if (comdiv && dolv == NULL)
+			comdiv = UC -1;
+#endif
 		if (cp[1] == '\0')
 			flags &= ~(execpr|readpr);
 
@@ -400,6 +444,7 @@ again:
 				len = 1;
 				wc = (unsigned char)*cp;
 				failed(argv[1], badopt);
+				return (-1);
 			}
 			cp += len;
 
@@ -422,7 +467,8 @@ again:
 						argp++;
 						argc--;
 						wc = *flagc;
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 							/* LINTED */
 						if (flagval[flagc-flagchar] ==
 						    (fl2 | aliasownerflg)) {
@@ -443,8 +489,10 @@ again:
 				if (argarg != NULL)
 					*argarg = '=';
 				if (flagc == NULL || wc != *flagc) {
-					if (argc > 2)
+					if (argc > 2) {
 						failed(argp[2], badopt);
+						return (-1);
+					}
 					continue;
 				}
 			} else {		/* Not set -o, but: set -c */
@@ -457,15 +505,20 @@ again:
 				if (eq(argv[0], "set") &&
 				    wc && any(wc, UC "sicrp")) {
 					failed(argv[1], badopt);
+					return (-1);
 				} else {
 					unsigned long *fp = &flags;
+#ifdef	DO_PS34
 					unsigned long oflags;
+#endif
 
 							/* LINTED */
 					fv = flagval[flagc-flagchar];
 					if (fv & fl2)
 						fp = &flags2;
+#ifdef	DO_PS34
 					oflags = *fp;
+#endif
 					*fp |= fv & ~fl2;
 					/*
 					 * Disallow to set -n on an interactive
@@ -486,13 +539,17 @@ again:
 						flags2 &= ~versflg;
 						prversion();
 					}
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_GLOBALALIASES)
 					if (fv == (fl2 | globalaliasflg)) {
-						catpath(homenod.namval,
+						if (homenod.namval) {
+						    catpath(homenod.namval,
 						    UC globalname);
-						ab_use(GLOBAL_AB,
+						    ab_use(GLOBAL_AB,
 						    (char *)make(curstak()));
+						}
 					}
+#endif
+#if	defined(DO_SYSALIAS) && defined(DO_LOCALALIASES)
 					if (fv == (fl2 | localaliasflg)) {
 						ab_use(LOCAL_AB,
 							(char *)localname);
@@ -507,14 +564,24 @@ again:
 					    (oflags & promptcmdsubst) == 0)
 						ps_reset();
 #endif
+#ifdef	DO_POSIX_EXPORT_ENV
+					if (fv == (fl2 | posixflg))
+						namscan(exportenv);
+#endif
 				}
 			} else if (wc == 'c' && argc > 2 && comdiv == 0) {
 				comdiv = argp[2];
 				argp[1] = argp[0];
 				argp++;
 				argc--;
+#ifdef	DO_POSIX_SET
+				if (*argp[1] == '-' ||	/* Check for --    */
+				    *argp[1] == '+')	/* or more options */
+					goto again;
+#endif
 			} else {
 				failed(argv[1], badopt);
+				return (-1);
 			}
 		}
 		argp[1] = argp[0];
@@ -522,7 +589,13 @@ again:
 		argp++;
 	} else if (argc > 1 &&
 		    *argp[1] == '+') { /* unset flags x, k, t, n, v, e, u */
-
+#ifdef	DO_MULTI_OPT
+		/*
+		 * Mark that we will later need to correct comdiv.
+		 */
+		if (comdiv && dolv == NULL)
+			comdiv = UC -1;
+#endif
 		(void) mbtowc(NULL, NULL, 0);
 		cp = argp[1];
 		cp++;
@@ -551,8 +624,10 @@ again:
 						wc = *flagc;
 				}
 				if (flagc == NULL || wc != *flagc) {
-					if (argc > 2)
+					if (argc > 2) {
 						failed(argp[2], badopt);
+						return (-1);
+					}
 					continue;
 				}
 			} else {		/* Not set +o, but: set +c */
@@ -578,13 +653,18 @@ again:
 				if (fv == pfshflg)
 					secpolicy_end();
 #endif
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && defined(DO_GLOBALALIASES)
 				if (fv == (fl2 | globalaliasflg)) {
 					ab_use(GLOBAL_AB, NULL);
 				}
+#endif
+#if	defined(DO_SYSALIAS) && defined(DO_LOCALALIASES)
 				if (fv == (fl2 | localaliasflg)) {
 					ab_use(LOCAL_AB, NULL);
 				}
+#endif
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 				if (fv == (fl2 | aliasownerflg)) {
 					ab_setaltowner(GLOBAL_AB, "");
 					ab_setaltowner(LOCAL_AB, "");
@@ -594,6 +674,13 @@ again:
 				if (fv == (fl2 | hostpromptflg))
 					hostprompt(FALSE);
 #endif
+#ifdef	DO_POSIX_EXPORT_ENV
+				if (fv == (fl2 | posixflg))
+					namscan(deexportenv);
+#endif
+			} else {
+				failed(argv[1], badopt);
+				return (-1);
 			}
 		}
 		argp[1] = argp[0];
@@ -601,8 +688,24 @@ again:
 		argp++;
 	}
 #ifdef	DO_MULTI_OPT
-	if (argc > 1 && (*argp[1] == '-' || *argp[1] == '+'))
+	if ((comdiv == NULL || dolv != NULL) &&
+	    argc > 1 && (*argp[1] == '-' || *argp[1] == '+'))
 		goto again;
+
+	if (comdiv == UC -1 && dolv == NULL) {
+		/*
+		 * Correct comdiv to point past last option.
+		 */
+		if (argc > 1) {
+			comdiv = argp[1];
+			argp[1] = argp[0];
+			argv++;
+			argc--;
+		} else {
+			failed(argv[1], mssgargn);
+			return (-1);
+		}
+	}
 #endif
 
 	setopts();
@@ -906,7 +1009,8 @@ lookopt(name)
 	return (NULL);
 }
 
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 static void
 listaliasowner(parse, flagidx)
 	int	parse;
@@ -947,7 +1051,8 @@ listopts(parse)
 			continue;
 					/* LINTED */
 		fv = flagval[flagc-flagchar];
-#ifdef	DO_SYSALIAS
+#if	defined(DO_SYSALIAS) && \
+	(defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES))
 		if (fv == (fl2 | aliasownerflg)) {
 					/* LINTED */
 			listaliasowner(parse, flagc-flagchar);
@@ -1036,8 +1141,10 @@ ps_reset()
 	assign(&ps3nod, UC selectmsg);
 #endif
 	assign(&ps4nod, UC execpmsg);
+#ifdef	DO_HOSTPROMPT
 	if (flags2 & hostpromptflg)
 		hostprompt(TRUE);
+#endif
 }
 #endif	/* DO_PS34 */
 #endif	/* DO_SET_O */

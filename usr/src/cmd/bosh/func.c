@@ -35,13 +35,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)func.c	1.31 16/07/01 2008-2016 J. Schilling
+ * @(#)func.c	1.36 19/01/13 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)func.c	1.31 16/07/01 2008-2016 J. Schilling";
+	"@(#)func.c	1.36 19/01/13 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -63,6 +63,10 @@ static	void	prendlst	__PR((void));
 	void	prnt		__PR((struct trenod *t));
 #endif
 	void	prf		__PR((struct trenod *t));
+#ifdef	DO_QS_CONVERT
+static	int	issqstr		__PR((const unsigned char *s));
+static	void	prs_sqstr	__PR((const unsigned char *s));
+#endif
 static void	prarg		__PR((struct argnod *argp));
 static void	prio		__PR((struct ionod *iop));
 
@@ -102,6 +106,8 @@ freetree(t)
 				break;
 
 			case TFORK:
+			case TNOFORK:
+			case TSETIO:
 				freeio(forkptr(t)->forkio);
 				freetree(forkptr(t)->forktre);
 				break;
@@ -125,6 +131,7 @@ freetree(t)
 				break;
 
 			case TFOR:
+			case TSELECT:
 			{
 				struct fornod *f = (struct fornod *)t;
 
@@ -467,6 +474,16 @@ prf(t)
 				prs_buff(UC " &");
 			break;
 
+		case TSETIO:
+#ifdef	PARSE_DEBUG
+			prs_buff(UC "TSETIO ");
+#endif
+			prf(forkptr(t)->forktre);
+			prio(forkptr(t)->forkio);
+			if (forkptr(t)->forktyp & FAMP)
+				prs_buff(UC " &");
+			break;
+
 		case TPAR:
 #ifdef	PARSE_DEBUG
 			prs_buff(UC "TPAR ");
@@ -636,6 +653,47 @@ prf(t)
 	sigchk();
 }
 
+#ifdef	DO_QS_CONVERT
+/*
+ * Check whether the argument is a single quoted string.
+ * All chars in such a string are prepended by '\\'.
+ */
+static int
+issqstr(s)
+	const unsigned char *s;
+{
+	if (*s != '\\')
+		return (FALSE);
+
+	while (*s++) {
+		if (*s++ == '\0')		/* Second char is nul: "\\\0" */
+			return (FALSE);
+		if (*s == '\0')			/* Ends after an even count */
+			break;
+		if (*s != '\\')			/* Next even char is not '\\' */
+			return (FALSE);
+	}
+	return (TRUE);
+}
+
+/*
+ * Print fully quoted string as single quoted string.
+ * This converts "\a\b\c" to "'abc'".
+ */
+static void
+prs_sqstr(s)
+	const unsigned char *s;
+{
+	prc_buff('\'');
+	while (*s++) {
+		if (*s == '\0')
+			break;
+		prc_buff(*s++);
+	}
+	prc_buff('\'');
+}
+#endif
+
 static void
 prarg(argp)
 	struct argnod	*argp;
@@ -649,7 +707,12 @@ prarg(argp)
 		prn_buff(i++);
 		prs_buff(UC "]: ");
 #endif
-		prs_buff(argp->argval);
+#ifdef	DO_QS_CONVERT
+		if (issqstr(argp->argval))
+			prs_sqstr(argp->argval);
+		else
+#endif
+			prs_buff(argp->argval);
 		argp = argp->argnxt;
 		if (argp)
 			prc_buff(SPACE);
@@ -716,11 +779,14 @@ prio(iop)
 				int		fd = chkopen(ion, O_RDONLY);
 
 				prc_buff(NL);
-				while ((amt = read(fd, buf, IO_BLK_SZ)) > 0) {
-					buf[amt] = 0;
-					prs_buff(buf);
+				if (fd >= 0) {		/* Paranoia */
+					while ((amt =
+					    read(fd, buf, IO_BLK_SZ)) > 0) {
+						buf[amt] = 0;
+						prs_buff(buf);
+					}
+					close(fd);
 				}
-				close(fd);
 				prs_buff(ion);
 				prc_buff(NL);
 				didnl++;

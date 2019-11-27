@@ -37,10 +37,19 @@
 #endif
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)defs.h	1.164 16/08/28 2008-2016 J. Schilling
+ * @(#)defs.h	1.205 19/10/05 2008-2019 J. Schilling
  */
+
+/*
+ * Some compilers may not support enough command line arguments.
+ * This include file permits to put the configuration inti conf.h
+ * instead of having it in the Makefile.
+ */
+#ifdef	DO_CONF_H
+#include	"conf.h"
+#endif
 
 #ifdef	__cplusplus
 extern "C" {
@@ -57,6 +66,7 @@ extern "C" {
 #define		XEC_NOBLTIN	010	/* Do not execute functions / bltins */
 #define		XEC_STDINSAV	020	/* STDIN_FILENO was moved away	    */
 #define		XEC_ALLOCJOB	040	/* A job slot was already allocated */
+#define		XEC_HASARGV	0100	/* t->comarg holds expanded argv[]  */
 
 /* endjobs flags */
 #define		JOB_STOPPED	01
@@ -68,7 +78,12 @@ extern "C" {
 /* error exits from various parts of shell */
 #define		ERROR		1	/* Standard shell error/exit code */
 #define		SYNBAD		2	/* Shell error/exit for bad syntax */
-#define		SIGFAIL 	2000
+#ifdef	DO_POSIX_TEST
+#define		ETEST		2	/* POSIX test(1) error exit code  */
+#else
+#define		ETEST		ERROR	/* historical test(1) error exit code */
+#endif
+#define		SIGFAIL 	2000	/* Default shell exit code on signal */
 #define		SIGFLG		0200	/* $? == SIGFLG + signo */
 #define		C_NOEXEC	126	/* Shell error/exit for exec error */
 #define		C_NOTFOUND	127	/* Shell error/exit for exec notfound */
@@ -105,6 +120,7 @@ extern "C" {
 #define		TFND		0x00C0	/* function definition node	*/
 #define		TTIME		0x00D0	/* "time" node			*/
 #define		TNOT		0x10D0	/* "!" node			*/
+#define		TSETIO		0x00E0	/* node to redirect io		*/
 
 /*
  * execute table
@@ -182,7 +198,9 @@ extern "C" {
 #define		SYSPRINTF	54
 #define		SYSCOMMAND	55
 #define		SYSLOCAL	56
+#define		SYSFC		57
 
+#define		SYSLOADABLE	255	/* For all dynamically loaded cmds   */
 #define		SYSMAX		255	/* Must fit in low 8 ENTRY.data bits */
 
 /*
@@ -230,6 +248,7 @@ extern "C" {
 #define		IOSTRIP		0x0200	/* <<-word: strip leading tabs	    */
 #define		IODOC_SUBST	0x0400	/* <<\word: no substitution	    */
 #define		IOCLOB		0x1000	/* >| clobber files		    */
+#define		IOBARRIER	0x2000	/* tmpfile link/unlink barrier	    */
 
 #define		INPIPE		0	/* Input fd index in pipe fd array  */
 #define		OTPIPE		1	/* Output fd index in pipe fd array */
@@ -240,6 +259,7 @@ extern "C" {
 #ifdef	SCHILY_INCLUDES
 #include	<schily/mconfig.h>
 #include	<schily/unistd.h>
+#include	<schily/getopt.h>
 #include	<schily/stdlib.h>	/* malloc()/free()... */
 #include	<schily/limits.h>
 #include	<schily/maxpath.h>
@@ -258,9 +278,21 @@ extern "C" {
 #include	<schily/wctype.h>	/* needed before we use wchar_t */
 #undef	feof				/* to make mode.h compile with K&R */
 
+#include	<schily/setjmp.h>
+#include	<schily/jmpdefs.h>
+
+#ifdef DO_SYSBUILTIN
+/*
+ * Note that if we do not #define DO_SYSBUILTIN, we will never have
+ * a HAVE_LOADABLE_LIBS #define
+ */
+#include	<schily/dlfcn.h>	/* to #define HAVE_LOADABLE_LIBS */
+#endif
+
 #include 	"mac.h"
 #include	"mode.h"
 #include	"name.h"
+#include	"bosh.h"
 
 #ifndef	HAVE_SYS_ACCT_H
 #undef	ACCT
@@ -272,6 +304,7 @@ extern "C" {
 #include 	"mac.h"
 #include	"mode.h"
 #include	"name.h"
+#include	"bosh.h"
 #include	<signal.h>
 #include	<sys/types.h>
 #include	<inttypes.h>
@@ -291,6 +324,8 @@ extern "C" {
 
 #include	<stdlib.h>
 #include	<limits.h>
+
+#include	<setjmp.h>
 
 #define	PROTOTYPES
 #define	__PR(a)	a
@@ -357,16 +392,33 @@ typedef	int	sigret;
 #endif	/* VOID_SIGS */
 #endif	/* RETSIGTYPE */
 
+/*
+ * Global data structure
+ */
+extern bosh_t	bosh;
+
 /* id's */
 extern pid_t	mypid;
 extern pid_t	mypgid;
 extern pid_t	mysid;
 
 /* getopt */
+#define	_sp		opt_sp	/* Use variable name from new getopt() */
+#ifndef	__CYGWIN__
+/*
+ *	Cygwin uses a nonstandard:
+ *
+ *		__declspec(dllexport)
+ *	or
+ *		__declspec(dllimport)
+ *
+ *	that is in conflict with our standard definition.
+ */
 extern int		optind;
 extern int		opterr;
-extern int 		_sp;
+extern int		optopt;
 extern char 		*optarg;
+#endif
 
 #ifdef	STAK_DEBUG
 #ifndef	DO_SYSALLOC
@@ -376,6 +428,7 @@ extern char 		*optarg;
 
 #ifdef	NO_INTERACTIVE
 #undef	INTERACTIVE
+#undef	DO_SYSFC
 #endif
 
 #ifdef	NO_SYSATEXPR
@@ -472,7 +525,7 @@ extern	void	exval_set	__PR((int xno));
 #define	exval_set(a)
 #endif
 extern	void	rmtemp		__PR((struct ionod *base));
-extern	void	rmfunctmp	__PR((void));
+extern	void	rmfunctmp	__PR((struct ionod *base));
 
 
 /*
@@ -485,6 +538,7 @@ extern	void	makearg		__PR((struct argnod *));
  * fault.c
  */
 extern	void	done		__PR((int sig)) __NORETURN;
+extern	void	fault		__PR((int sig));
 extern	int	handle		__PR((int sig, sigtype func));
 extern	void	stdsigs		__PR((void));
 extern	void	oldsigs		__PR((int dofree));
@@ -543,13 +597,14 @@ extern	int	estabf		__PR((unsigned char *s));
 extern	void	push		__PR((struct fileblk *af));
 extern	int	pop		__PR((void));
 extern	int	poptemp		__PR((void));
+extern	int	gpoptemp	__PR((void));
 extern	void	chkpipe		__PR((int *pv));
 extern	int	chkopen		__PR((unsigned char *idf, int mode));
 extern	void	renamef		__PR((int f1, int f2));
 extern	int	create		__PR((unsigned char *s, int iof));
 extern	int	tmpfil		__PR((struct tempblk *tb));
 extern	void	copy		__PR((struct ionod *ioparg));
-extern	void	link_iodocs	__PR((struct ionod *i));
+extern	int	link_iodocs	__PR((struct ionod *i));
 extern	void	swap_iodoc_nm	__PR((struct ionod *i));
 extern	int	savefd		__PR((int fd));
 extern	void	restore		__PR((int last));
@@ -594,6 +649,7 @@ extern	void	prtime		__PR((struct job *jp));
 #ifndef	HAVE_GETRUSAGE
 extern	int	getrusage	__PR((int who, struct rusage *r_usage));
 #endif
+extern	void	shmcreate	__PR((void));
 
 /*
  * macro.c
@@ -601,9 +657,11 @@ extern	int	getrusage	__PR((int who, struct rusage *r_usage));
 #define	M_PARM		1	/* Normal parameter expansion	*/
 #define	M_COMMAND	2	/* Command substitution		*/
 #define	M_DOLAT		4	/* $@ was expanded		*/
-#define	M_SPLIT		(M_PARM|M_COMMAND|M_DOLAT)
-#define	M_NOCOMSUBST	8	/* Do not expand ` ` and $()	*/
+#define	M_ARITH		8	/* $(()) was expanded		*/
+#define	M_SPLIT		(M_PARM|M_COMMAND|M_DOLAT|M_ARITH)
+#define	M_NOCOMSUBST	0x100	/* Do not expand ` ` and $()	*/
 extern	unsigned char *macro	__PR((unsigned char *as));
+extern	unsigned char *_macro	__PR((unsigned char *as));
 extern	void	subst		__PR((int in, int ot));
 
 /*
@@ -646,12 +704,15 @@ extern	void	printpro	__PR((struct namnod *n));
 extern	void	printexp	__PR((struct namnod *n));
 extern	void	printpexp	__PR((struct namnod *n));
 extern	void	printlocal	__PR((struct namnod *n));
+extern	void	exportenv	__PR((struct namnod *n));
+extern	void	deexportenv	__PR((struct namnod *n));
 extern	void	pushval		__PR((struct namnod *n, void *t));
 extern	void	popvars		__PR((void));
 extern	void	poplvars	__PR((void));
 extern	void	popval		__PR((struct namnod *n));
 extern	void	setup_env	__PR((void));
 extern	unsigned char **local_setenv __PR((int flg));
+extern	unsigned char **get_envptr __PR((void));
 extern	struct namnod *findnam	__PR((unsigned char *nam));
 
 #define	UNSET_FUNC	1
@@ -697,7 +758,11 @@ extern	unsigned char *endb	__PR((void));
 /*
  * pwd.c
  */
-extern	void	cwd		__PR((unsigned char *dir));
+extern	int	lchdir		__PR((char *path));
+extern	int	sh_hop_dirs	__PR((char *name, char **np));
+extern	int	lstatat		__PR((char *name, struct stat *buf, int flag));
+extern	void	cwd		__PR((unsigned char *dir,
+					unsigned char *cwdbase));
 extern	int	cwdrel2abs	__PR((void));
 extern	unsigned char *cwdget	__PR((int cdflg));
 extern	unsigned char *cwdset	__PR((void));
@@ -744,17 +809,27 @@ extern	unsigned char *setbrk	__PR((int));
 
 #define	GROWSTAK(a)	if ((a) >= brkend) \
 				(a) = growstak(a);
-#define	GROWSTAKL(a, l)	if (((a) + (l)) >= brkend) \
-				(a) = growstak(a);
-#define	GROWSTAK2(a, o)	if ((a) >= brkend) {\
-				char *oa = (char *)(a); \
-				(a) = growstak(a); \
-				(o) += (char *)(a) - oa; \
-			}
-#define	GROWSTAKTOP()	if (staktop >= brkend) \
-				(void) growstak(staktop);
-#define	GROWSTAKTOPL(l)	if ((staktop + (l)) >= brkend) \
-				(void) growstak(staktop);
+/*
+ * "a" needs to be a char * object
+ */
+#define	GROWSTAKL(a, l)	do { if (((a) + (l)) >= brkend) {	\
+				(a) += (l);			\
+				(a) = growstak(a);		\
+				(a) -= (l);			\
+			} } while (0);
+#define	GROWSTAK2(a, o)	do { if ((a) >= brkend) {		\
+				char *oa = (char *)(a);		\
+				(a) = growstak(a);		\
+				(o) += (char *)(a) - oa;	\
+			} } while (0);
+#define	GROWSTAKTOP()	do { if (staktop >= brkend)		\
+				(void) growstak(staktop);	\
+			} while (0);
+#define	GROWSTAKTOPL(l)	do { if ((staktop + (l)) >= brkend) {	\
+				staktop += (l);			\
+				(void) growstak(staktop);	\
+				staktop -= (l);			\
+			} } while (0);
 
 extern	void		*alloc		__PR((size_t));
 extern	void		free		__PR((void *ap));
@@ -777,7 +852,7 @@ extern	unsigned char *memcpystak	__PR((unsigned char *s1,
 /*
  * strexpr.c
  */
-extern	Intmax_t	strexpr	__PR((unsigned char *arg));
+extern	Intmax_t	strexpr	__PR((unsigned char *arg, int *errp));
 
 /*
  * string.c
@@ -785,6 +860,7 @@ extern	Intmax_t	strexpr	__PR((unsigned char *arg));
 extern	unsigned char *movstr	__PR((unsigned char *a, unsigned char *b));
 extern	int		any	__PR((wchar_t c, unsigned char *s));
 extern	int		anys	__PR((unsigned char *c, unsigned char *s));
+extern	int		clen	__PR((unsigned char *c));
 extern	int		cf	__PR((unsigned char *s1, unsigned char *s2));
 extern	int		length	__PR((unsigned char *as));
 extern	unsigned char *movstrn	__PR((unsigned char *a,
@@ -801,6 +877,9 @@ extern	int	str2sig		__PR((const char *s, int *sigp));
 #endif
 #ifndef	HAVE_SIG2STR
 extern	int	sig2str		__PR((int sig, char *s));
+#endif
+#ifndef	SIG2STR_MAX		/* From Solaris signal.h */
+#define	SIG2STR_MAX	32
 #endif
 
 /*
@@ -834,13 +913,14 @@ extern	void	sysunalias	__PR((int argc, unsigned char **argv));
  */
 #ifdef	DO_SYSBUILTIN
 extern	void	sysbuiltin	__PR((int argc, unsigned char **argv));
+extern	struct sysnod2 *sh_findbuiltin	__PR((unsigned char *name));
 #endif
 
 /*
  * find.c
  */
 #ifdef	DO_SYSFIND
-extern	void	sysfind		__PR((int argc, unsigned char **argv));
+extern	int	sysfind		__PR((int argc, Uchar **argv, bosh_t *));
 #endif
 
 /*
@@ -868,6 +948,8 @@ extern	unsigned int	skipwc	__PR((void));
 extern	unsigned int	nextwc	__PR((void));
 extern	unsigned char	*readw	__PR((wchar_t d));
 extern	unsigned int	readwc	__PR((void));
+extern	int		isbinary __PR((struct fileblk *f));
+extern	unsigned char	*do_tilde __PR((unsigned char *arg));
 
 /*
  * xec.c
@@ -875,9 +957,10 @@ extern	unsigned int	readwc	__PR((void));
 extern	int	execute		__PR((struct trenod *argt, int xflags,
 						int errorflg,
 						int *pf1, int *pf2));
-extern	unsigned char *ps_macro	__PR((unsigned char *as));
+extern	unsigned char *ps_macro	__PR((unsigned char *as, int perm));
 extern	void	execexp		__PR((unsigned char *s, Intptr_t f,
 						int xflags));
+extern	int	callsh		__PR((int ac, char **av));
 
 
 #define		_cf(a, b)	cf((unsigned char *)(a), (unsigned char *)(b))
@@ -946,6 +1029,7 @@ extern	void	execexp		__PR((unsigned char *s, Intptr_t f,
 extern int		output;
 extern int		ioset;
 extern struct ionod	*iotemp; /* files to be deleted sometime */
+extern struct ionod	*xiotemp; /* limit for files to be deleted sometime */
 extern struct ionod	*fiotemp; /* function files to be deleted sometime */
 extern struct ionod	*iopend; /* documents waiting to be read at NL */
 extern struct fdsave	fdmap[];
@@ -1005,6 +1089,7 @@ extern const char		rcfile[];
 extern const char		sysrcfile[];
 extern const char		globalname[];
 extern const char		localname[];
+extern const char		fcedit[];
 
 /* locale testing */
 extern const char		localedir[];
@@ -1014,6 +1099,7 @@ extern int			localedir_exists;
 extern struct namnod		fngnod;
 extern struct namnod		cdpnod;
 extern struct namnod		envnod;
+extern struct namnod		fcenod;
 extern struct namnod		ifsnod;
 extern struct namnod		homenod;
 extern struct namnod		pwdnod;
@@ -1031,6 +1117,7 @@ extern struct namnod		repnod;
 extern struct namnod		acctnod;
 extern struct namnod		mailpnod;
 extern struct namnod		timefmtnod;
+extern struct namnod		*optindnodep;
 
 /* special names */
 extern unsigned char		flagadr[];
@@ -1048,6 +1135,7 @@ extern const char		pathname[];
 extern const char		ppidname[];
 extern const char		cdpname[];
 extern const char		envname[];
+extern const char		fcename[];
 extern const char		ifsname[];
 extern const char		ps1name[];
 extern const char		ps2name[];
@@ -1140,6 +1228,7 @@ extern const char		devnull[];
 #define		vedflg		0100000		/* set -o ved VED cmdln. edit */
 #define		posixflg	0200000		/* set -o posix		*/
 #define		promptcmdsubst	0400000		/* set -o promptcmdsubst */
+#define		globskipdot	01000000	/* set -o globskipdot	*/
 
 extern unsigned long		flags;		/* Flags for set(1) and more */
 extern unsigned long		flags2;		/* Second set of flags */
@@ -1150,22 +1239,26 @@ extern int			dashdash;	/* flags set -- encountered */
 #endif
 
 /* error exits from various parts of shell */
-#include	<setjmp.h>
 extern jmp_buf			subshell;
 extern jmp_buf			errshell;
+extern jmps_t			*dotshell;
 
 /* fault handling */
 extern unsigned			brkincr;
 #define		MINTRAP		0
 #define		MAXTRAP		NSIG
 
-#define		TRAPSET		2
-#define		SIGSET		4
-#define		SIGMOD		8
-#define		SIGIGN		16
+#define		TRAPSET		2		/* Mark incoming signal/fault */
+#define		SIGSET		4		/* Mark fault w. no trapcmd */
+#define		SIGMOD		8		/* Signal with trap(1) set */
+#define		SIGIGN		16		/* Signal is ignored	*/
+#define		SIGCLR		32		/* From oldsigs() w. vfork() */
+#define		SIGINP		64		/* Signal in line editor inp */
 
 extern BOOL			trapnote;
+extern int			traprecurse;
 extern int			trapsig;
+extern unsigned char		*trapcom[];
 
 /* name tree and words */
 #ifdef	HAVE_ENVIRON_DEF
@@ -1184,19 +1277,23 @@ extern const char		readonly[];
 /* execflgs */
 extern struct excode		ex;
 extern struct excode		retex;
+#ifdef	DO_DOL_SLASH
+extern	int			*excausep;
+#endif
 extern int			exitval;
 extern int			retval;
 extern BOOL			execbrk;
+extern BOOL			dotbrk;
 extern int			loopcnt;
 extern int			breakcnt;
 extern int			funcnt;
+extern int			dotcnt;
 extern void			*localp;
 extern int			localcnt;
 extern int			tried_to_exit;
 
 /* fault */
 extern int			*intrptr;
-extern int			intrcnt;
 
 /* messages */
 extern const char		mailmsg[];
@@ -1268,6 +1365,7 @@ extern const char		builtinuse[];
 extern const char		stopuse[];
 extern const char		trapuse[];
 extern const char		ulimuse[];
+extern const char		limuse[];
 extern const char		nocurjob[];
 extern const char		loginsh[];
 extern const char		jobsstopped[];
@@ -1308,9 +1406,12 @@ extern int			ucb_builtins;
  * `trapnote' is set to SIGSET when fault is seen and
  * no trap has been set.
  */
-#define		sigchk()	if (trapnote & SIGSET)	{ \
-					exval_sig();	\
-					exitsh(exitval ? exitval : SIGFAIL); \
+#define		sigchk()	if (trapnote & SIGSET)	{		\
+					exval_sig();			\
+					if (!traprecurse) {		\
+						exitsh(exitval ?	\
+						    exitval : SIGFAIL); \
+					}				\
 				}
 
 #define		exitset()	(retex = ex, retval = exitval)

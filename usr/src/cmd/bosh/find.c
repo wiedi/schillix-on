@@ -1,9 +1,9 @@
-/* @(#)find.c	1.2 16/06/10 Copyright 2014-2015 J. Schilling */
+/* @(#)find.c	1.7 18/08/01 Copyright 2014-2018 J. Schilling */
 #include <schily/mconfig.h>
 /*
  *	find builtin
  *
- *	Copyright (c) 2014-2016 J. Schilling
+ *	Copyright (c) 2014-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -23,7 +23,7 @@
 #ifdef DO_SYSFIND
 
 static	UConst char sccsid[] =
-	"@(#)find.c	1.2 16/06/10 Copyright 2014-2016 J. Schilling";
+	"@(#)find.c	1.7 18/08/01 Copyright 2014-2018 J. Schilling";
 
 #include	<schily/walk.h>
 #include	<schily/find.h>
@@ -40,28 +40,50 @@ quitfun(arg)
 	return (*((int *)arg) != 0);
 }
 
-void
-sysfind(argc, argv)
+int
+sysfind(argc, argv, boshp)
 	int	argc;
 	unsigned char	**argv;
+	bosh_t	*boshp;
 {
 	FILE		*std[3];
 	squit_t		quit;
 	unsigned char	**xecenv;
+	int		exval;
+	unsigned long	oflags2 = *boshp->flagsp2;
 
 	std[0] = stdin;
 	std[1] = stdout;
 	std[2] = stderr;
 
+	find_sqinit(&quit);
 	quit.quitfun = quitfun;
-	quit.qfarg = &intrcnt;
+	quit.qfarg = &boshp->intrcnt;
+	quit.flags = SQ_CALL;
+	quit.callfun = boshp->callsh;
 
-	xecenv = local_setenv(ENV_NOFREE);
-	exitval = find_main(argc, (char **)argv, (char **)xecenv, std, &quit);
+	xecenv = boshp->get_envptr();
+	*boshp->flagsp2 &= ~timeflg;
+	exval = find_main(argc, (char **)argv, (char **)xecenv, std, &quit);
+	*boshp->flagsp2 = oflags2;
 
 	fflush(stdin);
 	fflush(stdout);
 	fflush(stderr);
+
+	return (exval);
+}
+
+/*
+ * find_main() disables file raising for stdin/stdout/stderr, but libschily
+ * would still include references (but not real calls) to raisecond(). Provide
+ * a dummy to avoid linking against raisecond() from a static libschily.
+ */
+void
+raisecond(n, a)
+	const	char	*n;
+	long		a;
+{
 }
 
 #endif /* DO_SYSFIND */

@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)bltin.c	1.109 16/09/06 2008-2016 J. Schilling
+ * @(#)bltin.c	1.140 19/08/27 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)bltin.c	1.109 16/09/06 2008-2016 J. Schilling";
+	"@(#)bltin.c	1.140 19/08/27 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -51,7 +51,7 @@ static	UConst char sccsid[] =
  *
  */
 
-#ifdef	INTERACTIVE
+#if	defined(INTERACTIVE) || defined(DO_SYSFC)
 #include	<schily/shedit.h>
 #endif
 
@@ -66,6 +66,7 @@ static	UConst char sccsid[] =
 #include	<sys/times.h>
 
 #include	<schily/resource.h>
+#include	<schily/wait.h>		/* Needed for CLD_EXITED */
 
 	void	builtin	__PR((int type, int argc, unsigned char **argv,
 					struct trenod *t, int xflags));
@@ -78,6 +79,15 @@ static	int	whatis	__PR((unsigned char *arg, int verbose));
 static	void	syscommand __PR((int argc, unsigned char **argv,
 					struct trenod *t, int xflags));
 #endif
+#if	defined(INTERACTIVE) || defined(DO_SYSFC)
+static	void	syshist	__PR((int argc, unsigned char **argv,
+					struct trenod *t, int xflags));
+#endif
+#ifdef	DO_TILDE
+static unsigned char *etilde	__PR((unsigned char *arg, unsigned char *s));
+#endif
+
+#define	no_pipe	(int *)0
 
 void
 builtin(type, argc, argv, t, xflags)
@@ -142,8 +152,35 @@ builtin(type, argc, argv, t, xflags)
 
 			if ((f = pathopen(getpath(a1), a1)) < 0)
 				failed(a1, notfound);
-			else
+			else {
+#ifdef	DO_POSIX_RETURN
+				jmps_t	dotjmp;
+				jmps_t	*odotjmp = dotshell;
+				struct fileblk	*ostandin = standin;
+
+				if (setjmp(dotjmp.jb)) {
+					/*
+					 * pushed in execexp()
+					 */
+					while (ostandin != standin) {
+						if (!pop())
+							break;
+					}
+					dotshell = odotjmp;
+					dotcnt--;
+					break;
+				}
+				dotshell = &dotjmp;
+				dotcnt++;
+#endif
+
 				execexp(0, (Intptr_t)f, xflags);
+
+#ifdef	DO_POSIX_RETURN
+				dotcnt--;
+				dotshell = odotjmp;
+#endif
+			}
 		}
 		break;
 
@@ -166,6 +203,10 @@ builtin(type, argc, argv, t, xflags)
 
 	case SYSEXIT:			/* POSIX special builtin */
 		if (tried_to_exit++ || endjobs(JOB_STOPPED)) {
+#ifdef	INTERACTIVE
+			if (!(xflags & XEC_EXECED))
+				shedit_treset();	/* Writes ~/.history */
+#endif
 			flags |= forcexit;	/* force exit */
 #ifdef	DO_SIGNED_EXIT
 			exitsh(a1 ? stosi(a1) : retval);
@@ -256,7 +297,7 @@ builtin(type, argc, argv, t, xflags)
 			flags |= forcexit; /* bad exec will terminate shell */
 			oldsigs(TRUE);
 			rmtemp(0);
-			rmfunctmp();
+			rmfunctmp(0);
 #ifdef ACCT
 			doacct();
 #endif
@@ -389,7 +430,7 @@ builtin(type, argc, argv, t, xflags)
 					}
 				}
 #endif
-			} while ((f = chdir((const char *) curstak())) < 0 &&
+			} while ((f = lchdir((char *) curstak())) < 0 &&
 			    cdpath);
 
 			free(np);
@@ -423,7 +464,7 @@ builtin(type, argc, argv, t, xflags)
 				unsigned char	*wd;
 
 				ocwdnod();		/* Update OLDPWD=    */
-				cwd(curstak());		/* Canonic from stak */
+				cwd(curstak(), NULL);	/* Canonic from stak */
 				wd = cwdget(cdopt);	/* Get reliable cwd  */
 #ifdef	DO_SYSPUSHD
 				if (type != SYSPUSHD)
@@ -527,14 +568,21 @@ builtin(type, argc, argv, t, xflags)
 
 			if (argv[1]) {
 				while (*++argv) {
-					char *p = strchr((char *)*argv, '=');
+					unsigned char *p;
 
+					p = UC strchr((char *)*argv, '=');
 					if (p)
 						*p = '\0';
 					pushval(lookup(*argv), localp);
 					if (p) {
 						*p = '=';
-						setname(*argv, 0);
+#ifdef	DO_TILDE
+						if (strchr(C p, '~') != NULL)
+							p = etilde(*argv, p);
+						else
+#endif
+							p = *argv;
+						setname(p, 0);
 					}
 					localcnt++;
 				}
@@ -568,8 +616,17 @@ builtin(type, argc, argv, t, xflags)
 			if (argv[1]) {
 				while (*++argv) {
 #ifdef	DO_POSIX_EXPORT
-					if (strchr((char *)*argv, '=')) {
-						setname(*argv, N_RDONLY);
+					unsigned char	*p;
+
+					p = UC strchr((char *)*argv, '=');
+					if (p) {
+#ifdef	DO_TILDE
+						if (strchr(C p, '~') != NULL)
+							p = etilde(*argv, p);
+						else
+#endif
+							p = *argv;
+						setname(p, N_RDONLY);
 						continue;
 					}
 #endif
@@ -608,8 +665,17 @@ builtin(type, argc, argv, t, xflags)
 			if (argv[1]) {
 				while (*++argv) {
 #ifdef	DO_POSIX_EXPORT
-					if (strchr((char *)*argv, '=')) {
-						setname(*argv, N_EXPORT);
+					unsigned char	*p;
+
+					p = UC strchr((char *)*argv, '=');
+					if (p) {
+#ifdef	DO_TILDE
+						if (strchr(C p, '~') != NULL)
+							p = etilde(*argv, p);
+						else
+#endif
+							p = *argv;
+						setname(p, N_EXPORT);
 						continue;
 					}
 #endif
@@ -696,8 +762,10 @@ builtin(type, argc, argv, t, xflags)
 				case '?':
 					gfailure(UC usage, repuse);
 					err = 1;
+					goto reperr;
 				}
 			}
+		reperr:
 			if (err)
 				break;
 
@@ -713,7 +781,18 @@ builtin(type, argc, argv, t, xflags)
 					sh_sleep(delay);
 				if (count > 0)
 					count--;
+				/*
+				 * Exit if this shell received a signal
+				 */
 				sigchk();
+				/*
+				 * Exit if child received a signal
+				 */
+				if ((ex.ex_code != 0 &&
+				    ex.ex_code != CLD_EXITED) ||
+				    ex.ex_status != 0) {
+					exitsh(exitval ? exitval : SIGFAIL);
+				}
 			}
 		} else {
 			gfailure(UC usage, repuse);
@@ -747,7 +826,7 @@ builtin(type, argc, argv, t, xflags)
 
 	case SYSHASH:
 		{
-#ifdef	DO_GETOPT_UTILS
+#ifdef	DO_GETOPT_UTILS		/* For all builtins that support -- */
 			struct optv	optv;
 			int		c;
 
@@ -806,16 +885,19 @@ builtin(type, argc, argv, t, xflags)
 		break;
 
 	case SYSRETURN:			/* POSIX special builtin */
-		if (funcnt == 0)
+		if (funcnt == 0 && dotcnt == 0)
 			error(badreturn);
 
-		execbrk = 1;
+		if (dotcnt > 0)
+			dotbrk = 1;
+		else
+			execbrk = 1;
 		exitval = (a1 ? stoi(a1) : retval);
 		break;
 
 	case SYSTYPE:
 		if (a1) {
-#ifdef	DO_GETOPT_UTILS
+#ifdef	DO_GETOPT_UTILS		/* For all builtins that support -- */
 			struct optv	optv;
 			int		c;
 
@@ -875,7 +957,7 @@ builtin(type, argc, argv, t, xflags)
 		unsigned char c[2];
 		unsigned char *cmdp = *argv;
 
-#ifdef	DO_GETOPT_UTILS
+#ifdef	DO_GETOPT_UTILS		/* For all builtins that support -- */
 		ind = optskip(argc, argv,
 					"getopts optstring name [arg ...]");
 		if (ind-- < 0)
@@ -890,6 +972,8 @@ builtin(type, argc, argv, t, xflags)
 		exitval = 0;
 		n = lookup(UC "OPTIND");
 		optind = stoi(n->namval);
+		if (optind <= 0)		/* Paranoia */
+			optind = 1;
 		varnam = argv[2];
 		if (argc > 3) {
 			argv[2] = dolv[0];
@@ -933,6 +1017,11 @@ builtin(type, argc, argv, t, xflags)
 		n = lookup(UC "OPTARG");
 		assign(n, UC optarg);
 #ifdef	DO_GETOPT_POSIX
+		/*
+		 * In case that the option string starts with ':',
+		 * POSIX requires to set OPTARG to the option
+		 * character that causes getopt() to return '?'/':'.
+		 */
 		if (optarg == NULL && argv[1][0] == ':' &&
 		    (getoptval == '?' || getoptval == ':')) {
 			c[0] = optopt;
@@ -944,8 +1033,8 @@ builtin(type, argc, argv, t, xflags)
 
 #ifdef	INTERACTIVE
 	case SYSHISTORY:
-		shedit_bhist(&intrptr);
-		if (intrptr) {		/* Was set by shedit_bshist()?	*/
+		syshist(argc, argv, t, xflags);
+		if (intrptr) {		/* Was set by syshist()?	*/
 			*intrptr = 0;	/* Clear interrupt counter	*/
 			intrptr = 0;	/* Disable intrptr for now	*/
 		}
@@ -953,6 +1042,7 @@ builtin(type, argc, argv, t, xflags)
 
 	case SYSSAVEHIST:
 		shedit_bshist(&intrptr);
+
 		if (intrptr) {		/* Was set by shedit_bshist()?	*/
 			*intrptr = 0;	/* Clear interrupt counter	*/
 			intrptr = 0;	/* Disable intrptr for now	*/
@@ -1032,8 +1122,6 @@ builtin(type, argc, argv, t, xflags)
 		break;
 	case SYSFALSE:
 		exitval = 1;
-		if (flags & errflg)
-			done(0);
 		break;
 #endif
 
@@ -1043,9 +1131,30 @@ builtin(type, argc, argv, t, xflags)
 		break;
 #endif
 
+#ifdef	HAVE_LOADABLE_LIBS
+	case SYSLOADABLE: {
+		int		exval;
+		struct sysnod2	*s2;
+
+		s2 = sh_findbuiltin(*argv);
+		if (s2 == NULL) {
+			failure(*argv, notfound);
+			break;
+		}
+		exval = (*s2->sysptr)(argc, argv, &bosh);
+		if (exval)
+			exitval = exval;
+	}
+		break;
+#endif
+
 #ifdef	DO_SYSFIND
-	case SYSFIND:
-		sysfind(argc, argv);
+	case SYSFIND: {
+		int	exval = sysfind(argc, argv, &bosh);
+
+		if (exval)
+			exitval = exval;
+	}
 		break;
 #endif
 
@@ -1103,6 +1212,16 @@ builtin(type, argc, argv, t, xflags)
 		break;
 #endif
 
+#ifdef	DO_SYSFC
+	case SYSFC:
+		syshist(argc, argv, t, xflags);
+		if (intrptr) {		/* Was set by syshist()?	*/
+			*intrptr = 0;	/* Clear interrupt counter	*/
+			intrptr = 0;	/* Disable intrptr for now	*/
+		}
+		break;
+#endif
+
 	default:
 		prs_buff(_gettext("unknown builtin\n"));
 	}
@@ -1139,6 +1258,10 @@ opt_LP(argc, argv, opts, use)
 			return (-1);
 		} else if (c == '?') {
 			if (opt < 0) {
+				/*
+				 * If *opts has been preinitialzed with -1,
+				 * accept e.g. -2 as a a pushd offset arg.
+				 */
 				c = argv[optv.ooptind][1];
 				if (c >= '0' && c <= '9')
 					return (optv.ooptind);
@@ -1152,6 +1275,15 @@ opt_LP(argc, argv, opts, use)
 			*opts = CHDIR_P;
 		}
 	}
+
+	/*
+	 * POSIX decided in 1992 to introduce an incompatible default for "cd".
+	 * Even though this is incompatible with the Bourne Shell behavior, it
+	 * may be too late to go back.
+	 */
+	if ((flags2 & posixflg) && *opts == 0)
+		*opts = CHDIR_L;
+
 	return (optv.optind);
 }
 #endif	/* DO_POSIX_CD */
@@ -1245,7 +1377,16 @@ syscommand(argc, argv, t, xflags)
 	} else if (Vflg) {
 		exitval = whatis(*argv, 1);
 	} else if (*argv) {
-		short	cmdhash = pathlook(argv[0], 0, (struct argnod *)0);
+		short		cmdhash;
+		unsigned long	oflags = flags;
+
+		/*
+		 * A function may overlay a builtin command.
+		 * We therefore do not search for functions.
+		 */
+		flags |= nofuncs;
+		cmdhash = pathlook(argv[0], 0, (struct argnod *)0);
+		flags = oflags;
 
 		if (hashtype(cmdhash) == BUILTIN) {
 			struct ionod	*iop = t->treio;
@@ -1260,9 +1401,16 @@ syscommand(argc, argv, t, xflags)
 		} else {
 			unsigned char		*sav = savstak();
 			struct ionod		*iosav = iotemp;
+			struct comnod	cnod;
+
+			cnod.comtyp = TCOM;
+			cnod.comio  = NULL;
+			cnod.comarg = (struct argnod *)argv;
+			cnod.comset = comptr(t)->comset;
 
 			flags |= nofuncs;
-			execexp(argv[0], (Intptr_t)&argv[1], xflags);
+			execute((struct trenod *)&cnod, xflags | XEC_HASARGV,
+				0, no_pipe, no_pipe);
 			flags &= ~nofuncs;
 			tdystak(sav, iosav);
 		}
@@ -1270,3 +1418,265 @@ syscommand(argc, argv, t, xflags)
 	flags &= ~ppath;
 }
 #endif	/* DO_SYSCOMMAND */
+
+#if	defined(INTERACTIVE) || defined(DO_SYSFC)
+#define	LFLAG	1	/* Do listing		*/
+#define	SFLAG	2	/* Re-execute		*/
+#define	EFLAG	4	/* Edit and Re-execute	*/
+#define	ALLFLAG	1024	/* Show full history	*/
+/*
+ * The implementation for the "history" and the "fc" builtin command.
+ *
+ * The "fc" builtin is an historic artefact from ksh.
+ * It is based on the original ksh history concept that has never been used in
+ * our history editor that is rather based on the history editor in "bsh", the
+ * shell from H.Berthold AG that had a fully integrated history editor in 1984
+ * already; based on a concept from 1982. Ksh originally called an external
+ * editor command to modify the history.
+ *
+ * As "fc" is part of the POSIX standard, we have to implement it even though
+ * the features required by POSIX do not match the features from a modern
+ * history editor, so we try to do the best we can...
+ *
+ * The "history" implementation currently just disables the re-run and edit
+ * features.
+ */
+static void
+syshist(argc, argv, t, xflags)
+	int		argc;
+	unsigned char	**argv;
+	struct trenod	*t;
+	int		xflags;
+{
+	struct optv	optv;
+	int		c;
+	int		fd;
+	int		first = 0;
+	int		last = 0;
+	int		flg = 0;
+	int		hflg = HI_INTR|HI_TAB;
+	unsigned char	*av0 = argv[0];
+	unsigned char	*cp;
+	unsigned char	*editor = NULL;
+	unsigned char	*substp = NULL;
+	struct tempblk	tb;
+	char		*fusage =
+			"fc [-r][-l][-n][-s][-e editor] [first [last]]";
+	char		*husage =
+			"history [-r][-n] [first [last]]";
+	char		*xusage = fusage;
+
+	if (*av0 == 'h') {
+		xusage = husage;
+		flg |= LFLAG;
+	}
+
+	optinit(&optv);
+
+	while ((c = optnext(argc, argv, &optv,
+				"rlnse:1234567890", xusage)) != -1) {
+		if (c == 0) {	/* Was -help */
+			return;
+		} else if (c == 'r') {
+			hflg |= HI_REVERSE;
+		} else if (c == 'l') {
+			flg |= LFLAG;
+		} else if (c == 'n') {
+			hflg |= HI_NONUM;
+		} else if (c == 's') {
+			flg |= SFLAG;
+		} else if (c == 'e') {
+			editor = UC optv.optarg;
+		} else if (digit(c)) {
+			first = stosi(argv[optv.ooptind]);
+			argc--;
+			argv++;
+			break;
+		}
+	}
+	argc -= optv.optind;
+	argv += optv.optind;
+
+	if ((flg & (LFLAG | SFLAG)) == 0)
+		flg |= EFLAG;
+
+	if ((flg & SFLAG) && argc > 0) {
+		/*
+		 * POSIX requires new=old only with "fc -s".
+		 */
+		if (anys(UC "=", argv[0])) {
+			substp = argv[0];
+			argc--;
+			argv++;
+		}
+	}
+
+	if (!first && argc > 0) {
+		cp = argv[0];
+		if (*cp == '+')
+			cp++;
+		if (digit(*cp)) {
+			first = stoi(UC cp);
+			if (first == 0)
+				flg |= ALLFLAG;
+		} else {
+			first = shedit_search_history(&intrptr,
+							hflg, 0, C argv[0]);
+		}
+		argc--;
+		argv++;
+	}
+	if (first == 0 && (flg & ALLFLAG) == 0) {
+		if (flg & LFLAG)
+			first = -15;
+		else
+			first = -1;
+	}
+	if (flg & SFLAG) {
+		last = first;
+	} else if (argc > 0) {
+		cp = argv[0];
+		if (*cp == '+')
+			cp++;
+		if (digit(*cp)) {
+			last = stosi(UC cp);
+		} else {
+			last = shedit_search_history(&intrptr,
+							hflg, 0, C argv[0]);
+		}
+		argc--;
+		argv++;
+	}
+	if (argc > 0) {
+		gfailure(av0, toomanyargs);
+		return;
+	}
+	if (last == 0) {
+		if (flg & LFLAG) {
+			unsigned	lastn;
+
+			shedit_histrange(NULL, &lastn, NULL);
+			last = lastn;
+		} else {
+			last = first;
+		}
+	}
+
+	if (flg & LFLAG) {
+		if (isatty(STDOUT_FILENO))
+			hflg |= HI_PRETTYP;
+		/*
+		 * We do not remove the new "fc -l" command but should include
+		 * the last command in our listing.
+		 */
+		if (first < 0)
+			first--;
+	} else {
+		unsigned	lastn;
+
+		shedit_histrange(NULL, &lastn, NULL);
+		/*
+		 * Remove this "fc" command from the history.
+		 */
+		(void) shedit_remove_history(&intrptr,
+						hflg, lastn, NULL);
+		if (last == lastn) {
+			shedit_histrange(NULL, &lastn, NULL);
+			last = lastn;
+		}
+		fd = tmpfil(&tb);
+	}
+	/*
+	 * Even in case we write the history into a file, we do not
+	 * convert ASCII newlines into ANSI newlines, so we may see
+	 * more lines in the file than history entries selected.
+	 */
+	if (shedit_history((flg & LFLAG) ? NULL : &fd,
+			&intrptr, hflg, first, last, C substp) != 0) {
+		gfailure(av0, "history specification out of range");
+		return;
+	}
+	if (flg & LFLAG)
+		return;
+
+	if (flg & EFLAG) {
+		char	*av[2];
+
+		av[0] = C make(tmpout);
+		av[1] = NULL;
+
+		if (editor == NULL)
+			editor = fcenod.namval;
+		if (editor == NULL)
+			editor = UC fcename;
+		execexp(editor, (Intptr_t)av, xflags);
+		unlink(av[0]);
+		free(av[0]);
+		if (exitval) {
+			close(fd);
+			return;
+		}
+	} else {
+		unlink(C tmpout);
+	}
+
+	lseek(fd, (off_t)0, SEEK_SET);
+	execexp(0, (Intptr_t)fd, xflags);
+	/*
+	 * Add re-executed commands to the history.
+	 */
+	lseek(fd, (off_t)0, SEEK_SET);
+	shedit_read_history(&fd, &intrptr, hflg);
+
+	close(fd);
+}
+#endif	/* defined(INTERACTIVE) || defined(DO_SYSFC) */
+
+#ifdef	DO_TILDE
+static unsigned char *
+etilde(arg, s)
+	unsigned char	*arg;		/* complete encironment entry	*/
+	unsigned char	*s;		/* points to '='		*/
+{
+	UIntptr_t	b = relstak();
+	unsigned char	*p;
+
+	++s;				/* Point to 1st char of value	*/
+	while (arg < s) {		/* Copy parts up to '='		*/
+		GROWSTAKTOP();
+		pushstak(*arg++);
+	}
+	while (*arg) {
+		p = UC strchr(C arg, '~');
+		if (p == NULL)
+			break;
+		while (arg < p) {	/* Copy up to '~'		*/
+			GROWSTAKTOP();
+			pushstak(*arg++);
+		}
+		if (p > s && p[-1] != ':') {
+			/* EMPTY */
+			;
+		} else if ((p = do_tilde(arg)) != NULL) {
+			unsigned char	c;
+
+			while (*p) {	/* Copy expanded directory	*/
+				GROWSTAKTOP();
+				pushstak(*p++);
+			}
+			do {		/* Skip unexpanded input	*/
+				c = *++arg;
+			} while (c && c != '/' && c != ':');
+			continue;
+		}
+		GROWSTAKTOP();
+		pushstak(*arg++);	/* Copy '~'			*/
+	}
+	while (*arg) {			/* Copy rest			*/
+		GROWSTAKTOP();
+		pushstak(*arg++);
+	}
+	zerostak();
+	return (absstak(b));
+}
+#endif

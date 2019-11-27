@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)io.c	1.29 16/08/28 2008-2016 J. Schilling
+ * @(#)io.c	1.44 19/09/25 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)io.c	1.29 16/08/28 2008-2016 J. Schilling";
+	"@(#)io.c	1.44 19/09/25 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -80,7 +80,8 @@ static	void	pushtemp	__PR((int fd, struct tempblk *tb));
 	int	create		__PR((unsigned char *s, int iof));
 	int	tmpfil		__PR((struct tempblk *tb));
 	void	copy		__PR((struct ionod *ioparg));
-	void	link_iodocs	__PR((struct ionod *i));
+	int	link_iodocs	__PR((struct ionod *i));
+static	int	copy_file	__PR((char *fromname, char *toname));
 	void	swap_iodoc_nm	__PR((struct ionod *i));
 	int	savefd		__PR((int fd));
 	void	restore		__PR((int last));
@@ -92,10 +93,12 @@ initf(fd)
 	struct fileblk *f = standin;
 
 	f->fdes = fd;
+	f->peekn = 0;
 	f->fsiz = ((flags & oneflg) == 0 ? BUFFERSIZE : 1);
 	f->fnxt = f->fend = f->fbuf;
 	f->nxtoff = f->endoff = 0;
 	f->feval = 0;
+	f->alias = 0;
 	f->flin = 1;
 	f->feof = FALSE;
 }
@@ -121,8 +124,10 @@ push(af)
 	struct fileblk *f;
 
 	(f = af)->fstak = standin;
+	f->peekn = 0;
 	f->feof = 0;
 	f->feval = 0;
+	f->alias = 0;
 	standin = f;
 }
 
@@ -142,6 +147,9 @@ pop()
 
 struct tempblk *tmpfptr;
 
+/*
+ * We only call pushtemp() with fd >= 0
+ */
 static void
 pushtemp(fd, tb)
 	int		fd;
@@ -155,12 +163,29 @@ pushtemp(fd, tb)
 int
 poptemp()
 {
-	if (tmpfptr) {
-		close(tmpfptr->fdes);
-		tmpfptr = tmpfptr->fstak;
+	int	fd = gpoptemp();
+
+	if (fd >= 0) {
+		close(fd);
 		return (TRUE);
-	} else
-		return (FALSE);
+	}
+	return (FALSE);
+}
+
+/*
+ * Get the fd from the fd stack for later use.
+ */
+int
+gpoptemp()
+{
+	if (tmpfptr) {
+		int	fd = tmpfptr->fdes;
+
+		tmpfptr = tmpfptr->fstak;
+		return (fd);
+	} else {
+		return (-1);
+	}
 }
 
 void
@@ -212,7 +237,7 @@ renamef(f1, f2)
 {
 #ifdef RES
 	if (f1 != f2) {
-		dup(f1 | DUPFLG, f2);
+		(void) dup(f1 | DUPFLG, f2);
 		close(f1);
 		if (f2 == 0)
 			ioset |= 1;
@@ -221,12 +246,24 @@ renamef(f1, f2)
 	int	fs;
 
 	if (f1 != f2) {
+		/*
+		 * This is a hack to work around a bug triggered by
+		 * DO_PIPE_PARENT that causes fd #10 to be renamed to fd #1
+		 * twice with the result of loosing fd #1 completely.
+		 * We currently only have a highly complex testcase that
+		 * does not allow to trace for the reason. So it seems to
+		 * be the best way to avoid the results of the bug until
+		 * we can fix the real reason.
+		 */
+		if (f2 == 1 && f1 >= 10 && fcntl(f1, F_GETFD, 0) < 0)
+			return;
+
 		fs = fcntl(f2, F_GETFD, 0);
 		close(f2);
-		fcntl(f1, F_DUPFD, f2);
+		(void) fcntl(f1, F_DUPFD, f2);
 		close(f1);
 		if (fs == 1)
-			fcntl(f2, F_SETFD, FD_CLOEXEC);
+			(void) fcntl(f2, F_SETFD, FD_CLOEXEC);
 		if (f2 == 0)
 			ioset |= 1;
 	}
@@ -269,6 +306,10 @@ create(s, iof)
 	}
 #endif
 #ifdef	O_CREAT
+#if defined(DO_O_APPEND) && defined(O_APPEND)
+	if (iof & IOAPP)
+		omode |= O_APPEND;
+#endif
 	if ((rc = open((char *)s, omode, 0666)) < 0) {
 #else
 	if ((rc = creat((char *)s, 0666)) < 0) {
@@ -278,6 +319,25 @@ create(s, iof)
 		 * Returns only if flags & noexit is set.
 		 */
 	} else {
+#ifdef	DO_NOCLOBBER
+		if ((flags2 & noclobberflg) && (iof & IOCLOB) == 0 &&
+		    statb.st_mode != 0) {
+			/*
+			 * Noclobber is set and a non regular file exists.
+			 * Check for a race condition and verify that the
+			 * opened file is not a regular file.
+			 */
+			fstat(rc, &statb);
+			if (S_ISREG(statb.st_mode)) {
+				close(rc);
+				failed(s, eclobber);
+				/*
+				 * Returns only if flags & noexit is set.
+				 */
+				return (-1);
+			}
+		}
+#endif
 		return (rc);
 	}
 	return (-1);
@@ -310,13 +370,22 @@ tmpfil(tb)
 		}
 	} while ((fd == -1) && (errno == EEXIST));
 	if (fd != -1) {
+		/*
+		 * Users may call "umask 0400" and as a result, the open()
+		 * above my have created a write only file. Since this is
+		 * a shell internal temp file, we decide to always grant
+		 * read/write for the owner.
+		 */
+		fchmod(fd, 0600);
 		pushtemp(fd, tb);
 		return (fd);
 	} else {
 		failed(tmpout, badcreate);
-		/* NOTREACHED */
+		/*
+		 * Returns only if flags & noexit is set.
+		 */
 	}
-	return (-1);		/* Not reached, but keeps GCC happy */
+	return (-1);
 }
 
 /*
@@ -329,8 +398,8 @@ void
 copy(ioparg)
 	struct ionod	*ioparg;
 {
-	unsigned char	*cline;
-	unsigned char	*clinep;
+	unsigned char	*cline;		/* Start of current line */
+	unsigned char	*clinep;	/* Current add pointer */
 	struct ionod	*iop;
 	unsigned int	c;
 	unsigned char	*ends;
@@ -340,125 +409,137 @@ copy(ioparg)
 	int		i;
 	int		stripflg;
 	unsigned char	*pc;
+	struct tempblk	tb;
 
+	if ((iop = ioparg) == NULL)
+		return;
 
-	if ((iop = ioparg) != NULL) {
-		struct tempblk tb;
-		copy(iop->iolst);
-		ends = mactrim((unsigned char *)iop->ioname);
-		stripflg = iop->iofile & IOSTRIP;
-		if (nosubst)
-			iop->iofile &= ~IODOC_SUBST;
-		fd = tmpfil(&tb);
+	copy(iop->iolst);
+	ends = mactrim((unsigned char *)iop->ioname);
+	stripflg = iop->iofile & IOSTRIP;
+	if (nosubst)
+		iop->iofile &= ~IODOC_SUBST;
+	fd = tmpfil(&tb);
 
-		if (fndef)
-			iop->ioname = (char *)make(tmpout);
-		else
-			iop->ioname = (char *)cpystak(tmpout);
+	if (fndef)
+		iop->ioname = (char *)make(tmpout);
+	else
+		iop->ioname = (char *)cpystak(tmpout);
 
-		iop->iolst = iotemp;
-		iotemp = iop;
+	iop->iolst = iotemp;
+	iotemp = iop;
 
-		cline = clinep = start = locstak();
-		poff = 0;
-		if (stripflg) {
-			iop->iofile &= ~IOSTRIP;
-			while (*ends == '\t')
-				ends++;
+	cline = clinep = start = locstak();
+	poff = 0;
+	if (stripflg) {
+		iop->iofile &= ~IOSTRIP;
+		while (*ends == '\t')
+			ends++;
+	}
+	for (;;) {
+		staktop = &clinep[1];
+		chkpr();
+		if (stakbot != start) {
+			poff = stakbot - start;
+			start += poff;
+			cline += poff;
+			clinep += poff;
+			poff = 0;
 		}
-		for (;;) {
-			chkpr();
-			if (nosubst) {
-				c = readwc();
-				if (stripflg)
-					while (c == '\t')
-						c = readwc();
-
-				while (!eolchar(c)) {
-					pc = readw(c);
-					while (*pc) {
-						GROWSTAK2(clinep, poff);
-						*clinep++ = *pc++;
-					}
+		staktop = start;
+		if (nosubst) {
+			c = readwc();
+			if (stripflg)
+				while (c == '\t')
 					c = readwc();
-				}
-			} else {
-				c = nextwc();
-				if (stripflg)
-					while (c == '\t')
-						c = nextwc();
 
-				while (!eolchar(c)) {
-					pc = readw(c);
-					while (*pc) {
-						GROWSTAK2(clinep, poff);
-						*clinep++ = *pc++;
-					}
-					if (c == '\\') {
-						pc = readw(readwc());
-						/* *pc might be NULL */
-						/* BEGIN CSTYLED */
-						if (*pc) {
-							while (*pc) {
-								GROWSTAK2(clinep, poff);
-								*clinep++ = *pc++;
-							}
-						} else {
-							GROWSTAK2(clinep, poff);
-							*clinep++ = *pc;
-						}
-						/* END CSTYLED */
-					}
-					c = nextwc();
+			while (!eolchar(c)) {
+				pc = readw(c);
+				while (*pc) {
+					GROWSTAK2(clinep, poff);
+					*clinep++ = *pc++;
 				}
+				c = readwc();
 			}
+		} else {
+			c = nextwc();
+			if (stripflg)
+				while (c == '\t')
+					c = nextwc();
 
+			while (!eolchar(c)) {
+				pc = readw(c);
+				while (*pc) {
+					GROWSTAK2(clinep, poff);
+					*clinep++ = *pc++;
+				}
+				if (c == '\\') {
+					pc = readw(readwc());
+					/* *pc might be NULL */
+					if (*pc) {
+						while (*pc) {
+							GROWSTAK2(clinep, poff);
+							*clinep++ = *pc++;
+						}
+					} else {
+						GROWSTAK2(clinep, poff);
+						*clinep++ = *pc;
+					}
+				}
+				c = nextwc();
+			}
+		}
+
+		GROWSTAK2(clinep, poff);
+		*clinep = 0;
+		if (poff) {
+			cline += poff;
+			start += poff;
+			poff = 0;
+		}
+		if (eof || eq(cline, ends)) {
+			if ((i = cline - start) > 0)
+				if (write(fd, start, i) != i)
+					break;
+			break;
+		} else {
 			GROWSTAK2(clinep, poff);
-			*clinep = 0;
+			*clinep++ = NL;
 			if (poff) {
 				cline += poff;
 				start += poff;
 				poff = 0;
 			}
-			if (eof || eq(cline, ends)) {
-				if ((i = cline - start) > 0)
-					write(fd, start, i);
-				break;
-			} else {
-				GROWSTAK2(clinep, poff);
-				*clinep++ = NL;
-				if (poff) {
-					cline += poff;
-					start += poff;
-					poff = 0;
-				}
-			}
-
-			if ((i = clinep - start) < CPYSIZ) {
-				cline = clinep;
-			} else {
-				write(fd, start, i);
-				cline = clinep = start;
-			}
 		}
 
-		/*
-		 * Pushed in tmpfil -- bug fix for problem
-		 * deleting in-line script.
-		 */
-		poptemp();
+		if ((i = clinep - start) < CPYSIZ) {
+			cline = clinep;
+		} else {
+			if (write(fd, start, i) != i)
+				break;
+			cline = clinep = start;
+		}
 	}
+
+	/*
+	 * Pushed in tmpfil -- bug fix for problem
+	 * deleting in-line script.
+	 */
+	poptemp();
 }
 
-void
+int
 link_iodocs(i)
 	struct ionod	*i;
 {
 	int r;
 	int len;
+	int ret = 0;
 	size_t size_left = TMPOUTSZ - tmpout_offset;
 
 	while (i) {
+		if (i->iofile & IOBARRIER)
+			break;
 		free(i->iolink);
 
 		/* make sure tmp file does not already exist. */
@@ -467,11 +548,10 @@ link_iodocs(i)
 			    size_left, "%u", serial);
 			serial++;
 			r = link(i->ioname, (char *)tmpout);
-
-#ifdef	HAVE_SYMLINK	/* Need to support Haiku */
+			/* Need to support Haiku */
 			if (r == -1 && errno != EEXIST)
-				r = symlink(i->ioname, (char *)tmpout);
-#endif
+				r = copy_file(i->ioname, (char *)tmpout);
+
 			if ((serial >= UINT_MAX) || (len >= size_left)) {
 			/*
 			 * We've already cycled through all the possible
@@ -484,13 +564,48 @@ link_iodocs(i)
 		} while (r == -1 && errno == EEXIST);
 
 		if (r != -1) {
+			ret = 1;
 			i->iolink = (char *)make(tmpout);
 			i = i->iolst;
 		} else {
 			failed(tmpout, badcreate);
+			/* NOTREACHED */
 		}
 
 	}
+	return (ret);
+}
+
+/*
+ * If link() fails because it is unimplemented (as on Haiku), we copy the file.
+ */
+static int
+copy_file(fromname, toname)
+	char	*fromname;
+	char	*toname;
+{
+	int	fi = open(fromname, O_RDONLY);
+	int	fo;
+	int	amt;
+	char	buf[1024];
+
+	if (fi < 0)
+		return (-1);
+
+	fo = open(toname, O_WRONLY|O_CREAT|O_EXCL, 0600);
+	if (fo < 0) {
+		close(fi);
+		return (-1);
+	}
+	while ((amt = read(fi, buf, sizeof (buf))) > 0) {
+		if (write(fo, buf, amt) != amt) {
+			amt = -1;
+			break;
+		}
+	}
+	close(fi);
+	close(fo);
+	return (amt);
 }
 
 void
@@ -498,6 +613,8 @@ swap_iodoc_nm(i)
 	struct ionod	*i;
 {
 	while (i) {
+		if (i->iofile & IOBARRIER)
+			break;
 		free(i->ioname);
 		i->ioname = i->iolink;
 		i->iolink = 0;

@@ -35,13 +35,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)echo.c	1.16 16/07/15 2008-2016 J. Schilling
+ * @(#)echo.c	1.19 19/01/08 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)echo.c	1.16 16/07/15 2008-2016 J. Schilling";
+	"@(#)echo.c	1.19 19/01/08 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -69,14 +69,16 @@ echo(argc, argv)
 	struct namnod   *sysv3;
 	int	do_sysv3 = 0;
 
-	sysv3 = findnam((unsigned char *)"SYSV3");
-	if (sysv3 && (sysv3->namflg & (N_EXPORT | N_ENVNAM)))
-		do_sysv3 = 1;
+	if ((flags & ppath) == 0) {
+		sysv3 = findnam((unsigned char *)"SYSV3");
+		if (sysv3 && (sysv3->namflg & (N_EXPORT | N_ENVNAM)))
+			do_sysv3 = 1;
+	}
 
 	/* Do the -n parsing if sysv3 is set or if ucb_builtsin is set */
-	if (ucb_builtins && !do_sysv3) {
+	if (ucb_builtins && !do_sysv3 && ((flags & ppath) == 0)) {
 #else
-	if (ucb_builtins) {
+	if (ucb_builtins && ((flags & ppath) == 0)) {
 #endif /* _iBCS2 */
 
 		nflg = 0;
@@ -182,6 +184,8 @@ escape_char(cp, res, echomode)
 
 	case '0':
 		j = wd = 0;
+		if (!echomode)		/* '\0123' must be '\n3' */
+			j = 1;
 	oct:
 		while ((*++cp >= '0' &&
 		    *cp <= '7') && j++ < 3) {
@@ -199,7 +203,7 @@ escape_char(cp, res, echomode)
 			wd = (*cp - '0');
 			goto oct;
 		}
-
+		/* FALLTHRU */
 	default:
 	norm:
 		c = *--cp;

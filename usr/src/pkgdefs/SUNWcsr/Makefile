@@ -74,6 +74,7 @@ DATAFILES += \
 	i.vfstab
 
 LICENSEFILES += \
+	../../cmd/bosh/THIRDPARTYLICENSE \
 	../../cmd/cmd-inet/sbin/ifparse/THIRDPARTYLICENSE \
 	../../cmd/cmd-inet/usr.sbin/THIRDPARTYLICENSE.route \
 	../../cmd/cmd-inet/usr.sbin/ifconfig/THIRDPARTYLICENSE
