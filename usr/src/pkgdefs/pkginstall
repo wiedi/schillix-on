@@ -11,7 +11,7 @@
 #
 
 #
-# Copyright 2006-2011 Jörg Schilling.  All rights reserved.
+# Copyright 2006-2019 Jörg Schilling.  All rights reserved.
 #
 
 owd=`pwd`
@@ -19,17 +19,22 @@ arch=`uname -p`
 if [ "$PKGARCHIVE" = "" ]; then
 	PKGARCHIVE=../../../packages/$arch/nightly/
 fi
+INSROOT=""
+insroot="$PKGARCHIVE/ROOT"
 dorm=FALSE
 pkglist=pkglist
 found_pkglist=FALSE
 
 
 usage() {
-	echo "Usage: pkginstall [-rm] [pkglist]"
+	echo "Usage: pkginstall [-rm] [-R root] [-pd dir] [pkglist]"
 	echo "Options:"
-	echo "	-rm	remove everything in $PKGARCHIVE/ROOT before installing"
+	echo "	-rm	remove everything in install root directory before installing"
+	echo "	-R root	Specify different install root directory"
+	echo "	-pd dir	Specify different package source directory"
 	echo
-	echo "By default, package names are taken from the file 'pkglist'"
+	echo "By default, package names are taken from the file './pkglist'"
+	echo "Default install root directory is '$insroot'"
 }
 
 while [ $# -gt 0 ]; do
@@ -42,6 +47,17 @@ while [ $# -gt 0 ]; do
 	-rm)
 		dorm=TRUE
 		shift
+		;;
+
+	-R)
+		INSROOT=$2
+		shift 2 || exit
+		;;
+
+	-pd)
+		PKGARCHIVE=$2
+		shift 2 || exit
+		insroot="$PKGARCHIVE/ROOT"
 		;;
 
 	-*)
@@ -57,7 +73,7 @@ while [ $# -gt 0 ]; do
 			exit 1
 		fi
 		
-		found_fileprefix=TRUE
+		found_pkglist=TRUE
 		pkglist=$1
 		#echo "arg:  $1"
 		#echo "args: $@"
@@ -71,18 +87,38 @@ if [ -r "$pkglist" ]; then
 		pkglist="$owd/$pkglist"
 	fi
 fi
+
+INSROOT=${INSROOT:-$insroot}
+echo "$INSROOT" | grep "^/" > /dev/null
+if [ $? -ne 0 ]; then
+	INSROOT="$owd/$INSROOT"
+fi
+
 #echo dorm $dorm
 #echo found_pkglist $found_pkglist
 #echo pklist $pkglist
+#echo INSROOT "$INSROOT"
 
 cd $PKGARCHIVE || exit
 cwd=`pwd`
 
-mkdir -p ROOT
-chown root:root ROOT
-chmod g+s ROOT
+mkdir -p "$INSROOT"
+chown root:root "$INSROOT"
+chmod g+s "$INSROOT"
 if [ $dorm = TRUE ]; then
-	(cd ROOT && rm -rf *)
+	(cd "$INSROOT" && rm -rf *)
 fi
 
-pkgadd -a $owd/admin-fullauto  -R $cwd/ROOT -d . ` cat $pkglist `
+#
+# Canonicalize "$INSROOT"
+#
+cd "$INSROOT" || exit
+INSROOT=`pwd`
+
+#
+# Back to the package directory...
+#
+cd "$cwd" || edit
+
+pkgadd -a $owd/admin-fullauto  -R "$INSROOT" -d . ` cat $pkglist `
+pkgadm sync -R "$INSROOT" -q
