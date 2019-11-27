@@ -23,6 +23,7 @@ CFLAGS += $(CCVERBOSE)
 CPPFLAGS +=	-Dunix=1		# Compile for UNIX environment
 CPPFLAGS +=	-DFLEXNAMES		# Allow long identifier names
 CPPFLAGS +=	-DSUN_SAYLINE		# Add enter/leave note to # line
+CPPFLAGS +=	-DEXIT_ON_ERROR		# exit() on #error directive
 CPPFLAGS +=	-DUSE_LARGEFILES
 CPPFLAGS +=	-DNO_PRINTFLIKE=1
 
