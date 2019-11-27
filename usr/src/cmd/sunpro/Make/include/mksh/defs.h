@@ -31,9 +31,9 @@
 #pragma	ident	"@(#)defs.h	1.35	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2018 J. Schilling
  *
- * @(#)defs.h	1.16 17/05/13 2017 J. Schilling
+ * @(#)defs.h	1.21 18/09/20 2017-2018 J. Schilling
  */
 
 /*
@@ -59,7 +59,12 @@
 #include <schily/stat.h>	/* stat_ansecs() */
 #include <schily/maxpath.h>	/* MAXNAMELEN */
 #include <schily/getcwd.h>
+/*
+ * Some Linux versions come with an incompatible prototype for bsd_signal()
+ */
+#define	bsd_signal	no_bsd_signal
 #include <schily/signal.h>
+#undef	bsd_signal
 #include <schily/dirent.h>	/* opendir() */
 #else
 #include <limits.h>		/* MB_LEN_MAX */
@@ -91,10 +96,15 @@
 /*
  * Definition of wchar functions.
  */
+#if defined(SCHILY_BUILD) || defined(SCHILY_INCLUDES)
+#include <schily/wctype.h>
+#include <schily/wchar.h>
+#else
 #ifdef	HAVE_WCTYPE_H	/* HP-UX-10.x does not have it */
 #include <wctype.h>
 #endif
 #include <wchar.h>
+#endif
 
 /*
  * A type and some utilities for boolean values
@@ -404,6 +414,7 @@ typedef enum {
 	no_parallel_special,
 	parallel_special,
 	posix_special,
+	phony_special,
 	precious_special,
 	sccs_get_posix_special,
 	sccs_get_special,
@@ -430,12 +441,21 @@ typedef enum {
 /*
  * timestruc_t is SVR4 specific
  */
+#ifdef	__nonono__
+/*
+ * We don't need this typedef, since there is a
+ * #define	timestruc_t	struct timespec
+ * in $(SRCROOT)/incs/*/xconfig.h that is created by "configure" in
+ * case out current platform does not support that typedef.
+ */
 typedef struct timespec timestruc_t;
+#endif
 #endif
 
 extern const timestruc_t file_no_time;
 extern const timestruc_t file_doesnt_exist;
 extern const timestruc_t file_is_dir;
+extern const timestruc_t file_phony_time;
 extern const timestruc_t file_min_time;
 extern const timestruc_t file_max_time;
 
@@ -530,12 +550,14 @@ struct _Name {
 		Boolean			is_file;
 		Boolean			is_dir;
 		Boolean			is_sym_link;
+		Boolean			is_phony;
 		Boolean			is_precious;
 		enum sccs_stat		has_sccs;
 #else
 		Boolean			is_file:1;
 		Boolean			is_dir:1;
 		Boolean			is_sym_link:1;
+		Boolean			is_phony:1;
 		Boolean			is_precious:1;
 #ifdef NSE
                 Boolean                 is_derived_src:1;
@@ -987,6 +1009,7 @@ extern int		exit_status;
 extern wchar_t		*file_being_read;
 /* Variable gnu_style=true if env. var. SUN_MAKE_COMPAT_MODE=GNU (RFE 4866328) */
 extern Boolean		gnu_style;
+extern Boolean		sunpro_compat;
 extern Name_set		hashtab;
 extern Name		host_arch;
 extern Name		host_mach;

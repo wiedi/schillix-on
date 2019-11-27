@@ -1,9 +1,9 @@
 '\" te
-. \" @(#)make.1s	1.9 17/05/21 Copyr 2012-2017 J. Schilling
+. \" @(#)make.1s	1.29 19/07/22 Copyr 2012-2019 J. Schilling
 .\" Copyright 1989 AT&T
 .\" Portions Copyright (c) 1992, X/Open Company Limited  All Rights Reserved
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved
-.\" Copyright (c) 2012-2017, J. Schilling
+.\" Copyright (c) 2012-2018, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\"
 .\" Sun Microsystems, Inc. gratefully acknowledges The Open Group for
@@ -35,7 +35,7 @@
 .\"
 .\" The contents of this file are subject to the terms of the
 .\" Common Development and Distribution License ("CDDL"), version 1.0.
-.\" You may only use this file in accordance with the terms of version
+.\" You may use this file only in accordance with the terms of version
 .\" 1.0 of the CDDL.
 .\"
 .\" A full copy of the text of the CDDL should have accompanied this
@@ -49,22 +49,34 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH make 1S "2017/05/21" "SunOS 5.11" "SunOS Specific Commands"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH make 1S "2019/07/22" "SunOS 5.11" "SunOS Specific Commands"
 .SH NAME
 make \- maintain, update, and regenerate related programs and files
 .SH SYNOPSIS
 .LP
 .nf
-\fB/usr/bin/make\fR [\fB-d\fR] [\fB-dd\fR] [\fB-D\fR] [\fB-DD\fR] [\fB-e\fR] [\fB-i\fR] [\fB-k\fR] [\fB-n\fR]
-     [\fB-p\fR] [\fB-P\fR] [\fB-q\fR] [\fB-r\fR] [\fB-s\fR] [\fB-S\fR] [\fB-t\fR] [\fB-V\fR]
+\fB/usr/bin/make\fR [\fB-C\fR \fIdirectory\fR] [\fB-d\fR] [\fB-dd\fR] [\fB-D\fR] [\fB-DD\fR] [\fB-e\fR] [\fB-i\fR]
+     [\fB-k\fR] [\fB-n\fR] [\fB-p\fR] [\fB-P\fR] [\fB-q\fR] [\fB-r\fR] [\fB-s\fR] [\fB-S\fR] [\fB-t\fR] [\fB-V\fR]
      [\fB-f\fR \fImakefile\fR].\|.\|. [\fB-K\fR \fIstatefile\fR].\|.\|. [\fItarget\fR].\|.\|.
      [\fImacro\fR = \fIvalue\fR.\|.\|.]
 .fi
 
 .LP
 .nf
-\fB/usr/xpg4/bin/make\fR [\fB-d\fR] [\fB-dd\fR] [\fB-D\fR] [\fB-DD\fR] [\fB-e\fR] [\fB-i\fR] [\fB-k\fR]
-     [\fB-n\fR] [\fB-p\fR] [\fB-P\fR] [\fB-q\fR] [\fB-r\fR] [\fB-s\fR] [\fB-S\fR] [\fB-t\fR] [\fB-V\fR]
+\fB/usr/xpg4/bin/make\fR [\fB-C\fR \fIdirectory\fR] [\fB-d\fR] [\fB-dd\fR] [\fB-D\fR] [\fB-DD\fR] [\fB-e\fR]
+     [\fB-i\fR] [\fB-k\fR] [\fB-n\fR] [\fB-p\fR] [\fB-P\fR] [\fB-q\fR] [\fB-r\fR] [\fB-s\fR] [\fB-S\fR] [\fB-t\fR] [\fB-V\fR]
      [\fB-f\fR \fImakefile\fR].\|.\|. [\fItarget\fR].\|.\|. [\fImacro\fR = \fIvalue\fR.\|.\|.]
 .fi
 
@@ -198,12 +210,29 @@ an error message and halts.
 The following options are supported:
 .sp
 .ne 2
-.mk
-.na
-.B -d
-.ad
-.RS 16n
-.rt
+.PD 0
+.TP 16n
+.BI \-C directory
+.TP
+.BI \-C " directory
+.PD
+Changes the current working directory to the directory
+.I directory
+before attempting to open and process the makefiles or run any targets.
+This option may
+be specified more than once, each subsequent occurrence of the option is
+dependent on those that came before it.
+.sp
+This option is not added to the 
+.B MAKEFLAGS
+environment variable and it is not read from that variable even when
+.B MAKEFLAGS
+contains this option.
+
+.sp
+.ne 2
+.TP
+.B \-d
 Displays the reasons why
 .B make
 .RB "chooses to rebuild a target." " make"
@@ -211,64 +240,38 @@ Displays the reasons why
 displays options read in from the
 .B MAKEFLAGS
 environment variable.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -dd
-.ad
-.RS 16n
-.rt
+.TP
+.B \-dd
 Displays the dependency check and processing in vast detail.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -D
-.ad
-.RS 16n
-.rt
+.TP
+.B \-D
 Displays the text of the makefiles read in.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -DD
-.ad
-.RS 16n
-.rt
+.TP
+.B \-DD
 Displays the text of the makefiles,
 .B make.rules
 file, the state file,
 and all hidden-dependency reports.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -e
-.ad
-.RS 16n
-.rt
+.TP
+.B \-e
 Environment variables override assignments within makefiles.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -f
-.I makefile
-.ad
-.RS 16n
-.rt
+.TP
+.BI \-f " makefile
 Uses the description file
 .IR makefile .
 A
@@ -294,7 +297,7 @@ is specified,
 tries the
 following in sequence, except when in POSIX mode (see \fB\&.POSIX\fR in
 Usage):
-.RS +4
+.RS
 .TP
 .ie t \(bu
 .el o
@@ -307,8 +310,6 @@ uses that file. If, however, there is an
 history file
 .RB ( SCCS/s.makefile ") which is newer, " make " attempts to retrieve and"
 use the most recent version.
-.RE
-.RS +4
 .TP
 .ie t \(bu
 .el o
@@ -325,7 +326,7 @@ history file
 that is newer,
 .B make
 attempts to retrieve and use the most recent version.
-.RE
+.PP
 When no
 .I makefile
 is specified,
@@ -333,63 +334,57 @@ is specified,
 in POSIX mode and
 .B /usr/xpg4/bin/make
 try the following files in sequence:
-.RS +4
 .TP
 .ie t \(bu
 .el o
 \fB\&./makefile\fR, \fB\&./Makefile\fR
-.RE
-.RS +4
 .TP
 .ie t \(bu
 .el o
 .BR s.makefile ,
 .B SCCS/s.makefile
-.RE
-.RS +4
 .TP
 .ie t \(bu
 .el o
 .BR s.Makefile ,
 .B SCCS/s.Makefile
 .RE
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -i
-.ad
-.RS 16n
-.rt
+.TP
+.B \-i
 Ignores error codes returned by commands.  Equivalent to the
 special-function target
 .BR \&.IGNORE: .
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -k
-.ad
-.RS 16n
-.rt
+.PD 0
+.TP
+.BI \-j make-max-jobs
+.TP
+.BI \-j\  make-max-jobs
+.PD
+Specifies the maximum total number of jobs that are
+run in parallel.
+.sp
+This option is not available in case that
+.B make
+as not been compiled with support for parallel make features.
+
+.sp
+.ne 2
+.TP
+.B \-k
 .RB "When a nonzero error status is returned by a rule, or when" " make"
 cannot find a rule, abandons work on the current target, but continues with
 other dependency branches that do not depend on it.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -K
-.I statefile
-.ad
-.RS 16n
-.rt
+.TP
+.BI \-K " statefile
 Uses the state file
 .IR statefile .
 A \fB\(mi\fR as the \fIstatefile\fR
@@ -405,16 +400,40 @@ argument pair appears,
 uses the concatenation of those files, in order of appearance.
 (See also \fB\&.KEEP_STATE\fR  and \fB\&.KEEP_STATE_FILE\fR in the
 Special-Function Targets section).
+
+.sp
+.ne 10
+.TP
+.BR \-m\  { serial " | " parallel }
+Allows to specify one of the following key words:
+.RS
+.br
+.ne 4
+.TP 10
+.B serial
+Causes
+.B make
+to behave like the standard serial version of
+.BR make .
+.br
+.ne 4
+.TP
+.B parallel
+Causes
+.B make
+to run several jobs in parallel on the
+.B make
+host.
+.PP
+This option is not available in case that
+.B make
+as not been compiled with support for parallel make features.
 .RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -n
-.ad
-.RS 16n
-.rt
+.TP
+.B \-n
 No execution mode. Prints commands, but does not execute them. Even lines
 beginning with an
 .B @
@@ -426,92 +445,75 @@ discussion of
 .B MAKEFLAGS
 in Reading Makefiles and the Environment).
 When in POSIX mode, lines beginning with a "\fB+\fR" are executed.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -p
-.ad
-.RS 16n
-.rt
+.TP
+.B \-N
+Reverse the effect of the
+.B \-n
+(No execution mode) option.
+
+.sp
+.ne 2
+.TP
+.B \-p
 Prints out the complete set of macro definitions and target descriptions.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -P
-.ad
-.RS 16n
-.rt
+.TP
+.B \-P
 Merely reports dependencies, rather than building them.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -q
-.ad
-.RS 16n
-.rt
+.TP
+.B \-q
 Question mode.
 .B make
 returns a zero or nonzero status code depending
 on whether or not the target file is up to date. When in POSIX mode, lines
 beginning with a "\fB+\fR" are executed.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -r
-.ad
-.RS 16n
-.rt
+.TP
+.B \-r
 Does not read in the default makefile
 .BR /usr/share/lib/make/make.rules .
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -s
-.ad
-.RS 16n
-.rt
+.TP
+.B \-R
+Do not run in parallel mode.
+.sp
+This option is not available in case that
+.B make
+as not been compiled with support for parallel make features.
+
+.sp
+.ne 2
+.TP
+.B \-s
 Silent mode. Does not print command lines before executing them. Equivalent
 to the special-function target
 .BR \&.SILENT: .
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -S
-.ad
-.RS 16n
-.rt
+.TP
+.B \-S
 Undoes the effect of the
 .B -k
 option. Stops processing when a non-zero
 exit status is returned by a command.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -t
-.ad
-.RS 16n
-.rt
+.TP
+.B \-t
 Touches the target files (bringing them up to date) rather than performing
 their rules.
 .B Warning:
@@ -522,23 +524,45 @@ maintained by more than one person. When the \fB\&.KEEP_STATE:\fR target
 appears in the makefile, this option updates the state file just as if the
 rules had been performed. When in POSIX mode, lines beginning with a
 "\fB+\fR" are executed.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -V
-.ad
-.RS 16n
-.rt
+.TP
+.B \-T
+Print a list of known targets.
+This includes targets from all explicit and implicit makefiles,
+e.g. the default makefile mentioned with in the description for the
+.B \-r
+option above.
+
+.sp
+.ne 2
+.TP
+.B \-u
+Unconditionally build the target and all its dependencies.
+This may result in targets being remade more than once since every target
+is rebuilt every time it appears in a dependency list.
+
+.sp
+.ne 2
+.TP
+.B \-V
 Puts
 .B make
 into SysV mode. Refer to
 .BR sysV-make (1)
 for respective
 details.
-.RE
+
+.sp
+.ne 2
+.TP
+.B \-w
+Print a message containing the working directory before and after processing
+targets.
+This may be useful for tracking down errors from complex nests of recursive
+.B make
+calls.
 
 .SH OPERANDS
 .sp
@@ -546,27 +570,17 @@ details.
 The following operands are supported:
 .sp
 .ne 2
-.mk
-.na
+.TP 16n
 .I target
-.ad
-.RS 15n
-.rt
 Target names, as defined in Usage.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-\fImacro\fB=\fIvalue\fR
-.ad
-.RS 15n
-.rt
+.TP
+.IB macro = value
 Macro definition. This definition overrides any regular definition for the
 specified macro within the makefile itself, or in the environment. However,
 this definition can still be overridden by conditional macro assignments.
-.RE
 
 .SH USAGE
 .sp
@@ -590,13 +604,17 @@ value:
 .BR -i ,
 .BR -k ,
 .BR -n ,
+.BR -N ,
 .BR -p ,
 .BR -q ,
 .BR -r ,
 .BR -s ,
 .BR -S ,
+.BR -t ,
+.BR -T ,
+.BR -u ,
 or
-.BR -t .
+.BR -w .
 Due to the
 implementation of POSIX.2 (see
 .BR POSIX.2 (5),
@@ -625,9 +643,11 @@ uses the file
 in the current directory;
 otherwise it reads the file
 .BR /usr/share/lib/make/make.rules ,
+.ne 6
 which
 contains the standard definitions and rules. Use the directive:
 .sp
+.ne 3
 .in +2
 .nf
 \fBinclude /usr/share/lib/make/make.rules\fR
@@ -704,6 +724,7 @@ take precedence over those imported from the environment.
 The macros
 .BR MAKEFLAGS ,
 .BR MAKE ,
+.BR MAKE_NAME ,
 .BR SHELL ,
 .BR HOST_ARCH ,
 .BR HOST_MACH ,
@@ -791,7 +812,48 @@ in a command line, that line is passed to the shell
 as the start of a comment).
 
 .br
-.ne 2
+.ne 3
+.TP
+.BI "export " "macro .\|.\|."
+If the word
+.B export
+appears as the first six letters of a line and
+is followed by a
+.B SPACE
+or
+.BR TAB ,
+the strings that follows are taken
+as a list of macros that should be
+exported in the list of environment variables.
+.sp
+If an environment variable with the same name already exists,
+it's value is replaced by the current value of the related make macro.
+An empty list of macro names is not considered an error.
+If the 
+.B PATH
+macro is in the list of parameters, the path search of the current
+.B make
+process is also affected.
+If the
+.B SHELL
+macro is in the list of parameters, it is ignored and the
+previous
+.B SHELL
+environment is kept.
+.sp
+Previous versions of
+.B make
+did not support the
+.B export
+directive.
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment,
+.B make
+does not support this feature.
+
+.br
+.ne 3
 .TP
 .BI "include " "filename .\|.\|."
 If the word
@@ -810,12 +872,119 @@ to a depth of no more than 38 nested makefiles. If
 is a
 macro reference, it is expanded.
 .sp
-Previous versions os
+Previous versions of
 .B make
 did only supoport one filename after the
 .B include
 directive, this version supports any number of filenames
 and macros that expand to more than one name.
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment,
+.B make
+only supports one filename after the
+.B include
+directive.
+
+.br
+.ne 3
+.TP
+.BI "-include " "filename .\|.\|."
+If the word
+.B -include
+appears as the first nine letters of a line and
+is followed by a
+.B SPACE
+or
+.BR TAB ,
+the string that follows is taken
+as a filename to interpolate at that line.
+.sp
+The
+.B -include
+directive is implemented similar to the
+.B include
+directive, except that a nonexistent file is
+not considered to be an error.
+.sp
+Previous versions of
+.B make
+did not support the
+.B -include
+directive.
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment,
+.B make
+does not support this feature.
+
+.br
+.ne 3
+.TP
+.BI "readonly " "macro .\|.\|."
+If the word
+.B readonly
+appears as the first eight letters of a line and
+is followed by a
+.B SPACE
+or
+.BR TAB ,
+the strings that follows are taken
+as a list of macros that should be
+marked as
+.BR readonly .
+This prevents further modification of the
+content of the related macros.
+An empty list of macro names is not considered an error.
+.sp
+Previous versions of
+.B make
+did not support the
+.B readonly
+directive.
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment,
+.B make
+does not support this feature.
+
+.br
+.ne 3
+.TP
+.BI "unexport " "macro .\|.\|."
+If the word
+.B unexport
+appears as the first eight letters of a line and
+is followed by a
+.B SPACE
+or
+.BR TAB ,
+the strings that follows are taken
+as a list of macros that should be
+removed from the list of environment variables.
+An empty list of macro names is not considered an error.
+If the 
+.B PATH
+macro is in the list of parameters, the path search of the current
+.B make
+process is also affected.
+If the
+.B SHELL
+macro is in the list of parameters, it is ignored and the
+previous
+.B SHELL
+environment is kept.
+.sp
+Previous versions of
+.B make
+did not support the
+.B unexport
+directive.
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment,
+.B make
+does not support this feature.
 
 .SS "\fITargets and Dependencies\fR"
 .sp
@@ -1024,8 +1193,26 @@ processing only those targets, and their dependencies.
 .ad
 .RS 9n
 .rt
-Define the value of a macro to be the output of a command (see Command
-Substitutions below).
+Define the value of a macro to be the output of a command (see
+.B Command Substitutions
+below).
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B :shell =
+.ad
+.RS 9n
+.rt
+Define the value of a macro to be the output of a command with
+.B make macros
+in the output of the command expanded by
+.B make
+before assigning the result to the macro (see
+.B Command Substitutions
+below).
 .RE
 
 .sp
@@ -1037,7 +1224,9 @@ Substitutions below).
 .RS 9n
 .rt
 In a macro reference, execute the command stored in the macro, and replace
-the reference with the output of that command (see \fBCommand Substitutions\fR below).
+the reference with the output of that command (see
+.B Command Substitutions
+below).
 .RE
 
 .SS "\fIRules\fR"
@@ -1279,6 +1468,23 @@ file in the current working directory.
 .ne 2
 .mk
 .na
+.B .LOCAL:
+.ad
+.RS 23n
+.rt
+When running in
+.B serial
+mode, this target has no effect. It is used when in
+.B parallel
+mode. See
+.BR dmake (1)
+for more information.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
 \fB\&.MAKE_VERSION:\fR
 .ad
 .RS 23n
@@ -1309,8 +1515,13 @@ warning message.
 .ad
 .RS 23n
 .rt
-Currently, this target has no effect, it is, however, reserved for future
-use.
+When running in
+.B serial
+mode, this target has no effect. It is used when in
+.B parallel
+mode. See
+.BR dmake (1)
+for more information.
 .RE
 
 .sp
@@ -1321,7 +1532,52 @@ use.
 .ad
 .RS 23n
 .rt
-Currently of no effect, but reserved for future use.
+When running in
+.B serial
+mode, this target has no effect. It is used when in
+.B parallel
+mode. See
+.BR dmake (1)
+for more information.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\&.PHONY:\fR
+.ad
+.RS 23n
+.rt
+List of targets that should not be checked against existing files.
+A target that is marked
+.B .PHONY
+will always considered to be out of date. 
+.B make
+does not remove any of the files
+listed as dependencies for this target when interrupted.
+.B make
+normally
+removes the current target when it receives an interrupt.
+If
+.B make
+is called with the
+.B \-t
+(touch) option, the targets marked as
+.B .PHONY
+are not touched.
+.sp
+With an empty
+.B SUN_MAKE_COMPAT_MODE
+environment, or when in
+.B SysV
+mode,
+.B make
+ignores the
+.B .PHONY
+target in order to achieve compatibility to previous versions of the
+.B SunPro make
+program.
 .RE
 
 .sp
@@ -1418,7 +1674,13 @@ The suffixes list for selecting implicit rules (see The Suffixes List).
 .ad
 .RS 23n
 .rt
-Currently of no effect, but reserved for future use.
+When running in
+.B serial
+mode, this target has no effect. It is used when in
+.B parallel
+mode. See
+.BR dmake (1)
+for more information.
 .RE
 
 .SS "\fIClearing Special Targets\fR"
@@ -1634,6 +1896,40 @@ This lets you use
 .B "make -n"
 to test an entire
 hierarchy of makefiles.
+.LP
+The
+.B MAKE 
+macro contains a path name that is sufficient to recursively call the same
+.I make
+program again (it either contains the last path component or the full path
+name of the make program).
+Note that this may differ from the name that was used on the command line
+if the name that was used on the command line would not allow to call the
+same
+.I make
+program from a different directory using this name.
+For this reason 
+.I $(MAKE)
+may not be used to check for a specific
+.I make
+program. Use
+.B $(MAKE_NAME)
+instead.
+.LP
+If not in
+.B SunPro make
+or in
+.B SysV
+compatibility mode,
+the
+.B MAKE_NAME
+macro is set up by
+.B make
+to help writing makefiles that depend on vendor specific features.
+It contains the official name of the
+make program \- in our case
+.BR sunpro .
+
 .sp
 .LP
 For compatibility with the 4.2
@@ -1839,6 +2135,27 @@ The machine architecture of the target system. By default, this is the output
 of the
 .BR arch (1)
 command, prepended with \fB\(mi\fR\&.
+
+.sp
+.LP
+The following macros are provided for compatibility with GNU make:
+.br
+.ne 2
+.TP 15n
+.B CURDIR
+After
+.B make
+has processed all
+.B \-C
+options (if any), it sets the variable
+.I CURDIR
+to the absolute pathname of the current working directory.
+This value is never touched by
+.B make
+again.
+An environment variable will not overwrite it, but a makefile may.
+Setting this variable has no effect on the operation of
+.BR make .
 
 .SS "Dynamic Macros"
 .sp
@@ -3265,6 +3582,56 @@ affects all files listed in the remainder of
 this utility description for files  with a component named SCCS.
 
 .br
+.ne 5
+.PD 0
+.TP
+.B SGS_SUPPORT
+.TP
+.B SGS_SUPPORT_32
+.TP
+.B SGS_SUPPORT_64
+.PD
+These variables contain a path to
+.B libmakestate.so.1
+that is used by the linker to load the
+.B make
+provided
+library in order to maintain linker dependencies by
+.BR make .
+.B SGS_SUPPORT
+is used for all binaries unless
+.B SGS_SUPPORT_32
+or
+.B SGS_SUPPORT_64
+are set.
+.B SGS_SUPPORT_32
+and
+.B SGS_SUPPORT_64
+are
+.B isa specific
+versions.
+.sp
+These environment variables may be set by the user, but they are also
+automatically maintained by
+.B make
+in case it is neither in
+.B POSIX
+nor in
+.B SysV
+mode.
+
+.br
+.ne 2
+.TP
+.B SUNPRO_DEPENDENCIES
+If
+.B make
+is in
+.B KEEP_STATE
+mode, this environment variable is used to tell the compiler that
+it should create include dependencies as a side effect of compiling.
+
+.br
 .ne 2
 .TP
 .B SUN_MAKE_COMPAT_MODE
@@ -3279,9 +3646,38 @@ and
 for explicit rules the same was as GNU make does.
 Note that the expansion of these dynamic macros for explicit
 rules is unspecified by the standard.
+.sp
+When in GNU compatibility mode, command line
+macro definitions are forwarded to recursively
+called
+.B make
+programs.
+.TP
+.B POSIX
+Switch
+.B make
+into
+.B POSIX
+mode.
 .TP
 other
-Ingnored
+Implement 100% compatibility to the version of the SunPro make program
+as published by Sun/Oracle.
+This results in disabling to forward command line
+macro definitions specified to the current
+.B make
+program to recursively
+called
+.B make
+programs.
+It disables the special macro
+.B MAKE_NAME
+and disables to evaluate the
+.B .PHONY
+special target.
+Multiple includes with a single
+.B include
+statement are disabled.
 .RE
 
 .br
@@ -3668,6 +4064,42 @@ target cannot simultaneously satisfy both dependency relationships, it is
 conflicted.
 .RE
 
+.sp
+.ne 2
+.mk
+.na
+.B "The string `\fIstring\fB' is not valid in current locale"
+.ad
+.sp .6
+.RS 4n
+A
+.I string
+or
+.I path-name
+was discovered that cannot be translated into the current locale.
+Run
+.B make
+in the
+.BR C \-locale
+(e.g. by using
+.BR LC_CTYPE=C )
+to avoid this problem.
+.RE
+
+.SH NOTES
+.sp
+.LP
+Unlike older versions of
+.BR make ,
+this version of 
+.B make
+forwards command line macros to sub-make programs as required by
+.BR POSIX .
+If you like to get the previous behavior, set the environment
+.B SUN_MAKE_COMPAT_MODE
+to an empty value before you start
+.BR make .
+
 .SH BUGS
 .sp
 .LP
@@ -3797,6 +4229,15 @@ strips a leading
 dynamic macro.
 .sp
 .LP
+Since all internal strings are handled as wide character strings,
+there may be problems caused from character conversion while
+using an inappropriate locale for the current project.
+In such a case, it helps to run
+.B make
+in the
+.BR C \-locale.
+.sp
+.LP
 With automatic
 .B SCCS
 retrieval, this version of
@@ -3817,3 +4258,9 @@ invokes the shell with the
 .B -e
 argument. This cannot be
 inferred from the syntax of the rule alone.
+
+.SH AUTHORS
+This version of
+.BR make (1)
+was originally written by Sun Microsystems in 1986.
+Since 2016, it is maintained by J\*org Schilling.

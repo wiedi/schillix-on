@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)misc.cc	1.34	95/10/04"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)misc.cc	1.9 17/05/13 2017 J. Schilling
+ * @(#)misc.cc	1.14 19/07/19 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)misc.cc	1.9 17/05/13 2017 J. Schilling";
+	"@(#)misc.cc	1.14 19/07/19 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -269,6 +271,9 @@ time_to_string(const timestruc_t &time)
         if (time == file_doesnt_exist) {
                 return gettext("File does not exist");
         }
+        if (time == file_phony_time) {
+                return gettext("File is phony");
+        }
         if (time == file_max_time) {
                 return gettext("Younger than any file");
         }
@@ -293,9 +298,16 @@ get_current_path(void)
 	char			pwd[(MAXPATHLEN * MB_LEN_MAX)];
 	static char		*current_path;
 
-	if (current_path == NULL) {
-		(void)getcwd(pwd, sizeof(pwd));
-		if (pwd[0] == (int) nul_char) {
+	if (current_path == NULL || current_path_reset == true) {
+		Name		name;
+		Name		value;
+
+		pwd[0] = (int) nul_char;
+
+		if (current_path != NULL)
+			free(current_path);
+		if (getcwd(pwd, sizeof(pwd)) == NULL ||
+		    pwd[0] == (int) nul_char) {
 			pwd[0] = (int) slash_char;
 			pwd[1] = (int) nul_char;
 #ifdef DISTRIBUTED
@@ -309,6 +321,12 @@ get_current_path(void)
 		}
 		current_path = strdup(pwd);
 #endif
+		current_path_reset = false;
+		MBSTOWCS(wcs_buffer, NOCATGETS("CURDIR"));
+		name = GETNAME(wcs_buffer, FIND_LENGTH);
+		MBSTOWCS(wcs_buffer, current_path);
+		value = GETNAME(wcs_buffer, FIND_LENGTH);
+		SETVAR(name, value, false); 
 	}
 	return current_path;
 }
@@ -343,6 +361,7 @@ get_current_path(void)
  *		ignore_name		The Name ".IGNORE", printed
  *		keep_state		Was ".KEEP_STATE" seen in makefile?
  *		percent_list		The list of % rules
+ *		phony			The Name ".PHONY", printed
  *		precious		The Name ".PRECIOUS", printed
  *		sccs_get_name		The Name ".SCCS_GET", printed
  *		sccs_get_posix_name	The Name ".SCCS_GET_POSIX", printed
@@ -391,6 +410,15 @@ dump_make_state(void)
 	if (keep_state) {
 		(void) printf("%s:\n\n", dot_keep_state->string_mb);
 	}
+
+	/* .PHONY */
+	(void) printf("%s:", phony->string_mb);
+	for (p = hashtab.begin(), e = hashtab.end(); p != e; p++) {
+			if (p->stat.is_phony) {
+				(void) printf(" %s", p->string_mb);
+			}
+	}
+	(void) printf("\n");
 
 	/* .PRECIOUS */
 	(void) printf("%s:", precious->string_mb);
@@ -670,6 +698,8 @@ load_cached_names(void)
 	path_name = GETNAME(wcs_buffer, FIND_LENGTH);
 	MBSTOWCS(wcs_buffer, NOCATGETS("+"));
 	plus = GETNAME(wcs_buffer, FIND_LENGTH);
+	MBSTOWCS(wcs_buffer, NOCATGETS(".PHONY"));
+	phony = GETNAME(wcs_buffer, FIND_LENGTH);
 	MBSTOWCS(wcs_buffer, NOCATGETS(".PRECIOUS"));
 	precious = GETNAME(wcs_buffer, FIND_LENGTH);
 	MBSTOWCS(wcs_buffer, NOCATGETS("?"));
@@ -722,6 +752,7 @@ load_cached_names(void)
 	no_parallel_name->special_reader = no_parallel_special;
 	parallel_name->special_reader = parallel_special;
 	localhost_name->special_reader = localhost_special;
+	phony->special_reader = phony_special;
 	precious->special_reader = precious_special;
 	sccs_get_name->special_reader = sccs_get_special;
 	sccs_get_posix_name->special_reader = sccs_get_posix_special;
@@ -740,7 +771,15 @@ load_cached_names(void)
 	#else
 	#if defined(SUN5_0)
 	if (posix) {
+#ifdef	HAVE__USR_XPG4_BIN_SH
 	  MBSTOWCS(wcs_buffer, NOCATGETS("/usr/xpg4/bin/sh"));
+#else
+#ifdef	HAVE__OPT_SCHILY_XPG4_BIN_SH
+	  MBSTOWCS(wcs_buffer, NOCATGETS("/opt/schily/xpg4/bin/sh"));
+#else
+	  MBSTOWCS(wcs_buffer, NOCATGETS("/bin/sh"));
+#endif
+#endif
 	} else {
 	  MBSTOWCS(wcs_buffer, NOCATGETS("/bin/sh"));
 	}
@@ -1003,4 +1042,3 @@ find_run_directory (char	*cmd,
 
     return rv;
 }
-

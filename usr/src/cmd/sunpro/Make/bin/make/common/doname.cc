@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)doname.cc	1.115	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)doname.cc	1.13 17/05/14 2017 J. Schilling
+ * @(#)doname.cc	1.21 19/01/07 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)doname.cc	1.13 17/05/14 2017 J. Schilling";
+	"@(#)doname.cc	1.21 19/01/07 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -222,6 +224,17 @@ try_again:
 			return build_failed;
 		}
 		fatal(gettext("Don't know how to make target `%s'"), target->string_mb);
+		break;
+
+	default:
+		/*
+		 * The following enum values are not handled:
+		 *	build_in_progress
+		 *	build_pending
+		 *	build_serial
+		 *	build_subtree
+		 * We need to check whether they may be needed.
+		 */
 		break;
 	}
 	return build_failed;
@@ -613,6 +626,18 @@ recheck_target:
 			case build_ok:
 				result = build_ok;
 				break;
+
+			default:
+				/*
+				 * The following enum values are not handled:
+				 *	build_dont_know
+				 *	build_in_progress
+				 *	build_pending
+				 *	build_serial
+				 *	build_subtree
+				 * We need to check whether they may be needed.
+				 */
+				break;
 			}
 		}
 		/* Look for double suffix rule */
@@ -684,6 +709,18 @@ recheck_target:
 					}
 					return build_running;
 #endif
+				default:
+					/*
+					 * The following enum values are not handled:
+					 *	build_dont_know
+					 *	build_ok
+					 *	build_in_progress
+					 *	build_pending
+					 *	build_serial
+					 *	build_subtree
+					 * We need to check whether they may be needed.
+					 */
+					break;
 				}
 			}
 		}
@@ -733,6 +770,18 @@ recheck_target:
 				}
 				return build_running;
 #endif
+				default:
+					/*
+					 * The following enum values are not handled:
+					 *	build_dont_know
+					 *	build_ok
+					 *	build_in_progress
+					 *	build_pending
+					 *	build_serial
+					 *	build_subtree
+					 * We need to check whether they may be needed.
+					 */
+					break;
 			}
 		}
 		/* Try to sccs get */
@@ -863,6 +912,18 @@ r_command:
 			if (true_target->stat.time == file_doesnt_exist) {
 				true_target->stat.time = file_max_time;
 			}
+			break;
+
+		default:
+			/*
+			 * The following enum values are not handled:
+			 *	build_dont_know
+			 *	build_failed
+			 *	build_in_progress
+			 *	build_pending
+			 *	build_subtree
+			 * We need to check whether they may be needed.
+			 */
 			break;
 		}
 	} else {
@@ -1021,6 +1082,7 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 	register Dependency	dependency;
 	Doname			dep_result;
 	Boolean			dependency_changed = false;
+	Boolean			printed = false;
 
 	line->body.line.dependency_time = file_doesnt_exist;
 	if (line->body.line.query != NULL) {
@@ -1133,6 +1195,18 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 						     dependency->name->string_mb);
 				}
 				break;
+
+			default:
+				/*
+				 * The following enum values are not handled:
+				 *	build_ok
+				 *	build_in_progress
+				 *	build_pending
+				 *	build_serial
+				 *	build_subtree
+				 * We need to check whether they may be needed.
+				 */
+				break;
 			}
 			if (dependency->name->depends_on_conditional) {
 				target->depends_on_conditional = true;
@@ -1205,7 +1279,8 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 				out_of_date = (Boolean) OUT_OF_DATE(true_target->stat.time,
 							            dependency->name->stat.time);
 			}
-			if ((build_unconditional || out_of_date) &&
+			if ((build_unconditional || out_of_date ||
+			    true_target->stat.is_phony) &&
 			    (dependency->name != force) &&
 			    (dependency->stale == false)) {
 				*out_of_date_tail = ALLOC(Chain);
@@ -1222,8 +1297,14 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 				}
 				(*out_of_date_tail)->next = NULL;
 				out_of_date_tail = &(*out_of_date_tail)->next;
-				if (debug_level > 0) {
-					if (dependency->name->stat.time == file_max_time) {
+				if (debug_level > 0 && !printed) {
+					if (true_target->stat.time == file_phony_time) {
+						(void) printf(gettext("%*sBuilding %s because it is PHONY\n"),
+							      recursion_level,
+							      "",
+							      true_target->string_mb);
+						printed = true;
+					} else if (dependency->name->stat.time == file_max_time) {
 						(void) printf(gettext("%*sBuilding %s because %s does not exist\n"),
 							      recursion_level,
 							      "",
@@ -1315,8 +1396,9 @@ check_dependencies(Doname *result, Property line, Boolean do_get, Name target, N
 			out_of_date = (Boolean) OUT_OF_DATE(true_target->stat.time,
 				                            line->body.line.dependency_time);
 		}
-		if (build_unconditional || out_of_date){
-			if(!recheck_conditionals) {
+		if (build_unconditional || out_of_date ||
+		    true_target->stat.is_phony) {
+			if (!recheck_conditionals) {
 				line->body.line.is_out_of_date = true;
 			}
 		}
@@ -1742,7 +1824,7 @@ run_command(register Property line, Boolean)
 		   strcpy(tmp_file_path, temp_file_directory);
 		}
 		sprintf(mbs_buffer,
-				NOCATGETS("%s/.make.dependency.%08x.%d.%d"),
+				NOCATGETS("%s/.make.dependency.%08lx.%d.%d"),
 			        tmp_file_path,
 			        hostid,
 			        getpid(),
@@ -1841,6 +1923,18 @@ run_command(register Property line, Boolean)
 						  			NULL;
 						return build_serial;
 					}
+				default:
+					/*
+					 * The following enum values are not handled:
+					 *	build_dont_know
+					 *	build_failed
+					 *	build_ok
+					 *	build_in_progress
+					 *	build_pending
+					 *	build_subtree
+					 * We need to check whether they may be needed.
+					 */
+					break;
 				}
 			}
 		} else {
@@ -2445,6 +2539,7 @@ do_assign(register Name line, register Name target)
 		fatal(gettext("= expected in rule `%s' for target `%s'"),
 		      line->string_mb,
 		      target->string_mb);
+		/* NOTREACHED */
 	case plus_char:
 		append = true;
 		equal++;
@@ -2868,7 +2963,7 @@ touch_command(register Property line, register Name target, Doname result)
 		job_result_msg = new Avo_MToolJobResultMsg();
 	);
 	for (name = target, target_group = NULL; name != NULL;) {
-		if (!name->is_member) {
+		if (!name->is_member && !name->stat.is_phony) {
 			/*
 			 * Build a touch command that can be passed
 			 * to dosys(). If KEEP_STATE is on, "make -t"
@@ -3128,6 +3223,7 @@ sccs_get(register Name target, register Property *command)
 	case DONT_KNOW_SCCS:
 		/* We dont know by now there is no SCCS/s.* */
 		target->stat.has_sccs = NO_SCCS;
+		/* FALLTHRU */
 	case NO_SCCS:
 		/*
 		 * If there is no SCCS/s.* but the plain file exists,

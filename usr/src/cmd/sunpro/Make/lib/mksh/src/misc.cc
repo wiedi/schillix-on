@@ -29,14 +29,14 @@
 #pragma	ident	"@(#)misc.cc	1.31	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2018 J. Schilling
  *
- * @(#)misc.cc	1.10 17/05/13 2017 J. Schilling
+ * @(#)misc.cc	1.13 18/04/16 2017-2018 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)misc.cc	1.10 17/05/13 2017 J. Schilling";
+	"@(#)misc.cc	1.13 18/04/16 2017-2018 J. Schilling";
 #endif
 
 /*
@@ -348,7 +348,7 @@ setup_char_semantics(void)
 	} else {
 		s = "=@-?!+";
 	}
-	for (s; MBTOWC(wc_buffer, s); s++) {
+	for (; MBTOWC(wc_buffer, s); s++) {
 		entry = get_char_semantics_entry(*wc_buffer);
 		char_semantics[entry] |= (int) command_prefix_sem;
 	}
@@ -392,7 +392,7 @@ errmsg(int errnum)
 	char			*emsg;
 #else
 	extern int		sys_nerr;
-	extern char		*sys_errlist[];	
+	extern char		*sys_errlist[];
 #endif
 	char			*errbuf;
 
@@ -586,8 +586,10 @@ get_current_path_mksh(void)
 	static char		*current_path;
 
 	if (current_path == NULL) {
-		(void)getcwd(pwd, sizeof(pwd));
-		if (pwd[0] == (int) nul_char) {
+		pwd[0] = (int) nul_char;
+
+		if (getcwd(pwd, sizeof(pwd)) == NULL ||
+		    pwd[0] == (int) nul_char) {
 			pwd[0] = (int) slash_char;
 			pwd[1] = (int) nul_char;
 		}
@@ -919,6 +921,28 @@ void
 mbstowcs_with_check(wchar_t *pwcs, const char *s, size_t n)
 {
 	if(mbstowcs(pwcs, s, n) == -1) {
+		const unsigned char *p;
+
+		p = (unsigned char *)setlocale(LC_CTYPE, NULL);
+
+		/*
+		 * Work around a Linux bug:
+		 * POSIX requires: In the POSIX locale an [EILSEQ] error cannot
+		 * occur since all byte values are valid characters.
+		 * But Linux ignores this ant this is why we did come here.
+		 */
+		if (p[0] == 'C' && p[1] == '\0') {
+			wchar_t	*wp = pwcs;
+
+			p = (const unsigned char *)s;
+			if (n == 0)
+				return;
+			do {
+				if ((*wp++ = *p++) == '\0')
+					break;
+			} while (--n > 0);
+			return;
+		}
 		fatal_mksh(gettext("The string `%s' is not valid in current locale"), s);
 	}
 }

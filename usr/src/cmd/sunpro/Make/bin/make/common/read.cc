@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)read.cc	1.64	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)read.cc	1.10 17/05/09 2017 J. Schilling
+ * @(#)read.cc	1.24 19/08/18 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)read.cc	1.10 17/05/09 2017 J. Schilling";
+	"@(#)read.cc	1.24 19/08/18 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -67,14 +69,52 @@ extern "C" Avo_err *avo_find_run_dir(char **dirp);
 #include <schily/schily.h>
 
 /*
+ * We cannot use "using std::wcsdup" as wcsdup() is not always
+ * in the std namespace.
+ * The Sun CC compiler in version 4 does not suport using namespace std;
+ * so be careful.
+ */
+#if !defined(__SUNPRO_CC_COMPAT) || __SUNPRO_CC_COMPAT >= 5
+using namespace std;		/* needed for wcsdup() */
+#endif
+
+/*
  * typedefs & structs
  */
+
+enum directive {
+	D_NONE = 0,		/* No valid directive found	*/
+	D_INCLUDE,		/* "include" directive found	*/
+	D_IINCLUDE,		/* "-include" directive found	*/
+	D_EXPORT,		/* "export" directive found	*/
+	D_UNEXPORT,		/* "unexport" directive found	*/
+	D_READONLY		/* "readonly" directive found	*/
+};
 
 /*
  * Static variables
  */
 
 static int line_started_with_space=0; // Used to diagnose spaces instead of tabs
+
+static wchar_t		include_d[8];
+static wchar_t		iinclude_d[9];
+static wchar_t		export_d[7];
+static wchar_t		unexport_d[9];
+static wchar_t		readonly_d[9];
+
+static struct dent {
+	wchar_t		*directive;
+	int		dlen;
+	enum directive	dir;
+} directives[] = {
+	{ include_d,	7, D_INCLUDE },
+	{ iinclude_d,	8, D_IINCLUDE },
+	{ export_d,	6, D_EXPORT },
+	{ unexport_d,	8, D_UNEXPORT },
+	{ readonly_d,	8, D_READONLY },
+	{ NULL,		0, D_NONE }
+};
 
 /*
  * File table of contents
@@ -83,6 +123,12 @@ static	void		parse_makefile(register Name true_makefile_name, register Source so
 static	Source		push_macro_value(register Source bp, register wchar_t *buffer, int size, register Source source);
 extern  void 		enter_target_groups_and_dependencies(Name_vector target, Name_vector depes, Cmd_line command, Separator separator, Boolean target_group_seen);
 extern	Name		normalize_name(register wchar_t *name_string, register int length);
+extern	void		doexport(Name name);
+extern	void		dounexport(Name name);
+extern	void		doreadonly(Name name);
+
+static Boolean		skip_comment(wchar_t * &source_p, wchar_t * &source_end, Source &source);
+static void		init_directives(void);
 
 /*
  *	read_simple_file(makefile_name, chase_path, doname_it,
@@ -174,12 +220,23 @@ read_simple_file(register Name makefile_name, register Boolean chase_path, regis
 #if !defined(TEAMWARE_MAKE_CMN)
                 		run_dir = make_run_dir;
 				if (run_dir) {
-                        		(void) sprintf(makerules_dir,
+					if (strstr(run_dir, "xpg4/bin") ||
+					    strstr(run_dir, "/onbld/")) {
+	                        		(void) sprintf(makerules_dir,
+						NOCATGETS("%s/../../share/lib/make"), run_dir);
+					} else {
+	                        		(void) sprintf(makerules_dir,
 						NOCATGETS("%s/../share/lib/make"), run_dir);
+					}
 					add_dir_to_path(makerules_dir,
 							&makefile_path,
 							-1);
 				}
+#ifdef INS_BASE
+				add_dir_to_path(NOCATGETS(INS_BASE "/share/lib/make"),
+						&makefile_path,
+						-1);
+#endif
 				add_dir_to_path(NOCATGETS("/usr/share/lib/make"),
 						&makefile_path,
 						-1);
@@ -581,12 +638,14 @@ parse_makefile(register Name true_makefile_name, register Source source)
 	static Name		shell_name;
 	int			i;
 
-	static wchar_t		include_space[10];
-	static wchar_t		include_tab[10];
 	int			tmp_bytes_left_in_string;
-	Boolean			tmp_maybe_include = false;
+	Boolean			tmp_maybe_directive = false;
 	int    			emptycount = 0;
 	Boolean			first_target;
+
+	enum directive		directive_type; 
+	int			directive_len;
+	struct dent		*dp;
 
 	String_rec		include_name;
 	wchar_t			include_buffer[STRING_BUFFER_LENGTH];
@@ -653,48 +712,15 @@ parse_makefile(register Name true_makefile_name, register Source source)
 		break;
 	case numbersign_char:
 		/* Comment. Skip over it */
-		for (; 1; source_p++) {
-			switch (GET_CHAR()) {
-			case nul_char:
-				GET_NEXT_BLOCK_NOCHK(source);
-				if (source == NULL) {
-					GOTO_STATE(on_eoln_state);
-				}
-				if (source->error_converting) {
-				// Illegal byte sequence - skip its first byte
-					source->inp_buf_ptr++;
-				}
-				source_p--;
-				break;
-			case backslash_char:
-				/* Comments can be continued */
-				if (*++source_p == (int) nul_char) {
-					GET_NEXT_BLOCK_NOCHK(source);
-					if (source == NULL) {
-						GOTO_STATE(on_eoln_state);
-					}
-					if (source->error_converting) {
-					// Illegal byte sequence - skip its first byte
-						source->inp_buf_ptr++;
-						source_p--;
-						break;
-					}
-				}
-				if(*source_p == (int) newline_char) {
-					if (source->fd >= 0) {
-						line_number++;
-					}
-				}
-				break;
-			case newline_char:
-				/*
-				 * After we skip the comment we go to
-				 * the end of line handler since end of
-				 * line terminates comments.
-				 */
-				goto end_of_line;
-			}
+		if (skip_comment(source_p, source_end, source) == false) {
+			GOTO_STATE(on_eoln_state);
 		}
+		/*
+		 * After we skip the comment we go to
+		 * the end of line handler since end of
+		 * line terminates comments.
+		 */
+		goto end_of_line;
 	case dollar_char:
 		/* Macro reference */
 		if (source->already_expanded) {
@@ -810,18 +836,34 @@ start_new_line_no_skip:
 	if (source == NULL) {
 		GOTO_STATE(exit_state);
 	}
-	/* Check if this is an include command */
+	/* Check if this is a directive command */
 	if ((makefile_type == reading_makefile) &&
 	    !source->already_expanded) {
-	    if (include_space[0] == (int) nul_char) {
-		MBSTOWCS(include_space, NOCATGETS("include "));
-		MBSTOWCS(include_tab, NOCATGETS("include\t"));
+
+	    if (include_d[0] == (int) nul_char)
+		init_directives();
+
+	    directive_len = 0;
+	    directive_type = D_NONE;
+	    for (dp = directives; dp->directive; dp++) {
+		if (IS_WEQUALN(source_p, dp->directive, dp->dlen)) {
+			if (source_p[dp->dlen] == (int)space_char ||
+			    source_p[dp->dlen] == (int)tab_char) {
+				directive_len = dp->dlen;
+				directive_type = dp->dir;
+				break;
+			}
+		}
+		if (sunpro_compat)
+			break;
 	    }
-	    if ((IS_WEQUALN(source_p, include_space, 8)) ||
-		(IS_WEQUALN(source_p, include_tab, 8))) {
-		source_p += 7;
+
+	    if (directive_type) {
+		source_p += directive_len;
 	try_next_include:	/* More than one include name on the line? */
 
+		if (!sunpro_compat && *source_p == numbersign_char)
+			goto start_new_line;
 		if (iswspace(*source_p)) {
 			Makefile_type save_makefile_type;
 			wchar_t		*name_start;
@@ -873,12 +915,20 @@ start_new_line_no_skip:
 					}
 					break;
 
+			    	case numbersign_char:
+					if (!sunpro_compat) {
+						if (source_p == string_start)
+							goto start_new_line;
+						goto string_end;
+					}
+
 				default:
 					source_p++;
 					break;
 				}
 			}
 
+	string_end:
 			source->string.text.p = source_p;
 			if (macro_seen_in_string) {
 				append_string(string_start,
@@ -964,32 +1014,59 @@ start_new_line_no_skip:
 			} else {
 				makefile_name = makefile_name_raw;
 			}
-			UNCACHE_SOURCE();
-			/* Read the file */
-			save_makefile_type = makefile_type;
-			/*
-			 * The original make program from Sun did complain with:
-			 * FOO=
-			 * include $(FOO)
-			 * but this is in conflict with the behavior of smake
-			 * and gmake and it would cause prolems if we allow
-			 * $(FOO) to expand to more than one incude file name.
-			 * So let us be quiet with empty includes.
-			 */
-			if (*makefile_name->string_mb != nul_char &&
-			    read_simple_file(makefile_name,
+			switch (directive_type) {
+
+			case D_INCLUDE:
+			case D_IINCLUDE:
+				UNCACHE_SOURCE();
+				/* Read the file */
+				save_makefile_type = makefile_type;
+				/*
+				 * The original make program from Sun did complain with:
+				 * FOO=
+				 * include $(FOO)
+				 * but this is in conflict with the behavior of smake
+				 * and gmake and it would cause prolems if we allow
+				 * $(FOO) to expand to more than one incude file name.
+				 * So let us be quiet with empty includes.
+				 */
+				if (*makefile_name->string_mb != nul_char &&
+				    read_simple_file(makefile_name,
 					     true,
 					     true,
-					     true,
+					     directive_type == D_IINCLUDE ? false:true,
 					     false,
 					     true,
-					     false) == failed) {
-				fatal_reader(gettext("Read of include file `%s' failed"),
+					     false) == failed && directive_type != D_IINCLUDE) {
+					fatal_reader(gettext("Read of include file `%s' failed"),
 					     makefile_name->string_mb);
+				}
+				makefile_type = save_makefile_type;
+				do_not_exec_rule = save_do_not_exec_rule;
+				CACHE_SOURCE(0);
+				break;
+
+			case D_EXPORT:
+				doexport(makefile_name);
+				break;
+			case D_UNEXPORT:
+				dounexport(makefile_name);
+				break;
+			case D_READONLY:
+				doreadonly(makefile_name);
+				break;
+			case D_NONE:
+				/*
+				 * Since we checked for directive_type != 0
+				 * before, this cannot happen, but it makes
+				 * clang quiet.
+				 */
+				break;
 			}
-			makefile_type = save_makefile_type;
-			do_not_exec_rule = save_do_not_exec_rule;
-			CACHE_SOURCE(0);
+			if (sunpro_compat) {
+				source_p++;
+				goto start_new_line;
+			}
 			if (makefile_name != makefile_name_raw) {
 				/*
 				 * The "makefile_name" is not from a line in
@@ -1011,22 +1088,30 @@ start_new_line_no_skip:
 			source_p++;
 			goto start_new_line;
 		} else {
-			source_p -= 7;
+			source_p -= directive_len;
 		}
 	    } else {
-		/* Check if the word include was split across 8K boundary. */
+		/* Check if the directive text was split across 8K boundary. */
 		
 		tmp_bytes_left_in_string = source->string.text.end - source_p;
-		if (tmp_bytes_left_in_string < 8) {
-			tmp_maybe_include = false;
-			if (IS_WEQUALN(source_p,
-				       include_space,
-				       tmp_bytes_left_in_string)) {
-				tmp_maybe_include = true;
+		if (tmp_bytes_left_in_string < 9) {
+			struct dent	*dp;
+
+			tmp_maybe_directive = false;
+			for (dp = directives; dp->directive; dp++) {
+				if (dp != directives && sunpro_compat)
+					break;
+				if (dp->dlen < tmp_bytes_left_in_string)
+					continue;
+				if (IS_WEQUALN(source_p, dp->directive,
+				    dp->dlen)) {
+					tmp_maybe_directive = true;
+					break;
+				}
 			}
-			if (tmp_maybe_include) {
+			if (tmp_maybe_directive) {
 				GET_NEXT_BLOCK(source);
-				tmp_maybe_include = false;
+				tmp_maybe_directive = false;
 				goto line_evald;
 			}
 		}
@@ -1097,46 +1182,13 @@ case scan_name_state:
 		break;
 	case numbersign_char:
 		/* Comment. Skip over it */
-		for (; 1; source_p++) {
-			switch (GET_CHAR()) {
-			case nul_char:
-				GET_NEXT_BLOCK_NOCHK(source);
-				if (source == NULL) {
-					GOTO_STATE(on_eoln_state);
-				}
-				if (source->error_converting) {
-				// Illegal byte sequence - skip its first byte
-					source->inp_buf_ptr++;
-				}
-				source_p--;
-				break;
-			case backslash_char:
-				if (*++source_p == (int) nul_char) {
-					GET_NEXT_BLOCK_NOCHK(source);
-					if (source == NULL) {
-						GOTO_STATE(on_eoln_state);
-					}
-					if (source->error_converting) {
-					// Illegal byte sequence - skip its first byte
-						source->inp_buf_ptr++;
-						source_p--;
-						break;
-					}
-				}
-				if(*source_p == (int) newline_char) {
-					if (source->fd >= 0) {
-						line_number++;
-					}
-				}
-				break;
-			case newline_char:
-				source_p++;
-				if (source->fd >= 0) {
-					line_number++;
-				}
-				GOTO_STATE(on_eoln_state);
+		if (skip_comment(source_p, source_end, source) == true) {
+			source_p++;
+			if (source->fd >= 0) {
+				line_number++;
 			}
 		}
+		GOTO_STATE(on_eoln_state);
 	case dollar_char:
 		/* Macro reference. Expand and push value */
 		if (source->already_expanded) {
@@ -2271,4 +2323,99 @@ enter_target_groups_and_dependencies(Name_vector target, Name_vector depes, Cmd_
 			}
 		}
 	}
+}
+
+void
+doexport(Name name)
+{
+	Name		val;
+	char		*eval;
+	size_t		len;
+
+	if (strcmp(name->string_mb, NOCATGETS("SHELL")) == 0)
+		return;
+
+	val = getvar(name);
+	len = strlen(name->string_mb) + 1 + strlen(val->string_mb) + 1;
+	eval = (char *)malloc(len);
+	strcpy(eval, name->string_mb);
+	strcat(eval, "=");
+	strcat(eval, val->string_mb);
+
+	putenv(eval);
+}
+
+void
+dounexport(Name name)
+{
+	Name		val;
+	char		*eval;
+	size_t		len;
+
+	if (strcmp(name->string_mb, NOCATGETS("SHELL")) == 0)
+		return;
+
+	unsetenv(name->string_mb);
+}
+
+void
+doreadonly(Name name)
+{
+	Property	macro;
+
+	if ((macro = get_prop(name->prop, macro_prop)) != NULL)
+		macro->body.macro.read_only = true;
+}
+
+static Boolean
+skip_comment(wchar_t * &source_p, wchar_t * &source_end, Source &source)
+{
+	/* Comment. Skip over it */
+	for (; 1; source_p++) {
+		switch (GET_CHAR()) {
+		case nul_char:
+			GET_NEXT_BLOCK_NOCHK(source);
+			if (source == NULL) {
+				return (false);
+			}
+			if (source->error_converting) {
+			// Illegal byte sequence - skip its first byte
+				source->inp_buf_ptr++;
+			}
+			source_p--;
+			break;
+		case backslash_char:
+			/* Comments can be continued */
+			if (*++source_p == (int) nul_char) {
+				GET_NEXT_BLOCK_NOCHK(source);
+				if (source == NULL) {
+					return (false);
+				}
+				if (source->error_converting) {
+				// Illegal byte sequence - skip its first byte
+					source->inp_buf_ptr++;
+					source_p--;
+					break;
+				}
+			}
+			if(*source_p == (int) newline_char) {
+				if (source->fd >= 0) {
+					line_number++;
+				}
+			}
+			break;
+		case newline_char:
+			return (true);
+		}
+	}
+}
+
+static void
+init_directives(void)
+{
+	MBSTOWCS(include_d,  NOCATGETS("include "));
+	MBSTOWCS(iinclude_d, NOCATGETS("-include "));
+	MBSTOWCS(export_d,   NOCATGETS("export "));
+	MBSTOWCS(unexport_d, NOCATGETS("unexport "));
+	MBSTOWCS(readonly_d, NOCATGETS("readonly "));
 }

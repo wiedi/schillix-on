@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)implicit.cc	1.64	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)implicit.cc	1.5 17/04/30 2017 J. Schilling
+ * @(#)implicit.cc	1.9 19/01/07 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)implicit.cc	1.5 17/04/30 2017 J. Schilling";
+	"@(#)implicit.cc	1.9 19/01/07 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -344,6 +346,7 @@ posix_attempts:
 					}
 					continue;
 				}
+				/* FALLTHRU */
 			case build_running:
 				if(!name_found) {
 					store_name(source);
@@ -366,6 +369,17 @@ posix_attempts:
 					retmem(sourcename);
 				}
 				return build_failed;
+
+			default:
+				/*
+				 * The following enum values are not handled:
+				 *	build_in_progress
+				 *	build_pending
+				 *	build_serial
+				 *	build_subtree
+				 * We need to check whether they may be needed.
+				 */
+				break;
 			}
 			
 			if (debug_level > 1) {
@@ -575,6 +589,19 @@ find_ar_suffix_rule(register Name target, Name true_target, Property *command, B
 			return build_ok;
 		case build_running:
 			return build_running;
+
+		default:
+			/*
+			 * The following enum values are not handled:
+			 *	build_dont_know
+			 *	build_failed
+			 *	build_in_progress
+			 *	build_pending
+			 *	build_serial
+			 *	build_subtree
+			 * We need to check whether they may be needed.
+			 */
+			break;
 		}
 		/*
 		 * If no rule was found, we try the next suffix to see
@@ -679,6 +706,19 @@ find_double_suffix_rule(register Name target, Property *command, Boolean recheck
 			return build_ok;
 		case build_running:
 			return build_running;
+
+		default:
+			/*
+			 * The following enum values are not handled:
+			 *	build_dont_know
+			 *	build_failed
+			 *	build_in_progress
+			 *	build_pending
+			 *	build_serial
+			 *	build_subtree
+			 * We need to check whether they may be needed.
+			 */
+			break;
 		}
 		if (true_target->suffix_scan_done == true) {
 			scanned_once = true;
@@ -1140,7 +1180,7 @@ find_percent_rule(register Name target, Property *command, Boolean rechecking)
 				line->body.line.is_out_of_date = true;
 			}
 			if (debug_level > 0) {
-				(void) printf(gettext("%*sBuilding %s using pattern rule %s: "),
+				(void) printf(gettext("%*sBuilding %s using pattern rule %s: %s"),
 					      recursion_level,
 					      "",
 					      true_target->string_mb,

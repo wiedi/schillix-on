@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)rep.cc	1.25	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)rep.cc	1.4 17/04/24 2017 J. Schilling
+ * @(#)rep.cc	1.8 19/08/12 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)rep.cc	1.4 17/04/24 2017 J. Schilling";
+	"@(#)rep.cc	1.8 19/08/12 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -55,6 +57,16 @@ static	UConst char sccsid[] =
 #include <schily/stdio.h>
 #include <schily/wchar.h>
 #include <schily/schily.h>
+
+/*
+ * We cannot use "using std::wcsdup" as wcsdup() is not always
+ * in the std namespace.
+ * The Sun CC compiler in version 4 does not suport using namespace std;
+ * so be careful.
+ */
+#if !defined(__SUNPRO_CC_COMPAT) || __SUNPRO_CC_COMPAT >= 5
+using namespace std;		/* needed for wcsdup() */
+#endif
 
 /*
  * Static variables
