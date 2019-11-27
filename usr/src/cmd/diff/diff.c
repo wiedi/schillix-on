@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -36,12 +36,12 @@
  * contributors.
  */
 /*
- * Copyright 2006-2017 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)diff.c	1.71 17/02/03 J. Schilling
+ * @(#)diff.c	1.76 19/10/28 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)diff.c 1.71 17/02/03 J. Schilling"
+#pragma ident "@(#)diff.c 1.76 19/10/28 J. Schilling"
 #endif
 
 #if defined(sun)
@@ -544,7 +544,8 @@ main(argc, argv)
 			break;
 
 		case 'V':		/* version */
-			printf("diff %s-%s version %s%s%s (%s-%s-%s)\n",
+			printf(gettext(
+			    "diff %s-%s version %s%s%s (%s-%s-%s)\n"),
 				PROVIDER,
 				SCCS_DIFF ? "SCCS":"diff",
 				VERSION,
@@ -759,7 +760,7 @@ same:
 	print_dstatus();
 
 #ifdef	DEBUG
-	fprintf(stderr, "Allocates space: %ld Bytes\n", (long)sbrk(0) - oe);
+	fprintf(stderr, "Allocated space: %ld Bytes\n", (long)sbrk(0) - oe);
 #endif
 	done();
 	/*NOTREACHED*/
@@ -2305,7 +2306,14 @@ same:
 			file1, file2);
 
 closem:
-	(void) close(f1); (void) close(f2);
+	/*
+	 * Check values, it may be directories that we did not open
+	 * and thus f1/f2 may be -1.
+	 */
+	if (f1 >= 0)
+		(void) close(f1);
+	if (f2 >= 0)
+		(void) close(f2);
 	return (0);
 
 notsame:
@@ -2472,7 +2480,7 @@ pfiletype(fmt)
 		return (gettext("a door"));
 #endif
 
-#ifdef	S_IFPORT
+#if defined(S_IFPORT) && S_IFPORT != S_IFIFO	/* Do not use it on Ultrix */
 	case S_IFPORT:
 		return (gettext("an event port"));
 #endif
