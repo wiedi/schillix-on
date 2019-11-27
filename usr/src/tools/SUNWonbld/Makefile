@@ -28,6 +28,17 @@ include ../../Makefile.master
 include $(PKGDEFS)/Makefile.com
 include ../Makefile.tools
 
+include $(SRC)/Makefile.buildnum
+
+#
+# To get these defaults, manifests should simply refer to PKGVERS.
+# See ../pkg/Makefile, keep in sync.
+#
+PKGVERS_COMPONENT= 0.$(RELEASE)
+PKGVERS_BUILTON= $(RELEASE)
+PKGVERS_BRANCH= 0.$(ONNV_BUILDNUM)
+PKGVERS= $(PKGVERS_COMPONENT),$(PKGVERS_BUILTON)-$(PKGVERS_BRANCH)
+
 #
 # Warning: do not use the common license files here.  Instead, make sure
 # that all files listed in LICENSEFILES come from somewhere under the
@@ -66,8 +77,8 @@ all: awk_pkginfo $(FILES)
 install: all .WAIT pkg
 
 awk_pkginfo: bld_awk_pkginfo
-	./bld_awk_pkginfo -m $(MACH) -p "$(RELEASE)/$(VERSION)" -o $@ -v \
-	$(ONVERS)
+	./bld_awk_pkginfo -m $(MACH) -p "$(RELEASE)/$(VERSION)" -P $(PKGVERS) \
+	-o $@ -v $(ONVERS)
 
 pkginfo: pkginfo.tmpl awk_pkginfo
 	$(RM) $@; nawk -f awk_pkginfo $@.tmpl > $@
