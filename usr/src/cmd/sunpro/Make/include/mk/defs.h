@@ -31,9 +31,9 @@
 #pragma	ident	"@(#)defs.h	1.61	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)defs.h	1.7 17/05/07 2017 J. Schilling
+ * @(#)defs.h	1.10 19/07/19 2017-2019 J. Schilling
  */
 
 /*
@@ -89,6 +89,7 @@
 				setvar_daemon(name, value, append, no_daemon, \
 					      true, debug_level)
 #ifdef SUN5_0
+#undef	MAX
 #define MAX(a,b)		(((a)>(b))?(a):(b))
 /*
  * New feature added to SUN5_0 make,  invoke the vanilla svr4 make when
@@ -282,6 +283,7 @@ extern	Percent		percent_list;
 extern	Dyntarget	dyntarget_list;
 extern	Name		plus;
 extern	Name		pmake_machinesfile;
+extern	Name		phony;
 extern	Name		precious;
 extern	Name		primary_makefile;
 extern	Boolean		quest;
@@ -335,6 +337,7 @@ extern	wchar_t		wcs_buffer2[];
 extern	wchar_t		*wcs_ptr;
 extern	wchar_t		*wcs_ptr2;
 extern	long int	hostid;
+extern	Boolean		current_path_reset;
 
 /*
  * Declarations of system defined variables

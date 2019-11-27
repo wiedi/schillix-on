@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)files.cc	1.37	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)files.cc	1.6 17/05/01 2017 J. Schilling
+ * @(#)files.cc	1.9 19/01/07 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)files.cc	1.6 17/05/01 2017 J. Schilling";
+	"@(#)files.cc	1.9 19/01/07 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -77,7 +79,7 @@ static	timestruc_t&	vpath_exists(register Name target);
 static	Name		enter_file_name(wchar_t *name_string, wchar_t *library);
 static	Boolean		star_match(register char *string, register char *pattern);
 static	Boolean		amatch(register wchar_t *string, register wchar_t *pattern);
-  
+
 /*
  *	exists(target)
  *
@@ -102,6 +104,11 @@ exists(register Name target)
 
 	/* We cache stat information. */
 	if (target->stat.time != file_no_time) {
+		return target->stat.time;
+	}
+
+	if (target->stat.is_phony && target->stat.time == file_no_time) {
+		target->stat.time = file_phony_time;
 		return target->stat.time;
 	}
 
@@ -717,6 +724,7 @@ top:
 					k |= (lower_bound <= string_ch) &&
 					     (string_ch <=
 					      (pattern_ch = pattern[1]));
+					/* FALLTHRU */
 				default:
 					if (string_ch ==
 					    (lower_bound = pattern_ch)) {

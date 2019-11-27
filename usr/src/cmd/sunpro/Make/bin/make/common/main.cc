@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)main.cc	1.158	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * Copyright 2017-2019 J. Schilling
  *
- * @(#)main.cc	1.22 17/05/17 2017 J. Schilling
+ * @(#)main.cc	1.45 19/07/21 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)main.cc	1.22 17/05/17 2017 J. Schilling";
+	"@(#)main.cc	1.45 19/07/21 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -120,7 +122,17 @@ extern void job_adjust_fini();
  * Defined macros
  */
 #define	LD_SUPPORT_ENV_VAR	NOCATGETS("SGS_SUPPORT")
+#define	LD_SUPPORT_ENV_VAR_32	NOCATGETS("SGS_SUPPORT_32")
+#define	LD_SUPPORT_ENV_VAR_64	NOCATGETS("SGS_SUPPORT_64")
 #define	LD_SUPPORT_MAKE_LIB	NOCATGETS("libmakestate.so.1")
+#ifdef	sun
+#ifdef	__i386
+#define	LD_SUPPORT_MAKE_ARCH	"i386/"
+#endif
+#ifdef	__sparc
+#define	LD_SUPPORT_MAKE_ARCH	"sparc/"
+#endif
+#endif	/* sun */
 
 /*
  * typedefs & structs
@@ -157,10 +169,10 @@ static	Boolean		trace_status;			/* `-p' */
 static	Boolean		getname_stat = false;
 #endif
 
-#if defined(TEAMWARE_MAKE_CMN)
-	static	time_t		start_time;
 	static	int		g_argc;
 	static	char		**g_argv;
+#if defined(TEAMWARE_MAKE_CMN)
+	static	time_t		start_time;
 #ifdef USE_DMS_CCR
 	static  Avo_usage_tracking *usageTracking = NULL;
 #else
@@ -201,6 +213,7 @@ static	void		report_recursion(Name);
 static	void		set_sgs_support(void);
 static	void		setup_for_projectdir(void);
 static	void		setup_makeflags_argv(void);
+static	void		dir_enter_leave(Boolean entering);
 static	void		report_dir_enter_leave(Boolean entering);
 
 extern void expand_value(Name, register String , Boolean);
@@ -340,14 +353,12 @@ main(int argc, char *argv[])
 #endif
 	textdomain(TEXT_DOMAIN);
 
-#ifdef TEAMWARE_MAKE_CMN
 	g_argc = argc;
 	g_argv = (char **) malloc((g_argc + 1) * sizeof(char *));
 	for (i = 0; i < argc; i++) {
 		g_argv[i] = argv[i];
 	}
 	g_argv[i] = NULL;
-#endif /* TEAMWARE_MAKE_CMN */
 
 	/*
 	 * Set argv_zero_string to some form of argv[0] for
@@ -364,6 +375,9 @@ main(int argc, char *argv[])
 		/*
 		 * argv[0] contains at least one slash,
 		 * but doesn't start with a slash
+		 * so it is relative to the current working directory.
+		 * Build an absolute path name for argv[0] to the called make
+		 * binary path before we may do a chdir() from a -C option.
 		 */
 		char	*tmp_current_path;
 		char	*tmp_string;
@@ -445,8 +459,16 @@ main(int argc, char *argv[])
 	 */
 	char * dmake_compat_mode_var = getenv(NOCATGETS("SUN_MAKE_COMPAT_MODE"));
 	if (dmake_compat_mode_var != NULL) {
+		sunpro_compat = true;
 		if (0 == strcasecmp(dmake_compat_mode_var, NOCATGETS("GNU"))) {
+			sunpro_compat = false;
 			gnu_style = true;
+		} else if (0 == strcasecmp(dmake_compat_mode_var,
+							NOCATGETS("POSIX"))) {
+			sunpro_compat = false;
+			gnu_style = false;
+			svr4 = false;
+			posix = true;		
 		}
 		//svr4 = false;
 		//posix = false;
@@ -495,8 +517,6 @@ main(int argc, char *argv[])
 
 	setup_char_semantics();
 
-	setup_for_projectdir();
-
 	/*
 	 * If running with .KEEP_STATE, curdir will be set with
 	 * the connected directory.
@@ -511,6 +531,9 @@ main(int argc, char *argv[])
 
 /*
  *	Set command line flags
+ *
+ *	Warning: Do not keep pointers from get_current_path() calls while
+ *	parsing the options as they could become invalid from a -C option.
  */
 	setup_makeflags_argv();
 	read_command_options(mf_argc, mf_argv);
@@ -520,6 +543,13 @@ main(int argc, char *argv[])
 		(void) printf(gettext("MAKEFLAGS value: %s\n"), cp == NULL ? "" : cp);
 	}
 
+	/*
+	 * Need to set this up after parsing options and after a
+	 * possible -C option has been processed.
+	 */
+	setup_for_projectdir();
+
+	dir_enter_leave(true);			/* Must be before next call */
 	setup_interrupt(handle_interrupt);
 
 	read_files_and_state(argc, argv);
@@ -577,7 +607,10 @@ main(int argc, char *argv[])
 		 * .dmakerc, we need to move the printout down after the check
 		 * for the .dmakerc file.
 		 */
-		(void) fprintf(stdout, gettext("dmake: defaulting to parallel mode.\n"));
+		if (getenv(NOCATGETS("DMAKE_DEF_PRINTED")) == NULL) {
+			putenv((char *)NOCATGETS("DMAKE_DEF_PRINTED=TRUE"));
+			(void) fprintf(stdout, gettext("dmake: defaulting to parallel mode.\n"));
+		}
 		dmake_mode_type = parallel_mode;
 		no_parallel = false;		
 #endif
@@ -846,6 +879,7 @@ main(int argc, char *argv[])
 	make_targets(argc, argv, parallel_flag);
 
 	report_dir_enter_leave(false);
+	dir_enter_leave(false);
 
 #ifdef NSE
         exit(nse_exit_status());
@@ -1167,7 +1201,7 @@ handle_interrupt(int)
 #else
 	while (wait((union wait*) NULL) != -1);
 #endif
-	/* Delete the current targets unless they are precious */
+	/* Delete the current targets unless they are precious or phony */
 	if ((current_target != NULL) &&
 	    current_target->is_member &&
 	    ((member = get_prop(current_target->prop, member_prop)) != NULL)) {
@@ -1177,7 +1211,8 @@ handle_interrupt(int)
 	    !touch &&
 	    !quest &&
 	    (current_target != NULL) &&
-	    !(current_target->stat.is_precious || all_precious)) {
+	    !(current_target->stat.is_precious || all_precious ||
+	    current_target->stat.is_phony)) {
 
 /* BID_1030811 */
 /* azv 16 Oct 95 */
@@ -1189,16 +1224,13 @@ handle_interrupt(int)
 				       current_target->string_mb);
 			if (current_target->stat.is_dir) {
 				(void) fprintf(stderr,
-					       gettext("not removed.\n"),
-					       current_target->string_mb);
+					       gettext("not removed.\n"));
 			} else if (unlink(current_target->string_mb) == 0) {
 				(void) fprintf(stderr,
-					       gettext("removed.\n"),
-					       current_target->string_mb);
+					       gettext("removed.\n"));
 			} else {
 				(void) fprintf(stderr,
 					       gettext("could not be removed: %s.\n"),
-					       current_target->string_mb,
 					       errmsg(errno));
 			}
 		}
@@ -1215,7 +1247,8 @@ handle_interrupt(int)
 		if (!do_not_exec_rule &&
 		    !touch &&
 		    !quest &&
-		    !(rp->target->stat.is_precious || all_precious)) {
+		    !(rp->target->stat.is_precious || all_precious ||
+		    rp->target->stat.is_phony)) {
 
 			rp->target->stat.time = file_no_time; 
 			if (exists(rp->target) != file_doesnt_exist) {
@@ -1224,16 +1257,13 @@ handle_interrupt(int)
 					       rp->target->string_mb);
 				if (rp->target->stat.is_dir) {
 					(void) fprintf(stderr,
-						       gettext("not removed.\n"),
-						       rp->target->string_mb);
+						       gettext("not removed.\n"));
 				} else if (unlink(rp->target->string_mb) == 0) {
 					(void) fprintf(stderr,
-						       gettext("removed.\n"),
-						       rp->target->string_mb);
+						       gettext("removed.\n"));
 				} else {
 					(void) fprintf(stderr,
 						       gettext("could not be removed: %s.\n"),
-						       rp->target->string_mb,
 						       errmsg(errno));
 				}
 			}
@@ -1325,12 +1355,12 @@ read_command_options(register int argc, register char **argv)
 	extern char		*optarg;
 	extern int		optind, opterr, optopt;
 
-#define SUNPRO_CMD_OPTS	"-~Bbc:Ddef:g:ij:K:kM:m:NnO:o:PpqRrSsTtuVvwx:"
+#define SUNPRO_CMD_OPTS	"-~BbC:c:Ddef:g:ij:K:kM:m:NnO:o:PpqRrSsTtuVvwx:"
 
 #if defined(TEAMWARE_MAKE_CMN) || defined(PMAKE)
-#	define SVR4_CMD_OPTS   "-c:ef:g:ij:km:nO:o:pqrsTtVv"
+#	define SVR4_CMD_OPTS   "-C:c:ef:g:ij:km:nO:o:pqrsTtVv"
 #else
-#	define SVR4_CMD_OPTS   "-ef:iknpqrstV"
+#	define SVR4_CMD_OPTS   "-C:ef:iknpqrstV"
 #endif
 
 	/*
@@ -1410,7 +1440,7 @@ read_command_options(register int argc, register char **argv)
 			if (svr4) {
 #if defined(TEAMWARE_MAKE_CMN) || defined(PMAKE)
 				fprintf(stderr,
-					gettext("Usage : dmake [ -f makefile ][ -c dmake_rcfile ][ -g dmake_group ]\n"));
+					gettext("Usage : dmake [ -f makefile ][ -c dmake_rcfile ][ -g dmake_group ][ -C directory ]\n"));
 				fprintf(stderr,
 					gettext("              [ -j dmake_max_jobs ][ -m dmake_mode ][ -o dmake_odir ]...\n"));
 				fprintf(stderr,
@@ -1426,7 +1456,7 @@ read_command_options(register int argc, register char **argv)
 #if defined(TEAMWARE_MAKE_CMN) || defined(PMAKE)
 				if (IS_EQUAL(argv_zero_base, NOCATGETS("dmake"))) {
 				fprintf(stderr,
-					gettext("Usage : dmake [ -f makefile ][ -c dmake_rcfile ][ -g dmake_group ]\n"));
+					gettext("Usage : dmake [ -f makefile ][ -c dmake_rcfile ][ -g dmake_group ][ -C directory ]\n"));
 				fprintf(stderr,
 					gettext("              [ -j dmake_max_jobs ][ -K statefile ][ -m dmake_mode ][ -x MODE_NAME=VALUE ][ -o dmake_odir ]...\n"));
 				fprintf(stderr,
@@ -1438,6 +1468,8 @@ read_command_options(register int argc, register char **argv)
 				{
 				fprintf(stderr,
 					gettext("Usage : make [ -f makefile ][ -K statefile ]... [ -d ][ -dd ][ -D ][ -DD ]\n"));
+				fprintf(stderr,
+					gettext("             [ -C directory]\n"));
 				fprintf(stderr,
 					gettext("             [ -e ][ -i ][ -k ][ -n ][ -p ][ -P ][ -q ][ -r ][ -s ][ -S ][ -t ]\n"));
 				fprintf(stderr,
@@ -1503,7 +1535,8 @@ read_command_options(register int argc, register char **argv)
 #endif
 				break;
 			case 8:	/* -j seen */
-				argv[i] = (char *)NOCATGETS("-j");
+				if (sunpro_compat)	/* Disallow -j5 */
+					argv[i] = (char *)NOCATGETS("-j");
 #if !defined(TEAMWARE_MAKE_CMN) && !defined(PMAKE)
 				warning(gettext("Ignoring DistributedMake -j option"));
 #endif
@@ -1516,7 +1549,7 @@ read_command_options(register int argc, register char **argv)
 				break;
 			case 32: /* -m seen */
 				argv[i] = (char *)NOCATGETS("-m");
-#ifndef TEAMWARE_MAKE_CMN
+#if !defined(TEAMWARE_MAKE_CMN) && !defined(PMAKE)
 				warning(gettext("Ignoring DistributedMake -m option"));
 #endif
 				break;
@@ -1539,6 +1572,8 @@ read_command_options(register int argc, register char **argv)
 #ifndef TEAMWARE_MAKE_CMN
 				warning(gettext("Ignoring DistributedMake -x option"));
 #endif
+				break;
+			case 2048:
 				break;
 			default: /* > 1 of -c, f, g, j, K, M, m, O, o, x seen */
 				fatal(gettext("Illegal command line. More than one option requiring\nan argument given in the same argument group"));
@@ -1599,7 +1634,7 @@ unquote_str(char *str, char *qstr)
 
 	to = qstr;
 	for (from = str; *from; from++) {
-		if (*from == '\\') {
+		if (*from == '\\' && from[1] != '\0') {
 			from++;
 		}
 		*to++ = *from;
@@ -1725,6 +1760,14 @@ setup_makeflags_argv()
 				unquote_str(cp_orig, mf_argv[i]);
 			}
 			*cp = tmp_char;
+			if (strcmp(mf_argv[i-1], NOCATGETS("-C")) == 0) {
+				/*
+				 * Ignore -C and argument.
+				 */
+				i -= 2;
+			}
+		} else {
+			mf_argv[i] = NULL;
 		}
 	}
 	mf_argv[i] = NULL;
@@ -1793,6 +1836,8 @@ parse_command_option(register char ch)
 			dmake_rcfile_specified = true;
 		}
 		return 2;
+	case 'C':			/* Change directory */
+		return 2048;
 	case 'D':			 /* Show lines read */
 		if (invert_this) {
 			read_trace_level--;
@@ -2013,6 +2058,9 @@ parse_command_option(register char ch)
 #if defined(SCHILY_BUILD) || defined(SCHILY_INCLUDES)
 			fprintf(stdout, NOCATGETS("%s: %s\n"),
 				argv_zero_base, verstring);
+			fprintf(stdout, "\n");
+			fprintf(stdout, "Copyright (C) 1987-2006 Sun Microsystems\n");
+			fprintf(stdout, "Copyright (C) 2017-2019 Joerg Schilling\n");
 			exit_status = 0;
 			exit(0);
 #else
@@ -2021,7 +2069,7 @@ parse_command_option(register char ch)
 #endif
 		}
 		return 0;
-	case 'w':			 /* Unconditional flag */
+	case 'w':			 /* Report working directory flag */
 		if (invert_this) {
 			report_cwd = false;
 		} else {
@@ -2105,6 +2153,104 @@ int   done=0;
 	}
 }
 
+static char *
+append_to_env(const char *env, const char *value, const char *deflt)
+{
+	size_t	len;
+	char	*oldpath = getenv(env);
+	char	*newpath;
+
+	if (value == NULL)
+		value = deflt;
+
+	if (oldpath == NULL) {
+		len = strlen(env) + 1 +
+			strlen(value) + 1;
+		newpath = (char *) malloc(len);
+		if (newpath)
+			sprintf(newpath, "%s=", env);
+	} else {
+		len = strlen(env) + 1 + strlen(oldpath) + 1 +
+			strlen(value) + 1;
+		newpath = (char *) malloc(len);
+		if (newpath)
+			sprintf(newpath, "%s=%s", env, oldpath);
+	}
+	if (newpath == NULL)
+		return (newpath);
+
+#if defined(TEAMWARE_MAKE_CMN)
+
+	/* function maybe_append_str_to_env_var() is defined in avo_util library
+	 * Serial make should not use this library !!!
+	 */
+	maybe_append_str_to_env_var(newpath, value);
+#else
+	if (oldpath == NULL) {
+		strcat(newpath, value);
+	} else {
+		strcat(newpath, ":");
+		strcat(newpath, value);
+	}
+#endif
+
+	return (newpath);
+}
+
+static char *
+get_run_lib(const char *run_dir, const char *subdir)
+{
+	size_t		len;
+	char		*lib;
+	struct stat	stb;
+
+	if (run_dir == NULL)
+		return (NULL);
+
+	len = strlen(run_dir) + 1 + 5	/* Nul + strlen("/lib/") */
+		+ (subdir ? strlen(subdir) : 0)
+		+ strlen(LD_SUPPORT_MAKE_LIB);
+	lib = (char *) malloc(len);
+	if (lib) {
+		strcpy(lib, run_dir);
+		strcat(lib, "/lib/");
+		if (subdir)
+			strcat(lib, subdir);
+		strcat(lib, LD_SUPPORT_MAKE_LIB);
+		if (stat(lib, &stb) < 0) {
+			free(lib);
+			lib = NULL;
+		}
+	}
+#ifdef	LD_SUPPORT_MAKE_ARCH
+	if (lib == NULL) {		/* Try tools path */
+		len += 3 + strlen(LD_SUPPORT_MAKE_ARCH);
+
+		lib = (char *) malloc(len);
+		if (lib) {
+			/*
+			 * OpenSolaris ON tools path:
+			 * tools/..../bin/i386/make
+			 * tools/..../lib/i386/libmakestate.so.1
+			 * or
+			 * tools/..../lib/i386/64/libmakestate.so.1
+			 */
+			strcpy(lib, run_dir);
+			strcat(lib, "/../lib/");
+			strcat(lib, LD_SUPPORT_MAKE_ARCH);
+			if (subdir)
+				strcat(lib, subdir);
+			strcat(lib, LD_SUPPORT_MAKE_LIB);
+			if (stat(lib, &stb) < 0) {
+				free(lib);
+				lib = NULL;
+			}
+		}
+	}
+#endif
+	return (lib);
+}
+
 /*
  *	set_sgs_support()
  *
@@ -2112,46 +2258,81 @@ int   done=0;
  *	  if it's not already in there.
  *	The SGS_SUPPORT env var and libmakestate.so.1 is used by
  *	  the linker ld to report .make.state info back to make.
+ *
+ *	In case there is a slash in the path for libmakestate.so.1,
+ *	we cannot use SGS_SUPPORT, but need SGS_SUPPORT_32 and SGS_SUPPORT_64.
+ *
+ *	If SGS_SUPPORT_32 or SGS_SUPPORT_64 is present, we manage these
+ *	variables as well.
  */
 static void
 set_sgs_support()
 {
-	int		len;
 	char		*newpath;
-	char		*oldpath;
+	char		*lib;
 	static char	*prev_path;
+	static char	*prev_path_32;
+	static char	*prev_path_64;
+	char		*run_dir = strdup(make_run_dir);
 
-	oldpath = getenv(LD_SUPPORT_ENV_VAR);
-	if (oldpath == NULL) {
-		len = strlen(LD_SUPPORT_ENV_VAR) + 1 +
-			strlen(LD_SUPPORT_MAKE_LIB) + 1;
-		newpath = (char *) malloc(len);
-		sprintf(newpath, "%s=", LD_SUPPORT_ENV_VAR);
-	} else {
-		len = strlen(LD_SUPPORT_ENV_VAR) + 1 + strlen(oldpath) + 1 +
-			strlen(LD_SUPPORT_MAKE_LIB) + 1;
-		newpath = (char *) malloc(len);
-		sprintf(newpath, "%s=%s", LD_SUPPORT_ENV_VAR, oldpath);
-	}
+	if (run_dir && strstr(run_dir, "xpg4/bin"))
+		run_dir = dirname(run_dir);	/* Strip last dir component */
+	run_dir = dirname(run_dir);		/* Strip last dir component */
 
-#if defined(TEAMWARE_MAKE_CMN)
+	lib = get_run_lib(run_dir, NULL);
+	newpath = append_to_env(LD_SUPPORT_ENV_VAR, lib, LD_SUPPORT_MAKE_LIB);
 
-	/* function maybe_append_str_to_env_var() is defined in avo_util library
-	 * Serial make should not use this library !!!
+	/*
+	 * Newer Solaris linker versions may switch to 64 bit binaries.
+	 * A simple SGS_SUPPORT entry would not work in case it contains
+	 * a slash. So do not create a SGS_SUPPORT entry in this case but
+	 * rather directly create SGS_SUPPORT_32 and SGS_SUPPORT_64.
 	 */
-	maybe_append_str_to_env_var(newpath, LD_SUPPORT_MAKE_LIB);
-#else
-	if (oldpath == NULL) {
-		sprintf(newpath, "%s%s", newpath, LD_SUPPORT_MAKE_LIB);
-	} else {
-		sprintf(newpath, "%s:%s", newpath, LD_SUPPORT_MAKE_LIB);
+	if (newpath && strchr(newpath, (int) slash_char)) {
+		free(newpath);
+		if (lib)
+			free(lib);
+		goto need_specific;
 	}
-#endif
-	putenv(newpath);
+
+	if (newpath)
+		putenv(newpath);
 	if (prev_path) {
 		free(prev_path);
 	}
 	prev_path = newpath;
+	if (lib)
+		free(lib);
+
+	if (getenv(LD_SUPPORT_ENV_VAR_32) == NULL &&
+	    getenv(LD_SUPPORT_ENV_VAR_64) == NULL)
+		return;
+
+need_specific:
+
+	lib = get_run_lib(run_dir, NULL);
+	newpath = append_to_env(LD_SUPPORT_ENV_VAR_32, lib, LD_SUPPORT_MAKE_LIB);
+
+	if (newpath)
+		putenv(newpath);
+	if (prev_path_32) {
+		free(prev_path_32);
+	}
+	prev_path_32 = newpath;
+	if (lib)
+		free(lib);
+
+	lib = get_run_lib(run_dir, "64/");
+	newpath = append_to_env(LD_SUPPORT_ENV_VAR_64, lib, LD_SUPPORT_MAKE_LIB);
+
+	if (newpath)
+		putenv(newpath);
+	if (prev_path_64) {
+		free(prev_path_64);
+	}
+	prev_path_64 = newpath;
+	if (lib)
+		free(lib);
 }
 
 /*
@@ -2291,13 +2472,18 @@ read_files_and_state(int argc, char **argv)
 	 * default makefile (make.rules), then we'd like to
 	 * change the macro value of MAKE to be some form
 	 * of argv[0] for recursive MAKE builds.
+	 * Since POSIX claims for the option -r:
+	 *	Clear the suffix list and do not use the built-in rules.
+	 * $(MAKE) should not be affected by -r. We need to provide a
+	 * useful default in case $(MAKE) has not been defined at all.
 	 */
 	MBSTOWCS(wcs_buffer, NOCATGETS("MAKE"));
 	def_make_name = GETNAME(wcs_buffer, wcslen(wcs_buffer));
 	def_make_macro = get_prop(def_make_name->prop, macro_prop);
-	if ((def_make_macro != NULL) &&
+	if ((def_make_macro == NULL) ||
+	    ((def_make_macro != NULL) &&
 	    (IS_EQUAL(def_make_macro->body.macro.value->string_mb,
-	              NOCATGETS("make")))) {
+	              NOCATGETS("make"))))) {
 		MBSTOWCS(wcs_buffer, argv_zero_string);
 		new_make_value = GETNAME(wcs_buffer, wcslen(wcs_buffer));
 		(void) SETVAR(def_make_name,
@@ -2306,10 +2492,12 @@ read_files_and_state(int argc, char **argv)
 	}
 
 #ifdef	DO_MAKE_NAME
-	MBSTOWCS(wcs_buffer, NOCATGETS("sunpro"));
-	SETVAR(sunpro_make_name,
+	if (!sunpro_compat && !svr4) {
+		MBSTOWCS(wcs_buffer, NOCATGETS("sunpro"));
+		SETVAR(sunpro_make_name,
 			GETNAME(wcs_buffer, FIND_LENGTH),
 			false);
+	}
 #endif
 
 	default_target_to_build = NULL;
@@ -2338,6 +2526,14 @@ read_files_and_state(int argc, char **argv)
 	makeflags_and_macro.size = 0;
 	enter_argv_values(mf_argc, mf_argv, &makeflags_and_macro);
 	enter_argv_values(argc, argv, &makeflags_and_macro);
+	/*
+	 * If there have been -C options, they have been evaluated
+	 * with the last call and we thus may need to re-initialize
+	 * CURDIR before we read the Makefiles in order to let them
+	 * overwrite CURDIR if they like.
+	 */
+	if (current_path_reset)
+		(void) get_current_path();
 
 /*
  *	Set MFLAGS and MAKEFLAGS
@@ -2536,6 +2732,8 @@ read_files_and_state(int argc, char **argv)
 		tmp_char = (char) space_char;
 		cp = makeflags_and_macro.start;
 		do {
+			if (!sunpro_compat && !svr4)
+				append_char(tmp_char, &makeflags_string);
 			append_char(tmp_char, &makeflags_string_posix);
 		} while ((tmp_char = *cp++) != '\0'); 
 		retmem_mb(makeflags_and_macro.start);
@@ -2602,7 +2800,8 @@ read_files_and_state(int argc, char **argv)
 			makefile_read = true;
 		} else if (argv[i] &&
 			   (argv[i][0] == (int) hyphen_char) &&
-			   (argv[i][1] == 'c' ||
+			   (argv[i][1] == 'C' ||
+			    argv[i][1] == 'c' ||
 			    argv[i][1] == 'g' ||
 			    argv[i][1] == 'j' ||
 			    argv[i][1] == 'K' ||
@@ -2904,6 +3103,8 @@ enter_argv_values(int argc, char *argv[], ASCII_Dyn_Array *makeflags_and_macro)
 			opt_separator = i;
 			continue;
 		} else if ((i < opt_separator) && (argv[i][0] == (int) hyphen_char)) {
+			char	*ap = argv[i+1];
+
 			switch (parse_command_option(argv[i][1])) {
 			case 1:	/* -f seen */
 				++i;
@@ -2923,7 +3124,9 @@ enter_argv_values(int argc, char *argv[], ASCII_Dyn_Array *makeflags_and_macro)
 				name = GETNAME(wcs_buffer, FIND_LENGTH);
 				break;
 			case 8:	/* -j seen */
-				if (argv[i+1] == NULL) {
+				if (argv[i][2])		/* e.g. -j5 */
+					ap = &argv[i][2];
+				if (ap == NULL) {
 					fatal(gettext("No dmake max jobs argument after -j flag"));
 				}
 				MBSTOWCS(wcs_buffer, NOCATGETS("DMAKE_MAX_JOBS"));
@@ -2997,24 +3200,42 @@ enter_argv_values(int argc, char *argv[], ASCII_Dyn_Array *makeflags_and_macro)
 					continue;
 				}
 				break;
+			case 2048: /* -C seen */
+				if (argv[i][2])		/* e.g. -Cdir */
+					ap = &argv[i][2];
+				else
+					argv[i+1] = NULL;
+				if (ap == NULL) {
+					fatal(gettext("No argument after -C flag"));
+				}
+				if (chdir(ap) != 0) {
+					fatal(gettext("Failed to change to directory %s: %s"),
+					    ap, strerror(errno));
+				}
+				argv[i] = NULL;
+				current_path_reset = true;
+				continue;
 			default: /* Shouldn't reach here */
 				argv[i] = NULL;
 				continue;
 			}
 			argv[i] = NULL;
+			if (argv[i+1] == ap)	/* If optarg is separate */
+				argv[i+1] = NULL;
+			else
+				i--;
 			if (i == (argc - 1)) {
 				break;
 			}
-			if ((length = strlen(argv[i+1])) >= MAXPATHLEN) {
+			if ((length = strlen(ap)) >= MAXPATHLEN) {
 				tmp_wcs_buffer = ALLOC_WC(length + 1);
-				(void) mbstowcs(tmp_wcs_buffer, argv[i+1], length + 1);
+				(void) mbstowcs(tmp_wcs_buffer, ap, length + 1);
 				value = GETNAME(tmp_wcs_buffer, FIND_LENGTH);
 				retmem(tmp_wcs_buffer);
 			} else {
-				MBSTOWCS(wcs_buffer, argv[i+1]);
+				MBSTOWCS(wcs_buffer, ap);
 				value = GETNAME(wcs_buffer, FIND_LENGTH);
 			}
-			argv[i+1] = NULL;
 		} else if ((cp = strchr(argv[i], (int) equal_char)) != NULL) {
 /* 
  * Combine all macro in dynamic array
@@ -3360,6 +3581,7 @@ make_targets(int argc, char **argv, Boolean parallel_flag)
 					} else {
 						default_target_to_build->stat.time = file_no_time;
 						if (!commands_done &&
+						    !default_target_to_build->stat.is_phony &&
 						    (exists(default_target_to_build) > file_doesnt_exist)) {
 							(void) printf(gettext("`%s' is up to date.\n"),
 								      default_target_to_build->string_mb);
@@ -3437,6 +3659,7 @@ make_targets(int argc, char **argv, Boolean parallel_flag)
 					}
 				} else {
 					if (!commands_done &&
+					    !default_target_to_build->stat.is_phony &&
 					    (exists(default_target_to_build) > file_doesnt_exist)) {
 						(void) printf(gettext("`%s' is up to date.\n"),
 							      default_target_to_build->string_mb);
@@ -3505,6 +3728,7 @@ make_targets(int argc, char **argv, Boolean parallel_flag)
 				}
 			} else {
 				if (!commands_done &&
+				    !default_target_to_build->stat.is_phony &&
 				    (exists(default_target_to_build) > file_doesnt_exist)) {
 					(void) printf(gettext("`%s' is up to date.\n"),
 						      default_target_to_build->string_mb);
@@ -3763,31 +3987,48 @@ get_dmake_odir_specified(void)
 #endif
 
 static void
-report_dir_enter_leave(Boolean entering)
+dir_enter_leave(Boolean entering)
 {
-	char	rcwd[MAXPATHLEN];
 static	char *	mlev = NULL;
 	char *	make_level_str = NULL;
 	int	make_level_val = 0;
 
 	make_level_str = getenv(NOCATGETS("MAKELEVEL"));
-	if(make_level_str) {
+	if (make_level_str) {
 		make_level_val = atoi(make_level_str);
 	}
-	if(mlev == NULL) {
+	if (mlev == NULL) {
 		mlev = (char*) malloc(MAXPATHLEN);
 	}
-	if(entering) {
+	if (entering) {
 		sprintf(mlev, NOCATGETS("MAKELEVEL=%d"), make_level_val + 1);
 	} else {
 		make_level_val--;
 		sprintf(mlev, NOCATGETS("MAKELEVEL=%d"), make_level_val);
 	}
 	putenv(mlev);
+}
 
-	if(report_cwd) {
-		if(make_level_val <= 0) {
-			if(entering) {
+static void
+report_dir_enter_leave(Boolean entering)
+{
+	char	rcwd[MAXPATHLEN];
+	char *	make_level_str = NULL;
+	int	make_level_val = 0;
+
+	make_level_str = getenv(NOCATGETS("MAKELEVEL"));
+	if (make_level_str) {
+		make_level_val = atoi(make_level_str);
+	}
+	/*
+	 * We previously did increment our environment, so we need to
+	 * correct this to get the correct value for this level.
+	 */
+	make_level_val--;
+
+	if (report_cwd) {
+		if (make_level_val <= 0) {
+			if (entering) {
 #ifdef TEAMWARE_MAKE_CMN
 				sprintf( rcwd
 				       , gettext("dmake: Entering directory `%s'\n")
@@ -3809,7 +4050,7 @@ static	char *	mlev = NULL;
 #endif
 			}
 		} else {
-			if(entering) {
+			if (entering) {
 #ifdef TEAMWARE_MAKE_CMN
 				sprintf( rcwd
 				       , gettext("dmake[%d]: Entering directory `%s'\n")
@@ -3865,8 +4106,24 @@ find_run_dir()
 	char		*exname = getexecpath();
 	char		*ret;
 
-	if (exname == NULL)
-		exname = findinpath(argv_zero_base, X_OK, TRUE, NULL);
+	if (exname == NULL) {
+		if (strchr(g_argv[0], (int) slash_char) == NULL) {
+			/*
+			 * Do pathname search only if we have been
+			 * called via PATH.
+			 */
+			exname = findinpath(g_argv[0], X_OK, TRUE, NULL);
+		} else {
+			/*
+			 * If arvg[0] starts with a slash, use it,
+			 * else use its concatenation with `pwd`.
+			 */
+			if (*g_argv[0] == slash_char)
+				exname = strdup(g_argv[0]);
+			else
+				exname = strdup(argv_zero_string);
+		}
+	}
 	if (exname == NULL)
 		return (NULL);
 	ret = strdup(dirname(exname));

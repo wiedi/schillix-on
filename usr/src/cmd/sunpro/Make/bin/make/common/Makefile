@@ -86,7 +86,7 @@ $(PROG):	$(OBJS)
 # We need to create a hardlink as otherwise make will not be able to tell
 # whether it has been called as /usr/bin/make or /usr/xpg4/bin/make.
 #
-$(ROOTXPG4BIN)/make:
+$(ROOTXPG4BIN)/make: $(ROOTPROG)
 	-$(RM) $@; $(LN) $(ROOTPROG) $@
 
 $(ROOTBIN)/dmake:

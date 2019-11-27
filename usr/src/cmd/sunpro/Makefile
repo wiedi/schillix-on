@@ -36,11 +36,11 @@ _msg:=          TARGET= _msg
 
 .PARALLEL:	$(SUBDIRS)
 
+all clean clobber install lint _msg: $(SUBDIRS)
+
 Make/bin/make/common:	Make/lib/bsd/src	\
 			Make/lib/mksh/src	\
 			Make/lib/vroot/src
-
-all clean clobber install lint _msg: $(SUBDIRS)
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

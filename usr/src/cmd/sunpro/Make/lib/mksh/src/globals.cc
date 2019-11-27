@@ -31,12 +31,12 @@
 /*
  * This file contains modifications Copyright 2017 J. Schilling
  *
- * @(#)globals.cc	1.3 17/05/13 2017 J. Schilling
+ * @(#)globals.cc	1.5 17/12/06 2017 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)globals.cc	1.3 17/05/13 2017 J. Schilling";
+	"@(#)globals.cc	1.5 17/12/06 2017 J. Schilling";
 #endif
 
 /*
@@ -109,6 +109,7 @@ int		exit_status;
 wchar_t		*file_being_read;
 /* Variable gnu_style=true if env. var. SUN_MAKE_COMPAT_MODE=GNU (RFE 4866328) */
 Boolean		gnu_style = false;
+Boolean		sunpro_compat = false;
 Name_set	hashtab;
 Name		host_arch;
 Name		host_mach;
@@ -145,5 +146,6 @@ pid_t		childPid = -1;	// This variable is used for killing child's process
 const timestruc_t file_no_time		= { -1, 0 };
 const timestruc_t file_doesnt_exist	= { 0, 0 };
 const timestruc_t file_is_dir		= { 1, 0 };
-const timestruc_t file_min_time		= { 2, 0 };
+const timestruc_t file_phony_time	= { 2, 0 };
+const timestruc_t file_min_time		= { 3, 0 };
 const timestruc_t file_max_time		= { INT_MAX, 0 };

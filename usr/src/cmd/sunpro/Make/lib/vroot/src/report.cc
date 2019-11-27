@@ -29,14 +29,14 @@
 #pragma	ident	"@(#)report.cc	1.17	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2018 J. Schilling
  *
- * @(#)report.cc	1.9 17/05/13 2017 J. Schilling
+ * @(#)report.cc	1.11 18/03/25 2017-2018 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)report.cc	1.9 17/05/13 2017 J. Schilling";
+	"@(#)report.cc	1.11 18/03/25 2017-2018 J. Schilling";
 #endif
 
 #include <stdio.h>
@@ -300,7 +300,8 @@ report_search_path(char *iflag)
 		return;
 	}
 	sprintf(filename, NOCATGETS("%s-CPP"), ptr+1);
-	(void)getcwd(curdir, sizeof(curdir));
+	if (getcwd(curdir, sizeof(curdir)) == NULL)
+		curdir[0] = nul_char;
 	if (strcmp(curdir, sdir) != 0 && strlen(iflag) > 2 && 
 	    iflag[2] != '/') {
 		/* Makefile must have had an "cd xx; cc ..." */
@@ -308,6 +309,7 @@ report_search_path(char *iflag)
 		newiflag = (char *)malloc(strlen(iflag) + strlen(curdir) + 2);
 		sprintf(newiflag, "-%c%s/%s", iflag[1], curdir, &iflag[2]);
 		report_dep(newiflag, filename);
+		free(newiflag);
 	} else {
 		report_dep(iflag, filename);
 	}

@@ -1,12 +1,14 @@
 /*
  * CDDL HEADER START
  *
- * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * This file and its contents are supplied under the terms of the
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -29,14 +31,14 @@
 #pragma	ident	"@(#)read2.cc	1.53	06/12/12"
 
 /*
- * This file contains modifications Copyright 2017 J. Schilling
+ * This file contains modifications Copyright 2017-2019 J. Schilling
  *
- * @(#)read2.cc	1.6 17/05/13 2017 J. Schilling
+ * @(#)read2.cc	1.13 19/08/12 2017-2019 J. Schilling
  */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)read2.cc	1.6 17/05/13 2017 J. Schilling";
+	"@(#)read2.cc	1.13 19/08/12 2017-2019 J. Schilling";
 #endif
 
 /*
@@ -57,6 +59,16 @@ static	UConst char sccsid[] =
 #include <schily/stdio.h>
 #include <schily/wchar.h>
 #include <schily/schily.h>
+
+/*
+ * We cannot use "using std::wcsdup" as wcsdup() is not always
+ * in the std namespace.
+ * The Sun CC compiler in version 4 does not suport using namespace std;
+ * so be careful.
+ */
+#if !defined(__SUNPRO_CC_COMPAT) || __SUNPRO_CC_COMPAT >= 5
+using namespace std;		/* needed for wcsdup() */
+#endif
 
 /*
  * Defined macros
@@ -796,6 +808,7 @@ enter_dependencies(register Name target, Chain target_group, register Name_vecto
 		built_last_make_run_seen = false;
 		command_changed = true;
 		target->ran_command = true;
+		/* FALLTHRU */
 	case reading_statefile:
 		/* Reading the statefile for the first time. Enter the rules */
 		/* as "Commands used" not "templates to use" */
@@ -807,6 +820,7 @@ enter_dependencies(register Name target, Chain target_group, register Name_vecto
 			}
 			line->body.line.command_used = command;
 		}
+		/* FALLTHRU */
 	case reading_cpp_file:
 		/* Reading report file from programs that reports */
 		/* dependencies. If this is the first time the target is */
@@ -1149,6 +1163,7 @@ enter_dyntarget(register Name target)
  *		no_parallel_name The Name ".NO_PARALLEL", used for tracing
  *		only_parallel	Set to indicate only some targets runs parallel
  *		parallel_name	The Name ".PARALLEL", used for tracing
+ *		phony		The Name ".PHONY", used for tracing
  *		precious	The Name ".PRECIOUS", used for tracing
  *		sccs_get_name	The Name ".SCCS_GET", used for tracing
  *		sccs_get_posix_name The Name ".SCCS_GET_POSIX", used for tracing
@@ -1194,7 +1209,15 @@ special_reader(Name target, register Name_vector depes, Cmd_line command)
 		keep_state = false;
 		#if defined(SUN5_0)
 		/* Use /usr/xpg4/bin/sh on Solaris */
+#ifdef	HAVE__USR_XPG4_BIN_SH
 		MBSTOWCS(wcs_buffer, NOCATGETS("/usr/xpg4/bin/sh"));
+#else
+#ifdef	HAVE__OPT_SCHILY_XPG4_BIN_SH
+		MBSTOWCS(wcs_buffer, NOCATGETS("/opt/schily/xpg4/bin/sh"));
+#else
+		MBSTOWCS(wcs_buffer, NOCATGETS("/bin/sh"));
+#endif
+#endif
 		(void) SETVAR(shell_name, GETNAME(wcs_buffer, FIND_LENGTH), false);
 		#endif
 		if (trace_reader) {
@@ -1382,6 +1405,31 @@ special_reader(Name target, register Name_vector depes, Cmd_line command)
 				depes->names[n]->no_parallel = true;
 				depes->names[n]->parallel = false;
 				depes->names[n]->localhost = true;
+			}
+		}
+		break;
+
+	case phony_special:
+		/*
+		 * .PHONY is only supported in case we do not emulate the
+		 * old Sun or SVR4 mode.
+		 *
+		 * Otherwise it is ignored as it has been in the
+		 * old Sun version.
+		 */
+		if (sunpro_compat || svr4)
+			break;
+
+		/* Set the phony bit for all the targets on */
+		/* the dependency list */
+		for (; depes != NULL; depes = depes->next) {
+			for (n = 0; n < depes->used; n++) {
+				if (trace_reader) {
+					(void) printf("%s:\t%s\n",
+						      phony->string_mb,
+						      depes->names[n]->string_mb);
+				}
+				depes->names[n]->stat.is_phony = true;
 			}
 		}
 		break;

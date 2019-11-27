@@ -10,12 +10,14 @@
 #
 
 #
-# Copyright 2017 Jörg Schilling.  All rights reserved.
+# Copyright 2017-2019 Jörg Schilling.  All rights reserved.
 #
 
 include ../Makefile.com
 
 DATAFILES += depend
+
+LICENSEFILES = $(SCHILLIX) ../../cmd/sunpro/THIRDPARTYLICENSE
 
 .KEEP_STATE:
 
