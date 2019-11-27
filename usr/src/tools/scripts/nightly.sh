@@ -1639,7 +1639,16 @@ DEV_CM="\"@(#)SunOS Internal Development: $LOGNAME $BUILD_DATE [$BASEWSDIR]\""
 export o_FLAG X_FLAG POUND_SIGN RELEASE_DATE DEV_CM
 
 maketype="distributed"
-MAKE=dmake
+if [[ -z "$MAKE" ]]; then
+	MAKE=dmake
+elif [[ ! -x "$MAKE" ]]; then
+	#
+	# If imported from the environment, $MAKE should be a path name
+	# that points to a dmake variant, used for testing purposes.
+	#
+	echo "\$MAKE from environment ($MAKE) is not executable, exiting."
+	exit 1
+fi
 # get the dmake version string alone
 DMAKE_VERSION=$( $MAKE -v )
 DMAKE_VERSION=${DMAKE_VERSION#*: }
@@ -1648,7 +1657,9 @@ DMAKE_MAJOR=$( echo $DMAKE_VERSION | \
 	sed -e 's/.*\<\([^.]*\.[^   ]*\).*$/\1/' )
 # Strip off the platform string (something like: "solaris2.11-i386")
 DMAKE_VERSION=$( echo $DMAKE_VERSION | \
-	sed -e 's/\([0-9]\) .*-.* 20/\1 20/' -e 's/ derived from SunPro Make sources//' )
+	sed -e 's/ derived from SunPro Make sources//' \
+	-e 's/ Copyright .*$//' \
+	-e 's/\([0-9]\) .*-.* 20/\1 20/')
 # extract the second (or final) integer
 DMAKE_MINOR=${DMAKE_MAJOR#*.}
 DMAKE_MINOR=${DMAKE_MINOR%%.*}
@@ -1657,7 +1668,11 @@ DMAKE_MAJOR=${DMAKE_MAJOR%%.*}
 CHECK_DMAKE=${CHECK_DMAKE:-y}
 if [ "$CHECK_DMAKE" = "y" -a \
      "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2017/04/23" -o \
-     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2017/04/23" ]; then
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2017/04/23" -o \
+     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/07/19" -o \
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/07/19" -o \
+     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/11/11" -o \
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/11/11" ]; then
 	:
 # x86 was built on the 12th, sparc on the 13th.
 elif [ "$CHECK_DMAKE" = "y" -a \

@@ -38,6 +38,7 @@ COMMON_SUBDIRS= \
 	ctf \
 	depcheck \
 	env \
+	dmake \
 	findunref \
 	ndrgen \
 	onbld \
@@ -90,6 +91,7 @@ ROOTDIRS= \
 	$(ROOTONBLD)/bin/$(MACH) \
 	$(ROOTONBLD)/lib \
 	$(ROOTONBLD)/lib/$(MACH) \
+	$(ROOTONBLD)/lib/$(MACH)/64 \
 	$(ROOTONBLD)/lib/perl \
 	$(ROOTONBLD)/lib/python2.4 \
 	$(ROOTONBLD)/lib/python2.4/onbld \
@@ -104,6 +106,7 @@ ROOTDIRS= \
 	$(ROOTONBLD)/env \
 	$(ROOTONBLD)/etc \
 	$(ROOTONBLD)/etc/exception_lists \
+	$(ROOTONBLD)/share \
 	$(ROOTONBLD)/gk \
 	$(ROOTONBLD)/man \
 	$(ROOTONBLD)/man/man1 \
