@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)xec.c	1.74 16/08/28 2008-2016 J. Schilling
+ * @(#)xec.c	1.112 19/10/05 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)xec.c	1.74 16/08/28 2008-2016 J. Schilling";
+	"@(#)xec.c	1.112 19/10/05 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -75,11 +75,16 @@ static jmp_buf	forkjmp;	/* To go back to TNOFORK in case of builtins */
 					int xflags, int errorflg,
 					int *pf1, int *pf2));
 #ifdef	DO_PS34
-	unsigned char *ps_macro	__PR((unsigned char *as));
+	unsigned char *ps_macro	__PR((unsigned char *as, int perm));
 #endif
 	void	execexp		__PR((unsigned char *s, Intptr_t f,
 					int xflags));
 static	void	execprint	__PR((unsigned char **));
+#ifdef	CASE_XPRINT
+static	void	cprint		__PR((unsigned char *a1,
+					unsigned char	*a2,
+					unsigned char	*a3));
+#endif
 static	int	ismonitor	__PR((int xflags));
 static	int	exallocjob	__PR((struct trenod *t, int xflags));
 
@@ -179,17 +184,21 @@ execute(argt, xflags, errorflg, pf1, pf2)
 				struct parnod	*p = parptr(t);
 				struct job	j;
 				int		osystime = flags2 & systime;
+				int		oflags = flags;
 
 				exitval = 0;
 				exval_clear();
 
+				memset(&j, 0, sizeof (j));
+				j.j_cmd = "";		/* could be better */
 				gettimeofday(&j.j_start, NULL);
 				ruget(&j.j_rustart);
 				flags2 |= systime;
-				execute(p->partre, xflags, errorflg, pf1, pf2);
+				execute(p->partre, xflags, 0, pf1, pf2);
 				prtime(&j);
 				if (!osystime)
 					flags2 &= ~systime;
+				flags = oflags;
 				break;
 			}
 #endif
@@ -202,7 +211,7 @@ execute(argt, xflags, errorflg, pf1, pf2)
 				exitval = 0;
 				exval_clear();
 
-				execute(p->partre, xflags, errorflg, pf1, pf2);
+				execute(p->partre, xflags, 0, pf1, pf2);
 				/*
 				 * In extended Bourne Shell mode, exitval does
 				 * not suffer from the exitcode mod 256 problem
@@ -229,11 +238,19 @@ execute(argt, xflags, errorflg, pf1, pf2)
 				exitval = 0;
 				exval_clear();
 
-				gchain = 0;
-				argn = getarg((struct comnod *)t);
-				com = scan(argn);
-				gchain = schain;
-
+				if (xflags & XEC_HASARGV) {
+					/*
+					 * Cheat code to support "command cmd"
+					 */
+					com = (unsigned char **)
+							comptr(t)->comarg;
+					argn = 1;	/* Cheat */
+				} else {
+					gchain = 0;
+					argn = getarg((struct comnod *)t);
+					com = scan(argn);
+					gchain = schain;
+				}
 				if (argn != 0)
 					cmdhash = pathlook(com[0],
 							1, comptr(t)->comset);
@@ -263,7 +280,18 @@ execute(argt, xflags, errorflg, pf1, pf2)
 					if (sp && (sp->sysflg & BLT_SPC) == 0)
 						pushov = N_PUSHOV;
 #endif
+#ifdef	DO_POSIX_EXPORT
+					/*
+					 * Exporting a shell variable with
+					 * "VAR=val exec cmd" is not required
+					 * by POSIX but looks more orthogonal.
+					 */
+					setlist(comptr(t)->comset,
+						(argn > 0?N_EXPORT:0)|pushov);
+#else
 					setlist(comptr(t)->comset, pushov);
+#endif
+
 				}
 
 				if (argn && (flags&noexec) == 0) {
@@ -273,6 +301,9 @@ execute(argt, xflags, errorflg, pf1, pf2)
 						execprint(com);
 
 					if (comtype == NOTFOUND) {
+#ifdef	DO_POSIX_REDIRECT
+						short	fdindex;
+#endif
 #ifdef	DO_PIPE_PARENT
 						resetjobfd();	/* Rest stdin */
 						if (ismonitor(xflags)) {
@@ -282,6 +313,9 @@ execute(argt, xflags, errorflg, pf1, pf2)
 #endif
 						pos = hashdata(cmdhash);
 						ex.ex_status = C_NOEXEC;
+#ifdef	DO_POSIX_REDIRECT
+						fdindex = initio(t->treio, 1);
+#endif
 						if (pos == 1) {
 							ex.ex_status =
 							ex.ex_code = C_NOTFOUND;
@@ -296,6 +330,12 @@ execute(argt, xflags, errorflg, pf1, pf2)
 							failurex(ERR_NOEXEC,
 								*com, badperm);
 						}
+#ifdef	DO_DOL_SLASH
+						*excausep = ex.ex_code;
+#endif
+#ifdef	DO_POSIX_REDIRECT
+						restore(fdindex);
+#endif
 						break;
 					} else if (comtype == PATH_COMMAND) {
 						pos = -1;
@@ -329,6 +369,7 @@ execute(argt, xflags, errorflg, pf1, pf2)
 							postjob(parent, 1, 1);
 						}
 #endif
+						pos = hashdata(cmdhash);
 						builtin(cmdhash,
 							argn, com, t, xflags);
 #ifdef	DO_PIPE_PARENT
@@ -352,20 +393,37 @@ execute(argt, xflags, errorflg, pf1, pf2)
 						}
 #endif
 						freejobs();
+#ifdef	DO_POSIX_RETURN
+						if (dotcnt > 0 && dotbrk) {
+							dotbrk = 0;
+							longjmp(dotshell->jb,
+								    1);
+						}
+#endif
+#ifdef	DO_POSIX_E
+						if (errorflg &&
+						    (flags & errflg) &&
+						    exitval &&
+						    pos != SYSRETURN) {
+							done(0);
+						}
+#endif
 						break;
 					} else if (comtype == FUNCTION) {
 						unsigned long	oflags = flags;
 						struct dolnod *olddolh;
 						struct namnod *n;
-						struct fndnod *f;
+						struct fndnod *f = NULL;
 						short idx;
 						unsigned char **olddolv = dolv;
 						int olddolc = dolc;
 						void *olocalp = localp;
 						int olocalcnt = localcnt;
+						int odotcnt = dotcnt;
 
 						n = findnam(com[0]);
-						f = fndptr(n->funcval);
+						if (n)	/* paranoia */
+							f = fndptr(n->funcval);
 						/* just in case */
 						if (f == NULL)
 							break;
@@ -374,6 +432,7 @@ execute(argt, xflags, errorflg, pf1, pf2)
 								savargs(funcnt);
 						f->fndref++;
 						funcnt++;
+						dotcnt = 0;
 #ifdef	DO_POSIX_FAILURE
 						flags |= noexit;
 #endif
@@ -414,6 +473,7 @@ execute(argt, xflags, errorflg, pf1, pf2)
 						dolv = olddolv;
 						dolc = olddolc;
 						funcnt--;
+						dotcnt = odotcnt;
 						/*
 						 * n->funcval may have been
 						 * pointing different func.
@@ -426,6 +486,13 @@ execute(argt, xflags, errorflg, pf1, pf2)
 					}
 				} else if (t->treio == 0) {
 					chktrap();
+#ifdef	DO_POSIX_E
+					if (argn == 0 && errorflg &&
+					    (flags & errflg) &&
+					    exitval) {
+						done(0);
+					}
+#endif
 					break;
 				}
 
@@ -448,28 +515,48 @@ execute(argt, xflags, errorflg, pf1, pf2)
 			struct ionod *ofiot = fiotemp;
 			struct ionod *oiot = iotemp;
 			struct fileblk *ostandin = standin;
+			struct excode oex;
 #endif
 
 			exitval = 0;
 			exval_clear();
+#ifdef	HAVE_VFORK
+			oex = ex;
+#endif
 
+#ifdef	DO_TRAP_EXIT
+			if (trapcom[0])
+				xflags &= ~XEC_EXECED;
+#endif
 			if (!(xflags & XEC_EXECED) || treeflgs&(FPOU|FAMP)) {
 				int forkcnt = 1;
 
 #ifdef	DO_PIPE_PARENT
-				if ((xflags & XEC_ALLOCJOB) ||
+				if (!(xflags & XEC_ALLOCJOB) ||
 				    !(treeflgs & FPOU)) {
 #else
 				if (!(treeflgs & FPOU)) {
 #endif
 					/*
 					 * Allocate job slot
+					 * Make sure, this happens even when
+					 * XEC_ALLOCJOB is set but curjob()
+					 * returns NULL.
 					 */
+#ifdef	DO_PIPE_PARENT
+					if (!curjob())
+						xflags &= ~XEC_ALLOCJOB;
+#endif
 					monitor = exallocjob(t, xflags);
 #ifdef	DO_PIPE_PARENT
 					xflags |= XEC_ALLOCJOB;
 #endif
 				}
+#ifdef	DO_PIPE_PARENT
+				else {
+					monitor = ismonitor(xflags);
+				}
+#endif
 
 #ifdef	HAVE_VFORK
 				if (type == TCOM) {
@@ -493,14 +580,15 @@ execute(argt, xflags, errorflg, pf1, pf2)
 				}
 				if (!isvfork &&
 				    (treeflgs & (FPOU|FAMP))) {
-					link_iodocs(iotemp);
-					linked = 1;
+					linked |= link_iodocs(iotemp);
+					linked |= link_iodocs(fiotemp);
 				}
 script:
 				while ((parent = isvfork?vfork():fork()) == -1)
 #else
 				if (treeflgs & (FPOU|FAMP)) {
 					link_iodocs(iotemp);
+					link_iodocs(fiotemp);
 					linked = 1;
 				}
 				while ((parent = fork()) == -1)
@@ -533,6 +621,7 @@ script:
 				}
 
 				if (parent) {	/* Parent != 0 -> Child pid */
+						/* but we are in the parent */
 #ifdef	DO_PIPE_PARENT
 					pid_t pgid = curpgid();
 
@@ -558,6 +647,8 @@ script:
 						mypid = opid;
 						mypgid = opgid;
 						flags = oflags;
+						ex = oex;
+						exitval = 0;
 					}
 #endif
 					if (monitor)
@@ -616,8 +707,10 @@ script:
 							xflags |= XEC_ALLOCJOB;
 #endif
 							goto script;
-						} else {
+						} else if (exflag != 0) {
 							exflag = 0;
+							ex.ex_status =
+							ex.ex_code = C_NOEXEC;
 						}
 					}
 #endif
@@ -631,7 +724,7 @@ script:
 
 					/*
 					 * The first process in this command
-					 * Remember the id as process group.
+					 * Remember it's id as process group.
 					 *
 					 * In special when using vfork together
 					 * with the new pipe setup, we need to
@@ -640,6 +733,13 @@ script:
 					 * parent as the parent process is
 					 * blocked until the child called exec()
 					 */
+#ifdef	JOB_DEBUG
+					fprintf(stderr,
+	"pgid %ld mypgid %ld type %X treeflags %X mypid %ld ppid %ld\n",
+					(long)pgid, (long)mypgid,
+					type, treeflgs,
+					(long)mypid, (long)getppid());
+#endif
 					if (pgid == 0) {
 						pgid = mypid;
 						setjobpgid(pgid);
@@ -653,10 +753,15 @@ script:
 						 * assignment to mypgid used to
 						 * be in makejob().
 						 */
-						if (type == TFORK)
+						if ((type == TFORK) &&
+						    (treeflgs & FPOU)) {
 							mypgid = pgid;
+						}
 					}
 					setpgid(mypid, pgid);
+#ifdef	JOB_DEBUG
+					close(-10);	/* truss(1) marker */
+#endif
 					if (!(treeflgs & FAMP))
 						settgid(pgid, mypgid);
 				}
@@ -673,13 +778,14 @@ script:
 
 			flags |= (forked|jcoff);
 
-			fiotemp  = 0;
-
 			if (linked == 1) {
 				swap_iodoc_nm(iotemp);
+				swap_iodoc_nm(fiotemp);
 				xflags |= XEC_LINKED;
-			} else if (!(xflags & XEC_LINKED))
+			} else if (!(xflags & XEC_LINKED)) {
 				iotemp = 0;
+				fiotemp  = 0;
+			}
 #ifdef ACCT
 			suspacct();
 #endif
@@ -689,8 +795,12 @@ script:
 			/*
 			 * Job control: pgrp / TTY-signal handling
 			 */
-			if (!(treeflgs & FPOU))
+			if (!(treeflgs & FPOU)) {
+				/*
+				 * Call setpgid() if in monitor mode.
+				 */
 				makejob(monitor, !(treeflgs & FAMP));
+			}
 
 			/*
 			 * pipe in or out
@@ -723,12 +833,14 @@ script:
 				eflag = 0;
 				setlist(comptr(t)->comset, N_EXPORT|pushov);
 #ifdef	HAVE_VFORK
-				if (isvfork)
+				if (isvfork) {
 					rmtemp(oiot);
-				else
+					rmfunctmp(ofiot);
+				} else
 #endif
 				{
 					rmtemp(0);
+					rmfunctmp(0);
 					clearjobs();
 				}
 				execa(com, pos, isvfork, NULL);
@@ -815,6 +927,19 @@ script:
 			/* NOTREACHED */
 #endif	/* DO_PIPE_PARENT */
 
+#ifdef	DO_SETIO_NOFORK
+		case TSETIO:		/* save and reset IO streams */
+		{
+			short	fdindex;
+
+			fdindex = initio(t->treio, 1);
+			execute(forkptr(t)->forktre,
+				xflags, errorflg,
+				no_pipe, no_pipe);
+			restore(fdindex);
+			break;
+		}
+#endif	/* DO_SETIO_NOFORK */
 
 		case TPAR:		/* "()" parentized cmd */
 			/*
@@ -862,11 +987,23 @@ script:
 
 		case TLST:		/* ";" separated command list */
 			execute(lstptr(t)->lstlef,
-				xflags&XEC_NOSTOP, errorflg,
+				xflags&XEC_NOSTOP,
+				errorflg,
 				no_pipe, no_pipe);
-			/* Update errorflg if set -e is invoked in the sub-sh */
+			/*
+			 * When not in POSIX mode, be compatible to the Solaris
+			 * modifications for bugid 1133408 even tough this is
+			 * questionable:
+			 *
+			 * Update errorflg if set -e is invoked in the sub-sh
+			 */
 			execute(lstptr(t)->lstrit,
-				xflags, (errorflg | (eflag & errflg)),
+				xflags,
+#ifdef	DO_POSIX_E
+				errorflg,
+#else
+				(errorflg | (eflag & errflg)),
+#endif
 				no_pipe, no_pipe);
 			break;
 
@@ -1038,6 +1175,10 @@ script:
 				exitval = 0;
 				exval_clear();
 #endif
+#ifdef	CASE_XPRINT
+				if (flags & execpr)
+					cprint(UC "case", r, UC "in");
+#endif
 				regp = swptr(t)->swlst;
 				while (regp) {
 					struct argnod *rex = regp->regptr;
@@ -1045,9 +1186,24 @@ script:
 					while (rex) {
 						unsigned char	*s;
 
-						if (gmatch((char *)r, (char *)
-						    (s = macro(rex->argval))) ||
-						    (trim(s), eq(r, s))) {
+						s = macro(rex->argval);
+						/*
+						 * Make 'case "" in "")' work.
+						 * See AT&T hack in _macro() and
+						 * quoted nul removal in trims()
+						 */
+						if (s[0] == '\\' &&
+						    s[1] == '\0')
+							s++;
+#ifdef	CASE_XPRINT
+						if (flags & execpr)
+							cprint(s, UC ")",
+								UC "...");
+#endif
+						if (gmatch((char *)r,
+								(char *)s) ||
+						    ((flags2 & posixflg) == 0 &&
+						    (trim(s), eq(r, s)))) {
 							execute(regp->regcom,
 								XEC_NOSTOP,
 								errorflg,
@@ -1090,27 +1246,99 @@ execexp(s, f, xflags)
 		fb.feval = (unsigned char **)(f);
 	} else if (f >= 0)
 		initf(f);
+
+	/*
+	 * xflags != 0 currently only happens from bltin.c
+	 * so we switch off XEC_EXECED here. This may change
+	 * in the future.
+	 * We need to do this because "eval cmd&" may otherwise
+	 * leave shell tempfiles if "cmd" contains a here document.
+	 */
+	xflags &= ~XEC_EXECED;
 	execute(cmd(NL, NLFLG | MTFLG | SEMIFLG),
 		xflags, (int)(flags & errflg), no_pipe, no_pipe);
 	pop();
 }
 
+/*
+ * Callback function for find ... -call
+ */
+int
+callsh(ac, av)
+	int	ac;
+	char	**av;
+{
+	struct dolnod	*olddolh;
+	unsigned char	**olddolv = dolv;
+	int		olddolc = dolc;
+	char		*av0 = av[0];
+
+
+	if (!anys(UC "$", UC av0)) {
+		/*
+		 * If av0 does not contain a variable reference,
+		 * behave as with "eval".
+		 */
+		traprecurse++;
+		execexp(UC av0, (Intptr_t)&av[1], 0);	/* xflags ??? */
+		traprecurse--;
+		return (exitval);
+	}
+	/*
+	 * save current positional parameters
+	 */
+	traprecurse++;
+	olddolh = (struct dolnod *)savargs(funcnt);
+	funcnt++;
+	av[0] = "call";
+	setargs(UCP av);
+	execexp(UC av0, (Intptr_t)0, 0);		/* xflags ??? */
+	(void) restorargs(olddolh, funcnt);
+	av[0] = av0;
+	dolv = olddolv;
+	dolc = olddolc;
+	funcnt--;
+	traprecurse--;
+
+	return (exitval);
+}
+
 #ifdef	DO_PS34
 unsigned char *
-ps_macro(as)
+ps_macro(as, perm)
 	unsigned char	*as;
+	int		perm;
 {
 extern	int		macflag;
 	int		oflags = flags;
 	int		omacflag = macflag;
+	int		otrapnote = trapnote;
 	unsigned char	*res;
 
+	/*
+	 * Disable -x and -v to avoid recursion.
+	 */
 	flags &= ~(execpr|readpr);
+
+	/*
+	 * Disable exit() and longjmp() in case of errors,
+	 * needed to avoid endless longjmp() loops in case of
+	 * unsuported substitustions (e.g. a ksh93 .profile).
+	 */
+	flags &= ~errflg;
+	flags |= noexit;
+
 	if ((flags2 & promptcmdsubst) == 0)
 		macflag |= M_NOCOMSUBST;
-	res = macro(as);
+	trapnote = 0;
+	res = _macro(as);
+	staktop = res;		/* Restore to previous stakbot offset */
 	macflag = omacflag;
 	flags = oflags;
+	trapnote = otrapnote;
+
+	if (perm)
+		return (make(res));
 
 	return (res);
 }
@@ -1124,18 +1352,36 @@ execprint(com)
 	unsigned char	*s;
 
 #ifdef	DO_PS34
-	prs(ps_macro(ps4nod.namval?ps4nod.namval:UC execpmsg));
+	prs(ps_macro(ps4nod.namval?ps4nod.namval:UC execpmsg, FALSE));
 #else
 	prs(_gettext(execpmsg));
 #endif
 	while (com[argn] != ENDARGS) {
 		s = com[argn++];
-		write(output, s, length(s) - 1);
+		(void) write(output, s, length(s) - 1);
 		blank();
 	}
 
 	newline();
 }
+
+#ifdef	CASE_XPRINT
+static void
+cprint(a1, a2, a3)
+	unsigned char	*a1;
+	unsigned char	*a2;
+	unsigned char	*a3;
+{
+	unsigned char	*com[4];
+
+	com[0] = a1;
+	com[1] = a2;
+	com[2] = a3;
+	com[3] = ENDARGS;
+
+	execprint(com);
+}
+#endif
 
 static int
 ismonitor(xflags)
@@ -1156,15 +1402,30 @@ exallocjob(t, xflags)
 		/* EMPTY */;
 	} else if (monitor) {
 		int save_fd;
+		unsigned char *savebot;
 
 		save_fd = setb(-1);
-		prcmd(t);
+		if (xflags & XEC_HASARGV) {
+			unsigned char	**av = UCP comptr(t)->comarg;
+
+			/*
+			 * Cheat code to support "command cmd"
+			 */
+			while (*av) {
+				prs_buff(*av++);
+				if (*av)
+					prc_buff(SPACE);
+			}
+		} else {
+			prcmd(t);
+		}
 		/*
 		 * We use cwdget(CHDIR_L) as this does not modify PWD
 		 * unless it is definitely invalid.
 		 */
-		allocjob((char *)stakbot, cwdget(CHDIR_L), monitor);
-		(void) setb(save_fd);
+		(void) setb(save_fd);	/* Make string semi-permanent	*/
+		savebot = endb();	/* Get string base address	*/
+		allocjob((char *)savebot, cwdget(CHDIR_L), monitor);
 	} else {
 		allocjob("", (unsigned char *)"", 0);
 	}

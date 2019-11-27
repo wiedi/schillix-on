@@ -1,13 +1,13 @@
-/* @(#)abbrev.c	1.69 16/08/09 Copyright 1985-2016 J. Schilling */
+/* @(#)abbrev.c	1.74 18/06/26 Copyright 1985-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)abbrev.c	1.69 16/08/09 Copyright 1985-2016 J. Schilling";
+	"@(#)abbrev.c	1.74 18/06/26 Copyright 1985-2018 J. Schilling";
 #endif
 /*
  *	Abbreviation symbol handling
  *
- *	Copyright (c) 1985-2016 J. Schilling
+ *	Copyright (c) 1985-2018 J. Schilling
  *
  *	.global & .local alias abbreviations are handled here
  *
@@ -116,7 +116,7 @@ LOCAL	char	sn_badfile[]	= "bad_sym_file";
 #define	raisecond(n, v)	error(n)
 #define	malloc		alloc
 
-#define	ctlc		intrcnt
+#define	ctlc		bosh.intrcnt
 
 #ifdef	HAVE_SNPRINTF
 	/*
@@ -189,7 +189,7 @@ typedef struct abtab {
 LOCAL	abtab_t	ab_tabs[ABTABS]	= {	{0, 0, 0, 0, 0, (uid_t)-1},
 					{0, 0, 0, 0, 0, (uid_t)-1}};
 
-extern	abidx_t	deftab;		/* Variable is defined in hashcmd.c */
+EXPORT	abidx_t	deftab		= GLOBAL_AB;	/* Use .globals by default */
 
 LOCAL	abtab_t	*_ab_down	__PR((abidx_t tab));
 LOCAL	abent_t	*_ab_lookup	__PR((abtab_t *ap, char *name, BOOL new));
@@ -897,6 +897,7 @@ ab_push(tab, name, val, aflags)
 		np->ab_flags |= ABF_BEGIN;
 	else
 		np->ab_flags &= ~ABF_BEGIN;
+	np->ab_flags &= ~ABF_POP;
 	return (TRUE);
 }
 
@@ -1075,6 +1076,8 @@ ab_list(tab, pattern, f, aflags)
 			fflush(f);
 		} else {
 			berror("%s", ebadpattern);
+			free((char *)aux);
+			free((char *)state);
 			return (FALSE);
 		}
 		free((char *)aux);

@@ -37,13 +37,13 @@
 #include <schily/errno.h>
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)msg.c	1.68 16/07/14 2008-2016 J. Schilling
+ * @(#)msg.c	1.80 19/04/17 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)msg.c	1.68 16/07/14 2008-2016 J. Schilling";
+	"@(#)msg.c	1.80 19/04/17 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -82,7 +82,9 @@ const char	piperr[]	= "cannot make pipe";
 const char	badopen[]	= "cannot open";
 const char	coredump[]	= " - core dumped";
 const char	arglist[]	= "arg list too long";
+#ifdef	ETXTBSY
 const char	txtbsy[]	= "text busy";
+#endif
 const char	toobig[]	= "too big";
 const char	badexec[]	= "cannot execute";
 const char	notfound[]	= "not found";
@@ -95,7 +97,12 @@ const char	badtrap[]	= "bad trap";
 const char	wtfailed[]	= "is read only";
 const char	notid[]		= "is not an identifier";
 const char	badulimit[]	= "exceeds allowable limit";
+#ifdef	DO_POSIX_RETURN
+const char	badreturn[]	=
+			"cannot return when not in function or sourced script";
+#else
 const char	badreturn[]	= "cannot return when not in function";
+#endif
 #ifndef	DO_POSIX_UNSET
 const char	badexport[]	= "cannot export functions";
 #endif
@@ -136,9 +143,15 @@ const char	ambiguous[]	= "ambiguous";
 const char	usage[]		= "usage";
 const char	nojc[]		= "no job control";
 #ifdef	DO_SYSALIAS
+#if	defined(DO_GLOBALALIASES) || defined(DO_LOCALALIASES)
 const char	aliasuse[]	=
 		"alias [-a] [-e] [-g] [-l] [-p] [-r] [--raw] [name[=value]...]";
 const char	unaliasuse[]	= "unalias [-a] [-g] [-l] [-p] [name...]";
+#else
+const char	aliasuse[]	=
+		"alias [-a] [-e] [-p] [--raw] [name[=value]...]";
+const char	unaliasuse[]	= "unalias [-a] [-p] [name...]";
+#endif
 #endif
 #ifdef	DO_SYSREPEAT
 const char	repuse[]	= "repeat [-c count] [-d delay] cmd [args]";
@@ -149,10 +162,14 @@ const char	builtinuse[]	=
 #endif
 const char	stopuse[]	= "stop id ...";
 #ifdef	DO_POSIX_TRAP
-const char	trapuse[]	= "trap [action condition ...]";
+const char	trapuse[]	= "trap -p [ [action] condition ...]";
 #endif
 const char	ulimuse[]	=
-		"ulimit [ -HSacdefilmnqrstuvLMPRS ] [ limit ]";
+		"ulimit [ -HSakcdefiklmnoqrstuvwLMPR ] [ limit ]";
+#ifdef	DO_SYSLIMIT
+const char	limuse[]	=
+		"limit [ -HS ] [ resource [ limit ]]";
+#endif
 const char	killuse[]	=
 		"kill [ [ -sig | -s sig ] id ... | -l [ signo ... ] ]";
 const char	jobsuse[]	= "jobs [ [ -l | -p ] [ id ... ] | -x cmd ]";
@@ -189,6 +206,7 @@ const char	pathname[]	= "PATH";
 const char	ppidname[]	= "PPID";
 const char	cdpname[]	= "CDPATH";
 const char	envname[]	= "ENV";
+const char	fcename[]	= "FCEDIT";
 const char	homename[]	= "HOME";
 const char	mailname[]	= "MAIL";
 const char	ifsname[]	= "IFS";
@@ -210,14 +228,14 @@ const char	timefmtname[]	= "TIMEFORMAT";
  */
 const char	nullstr[]	= "";
 const char	sptbnl[]	= " \t\n";
-const char	defpath[]	= "/usr/bin:";
+const char	defpath[]	= "/usr/bin::";
 #ifdef	DO_SYSCOMMAND
 /*
  * The correct POSIX default PATH for Solaris + "/bin" after "/usr/bin" should
  * be sufficient for all platforms.
  */
 const char	defppath[]	=
-"/usr/xpg6/bin:/usr/xpg4/bin:/usr/ccs/bin:/usr/bin:/bin:/opt/SUNWspro/bin:";
+"/usr/xpg6/bin:/usr/xpg4/bin:/usr/ccs/bin:/usr/bin:/bin:/opt/SUNWspro/bin::";
 #endif
 const char	colon[]		= ": ";
 const char	minus[]		= "-";
@@ -239,11 +257,19 @@ const char	sysrcfile[]	= "/etc/sh.shrc";
 const char	globalname[]	= ".globals";
 const char	localname[]	= ".locals";
 const unsigned char shname[]	= "sh (Schily Bourne Shell)";
+#ifdef	DO_SYSFC
+const char	fcedit[]	= "/bin/ed";
+#endif
 
 /*
  * locale testing
+ *
+ * Since localedir may not be the same for all target architectures
+ * we just disable this check for a non-Solaris environment.
  */
+#if	defined(IS_SUN) || defined(DO_SPLIT_ROOT)
 const char	localedir[]	= "/usr/lib/locale";
+#endif
 int		localedir_exists;
 
 /*
@@ -324,11 +350,6 @@ const int no_test_ops = sizeof (test_ops)/sizeof (struct sysnod);
  * Built-ins marked with "i" may not be permitted intrincics in the future.
  * Built-ins marked with "-" do not follow utility syntax guidelines.
  * Built-ins marked with "U" follow utility syntax guidelines and support --.
- *
- * The POSIX standard in addition defines the regular intrinsic utility
- * "fc" that is not part of the Bourne Shell as the Bourne Shell uses a command
- * line history editor taken from "bsh" that was fully integrated in 1984
- * already, when ksh still called an external editor command.
  */
 const struct sysnod commands[] =
 {
@@ -374,6 +395,9 @@ const struct sysnod commands[] =
 #ifdef	DO_SYSTRUE
 	{ "false",	SYSFALSE,	0 },		/*  i  */
 #endif
+#ifdef	DO_SYSFC
+	{ "fc",		SYSFC,		BLT_INT },	/*  I  */
+#endif
 	{ "fg",		SYSFGBG,	BLT_INT },	/*  I  */
 #ifdef	DO_SYSFIND
 	{ "find",	SYSFIND },
@@ -387,6 +411,9 @@ const struct sysnod commands[] =
 	{ "kill",	SYSKILL,	BLT_INT },	/*  I  */
 #ifdef	DO_SYSKILLPG
 	{ "killpg",	SYSKILL,	0 },
+#endif
+#ifdef	DO_SYSLIMIT
+	{ "limit",	SYSULIMIT,	0 },
 #endif
 #ifdef	DO_SYSLOCAL
 	{ "local",	SYSLOCAL,	0 },

@@ -41,7 +41,7 @@
 /*
  *				Copyright Geoff Collyer 1987-2005
  *
- * @(#)stak.c	2.20 16/07/15	Copyright 2010-2016 J. Schilling
+ * @(#)stak.c	2.23 19/02/10	Copyright 2010-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -57,7 +57,7 @@
 
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)stak.c	2.20 16/07/15 Copyright 2010-2016 J. Schilling";
+	"@(#)stak.c	2.23 19/02/10 Copyright 2010-2019 J. Schilling";
 #endif
 
 
@@ -197,16 +197,14 @@ static	unsigned char *__growstak __PR((int incr));
  */
 static void *
 xmalloc(size)
-	size_t	size;
+	register size_t	size;
 {
-	char	*ret = malloc(size);
+	register char	*ret = malloc(size);
 
 	if (ret == NULL)
 		return ((void *)ret);
 
-	if (stklow == NULL)
-		stklow = ret;
-	else if (ret < stklow)
+	if (ret < stklow)
 		stklow = ret;
 
 	if ((ret + size) > stkhigh)
@@ -235,17 +233,17 @@ xmalloc(size)
 		Stackblk *nextitem;					\
 									\
 		tosscheck(stk);						\
+									\
+		TPRS("tossgrowing freeing ");				\
+		TPRN((long)stk.topitem);				\
+		TPRS("\n");						\
+									\
 		stk.topitem->h.magic = 0;	/* erase magic */	\
 									\
 		/*							\
 		 * about to free the ptr to next, so copy it first	\
 		 */							\
 		nextitem = stk.topitem->h.word;				\
-									\
-		TPRS("tossgrowing freeing ");				\
-		TPRN((long)stk.topitem);				\
-		TPRS("\n");						\
-									\
 		free(stk.topitem);					\
 		stk.topitem = nextitem;					\
 	}
@@ -269,17 +267,17 @@ tossgrowing()				/* free the growing stack */
 			error("tossgrowing: bad magic on stack");
 		}
 #endif	/* TOSSCHECK */
+
+		TPRS("tossgrowing freeing ");
+		TPRN((long)stk.topitem);
+		TPRS("\n");
+
 		stk.topitem->h.magic = 0;	/* erase magic */
 
 		/*
 		 * about to free the ptr to next, so copy it first
 		 */
 		nextitem = stk.topitem->h.word;
-
-		TPRS("tossgrowing freeing ");
-		TPRN((long)stk.topitem);
-		TPRS("\n");
-
 		free(stk.topitem);
 		stk.topitem = nextitem;
 	}
@@ -429,7 +427,7 @@ endstak(argp)
 	UIntptr_t	argoff = argp - stakbot;
 
 	if (argp >= stakend) {			/* Space for null byte */
-		__growstak(argp - stakend);
+		__growstak(argp - stakend + 1);	/* stakend is off space */
 		argp = stakbot + argoff;
 	}
 	*argp++ = 0;				/* terminate the string */
@@ -456,22 +454,23 @@ tdystak(sav, iosav)
 
 	rmtemp(iosav);			/* pop temp files */
 
-	if (sav != 0)
-		blk = (Stackblk *)(sav - sizeof (Stackblkhdr));
 	if (sav == 0) {
 		/* EMPTY */
 		STPRS("tdystak(0)\n");
-	} else if (blk->h.magic == STMAGICNUM ||
-		    blk->h.magic == STNMAGICNUM) {
-		/* EMPTY */
-		STPRS("tdystak(data ptr: ");
-		STPRN((long)sav);
-		STPRS(")\n");
 	} else {
-		STPRS("tdystak(garbage: ");
-		STPRN((long)sav);
-		STPRS(")\n");
-		error("tdystak: bad magic in argument");
+		blk = (Stackblk *)(sav - sizeof (Stackblkhdr));
+		if (blk->h.magic == STMAGICNUM ||
+		    blk->h.magic == STNMAGICNUM) {
+			/* EMPTY */
+			STPRS("tdystak(data ptr: ");
+			STPRN((long)sav);
+			STPRS(")\n");
+		} else {
+			STPRS("tdystak(garbage: ");
+			STPRN((long)sav);
+			STPRS(")\n");
+			error("tdystak: bad magic in argument");
+		}
 	}
 
 	/*
@@ -599,6 +598,7 @@ __growstak(incr)
 	TPRN(stakend - oldbsy);
 	TPRS(" bytes; ");
 
+#if	!defined(HAVE_REALLOC_NULL) || defined(pdp11)
 	if (incr < 0) {
 		/*
 		 * V7 realloc wastes the memory given back when
@@ -610,7 +610,7 @@ __growstak(incr)
 
 		if (new == (unsigned char *)NIL)
 			error(nostack);
-		if (staklen > 16) {
+		if (staklen >= 16) {
 			memcpy(new, oldbsy, staklen);
 		} else {
 			register int		amt = staklen;
@@ -622,14 +622,17 @@ __growstak(incr)
 		}
 		free(oldbsy);
 		oldbsy = new;
-	} else {
+	} else
+#endif
 		/*
 		 * get realloc to grow the stack to match the stack top
 		 */
 		if ((oldbsy = realloc(oldbsy, (unsigned)staklen)) ==
-						    (unsigned char *)NIL)
+						    (unsigned char *)NIL) {
 			error(nostack);
-	}
+		}
+
+#ifdef	STAK_DEBUG
 	TPRS("now @ ");
 	TPRN((long)oldbsy);
 	TPRS(" of ");
@@ -645,6 +648,7 @@ __growstak(incr)
 		TPRS(" bigger");
 	}
 	TPRS(")\n");
+#endif
 
 	stakend = oldbsy + staklen;	/* see? points at the last byte */
 	staktop = oldbsy + topoff;
@@ -680,8 +684,10 @@ addblok(reqd)				/* called from main at start only */
 	unsigned	reqd;
 {
 	USED(reqd);
-	if (stakbot == 0)
+	if (stakbot == 0) {
 		grostalloc();		/* allocate initial arena */
+		stklow = (char *)stk.topitem;
+	}
 }
 
 /*

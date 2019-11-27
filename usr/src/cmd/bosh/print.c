@@ -34,16 +34,16 @@
 #endif
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)print.c	1.37 16/05/09 2008-2016 J. Schilling
+ * @(#)print.c	1.44 19/08/27 2008-2019 J. Schilling
  */
 #ifdef	SCHILY_INCLUDES
 #include <schily/mconfig.h>
 #endif
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)print.c	1.37 16/05/09 2008-2016 J. Schilling";
+	"@(#)print.c	1.44 19/08/27 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -68,6 +68,10 @@ static	UConst char sccsid[] =
 
 #define		BUFLEN		256
 #define		NUMBUFLEN	21	/* big enough for 64 bits */
+#if	NUMBUFLEN < SIG2STR_MAX
+#undef		NUMBUFLEN
+#define		NUMBUFLEN	(SIG2STR_MAX-1)
+#endif
 unsigned char numbuf[NUMBUFLEN+1];	/* Add one for sign */
 
 static unsigned char buffer[BUFLEN];
@@ -309,7 +313,11 @@ stoi(icp)
 		r = r * 10 + c - '0';
 		cp++;
 	}
+#ifdef	DO_STOI_PICKY
+	if (r < 0 || cp == icp || *cp != '\0') {
+#else
 	if (r < 0 || cp == icp) {
+#endif
 		failed(icp, badnum);
 		/* NOTREACHED */
 	} else {
@@ -494,22 +502,27 @@ void
 prs_cntl(s)
 	unsigned char	*s;
 {
+	unsigned char cbuf[BUFLEN+5];	/* 4 bytes for octal number + nul */
 	int n;
 	wchar_t wc;
 	unsigned char *olds = s;
-	unsigned char *ptr = bufp;
+	unsigned char *ptr = cbuf;
 	wchar_t c;
+	BOOL	err = FALSE;
 
 	(void) mbtowc(NULL, NULL, 0);
-	if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) <= 0) {
+	if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) < 0) {
 		(void) mbtowc(NULL, NULL, 0);
-		n = 0;
+		n = 1;
+		wc = *s;
+		err = TRUE;
 	}
 	if (wc == 0)
 		n = 0;
 	while (n != 0) {
-		if (n < 0) {
+		if (err) {
 			ptr = octal(*s++, ptr);
+			err = FALSE;
 		} else {
 			c = wc;
 			s += n;
@@ -533,7 +546,9 @@ prs_cntl(s)
 					 * sequences are
 					 * printable
 					 */
-					ptr = octal(*olds, ptr);
+					while (n--) {
+						ptr = octal(*olds++, ptr);
+					}
 				}
 			} else {
 				while (n--) {
@@ -541,21 +556,23 @@ prs_cntl(s)
 				}
 			}
 		}
-		if (buffd != -1 && ptr >= &bufp[BUFLEN-4]) {
+		if (ptr >= &cbuf[BUFLEN]) {
 			*ptr = '\0';
-			prs(bufp);
-			ptr = bufp;
+			prs(cbuf);
+			ptr = cbuf;
 		}
 		olds = s;
-		if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) <= 0) {
+		if ((n = mbtowc(&wc, (const char *)s, MB_LEN_MAX)) < 0) {
 			(void) mbtowc(NULL, NULL, 0);
-			n = 0;
+			n = 1;
+			wc = *s;
+			err = TRUE;
 		}
 		if (wc == 0)
 			n = 0;
 	}
 	*ptr = '\0';
-	prs(bufp);
+	prs(cbuf);
 }
 
 #ifdef	DO_POSIX_UNSET

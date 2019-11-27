@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)main.c	1.58 16/09/09 2008-2016 J. Schilling
+ * @(#)main.c	1.79 19/10/05 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)main.c	1.58 16/09/09 2008-2016 J. Schilling";
+	"@(#)main.c	1.79 19/10/05 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -121,6 +121,7 @@ static void	Ldup		__PR((int, int));
 	void	setmail		__PR((unsigned char *));
 	void	setmode		__PR((int prof));
 	void	secpolicy_print	__PR((int level, const char *msg));
+static	void	bosh_init	__PR((void));
 
 int
 main(c, v, e)
@@ -134,13 +135,20 @@ main(c, v, e)
 
 	init_sigval();
 	mypid = getpid();
-	mypgid = getpgid(mypid);
-	mysid = getsid(mypid);
+	mypgid = getpgid(mypid);	/* get process group for this shell */
+	mysid = getsid(mypid);		/* get process group id of leader */
 
+#if	defined(IS_SUN) || defined(DO_SPLIT_ROOT)
 	/*
 	 * Do locale processing only if /usr is mounted.
+	 * This is to help the single user shell to work.
+	 * Since localedir may not be the same for all target architectures
+	 * we just disable this check for a non-Solaris environment.
 	 */
 	localedir_exists = (access(localedir, F_OK) == 0);
+#else
+	localedir_exists = TRUE;
+#endif
 
 	/*
 	 * initialize storage allocation
@@ -149,6 +157,11 @@ main(c, v, e)
 	if (stakbot == 0) {
 		addblok((unsigned)0);
 	}
+
+	/*
+	 * Initialize global data structure.
+	 */
+	bosh_init();
 
 	/*
 	 * If the first character of the last path element of v[0] is "-"
@@ -241,6 +254,12 @@ main(c, v, e)
 	    eq("-jbosh", simple((unsigned char *)*v)))
 		flags |= monitorflg;
 
+#ifdef	DO_GLOBSKIPDOT_DEF
+	flags2 |= globskipdot;
+#endif
+#ifdef	DO_ALWAYS_POSIX_SH
+	flags2 |= posixflg;
+#else
 #ifdef	DO_POSIX_SH
 	/*
 	 * If the last path name component is "sh", set -o posix by default.
@@ -295,11 +314,14 @@ main(c, v, e)
 	}
 #endif	/* DO_POSIX_PATH */
 #endif	/* DO_POSIX_SH */
+#endif	/* DO_ALWAYS_POSIX_SH */
 	posix = flags2 & posixflg;	/* remember "auto-posix" value */
 
 	hcreate();
 	set_dotpath();
-
+#ifdef	DO_DOL_SLASH
+	shmcreate();
+#endif
 
 	/*
 	 * look for options
@@ -313,6 +335,15 @@ main(c, v, e)
 	}
 	if ((flags & stdflg) == 0)
 		dolc--;
+
+#ifdef	DO_EXPORT_ENV
+	namscan(exportenv);
+#else
+#ifdef	DO_POSIX_EXPORT_ENV
+	if (flags2 & posixflg)
+		namscan(exportenv);
+#endif
+#endif
 
 	if ((flags & privflg) == 0) {
 		uid_t euid;
@@ -357,6 +388,11 @@ main(c, v, e)
 #endif
 		flags |= subsh;
 		flags2 |= posix;	/* restore "auto-posix" value */
+#ifdef	DO_GLOBSKIPDOT_DEF
+		flags2 |= globskipdot;
+#endif
+
+		mypgid = getpgid(0);	/* get process group of script */
 	}
 
 	/*
@@ -384,6 +420,9 @@ main(c, v, e)
 
 	dfault(&mchknod, (unsigned char *)MAILCHECK);
 	mailchk = stoi(mchknod.namval);
+#ifdef	DO_SYSFC
+	dfault(&fcenod, (unsigned char *)fcedit);
+#endif
 #ifdef	DO_PS34
 	dfault(&ps3nod, (unsigned char *)selectmsg);
 	dfault(&ps4nod, (unsigned char *)execpmsg);
@@ -408,6 +447,9 @@ main(c, v, e)
 	/* initialize OPTIND for getopt */
 
 	n = lookup((unsigned char *)"OPTIND");
+#ifdef	DO_GETOPT_POSIX
+	optindnodep = n;
+#endif
 	assign(n, (unsigned char *)"1");
 	/*
 	 * make sure that option parsing starts
@@ -448,13 +490,26 @@ main(c, v, e)
 			 * This is an interactive shell, mark it as interactive.
 			 */
 			if ((flags & intflg) == 0) {
-				flags |= intflg;
+				/*
+				 * Do not switch on interactive mode in case
+				 * "sh < file" was called.
+				 */
+				if (isatty(STDIN_FILENO))
+					flags |= intflg;
 			}
 #ifdef	DO_BGNICE
 			flags2 |= bgniceflg;
 #endif
 #ifdef	INTERACTIVE
 			flags2 |= vedflg;
+#endif
+#ifdef	DO_POSIX_M
+			/*
+			 * POSIX requires to auto-enable -m when
+			 * in interactive mode.
+			 */
+			if ((flags & intflg) != 0)
+				flags |= monitorflg;
 #endif
 			setopts();			/* set flagadr */
 		}
@@ -547,7 +602,7 @@ main(c, v, e)
 			if (input != 0)
 				preacct(cmdadr);
 #endif
-			comdiv--;
+			comdiv = UC -1;		/* disable "set -c cmd" */
 		}
 	}
 #ifdef pdp11
@@ -580,6 +635,10 @@ exfile(prof)
 	setmode(prof);
 
 	if (setjmp(errshell)) {
+		/*
+		 * clear special "command -p" flag.
+		 */
+		flags &= ~ppath;
 #ifdef	DO_SYSLOCAL
 		if (localp) {
 			localp = NULL;
@@ -588,6 +647,9 @@ exfile(prof)
 #endif
 		if (prof) {
 			close(input);
+			/*
+			 * Reset process group to saved value.
+			 */
 			(void) endjobs(0);
 			return;
 		}
@@ -601,13 +663,27 @@ exfile(prof)
 	nohash = 0;
 	iopend = 0;
 
+	/*
+	 * initf() initializes the input filehdr or flushes the content of the
+	 * buffer. Flushing is needed when we come from the errshell longjmp().
+	 */
 	if (input >= 0)
 		initf(input);
+
+#ifdef	DO_CHECKBINARY
+	/*
+	 * Check wether the script may be a binary file, e.g. from a different
+	 * architecture and caused a ENOEXEC error.
+	 */
+	if (isbinary(standin))
+		failedx(ERR_NOEXEC, cmdadr, badexec);
+#endif
+
 	/*
 	 * command loop
 	 */
 	for (;;) {
-		intrcnt = 0;	/* Reset interrupt counter */
+		bosh.intrcnt = 0; /* Reset interrupt counter */
 		tdystak(0, 0);
 		stakchk();	/* may reduce sbrk */
 		exitset();
@@ -639,12 +715,15 @@ exfile(prof)
 #define	EDIT_RPOMPTS	2
 			if (flags2 & vedflg) {
 				editpr(0);
-			} else
+			} else {
 #endif
 #ifdef	DO_PS34
-				prs(ps_macro(ps1nod.namval));
+				prs(ps_macro(ps1nod.namval, FALSE));
 #else
 				prs(ps1nod.namval);	/* Ignores NULL ptr */
+#endif
+#ifdef	INTERACTIVE
+			}
 #endif
 
 #ifdef TIME_OUT
@@ -654,8 +733,12 @@ exfile(prof)
 		}
 
 		trapnote = 0;
+		traprecurse = 0;
 		peekc = readwc();
 		if (eof) {
+			/*
+			 * Reset process group to saved value.
+			 */
 			if (endjobs(JOB_STOPPED))
 				return;
 			eof = 0;
@@ -680,7 +763,7 @@ exfile(prof)
 			if (t == NULL && flags & ttyflg) {
 				freejobs();
 			} else {
-				execbrk = 0;
+				execbrk = dotbrk = 0;
 				execute(t, 0, eflag, no_pipe, no_pipe);
 			}
 		}
@@ -700,12 +783,15 @@ chkpr()
 #ifdef	INTERACTIVE
 		if (flags2 & vedflg) {
 			editpr(1);
-		} else
+		} else {
 #endif
 #ifdef	DO_PS34
-			prs(ps_macro(ps2nod.namval));
+			prs(ps_macro(ps2nod.namval, FALSE));
 #else
 			prs(ps2nod.namval);	/* Ignores NULL ptr */
+#endif
+#ifdef	INTERACTIVE
+		}
 #endif
 	}
 }
@@ -716,14 +802,25 @@ editpr(idx)
 	int	idx;
 {
 	if (flags2 & vedflg) {
-		char *prompts[EDIT_RPOMPTS];
+	static	char *prompts[EDIT_RPOMPTS];
+	static	char palloc[EDIT_RPOMPTS];
 
-		if ((prompts[0] = C ps1nod.namval) == NULL)
-			prompts[0] = C nullstr;
-		if ((prompts[1] = C ps2nod.namval) == NULL)
-			prompts[1] = C nullstr;
+		if (palloc[idx])
+			free(prompts[idx]);
+
+		if (idx == 0 || prompts[0] == NULL) {
+			if ((prompts[0] = C ps1nod.namval) == NULL)
+				prompts[0] = C nullstr;
+			palloc[0] = FALSE;
+		}
+		if (idx == 1 || prompts[1] == NULL) {
+			if ((prompts[1] = C ps2nod.namval) == NULL)
+				prompts[1] = C nullstr;
+			palloc[1] = FALSE;
+		}
 #ifdef	DO_PS34
-		prompts[idx] = C ps_macro(UC prompts[idx]);
+		prompts[idx] = C ps_macro(UC prompts[idx], TRUE);
+		palloc[idx] = TRUE;
 #endif
 		shedit_setprompts(idx, EDIT_RPOMPTS, prompts);
 	}
@@ -771,10 +868,10 @@ Ldup(fa, fb)
 	if (fa >= 0) {
 		if (fa != fb) {
 			close(fb);
-			fcntl(fa, F_DUPFD, fb); /* normal dup */
+			(void) fcntl(fa, F_DUPFD, fb);	/* normal dup */
 			close(fa);
 		}
-		fcntl(fb, F_SETFD, FD_CLOEXEC);	/* autoclose for fb */
+		(void) fcntl(fb, F_SETFD, FD_CLOEXEC);	/* autoclose for fb */
 	}
 
 #endif
@@ -883,6 +980,9 @@ setmode(prof)
 			setmail(mailpnod.namval);
 		else
 			setmail(mailnod.namval);
+		/*
+		 * Set job control and make me a process group leader
+		 */
 		startjobs();
 	} else {
 		flags |= prof;
@@ -910,4 +1010,14 @@ secpolicy_print(level, msg)
 		error(msg);
 		break;
 	}
+}
+
+static void
+bosh_init()
+{
+	bosh.intrcnt	= 0;
+	bosh.flagsp	= &flags;
+	bosh.flagsp2	= &flags2;
+	bosh.get_envptr	= get_envptr;
+	bosh.callsh	= callsh;
 }

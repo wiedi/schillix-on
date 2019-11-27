@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2017 J. Schilling
  *
- * @(#)cmd.c	1.45 16/08/20 2008-2016 J. Schilling
+ * @(#)cmd.c	1.50 17/12/18 2008-2017 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)cmd.c	1.45 16/08/20 2008-2016 J. Schilling";
+	"@(#)cmd.c	1.50 17/12/18 2008-2017 J. Schilling";
 #endif
 
 /*
@@ -137,6 +137,7 @@ cmd(sym, flg)
 {
 	struct trenod *i, *e;
 
+	wdset = 0;
 	i = list(flg);
 	if (wdval == NL) {
 		if (flg & NLFLG) {
@@ -290,10 +291,23 @@ static struct regnod *
 syncase(esym)
 	int	esym;
 {
+#ifdef	DO_POSIX_CASE
+	wdset |= IN_CASE;
+#endif
 	skipnl(0);
-	if (wdval == esym)
+
+#ifdef	DO_POSIX_CASE
+	if (wdval == 0 &&
+	    syslook(wdarg->argval,
+			    reserved, no_reserved) == esym) {
+		wdval = esym;
+	}
+#endif
+
+	if (wdval == esym) {
+		wdset &= ~IN_CASE;
 		return (0);
-	else {
+	} else {
 		struct regnod *r =
 		    (struct regnod *)getstor(sizeof (struct regnod));
 		struct argnod *argp;
@@ -305,11 +319,18 @@ syncase(esym)
 #endif
 		for (;;) {
 			if (fndef) {
+				unsigned char	*p;
+
 				argp = wdarg;
 				wdarg = (struct argnod *)
 						alloc(length(argp->argval) +
-								BYTESPERWORD);
-				movstr(argp->argval, wdarg->argval);
+							1 + BYTESPERWORD);
+				p = movstr(argp->argval, wdarg->argval);
+				/*
+				 * Hack: A second Nul byte is needed if the
+				 * word ends in "\\\0".
+				 */
+				*++p = '\0';
 			}
 
 			wdarg->argnxt = r->regptr;
@@ -326,6 +347,7 @@ syncase(esym)
 			else
 				break;
 		}
+		wdset &= ~IN_CASE;
 		r->regcom = cmd(0, NLFLG | MTFLG);
 		if (wdval == ECSYM)
 			r->regnxt = syncase(esym);
@@ -388,6 +410,7 @@ item(flag)
 		{
 			int	w;
 			struct ifnod *t;
+			struct trenod *tt = NULL; /* Make silly gcc quiet */
 
 			t = (struct ifnod *)getstor(sizeof (struct ifnod));
 			r = (struct trenod *)t;
@@ -398,9 +421,22 @@ item(flag)
 			t->eltre = ((w = wdval) == ELSYM ?
 					cmd(FISYM, NLFLG) :
 						(w == EFSYM ?
-						(wdval = IFSYM, item(0)) : 0));
-			if (w == EFSYM)
+						(wdval = IFSYM, tt = item(0)) :
+						0));
+			if (w == EFSYM) {
+#ifdef	DO_SETIO_NOFORK
+				if (tt->tretyp != TSETIO)
+					return (r);
+				/*
+				 * Let post-command IO redirection apply to the
+				 * whole command and not only to the else part.
+				 */
+				t->eltre = forkptr(tt)->forktre;
+				forkptr(tt)->forktre = (struct trenod *)t;
+				r = tt;
+#endif
 				return (r);
+			}
 			break;
 		}
 
@@ -487,6 +523,8 @@ item(flag)
 
 			if (word() == ';')
 				synbad();
+			else if (wdval != 0)
+				return (item(flag));
 		}
 		/* FALLTHROUGH */
 #endif
@@ -557,12 +595,20 @@ item(flag)
 
 				while (wdval == 0) {
 					if (fndef) {
+						unsigned char	*p;
+
 						argp = wdarg;
 						wdarg = (struct argnod *)
 						    alloc(length(argp->argval) +
-								BYTESPERWORD);
-						movstr(argp->argval,
+							1 + BYTESPERWORD);
+						p = movstr(argp->argval,
 								wdarg->argval);
+						/*
+						 * Hack: A second Nul byte is
+						 * needed if the word ends in
+						 * "\\\0".
+						 */
+						*++p = '\0';
 					}
 
 					argp = wdarg;
@@ -636,8 +682,15 @@ item(flag)
 	reserv++;
 	word();
 	if ((io = inout(io)) != NULL) {
+#ifdef	DO_SETIO_NOFORK
+		int type = r->tretyp & COMMSK;
+#endif
 		r = makefork(0, r);
 		r->treio = io;
+#ifdef	DO_SETIO_NOFORK
+		if (type != TFORK)
+			r->tretyp = TSETIO;
+#endif
 	}
 	return (r);
 }

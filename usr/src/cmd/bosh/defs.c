@@ -31,16 +31,16 @@
 #endif
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2018 J. Schilling
  *
- * @(#)defs.c	1.17 16/07/06 2008-2016 J. Schilling
+ * @(#)defs.c	1.25 19/10/06 2008-2018 J. Schilling
  */
 #ifdef	SCHILY_INCLUDES
 #include <schily/mconfig.h>
 #endif
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)defs.c	1.17 16/07/06 2008-2016 J. Schilling";
+	"@(#)defs.c	1.25 19/10/06 2008-2018 J. Schilling";
 #endif
 
 /*
@@ -49,26 +49,31 @@ static	UConst char sccsid[] =
 
 #ifdef	SCHILY_INCLUDES
 #include	<schily/mconfig.h>
-#include	<setjmp.h>
 #include	"mode.h"
 #include	"name.h"
 #include	<schily/param.h>
 #include	"defs.h"
+#include	<schily/wait.h>		/* Needed for CLD_EXITED */
 #else
 #include	<setjmp.h>
 #include	"mode.h"
 #include	"name.h"
 #include	<sys/param.h>
 #include	"defs.h"
+#include	<sys/types.h>
+#include	<sys/wait.h>		/* Needed for CLD_EXITED */
 #endif
 #ifndef NOFILE
 #define	NOFILE 20
 #endif
 
+bosh_t		bosh;
+
 /* temp files and io */
 int		output = STDERR_FILENO;
 int		ioset;
 struct ionod	*iotemp;	/* files to be deleted sometime */
+struct ionod	*xiotemp;	/* limit for files to be deleted sometime */
 struct ionod	*fiotemp;	/* function files to be deleted sometime */
 struct ionod	*iopend;	/* documents waiting to be read at NL */
 struct fdsave	fdmap[NOFILE];
@@ -110,20 +115,27 @@ int		dashdash;	/* flags set -- encountered */
 /* error exits from various parts of shell */
 jmp_buf		subshell;
 jmp_buf		errshell;
+jmps_t		*dotshell;
 
 /* fault handling */
 BOOL		trapnote;
+int		traprecurse;
 int		trapsig;	/* Last signal */
 
 /* execflgs */
-struct excode	ex;
-struct excode	retex;
+struct excode	ex =	{ CLD_EXITED };
+struct excode	retex =	{ CLD_EXITED };
+#ifdef	DO_DOL_SLASH
+int		*excausep;
+#endif
 int		exitval;
 int		retval;
 BOOL		execbrk;
+BOOL		dotbrk;
 int		loopcnt;
 int		breakcnt;
 int		funcnt;
+int		dotcnt;
 void		*localp;
 int		localcnt;
 int		eflag;

@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)test.c	1.35 16/08/01 2008-2016 J. Schilling
+ * @(#)test.c	1.43 19/09/16 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)test.c	1.35 16/08/01 2008-2016 J. Schilling";
+	"@(#)test.c	1.43 19/09/16 2008-2019 J. Schilling";
 #endif
 
 
@@ -53,14 +53,18 @@ static	UConst char sccsid[] =
 
 #ifdef	SCHILY_INCLUDES
 #include	<schily/types.h>
+#include	<schily/fcntl.h>
 #include	<schily/stat.h>
 #else
 #include <sys/types.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #endif
 
 #ifndef	HAVE_LSTAT
 #define	lstat	stat
+#undef	AT_SYMLINK_NOFOLLOW
+#define	AT_SYMLINK_NOFOLLOW	0
 #endif
 #ifndef	HAVE_DECL_STAT
 extern int stat	__PR((const char *, struct stat *));
@@ -104,6 +108,14 @@ static	void	bfailed		__PR((unsigned char *s1,
 					const char *s2,
 					unsigned char *s3));
 
+#ifdef	DO_POSIX_TEST
+/*
+ * In POSIX mode, we need to overwrite the standard error code with a
+ * value > 1, this is ETEST (2).
+ */
+#undef	ERROR
+#define	ERROR	ETEST
+#endif
 
 #ifdef	DO_SYSATEXPR
 static int	isexpr;
@@ -171,7 +183,7 @@ test(argn, com)
 	if (ac <= 1)				/* POSIX case: 0 args	*/
 		return (1);			/* test exits false	*/
 	if (setjmp(testsyntax))
-		return (1);
+		return (ETEST);
 
 #ifdef	DO_POSIX_TEST
 	not = com[1][0] == '!' && com[1][1] == '\0';
@@ -221,7 +233,8 @@ test(argn, com)
 		if (not)
 			return (inv ^ (com[1][0] != 0));
 
-		if (com[0][0] == '-' && com[0][2] == '\0' &&
+		if (com[0][0] == '-' &&
+		    com[0][1] != '\0' && com[0][2] == '\0' &&
 		    strchr(test_unops, com[0][1]))
 			return (inv ^ !test_unary(com[0][1], com[1]));
 
@@ -419,13 +432,13 @@ e3()
 			unsigned char	*na;
 
 			if (ap >= ac)		/* no args */
-				return (isatty(1));
+				return (isatty(STDOUT_FILENO));
 			na = nxtarg(0);
 			ap--;
 			if (eq(na, "-a") || eq(na, "-o"))
-				return (isatty(1));
+				return (isatty(STDOUT_FILENO));
 		}
-		if (a[0] == '-' && a[2] == '\0' &&
+		if (a[0] == '-' && a[1] != '\0' && a[2] == '\0' &&
 		    strchr(test_unops, a[1]))
 			return (test_unary(a[1], nxtarg(0)));
 	}
@@ -541,7 +554,7 @@ test_unary(op, arg)
 			if (ucb_builtins) {
 				struct stat statb;
 
-				return (stat((char *)arg, &statb) >= 0 &&
+				return (lstatat((char *)arg, &statb, 0) >= 0 &&
 					(statb.st_mode & S_IFMT) != S_IFDIR);
 			} else {
 				return (filtyp(arg, S_IFREG));
@@ -561,7 +574,9 @@ test_unary(op, arg)
 			if (arg && *arg == '?') {
 				return (lookopt(++arg) != NULL);
 			}
-			return (optval(lookopt(arg)));
+			if (arg)
+				return (optval(lookopt(arg)));
+			return (0);	/* should never happen */
 #endif
 	case 'p':
 			return (filtyp(arg, S_IFIFO));
@@ -570,7 +585,8 @@ test_unary(op, arg)
 			return (filtyp(arg, S_IFLNK));
 #ifdef	DO_EXT_TEST
 	case 'P':
-#ifdef	S_IFPORT
+#if defined(S_IFPORT) && S_IFPORT != S_IFIFO	/* Do not use it on Ultrix */
+
 			return (filtyp(arg, S_IFPORT));
 #else
 			return (0);
@@ -651,7 +667,7 @@ ftype(f, field)
 {
 	struct stat statb;
 
-	if (stat((char *)f, &statb) < 0)
+	if (lstatat((char *)f, &statb, 0) < 0)
 		return (0);
 	if ((statb.st_mode & field) == field)
 		return (1);
@@ -664,10 +680,9 @@ filtyp(f, field)
 	int		field;
 {
 	struct stat statb;
-	int (*statf) __PR((const char *_nm, struct stat *_fs)) =
-					(field == S_IFLNK) ? lstat : stat;
+	int	flag = (field == S_IFLNK) ? AT_SYMLINK_NOFOLLOW : 0;
 
-	if ((*statf)((char *)f, &statb) < 0)
+	if (lstatat((char *)f, &statb, flag) < 0)
 		return (0);
 	if ((statb.st_mode & S_IFMT) == field)
 		return (1);
@@ -684,9 +699,9 @@ fsame(f1, f2)
 	struct	stat	statb1;
 	struct	stat	statb2;
 
-	if (stat((char *)f1, &statb1) < 0)	/* lstat() ??? */
+	if (lstatat((char *)f1, &statb1, 0) < 0)	/* lstat() ??? */
 		return (FALSE);
-	if (stat((char *)f2, &statb2) < 0)	/* lstat() ??? */
+	if (lstatat((char *)f2, &statb2, 0) < 0)	/* lstat() ??? */
 		return (FALSE);
 	if (statb1.st_ino == statb2.st_ino && statb1.st_dev == statb2.st_dev)
 		return (1);
@@ -702,8 +717,8 @@ ftime(f1, f2)
 	struct	stat	statb2;
 	int		ret;
 
-	ret = stat((char *)f1, &statb1);	/* lstat() ??? */
-	if (stat((char *)f2, &statb2) < 0)	/* lstat() ??? */
+	ret = lstatat((char *)f1, &statb1, 0);	/* lstat() ??? */
+	if (lstatat((char *)f2, &statb2, 0) < 0) /* lstat() ??? */
 		return (ret < 0 ? 0:1);
 	if (ret < 0)
 		return (-1);
@@ -726,7 +741,7 @@ fnew(f)
 {
 	struct	stat	statb;
 
-	if (stat((char *)f, &statb) < 0)	/* lstat() ??? */
+	if (lstatat((char *)f, &statb, 0) < 0)	/* lstat() ??? */
 		return (0);
 
 	if (statb.st_mtime > statb.st_atime)
@@ -744,7 +759,7 @@ fowner(f, owner)
 {
 	struct	stat	statb;
 
-	if (stat((char *)f, &statb) < 0)	/* lstat() ??? */
+	if (lstatat((char *)f, &statb, 0) < 0)	/* lstat() ??? */
 		return (FALSE);
 	return (statb.st_uid == owner);
 }
@@ -756,7 +771,7 @@ fgroup(f, group)
 {
 	struct	stat	statb;
 
-	if (stat((char *)f, &statb) < 0)	/* lstat() ??? */
+	if (lstatat((char *)f, &statb, 0) < 0)	/* lstat() ??? */
 		return (FALSE);
 	return (statb.st_gid == group);
 }
@@ -768,7 +783,7 @@ fsizep(f)
 {
 	struct stat statb;
 
-	if (stat((char *)f, &statb) < 0)
+	if (lstatat((char *)f, &statb, 0) < 0)
 		return (0);
 	return (statb.st_size > 0);
 }
@@ -778,10 +793,16 @@ str2imax(a)
 	unsigned char	*a;
 {
 	Intmax_t	i;
+	char		*ep;
+
 #ifdef	HAVE_STRTOLL
-	i = strtoll((char *)a, NULL, 10);
+	i = strtoll((char *)a, &ep, 10);
 #else
-	i = strtol((char *)a, NULL, 10);
+	i = strtol((char *)a, &ep, 10);
+#endif
+#ifdef	DO_POSIX_TEST
+	if ((char *)a == ep || *ep != '\0')
+		bfailed((unsigned char *)ep, badnum, NULL);
 #endif
 	return (i);
 }
@@ -793,9 +814,9 @@ bfailed(s1, s2, s3)
 	unsigned char	*s3;
 {
 #ifdef	DO_POSIX_FAILURE
-	failure_real(ERROR, s1, s2, s3, 0);
+	failure_real(ETEST, s1, s2, s3, 0);
 #else
-	failed_real(ERROR, s1, s2, s3);
+	failed_real(ETEST, s1, s2, s3);
 #endif
 	longjmp(testsyntax, 1);
 }

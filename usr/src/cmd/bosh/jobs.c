@@ -37,13 +37,13 @@
 #include "jobs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)jobs.c	1.95 16/08/17 2008-2016 J. Schilling
+ * @(#)jobs.c	1.109 19/10/05 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)jobs.c	1.95 16/08/17 2008-2016 J. Schilling";
+	"@(#)jobs.c	1.109 19/10/05 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -100,10 +100,17 @@ static	UConst char sccsid[] =
 #ifdef	NO_WAITID
 #undef	HAVE_WAITID
 #endif
-#ifndef	HAVE_WAITID		/* Need to define everything for waitid() */
-
 
 /*
+ * The following larger block contains definitions that are needed when either
+ * waitid() is missing (e.g. SunOS-4.x) or defective (e.g. Linux, AIX, HP-UX
+ * Mac OS X).
+ */
+#ifndef	HAVE_WAITID		/* Need to define everything for waitid() */
+/*
+ * This is used to emulate waitid() via waitpid(), so we need to take
+ * care about things that don't work and things that are missing.
+ *
  * AIX, Linux and Mac OS X, NetBSD return EINVAL if WNOWAIT is used
  * with waitpid().
  * XXX: We need to verify whether this is true as well with waitid().
@@ -132,9 +139,14 @@ typedef struct {
 } my_siginfo_t;
 
 #define	siginfo_t	my_siginfo_t
+#undef	waitid
 #define	waitid		my_waitid
+#undef	id_t
 #define	id_t		pid_t
 
+/*
+ * End of definitions needed for waitid() emulation.
+ */
 #endif	/* HAVE_WAITID */
 
 #ifdef	DO_DOT_SH_PARAMS
@@ -196,7 +208,7 @@ static struct job *str2job	__PR((char *cmdp, char *job, int mustbejob));
 static void	freejob		__PR((struct job *jp));
 	void	collect_fg_job	__PR((void));
 static int	statjob		__PR((struct job *jp,
-					siginfo_t *si, int fg, int rc));
+					siginfo_t *si, pid_t fg, int rc));
 static void	collectjobs	__PR((int wnohang));
 	void	freejobs	__PR((void));
 static void	waitjob		__PR((struct job *jp));
@@ -248,6 +260,10 @@ static	void	ruadd		__PR((struct rusage *ru, struct rusage *ru2));
 #ifndef	HAVE_WAITID
 static	int	waitid		__PR((idtype_t idtype, id_t id,
 					siginfo_t *infop, int opts));
+#endif
+#ifdef	DO_TRAP_FROM_WAITID
+static int	didsignal	__PR((siginfo_t	*infop));
+static void	checksigs	__PR((siginfo_t	*infop));
 #endif
 
 #if	!defined(HAVE_TCGETPGRP) && defined(TIOCGPGRP)
@@ -424,6 +440,9 @@ collect_fg_job()
 		errno = 0;
 		si.si_pid = 0;
 		err = waitid(P_PID, jp->j_pid, &si, (WEXITED|WTRAPPED));
+#ifdef	DO_TRAP_FROM_WAITID
+		checksigs(&si);			/* fault() with jobcontrol */
+#endif
 		if (si.si_pid == jp->j_pid || (err == -1 && errno == ECHILD))
 			break;
 	}
@@ -431,13 +450,19 @@ collect_fg_job()
 
 /*
  * analyze the status of a job
+ *
+ * On platforms with an incomplete and buggy waitid()/waitpid() implementation
+ * like Linux, we pass the process group id of the process, we did wait for in
+ * the parameter "fg". This value has been obtained before waitid() was called.
+ * Since WNOWAIT does not work and as a result, the related process no longer
+ * exists, we cannot call getpgid() here anymore.
  */
 static int
 statjob(jp, si, fg, rc)
-	struct job	*jp;
-	siginfo_t	*si;
-	int		fg;
-	int		rc;
+	struct job	*jp;	/* Job pointer for this job	    */
+	siginfo_t	*si;	/* Siginfo for the child to stat    */
+	pid_t		fg;	/* Whether this is a foreground job */
+	int		rc;	/* Whether to set "exitcode"	    */
 {
 	int	code = si->si_code;
 	pid_t tgid;
@@ -498,12 +523,37 @@ statjob(jp, si, fg, rc)
 				jp->j_flag |= J_NOTIFY;
 				jobnote++;
 			}
+#ifdef	DO_DOL_SLASH
+			if (jp->j_xval == ERR_NOTFOUND &&
+			    *excausep == C_NOTFOUND) {
+				jp->j_xcode = C_NOTFOUND;
+				*excausep = 0;
+			}
+			if (jp->j_xval == ERR_NOEXEC &&
+			    *excausep == C_NOEXEC) {
+				jp->j_xcode = C_NOEXEC;
+				*excausep = 0;
+			}
+#endif
 		}
 		if (fg) {
 			pid_t	jgid = getpgid(jp->j_pid);
 
+#if	WNOWAIT == 0	/* Hack for Linux et al */
+			if (jgid == (pid_t)-1 && fg != (pid_t)-1)
+				jgid = fg;
+#endif
+			/*
+			 * The previous hack was to use "svpgid" in case that
+			 * "jgid" was -1. This turned out to give problems with
+			 *   dosh 'nroff -u1 -Tlp -man $@ | col -x' | more
+			 * but it turned out that "mypgid" was a better
+			 * approximation. Since we now get the value from "fg",
+			 * we go back to the original implementation for the
+			 * second settgid() call.
+			 */
 			if (!settgid(mypgid, jp->j_pgid) ||
-			    !settgid(mypgid, jgid == (pid_t)-1 ? svpgid:jgid)) {
+			    !settgid(mypgid, jgid)) {
 				int	fd = STDIN_FILENO;
 
 				if (tcgetattr(fd, &mystty) < 0 &&
@@ -572,6 +622,9 @@ collectjobs(wnohang)
 	for (n = jobcnt - jobdone; n > 0; n--) {
 		if (waitid(P_ALL, 0, &si, wnohang|wflags) < 0)
 			break;
+#ifdef	DO_TRAP_FROM_WAITID
+		checksigs(&si);			/* fault() with jobcontrol */
+#endif
 		pid = si.si_pid;
 		if (pid == 0)
 			break;
@@ -613,6 +666,9 @@ freejobs()
 	}
 }
 
+/*
+ * Always called for a foreground job.
+ */
 static void
 waitjob(jp)
 	struct job	*jp;
@@ -626,6 +682,9 @@ waitjob(jp)
 #ifdef	DO_TIME
 	struct job	j;
 #endif
+#if	WNOWAIT == 0	/* This is AIX, Linux, Mac OS X or NetBSD.	*/
+	pid_t   jgid;	/* Needed because waitid() always reaps child	*/
+#endif			/* on the incomplete implementation there.	*/
 
 #ifdef	DO_TIME
 	ruget(&jp->j_rustart);
@@ -636,6 +695,9 @@ waitjob(jp)
 	else
 		wflags = 0;
 	wflags |= (WEXITED|WTRAPPED);	/* Needed for waitid() */
+#if	WNOWAIT == 0
+	jgid = getpgid(pid);		/* Get it now, we can't do it later */
+#endif
 	do {
 		errno = 0;
 		ret = waitid(P_PID, pid, &si, wflags|WNOWAIT);
@@ -649,6 +711,10 @@ waitjob(jp)
 		/*
 		 * si.si_pid == 0: no status is available for pid
 		 */
+
+#ifdef	DO_TRAP_FROM_WAITID
+		checksigs(&si);			/* fault() with jobcontrol */
+#endif
 	} while (si.si_pid != pid);
 
 #if	WNOWAIT != 0
@@ -664,7 +730,7 @@ waitjob(jp)
 #ifdef	DO_TIME
 	j = *jp;
 #endif
-	jdone = statjob(jp, &si, 1, 1);	/* Sets exitval, see below */
+	jdone = statjob(jp, &si, 1, 1);		/* Sets exitval, see below */
 	/*
 	 * Avoid hang on FreeBSD, so wait/reap here only for died children.
 	 */
@@ -682,13 +748,13 @@ waitjob(jp)
 #else	/* WNOWAIT == 0 */
 	/*
 	 * Inclomplete waitid() implementation (e.g. Linux). We may fail
-	 * to get the right progrss group for pid and fail to restore
+	 * to get the right process group for pid and fail to restore
 	 * our process group in the terninal.
 	 */
 #ifdef	DO_TIME
 	j = *jp;
 #endif
-	jdone = statjob(jp, &si, 1, 1);	/* Sets exitval, see below */
+	jdone = statjob(jp, &si, jgid, 1);	/* Sets exitval, see below */
 #endif	/* WNOWAIT != 0 */
 
 #ifdef	DO_PIPE_PARENT
@@ -706,6 +772,9 @@ waitjob(jp)
 		err = waitid(P_ALL, 0, &si, wflags|WCONTINUED|WNOHANG);
 		if (si.si_pid == 0 || (err == -1 && errno == ECHILD))
 			break;
+#ifdef	DO_TRAP_FROM_WAITID
+		checksigs(&si);			/* fault() with jobcontrol */
+#endif
 	}
 #endif
 
@@ -736,6 +805,10 @@ settgid(new, expected)
 	int	fd = STDIN_FILENO;
 	pid_t	current = tcgetpgrp(fd);
 
+#ifdef	JOB_DEBUG
+	fprintf(stderr, "settgid(new %ld, expected %ld) current %ld\n",
+		(long)new, (long)expected, (long)current);
+#endif
 	/*
 	 * "current" may be -1 in case that STDIN_FILENO was a renamed pipe,
 	 * and errno in this case will be ENOTTY or EINVAL.
@@ -752,6 +825,7 @@ settgid(new, expected)
 		/*
 		 * POSIX says: tcgetpgrp() returns a nonexisting process group
 		 * id when no foreground process group was set up.
+		 *
 		 * Some older Linux versions (e.g. 2.6.18) return a nonexisting
 		 * pgrp in case no process from the expected process group
 		 * exists anymore. If no process with the returned process group
@@ -1025,7 +1099,7 @@ curpgid()
 }
 
 /*
- * Set up "pgid" as process group id in case this has noe been done already.
+ * Set up "pgid" as process group id in case this has not been done already.
  */
 void
 setjobpgid(pgid)
@@ -1096,9 +1170,17 @@ allocjob(cmdp, cwdp, monitor)
 	jpp = &joblst;
 
 	if (monitor) {
+		/*
+		 * First skip all jobs without job id.
+		 */
 		for (; *jpp; jpp = &(*jpp)->j_nxtp)
 			if ((*jpp)->j_jid != 0)
 				break;
+		/*
+		 * Now find the end of the job list or the first
+		 * location where the job numbers are no longer
+		 * contiguous.
+		 */
 		for (jid = 1; *jpp; jpp = &(*jpp)->j_nxtp, jid++)
 			if ((*jpp)->j_jid != jid)
 				break;
@@ -1106,8 +1188,8 @@ allocjob(cmdp, cwdp, monitor)
 		jid = 0;
 
 	jp->j_jid = jid;
-	nextjob = jpp;
-	thisjob = jp;
+	nextjob = jpp;	/* Remember where to insert this job via postjob() */
+	thisjob = jp;	/* This job is going to be inserted by postjob()   */
 }
 
 void
@@ -1395,6 +1477,9 @@ syswait(argc, argv)
 			continue;
 		if (waitid(P_PID, jp->j_pid, &si, wflags) < 0)
 			break;
+#ifdef	DO_TRAP_FROM_WAITID
+		checksigs(&si);			/* fault() with jobcontrol */
+#endif
 		(void) statjob(jp, &si, 0, 1);
 	}
 }
@@ -1553,13 +1638,32 @@ static void
 listsigs()
 {
 	int i;
+	int maxtrap = MAXTRAP;
 	int cnt = 0;
 	char sep = 0;
-	char buf[12];
+#if	SIG2STR_MAX < 22
+#define	SIG_BLEN	22	/* Enough for 64 bits */
+#else
+#define	SIG_BLEN	SIG2STR_MAX
+#endif
+	char buf[SIG_BLEN]; /* Large enough for SIG* names, enough for num */
 
-	for (i = 1; i < MAXTRAP; i++) {
-		if (sig2str(i, buf) < 0)
-			strcpy(buf, "bad sig");	/* continue; */
+#ifdef	SIGRTMAX
+	i = SIGRTMAX + 1;
+	if (i > maxtrap)
+		maxtrap = i;
+#endif
+	for (i = 1; i < maxtrap; i++) {
+		if (sig2str(i, buf) < 0) {
+			/*
+			 * The original code was just:
+			 *	continue;
+			 * but we would not realize that there may be gaps in
+			 * the list. So print the number, usable as kill arg.
+			 */
+			itos(i);
+			strcpy(buf, C numbuf);
+		}
 		if (sep)
 			prc_buff(sep);
 		prs_buff((unsigned char *)buf);
@@ -1577,7 +1681,7 @@ namesigs(argv)
 	char	*argv[];
 {
 	int sig;
-	char buf[12];
+	char buf[SIG2STR_MAX];
 
 	while (*++argv) {
 		sig = stoi((unsigned char *)*argv) & 0x7F;
@@ -1633,6 +1737,7 @@ syskill(argc, argv)
 						goto optdone;
 					}
 				}
+				/* FALLTHROUGH */
 		case ':':
 				optbad(argc, UCP argv, &optv);
 				gfailure((unsigned char *)usage, killuse);
@@ -2048,6 +2153,7 @@ ruadd(ru, ru2)
 	timeradd(&ru->ru_utime, &ru2->ru_utime);
 	timeradd(&ru->ru_stime, &ru2->ru_stime);
 
+#if !defined(__BEOS__) && !defined(__HAIKU__)
 #ifdef	__future__
 	if (ru2->ru_maxrss > ru->ru_maxrss)
 		ru->ru_maxrss =	ru2->ru_maxrss;
@@ -2066,6 +2172,7 @@ ruadd(ru, ru2)
 	ru->ru_nsignals += ru2->ru_nsignals;
 	ru->ru_nvcsw += ru2->ru_nvcsw;
 	ru->ru_nivcsw += ru2->ru_nivcsw;
+#endif /* !defined(__BEOS__) && !defined(__HAIKU__) */
 }
 #endif	/* DO_TIME */
 
@@ -2170,9 +2277,108 @@ waitid(idtype, id, infop, opts)
 		infop->si_status = WSTOPSIG(exstat);
 	} else if (WIFCONTINUED(exstat)) {
 		infop->si_code = CLD_CONTINUED;
+#ifdef	SIGCONT
+		infop->si_status = SIGCONT;
+#else
 		infop->si_status = 0;
+#endif
 	}
 
 	return (0);
 }
 #endif
+
+#ifdef	DO_TRAP_FROM_WAITID
+static int
+didsignal(infop)
+	siginfo_t	*infop;
+{
+	if (infop->si_pid == 0)
+		return (FALSE);
+
+	switch (infop->si_code) {
+
+#ifdef	CLD_KILLED
+	case CLD_KILLED:
+#endif
+#ifdef	CLD_DUMPED
+	case CLD_DUMPED:
+#endif
+#ifdef	CLD_TRAPPED
+	case CLD_TRAPPED:
+#endif
+#ifdef	CLD_STOPPED
+	case CLD_STOPPED:
+#endif
+#ifdef	CLD_CONTINUED
+	case CLD_CONTINUED:
+#endif
+		return (TRUE);
+
+	default:
+		return (FALSE);
+	}
+}
+
+static void
+checksigs(infop)
+	siginfo_t	*infop;
+{
+	if ((flags & (monitorflg|jcflg|jcoff)) == (monitorflg|jcflg)) {
+		if (didsignal(infop) && infop->si_status) {
+			fault(infop->si_status);
+		}
+	}
+}
+#endif
+
+#ifdef	DO_DOL_SLASH
+
+#ifdef	HAVE_SMMAP
+#include <schily/mman.h>
+
+void
+shmcreate()
+{
+	int	f;
+	char	*addr;
+#ifdef	_SC_PAGESIZE
+	int	size = (int)sysconf(_SC_PAGESIZE);
+#else
+	int	size = getpagesize();
+#endif
+static	int	myint;
+
+#ifdef	MAP_ANONYMOUS	/* HP/UX */
+	f = -1;
+	addr = mmap(0, mmap_sizeparm(size), PROT_READ|PROT_WRITE,
+					MAP_SHARED|MAP_ANONYMOUS, f, 0);
+#else
+	if ((f = open("/dev/zero", O_RDWR)) < 0)
+		goto err;
+	addr = mmap(0, mmap_sizeparm(size), PROT_READ|PROT_WRITE,
+					MAP_SHARED, f, 0);
+	close(f);
+#endif
+	if (addr == (char *)-1)
+		goto err;
+
+	excausep = (int *)addr;
+	return;
+err:
+	/*
+	 * mmap() did not work, try to be silent...
+	 */
+	excausep = &myint;
+}
+#else	/* !HAVE_SMMAP */
+void
+shmcreate()
+{
+static	int	myint;
+
+	excausep = &myint;
+}
+#endif	/* HAVE_SMMAP */
+
+#endif	/* DO_DOL_SLASH */

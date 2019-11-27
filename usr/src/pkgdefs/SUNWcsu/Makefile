@@ -28,6 +28,7 @@
 include ../Makefile.com
 
 LICENSEFILES += \
+	../../cmd/bosh/THIRDPARTYLICENSE \
 	../../cmd/cmd-inet/usr.lib/in.mpathd/THIRDPARTYLICENSE \
 	../../cmd/cmd-inet/usr.sbin/THIRDPARTYLICENSE.arp \
 	../../cmd/cmd-inet/usr.sbin/traceroute/THIRDPARTYLICENSE \

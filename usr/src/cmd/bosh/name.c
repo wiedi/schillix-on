@@ -36,13 +36,13 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)name.c	1.67 16/09/25 2008-2016 J. Schilling
+ * @(#)name.c	1.79 19/08/27 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)name.c	1.67 16/09/25 2008-2016 J. Schilling";
+	"@(#)name.c	1.79 19/08/27 2008-2019 J. Schilling";
 #endif
 
 /*
@@ -105,6 +105,7 @@ static void	_popvars	__PR((struct namnod *n));
 static void	countnam	__PR((struct namnod *n));
 static void	pushnam		__PR((struct namnod *n));
 	unsigned char **local_setenv __PR((int flg));
+	unsigned char **get_envptr __PR((void));
 	struct namnod *findnam	__PR((unsigned char *nam));
 	void	unset_name	__PR((unsigned char *name, int uflg));
 static void	dolocale	__PR((char *nm));
@@ -124,10 +125,17 @@ struct namnod ps2nod =			/* PS2= */
 	(struct namnod *)NIL,
 	(unsigned char *)ps2name
 };
-struct namnod envnod =			/* ENV= */
+struct namnod fcenod =			/* FCEDIT= */
 {
 	(struct namnod *)NIL,
 	(struct namnod *)NIL,
+	(struct namnod *)NIL,
+	(unsigned char *)fcename
+};
+struct namnod envnod =			/* ENV= */
+{
+	(struct namnod *)NIL,
+	&fcenod,
 	(struct namnod *)NIL,
 	(unsigned char *)envname
 };
@@ -250,6 +258,9 @@ struct namnod mailpnod =		/* MAILPATH= */
 	(struct namnod *)NIL,
 	(unsigned char *)mailpname
 };
+#ifdef	DO_GETOPT_POSIX
+struct namnod *optindnodep;		/* OPTIND= */
+#endif
 
 
 struct namnod *namep = &mchknod;
@@ -324,7 +335,8 @@ setlist(arg, xp)
 		arg = arg->argnxt;
 		if (flags & execpr) {
 #ifdef	DO_PS34
-			prs(ps_macro(ps4nod.namval?ps4nod.namval:UC execpmsg));
+			prs(ps_macro(ps4nod.namval?ps4nod.namval:UC execpmsg,
+								FALSE));
 #endif
 			prs(s);
 			if (arg)
@@ -370,6 +382,14 @@ setname(argi, xp)
 			attrib(n, xp);	/* readonly attrib after assignement */
 
 			dolocale((char *)n->namid);
+#ifdef	DO_GETOPT_POSIX
+			/*
+			 * make sure that option parsing starts
+			 * at first character
+			 */
+			if (n == optindnodep)
+				_sp = 1;
+#endif
 			return;
 		}
 	}
@@ -513,6 +533,12 @@ readvar(namec, names)
 	unsigned char *oldstak;
 	unsigned char *pc, *rest;
 	int		d;
+#ifdef	DO_POSIX_READ
+	wchar_t		wc;
+	unsigned char	ifsw[3];	/* Max.: space and tab */
+#else
+	unsigned char	*ifsw;
+#endif
 	unsigned int	(*nextwchar)__PR((void));
 	unsigned char	*ifs;
 	BOOL		ifswhite = FALSE;
@@ -540,11 +566,13 @@ readvar(namec, names)
 		names += optv.optind;
 	}
 
+#if	defined(DO_SELECT)
 	if (namec <= 1) {
-		a[0] = UC repname;
+		a[0] = UC repname;	/* REPLY */
 		a[1] = NULL;
 		names = a;
 	} else
+#endif
 #endif
 		names++;
 	ifs = ifsnod.namval;
@@ -552,14 +580,24 @@ readvar(namec, names)
 		ifs = (unsigned char *)sptbnl;
 
 #ifdef	DO_POSIX_READ
-	for (rel = ifs; *rel; rel++) {
-		if (anys(rel, UC sptbnl)) {
+	ifsw[0] = '\0';
+	ifsw[1] = '\0';
+	pc = ifsw;
+	for (rel = ifs; *rel; rel += d) {
+		if ((d = mbtowc(&wc, C rel, MULTI_BYTE_MAX)) <= 0) {
+			(void) mbtowc(NULL, NULL, 0);
+			wc = *rel;
+		}
+		if (space(wc)) {
+			if (ifsw[0] != wc && ifsw[1] != wc)
+				*pc++ = wc;
 			ifswhite = TRUE;
-			break;
 		}
 	}
+	*pc = '\0';
 #else
 	ifswhite = TRUE;
+	ifsw = UC sptbnl;
 #endif
 
 	n = lookup(*names++);		/* done now to avoid storage mess */
@@ -590,7 +628,7 @@ readvar(namec, names)
 
 	/*
 	 * Read first character and
-	 * strip leading IFS characters
+	 * strip leading IFS white space characters
 	 */
 	c[0] = '\0';
 	do {
@@ -602,7 +640,7 @@ readvar(namec, names)
 		while ((*pc++ = *rest++) != '\0')
 			/* LINTED */
 			;
-		if (ifswhite && !anys(c, ifs))
+		if (ifswhite && !anys(c, ifsw))
 			break;
 	} while (ifswhite);
 
@@ -630,7 +668,7 @@ readvar(namec, names)
 					while ((*pc++ = *rest++) != '\0')
 						/* LINTED */
 						;
-					if (ifswhite && !anys(c, ifs))
+					if (ifswhite && !anys(c, ifsw))
 						break;
 				} while (ifswhite);
 			}
@@ -723,9 +761,9 @@ make(v)
  */
 struct namnod *
 lookup(nam)
-	unsigned char	*nam;
+	register unsigned char	*nam;
 {
-	struct namnod *nscan = namep;
+	register struct namnod *nscan = namep;
 	struct namnod **prev = NULL;	/* Make stupid GCC happy */
 	int		LR;
 
@@ -736,8 +774,8 @@ lookup(nam)
 #define	INLINE_CMP
 #ifdef	INLINE_CMP
 		{
-			unsigned char	*s1 = nam;
-			unsigned char	*s2 = nscan->namid;
+			register unsigned char	*s1 = nam;
+			register unsigned char	*s2 = nscan->namid;
 
 			while (*s1++ == *s2)
 				if (*s2++ == 0)
@@ -966,6 +1004,23 @@ printpexp(n)
 }
 #endif
 
+#ifdef	DO_POSIX_EXPORT_ENV
+void
+exportenv(n)
+	struct namnod	*n;
+{
+	if (n->namflg & N_ENVNAM)
+		n->namflg |= N_EXPORT;
+}
+void
+deexportenv(n)
+	struct namnod	*n;
+{
+	if ((n->namflg & (N_ENVNAM|N_EXPORT|N_ENVCHG)) == (N_ENVNAM|N_EXPORT))
+		n->namflg &= ~N_EXPORT;
+}
+#endif
+
 #if !defined(NO_VFORK) || defined(DO_POSIX_SPEC_BLTIN) || defined(DO_SYSLOCAL)
 /*
  * Push the current value by dulicating the content in
@@ -976,14 +1031,13 @@ pushval(n, t)
 	struct namnod	*n;
 	void		*t;
 {
-	if (n->namval) {
-		struct namnod *nscan = (struct namnod *)alloc(sizeof (*nscan));
+	struct namnod *nscan = (struct namnod *)alloc(sizeof (*nscan));
 
-		*nscan = *n;
-		n->namval = make(n->namval);
-		n->nampush = nscan;
-		nscan->funcval = t;
-	}
+	*nscan = *n;
+	n->namval = make(n->namval);
+	n->nampush = nscan;
+	nscan->funcval = t;
+
 	attrib(n, t ? N_LOCAL : N_PUSHOV);
 }
 #endif
@@ -1171,6 +1225,7 @@ pushnam(n)
 
 /*
  * Prepare the environ for a new external command.
+ * The allocated memory is free()d before starting the next command.
  */
 unsigned char **
 local_setenv(flg)
@@ -1188,6 +1243,15 @@ local_setenv(flg)
 	namflg = 0;
 	*argnam++ = 0;
 	return (er);
+}
+
+/*
+ * Get a temporary environ, e.g. for a builtin command.
+ */
+unsigned char **
+get_envptr()
+{
+	return (local_setenv(ENV_NOFREE));
 }
 
 struct namnod *

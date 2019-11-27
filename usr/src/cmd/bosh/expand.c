@@ -34,19 +34,22 @@
 #include "defs.h"
 
 /*
- * Copyright 2008-2016 J. Schilling
+ * Copyright 2008-2019 J. Schilling
  *
- * @(#)expand.c	1.18 16/08/28 2008-2016 J. Schilling
+ * @(#)expand.c	1.29 19/09/25 2008-2019 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)expand.c	1.18 16/08/28 2008-2016 J. Schilling";
+	"@(#)expand.c	1.29 19/09/25 2008-2019 J. Schilling";
 #endif
 
 /*
  *	UNIX shell
  *
  */
+
+#include	<schily/fcntl.h>
+#include	<schily/errno.h>
 
 #include	<sys/types.h>
 #include	<sys/stat.h>
@@ -64,9 +67,15 @@ static	UConst char sccsid[] =
  *
  */
 	int	expand	__PR((unsigned char *as, int rcnt));
-static void	addg	__PR((unsigned char *, unsigned char *, unsigned char *,
+static void	addg	__PR((unsigned char *, unsigned char *,
+			    unsigned char *,
 			    unsigned char *));
 	void	makearg	__PR((struct argnod *));
+static	DIR	*lopendir __PR((char *name));
+
+#ifdef	DO_GLOBSKIPDOT
+static char	*dots[] = { ".", ".." };
+#endif
 
 int
 expand(as, rcnt)
@@ -75,7 +84,6 @@ expand(as, rcnt)
 {
 	int	count;
 	DIR	*dirf;
-	BOOL	dir = 0;
 	unsigned char	*rescan = 0;
 	unsigned char	*slashsav = 0;
 	unsigned char	*s, *cs;
@@ -85,6 +93,9 @@ expand(as, rcnt)
 	int	len;
 	wchar_t	wc;
 
+#ifdef	EXPAND_DEBUG
+	fprintf(stderr, "expand(%s, %d)\n", as, rcnt);
+#endif
 	if (trapnote & SIGSET)
 		return (0);
 	s = cs = as;
@@ -92,10 +103,10 @@ expand(as, rcnt)
 	 * check for meta chars
 	 */
 	{
-		BOOL open;
+		BOOL openbr;
 
 		slash = 0;
-		open = 0;
+		openbr = 0;
 		(void) mbtowc(NULL, NULL, 0);
 		do
 		{
@@ -115,15 +126,15 @@ expand(as, rcnt)
 
 			case '/':
 				slash++;
-				open = 0;
+				openbr = 0;
 				continue;
 
 			case '[':
-				open++;
+				openbr++;
 				continue;
 
 			case ']':
-				if (open == 0)
+				if (openbr == 0)
 					continue;
 				/* FALLTHROUGH */
 			case '?':
@@ -165,8 +176,7 @@ expand(as, rcnt)
 		}
 	}
 
-	if ((dirf = opendir(*s ? (char *)s : (char *)".")) != 0)
-		dir++;
+	dirf = lopendir(*s ? (char *)s : (char *)".");
 
 	/* Let s point to original string because it will be trimmed later */
 	if (s2)
@@ -176,7 +186,7 @@ expand(as, rcnt)
 		slashsav = cs++; /* remember where first slash in as is */
 
 	/* check for rescan */
-	if (dir) {
+	if (dirf) {
 		unsigned char *rs;
 		struct dirent *e;
 
@@ -203,16 +213,42 @@ expand(as, rcnt)
 			count++;
 		} else
 #endif
+		{
+#ifdef	DO_GLOBSKIPDOT
+		if ((flags2 & globskipdot) == 0 && *cs == '.') {
+			/*
+			 * Synthesize "." and ".." to make sure they are present
+			 * even if the current filesystem does not have them.
+			 */
+			for (len = 0; len < 2; len++) {
+				if (gmatch(dots[len], (char *)cs)) {
+					addg(s, (unsigned char *)dots[len],
+					    rescan, slashsav);
+					count++;
+				}
+			}
+		}
+#endif
 		while ((e = readdir(dirf)) != 0 && (trapnote & SIGSET) == 0) {
-			if (e->d_name[0] == '.' && *cs != '.')
+			char	*name = e->d_name;
+
+#ifdef	DO_GLOBSKIPDOT
+			/*
+			 * Skip the following names: "", ".", "..".
+			 */
+			if (name[name[0] != '.' ? 0 :
+			    name[1] != '.' ? 1 : 2] == '\0')
+				continue;
+#endif
+			if (name[0] == '.' && *cs != '.')
 				continue;
 
-			if (gmatch(e->d_name, (char *)cs)) {
-				addg(s, (unsigned char *)e->d_name, rescan,
+			if (gmatch(name, (char *)cs)) {
+				addg(s, (unsigned char *)name, rescan,
 				    slashsav);
 				count++;
 			}
-		}
+		}}
 		(void) closedir(dirf);
 
 		if (rescan) {
@@ -312,4 +348,35 @@ makearg(args)
 {
 	args->argnxt = gchain;
 	gchain = args;
+}
+
+static DIR *
+lopendir(name)
+	char	*name;
+{
+#if	defined(HAVE_FCHDIR) && defined(DO_EXPAND_LONG)
+	char	*p;
+	int	fd;
+	int	dfd;
+#endif
+	DIR	*ret = NULL;
+
+	if ((ret = opendir(name)) == NULL && errno != ENAMETOOLONG)
+		return ((DIR *)NULL);
+
+#if	defined(HAVE_FCHDIR) && defined(DO_EXPAND_LONG)
+	if (ret)
+		return (ret);
+
+	fd = sh_hop_dirs(name, &p);
+	if (fd < 0)
+		return ((DIR *)NULL);
+	if ((dfd = openat(fd, p, O_RDONLY|O_DIRECTORY|O_NDELAY)) < 0) {
+		close(fd);
+		return ((DIR *)NULL);
+	}
+	close(fd);
+	ret = fdopendir(dfd);
+#endif
+	return (ret);
 }
