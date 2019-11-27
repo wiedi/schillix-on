@@ -1,14 +1,15 @@
 %{
-/* @(#)cpy.y	1.5 10/09/21 2010 J. Schilling */
+/* @(#)cpy.y	1.8 19/08/29 2010-2019 J. Schilling */
+#include <schily/mconfig.h>
 #ifndef lint
-static	char y_sccsid[] =
-	"@(#)cpy.y	1.5 10/09/21 2010 J. Schilling";
+static	UConst char y_sccsid[] =
+	"@(#)cpy.y	1.8 19/08/29 2010-2019 J. Schilling";
 #endif
 /*
  * This implementation is based on the UNIX 32V release from 1978
  * with permission from Caldera Inc.
  *
- * Copyright (c) 2010 J. Schilling
+ * Copyright (c) 2010-2019 J. Schilling
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,6 +74,7 @@ static	char y_sccsid[] =
 #include <schily/mconfig.h>
 
 #include "cpp.h"
+#include <schily/limits.h>
 %}
 %term number stop DEFINED
 %term EQ NE LE GE LS RS
@@ -98,9 +100,29 @@ S:	e stop	{return($1);}
 e:	  e '*' e
 		{$$ = $1 * $3;}
 	| e '/' e
-		{$$ = $1 / $3;}
+		{
+			if ($3 == 0) {
+				yyerror("division by zero");
+				$$ = 0;
+			} else if ($1 == INT_MIN && $3 == -1) {
+				yyerror("division overflow");
+				$$ = INT_MIN;
+			} else {
+				$$ = $1 / $3;
+			}
+		}
 	| e '%' e
-		{$$ = $1 % $3;}
+		{
+			if ($3 == 0) {
+				yyerror("division by zero");
+				$$ = 0;
+			} else if ($1 == INT_MIN && $3 == -1) {
+				yyerror("division overflow");
+				$$ = INT_MIN;
+			} else {
+				$$ = $1 % $3;
+			}
+		}
 	| e '+' e
 		{$$ = $1 + $3;}
 	| e '-' e
@@ -147,10 +169,10 @@ term:
 	| '(' e ')'
 		{$$ = $2;}
 	| DEFINED '(' number ')'
-		{$$= $3;}
+		{$$ = $3;}
 	| DEFINED number
 		{$$ = $2;}
 	| number
-		{$$= $1;}
+		{$$ = $1;}
 %%
 # include "yylex.c"
