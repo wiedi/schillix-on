@@ -200,6 +200,9 @@ static int	ABI_namelength = 0;
 
 #define	MAX_FDS	20
 
+#define	INHERITFS	"inherited-filesystem="
+#define	INHERITFS_LEN	((sizeof (INHERITFS))-1)
+
 /*
  * forward declarations
  */
@@ -210,17 +213,18 @@ static int		boot_and_pkginstall_check_in_zones(zoneList_t a_zlst,
 static int		boot_and_install_in_zones(zoneList_t a_zlst,
 				char *a_idsName, char *a_altBinDir,
 				char *a_zoneAdminFile, char *a_zoneTempDir);
-static void		pkginstall_check_in_one_zone(char *a_zoneName,
-				char *a_idsName, char *a_zoneAdminFile,
-				char *a_zoneTempDir, char *a_altBinDir,
-				char *a_scratchName, zone_state_t a_zoneState,
-				boolean_t a_tmpzn);
+static void		pkginstall_check_in_one_zone(char **a_inheritedPkgDirs,
+				char *a_zoneName, char *a_idsName,
+				char *a_zoneAdminFile, char *a_zoneTempDir,
+				char *a_altBinDir, char *a_scratchName,
+				zone_state_t a_zoneState, boolean_t a_tmpzn);
 static void		ckreturn(int retcode);
 static void		create_zone_adminfile(char **r_zoneAdminFile,
 				char *a_zoneTempDir, char *a_admnfile);
 static void		create_zone_tempdir(char **r_zoneTempDir,
 				char *a_tmpdir);
-static void		install_in_one_zone(char *a_zoneName, char *a_idsName,
+static void		install_in_one_zone(char **a_inheritedPkgDirs,
+				char *a_zoneName, char *a_idsName,
 				char *a_zoneAdminFile, char *a_zoneTempDir,
 				char *a_altBinDir, zone_state_t a_zoneState,
 				boolean_t a_tmpzn);
@@ -231,13 +235,15 @@ static int		install_in_zones(zoneList_t a_zlst, char *a_idsName,
 				char *a_altBinDir, char *a_zoneAdminFile,
 				char *a_zoneTempDir);
 static int		pkgInstall(char *ir, char *a_idsName, char *a_pkgDir,
-				char *a_altBinDir);
+				char *a_altBinDir, char **a_inheritedPkgDirs);
 static int		pkgZoneCheckInstall(char *a_zoneName,
+				char **a_inheritedPkgDirs,
 				zone_state_t a_zoneState,
 				char *a_idsName, char *a_altBinDir,
 				char *a_adminFile, char *a_stdoutPath,
 				boolean_t a_tmpzn);
 static int		pkgZoneInstall(char *a_zoneName,
+				char **a_inheritedPkgDirs,
 				zone_state_t a_zoneState,
 				char *a_idsName, char *a_altBinDir,
 				char *a_adminFile, boolean_t a_tmpzn);
@@ -581,6 +587,9 @@ main(int argc, char **argv)
 		 * ---> add zone name to appropriate messages
 		 * -> nozones
 		 * ---> act as though in global zone with no non-global zones
+		 * -> inherited-filesystems
+		 * ---> add specified file system to list of file systems
+		 * ---> that are inherited from the global zone
 		 * -> enable-hollow-package-support
 		 * ---> Enable hollow package support. When specified, for any
 		 * ---> package that has SUNW_PKG_HOLLOW=true:
@@ -614,6 +623,17 @@ main(int argc, char **argv)
 				if (strcmp(p,
 					"enable-hollow-package-support") == 0) {
 					set_depend_pkginfo_DB(B_TRUE);
+					continue;
+				}
+
+				if (strncmp(p, INHERITFS, INHERITFS_LEN) == 0) {
+					if (z_add_inherited_file_system(
+						p+INHERITFS_LEN) == B_FALSE) {
+						progerr(ERR_NOSUCH_INHERITED,
+							p+INHERITFS_LEN);
+						quit(1);
+						/* NOTREACHED */
+					}
 					continue;
 				}
 
@@ -1472,6 +1492,9 @@ main(int argc, char **argv)
  *		check of the a single package in the specified zone
  * Arguments:	a_zoneName - pointer to string representing the name of the
  *			zone to check install the package in.
+ *		a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
  *		a_zoneState - current state of the zone; must be mounted or
  *			running.
  *		a_idsName - pointer to string representing the data stream
@@ -1502,9 +1525,9 @@ main(int argc, char **argv)
  */
 
 static int
-pkgZoneCheckInstall(char *a_zoneName, zone_state_t a_zoneState,
-	char *a_idsName, char *a_altBinDir, char *a_adminFile,
-	char *a_stdoutPath, boolean_t a_tmpzn)
+pkgZoneCheckInstall(char *a_zoneName, char **a_inheritedPkgDirs,
+	zone_state_t a_zoneState, char *a_idsName, char *a_altBinDir,
+	char *a_adminFile, char *a_stdoutPath, boolean_t a_tmpzn)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -1687,6 +1710,19 @@ pkgZoneCheckInstall(char *a_zoneName, zone_state_t a_zoneState,
 		}
 	}
 
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
+		}
+	}
+
 	/*
 	 * add parent zone info/type
 	 */
@@ -1791,6 +1827,9 @@ pkgZoneCheckInstall(char *a_zoneName, zone_state_t a_zoneState,
  *		of a single package in the specified zone
  * Arguments:	a_zoneName - pointer to string representing the name of the
  *			zone to install the package in.
+ *		a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
  *		a_zoneState - current state of the zone; must be mounted or
  *			running.
  *		a_idsName - pointer to string representing the data stream
@@ -1821,8 +1860,9 @@ pkgZoneCheckInstall(char *a_zoneName, zone_state_t a_zoneState,
  */
 
 static int
-pkgZoneInstall(char *a_zoneName, zone_state_t a_zoneState, char *a_idsName,
-    char *a_altBinDir, char *a_adminFile, boolean_t a_tmpzn)
+pkgZoneInstall(char *a_zoneName, char **a_inheritedPkgDirs,
+    zone_state_t a_zoneState, char *a_idsName, char *a_altBinDir,
+    char *a_adminFile, boolean_t a_tmpzn)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -2035,6 +2075,19 @@ pkgZoneInstall(char *a_zoneName, zone_state_t a_zoneState, char *a_idsName,
 		}
 	}
 
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
+		}
+	}
+
 	/*
 	 * add parent zone info/type
 	 */
@@ -2146,6 +2199,9 @@ pkgZoneInstall(char *a_zoneName, zone_state_t a_zoneState, char *a_idsName,
  *		a_altBinDir - pointer to string representing location of the
  *			pkginstall executable to run. If not NULL, then pass
  *			the path specified to the -b option to pkginstall.
+ *		a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
  * Returns:	int	(see ckreturn() function for details)
  *		0 - success
  *		1 - package operation failed (fatal error)
@@ -2164,7 +2220,8 @@ pkgZoneInstall(char *a_zoneName, zone_state_t a_zoneState, char *a_idsName,
  */
 
 static int
-pkgInstall(char *a_altRoot, char *a_idsName, char *a_pkgDir, char *a_altBinDir)
+pkgInstall(char *a_altRoot, char *a_idsName, char *a_pkgDir, char *a_altBinDir,
+	char **a_inheritedPkgDirs)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -2412,6 +2469,19 @@ pkgInstall(char *a_altRoot, char *a_idsName, char *a_pkgDir, char *a_altBinDir)
 		if (pkgdev.fstyp != NULL) {
 			arg[nargs++] = "-f";
 			arg[nargs++] = pkgdev.fstyp;
+		}
+	}
+
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
 		}
 	}
 
@@ -3328,7 +3398,10 @@ get_package_list(char ***r_pkgList, char **a_argv, char *a_categories,
 /*
  * Name:	install_in_one_zone
  * Description:	Install a single package in a single zone
- * Arguments:	a_zoneName - pointer to string representing the name of the
+ * Arguments:	a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
+ *		a_zoneName - pointer to string representing the name of the
  *			zone to install the package into.
  *		a_idsName - pointer to string representing the data stream
  *			device (input data stream) containing the package to
@@ -3358,8 +3431,8 @@ get_package_list(char ***r_pkgList, char **a_argv, char *a_categories,
  */
 
 static void
-install_in_one_zone(char *a_zoneName, char *a_idsName,
-	char *a_zoneAdminFile, char *a_zoneTempDir,
+install_in_one_zone(char **a_inheritedPkgDirs, char *a_zoneName,
+	char *a_idsName, char *a_zoneAdminFile, char *a_zoneTempDir,
 	char *a_altBinDir, zone_state_t a_zoneState, boolean_t a_tmpzn)
 {
 	char	zoneStreamName[PATH_MAX] = {'\0'};
@@ -3395,8 +3468,8 @@ install_in_one_zone(char *a_zoneName, char *a_idsName,
 
 	echoDebug(DBG_INSTALL_IN_ZONE, pkginst, a_zoneName, zoneStreamName);
 
-	n = pkgZoneInstall(a_zoneName, a_zoneState, zoneStreamName,
-	    a_altBinDir, a_zoneAdminFile, a_tmpzn);
+	n = pkgZoneInstall(a_zoneName, a_inheritedPkgDirs, a_zoneState,
+		zoneStreamName, a_altBinDir, a_zoneAdminFile, a_tmpzn);
 
 	/* set success/fail condition variables */
 
@@ -3435,6 +3508,7 @@ static int
 install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 	char *a_zoneAdminFile, char *a_zoneTempDir)
 {
+	char		**inheritedPkgDirs;
 	char		*zoneName;
 	int		zoneIndex;
 	int		zonesSkipped = 0;
@@ -3465,11 +3539,16 @@ install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 			continue;
 		}
 
+		/* determine list of directories inherited from global zone */
+
+		inheritedPkgDirs = z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 		/* install the package in this zone */
 
-		install_in_one_zone(z_zlist_get_scratch(a_zlst, zoneIndex),
-		    a_idsName, a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
-		    zst, B_FALSE);
+		install_in_one_zone(inheritedPkgDirs,
+		    z_zlist_get_scratch(a_zlst, zoneIndex), a_idsName,
+		    a_zoneAdminFile, a_zoneTempDir, a_altBinDir, zst, B_FALSE);
 	}
 
 	return (zonesSkipped);
@@ -3503,6 +3582,7 @@ boot_and_install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 	char *a_zoneAdminFile, char *a_zoneTempDir)
 {
 	boolean_t	b;
+	char		**inheritedPkgDirs;
 	char		*zoneName;
 	int		zoneIndex;
 	int		zonesSkipped = 0;
@@ -3555,10 +3635,16 @@ boot_and_install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 			continue;
 		}
 
+		/* determine list of directories inherited from global zone */
+
+		inheritedPkgDirs = z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 		/* install the package in this zone */
 
-		install_in_one_zone(z_zlist_get_scratch(a_zlst, zoneIndex),
-		    a_idsName, a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
+		install_in_one_zone(inheritedPkgDirs,
+		    z_zlist_get_scratch(a_zlst, zoneIndex), a_idsName,
+		    a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
 		    ZONE_STATE_MOUNTED, B_TRUE);
 
 		/* restore original state of zone */
@@ -3575,7 +3661,10 @@ boot_and_install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 /*
  * Name:	pkginstall_check_in_one_zone
  * Description:	Do a pre install check of a single package in a single zone
- * Arguments:	a_zoneName - pointer to string representing the name of the
+ * Arguments:	a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
+ *		a_zoneName - pointer to string representing the name of the
  *			zone to check install the package in.
  *		a_idsName - pointer to string representing the data stream
  *			device (input data stream) containing the package to
@@ -3605,7 +3694,7 @@ boot_and_install_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
  */
 
 static void
-pkginstall_check_in_one_zone(char *a_zoneName,
+pkginstall_check_in_one_zone(char **a_inheritedPkgDirs, char *a_zoneName,
 	char *a_idsName, char *a_zoneAdminFile, char *a_zoneTempDir,
 	char *a_altBinDir, char *a_scratchName, zone_state_t a_zoneState,
 	boolean_t a_tmpzn)
@@ -3633,8 +3722,9 @@ pkginstall_check_in_one_zone(char *a_zoneName,
 	echoDebug(DBG_CHECKINSTALL_IN_ZONE, pkginst, a_zoneName,
 						zoneStreamName);
 
-	n = pkgZoneCheckInstall(a_scratchName, a_zoneState, zoneStreamName,
-	    a_altBinDir, a_zoneAdminFile, preinstallcheckPath, a_tmpzn);
+	n = pkgZoneCheckInstall(a_scratchName, a_inheritedPkgDirs,
+	    a_zoneState, zoneStreamName, a_altBinDir, a_zoneAdminFile,
+	    preinstallcheckPath, a_tmpzn);
 
 	/* set success/fail condition variables */
 
@@ -3672,6 +3762,7 @@ static int
 pkginstall_check_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 	char *a_zoneAdminFile, char *a_zoneTempDir)
 {
+	char		**inheritedPkgDirs;
 	char		*zoneName;
 	int		zoneIndex;
 	int		zonesSkipped = 0;
@@ -3688,8 +3779,11 @@ pkginstall_check_in_zones(zoneList_t a_zlst, char *a_idsName, char *a_altBinDir,
 			continue;
 		}
 
-		pkginstall_check_in_one_zone(zoneName, a_idsName,
-		    a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
+		inheritedPkgDirs = z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
+		pkginstall_check_in_one_zone(inheritedPkgDirs, zoneName,
+		    a_idsName, a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
 		    z_zlist_get_scratch(a_zlst, zoneIndex), zst, B_FALSE);
 	}
 
@@ -3728,6 +3822,7 @@ boot_and_pkginstall_check_in_zones(zoneList_t a_zlst, char *a_idsName,
 	int		zonesSkipped = 0;
 	char		*zoneName;
 	boolean_t	b;
+	char		**inheritedPkgDirs;
 	zone_state_t	zst;
 
 	/* entry assertions */
@@ -3777,10 +3872,15 @@ boot_and_pkginstall_check_in_zones(zoneList_t a_zlst, char *a_idsName,
 			continue;
 		}
 
+		/* determine list of directories inherited from global zone */
+
+		inheritedPkgDirs = z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 		/* pre-installation check of the package in this zone */
 
-		pkginstall_check_in_one_zone(zoneName, a_idsName,
-		    a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
+		pkginstall_check_in_one_zone(inheritedPkgDirs, zoneName,
+		    a_idsName, a_zoneAdminFile, a_zoneTempDir, a_altBinDir,
 		    z_zlist_get_scratch(a_zlst, zoneIndex),
 		    ZONE_STATE_MOUNTED, B_TRUE);
 
@@ -4064,7 +4164,7 @@ static	char		*zoneAdminFile = (char *)NULL;
 			interrupted = 0;	/* last action was NOT quit */
 
 			n = pkgInstall(get_inst_root(), NULL, packageDir,
-			    a_altBinDir);
+			    a_altBinDir,  NULL);
 
 			/* set success/fail condition variables */
 
@@ -4317,7 +4417,8 @@ static	char		*zoneTempDir = (char *)NULL;
 		/* call pkginstall for this package */
 
 		n = pkgInstall(get_inst_root(), NULL,
-				packageDir, a_altBinDir);
+				packageDir, a_altBinDir,
+				(char **)NULL);
 
 		/* set success/fail condition variables */
 
@@ -4470,7 +4571,8 @@ add_packages_in_global_no_zones(char **a_pkgList, char *a_uri,
 		/* call pkginstall for this package */
 
 		n = pkgInstall(get_inst_root(), a_idsName,
-				pkgdev.dirname, a_altBinDir);
+				pkgdev.dirname, a_altBinDir,
+				z_get_inherited_file_systems());
 
 		/* set success/fail condition variables */
 

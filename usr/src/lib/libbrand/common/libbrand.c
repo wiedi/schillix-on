@@ -21,6 +21,7 @@
 
 /*
  * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, J. Schilling
  */
 
 #include <assert.h>
@@ -107,6 +108,17 @@ brand_error_func(void *ctx, const char *msg, ...)
 	/*
 	 * Ignore error messages from libxml
 	 */
+#ifdef	BRAND_DEBUG
+	/*
+	 * In brand debug mode print libxlm2 messages to debug the syntax
+	 * of the system configuration.
+	 */
+	va_list args;
+
+	va_start(args, msg); 
+	vfprintf(stderr, msg, args);
+	va_end(args);
+#endif
 }
 
 static boolean_t
@@ -147,7 +159,13 @@ libbrand_initialize()
 	xmlDoValidityCheckingDefaultValue = 1;
 	(void) xmlKeepBlanksDefault(0);
 	xmlGetWarningsDefaultValue = 0;
+#ifndef	BRAND_DEBUG
+	/*
+	 * In brand debug mode, do not suppress the syntax messages
+	 * from libxml2.
+	 */
 	xmlSetGenericErrorFunc(NULL, brand_error_func);
+#endif
 
 	libbrand_initialized = B_TRUE;
 	(void) mutex_unlock(&initialize_lock);

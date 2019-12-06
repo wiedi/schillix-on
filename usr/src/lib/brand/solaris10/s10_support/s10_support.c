@@ -99,6 +99,7 @@ static int
 s10_verify(char *xmlfile)
 {
 	zone_dochandle_t	handle;
+	struct zone_fstab	fstab;
 	struct zone_devtab	devtab;
 
 	if ((handle = zonecfg_init_handle()) == NULL)
@@ -108,6 +109,21 @@ s10_verify(char *xmlfile)
 		zonecfg_fini_handle(handle);
 		s10_err(gettext("zonecfg provided an invalid XML file"));
 	}
+
+	/*
+	 * Check to see whether the zone has any inherit-pkg-dirs
+	 * configured.
+	 */
+	if (zonecfg_setipdent(handle) != Z_OK) {
+		zonecfg_fini_handle(handle);
+		s10_err(gettext("zonecfg provided an invalid XML file"));
+	}
+	if (zonecfg_getipdent(handle, &fstab) == Z_OK) {
+		zonecfg_fini_handle(handle);
+		s10_err(gettext("solaris10 zones do not support "
+		    "inherit-pkg-dirs"));
+	}
+	(void) zonecfg_endipdent(handle);
 
 	/*
 	 * Check to see whether the zone has any unsupported devices

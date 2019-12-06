@@ -1697,6 +1697,35 @@ zonecfg_add_filesystem(zone_dochandle_t handle, struct zone_fstab *tabptr)
 	return (Z_OK);
 }
 
+static int
+zonecfg_add_ipd_core(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	xmlNodePtr newnode, cur = handle->zone_dh_cur;
+	int err;
+
+	newnode = xmlNewTextChild(cur, NULL, DTD_ELEM_IPD, NULL);
+	if ((err = newprop(newnode, DTD_ATTR_DIR, tabptr->zone_fs_dir)) != Z_OK)
+		return (err);
+	return (Z_OK);
+}
+
+int
+zonecfg_add_ipd(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	int err;
+
+	if (tabptr == NULL)
+		return (Z_INVAL);
+
+	if ((err = operation_prep(handle)) != Z_OK)
+		return (err);
+
+	if ((err = zonecfg_add_ipd_core(handle, tabptr)) != Z_OK)
+		return (err);
+
+	return (Z_OK);
+}
+
 int
 zonecfg_add_fs_option(struct zone_fstab *tabptr, char *option)
 {
@@ -1839,6 +1868,61 @@ zonecfg_modify_filesystem(
 	return (Z_OK);
 }
 
+static int
+zonecfg_delete_ipd_core(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	xmlNodePtr cur = handle->zone_dh_cur;
+
+	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
+		if (xmlStrcmp(cur->name, DTD_ELEM_IPD))
+			continue;
+		if (match_prop(cur, DTD_ATTR_DIR, tabptr->zone_fs_dir)) {
+			xmlUnlinkNode(cur);
+			xmlFreeNode(cur);
+			return (Z_OK);
+		}
+	}
+	return (Z_NO_RESOURCE_ID);
+}
+
+int
+zonecfg_delete_ipd(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	int err;
+
+	if (tabptr == NULL)
+		return (Z_INVAL);
+
+	if ((err = operation_prep(handle)) != Z_OK)
+		return (err);
+
+	if ((err = zonecfg_delete_ipd_core(handle, tabptr)) != Z_OK)
+		return (err);
+
+	return (Z_OK);
+}
+
+int
+zonecfg_modify_ipd(zone_dochandle_t handle, struct zone_fstab *oldtabptr,
+    struct zone_fstab *newtabptr)
+{
+	int err;
+
+	if (oldtabptr == NULL || newtabptr == NULL)
+		return (Z_INVAL);
+
+	if ((err = operation_prep(handle)) != Z_OK)
+		return (err);
+
+	if ((err = zonecfg_delete_ipd_core(handle, oldtabptr)) != Z_OK)
+		return (err);
+
+	if ((err = zonecfg_add_ipd_core(handle, newtabptr)) != Z_OK)
+		return (err);
+
+	return (Z_OK);
+}
+
 int
 zonecfg_lookup_filesystem(
 	zone_dochandle_t handle,
@@ -1965,6 +2049,55 @@ zonecfg_lookup_filesystem(
 		if (zonecfg_add_fs_option(tabptr, options_str) != Z_OK)
 			break;
 	}
+	return (Z_OK);
+}
+
+int
+zonecfg_lookup_ipd(zone_dochandle_t handle, struct zone_fstab *tabptr)
+{
+	xmlNodePtr cur, match;
+	int err;
+	char dirname[MAXPATHLEN];
+
+	if (tabptr == NULL)
+		return (Z_INVAL);
+
+	if ((err = operation_prep(handle)) != Z_OK)
+		return (err);
+
+	/*
+	 * General algorithm:
+	 * Walk the list of children looking for matches on any properties
+	 * specified in the fstab parameter.  If more than one resource
+	 * matches, we return Z_INSUFFICIENT_SPEC; if none match, we return
+	 * Z_NO_RESOURCE_ID.
+	 */
+	cur = handle->zone_dh_cur;
+	match = NULL;
+	for (cur = cur->xmlChildrenNode; cur != NULL; cur = cur->next) {
+		if (xmlStrcmp(cur->name, DTD_ELEM_IPD))
+			continue;
+		if (strlen(tabptr->zone_fs_dir) > 0) {
+			if ((fetchprop(cur, DTD_ATTR_DIR, dirname,
+			    sizeof (dirname)) == Z_OK) &&
+			    (strcmp(tabptr->zone_fs_dir, dirname) == 0)) {
+				if (match == NULL)
+					match = cur;
+				else
+					return (Z_INSUFFICIENT_SPEC);
+			}
+		}
+	}
+
+	if (match == NULL)
+		return (Z_NO_RESOURCE_ID);
+
+	cur = match;
+
+	if ((err = fetchprop(cur, DTD_ATTR_DIR, tabptr->zone_fs_dir,
+	    sizeof (tabptr->zone_fs_dir))) != Z_OK)
+		return (err);
+
 	return (Z_OK);
 }
 
@@ -3867,6 +4000,8 @@ nm_to_dtd(char *nm)
 		return (DTD_ELEM_DEVICE);
 	if (strcmp(nm, "fs") == 0)
 		return (DTD_ELEM_FS);
+	if (strcmp(nm, "inherit-pkg-dir") == 0)
+		return (DTD_ELEM_IPD);
 	if (strcmp(nm, "net") == 0)
 		return (DTD_ELEM_NET);
 	if (strcmp(nm, "attr") == 0)

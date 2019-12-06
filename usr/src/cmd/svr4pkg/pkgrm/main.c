@@ -168,6 +168,9 @@ extern char	*pkgdir;
 #define	TEXT_DOMAIN "SYS_TEST"
 #endif
 
+#define	INHERITFS	"inherited-filesystem="
+#define	INHERITFS_LEN	((sizeof (INHERITFS))-1)
+
 /*
  * forward declarations
  */
@@ -181,11 +184,13 @@ static int		doRemove(int a_nodelete, char *a_altBinDir,
 				int a_longestPkg, char *a_adminFile,
 				char *a_zoneAdminFile, zoneList_t zlst);
 static int		pkgRemove(int a_nodelete, char *a_altBinDir,
-				char *a_adminFile);
-static int		pkgZoneCheckRemove(char *a_zoneName, char *a_altBinDir,
+				char *a_adminFile, char **a_inheritedPkgDirs);
+static int		pkgZoneCheckRemove(char *a_zoneName,
+				char **a_inheritedPkgDirs, char *a_altBinDir,
 				char *a_adminFile, char *a_stdoutPath,
 				zone_state_t a_zoneState, boolean_t tmpzone);
-static int		pkgZoneRemove(char *a_zoneName, int a_nodelete,
+static int		pkgZoneRemove(char *a_zoneName,
+				char **a_inheritedPkgDirs, int a_nodelete,
 				char *a_altBinDir, char *a_adminFile,
 				zone_state_t a_zoneState, boolean_t tmpzone);
 static void		resetreturn();
@@ -376,6 +381,9 @@ main(int argc, char **argv)
 		 * ---> enable debugging output
 		 * -> nozones
 		 * ---> act as though in global zone with no non-global zones
+		 * -> inherited-filesystems
+		 * ---> add specified file system to list of file systems
+		 * ---> that are inherited from the global zone
 		 * -> enable-hollow-package-support
 		 * --> Enable hollow package support. When specified, for any
 		 * --> package that has SUNW_PKG_HOLLOW=true:
@@ -395,6 +403,17 @@ main(int argc, char **argv)
 
 				if (strcmp(p, "nozones") == 0) {
 					noZones = B_TRUE;
+					continue;
+				}
+
+				if (strncmp(p, INHERITFS, INHERITFS_LEN) == 0) {
+					if (z_add_inherited_file_system(
+						p+INHERITFS_LEN) == B_FALSE) {
+						progerr(ERR_NOSUCH_INHERITED,
+							p+INHERITFS_LEN);
+						quit(1);
+						/* NOTREACHED */
+					}
 					continue;
 				}
 
@@ -848,6 +867,7 @@ doRemove(int a_nodelete, char *a_altBinDir, int a_longestPkg, char *a_adminFile,
 	char *a_zoneAdminFile, zoneList_t a_zlst)
 {
 	boolean_t	b;
+	char		**inheritedPkgDirs;
 	char		*zoneName;
 	char		ans[MAX_INPUT];
 	int		n;
@@ -986,14 +1006,19 @@ doRemove(int a_nodelete, char *a_altBinDir, int a_longestPkg, char *a_adminFile,
 		echo(MSG_REMOVE_PKG_FROM_ZONE, pkginst, zoneName);
 		echoDebug(DBG_REMOVE_PKG_FROM_ZONE, pkginst, zoneName);
 
+		/* determine list of directories inherited from global zone */
+
+		inheritedPkgDirs = z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 		/*
 		 * remove package from zone; use the zone admin file which
 		 * suppresses all checks.
 		 */
 
 		n = pkgZoneRemove(z_zlist_get_scratch(a_zlst, zoneIndex),
-			a_nodelete, a_altBinDir, a_zoneAdminFile,
-			zst, B_FALSE);
+			inheritedPkgDirs, a_nodelete, a_altBinDir,
+			a_zoneAdminFile, zst, B_FALSE);
 
 		/* set success/fail condition variables */
 
@@ -1047,14 +1072,21 @@ doRemove(int a_nodelete, char *a_altBinDir, int a_longestPkg, char *a_adminFile,
 
 			echo(MSG_REMOVE_PKG_FROM_ZONE, pkginst, zoneName);
 
+			/* determine list of dirs inherited from global zone */
+
+			inheritedPkgDirs =
+				z_zlist_get_inherited_pkg_dirs(a_zlst,
+						zoneIndex);
+
 			/*
 			 * remove package from zone; use the zone admin file
 			 * which suppresses all checks.
 			 */
 
 			n = pkgZoneRemove(z_zlist_get_scratch(a_zlst,
-				zoneIndex), a_nodelete, a_altBinDir,
-				a_zoneAdminFile, ZONE_STATE_MOUNTED, B_TRUE);
+				zoneIndex), inheritedPkgDirs,
+				a_nodelete, a_altBinDir, a_zoneAdminFile,
+				ZONE_STATE_MOUNTED, B_TRUE);
 
 			/* set success/fail condition variables */
 
@@ -1085,7 +1117,8 @@ doRemove(int a_nodelete, char *a_altBinDir, int a_longestPkg, char *a_adminFile,
 		 * call pkgremove for this package for the global zone;
 		 * use the admin file passed in by the user via -a.
 		 */
-		n = pkgRemove(a_nodelete, a_altBinDir, a_adminFile);
+		n = pkgRemove(a_nodelete, a_altBinDir, a_adminFile,
+		    z_get_inherited_file_systems());
 
 		/* set success/fail condition variables */
 		ckreturn(n);
@@ -1179,8 +1212,9 @@ ckreturn(int retcode)
 }
 
 static int
-pkgZoneCheckRemove(char *a_zoneName, char *a_altBinDir, char *a_adminFile,
-	char *a_stdoutPath, zone_state_t a_zoneState, boolean_t tmpzone)
+pkgZoneCheckRemove(char *a_zoneName, char **a_inheritedPkgDirs,
+	char *a_altBinDir, char *a_adminFile, char *a_stdoutPath,
+	zone_state_t a_zoneState, boolean_t tmpzone)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -1318,6 +1352,19 @@ pkgZoneCheckRemove(char *a_zoneName, char *a_altBinDir, char *a_adminFile,
 	arg[nargs++] = "-O";
 	arg[nargs++] = "addzonename";
 
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
+		}
+	}
+
 	/*
 	 * add parent zone info/type
 	 */
@@ -1402,8 +1449,9 @@ pkgZoneCheckRemove(char *a_zoneName, char *a_altBinDir, char *a_adminFile,
 }
 
 static int
-pkgZoneRemove(char *a_zoneName, int a_nodelete, char *a_altBinDir,
-	char *a_adminFile, zone_state_t a_zoneState, boolean_t tmpzone)
+pkgZoneRemove(char *a_zoneName, char **a_inheritedPkgDirs,
+	int a_nodelete, char *a_altBinDir, char *a_adminFile,
+	zone_state_t a_zoneState, boolean_t tmpzone)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -1544,6 +1592,20 @@ pkgZoneRemove(char *a_zoneName, int a_nodelete, char *a_altBinDir,
 	arg[nargs++] = "-O";
 	arg[nargs++] = "addzonename";
 
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
+		}
+	}
+
 	/*
 	 * add parent zone info/type
 	 */
@@ -1641,6 +1703,9 @@ pkgZoneRemove(char *a_zoneName, int a_nodelete, char *a_altBinDir,
  *		a_adminFile - pointer to string representing the admin
  *			file to pass to pkgremove when removing the package.
  *			If this is == NULL no admin file is given to pkgremove.
+ *		a_inheritedPkgDirs - pointer to array of strings, each one
+ *			representing the non-global zones full path of a
+ *			directory that is inherited from the global zone.
  * Returns:	int	(see ckreturn() function for details)
  *		0 - success
  *		1 - package operation failed (fatal error)
@@ -1653,7 +1718,8 @@ pkgZoneRemove(char *a_zoneName, int a_nodelete, char *a_altBinDir,
  */
 
 static int
-pkgRemove(int a_nodelete, char *a_altBinDir, char *a_adminFile)
+pkgRemove(int a_nodelete, char *a_altBinDir, char *a_adminFile,
+	char **a_inheritedPkgDirs)
 {
 	char	*arg[MAXARGS];
 	char	*p;
@@ -1763,6 +1829,19 @@ pkgRemove(int a_nodelete, char *a_altBinDir, char *a_adminFile)
 
 	if (a_nodelete) {
 		arg[nargs++] = "-F";
+	}
+
+	/* add all inherited file systems */
+
+	if (a_inheritedPkgDirs != (char **)NULL) {
+		for (n = 0; a_inheritedPkgDirs[n] != (char *)NULL; n++) {
+			char	ifs[MAXPATHLEN+22];
+			(void) snprintf(ifs, sizeof (ifs),
+				"inherited-filesystem=%s",
+				a_inheritedPkgDirs[n]);
+			arg[nargs++] = "-O";
+			arg[nargs++] = strdup(ifs);
+		}
 	}
 
 	/*
@@ -1883,6 +1962,7 @@ remove_packages_in_global_with_zones(char **a_pkgList, int a_nodelete,
 static	char		*zoneAdminFile = (char *)NULL;
 
 	boolean_t	b;
+	char		**inheritedPkgDirs;
 	char		*zoneName;
 	char		*scratchName;
 	char		preremovecheckPath[PATH_MAX+1];
@@ -1980,14 +2060,20 @@ static	char		*zoneAdminFile = (char *)NULL;
 				"%s/%s.%s.preremovecheck.txt",
 				zoneTempDir, pkginst, scratchName);
 
+			/* determine list of dirs inherited from global zone */
+
+			inheritedPkgDirs =
+				z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 			/*
 			 * dependency check this package this zone; use the
 			 * user supplied admin file so that the appropriate
 			 * level of dependency checking is (or is not) done.
 			 */
 
-			n = pkgZoneCheckRemove(scratchName, a_altBinDir,
-				admnfile, preremovecheckPath,
+			n = pkgZoneCheckRemove(scratchName, inheritedPkgDirs,
+				a_altBinDir, admnfile, preremovecheckPath,
 				zst, B_FALSE);
 
 			/* set success/fail condition variables */
@@ -2055,14 +2141,20 @@ static	char		*zoneAdminFile = (char *)NULL;
 				"%s/%s.%s.preremovecheck.txt",
 				zoneTempDir, pkginst, scratchName);
 
+			/* determine list of dirs inherited from global zone */
+
+			inheritedPkgDirs =
+				z_zlist_get_inherited_pkg_dirs(a_zlst,
+					zoneIndex);
+
 			/*
 			 * dependency check this package this zone; use the
 			 * user supplied admin file so that the appropriate
 			 * level of dependency checking is (or is not) done.
 			 */
 
-			n = pkgZoneCheckRemove(scratchName, a_altBinDir,
-				admnfile, preremovecheckPath,
+			n = pkgZoneCheckRemove(scratchName, inheritedPkgDirs,
+				a_altBinDir, admnfile, preremovecheckPath,
 				ZONE_STATE_MOUNTED, B_TRUE);
 
 			/* set success/fail condition variables */

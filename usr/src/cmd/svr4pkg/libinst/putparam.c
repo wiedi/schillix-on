@@ -193,6 +193,7 @@ putuserlocale(void)
 void
 putConditionInfo(char *a_parentZoneName, char *a_parentZoneType)
 {
+	char	**pp;
 	char	*p;
 	char	*pa;
 	SML_TAG	*tag = SML_TAG__NULL;
@@ -207,6 +208,7 @@ putConditionInfo(char *a_parentZoneName, char *a_parentZoneType)
 	 * <environmentConditionInformation>
 	 * <parentZone zoneName=<?> zoneType=<?>/>
 	 * <currentZone zoneName=<?> zoneType=<?>/>
+	 * <inheritedFileSystem fileSystemName=<?>/>
 	 * </environmentConditionInformation>
 	 */
 
@@ -263,6 +265,30 @@ putConditionInfo(char *a_parentZoneName, char *a_parentZoneType)
 
 	(void) smlAddTag(&tag, -1, ntag);
 	free(ntag);
+
+	/*
+	 * describe any inherited file systems:
+	 * <inheritedFileSystem fileSystemName=<?>/>
+	 */
+
+	pp = z_get_inherited_file_systems();
+	if (pp != (char **)NULL) {
+		int n;
+		for (n = 0; pp[n] != (char *)NULL; n++) {
+			/* allocate tag for inherited file system info */
+
+			ntag = smlNewTag(TAG_COND_INHERITED_FS);
+
+			/* inherited file system */
+
+			smlSetParam(ntag, TAG_COND_FS_NAME, pp[n]);
+
+			/* add to top level tag */
+
+			(void) smlAddTag(&tag, -1, ntag);
+			free(ntag);
+		}
+	}
 
 	/*
 	 * done filling in tag - convert to string and place in environment
