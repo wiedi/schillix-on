@@ -1,7 +1,7 @@
 '\" te
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2006, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2013,2019 J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Portions Copyright (c) 1992, X/Open Company Limited All Rights Reserved
 .\"
@@ -48,40 +48,41 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH tar 1 "26 Oct 2007" "SunOS 5.11" "User Commands"
+.TH tar 1 "27 Aug 2019" "SunOS 5.11" "User Commands"
 .SH NAME
 tar \- create tape archives and add or extract files
 .SH SYNOPSIS
 .LP
 .nf
-\fBtar\fR c[BDeEFhilnopPqTvw@/[0-7]][bfk][X.\|.\|.] [\fIblocksize\fR]
+\fBtar\fR c[BDeEFhilnopPTvw@/[0-7]][bfk][X.\|.\|.][j|J|z|Z] [\fIblocksize\fR]
      [\fItarfile\fR] [\fIsize\fR] [\fIexclude-file\fR].\|.\|.
      {\fIfile\fR | \(miI \fIinclude-file\fR | \(miC \fIdirectory\fR \fIfile\fR}.\|.\|.
 .fi
 
 .LP
 .nf
-\fBtar\fR r[BDeEFhilnqTvw@/[0-7]][bfk] [\fIblocksize\fR] [\fItarfile\fR]
-     [\fIsize\fR]
+\fBtar\fR r[BDeEFhilnTvw@/[0-7]][bfk][j|J|z|Z] [\fIblocksize\fR] [\fItarfile\fR]
+     [\fIsize\fR] [\fIexclude-file\fR].\|.\|.
      {\fIfile\fR | \(miI \fIinclude-file\fR | \(miC \fIdirectory\fR \fIfile\fR}.\|.\|.
 .fi
 
 .LP
 .nf
-\fBtar\fR t[BeFhilnqTv[0-7]][fk][X.\|.\|.] [\fItarfile\fR] [\fIsize\fR]
+\fBtar\fR t[BeFhilnTv[0-7]][f][X.\|.\|.][j|J|z|Z] [\fItarfile\fR] [\fIsize\fR]
      [\fIexclude-file\fR].\|.\|. {\fIfile\fR | \(miI \fIinclude-file\fR}.\|.\|.
 .fi
 
 .LP
 .nf
-\fBtar\fR u[BDeEFhilnqTvw@/[0-7]][bfk] [\fIblocksize\fR] [\fItarfile\fR]
-     [\fIsize\fR] \fIfile\fR.\|.\|.
+\fBtar\fR u[BDeEFhilnTvw@/[0-7]][bfk][j|J|z|Z] [\fIblocksize\fR] [\fItarfile\fR]
+     [\fIsize\fR] [\fIexclude-file\fR].\|.\|.
+     {\fIfile\fR | \(miI \fIinclude-file\fR | \(miC \fIdirectory\fR \fIfile\fR}.\|.\|.
 .fi
 
 .LP
 .nf
-\fBtar\fR x[BeFhilmnopqTvw@/[0-7]][fk][X.\|.\|.] [\fItarfile\fR] [\fIsize\fR]
-     [\fIexclude-file\fR].\|.\|. [\fIfile\fR].\|.\|.
+\fBtar\fR x[BeFhilmnopTvw@/[0-7]][f][X.\|.\|.][j|J|z|Z] [\fItarfile\fR] [\fIsize\fR]
+     [\fIexclude-file\fR].\|.\|. [\(miC \fIdirectory\fR] {\fIfile\fR | \(miI \fIinclude-file\fR}.\|.\|.
 .fi
 
 .SH DESCRIPTION
@@ -161,6 +162,38 @@ all files in
 .IR directory .
 This operand enables archiving files from
 multiple directories not related by a close common parent.
+.sp
+After
+.I file
+has been archived,
+.B tar
+changes back its directory to the directory from where it has been run.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+\fB\(miC\fR \fIdirectory\fR
+.ad
+.sp .6
+.RS 4n
+This option may also be passed when using the
+.B x
+(extract) operation.
+In this case, no
+.I file
+operand is associated to the
+.B \-C
+option.
+.sp
+In this case,
+.B tar
+first opens the archive, then issues a
+.B chdir
+to
+.I directory
+and after that, the archive is extracted.
 .RE
 
 .sp
@@ -479,10 +512,13 @@ affected.
 .sp .6
 .RS 4n
 Error. Exit immediately with a positive exit status if any unexpected errors
-occur. The
+occur.
+.de ..
+The
 .B SYSV3
 environment variable overrides the default behavior.
 (See ENVIRONMENT VARIABLES section below.)
+..
 .RE
 
 .sp
@@ -600,10 +636,12 @@ suffix, and all files named
 .BR core ,
 and
 .BR a.out .
+.de ..
 The
 .B SYSV3
 environment variable overrides the default behavior. (See
 ENVIRONMENT VARIABLES section below.)
+..
 .RE
 
 .sp
@@ -628,6 +666,62 @@ does not follow symbolic links.
 .sp .6
 .RS 4n
 Ignore directory checksum errors.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B j
+.ad
+.sp .6
+.RS 4n
+in
+.B c
+(create) mode, compress the resulting archive with
+.BR bzip2 .
+In
+.B extract
+or
+.B list
+mode, this option is ignored.
+This implementation recognizes
+.B bzip2
+compression automatically when reading archives.
+In
+.B update
+or
+.B replace
+mode, it first decompresses the file and later applies the same
+mechanism to compress the archive automatically.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B J
+.ad
+.sp .6
+.RS 4n
+in
+.B c
+(create) mode, compress the resulting archive with
+.BR xz .
+In
+.B extract
+or
+.B list
+mode, this option is ignored.
+This implementation recognizes
+.B xz
+compression automatically when reading archives.
+In
+.B update
+or
+.B replace
+mode, it first decompresses the file and later applies the same
+mechanism to compress the archive automatically.
 .RE
 
 .sp
@@ -757,6 +851,7 @@ Suppress the addition of a trailing "\fB/\fR" on directory entries in the
 archive.
 .RE
 
+.de ..
 .sp
 .ne 2
 .mk
@@ -769,6 +864,7 @@ Stop after extracting the first occurrence of the named file.
 .B tar
 normally continues reading the archive after finding an occurrence of a file.
 .RE
+..
 
 .sp
 .ne 2
@@ -901,6 +997,62 @@ included files. If a file is specified in both the
 and the
 .I include-file
 (or on the command line), it is excluded.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B z
+.ad
+.sp .6
+.RS 4n
+in
+.B c
+(create) mode, compress the resulting archive with
+.BR gzip .
+In
+.B extract
+or
+.B list
+mode, this option is ignored.
+This implementation recognizes
+.B gzip
+compression automatically when reading archives.
+In
+.B update
+or
+.B replace
+mode, it first decompresses the file and later applies the same
+mechanism to compress the archive automatically.
+.RE
+
+.sp
+.ne 2
+.mk
+.na
+.B Z
+.ad
+.sp .6
+.RS 4n
+in
+.B c
+(create) mode, compress the resulting archive with
+.BR compress .
+In
+.B extract
+or
+.B list
+mode, this option is ignored.
+This implementation recognizes
+.B compress
+compression automatically when reading archives.
+In
+.B update
+or
+.B replace
+mode, it first decompresses the file and later applies the same
+mechanism to compress the archive automatically.
 .RE
 
 .sp
@@ -1373,6 +1525,7 @@ tar: tape read error
 .sp
 
 .SH ENVIRONMENT VARIABLES
+.de ..
 .sp
 .ne 2
 .mk
@@ -1421,7 +1574,18 @@ exits with an error.
 .RE
 
 .RE
+..
 
+.TP
+.B TMPDIR
+.B tar
+creates temporary files in
+.B /tmp
+by default. If
+.B TMPDIR
+is present,
+.B tar
+uses the directory specified by TMPDIR.
 .sp
 .LP
 See
@@ -1561,38 +1725,31 @@ An error occurred.
 .sp .6
 .RS 4n
 Settings might look like this:
-.br
+.sp
 .in +2
-.B archive0=/dev/rmt/0
+.TS
+tab();
+lw(2.75i) lw(.75i) lw(.75i)
+lbw(2.75i) lbw(.75i) lbw(.75i)
+.
+# DeviceBlocksMedia size
+archive0=/dev/rmt/0200
+archive1=/dev/rmt/0n200
+archive2=/dev/rmt/1200
+archive3=/dev/rmt/1n200
+archive4=/dev/rmt/01260
+archive5=/dev/rmt/0n1260
+archive6=/dev/rmt/11260
+archive7=/dev/rmt/1n1260
+.TE
 .in -2
-.br
-.in +2
-.B archive1=/dev/rmt/0n
-.in -2
-.br
-.in +2
-.B archive2=/dev/rmt/1
-.in -2
-.br
-.in +2
-.B archive3=/dev/rmt/1n
-.in -2
-.br
-.in +2
-.B archive4=/dev/rmt/0
-.in -2
-.br
-.in +2
-.B archive5=/dev/rmt/0n
-.in -2
-.br
-.in +2
-.B archive6=/dev/rmt/1
-.in -2
-.br
-.in +2
-.B archive7=/dev/rmt/1n
-.in -2
+.LP
+The
+.I blocks
+entry specifies the default blocking factor, the 
+.I media size
+entry (if not zero) specifies the size of a media,
+e.g. a floppy disk.
 .RE
 
 .sp
@@ -1603,7 +1760,9 @@ Settings might look like this:
 .ad
 .sp .6
 .RS 4n
-
+Temp files unless
+.B TMPDIR
+is used.
 .RE
 
 .SH ATTRIBUTES
@@ -1644,6 +1803,7 @@ Interface StabilityCommitted
 .BR mt (1),
 .BR pax (1),
 .BR setfacl (1),
+.BR star (1),
 .BR umask (1),
 .BR mknod (1M),
 .BR archives.h (3HEAD),

@@ -33,6 +33,13 @@
  * under license from the Regents of the University of California.
  */
 
+/*
+ * Copyright 2018-2019 J. Schilling
+ *
+ * From @(#)tar.c      1.157   10/07/15 SMI
+ */
+
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/param.h>
@@ -409,7 +416,7 @@ struct linkbuf {
 	dev_t	devnum;
 	int	count;
 	char	pathname[MAXNAM+1];	/* added 1 for last NULL */
-	char 	attrname[MAXNAM+1];
+	char	attrname[MAXNAM+1];
 	struct	linkbuf *nextp;
 } *ihead;
 
@@ -551,6 +558,8 @@ static void *compress_malloc(size_t);
 static void check_compression();
 static char *bz_suffix();
 static char *gz_suffix();
+static char *xz_suffix();
+static char *zstd_suffix();
 static char *add_suffix();
 static void wait_pid(pid_t);
 
@@ -559,12 +568,12 @@ static	struct stat stbuf;
 static	char	*myname;
 static	int	checkflag = 0;
 static	int	Xflag, Fflag, iflag, hflag, Bflag, Iflag;
-static	int	rflag, xflag, vflag, tflag, mt, svmt, cflag, mflag, pflag;
+static	int	rflag, xflag, vflag, tflag, mt, cflag, mflag, pflag;
 static	int	uflag;
 static	int	errflag;
 static	int	oflag;
-static	int	bflag, Aflag;
-static 	int	Pflag;			/* POSIX conformant archive */
+static	int	bflag, kflag, Aflag;
+static	int	Pflag;			/* POSIX conformant archive */
 static	int	Eflag;			/* Allow files greater than 8GB */
 static	int	atflag;			/* traverse extended attributes */
 static	int	saflag;			/* traverse extended sys attributes */
@@ -572,6 +581,7 @@ static	int	Dflag;			/* Data change flag */
 static	int	jflag;			/* flag to use 'bzip2' */
 static	int	zflag;			/* flag to use 'gzip' */
 static	int	Zflag;			/* flag to use 'compress' */
+static	int	Jflag;			/* flag to use 'xz' */
 
 /* Trusted Extensions */
 static	int	Tflag;			/* Trusted Extensions attr flags */
@@ -625,7 +635,7 @@ static	int	extno;		/* number of extent:  starts at 1 */
 static	int	extotal;	/* total extents in this file */
 static	off_t	extsize;	/* size of current extent during extraction */
 static	ushort_t	Oumask = 0;	/* old umask value */
-static 	int is_posix;	/* true if archive we're reading is POSIX-conformant */
+static	int is_posix;	/* true if archive we're reading is POSIX-conformant */
 static	const	char	*magic_type = "ustar";
 static	size_t	xrec_size = 8 * PATH_MAX;	/* extended rec initial size */
 static	char	*xrec_ptr;
@@ -635,6 +645,9 @@ static	int	charset_type = 0;
 
 static	u_longlong_t	xhdr_flgs;	/* Bits set determine which items */
 					/*   need to be in extended header. */
+
+static	pid_t	cpid;			/* Used to wait() in done() */
+
 #define	_X_DEVMAJOR	0x1
 #define	_X_DEVMINOR	0x2
 #define	_X_GID		0x4
@@ -693,17 +706,25 @@ int waitaround = 0;		/* wait for rendezvous with the debugger */
 #define	BZIP		"/usr/bin/bzip2"
 #define	GZIP		"/usr/bin/gzip"
 #define	COMPRESS	"/usr/bin/compress"
+#define	XZ		"/usr/bin/xz"
+#define	ZSTD		"/usr/bin/zstd"
 #define	BZCAT		"/usr/bin/bzcat"
 #define	GZCAT		"/usr/bin/gzcat"
 #define	ZCAT		"/usr/bin/zcat"
+#define	XZCAT		"/usr/bin/xzcat"
+#define	ZSTDCAT		"/usr/bin/zstdcat"
 #define	GS		8		/* number of valid 'gzip' sufixes */
 #define	BS		4		/* number of valid 'bzip2' sufixes */
+#define	XS		1		/* number of valid 'xz' sufixes */
+#define	ZS		1		/* number of valid 'zstd' sufixes */
 
-static	char		*compress_opt; 	/* compression type */
+static	char		*compress_opt;	/* compression type */
 
 static	char		*gsuffix[] = {".gz", "-gz", ".z", "-z", "_z", ".Z",
 			".tgz", ".taz"};
 static	char		*bsuffix[] = {".bz2", ".bz", ".tbz2", ".tbz"};
+static	char		*xsuffix[] = {".xz"};
+static	char		*zstsuffix[] = {".zst"};
 static	char		*suffix;
 
 
@@ -713,8 +734,6 @@ main(int argc, char *argv[])
 	char		*cp;
 	char		*tmpdirp;
 	pid_t		thispid;
-	pid_t		pid;
-	int		wstat;
 
 	(void) setlocale(LC_ALL, "");
 #if !defined(TEXT_DOMAIN)	/* Should be defined by cc -D */
@@ -865,6 +884,13 @@ main(int argc, char *argv[])
 			bflag++;
 			nblock = bcheck(*argv++);
 			break;
+		case 'k':
+			assert_string(*argv, gettext(
+			    "tar: size value must be specified with 'k' "
+			    "function modifier\n"));
+			kflag++;
+			blocklim = kcheck(*argv++);
+			break;
 		case 'n':		/* not a magtape (instead of 'k') */
 			NotTape++;	/* assume non-magtape */
 			break;
@@ -873,6 +899,7 @@ main(int argc, char *argv[])
 			break;
 		case 'e':
 			errflag++;
+			break;
 		case 'o':
 			oflag++;
 			break;
@@ -897,13 +924,16 @@ main(int argc, char *argv[])
 			pflag++;	/* also set flag for ACL */
 			break;
 		case 'j':		/* compession "bzip2" */
-			jflag++;
+			jflag = 1;
+			break;
+		case 'J':		/* compession "xz" */
+			Jflag = 1;
 			break;
 		case 'z':		/* compression "gzip" */
-			zflag++;
+			zflag = 1;
 			break;
 		case 'Z':		/* compression "compress" */
-			Zflag++;
+			Zflag = 1;
 			break;
 		default:
 			(void) fprintf(stderr, gettext(
@@ -919,10 +949,9 @@ main(int argc, char *argv[])
 		usage();
 	}
 	if (cflag) {
-		if ((zflag && jflag) || (zflag && Zflag) ||
-		    (jflag && Zflag)) {
+		if ((zflag + jflag + Zflag + Jflag) > 1) {
 			(void) fprintf(stderr, gettext(
-			    "tar: specify only one of [jzZ] to "
+			    "tar: specify only one of [jJzZ] to "
 			    "create a compressed file.\n"));
 			usage();
 		}
@@ -1004,6 +1033,9 @@ main(int argc, char *argv[])
 				compress_opt =
 				    compress_malloc(strlen(COMPRESS) + 1);
 				(void) strcpy(compress_opt, COMPRESS);
+			} else if (Jflag) {
+				compress_opt = compress_malloc(strlen(XZ) + 1);
+				(void) strcpy(compress_opt, XZ);
 			}
 		} else {
 			/*
@@ -1092,13 +1124,32 @@ main(int argc, char *argv[])
 			(void) printf(
 			gettext("Suppressing absolute pathnames\n"));
 		if (cflag && compress_opt != NULL) {
-			pid = compress_file();
-			wait_pid(pid);
+			cpid = compress_file();
 		}
 		dorep(argv);
+		if (cpid > 0) {
+			wait_pid(cpid);
+		}
 		if (rflag && !cflag && (compress_opt != NULL))
 			compress_back();
 	} else if (xflag || tflag) {
+		if (strcmp(usefile, "-") == 0) {
+			mt = dup(0);
+			++bflag;
+			/* try to recover from short reads when reading stdin */
+			++Bflag;
+		} else if ((mt = open(usefile, 0)) < 0)
+			vperror(1, "%s", usefile);
+
+		/* Decompress if the file is compressed */
+
+		if (strcmp(usefile, "-") != 0) {
+			check_compression();
+			if (compress_opt != NULL) {
+				cpid = uncompress_file();
+			}
+		}
+
 		/*
 		 * for each argument, check to see if there is a "-I file" pair.
 		 * if so, move the 3rd argument into "-I"'s place, build_table()
@@ -1115,25 +1166,24 @@ main(int argc, char *argv[])
 				} else {
 					Iflag = 1;
 					argv[argc] = argv[argc+2];
+					argv[argc+1] = argv[argc+2];
 					build_table(include_tbl, argv[++argc]);
 				}
-			}
-		}
-		if (strcmp(usefile, "-") == 0) {
-			mt = dup(0);
-			++bflag;
-			/* try to recover from short reads when reading stdin */
-			++Bflag;
-		} else if ((mt = open(usefile, 0)) < 0)
-			vperror(1, "%s", usefile);
-
-		/* Decompress if the file is compressed */
-
-		if (strcmp(usefile, "-") != 0) {
-			check_compression();
-			if (compress_opt != NULL) {
-				pid = uncompress_file();
-				wait_pid(pid);
+			} else if ((strcmp(argv[argc], "-C") == 0) &&
+			    argv[argc+1]) {
+				if (tar_chdir(argv[argc+1]) < 0) {
+					vperror(1, gettext(
+					    "can't change directories to %s"),
+					    argv[argc+1]);
+				} else {
+					/*
+					 * Remove from arg list by duplication
+					 * of next argument.
+					 */
+					argv[argc] = argv[argc+2];
+					argv[argc+1] = argv[argc+2];
+					argc++;
+				}
 			}
 		}
 		if (xflag) {
@@ -1144,6 +1194,9 @@ main(int argc, char *argv[])
 			doxtract(argv);
 		} else if (tflag)
 			dotable(argv);
+		if (cpid > 0) {
+			wait_pid(cpid);
+		}
 	}
 	else
 		usage();
@@ -1160,14 +1213,14 @@ usage(void)
 	(void) fprintf(stderr, gettext(
 #if defined(O_XATTR)
 #if defined(_PC_SATTR_ENABLED)
-	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw@/[0-7]][bf][X...] "
+	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw@/[0-7]][bfk][X...] "
 #else
-	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw@[0-7]][bf][X...] "
+	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw@[0-7]][bfk][X...] "
 #endif	/* _PC_SATTR_ENABLED */
 #else
-	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw[0-7]][bf][X...] "
+	    "Usage: tar {c|r|t|u|x}[BDeEFhilmnopPTvw[0-7]][bfk][X...] "
 #endif	/* O_XATTR */
-	    "[j|z|Z] "
+	    "[j|J|z|Z] "
 	    "[blocksize] [tarfile] [size] [exclude-file...] "
 	    "{file | -I include-file | -C directory file}...\n"));
 	done(1);
@@ -1386,15 +1439,24 @@ dorep(char *argv[])
  *	wants it backed up must call backtape himself
  *	RETURNS:	0 if not EOT, tape position unaffected
  *			1 if	 EOT, tape position unaffected
+ *
+ *	Note that the standard requires a complete block of nulls
+ *	to mark EOF, but we for now stick with the historic practice
+ *	to only check the first character of the path name.
  */
 
 static int
 endtape(void)
 {
 	if (dblock.dbuf.name[0] == '\0') {	/* null header = EOT */
-		return (1);
-	} else
-		return (0);
+		/*
+		 * When working on "ustar" archives, be careful and also
+		 * check prefix.
+		 */
+		if (!is_posix || dblock.dbuf.prefix[0] == '\0')
+			return (1);
+	}
+	return (0);
 }
 
 /*
@@ -1460,7 +1522,10 @@ top:
 			break;
 		}
 
-	if ((dblock.dbuf.typeflag == 'X') || (dblock.dbuf.typeflag == 'L')) {
+	if ((dblock.dbuf.typeflag == 'X') ||
+	    (dblock.dbuf.typeflag == 'x') ||
+	    (dblock.dbuf.typeflag == 'g') ||
+	    (dblock.dbuf.typeflag == 'L')) {
 		Xhdrflag = 1;	/* Currently processing extended header */
 	} else {
 		Xhdrflag = 0;
@@ -1876,7 +1941,7 @@ putfile(char *longname, char *shortname, char *parent, attr_data_t *attrinfo,
 	 *	-- the length of the fullname equals NAMSIZ, and the shortname
 	 *	   is less than NAMSIZ, (splitting in this case preserves
 	 *	   compatibility with 5.6 and 5.5.1 tar), or
-	 * 	-- the length of the fullname equals NAMSIZ, the file is a
+	 *	-- the length of the fullname equals NAMSIZ, the file is a
 	 *	   directory and we are not in POSIX-conformant mode (where
 	 *	   trailing slashes are removed from directories).
 	 */
@@ -2597,7 +2662,7 @@ splitfile(char *longname, int ifd, char *name, char *prefix, int filetype)
  *	            regular file when extracted
  *
  *	Returns 1 when file size > 0 and typeflag is not recognized
- * 	Otherwise returns 0
+ *	Otherwise returns 0
  */
 static int
 convtoreg(off_t size)
@@ -2728,13 +2793,13 @@ verify_attr_support(char *filename, int attrflg, arc_action_t actflag,
  * it will be set to 0.
  *
  * Possible return values:
- * 	ATTR_OK		Successfully opened and, if needed, changed into the
+ *	ATTR_OK		Successfully opened and, if needed, changed into the
  *			attribute directory containing attrname.
  *	ATTR_SKIP	The command line specifications don't enable the
  *			processing of the attribute type.
- * 	ATTR_CHDIR_ERR	An error occurred while trying to change into an
+ *	ATTR_CHDIR_ERR	An error occurred while trying to change into an
  *			attribute directory.
- * 	ATTR_OPEN_ERR	An error occurred while trying to open an
+ *	ATTR_OPEN_ERR	An error occurred while trying to open an
  *			attribute directory.
  *	ATTR_XATTR_ERR	The underlying file system doesn't support extended
  *			attributes.
@@ -3886,7 +3951,7 @@ xblocks(int issysattr, off_t bytes, int ofile)
 }
 
 /*
- * 	xsfile	extract split file
+ *	xsfile	extract split file
  *
  *	xsfile(ofd);	ofd = output file descriptor
  *
@@ -4421,7 +4486,7 @@ checkdir(char *name)
  */
 
 static void
-resugname(int dirfd, 	/* dir fd file resides in */
+resugname(int dirfd,	/* dir fd file resides in */
 	char *name,	/* name of the file to be modified */
 	int symflag)	/* true if file is a symbolic link */
 {
@@ -4832,6 +4897,9 @@ done(int n)
 			perror(gettext("tar: close error"));
 			exit(2);
 		}
+	}
+	if (cpid > 0) {
+		wait_pid(cpid);
 	}
 	exit(n);
 }
@@ -5299,9 +5367,10 @@ kcheck(char *kstr)
 		(void) fprintf(stderr, gettext(
 		    "tar: sizes below %luK not supported (%" FMT_blkcnt_t
 		    ").\n"), (ulong_t)MINSIZE, kval);
-		(void) fprintf(stderr, gettext(
-		    "bad size entry for %s in %s.\n"),
-		    archive, DEF_FILE);
+		if (!kflag)
+			(void) fprintf(stderr, gettext(
+			    "bad size entry for %s in %s.\n"),
+			    archive, DEF_FILE);
 		done(1);
 	}
 	mulvol++;
@@ -6066,7 +6135,6 @@ check_prefix(char **namep, char **dirp, char **compp)
 	if ((tflag || xflag) && !Pflag) {
 		if (is_absolute(fullname) || has_dot_dot(fullname)) {
 			char *stripped_prefix;
-			size_t prefix_len = 0;
 
 			(void) strcpy(savename, fullname);
 			strcpy(fullname,
@@ -6746,7 +6814,7 @@ write_ancillary(union hblock *dblockp, char *secinfo, int len, char hdrtype)
  * Read the data record for extended headers and then the regular header.
  * The data are read into the buffer and then null-terminated.  Entries
  * for typeflag 'X' extended headers are of the format:
- * 	"%d %s=%s\n"
+ *	"%d %s=%s\n"
  *
  * When an extended header record is found, the extended header must
  * be processed and its values used to override the values in the
@@ -6772,6 +6840,8 @@ get_xdata(void)
 					_X_UID, "uid",
 					_X_UNAME, "uname",
 					_X_MTIME, "mtime",
+					_X_ATIME, "atime",
+					_X_CTIME, "ctime",
 					_X_LAST, "NULL" };
 	char		*lineloc;
 	int		length, i;
@@ -6779,11 +6849,14 @@ get_xdata(void)
 	blkcnt_t	nblocks;
 	int		bufneeded;
 	int		errors;
+	char		typeflag;
 
 	(void) memset(&Xtarhdr, 0, sizeof (Xtarhdr));
 	xhdr_count++;
 	errors = 0;
 
+next_xhdr:
+	typeflag = dblock.dbuf.typeflag;
 	nblocks = TBLOCKS(stbuf.st_size);
 	bufneeded = nblocks * TBLOCK;
 	if (bufneeded >= xrec_size) {
@@ -6906,6 +6979,12 @@ get_xdata(void)
 			else
 				xhdr_flgs |= _X_MTIME;
 			break;
+		case _X_ATIME:
+		case _X_CTIME:
+			/*
+			 * Ignore for now...
+			 */
+			break;
 		default:
 			(void) fprintf(stderr,
 			    gettext("tar:  unrecognized extended"
@@ -6920,6 +6999,11 @@ get_xdata(void)
 	else
 		if (errors)
 			Errflg = 1;
+	/*
+	 * An 'x' header may follow a 'g' header, so reparse if needed.
+	 */
+	if (typeflag == 'g' && dblock.dbuf.typeflag == 'x')
+		goto next_xhdr;
 	return (errors);
 }
 
@@ -7503,7 +7587,7 @@ prepare_xattr(
 {
 	char			*bufhead;	/* ptr to full buffer */
 	char			*aptr;
-	struct xattr_hdr 	*hptr;		/* ptr to header in bufhead */
+	struct xattr_hdr	*hptr;		/* ptr to header in bufhead */
 	struct xattr_buf	*tptr;		/* ptr to pathing pieces */
 	int			totalen;	/* total buffer length */
 	int			len;		/* length returned to user */
@@ -7848,7 +7932,7 @@ xattrs_put(char *longname, char *shortname, char *parent, char *attrparent)
 		return;
 	}
 
-	while (dp = readdir(dirp)) {
+	while ((dp = readdir(dirp)) != NULL) {
 		if (strcmp(dp->d_name, "..") == 0) {
 			continue;
 		} else if (strcmp(dp->d_name, ".") == 0) {
@@ -8530,8 +8614,8 @@ chop_endslashes(char *path)
  *
  *	attribute type        attribute		process procedure
  *	----------------      ----------------  --------------------------
- *   	DIR_TYPE       = 'D'   directory flag	append if a directory
- *    	LBL_TYPE       = 'L'   SL[IL] or SL	append ascii label
+ *	DIR_TYPE       = 'D'   directory flag	append if a directory
+ *	LBL_TYPE       = 'L'   SL[IL] or SL	append ascii label
  *
  *
  */
@@ -8684,7 +8768,7 @@ append_ext_attr(char *shortname, char **secinfo, int *len)
  *	attribute type        attribute		process procedure
  *	----------------      ----------------  -------------------------
  *    #	LBL_TYPE       = 'L'   SL               construct binary label
- *    #	APRIV_TYPE     = 'P'   allowed priv    	construct privileges
+ *    #	APRIV_TYPE     = 'P'   allowed priv	construct privileges
  *    #	FPRIV_TYPE     = 'p'   forced priv	construct privileges
  *    #	COMP_TYPE      = 'C'   path component	construct real path
  *    #	DIR_TYPE       = 'D'   directory flag	note it is a directory
@@ -9148,9 +9232,6 @@ static void
 compress_back()
 {
 	pid_t	pid;
-	int status;
-	int wret;
-	struct	stat statb;
 
 	if (vflag) {
 		(void) fprintf(vfile,
@@ -9174,18 +9255,17 @@ compress_back()
 #define	GZIP_MAGIC	"\037\213"
 #define	BZIP_MAGIC	"BZh"
 #define	COMP_MAGIC	"\037\235"
+#define	XZ_MAGIC	"\375\067\172\130\132\000"
+#define	ZSTD_MAGIC	"\50\265\57\375"
 
 void
 check_compression()
 {
-	char 	magic[2];
-	char	buf[16];
+	char	magic[16];
 	FILE	*fp;
 
 	if ((fp = fopen(usefile, "r")) != NULL) {
-		(void) fread(buf, sizeof (char), 6, fp);
-		magic[0] = buf[0];
-		magic[1] = buf[1];
+		(void) fread(magic, sizeof (char), 6, fp);
 		(void) fclose(fp);
 	}
 
@@ -9213,6 +9293,22 @@ check_compression()
 			compress_opt = compress_malloc(strlen(COMPRESS) + 1);
 			(void) strcpy(compress_opt, COMPRESS);
 		}
+	} else if (memcmp(magic, XZ_MAGIC, 6) == 0) {
+		if (xflag || tflag) {
+			compress_opt = compress_malloc(strlen(XZCAT) + 1);
+			(void) strcpy(compress_opt, XZCAT);
+		} else if (uflag || rflag) {
+			compress_opt = compress_malloc(strlen(XZ) + 1);
+			(void) strcpy(compress_opt, XZ);
+		}
+	} else if (memcmp(magic, ZSTD_MAGIC, 4) == 0) {
+		if (xflag || tflag) {
+			compress_opt = compress_malloc(strlen(ZSTDCAT) + 1);
+			(void) strcpy(compress_opt, ZSTDCAT);
+		} else if (uflag || rflag) {
+			compress_opt = compress_malloc(strlen(ZSTD) + 1);
+			(void) strcpy(compress_opt, ZSTD);
+		}
 	}
 }
 
@@ -9235,6 +9331,16 @@ add_suffix()
 			strlcat(tfname, bsuffix[0], sizeof (tfname));
 			return (bsuffix[0]);
 		}
+	} else if (strcmp(compress_opt, XZ) == 0) {
+		if ((suffix = xz_suffix()) == NULL) {
+			strlcat(tfname, xsuffix[0], sizeof (tfname));
+			return (xsuffix[0]);
+		}
+	} else if (strcmp(compress_opt, ZSTD) == 0) {
+		if ((suffix = zstd_suffix()) == NULL) {
+			strlcat(tfname, zstsuffix[0], sizeof (tfname));
+			return (zstsuffix[0]);
+		}
 	}
 	return (NULL);
 }
@@ -9243,10 +9349,7 @@ add_suffix()
 void
 decompress_file(void)
 {
-	pid_t 	pid;
-	int	status;
-	char	cmdstr[PATH_MAX];
-	char	fname[PATH_MAX];
+	pid_t	pid;
 	char	*added_suffix;
 
 
@@ -9288,7 +9391,7 @@ compress_file(void)
 	if (pipe(fd) < 0) {
 		vperror(1, gettext("Could not create pipe"));
 	}
-	if (pid = fork() > 0) {
+	if ((pid = fork()) > 0) {
 		mt = fd[1];
 		(void) close(fd[0]);
 		return (pid);
@@ -9316,7 +9419,7 @@ uncompress_file(void)
 	if (pipe(fd) < 0) {
 		vperror(1, gettext("Could not create pipe"));
 	}
-	if (pid = fork() > 0) {
+	if ((pid = fork()) > 0) {
 		mt = fd[0];
 		(void) close(fd[1]);
 		return (pid);
@@ -9334,7 +9437,7 @@ uncompress_file(void)
 char *
 bz_suffix()
 {
-	int 	i;
+	int	i;
 	int	slen;
 	int	nlen = strlen(usefile);
 
@@ -9352,7 +9455,7 @@ bz_suffix()
 char *
 gz_suffix()
 {
-	int 	i;
+	int	i;
 	int	slen;
 	int	nlen = strlen(usefile);
 
@@ -9362,6 +9465,42 @@ gz_suffix()
 			return (NULL);
 		if (strcmp(usefile + nlen - slen, gsuffix[i]) == 0)
 			return (gsuffix[i]);
+	}
+	return (NULL);
+}
+
+/* Checking valid 'xz' suffix */
+char *
+xz_suffix()
+{
+	int	i;
+	int	slen;
+	int	nlen = strlen(usefile);
+
+	for (i = 0; i < XS; i++) {
+		slen = strlen(xsuffix[i]);
+		if (nlen < slen)
+			return (NULL);
+		if (strcmp(usefile + nlen - slen, xsuffix[i]) == 0)
+			return (xsuffix[i]);
+	}
+	return (NULL);
+}
+
+/* Checking valid 'zstd' suffix */
+char *
+zstd_suffix()
+{
+	int	i;
+	int	slen;
+	int	nlen = strlen(usefile);
+
+	for (i = 0; i < ZS; i++) {
+		slen = strlen(zstsuffix[i]);
+		if (nlen < slen)
+			return (NULL);
+		if (strcmp(usefile + nlen - slen, zstsuffix[i]) == 0)
+			return (zstsuffix[i]);
 	}
 	return (NULL);
 }
