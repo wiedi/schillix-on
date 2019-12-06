@@ -175,6 +175,8 @@ static char *create_token(char *s);
 
 <TSTATE>fs	{ return FS; }
 
+<TSTATE>inherit-pkg-dir	{ return IPD; }
+
 <TSTATE>device	{ return DEVICE; }
 
 <TSTATE>rctl	{ return RCTL; }

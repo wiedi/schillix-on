@@ -339,6 +339,11 @@ extern	int	zonecfg_modify_filesystem(zone_dochandle_t,
     struct zone_fstab *, struct zone_fstab *);
 extern	int	zonecfg_lookup_filesystem(zone_dochandle_t,
     struct zone_fstab *);
+extern	int	zonecfg_add_ipd(zone_dochandle_t, struct zone_fstab *);
+extern	int	zonecfg_delete_ipd(zone_dochandle_t, struct zone_fstab *);
+extern	int	zonecfg_modify_ipd(zone_dochandle_t,
+    struct zone_fstab *, struct zone_fstab *);
+extern	int	zonecfg_lookup_ipd(zone_dochandle_t, struct zone_fstab *);
 extern	int	zonecfg_add_fs_option(struct zone_fstab *, char *);
 extern	int	zonecfg_remove_fs_option(struct zone_fstab *, char *);
 extern	void	zonecfg_free_fs_option_list(zone_fsopt_t *);

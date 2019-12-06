@@ -235,9 +235,11 @@ safe_wrap()
 }
 
 #
-# Read zonecfg fs entries and save the relevant data, one entry per
+# Read zonecfg ipd and fs entries and save the relevant data, one entry per
 # line.
 # This assumes the properties from the zonecfg output, e.g.:
+#	inherit-pkg-dir:
+#		dir: /usr
 #	fs:
 #		dir: /opt
 #		special: /opt
@@ -245,10 +247,37 @@ safe_wrap()
 #		type: lofs
 #		options: [noexec,ro,noatime]
 #
-# and it assumes the order of the fs properties as above.
+# and it assumes the order of the fs properties as above.  This also saves the
+# inherit-pkg-dir patterns into the ipd.{cpio|pax} temporary files for
+# filtering while extracting the image into the zonepath.  We have to save the
+# IPD patterns in the appropriate format for filtering with the different
+# archivers and we don't know what format we'll get until after the flash
+# archive is unpacked.
 #
 get_fs_info()
 {
+	zonecfg -z $zonename info inherit-pkg-dir | \
+	    nawk -v ipdcpiof=$ipdcpiofile -v ipdpaxf=$ipdpaxfile '{
+		if ($1 == "dir:") {
+			dir=$2;
+			printf("%s lofs %s ro\n", dir, dir);
+
+			if (substr(dir, 1, 1) == "/") {
+				printf("%s\n", substr(dir, 2)) >> ipdcpiof
+				printf("%s/*\n", substr(dir, 2)) >> ipdcpiof
+			} else {
+				printf("%s\n", dir) >> ipdcpiof
+				printf("%s/*\n", dir) >> ipdcpiof
+			}
+
+			if (substr(dir, 1, 1) == "/") {
+				printf("%s ", substr(dir, 2)) >> ipdpaxf
+			} else {
+				printf("%s ", dir) >> ipdpaxf
+			}
+		}
+	}' >> $fstmpfile
+
 	zonecfg -z $zonename info fs | nawk '{
 		if ($1 == "options:") {
 			# Remove brackets.
@@ -482,16 +511,16 @@ install_flar()
 	if [[ $archiver == "pax" ]]; then
 		# pax archiver specified
 		archiver_command="/usr/bin/pax"
-		if [[ -s $fspaxfile ]]; then
+		if [[ -s $ipdpaxfile ]]; then
 			archiver_arguments="-r -p e -c \
-			    $(/usr/bin/cat $fspaxfile)"
+			    $(/usr/bin/cat $ipdpaxfile)"
 		else
 			archiver_arguments="-r -p e"
 		fi
 	elif [[ $archiver == "cpio" || -z $archiver ]]; then
 		# cpio archived specified OR no archiver specified - use default
 		archiver_command="/usr/bin/cpio"
-		archiver_arguments="-icdumfE $fscpiofile"
+		archiver_arguments="-icdumfE $ipdcpiofile"
 	else
 		# unknown archiver specified
 		log "$unknown_archiver" $archiver
@@ -640,7 +669,7 @@ install_cpio()
 
 	get_archive_base "$stage1" "$archive" "cpio -it"
 
-	cpioopts="-idmfE $fscpiofile"
+	cpioopts="-idmfE $ipdcpiofile"
 
 	vlog "cd \"$ARCHIVE_BASE\" && $stage1 \"$archive\" | cpio $cpioopts"
 
@@ -662,8 +691,8 @@ install_pax()
 
 	get_archive_base "cat" "$archive" "pax"
 
-	if [[ -s $fspaxfile ]]; then
-		filtopt="-c $(/usr/bin/cat $fspaxfile)"
+	if [[ -s $ipdpaxfile ]]; then
+		filtopt="-c $(/usr/bin/cat $ipdpaxfile)"
 	fi
 
 	vlog "cd \"$ARCHIVE_BASE\" && pax -r -f \"$archive\" $filtopt"
@@ -689,6 +718,8 @@ install_ufsdump()
 	#
 	# ufsrestore goes interactive if you ^C it.  To prevent that,
 	# we make sure its stdin is not a terminal.
+	# Note that there is no way to filter inherit-pkg-dirs for a full
+	# restore so there will be warnings in the log file.
 	#
 	( cd "$ZONEROOT" && ufsrestore rf "$archive" < /dev/null )
 	result=$?
@@ -708,7 +739,7 @@ install_dir()
 	cpioopts="-pdm"
 
 	first=1
-	filt=$(for i in $(cat $fspaxfile)
+	filt=$(for i in $(cat $ipdpaxfile)
 		do
 			echo $i | egrep -s "/" && continue
 			if [[ $first == 1 ]]; then
@@ -885,32 +916,33 @@ install_image()
 
 	# Make sure we always have the files holding the directories to filter
 	# out when extracting from a CPIO or PAX archive.  We'll add the fs
-	# entries to these files in get_fs_info()
-	fscpiofile=$(/usr/bin/mktemp -t -p /var/tmp fs.cpio.XXXXXX)
-	if [[ -z "$fscpiofile" ]]; then
+	# entries to these files in get_fs_info() (there may be no IPDs for
+	# some brands but thats ok).
+	ipdcpiofile=$(/usr/bin/mktemp -t -p /var/tmp ipd.cpio.XXXXXX)
+	if [[ -z "$ipdcpiofile" ]]; then
 		rm -f $fstmpfile
 		fatal "$e_tmpfile"
 	fi
 
-	# Filter out these directories.
-	echo 'dev/*' >>$fscpiofile
-	echo 'devices/*' >>$fscpiofile
-	echo 'devices' >>$fscpiofile
-	echo 'proc/*' >>$fscpiofile
-	echo 'tmp/*' >>$fscpiofile
-	echo 'var/run/*' >>$fscpiofile
-	echo 'system/contract/*' >>$fscpiofile
-	echo 'system/object/*' >>$fscpiofile
+	# In addition to the IPDs, also filter out these directories.
+	echo 'dev/*' >>$ipdcpiofile
+	echo 'devices/*' >>$ipdcpiofile
+	echo 'devices' >>$ipdcpiofile
+	echo 'proc/*' >>$ipdcpiofile
+	echo 'tmp/*' >>$ipdcpiofile
+	echo 'var/run/*' >>$ipdcpiofile
+	echo 'system/contract/*' >>$ipdcpiofile
+	echo 'system/object/*' >>$ipdcpiofile
 
-	fspaxfile=$(/usr/bin/mktemp -t -p /var/tmp fs.pax.XXXXXX)
-	if [[ -z "$fspaxfile" ]]; then
-		rm -f $fstmpfile $fscpiofile
+	ipdpaxfile=$(/usr/bin/mktemp -t -p /var/tmp ipd.pax.XXXXXX)
+	if [[ -z "$ipdpaxfile" ]]; then
+		rm -f $fstmpfile $ipdcpiofile
 		fatal "$e_tmpfile"
 	fi
 
 	printf "%s " \
 	    "dev devices proc tmp var/run system/contract system/object" \
-	    >>$fspaxfile
+	    >>$ipdpaxfile
 
 	# Set up any fs mounts so the archive will install into the correct
 	# locations.
@@ -918,7 +950,7 @@ install_image()
 	mnt_fs
 	if (( $? != 0 )); then
 		umnt_fs >/dev/null 2>&1
-		rm -f $fstmpfile $fscpiofile $fspaxfile
+		rm -f $fstmpfile $ipdcpiofile $ipdpaxfile
 		fatal "$mount_failed"
 	fi
 
@@ -991,7 +1023,7 @@ install_image()
 
 	# Clean up any fs mounts used during unpacking.
 	umnt_fs
-	rm -f $fstmpfile $fscpiofile $fspaxfile
+	rm -f $fstmpfile $ipdcpiofile $ipdpaxfile
 
 	chmod 700 $zonepath
 
