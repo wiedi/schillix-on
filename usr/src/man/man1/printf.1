@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2009, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2016, J. Schilling
+.\" Copyright (c) 2012-2019, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Copyright 1992, X/Open Company Limited All Rights Reserved
 .\" Portions Copyright (c) 1982-2007 AT&T Knowledge Ventures
@@ -48,20 +48,20 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH printf 1 "12 Sept 2016" "SunOS 5.11" "User Commands"
+.TH printf 1 "30 Aug 2019" "SunOS 5.11" "User Commands"
 .SH NAME
 printf \- write formatted output
 .SH SYNOPSIS
 .SS "/usr/bin/printf"
 .LP
 .nf
-\fBprintf\fR \fIformat\fR [\fIargument\fR].\|.\|.
+\fBprintf\fR \fIformat\fR [\fIargument\fR.\|.\|.]
 .fi
 
 .SS "bosh"
 .LP
 .nf
-\fBprintf\fR \fIformat\fR [\fIargument ...\fR]
+\fBprintf\fR \fIformat\fR [\fIargument\fR.\|.\|.]
 .fi
 
 .SS "ksh93"
@@ -159,6 +159,17 @@ operand.
 .TP
 .ie t \(bu
 .el o
+The additional conversion characters
+.B a
+and
+.B A
+are supported to print floating point numbers in a hexadecimal
+representation.
+.RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
 An additional conversion character,
 .BR b ,
 is supported as follows. The
@@ -198,6 +209,27 @@ operands and any additional characters in the
 operand.
 .RE
 .RE
+.RS +4
+.TP
+.ie t \(bu
+.el o
+The format strings
+.BI % n $
+and
+.BI * m $\c
+, where
+.I n
+or
+.I m
+are decimal integers in the range 1 ..
+.IR maxargs ,
+allow to specify the
+position in the parameter list.
+See
+.BR printf (3C)
+for more information.
+.RE
+.sp
 The interpretation of a backslash followed by any other sequence of
 characters is unspecified.
 .sp
@@ -261,6 +293,7 @@ If the leading character is a single- or double-quote, the value is the
 numeric value in the underlying codeset of the character following the
 single- or double-quote.
 .RE
+.sp
 If an argument operand cannot be completely converted into an internal
 value appropriate to the corresponding conversion specification, a
 diagnostic message is written to standard error and the utility does not
@@ -283,7 +316,7 @@ operand.
 The
 .I format
 operand is treated like a
-.BR printf (3)
+.BR printf (3C)
 format string and the escape sequences
 .BR '\ea' ,
 .BR '\eb' ,
@@ -308,6 +341,12 @@ In addition to the format specifiers
 .BR %u ,
 .BR %x ,
 .BR %X ,
+.BR %e ,
+.BR %E ,
+.BR %f ,
+.BR %F ,
+.BR %g ,
+.BR %G ,
 the format
 .BR %b 
 is supported.
@@ -333,7 +372,7 @@ or via the
 format specifier and related arguments.
 .sp
 The
-.BR printf (3)
+.BR printf (3C)
 flag characters
 .BR '+' ,
 .BR '\ ' ,
@@ -341,6 +380,22 @@ flag characters
 and
 .BR '0'
 are supported.
+.sp
+The format strings
+.BI % n $
+and
+.BI * m $\c
+, where
+.I n
+or
+.I m
+are decimal integers in the range 1 ..
+.IR maxargs ,
+allow to specify the
+position in the parameter list.
+See
+.BR printf (3C)
+for more information.
 .sp
 The
 .I format
@@ -353,6 +408,13 @@ operand contains more format specifiers than
 .I argument
 operands have been specified, string formats are treated as if an empty string
 has been supplied and integer arguments are treated as if a 0 has been supplied.
+.sp
+.LP
+.B /usr/bin/printf
+is equivalent to
+.BR bosh 's
+.B printf
+built-in.
 
 .SS "ksh93"
 .sp
@@ -701,15 +763,15 @@ was supplied, and time conversions are treated as if
 .B now
 was
 supplied.
-.sp
-.LP
-.B /usr/bin/printf
-is equivalent to
-.BR ksh93 's
-\fBprintf\fR built-in
-and
-.BR "print -f" ,
-which allows additional options to be specified.
+'\".sp
+'\".LP
+'\".B /usr/bin/printf
+'\"is equivalent to
+'\".BR ksh93 's
+'\"\fBprintf\fR built-in
+'\"and
+'\".BR "print -f" ,
+'\"which allows additional options to be specified.
 .SH USAGE
 .SS "/usr/bin/printf"
 .sp
@@ -722,10 +784,6 @@ when using the
 conversion specification. Applications should be
 extremely cautious using either of these features when there are multi-byte
 characters in the character set.
-.sp
-.LP
-Field widths and precisions cannot be specified as
-.BR * .
 .sp
 .LP
 The
@@ -896,6 +954,23 @@ and
 .BR %g
 and
 .BR strtod (3C).
+.LP
+Note that
+.B /usr/bin/printf
+as well as the 
+.B printf
+built-ins from
+.B bosh
+and
+.B ksh93
+currently use
+.BR strtoll (3C)
+and
+.BR strtoull (3C)
+for integer type numbers and thus have the limits at
+.B -9223372036854775808
+and
+.BR 9223372036854775807 .
 
 .LP
 .B Example 5
@@ -952,7 +1027,9 @@ representation of the character.
 If an argument operand cannot be completely converted into an internal
 value appropriate to the corresponding conversion specification, a
 diagnostic message is written to standard error and the utility does exit
-with a zero exit status, but continues processing any remaining operands and
+with a
+.B non zero
+exit status, but continues processing any remaining operands and
 writes the value accumulated at the time the error was detected to standard
 output.
 
@@ -989,6 +1066,13 @@ nan
 .fi
 .in -2
 .sp
+.LP
+Note that the hexadecimal floating point format is currently only supported in
+.B /usr/bin/printf
+and the
+.B printf
+built-in from
+.BR ksh93 .
 
 .LP
 .B Example 7
@@ -1023,13 +1107,18 @@ produces:
 Output of unicode values
 .sp
 .LP
+The
+.B printf
+built-in from
+.B ksh93
+supports escape sequences for unicode characters.
 The following command will print the EURO unicode symbol (code-point
 0x20ac).
 
 .sp
 .in +2
 .nf
-example% LC_ALL=en_US.UTF-8 printf "\u[20ac]\en"
+example% LC_ALL=en_US.UTF-8 printf "\eu20ac\en"
 .fi
 .in -2
 .sp
@@ -1178,7 +1267,7 @@ Note that the '$' characters must be properly escaped, such as
 .sp
 .in +2
 .nf
-"%1\$s, %3\$d. %2\$s, %4\$d:%5\$.2d\en" in this case
+"%1\e$s, %3\e$d. %2\e$s, %4\e$d:%5\e$.2d\en" in this case
 .fi
 .in -2
 .sp
@@ -1312,8 +1401,47 @@ or this manual page will result in
 undefined behavior.
 .sp
 .LP
+The former closed source implementation for
+.B /usr/bin/printf
+from
+.B Sun
+and
+.B IBM
+did interpret
+.B \ec 
+in the format string the same way as it is defined for the
+.B %b
+format.
+This implementation for 
+.B /usr/bin/printf
+is based on the implementation from
+.BR bosh (1)
+and does not do that since it would be in conflict with
+.BR POSIX .
+.sp
+.LP
+The former closed source implementation for
+.B /usr/bin/printf
+from
+.B Sun
+and
+.B IBM
+did support the format strings
+.BI % n $
+and
+.BI * m $
+only with
+.B %s
+type formats and only with 19 arguments.
+This implementation for 
+.B /usr/bin/printf
+supports any type of formats and any number of arguments.
+.sp
+.LP
 Floating-point values follow C99, XPG6 and IEEE 754 standard behavior and
-can handle values the same way as the platform's |\fBlong double\fR|
+can handle values the same way as the platform's
+'\"|\fBlong double\fR| was the original Sun text but this was wrong
+.B double
 datatype.
 .sp
 .LP
