@@ -29,6 +29,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2011 J. Schilling
+ */
 
 #define	_LARGEFILE64_SOURCE
 
@@ -166,6 +169,7 @@ static int lookup(char **tab);
 static int ccom(void);
 static int ascom(void);
 static int sccs(void);
+static int sccsvn(void);
 static int english(char *bp, int n);
 static int shellscript(char buf[], struct stat64 *sb);
 static int elf_check(char *file);
@@ -615,8 +619,14 @@ spcl:
 static int
 def_position_tests(char *file)
 {
+	int	v;
+
 	if (sccs()) {	/* look for "1hddddd" where d is a digit */
 		(void) printf("sccs \n");
+		return (1);
+	}
+	if (v = sccsvn()) { /* look for "1hVdsum=ddddd" where d is a digit */
+		(void) printf("sccs v%d\n", v);
 		return (1);
 	}
 	if (fbuf[0] == '#' && fbuf[1] == '!' && shellscript(fbuf+2, &mbuf))
@@ -1407,6 +1417,40 @@ sccs(void)
 		return (0);
 	}
 	return (1);
+}
+
+static int
+sccsvn(void)
+{			/* look for "1hVd,sum=ddddd" where d is a digit */
+	register int j;
+	register long v = 0;
+
+	if (fbuf[0] == 1 && fbuf[1] == 'h' && fbuf[2] == 'V') {
+		char	*p = &fbuf[3];
+
+		if (!isdigit(*p))
+			return (0);
+		v = strtol(p, &p, 10);
+		if (*p++ != ',')
+			return (0);
+		if (v < 6 || v > 99)
+			return (0);
+		if (strncmp(p, "sum=", 4))
+			return (0);
+		p += 4;
+
+		for (j = 0; j < 5; j++) {
+			if (isdigit(p[j]))
+				continue;
+			else
+				return (0);
+		}
+		if (p[5] != '\n' && p[5] != ',')
+			return (0);
+	} else {
+		return (0);
+	}
+	return ((int)v);
 }
 
 static int
