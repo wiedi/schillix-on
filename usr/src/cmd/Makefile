@@ -314,6 +314,7 @@ COMMON_SUBDIRS=		\
 	pr		\
 	prctl		\
 	print		\
+	printf		\
 	priocntl	\
 	prodreg		\
 	profiles	\
@@ -478,7 +479,6 @@ $(CLOSED_BUILD)COMMON_SUBDIRS += \
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
 	$(CLOSED)/cmd/mtst	\
-	$(CLOSED)/cmd/printf	\
 	$(CLOSED)/cmd/sed	\
 	$(CLOSED)/cmd/sed_xpg4	\
 	$(CLOSED)/cmd/tail	\
@@ -666,6 +666,7 @@ MSGSUBDIRS=		\
 	pr		\
 	praudit		\
 	print		\
+	printf		\
 	prodreg		\
 	profiles	\
 	projadd		\
@@ -768,7 +769,6 @@ $(CLOSED_BUILD)MSGSUBDIRS += \
 	$(CLOSED)/cmd/llc2	\
 	$(CLOSED)/cmd/localedef	\
 	$(CLOSED)/cmd/more_xpg4	\
-	$(CLOSED)/cmd/printf	\
 	$(CLOSED)/cmd/sed	\
 	$(CLOSED)/cmd/sed_xpg4	\
 	$(CLOSED)/cmd/tail	\
