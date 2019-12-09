@@ -1045,7 +1045,9 @@ dumpargs(private_t *pri, long ap, const char *str)
 			(void) fputs("  ", stdout);
 			leng += 2 + strlen(string);
 		}
+		(void) fputs("\"", stdout);
 		(void) fputs(string, stdout);
+		(void) fputs("\"", stdout);
 	}
 	(void) fputc('\n', stdout);
 }
