@@ -384,6 +384,7 @@ MANFILES=				\
 	monitor.1m			\
 	mount_cachefs.1m		\
 	mount_hsfs.1m			\
+	mount_lofs.1m			\
 	mount_nfs.1m			\
 	mount_pcfs.1m			\
 	mount_smbfs.1m			\
