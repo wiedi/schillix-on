@@ -1667,12 +1667,8 @@ DMAKE_MINOR=${DMAKE_MINOR%%.*}
 DMAKE_MAJOR=${DMAKE_MAJOR%%.*}
 CHECK_DMAKE=${CHECK_DMAKE:-y}
 if [ "$CHECK_DMAKE" = "y" -a \
-     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2017/04/23" -o \
-     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2017/04/23" -o \
-     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/07/19" -o \
-     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/07/19" -o \
-     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/11/11" -o \
-     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/11/11" ]; then
+     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/12/01" -o \
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/12/01" ]; then
 	:
 # x86 was built on the 12th, sparc on the 13th.
 elif [ "$CHECK_DMAKE" = "y" -a \
