@@ -47,6 +47,7 @@ static char zone_info[256];
 static char zone_lag[256];
 static char tz[256] = "TZ=";
 int debug = 0;
+int nowrite = 0;
 int lag;
 int errors_ok = 0; /* allow "rtc no-args" to be quiet when not configured */
 static time_t clock_val;
@@ -167,10 +168,13 @@ set_zone(char *zone_string)
 	long current_lag;
 
 	(void) umask(0022);
-	if ((zonefptr = fopen(zonefile, "w")) == NULL) {
-		(void) fprintf(stderr, "%s: cannot open %s: errno = %d\n",
-			progname, zonefile, errno);
-		return (0);
+	if (!nowrite) {
+		if ((zonefptr = fopen(zonefile, "w")) == NULL) {
+			(void) fprintf(stderr,
+				    "%s: cannot open %s: errno = %d\n",
+				progname, zonefile, errno);
+			return (0);
+		}
 	}
 
 	tz[3] = 0;
@@ -190,11 +194,14 @@ set_zone(char *zone_string)
 		(void) printf("%s DST.    Lag is %ld.\n", tm->tm_isdst ? "Is" :
 		    "Is NOT",  tm->tm_isdst ? altzone : timezone);
 
+	if (nowrite)
+		zonefptr = stdout;
 	(void) fprintf(zonefptr, zone_comment, zonefile);
 	(void) fprintf(zonefptr, "zone_info=%s\n", zone_string);
 	(void) fprintf(zonefptr, "zone_lag=%ld\n",
 	    tm->tm_isdst ? altzone : timezone);
-	(void) fclose(zonefptr);
+	if (!nowrite)
+		(void) fclose(zonefptr);
 	zonefptr = NULL;
 	return (current_lag);
 }
@@ -202,6 +209,11 @@ set_zone(char *zone_string)
 void
 correct_time_and_lag(long current_lag)
 {
+	if (nowrite) {
+		fprintf(stderr, "No-write mode: Set of RTC prevented.\n");
+		return;
+	}
+
 	/* correct the lag */
 	(void) sysi86(SGMTL, current_lag);
 
@@ -272,6 +284,11 @@ correct_rtc_and_lag()
 	}
 
 	if (current_lag != kernels_lag) {
+		if (nowrite) {
+			fprintf(stderr,
+				"No-write mode: Set of RTC prevented.\n");
+			return;
+		}
 		if (debug)
 			(void) fprintf(stderr, "correcting kernel's lag\n");
 		(void) sysi86(SGMTL, current_lag);	/* correct the lag */
@@ -295,7 +312,7 @@ void
 usage()
 {
 	static char Usage[] = "Usage:\n\
-rtc [-c] [-z time_zone] [-?]\n";
+rtc [-c] [-d] [-n] [-z time_zone] [-?]\n";
 
 	(void) fprintf(stderr, Usage);
 }
@@ -306,6 +323,8 @@ verbose_usage()
 	static char Usage1[] = "\
 	Options:\n\
 	    -c\t\tCheck and correct for daylight savings time rollover.\n\
+	    -d\t\tEnable debugging.\n\
+	    -n\t\tNo write mode, keep everything as is.\n\
 	    -z [zone]\tRecord the zone info in the config file.\n";
 
 	(void) fprintf(stderr, Usage1);
@@ -314,7 +333,9 @@ verbose_usage()
 int
 main(int argc, char *argv[])
 {
-	int c;
+	int	c;
+	int	correct = 0;
+	char	*zstring = NULL;
 
 	progname = argv[0];
 
@@ -323,16 +344,19 @@ main(int argc, char *argv[])
 		display_zone_string();
 	}
 
-	while ((c = getopt(argc, argv, "cz:d")) != EOF) {
+	while ((c = getopt(argc, argv, "cz:dn")) != EOF) {
 		switch (c) {
 		case 'c':
-			correct_rtc_and_lag();
+			correct = 1;
 			continue;
 		case 'z':
-			initialize_zone(optarg);
+			zstring = optarg;
 			continue;
 		case 'd':
 			debug = 1;
+			continue;
+		case 'n':
+			nowrite = 1;
 			continue;
 		case '?':
 			verbose_usage();
@@ -342,5 +366,15 @@ main(int argc, char *argv[])
 			return (1);
 		}
 	}
+	/*
+	 * First set the new zone if requested.
+	 */
+	if (zstring)
+		initialize_zone(zstring);
+	/*
+	 * Now correct the time if requested;
+	 */
+	if (correct)
+		correct_rtc_and_lag();
 	return (0);
 }
