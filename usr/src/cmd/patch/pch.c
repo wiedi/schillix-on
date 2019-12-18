@@ -1,13 +1,13 @@
-/* @(#)pch.c	1.32 16/12/18 2011-2016 J. Schilling */
+/* @(#)pch.c	1.38 19/08/17 2011-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)pch.c	1.32 16/12/18 2011-2016 J. Schilling";
+	"@(#)pch.c	1.38 19/08/17 2011-2019 J. Schilling";
 #endif
 /*
  *	Copyright (c) 1986-1988 Larry Wall
  *	Copyright (c) 1990 Wayne Davison
- *	Copyright (c) 2011-2016 J. Schilling
+ *	Copyright (c) 2011-2019 J. Schilling
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following condition is met:
@@ -65,7 +65,6 @@ static	int	intuit_diff_type __PR((void));
 static	void	next_intuit_at __PR((LINENUM file_pos, LINENUM file_line));
 static	void	skip_to __PR((off_t file_pos, off_t file_line));
 static	void	malformed __PR((void));
-static	void	ovstrcpy __PR((char *p2, char *p1));
 static	ssize_t	pgets __PR((char **bfp, size_t *szp, FILE *fp));
 
 /* Prepare to look for the next patch in the patch file. */
@@ -392,17 +391,22 @@ intuit_diff_type()
 	scan_exit:
 
 	if (no_filearg) {
-		if (indtmp != Nullch)
+		if (indtmp != Nullch) {
 			indname = fetchname(indtmp, strippath,
 						ok_to_create_file, NULL);
-		if (oldtmp != Nullch)
+		}
+		if (oldtmp != Nullch) {
 			oldname = fetchname(oldtmp, strippath,
 						ok_to_create_file,
-						&is_null_time[0]);
-		if (newtmp != Nullch)
+						&file_times[0]);
+			is_null_time[0] = file_times[0].dt_sec == 0;
+		}
+		if (newtmp != Nullch) {
 			newname = fetchname(newtmp, strippath,
 						ok_to_create_file,
-						&is_null_time[1]);
+						&file_times[1]);
+			is_null_time[1] = file_times[1].dt_sec == 0;
+		}
 
 		if (do_wall && oldname && newname) {
 			/*
@@ -1174,18 +1178,6 @@ _("Unexpected end of file in patch at line %lld.\n"),
 	return (TRUE);
 }
 
-/*
- * A strcpy() that works with overlapping buffers
- */
-static void
-ovstrcpy(p2, p1)
-	register char	*p2;
-	register char	*p1;
-{
-	while ((*p2++ = *p1++) != '\0')
-		;
-}
-
 /* Input a line from the patch file, worrying about indentation. */
 
 static ssize_t
@@ -1412,11 +1404,41 @@ do_ed_script()
 	if (!skip_rest_of_patch) {
 		Unlink(TMPOUTNAME);
 		copy_file(filearg[0], TMPOUTNAME);
-		if (verbose)
-			Snprintf(buf, bufsize, "/bin/ed %s", TMPOUTNAME);
-		else
-			Snprintf(buf, bufsize, "/bin/ed - %s", TMPOUTNAME);
+		/*
+		 * Warning: "ed" stays in command mode in case there is e.g.
+		 * a wrong line number before an "append" command.
+		 *
+		 * Using this "feature" could allow to hide a shell command
+		 * from the command filter. However in correctly implemented
+		 * "ed" versions, an error while reading from a file must
+		 * result in e non-zero exit. This was not true for older
+		 * GNU ed versions and resulted in the "beep" attack.
+		 *
+		 * To avoid related other probably unknown problems, we
+		 * use the "red" command instead and start "red" from /tmp
+		 * as it does not accept filenames with a '/' inside.
+		 */
+		if (verbose) {
+			Snprintf(buf, bufsize, "cd %s && %s %s",
+						TMPDIR,
+						CNF_PATH_RED,
+						TMPOUTNAME + TMPDLEN);
+		} else {
+			Snprintf(buf, bufsize, "cd %s && %s - %s",
+						TMPDIR,
+						CNF_PATH_RED,
+						TMPOUTNAME + TMPDLEN);
+		}
 		pipefp = popen(buf, "w");
+#ifdef	__unsafe__
+		if (pipefp == NULL) {
+			if (verbose)
+				Snprintf(buf, bufsize, "/bin/ed %s", TMPOUTNAME);
+			else
+				Snprintf(buf, bufsize, "/bin/ed - %s", TMPOUTNAME);
+			pipefp = popen(buf, "w");
+		}
+#endif
 	}
 	for (;;) {
 		beginning_of_this_line = ftell(pfp);
