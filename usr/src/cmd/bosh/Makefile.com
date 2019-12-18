@@ -228,8 +228,10 @@ LDFLAGS += $(MAPFILES:%=-M%)
 # These dependencies are loaded when libshedit is loaded because we are in
 # interactive mode.
 #
-LAZYLIBS = $(ZLAZYLOAD) -lgen -lsecdb -lshedit -lfind -lschily $(ZNOLAZYLOAD)
-lint := LAZYLIBS = -lgen -lsecdb -lshedit -lfind -lschily
+# Since we use -DDO_POSIX_GMATCH, we no longer need -lgen in LAZYLIBS.
+#
+LAZYLIBS = $(ZLAZYLOAD) -lsecdb -lshedit -lfind -lschily $(ZNOLAZYLOAD)
+lint := LAZYLIBS = -lsecdb -lshedit -lfind -lschily
 LDLIBS += $(LAZYLIBS)
 
 .KEEP_STATE:
