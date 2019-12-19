@@ -2,11 +2,13 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").
- * You may not use this file except in compliance with the License.
+ * Common Development and Distribution License ("CDDL"), version 1.0.
+ * You may use this file only in accordance with the terms of version
+ * 1.0 of the CDDL.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  * See the License for the specific language governing permissions
  * and limitations under the License.
  *
@@ -25,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2015 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)val.c	1.43 15/02/06 J. Schilling
+ * @(#)val.c	1.61 19/11/12 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)val.c 1.43 15/02/06 J. Schilling"
+#pragma ident "@(#)val.c 1.61 19/11/12 J. Schilling"
 #endif
 /*
  * @(#)val.c 1.22 06/12/12
@@ -42,38 +44,39 @@
 #endif
 /************************************************************************/
 /*									*/
-/*  val -                                                               */
-/*  val [-mname] [-rSID] [-s] [-ytype] file ...                         */
-/*                                                                      */
+/*  val -								*/
+/*  val [-mname] [-rSID] [-s] [-ytype] file ...				*/
+/*									*/
 /************************************************************************/
 
-# include	<defines.h>
-# include	<version.h>
-# include	<had.h>
-# include	<i18n.h>
-# include	<ccstypes.h>
-# include	<schily/sysexits.h>
+#include	<defines.h>
+#include	<version.h>
+#include	<had.h>
+#include	<i18n.h>
+#include	<ccstypes.h>
+#include	<schily/sysexits.h>
 
-# define	FILARG_ERR	0200	/* no file name given */
-# define	UNKDUP_ERR	0100	/* unknown or duplicate keyletter */
-# define	CORRUPT_ERR	040	/* corrupt file error code */
-# define	FILENAM_ERR	020	/* file name error code */
-# define	INVALSID_ERR	010	/* invalid or ambiguous SID error  */
-# define	NONEXSID_ERR	04	/* non-existent SID error code */
-# define	TYPE_ERR	02	/* type arg value error code */
-# define	NAME_ERR	01	/* name arg value error code */
-# define	TRUE		1
-# define	FALSE		0
-# define	BLANK(l)	while (!(*l == '\0' || *l == ' ' || *l == '\t')) l++;
+#define	FILARG_ERR	0200	/* no file name given */
+#define	UNKDUP_ERR	0100	/* unknown or duplicate keyletter */
+#define	CORRUPT_ERR	040	/* corrupt file error code */
+#define	FILENAM_ERR	020	/* file name error code */
+#define	INVALSID_ERR	010	/* invalid or ambiguous SID error  */
+#define	NONEXSID_ERR	04	/* non-existent SID error code */
+#define	TYPE_ERR	02	/* type arg value error code */
+#define	NAME_ERR	01	/* name arg value error code */
+#define	TRUE		1
+#define	FALSE		0
+#define	BLANK(l)	while (!(*l == '\0' || *l == ' ' || *l == '\t')) l++;
 
 static int	silent;		/* be silent, report only in exit code */
 static int	debug;		/* print debug messages */
 static int	ret_code;	/* prime return code from 'main' program */
-static int	inline_err=0;	/* input line error code (from 'process') */
-static int	infile_err=0;	/* file error code (from 'validate') */
+static int	inline_err = 0;	/* input line error code (from 'process') */
+static int	infile_err = 0;	/* file error code (from 'validate') */
 static int	inpstd;		/* TRUE = args from standard input */
 
 static struct packet gpkt;
+static Nparms	N;			/* Keep -N parameters		*/
 
 static struct deltab dt;
 static struct deltab odt;
@@ -124,19 +127,18 @@ static int	get_hashtest	__PR((int ser));
 */
 
 int
-main(argc,argv)
+main(argc, argv)
 int argc;
 char	*argv[];
 {
 	FILE	*iop;
-	register int j;
 	char *lp;
 
 	/*
 	 * Set locale for all categories.
 	 */
 	setlocale(LC_ALL, NOGETTEXT(""));
-	
+
 	sccs_setinsbase(INS_BASE);
 
 	/*
@@ -144,12 +146,12 @@ char	*argv[];
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	   NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	   NOGETTEXT("/usr/ccs/lib/locale/"));
 #endif
-	
+
 	(void) textdomain(NOGETTEXT("SUNW_SPRO_SCCS"));
 
 	tzset();	/* Set up timezome related vars */
@@ -168,36 +170,32 @@ char	*argv[];
 	if (argc == 2 && argv[1][0] == '-' && !(argv[1][1])) {
 		inpstd = TRUE;
 		iop = stdin;		/* read from standard input */
-		while (fgets(line,BUFSIZ,iop) != NULL) {
-		   if (line[0] != '\n') {
-		      repl(line,'\n','\0');
-		      strlcpy(save_line, line, sizeof (save_line));
-		      argv = Argv;
-		      *argv++ = "val";
-		      lp = save_line;
-		      argc = 1;
-		      while ( *lp != '\0' ) {
-			 while ((*lp == ' ') || (*lp == '\t'))
-			    *lp++ = '\0'; 
-			 *argv++ = lp++;
-			 argc++;
-			 while ( (*lp != ' ')&&(*lp != '\t')&&(*lp != '\0') )
-			    lp++;
-		     }
-		     *argv = NULL;
-		     argv = Argv;
-		     process(line,argc,argv);
-		     ret_code |= inline_err;
-		   } 
+		while (fgets(line, BUFSIZ, iop) != NULL) {
+		    if (line[0] != '\n') {
+			repl(line, '\n', '\0');
+			strlcpy(save_line, line, sizeof (save_line));
+			argv = Argv;
+			*argv++ = "val";
+			lp = save_line;
+			argc = 1;
+			while (*lp != '\0') {
+			    while ((*lp == ' ') || (*lp == '\t'))
+				*lp++ = '\0';
+			    *argv++ = lp++;
+			    argc++;
+			    while ((*lp != ' ') && (*lp != '\t') && (*lp != '\0'))
+				lp++;
+			}
+			*argv = NULL;
+			argv = Argv;
+			process(line, argc, argv);
+			ret_code |= inline_err;
+		    }
 		}
-	}
-	else {
+	} else {
 		inpstd = FALSE;
-		for (j = 1; j < argc; j++)
-			sprintf(line,"%s",argv[j]);
-		j = strlen(line);
-		line[j > 0 ? j : 0] = '\0';
-		process(line,argc,argv);
+		line[0] = '\0';
+		process(line, argc, argv);
 		ret_code = inline_err;
 	}
 
@@ -214,7 +212,7 @@ char	*argv[];
 */
 
 static void
-process(p_line,argc,argv)
+process(p_line, argc, argv)
 char	*p_line;
 int	argc;
 char	*argv[];
@@ -231,7 +229,8 @@ char	*argv[];
 	int 	c;
 
 	int current_optind;
-	
+	int no_arg;
+
 	silent = FALSE;
 	path[0] = sid[0] = type[0] = name[0] = 0;
 	num_files = inline_err = 0;
@@ -252,35 +251,43 @@ char	*argv[];
 	current_optind = 1;
 	optind = 1;
 	opterr = 0;
+	no_arg = 0;
 	j = 1;
 	/*CONSTCOND*/
 	while (1) {
-			if(current_optind < optind) {
-			   current_optind = optind;
-			   argv[j] = 0;
-			   if (optind > j+1 ) {
-			      argv[j+1] = NULL;
-			   }
+			if (current_optind < optind) {
+				current_optind = optind;
+				argv[j] = 0;
+				if (optind > j+1) {
+					if ((argv[j+1][0] != '-') &&
+					    (no_arg == 0)) {
+						argv[j+1] = NULL;
+					} else {
+						optind = j+1;
+						current_optind = optind;
+			 		}
+				}
 			}
+			no_arg = 0;
 			j = current_optind;
-		        c = getopt(argc, argv, "-r:sm:y:hTV(version)");
+			c = getopt(argc, argv, "()-r:sm:y:hvTN:V(version)");
 
 				/* this takes care of options given after
 				** file names.
 				*/
 			if (c == EOF) {
-			   if (optind < argc) {
+			    if (optind < argc) {
 				/* if it's due to -- then break; */
-			       if(argv[j][0] == '-' &&
-				      argv[j][1] == '-') {
-			          argv[j] = 0;
-			          break;
-			       }
-			       optind++;
-			       current_optind = optind;
-			       continue;
-			   } else {
-			       break;
+				if (argv[j][0] == '-' &&
+				    argv[j][1] == '-') {
+					argv[j] = 0;
+					break;
+				}
+				optind++;
+				current_optind = optind;
+				continue;
+			    } else {
+				break;
 			   }
 			}
 			p = optarg;
@@ -299,13 +306,26 @@ char	*argv[];
 				case 'm':
 					strlcpy(name, p, sizeof (name));
 					break;
+				case 'v':
+					break;
 
 				case 'T':
 					debug = TRUE;
 					silent = FALSE;
 					break;
+
+				case 'N':	/* Bulk names */
+					initN(&N);
+					if (optarg == argv[j+1]) {
+					   no_arg = 1;
+					   break;
+					}
+					N.n_parm = p;
+					break;
+
 				case 'V':		/* version */
-					printf("val %s-SCCS version %s %s (%s-%s-%s)\n",
+					printf(gettext(
+					    "val %s-SCCS version %s %s (%s-%s-%s)\n"),
 						PROVIDER,
 						VERSION,
 						VDATE,
@@ -314,16 +334,16 @@ char	*argv[];
 
 				default:
 					Fflags &= ~FTLEXIT;
-					fatal(gettext("Usage: val [ -h ] [ -s ] [ -m name ] [ -r SID ] [ -T ] [ -y type ] s.filename..."));
+					fatal(gettext("Usage: val [ -h ] [ -s ] [ -m name ] [ -r SID ] [ -T ] [ -v ]\n\t[ -y type ] [ -N[bulk-spec]] s.filename..."));
 					if (debug) {
 						printf(gettext("Uknown option '%c'.\n"),
 							optopt?optopt:c);
 					}
 					inline_err |= UNKDUP_ERR;
 					if (inpstd)
-					   report(inline_err,savelinep,"");
+					   report(inline_err, savelinep, "");
 					else
-					   report(inline_err,"","");
+					   report(inline_err, "", "");
 					return;
 			}
 			/*
@@ -341,11 +361,11 @@ char	*argv[];
 			}
 	}
 
-	for(j=1; j<argc; j++){
-		if(argv[j]) {
+	for (j = 1; j < argc; j++) {
+		if (argv[j]) {
 			if (filelist == NULL)
 				filelist = &argv[j];
-		        num_files++;
+			num_files++;
 		}
 	}
 	/*
@@ -360,15 +380,24 @@ char	*argv[];
 	check for error in command line.
 	*/
 	if (inline_err) {
-	   if (!silent) {
-	      if (inpstd)
-		 report(inline_err,savelinep,"");
-	      else
-		 report(inline_err,"","");
-	   }
-	   return;		/* return to 'main' routine */
+	    if (!silent) {
+		if (inpstd)
+			report(inline_err, savelinep, "");
+		else
+			report(inline_err, "", "");
+	    }
+	    return;		/* return to 'main' routine */
 	}
 	line_sw = 1;		/* print command line flag */
+
+	xsethome(NULL);
+	if (HADUCN) {					/* Parse -N args  */
+		parseN(&N);
+
+		if (N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+			fatal(gettext("-Ns. not supported in off-tree project mode"));
+	}
+
 	/*
 	loop through 'validate' for each file on command line.
 	*/
@@ -391,10 +420,10 @@ char	*argv[];
 		}
 		strlcpy(path, filelist[i+j], sizeof (path));
 		if (!inpstd) {
-			do_file(path, do_validate, 1, 1);
+			do_file(path, do_validate, 1, N.n_sdot);
 			continue;
 		}
-		validate(path,sid,type,name);
+		validate(path, sid, type, name);
 		inline_err |= infile_err;
 		/*
 		check for error from 'validate' and call 'report'
@@ -402,19 +431,30 @@ char	*argv[];
 		*/
 		if (infile_err && !silent) {
 			if (line_sw && inpstd) {
-				report(infile_err,savelinep,path);
+				report(infile_err, savelinep, path);
 				line_sw = 0;
-			}
-			else report(infile_err,"",path);
+			} else
+				report(infile_err, "", path);
 		}
 	}
-	return;		/* return to 'main' routine */
+	/* return to 'main' routine */
 }
 
 static void
 do_validate(c_path)
 	char	*c_path;
 {
+	if (HADUCN) {
+		char	*ofile = c_path;
+
+		c_path = bulkprepare(&N, c_path);
+		if (c_path == NULL) {
+			if (N.n_ifile)
+				ofile = N.n_ifile;
+			fatal(gettext("directory specified as s-file (cm14)"));
+		}
+	}
+
 	validate(c_path, sid, type, name);
 	inline_err |= infile_err;
 
@@ -435,21 +475,21 @@ do_validate(c_path)
 */
 
 static void
-validate(c_path,c_sid,c_type,c_name)
+validate(c_path, c_sid, c_type, c_name)
 char	*c_path;
 char	*c_sid;
 char	*c_type;
 char	*c_name;
 {
 	register char	*l;
-	int	goods,goodt,goodn,hadmflag;
+	int	goods, goodt, goodn, hadmflag;
 
 	infile_err = goods = goodt = goodn = hadmflag = 0;
 	dt.d_dtime.dt_sec = odt.d_dtime.dt_sec = 0;
 	dt.d_dtime.dt_nsec = odt.d_dtime.dt_nsec = 0;
 	dt.d_dtime.dt_zone = odt.d_dtime.dt_zone = DT_NO_ZONE;
 
-	s_init(&gpkt,c_path);
+	s_init(&gpkt, c_path);
 
 	if (!sccsfile(c_path) || (gpkt.p_iop = fopen(c_path, "rb")) == NULL) {
 		if (debug) {
@@ -475,6 +515,15 @@ char	*c_name;
 			infile_err |= CORRUPT_ERR;
 		}
 		else {
+			if (HADV) {
+				if (gpkt.p_flags & PF_V6)
+					printf("SCCS V6 %s\n", c_path);
+				else
+					printf("SCCS V4 %s\n", c_path);
+				sclose(&gpkt);
+				return;
+			}
+
 			/*
 			 * Read delta table for get_hashtest()
 			 */
@@ -484,23 +533,29 @@ char	*c_name;
 			/*
 			 * get old file checksum count
 			 */
-			satoi(l,&gpkt.p_ihash);
+			satoi(l, &gpkt.p_ihash);
 			gpkt.p_chash = 0;
 			gpkt.p_uchash = 0;
-			if (HADR)
+			if (HADR) {
+				struct sid	ssid;
+				char		*p;
+
 				/*
 				check for invalid or ambiguous SID.
 				*/
-				if (invalid(c_sid)) {
+				p = sid_ab(c_sid, &ssid);
+				if (*p ||
+				    (ssid.s_rel == 0 && ssid.s_lev) ||
+				    (ssid.s_lev == 0 && ssid.s_br) ||
+				    (ssid.s_br == 0 && ssid.s_seq))
 					infile_err |= INVALSID_ERR;
-				}
+			}
 			/*
 			read delta table checking for errors and/or
 			SID.
 			*/
-			if (do_delt(&gpkt,goods,c_sid)) {
-				fclose(gpkt.p_iop);
-				gpkt.p_iop = NULL;
+			if (do_delt(&gpkt, goods, c_sid)) {
+				sclose(&gpkt);
 				get_close();		/* for SID checksums */
 				if (debug)
 					printf(gettext(
@@ -510,7 +565,7 @@ char	*c_name;
 				return;
 			}
 
-			read_to(EUSERNAM,&gpkt);
+			read_to(EUSERNAM, &gpkt);
 
 			if (HADY || HADM) {
 				/*
@@ -520,16 +575,16 @@ char	*c_name;
 					*l++ == CTLCHAR &&
 					*l++ == FLAG) {
 					NONBLANK(l);
-					repl(l,'\n','\0');
+					repl(l, '\n', '\0');
 					if (*l == TYPEFLAG) {
 						l += 2;
-						if (equal(c_type,l))
+						if (equal(c_type, l))
 							goodt++;
 					}
 					else if (*l == MODFLAG) {
 						hadmflag++;
 						l += 2;
-						if (equal(c_name,l))
+						if (equal(c_name, l))
 							goodn++;
 					}
 				}
@@ -541,7 +596,7 @@ char	*c_name;
 				if (gpkt.p_line != NULL &&
 				    gpkt.p_line[0] == CTLCHAR &&
 				    gpkt.p_line[1] != BUSERTXT)
-					read_to(BUSERTXT,&gpkt);
+					read_to(BUSERTXT, &gpkt);
 
 				/*
 				 * If we did not find the mandatory begin of
@@ -550,8 +605,7 @@ char	*c_name;
 				if (gpkt.p_line != NULL &&
 				    gpkt.p_line[0] == CTLCHAR &&
 				    gpkt.p_line[1] != BUSERTXT) {
-					fclose(gpkt.p_iop);
-					gpkt.p_iop = NULL;
+					sclose(&gpkt);
 					get_close();	/* for SID checksums */
 					if (debug)
 						printf(gettext(
@@ -566,7 +620,7 @@ char	*c_name;
 				if (!goodt && HADY) {
 					if (debug)
 						printf(gettext(
-						"%s%s: missmatch between %cY%c and '%s'\n"),
+						"%s%s: mismatch between %cY%c and '%s'\n"),
 							"    ", c_path,
 							'%', '%', c_type);
 					infile_err |= TYPE_ERR;
@@ -575,7 +629,7 @@ char	*c_name;
 				check if 'm' flag matched '-m' arg value.
 				*/
 				if (HADM && !hadmflag) {
-					if (!equal(auxf(sname(c_path),'g'),c_name)) {
+					if (!equal(auxf(sname(c_path), 'g'), c_name)) {
 						if (debug)
 							printf(gettext(
 							"%s%s: no 'm' flag\n"),
@@ -586,14 +640,14 @@ char	*c_name;
 				else if (HADM && hadmflag && !goodn) {
 						if (debug)
 							printf(gettext(
-							"%s%s: missmatch between %cM%c and '%s'\n"),
+							"%s%s: mismatch between %cM%c and '%s'\n"),
 							"    ", c_path,
 							'%', '%', c_name);
 						infile_err |= NAME_ERR;
 				}
 			}
-			else read_to(BUSERTXT,&gpkt);
-			read_to(EUSERTXT,&gpkt);
+			else read_to(BUSERTXT, &gpkt);
+			read_to(EUSERTXT, &gpkt);
 			gpkt.p_chkeof = 1;
 			/*
 			read remainder of file so 'read_mod'
@@ -602,11 +656,11 @@ char	*c_name;
 			while (read_mod(&gpkt))
 				;
 		}
-	fclose(gpkt.p_iop);	/* close file pointer */
-	gpkt.p_iop = NULL;
+	sclose(&gpkt);		/* close file pointer */
+	sfree(&gpkt);		/* free line pointer */
 	get_close();		/* for SID checksums */
 	}
-	return;		/* return to 'process' function */
+	/* return to 'process' function */
 }
 
 
@@ -630,8 +684,10 @@ struct packet *pkt;
 
 		del_ab(&lp[-2], &dt, pkt);	/* We are called with &lp[2] */
 
-		if (dt.d_dtime.dt_sec != 0 && odt.d_dtime.dt_sec != 0 &&
-		    dt.d_dtime.dt_sec > odt.d_dtime.dt_sec) {
+		if ((dt.d_dtime.dt_sec != 0 && odt.d_dtime.dt_sec != 0 &&
+		    (dt.d_dtime.dt_sec > odt.d_dtime.dt_sec)) ||
+		    ((dt.d_dtime.dt_sec == odt.d_dtime.dt_sec) &&
+		    (dt.d_dtime.dt_nsec > odt.d_dtime.dt_nsec))) {
 			sid_ba(&dt.d_sid, str);
 			sid_ba(&odt.d_sid, ostr);
 			printf(gettext(
@@ -687,7 +743,7 @@ struct packet *pkt;
 	delp->pred = lp;			/* Pred serial	"41"	*/
 	if (missfld == 0 && (*lp == '\0' || *lp == '\n'))
 		missfld++;
-	repl(lp,'\n','\0');
+	repl(lp, '\n', '\0');
 	if (dflags && (*lp == '\0' || *lp == '\n')) {
 		if (debug)
 			printf(gettext("%s%s: username missing in line %d\n"),
@@ -700,6 +756,39 @@ struct packet *pkt;
 			"    ", pkt->p_file, pkt->p_slnno);
 		infile_err |= CORRUPT_ERR;
 	}
+	if ((pkt->p_flags & PF_V6) == 0) {
+		int	dterr = 0;
+
+		p = strchr(delp->datetime, '/');
+		if ((p - delp->datetime) > 2) {
+			if (dt.d_dtime.dt_sec < Y1969 ||
+			    dt.d_dtime.dt_sec >= Y2038) {
+				/*
+				 * In this case, 4-digit year numbers are OK.
+				 */
+				if ((p - delp->datetime) != 4)
+					dterr++;
+			} else {
+				dterr++;
+			}
+		}
+		/*
+		 * Nanoseconds not allowed in SCCSv4 mode.
+		 */
+		if (strchr(delp->datetime, '.'))
+			dterr++;
+		/*
+		 * With 2-digit year, the length is 17.
+		 */
+		if (strlen(delp->datetime) > 19)
+			dterr++;
+		if (dterr) {
+			if (debug)
+				printf(gettext("%s%s: invalid v4 datetime field '%s' in line %d\n"),
+				"    ", pkt->p_file, delp->datetime, pkt->p_slnno);
+			infile_err |= CORRUPT_ERR;
+		}
+	}
 }
 
 
@@ -708,7 +797,7 @@ struct packet *pkt;
 */
 
 static void
-read_to(ch,pkt)
+read_to(ch, pkt)
 register char ch;
 register struct packet *pkt;
 {
@@ -716,7 +805,6 @@ register struct packet *pkt;
 	while (((n = get_line(pkt)) != NULL) &&
 			!(*n++ == CTLCHAR && *n == ch))
 		;
-	return;
 }
 
 
@@ -726,7 +814,7 @@ register struct packet *pkt;
 */
 
 static void
-report(code,inp_line,file)
+report(code, inp_line, file)
 register int	code;
 register char	*inp_line;
 register char	*file;
@@ -735,77 +823,42 @@ register char	*file;
 	percent = '%';		/* '%' for -m and/or -y messages */
 /* xpg4 behaviour
 	if (*inp_line)
-		printf("%s:\n",inp_line);
+		printf("%s:\n", inp_line);
 	if (code & NAME_ERR)
-	   printf(gettext(" %s: %cM%c -m mismatch\n"),file,percent,percent);
+	   printf(gettext(" %s: %cM%c -m mismatch\n"), file, percent, percent);
 	if (code & TYPE_ERR)
-	   printf(gettext(" %s: %cY%c -y mismatch\n"),file,percent,percent);
+	   printf(gettext(" %s: %cY%c -y mismatch\n"), file, percent, percent);
 	if (code & NONEXSID_ERR)
-	   printf(gettext(" %s: SID nonexistent\n"),file);
+	   printf(gettext(" %s: SID nonexistent\n"), file);
 	if (code & INVALSID_ERR)
-	   printf(gettext(" %s: SID invalid or ambiguous\n"),file);
+	   printf(gettext(" %s: SID invalid or ambiguous\n"), file);
 	if (code & FILENAM_ERR)
-	   printf(gettext(" %s: can't open file or file not SCCS\n"),file);
+	   printf(gettext(" %s: can't open file or file not SCCS\n"), file);
 	if (code & CORRUPT_ERR)
-	   printf(gettext(" %s: corrupted SCCS file\n"),file);
+	   printf(gettext(" %s: corrupted SCCS file\n"), file);
 	if (code & UNKDUP_ERR)
-	   printf(gettext(" %s: Unknown or duplicate keyletter argument\n"),file);
+	   printf(gettext(" %s: Unknown or duplicate keyletter argument\n"), file);
 	if (code & FILARG_ERR)
-		printf(gettext(" %s: missing file argument\n"),file);
+		printf(gettext(" %s: missing file argument\n"), file);
 */
 	if (*inp_line)
-		printf("%s\n\n",inp_line);
+		printf("%s\n\n", inp_line);
 	if (code & NAME_ERR)
-	   printf(gettext("    %s: %cM%c -m mismatch\n"),file,percent,percent);
+	   printf(gettext("    %s: %cM%c -m mismatch\n"), file, percent, percent);
 	if (code & TYPE_ERR)
-	   printf(gettext("    %s: %cY%c -y mismatch\n"),file,percent,percent);
+	   printf(gettext("    %s: %cY%c -y mismatch\n"), file, percent, percent);
 	if (code & NONEXSID_ERR)
-	   printf(gettext("    %s: SID nonexistent\n"),file);
+	   printf(gettext("    %s: SID nonexistent\n"), file);
 	if (code & INVALSID_ERR)
-	   printf(gettext("    %s: SID invalid or ambiguous\n"),file);
+	   printf(gettext("    %s: SID invalid or ambiguous\n"), file);
 	if (code & FILENAM_ERR)
-	   printf(gettext("    %s: can't open file or file not SCCS\n"),file);
+	   printf(gettext("    %s: can't open file or file not SCCS\n"), file);
 	if (code & CORRUPT_ERR)
-	   printf(gettext("    %s: corrupted SCCS file\n"),file);
+	   printf(gettext("    %s: corrupted SCCS file\n"), file);
 	if (code & UNKDUP_ERR)
-	   printf(gettext("    %s: Unknown or duplicate keyletter argument\n"),file);
+	   printf(gettext("    %s: Unknown or duplicate keyletter argument\n"), file);
 	if (code & FILARG_ERR)
-		printf(gettext("    %s: missing file argument\n"),file);
-	return;
-}
-
-
-/* This function takes as its argument the SID inputed and determines
- * whether or not it is valid (e. g. not ambiguous or illegal).
-*/
-
-static int
-invalid(i_sid)
-register char	*i_sid;
-{
-	register int count;
-	register int digits;
-	count = digits = 0;
-	if (*i_sid == '0' || *i_sid == '.')
-		return (1);
-	i_sid++;
-	digits++;
-	while (*i_sid != '\0') {
-		if (*i_sid++ == '.') {
-			digits = 0;
-			count++;
-			if (*i_sid == '0' || *i_sid == '.')
-				return (1);
-		}
-		digits++;
-		if (digits > 5)
-			return (1);
-	}
-	if (*(--i_sid) == '.' )
-		return (1);
-	if (count == 1 || count == 3)
-		return (0);
-	return (1);
+		printf(gettext("    %s: missing file argument\n"), file);
 }
 
 
@@ -819,21 +872,41 @@ static char	*
 get_line(pkt)
 register struct packet *pkt;
 {
+#ifdef	NO_GETDELIM
 	char	buf[DEF_LINE_SIZE];
-	int	eof;
 	register size_t nread = 0;
+#endif
+	int	eof = 0;
 	register size_t used = 0;
 	register signed char *p;
 	register unsigned char *u_p;
 
+#ifndef	NO_GETDELIM
+	/*
+	 * getdelim() allows to read lines that have embedded nul bytes
+	 * and we don't need to call strlen().
+	 */
+	errno = 0;
+	used = getdelim(&pkt->p_line, &pkt->p_line_size, '\n', pkt->p_iop);
+	if (used == -1) {
+		if (errno == ENOMEM)
+			fatal(gettext("OUT OF SPACE (ut9)"));
+		if (ferror(pkt->p_iop)) {
+			xmsg(pkt->p_file, NOGETTEXT("getline"));
+		} else if (feof(pkt->p_iop)) {
+			used = 0;
+			eof = 1;
+		}
+	}
+#else
 	/* read until EOF or newline encountered */
 	do {
-		if (!(eof = (fgets(buf, sizeof(buf), pkt->p_iop) == NULL))) {
+		if (!(eof = (fgets(buf, sizeof (buf), pkt->p_iop) == NULL))) {
 			nread = strlen(buf);
 
 			if ((used + nread) >=  pkt->p_line_size) {
-				pkt->p_line_size += sizeof(buf);
-				pkt->p_line = (char*) realloc(pkt->p_line, pkt->p_line_size);
+				pkt->p_line_size += sizeof (buf);
+				pkt->p_line = (char *) realloc(pkt->p_line, pkt->p_line_size);
 				if (pkt->p_line == NULL) {
 					efatal(gettext("OUT OF SPACE (ut9)"));
 				}
@@ -843,6 +916,9 @@ register struct packet *pkt;
 			used += nread;
 		}
 	} while (!eof && (pkt->p_line[used-1] != '\n'));
+#endif
+	pkt->p_linebase = pkt->p_line;
+	pkt->p_line_length = used;
 
 	/* check end of file condition */
 	if (eof && (used == 0)) {
@@ -861,10 +937,10 @@ register struct packet *pkt;
 						"    ", pkt->p_file,
 						pkt->p_ihash,
 						pkt->p_chash & 0xFFFF);
-		   	infile_err |= CORRUPT_ERR;
+			infile_err |= CORRUPT_ERR;
 		   }
 		}
-		return NULL;
+		return (NULL);
 	}
 
 	/* increment line number */
@@ -873,12 +949,12 @@ register struct packet *pkt;
 	}
 
 	/* update check sum */
-	for (p = (signed char *)pkt->p_line,u_p = (unsigned char *)pkt->p_line; *p; ) {
+	for (p = (signed char *)pkt->p_line, u_p = (unsigned char *)pkt->p_line; *p; ) {
 		pkt->p_chash += *p++;
 		pkt->p_uchash += *u_p++;
 	}
 
-	return pkt->p_line;
+	return (pkt->p_line);
 }
 
 
@@ -887,13 +963,13 @@ register struct packet *pkt;
 */
 
 static void
-s_init(pkt,file)
+s_init(pkt, file)
 register struct packet *pkt;
 register char *file;
 {
 
-	zero((char*) pkt, sizeof(*pkt));
-	copy(file,pkt->p_file);
+	zero((char *) pkt, sizeof (*pkt));
+	copy(file, pkt->p_file);
 	pkt->p_wrttn = 1;
 	pkt->do_chksum = 1;	/* turn on checksum check for getline */
 }
@@ -923,22 +999,22 @@ register struct packet *pkt;
 						"    ", pkt->p_file,
 						pkt->p_slnno);
 				infile_err |= CORRUPT_ERR;
-				return(0);
+				return (0);
 			}
 			NONBLANK(p);
-			satoi(p,&ser);
+			satoi(p, &ser);
 			if (iord == END)
-				rem_q(pkt,ser);
+				rem_q(pkt, ser);
 			else if (pkt->p_apply != 0) {
 				ap = &pkt->p_apply[ser];
 				if (ap->a_code == APPLY)
-					add_q(pkt,ser,iord == INS ? YES : NO,
-					    iord,ap->a_reason & USER);
+					add_q(pkt, ser, iord == INS ? YES : NO,
+					    iord, ap->a_reason & USER);
 				else
-					add_q(pkt,ser,iord == INS ? NO : 0,
-					    iord,ap->a_reason & USER);
+					add_q(pkt, ser, iord == INS ? NO : 0,
+					    iord, ap->a_reason & USER);
 			} else
-				add_q(pkt,ser,iord == INS ? NO : 0,iord,0);
+				add_q(pkt, ser, iord == INS ? NO : 0, iord, 0);
 		}
 	}
 	if (pkt->p_q) {
@@ -949,11 +1025,11 @@ register struct packet *pkt;
 				pkt->p_slnno);
 		infile_err |= CORRUPT_ERR;
 	}
-	return(0);
+	return (0);
 }
 
 static void
-add_q(pkt,ser,keep,iord,user)
+add_q(pkt, ser, keep, iord, user)
 struct packet *pkt;
 int ser;
 int keep;
@@ -973,13 +1049,13 @@ int user;
 				cur->q_sernum, pkt->p_slnno);
 		infile_err |= CORRUPT_ERR;
 	}
-	prev->q_next = q = (struct queue *) fmalloc(sizeof(*q));
+	prev->q_next = q = (struct queue *) fmalloc(sizeof (*q));
 	q->q_next = cur;
 	q->q_sernum = ser;
 	q->q_keep = keep;
 	q->q_iord = iord;
 	q->q_user = user;
-	if (pkt->p_ixuser && (q->q_ixmsg = chk_ix(q,pkt->p_q)))
+	if (pkt->p_ixuser && (q->q_ixmsg = chk_ix(q, pkt->p_q)))
 		++(pkt->p_ixmsg);
 	else
 		q->q_ixmsg = 0;
@@ -988,7 +1064,7 @@ int user;
 }
 
 static void
-rem_q(pkt,ser)
+rem_q(pkt, ser)
 register struct packet *pkt;
 int ser;
 {
@@ -997,7 +1073,7 @@ int ser;
 	for (cur = (struct queue *) (&pkt->p_q); (cur = (prev = cur)->q_next) != NULL; )
 		if (cur->q_sernum == ser)
 			break;
-	if (cur && cur != (struct queue *)&pkt->p_q ) {
+	if (cur && cur != (struct queue *)&pkt->p_q) {
 		if (cur->q_ixmsg)
 			--(pkt->p_ixmsg);
 		prev->q_next = cur->q_next;
@@ -1021,7 +1097,7 @@ register struct packet *pkt;
 	register struct queue *q;
 	register struct sid *sp;
 
-	for (q = pkt->p_q; q; q = q->q_next )
+	for (q = pkt->p_q; q; q = q->q_next)
 		if (q->q_keep != '\0') {
 			if ((pkt->p_keep = q->q_keep) == YES) {
 				sp = &pkt->p_idel[q->q_sernum].i_sid;
@@ -1036,10 +1112,10 @@ register struct packet *pkt;
 }
 
 
-# define apply(qp)	((qp->q_iord == INS && qp->q_keep == YES) || \
+#define	apply(qp)	((qp->q_iord == INS && qp->q_keep == YES) || \
 			 (qp->q_iord == DEL && qp->q_keep == NO))
 static int
-chk_ix(new,head)
+chk_ix(new, head)
 register struct queue *new;
 struct queue *head;
 {
@@ -1048,12 +1124,12 @@ struct queue *head;
 	int firstins, lastdel;
 
 	if (!apply(new))
-		return(0);
+		return (0);
 	for (cur = head; cur; cur = cur->q_next)
 		if (cur->q_user)
 			break;
 	if (!cur)
-		return(0);
+		return (0);
 	retval = 0;
 	firstins = 0;
 	lastdel = 0;
@@ -1073,35 +1149,37 @@ struct queue *head;
 		if (firstins && (new->q_sernum < firstins))
 			retval++;
 	}
-	return(retval);
+	return (retval);
 }
 
 
-/* This function reads the delta table entries and checks for the format
+/*
+ * This function reads the delta table entries and checks for the format
  * as specifed in sccsfile(V).  If the format is incorrect, a corrupt
  * error will be issued by 'val'.  This function also checks
  * if the sid requested is in the file (depending if '-r' was specified).
-*/
+ */
 
 static int
-do_delt(pkt,goods,d_sid)
+do_delt(pkt, goods, d_sid)
 register struct packet *pkt;
 register int goods;
 register char *d_sid;
 {
 	char *l;
 
-	while(getstats(pkt)) {
+	while (getstats(pkt)) {
 		if ((((l = get_line(pkt)) != NULL) && *l++ != CTLCHAR) ||
 		    *l++ != BDELTAB)
-			return(1);
+			return (1);
 		getdel(&del, l, pkt);
 		if (HADR && !(infile_err & INVALSID_ERR)) {
-			if (equal(d_sid,del.osid) && del.type == 'D')
+			if (equal(d_sid, del.osid) &&
+			    (del.type == 'D' || del.type == 'U'))
 				goods++;
 		}
 		if (gpkt.p_flags & PF_V6 &&
-		    HADH && del.type == 'D') {
+		    HADH && (del.type == 'D' || del.type == 'U')) {
 			int	ser;
 
 			satoi(del.serial, &ser);
@@ -1111,7 +1189,7 @@ register char *d_sid;
 			if (pkt->p_line[0] != CTLCHAR)
 				break;
 			else {
-				switch(pkt->p_line[1]) {
+				switch (pkt->p_line[1]) {
 				case EDELTAB:
 					break;
 				case COMMENTS:
@@ -1124,19 +1202,19 @@ register char *d_sid;
 					if (pkt->p_flags & PF_V6)
 						continue;
 				default:
-					return(1);
+					return (1);
 				}
 				break;
 			}
 		if (l == NULL || pkt->p_line[0] != CTLCHAR)
-			return(1);
+			return (1);
 	}
 	if (pkt->p_line[1] != BUSERNAM)
-		return(1);
+		return (1);
 	if (HADR && !goods && !(infile_err & INVALSID_ERR)) {
 		infile_err |= NONEXSID_ERR;
 	}
-	return(0);
+	return (0);
 }
 
 
@@ -1150,15 +1228,15 @@ register struct packet *pkt;
 	register char *op;
 	register int i = 0;
 
-	if ( p == NULL || *p++ != CTLCHAR || *p != STATS)
-		return(0);
+	if (p == NULL || *p++ != CTLCHAR || *p != STATS)
+		return (0);
 
 	/*
 	 * We do not check the format of the statistics line in non-debug mode
 	 * as the related values are otherwise ignored by SCCS.
 	 */
 	if (!debug)
-		return(1);
+		return (1);
 
 	p++;
 	NONBLANK(p);
@@ -1177,7 +1255,7 @@ register struct packet *pkt;
 			"%s%s: illegal character in statistics in line %d\n"),
 				"    ", pkt->p_file, pkt->p_slnno);
 			infile_err |= CORRUPT_ERR;
-			return(1);
+			return (1);
 		} else if ((p - op) != 5) {
 			if ((p - op) > 5)
 				printf(gettext(
@@ -1188,12 +1266,12 @@ register struct packet *pkt;
 				"%s%s: illegal number length in statistics in line %d\n"),
 				"    ", pkt->p_file, pkt->p_slnno);
 			infile_err |= CORRUPT_ERR;
-			return(1);
+			return (1);
 		}
 		p++;
 		i++;
 	}
-	return(1);
+	return (1);
 }
 
 static char *
@@ -1236,8 +1314,8 @@ get_setup(file)
 	pk2.p_reopen = 1;
 	pk2.p_cutoff = MAX_TIME;
 
-	if ((pk2.p_flags & PF_V6) == 0) 
-		pk2.p_flags |= PF_GMT; 
+	if ((pk2.p_flags & PF_V6) == 0)
+		pk2.p_flags |= PF_GMT;
 
 	if (dodelt(&pk2, &stats, (struct sid *) 0, 0) == 0)
 		fmterr(&pk2);
@@ -1250,17 +1328,15 @@ get_setup(file)
 			printf(gettext(
 			"%s%s: SID checksums missing\n"),
 					"    ", pk2.p_file);
-	   	infile_err |= CORRUPT_ERR;
+		infile_err |= CORRUPT_ERR;
 	}
 }
 
 LOCAL void
 get_close()
 {
-	if (pk2.p_iop) {
-		fclose(pk2.p_iop);
-		pk2.p_iop = NULL;
-	}
+	sclose(&pk2);
+	sfree(&pk2);
 	xrm(&gpkt);
 	ffreeall();
 }
@@ -1285,7 +1361,7 @@ get_hashtest(ser)
 	pk2.p_gotsid = pk2.p_idel[ser].i_sid;
 	pk2.p_reqsid = pk2.p_gotsid;
 
-	zero((char *) pk2.p_apply, (max_ser+1)*sizeof(*pk2.p_apply));
+	zero((char *) pk2.p_apply, (max_ser+1)*sizeof (*pk2.p_apply));
 	setup(&pk2, ser);
 
 	pk2.p_ghash = 0;
@@ -1307,7 +1383,7 @@ get_hashtest(ser)
 					pk2.p_ghash & 0xFFFF,
 					pk2.p_hash[ser]);
 		}
-	   	infile_err |= CORRUPT_ERR;
+		infile_err |= CORRUPT_ERR;
 		return (0);
 	}
 	return (1);

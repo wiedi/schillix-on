@@ -25,7 +25,7 @@ OBJECTS =	abspath.o any.o cat.o dname.o fatal.o fdfopen.o fmalloc.o \
 		satoi.o \
 		setsig.o sname.o strend.o trnslat.o userexit.o urandom.o \
 		xcreat.o \
-		xlink.o xmkdir.o xmkdirs.o \
+		xlink.o xmalloc.o xmkdir.o xmkdirs.o \
 		xmsg.o xopen.o xpipe.o xunlink.o zero.o zrealloc.o
 
 .KEEP_STATE:

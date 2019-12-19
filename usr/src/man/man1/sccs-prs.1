@@ -1,11 +1,11 @@
 '\" te
-.\" @(#)sccs-prs.1	1.23 15/04/29 Copyright 2007-2015 J. Schilling
+.\" @(#)sccs-prs.1	1.37 19/05/16 Copyright 2007-2018 J. Schilling
 .\" Copyright (c) 1999, Sun Microsystems, Inc.
 .\" CDDL HEADER START
 .\"
 .\" The contents of this file are subject to the terms of the
 .\" Common Development and Distribution License ("CDDL"), version 1.0.
-.\" You may only use this file in accordance with the terms of version
+.\" You may use this file only in accordance with the terms of version
 .\" 1.0 of the CDDL.
 .\"
 .\" A full copy of the text of the CDDL should have accompanied this
@@ -31,7 +31,7 @@
 .if n .ds o oe
 .if n .ds u ue
 .if n .ds s sz
-.TH sccs-prs 1 "2015/04/29" "SunOS 5.11" "User Commands"
+.TH sccs-prs 1 "2019/05/16" "SunOS 5.11" "User Commands"
 .SH NAME
 sccs-prs, prs \- display selected portions of an SCCS history
 .SH SYNOPSIS
@@ -48,6 +48,8 @@ sccs-prs, prs \- display selected portions of an SCCS history
 .RI [ nsedelim "]] \c
 .RB [ -r\c
 .IR sid "] \c
+.RB [ -N\c
+.IR bulk-spec "] \c
 .IR s.filename ...
 .fi
 
@@ -61,6 +63,10 @@ utility displays part or all of the
 file (see 
 .BR sccsfile (4))
 in a user supplied format.
+.LP
+The output is based on data from the
+.BR s. files
+that is first converted into a binary format and later converted back into text.
 
 .LP
 If a directory name is used in place of the
@@ -230,13 +236,146 @@ extension that does not exist in historic
 .B sccs 
 implementations.
 
+.sp
+.ne 3
+.TP
+.BI -N bulk-spec
+Processes a bulk of SCCS history files.
+This option allows to do an efficient mass processing of SCCS history files.
+.sp
+The
+.I bulk-spec
+parameter is composed from an optional list of
+.B flag
+parameters followed by an optional
+.B path
+specifier.
+.sp
+The following flag types are supported:
+.RS
+.TP 10
+.B ++
+If
+.I bulk-spec
+is preceded by a
+.BR `++' ,
+.BR prs (1)
+expects to process filenames that are prepended by a plus sign,
+the related
+.B SID
+and another plus sign following the form:
+.sp
+.BI "    +" sid +\c
+.I filename
+.sp
+This permits each file to be retrieved with an individual
+.BR SID .
+.TP
+.B space
+This is a placeholder dummy flag that allows to use a prepared string for
+the 
+.B \-N
+option and to replace the space character by one of the supported flags
+on demand.
+.LP
+.ne 4
+The following path specifier types are supported:
+.TP 10
+.B \-N
+The file name parameters to the
+.B prs
+command are not
+.I s.filename
+files but the names of the g-files.
+The
+.I s.filename
+names are automatically derived from the g-file names by prepending
+.B s.
+to the last path name component.
+Both,
+.I s.filename
+and the g-file are in the same directory.
+.TP
+.B \-Ns.
+The file name parameters to the
+.B prs
+command are
+.I s.filename
+files.
+The the g-files names are automatically derived by removing
+.B s.
+from the beginning of last path name component of the
+.IR s.filename.
+Both,
+.I s.filename
+and the g-file are in the same directory.
+.TP
+.BI \-N dir
+The file name parameters to the
+.B prs
+command are not
+.I s.filename
+files but the names of the g-files.
+The
+.I s.filename
+names are put into directory
+.IR dir ,
+the names are automatically derived from the g-file names by prepending
+.IB dir /s.
+to the last path name component.
+.TP
+.BI \-N dir /s.
+The file name parameters to the
+.B prs
+command are
+.I s.filename
+files in directory
+.IR dir .
+The the g-files names are automatically derived by removing
+.IB dir /s.
+from the beginning of last path name component of the
+.IR s.filename.
+.PP
+A typical value for
+.I dir
+is
+.BR SCCS .
+.PP
+In order to overcome the limited number of
+.BR exec (2)
+arguments, it is recommended to use
+.RB ` \(mi \&'
+as the file name parameter for
+.BR prs (1)
+and to send a list of path names to
+.BR stdin .
+.PP
+This option is a
+.B \s-1SCHILY\s+1
+extension that does not exist in historic
+.B sccs
+implementations.
+.RE
+
 .br
 .ne 3
 .TP
+.PD 0
 .B \-V
+.TP
+.B \-version
+.TP
+.B \-\-version
+.PD
 Prints the
 .B prs
 version number string and exists.
+.sp
+This option is a
+.B \s-1SCHILY\s+1
+extension that does not exist in historic
+.B sccs
+implementations.
 
 .SH USAGE
 
@@ -271,12 +410,16 @@ These data keywords are listed in the table below:
 .LP
 
 .sp
+.if n .if !\nh .RS -2i
 .TS
 tab();
-lw(.55i) lw(1.64i) lw(.65i) lw(1.62i) lw(.65i)
-lw(.55i) lw(1.64i) lw(.65i) lw(1.62i) lw(.65i)
+lw(.45i) lw(1.64i) lw(.75i) lw(1.62i) lw(.65i)
+lw(.45i) lw(1.64i) lw(.75i) lw(1.62i) lw(.65i)
 .
-\fIKeyword\fR\fIData Item\fR\fIFile Section*\fR\fIValue\fR\fIFormat\fR**
+\fIKeyword\fR\fIData Item\fRT{
+\fIFile Section*\fR
+T}\fIValue\fR\fIFormat\fR**
+
 \fB:A:\fRA form of \fBwhat\fR string:N/A\fB:Z::Y: :M: :I::Z:\fRS
 \fB:AC:\fRCMF validation programF\fItext\fRS
 \fB:B:\fRbranch numberD\fInnnn\fRS
@@ -290,15 +433,17 @@ lw(.55i) lw(1.64i) lw(.65i) lw(1.62i) lw(.65i)
 \fB:Dd:\fRday delta createdD\fInn\fRS
 \fB:Dg:\fRdeltas ignored (seq #)D\fB:DS: :DS:\fR\|.\|.\|.S
 \fB:DI:\fRT{
-seq-no. of deltas included, excluded, ignored
+seq\-no.\ of\ deltas included,\ excluded, ignored
 T}D\fB:Dn:/:Dx:/:Dg:\fRS
 \fB:DL:\fRdelta line statisticsD\fB:Li:/:Ld:/:Lu:\fRS
 \fB:Dm:\fRmonth delta createdD\fInn\fRS
 \fB:Dn:\fRdeltas included (seq #)D\fB:DS: :DS:\fR\|.\|.\|.S
-\fB:DP:\fRpredecessor delta seq-no. D\fInnnn\fRS
+\fB:DP:\fRT{
+predecessor\ delta seq-no.
+T}D\fInnnn\fRS
 \fB:Ds:\fRdefault SIDF\fB:I:\fRS
 \fB:DS:\fRdelta sequence numberD\fInnnn\fRS
-\fB:Dt:\fRdelta informationD \fB:DT: :I: :D: :T: :P: :DS: :DP:\fRS
+\fB:Dt:\fRdelta informationD\fB:DT: :I: :D: :T: :P: :DS: :DP:\fRS
 \fB:DT:\fRdelta typeD\fBD\fR or \fBR\fRS
 \fB:Dx:\fRdeltas excluded (seq #)D\fB:DS:\fR \|.\|.\|.S
 \fB:Dy:\fRyear delta createdD\fInn\fRS
@@ -309,14 +454,22 @@ T}D\fB:Dn:/:Dx:/:Dg:\fRS
 \fB:FD:\fRfile descriptive textC\fItext\fRM
 \fB:FL:\fRflag listF\fItext\fRM
 \fB:GB:\fRgotten bodyB\fItext\fRM
+\fB:Gp:\fRinitial pathG\fItext\fRS
+\fB:Gr:\fRunified randomG\fItext\fRS
 \fB:I:\fRSCCS delta ID (SID)D\fB:R:.:L:.:B:.:S:\fRS
 \fB:J:\fRjoint edit flagF\fByes\fR or \fBno\fRS
-\fB:KF:\fRkeyword error/warning flagF\fByes\fR or \fBno\fRS
+\fB:KF:\fRT{
+keyword\ error/warning flag
+T}F\fByes\fR or \fBno\fRS
 \fB:L:\fRlevel numberD\fInnnn\fRS
 \fB:Ld:\fRlines deleted by deltaD\fInnnnn\fRS
-\fB:Li:\fRlines inserted by deltaD\fInnnnn\fRS
+\fB:Li:\fRT{
+lines\ inserted\ by delta
+T}D\fInnnnn\fRS
 \fB:LK:\fRlocked releasesF\fB:R:\fR\|.\|.\|.S
-\fB:Lu:\fRlines unchanged by deltaD\fInnnnn\fRS
+\fB:Lu:\fRT{
+lines\ unchanged\ by delta
+T}D\fInnnnn\fRS
 \fB:M:\fRmodule nameF\fItext\fRS
 \fB:MC:\fRCMF validation flagF\fByes\fR or \fBno\fRS
 \fB:MF:\fRMR validation flagF\fByes\fR or \fBno\fRS
@@ -338,11 +491,14 @@ T}D\fB:Dn:/:Dx:/:Dg:\fRS
 \fB:Y:\fRmodule type flagF\fItext\fRS
 \fB:Z:\fR\fBwhat\fR string delimiterN/A\fB@(#)\fRS
 .TE
+.if n .if !\nh .RE
 
 .LP
-	*B = body, D = delta table, F = flags, U = user names 	
+.nf
+*B = body, D = delta table, F = flags, G = gl. metadata, U = user names
+.fi
 .LP
-	**S = simple format, M = multi-line format
+**S = simple format, M = multi-line format
 .sp
 
 .SH EXAMPLES
@@ -507,7 +663,7 @@ command for explanations (see
 .SH AUTHORS
 The
 .B SCCS
-suite was origininally written by Marc J. Rochkind at Bell Labs in 1972.
+suite was originally written by Marc J. Rochkind at Bell Labs in 1972.
 Release 4.0 of
 .BR SCCS ,
 introducing new versions of the programs
@@ -528,3 +684,41 @@ was later maintained by various people at AT&T and Sun Microsystems.
 Since 2006, the
 .B SCCS
 suite is maintained by J\*org Schilling.
+
+.br
+.ne 7
+.SH "SOURCE DOWNLOAD"
+A frequently updated source code for the
+.B SCCS
+suite is included in the
+.B schilytools
+project and may be retrieved from the
+.B schilytools
+project at Sourceforge at:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/
+.LP
+The download directory is:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/files/
+.LP
+Check for the
+.B schily\-*.tar.bz2
+archives.
+.LP
+Less frequently updated source code for the
+.B SCCS
+suite is at:
+.LP
+.B
+    http://sourceforge.net/projects/sccs/files/
+.LP
+Separate project informations for the
+.B SCCS
+project may be retrieved from:
+.LP
+.B
+    http://sccs.sf.net
+.br

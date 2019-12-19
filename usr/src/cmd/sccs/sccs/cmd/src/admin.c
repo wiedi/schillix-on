@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2017 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)admin.c	1.103 17/04/15 J. Schilling
+ * @(#)admin.c	1.126 19/11/11 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)admin.c 1.103 17/04/15 J. Schilling"
+#pragma ident "@(#)admin.c 1.126 19/11/11 J. Schilling"
 #endif
 /*
  * @(#)admin.c 1.39 06/12/12
@@ -106,12 +106,13 @@ static char	*tfile;			/* -t argument			*/
 static char	*dir_name;		/* directory for -N		*/
 static struct timespec	ifile_mtime;	/* Timestamp for -i -o		*/
 static Nparms	N;			/* Keep -N parameters		*/
+static Xparms	X;			/* Keep -X parameters		*/
 static char	*CMFAPPL;		/* CMF MODS			*/
 static char	*z;			/* for validation program name	*/
 static char	had_flag[NFLAGS];	/* -f seen list			*/
 static char	rm_flag[NFLAGS];	/* -d seen list			*/
 #if	defined(PROTOTYPES) && defined(INS_BASE)
-static char	Valpgmp[]	=	NOGETTEXT(INS_BASE "/ccs/bin/" "val");
+static char	Valpgmp[]	=	NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "bin/" "val");
 #endif
 static char	Valpgm[]	=	NOGETTEXT("val");
 static int	fexists;		/* Current file exists		*/
@@ -121,7 +122,7 @@ static int	versflag = 4;		/* history vers for new files	*/
 static struct sid	new_sid;	/* -r argument			*/
 static char	*anames[MAXNAMES];	/* -a arguments			*/
 static char	*enames[MAXNAMES];	/* -e arguments			*/
-static char	*unlock;		/* -dl argument			*/
+static char	*unlockarg;		/* -dl argument			*/
 static char	*locks;			/* 'l' flag value in file	*/
 static char	*flag_p[NFLAGS];	/* -f arguments			*/
 static int	asub;			/* Index for anames[]		*/
@@ -147,7 +148,6 @@ static	int	pos_ser __PR((char *s1, char *s2));
 static	int	range __PR((register char *line));
 static	FILE *	code __PR((FILE *iptr, char *afile, off_t offset, int thash, struct packet *pktp));
 static	void	direrror __PR((char *dir, int keylet));
-static	void 	aget	__PR((char *afile, char *gname, int ser));
 
 extern int	org_ihash;
 extern int	org_chash;
@@ -179,7 +179,7 @@ char *argv[];
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	   NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	   NOGETTEXT("/usr/ccs/lib/locale/"));
@@ -232,7 +232,7 @@ char *argv[];
 			}
 			no_arg = 0;
 			j = current_optind;
-		        c = getopt(argc, argv, "-i:t:m:y:d:f:r:nN:hzboqkw:a:e:V:(version)");
+		        c = getopt(argc, argv, "()-i:t:m:y:d:f:r:nN:hzboqkw:a:e:X:V:(version)");
 				/*
 				*  this takes care of options given after
 				*  file names.
@@ -261,8 +261,16 @@ char *argv[];
 				   ifile = "";
 				   break;
 				}
+				/*
+				 * Use -i. to tell admin to retrieve the ifile
+				 * name from the g-file name with -N
+				 * We cannot check for "." here as -N may have
+				 * been specified later on the cmd line.
+				 */
 				ifile = p;
-				if (*ifile && exists(ifile)) {
+				if (*ifile &&
+				    !(ifile[0] == '.' && ifile[1] == '\0') &&
+				    exists(ifile)) {
 				   if ((Statbuf.st_mode & S_IFMT) == S_IFDIR) {
 					direrror(ifile, c);
 				   } else {
@@ -347,7 +355,7 @@ char *argv[];
 						if (!range(p))
 							fatal(gettext("element in list out of range (ad28)"));
 						if (*p != 'a')
-							unlock = p;
+							unlockarg = p;
 					}
 					break;
 
@@ -507,24 +515,37 @@ char *argv[];
 				testklt = 0;
 				if (!(*p) || *p == '-')
 					fatal(gettext("bad a argument (ad8)"));
-				if (asub > MAXNAMES)
+				if (asub > MAXNAMES) {
 					fatal(gettext("too many 'a' keyletters (ad9)"));
-				anames[asub++] = p;
+					/* NOTREACHED */
+				}
+				anames[asub++] = sccs_user(p);
 				break;
 
 			case 'e':	/* user-name to be removed */
 				testklt = 0;
 				if (!(*p) || *p == '-')
 					fatal(gettext("bad e argument (ad10)"));
-				if (esub > MAXNAMES)
+				if (esub > MAXNAMES) {
 					fatal(gettext("too many 'e' keyletters (ad11)"));
-				enames[esub++] = p;
+					/* NOTREACHED */
+				}
+				enames[esub++] = sccs_user(p);
+				break;
+
+			case 'X':
+				X.x_parm = optarg;
+				X.x_flags = XO_INIT_PATH|XO_URAND|XO_UNLINK|XO_MAIL;
+				if (!parseX(&X))
+					goto err;
+				had[NLOWER+c-'A'] = 0;	/* Allow mult -X */
 				break;
 
 			case 'V':		/* version */
 				if (optarg == argv[j+1]) {
 				doversion:
-					printf("admin %s-SCCS version %s %s (%s-%s-%s)\n",
+					printf(gettext(
+					    "admin %s-SCCS version %s %s (%s-%s-%s)\n"),
 						PROVIDER,
 						VERSION,
 						VDATE,
@@ -542,6 +563,7 @@ char *argv[];
 				}
 
 			default:
+			err:
 				/*
 				 * Check whether "-V" was last arg...
 				 */
@@ -550,7 +572,7 @@ char *argv[];
 				    argv[argc-1][1] == 'V' &&
 				    argv[argc-1][2] == '\0')
 					goto doversion;
-				fatal(gettext("Usage: admin [ -bhknoz ][ -ausername|groupid ]\n\t[ -dflag ][ -eusername|groupid ]\n\t[ -fflag [value]][ -i [filename]]\n\t[ -m mr-list][ -r release ][ -t [description-file]]\n\t[ -N[bulk-spec]] [ -y[comment]] s.filename ..."));
+				fatal(gettext("Usage: admin [ -bhknoz ][ -ausername|groupid ]\n\t[ -dflag ][ -eusername|groupid ]\n\t[ -fflag [value]][ -i [filename]]\n\t[ -m mr-list][ -r release ][ -t [description-file]]\n\t[ -N[bulk-spec]][ -Xxopts ] [ -y[comment]] s.filename ..."));
 			}
 			/*
 			 * Make sure that we only collect option letters from
@@ -575,23 +597,38 @@ char *argv[];
 
 	if (num_files == 0 && !HADUCN)
 		fatal(gettext("missing file arg (cm3)"));
+	if (num_files > 1 && (X.x_opts & (XO_INIT_PATH|XO_URAND)))
+		fatal(gettext("too many file args (cm18)"));
 
+	setsig();
+	xsethome(NULL);
 	if (HADUCN) {					/* Parse -N args  */
-		HADI = HADN = 1;
+		/*
+		 * initN() was already called while parsing options.
+		 */
+		if (HADI)
+			N.n_flags |= N_IFILE;
+		if (HADI && ifile[0] == '.' && ifile[1] == '\0')
+			N.n_flags |= N_IDOT;
+		if (HADN)
+			N.n_flags |= N_NFILE;
 		parseN(&N);
+		if (N.n_get)
+			N.n_flags |= N_GETI;
+
+		if (N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+			fatal(gettext("-Ns. not supported in off-tree project mode"));
+
+	} else if (HADI && ifile[0] == '.' && ifile[1] == '\0') {
+		direrror(ifile, 'i');
 	}
+
 	if ((HADY || HADM) && ! (HADI || HADN))
 		fatal(gettext("illegal use of 'y' or 'm' keyletter (ad30)"));
 	if (HADI && !HADUCN && num_files > 1) /* only one file allowed with `i' */
 		fatal(gettext("more than one file (ad15)"));
 	if ((HADI || HADN) && ! logname())
 		fatal(gettext("USER ID not in password file (cm9)"));
-
-	setsig();
-
-	xsethome(NULL);
-	if (HADUCN && N.n_sdot && (sethomestat & SETHOME_OFFTREE))
-		fatal(gettext("-Ns. not supported in off-tree project mode"));
 
 	/*
 	Change flags for 'fatal' so that it will return to this
@@ -612,7 +649,6 @@ char *argv[];
 
 	return (Fcnt ? 1 : 0);
 }
-
 
 /*
 	Routine that actually does admin's work on SCCS files.
@@ -684,7 +720,8 @@ char	*afile;
 		}
 		had_dir = 0;
 		dir_name = N.n_dir_name;
-		ifile = N.n_ifile;
+		if (N.n_flags & N_IDOT)
+			ifile = N.n_ifile;
 	}
 
 	if (HADI && had_dir) /* directory not allowed with `i' keyletter */
@@ -819,8 +856,23 @@ char	*afile;
 		 * Initialize global meta data
 		 */
 		if (versflag == 6) {
-			set_init_path(&gpkt, afile, dir_name);
-			urandom(&gpkt.p_rand);
+			if (X.x_opts & XO_INIT_PATH) {
+				gpkt.p_init_path = X.x_init_path;
+			} else if (HADUCN) {
+				/*
+				 * Only if we have been called with -N..., we
+				 * know the real g-file name. We cannot derive
+				 * the g-file name from the s.file name
+				 * otherwise, since we cannot know about sub
+				 * dirs like "SCCS" in the other cases.
+				 */
+				set_init_path(&gpkt, N.n_ifile, dir_name);
+			}
+
+			if (X.x_opts & XO_URAND)
+				gpkt.p_rand = X.x_rand;
+			else
+				urandom(&gpkt.p_rand);
 		}
 	}
 
@@ -862,6 +914,8 @@ char	*afile;
 		newstats(&gpkt,line,"0");
 
 		dt.d_type = 'D';	/* type of delta */
+		if (X.x_opts & XO_UNLINK)
+			dt.d_type = 'U';
 
 		/*
 		Set initial release, level, branch and
@@ -881,6 +935,8 @@ char	*afile;
 			{
 			 dt.d_sid.s_rel = 1;
 			 dt.d_sid.s_lev = 1;
+			if (X.x_opts & XO_UNLINK)
+				dt.d_sid.s_lev = 0;
 			 dt.d_sid.s_br = dt.d_sid.s_seq = 0;
 			}
 		dtime(&dt.d_dtime);		/* get time and date */
@@ -922,7 +978,9 @@ char	*afile;
 		}
 		if (gpkt.p_flags & PF_V6) {
 			Checksum_offset = ftell(gpkt.p_xiop);
+			gpkt.p_mail = X.x_mail;
 			sidext_ba(&gpkt, &dt);	/* Will not write "dt" entry. */
+			gpkt.p_mail = NULL;
 		}
 
 		/*
@@ -1075,7 +1133,7 @@ char	*afile;
 			}
 			if (rm_flag[k]) {
 				if (f == LOCKFLAG) {
-					if (unlock) {
+					if (unlockarg) {
 						in_f = lval;
 						if (((lval = adjust(in_f)) != NULL) &&
 							!had_flag[k])
@@ -1173,7 +1231,11 @@ char	*afile;
 		 * Writing out SCCS v6 flags belongs here.
 		 */
 
-		putmeta(&gpkt);
+		/*
+		 * Since we are creating a new history file, everything is from
+		 * us and every meta data needs to be written.
+		 */
+		putmeta(&gpkt, M_ALL);
 
 		/*
 		Beginning of descriptive (user) text.
@@ -1381,6 +1443,7 @@ char	*afile;
 						fatal(gettext("invalid id keywords (cm10)"));
 				} else {
 					fprintf(stderr, gettext("No id keywords (cm7)\n"));
+					(void) sccsfatalhelp("(cm7)");
 				}
 			}
 
@@ -1501,33 +1564,9 @@ char	*afile;
 				unlink(ifile);
 			} else if (N.n_get) {
 				unlink(ifile);
-				aget(gpkt.p_file, ifile, 1);
-				if (HADO) {
-					struct timespec	ts[2];
-					extern dtime_t	Timenow;
-
-					ts[0].tv_sec = Timenow.dt_sec;
-					ts[0].tv_nsec = Timenow.dt_nsec;
-					ts[1].tv_sec = ifile_mtime.tv_sec;
-					ts[1].tv_nsec = ifile_mtime.tv_nsec;
-
-					/*
-					 * As SunPro make and gmake call sccs
-					 * get when the time if s.file equals
-					 * the time stamp of the g-file, make
-					 * sure the g-file is a bit younger.
-					 */
-					if (!(gpkt.p_flags & PF_V6)) {
-						struct timespec	tn;
-
-						getnstimeofday(&tn);
-						ts[1].tv_nsec = tn.tv_nsec;
-					}
-					if (ts[1].tv_nsec <= 500000000)
-						ts[1].tv_nsec += 499999999;
-
-					utimensat(AT_FDCWD, ifile, ts, 0);
-				}
+				doget(gpkt.p_file, ifile, 1);
+				if (HADO)
+					dogtime(&gpkt, ifile, &ifile_mtime);
 			}
 		}
 		xrm(&gpkt);
@@ -1543,9 +1582,12 @@ char	*afile;
 		stdin_file_buf[0] = '\0';
 	}
 	if (gpkt.p_init_path) {
-		ffree(gpkt.p_init_path);
+		if (gpkt.p_init_path != X.x_init_path)
+			ffree(gpkt.p_init_path);
 		gpkt.p_init_path = NULL;
 	}
+	sclose(&gpkt);
+	sfree(&gpkt);
 }
 
 static int
@@ -1642,7 +1684,7 @@ struct	packet	*pkt;		/* struct paket for output	*/
 					sprintf(SccsError,
 					gettext(
 			  "file '%s' contains illegal data on line %jd (ad21)"),
-					file, (intmax_t)++nline);
+					file, (Intmax_t)++nline);
 					fatal(SccsError);
 				}
 			}
@@ -1682,7 +1724,7 @@ struct	packet	*pkt;		/* struct paket for output	*/
 		    } else {
 		       sprintf(SccsError,
 			 gettext("file '%s' contains illegal data on line %jd (ad21)"),
-			 file, (intmax_t)nline);
+			 file, (Intmax_t)nline);
 		       fatal(SccsError);
 		    }
 		 }
@@ -1738,6 +1780,7 @@ struct	packet	*pkt;		/* struct paket for output	*/
 				dir_name,
 				*dir_name?"/":"",
 				file);
+			(void) sccsfatalhelp("(ad31)");
 			return (nline);
 		}
 
@@ -1763,7 +1806,7 @@ warnctl(file, nline)
 		"WARNING [%s%s%s]: line %jd begins with ^A\n"),
 		dir_name,
 		*dir_name?"/":"",
-		file, (intmax_t)nline);
+		file, (Intmax_t)nline);
 }
 
 static void
@@ -1782,7 +1825,8 @@ clean_up()
 			unlink(gpkt.p_file);
 	}
 	if (gpkt.p_init_path) {
-		ffree(gpkt.p_init_path);
+		if (gpkt.p_init_path != X.x_init_path)
+			ffree(gpkt.p_init_path);
 		gpkt.p_init_path = NULL;
 	}
 	if (!HADH) {
@@ -1861,7 +1905,7 @@ char	*line;
 	char	t_line[MAXLINE];
 	char	rel[5];
 
-	t_unlock = unlock;
+	t_unlock = unlockarg;
 	while(*t_unlock) {
 		NONBLANK(t_unlock);
 		t_unlock = getval(t_unlock,rel);
@@ -1875,21 +1919,28 @@ char	*line;
 				else --i;
 			}
 			k = 0;
-			for(i = 0; i < (int) length(line); i++)
+			for(i = 0; i < (int) length(line); i++) {
 				if (line[i] == '+')
 					continue;
 				else if (k == 0 && line[i] == ' ')
 					continue;
 				else t_line[k++] = line[i];
-			if (t_line[(int) strlen(t_line) - 1] == ' ')
-				t_line[(int) strlen(t_line) - 1] = '\0';
+			}
 			t_line[k] = '\0';
+			if (k > 0 &&
+			    t_line[(int) strlen(t_line) - 1] == ' ')
+				t_line[(int) strlen(t_line) - 1] = '\0';
 			line = t_line;
 		}
 	}
-	if (length(line))
-		return(line);
-	else return(0);
+	if (length(line) == 0)
+		return (0);
+	if (line == t_line) {
+		t_unlock = fmalloc(size(line));
+		copy(line, t_unlock);
+		return (t_unlock);
+	}
+	return (line);
 }
 
 static char*
@@ -1976,11 +2027,12 @@ struct packet *pktp;
 
 	/* issue a warning that file is non-text */
 	if (!HADB) {
-		fprintf(stderr, "WARNING [%s%s%s]: %s",
+		fprintf(stderr, gettext("WARNING [%s%s%s]: %s"),
 			dir_name,
 			*dir_name?"/":"",
 			ifile,
 			gettext("Not a text file (ad32)\n"));
+			(void) sccsfatalhelp("(ad32)");
 	}
 	rewind(iptr);
 	eptr = fopen(auxf(afile,'e'), "wb");
@@ -2008,77 +2060,4 @@ direrror(dir, keylet)
 	gettext("directory `%s' specified as `%c' keyletter value (ad29)"),
 		dir, (char)keylet);
 	fatal(SccsError);
-}
-
-static void
-aget(afile, gname, ser)
-	char		*afile;
-	char		*gname;
-	int		ser;
-{
-	struct packet	pk2;
-	struct stats	stats;
-	char		ohade;
-
-	sinit(&pk2, afile, SI_OPEN);
-
-	pk2.p_stdout = stderr;
-	pk2.p_cutoff = MAX_TIME;
-
-	if (dodelt(&pk2, &stats, (struct sid *) 0, 0) == 0)
-		fmterr(&pk2);
-	finduser(&pk2);
-	doflags(&pk2);
-	flushto(&pk2, EUSERTXT, FLUSH_NOCOPY);
-
-	pk2.p_chkeof = 1;
-	pk2.p_gotsid = pk2.p_idel[ser].i_sid;
-	pk2.p_reqsid = pk2.p_gotsid;
-
-	setup(&pk2, ser);
-	ohade = HADE;
-	HADE = 0;
-	idsetup(&pk2, NULL);
-	HADE = ohade;
-
-	if (exists(afile) && (S_IEXEC & Statbuf.st_mode)) {
-		pk2.p_gout = xfcreat(gname, HADK ?
-			((mode_t)0755) : ((mode_t)0555));
-	} else {
-		pk2.p_gout = xfcreat(gname, HADK ?
-			((mode_t)0644) : ((mode_t)0444));
-	}
-
-#ifdef	USE_SETVBUF
-	setvbuf(pk2.p_gout, NULL, _IOFBF, VBUF_SIZE);
-#endif
-
-	pk2.p_ghash = 0;
-	if (pk2.p_encoding & EF_UUENCODE) {
-		while (readmod(&pk2)) {
-			decode(pk2.p_line, pk2.p_gout);
-		}
-	} else {
-		while (readmod(&pk2)) {
-			char	*p;
-
-			if (pk2.p_flags & PF_NONL)
-				pk2.p_line[pk2.p_line_length-1] = '\0';
-			p = idsubst(&pk2, pk2.p_lineptr);
-			if (fputs(p, pk2.p_gout) == EOF)
-				xmsg(gname, NOGETTEXT("get"));
-		}
-	}
-	if (fflush(pk2.p_gout) == EOF)
-		xmsg(gname, NOGETTEXT("get"));
-	/*
-	 * Force g-file to disk and verify
-	 * that it actually got there.
-	 */
-#ifdef	HAVE_FSYNC
-	if (fsync(fileno(pk2.p_gout)) < 0)
-		xmsg(gname, NOGETTEXT("get"));
-#endif
-	if (fclose(pk2.p_gout) == EOF)
-		xmsg(gname, NOGETTEXT("get"));
 }

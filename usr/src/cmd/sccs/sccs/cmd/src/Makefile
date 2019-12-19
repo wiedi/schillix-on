@@ -36,15 +36,6 @@ POFILE=	schilysccs.po
 
 include ../../../Makefile.com
 
-INS_BASE=	/usr
-
-CPPFLAGS +=	-DUSE_RECURSIVE
-CPPFLAGS +=	-DUSE_NLS
-CPPFLAGS +=	-DINS_BASE=\"$(INS_BASE)\"
-CPPFLAGS +=	-DSCCS_FATALHELP		# auto call to help
-CPPFLAGS +=	-DSCCS_V6_ENV			# Assume -V6 if SCCS_V6= is present
-CPPFLAGS +=	-DPROVIDER=\"SchilliX-ON\"
-
 LDLIBS += ../../lib/comobj/src/libcomobj.a
 LDLIBS += ../../lib/cassi/src/libcassi.a
 LDLIBS += ../../lib/mpwlib/src/libmpw.a

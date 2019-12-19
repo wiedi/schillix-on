@@ -1,12 +1,12 @@
 '\" te
-.\" @(#)sccs-get.1	1.37 15/04/29 Copyright 2007-2015 J. Schilling
+.\" @(#)sccs-get.1	1.47 18/12/18 Copyright 2007-2018 J. Schilling
 .\" Copyright (c) 1999, Sun Microsystems, Inc. All Rights Reserved
 .\" Copyright (c) 2007-2015, J. Schilling
 .\" CDDL HEADER START
 .\"
 .\" The contents of this file are subject to the terms of the
 .\" Common Development and Distribution License ("CDDL"), version 1.0.
-.\" You may only use this file in accordance with the terms of version
+.\" You may use this file only in accordance with the terms of version
 .\" 1.0 of the CDDL.
 .\"
 .\" A full copy of the text of the CDDL should have accompanied this
@@ -32,7 +32,7 @@
 .if n .ds o oe
 .if n .ds u ue
 .if n .ds s sz
-.TH sccs-get 1 "2015/04/29" "SunOS 5.11" "User Commands"
+.TH sccs-get 1 "2018/12/18" "SunOS 5.11" "User Commands"
 .SH NAME
 sccs-get, get \- retrieve a version of an SCCS file
 .SH SYNOPSIS
@@ -196,7 +196,7 @@ the
 data specs.
 .sp
 This option is a
-.B SCHILY
+.B \s-1SCHILY\s+1
 extension that does not exist in historic
 .B sccs
 implementations.
@@ -319,7 +319,13 @@ including the release ceiling, floor, and authorized user list, are honored by
 .B \-F
 Enforce to retrieve the
 .BR g. file
-even if a SID specific checksum missmatch has been detected.
+even if a SID specific checksum mismatch has been detected.
+.sp
+This option is a
+.B \s-1SCHILY\s+1
+extension that does not exist in historic
+.B sccs
+implementations.
 
 .br
 .ne 3
@@ -432,6 +438,13 @@ and another plus sign following the form:
 .sp
 This permits each file to be retrieved with an individual
 .BR SID .
+.TP
+.B space
+This is a placeholder dummy flag that allows to use a prepared string for
+the 
+.B \-N
+option and to replace the space character by one of the supported flags
+on demand.
 .LP
 The following path specifier types are supported:
 .TP 10
@@ -446,6 +459,9 @@ The
 names are automatically derived from the g-file names by prepending
 .B s.
 to the last path name component.
+Both,
+.I s.filename
+and the g-file are in the same directory.
 .TP
 .B \-Ns.
 The file name parameters to the
@@ -457,6 +473,9 @@ The the g-files names are automatically derived by removing
 .B s.
 from the beginning of last path name component of the
 .IR s.filename.
+Both,
+.I s.filename
+and the g-file are in the same directory.
 .TP
 .BI \-N dir
 The file name parameters to the
@@ -533,7 +552,7 @@ rules. Using
 .RB ` "get -o" '
 thus may cause
 .B make 
-to perform an automatic retrival of the latest version as the
+to perform an automatic retrieval of the latest version as the
 .BR s. file
 is newer than the gotten file, or cause
 .B make
@@ -541,7 +560,7 @@ to skip the compilation
 as the compilation result is already newer than the gotten file.
 .sp
 This option is a
-.B SCHILY
+.B \s-1SCHILY\s+1
 extension that does not exist in historic
 .B sccs
 implementations.
@@ -645,14 +664,32 @@ By default, the
 is created in the current directory (independent from
 the location of the 
 .BI s. file\fR.
+.sp
+This option is a
+.B \s-1SCHILY\s+1
+extension that does not exist in historic
+.B sccs
+implementations.
 
 .br
 .ne 3
 .TP
+.PD 0
 .B \-V
+.TP
+.B \-version
+.TP
+.B \-\-version
+.PD
 Prints the
 .B get
 version number string and exists.
+.sp
+This option is a
+.B \s-1SCHILY\s+1
+extension that does not exist in historic
+.B sccs
+implementations.
 
 .SS /usr/ccs/bin/get
 
@@ -791,6 +828,10 @@ is as follows:
 \fB"%s\en%d lines\en"\fR, <\fISID\fR>, <\fInumber of lines\fR>
 .fi
 .in -2
+.sp
+The text
+.B lines
+may appear in the language of the current locale.
 
 .SS /usr/xpg4/bin/get
 
@@ -802,9 +843,13 @@ is as follows:
 .LP
 .in +2
 .nf
-\fB"%s\en%d\en"\fR, <\fISID\fR>, <\fInumber of lines\fR>
+\fB"%s\en%d lines\en"\fR, <\fISID\fR>, <\fInumber of lines\fR>
 .fi
 .in -2
+.sp
+The text
+.B lines
+is always in English.
 
 .SH USAGE
 
@@ -1084,6 +1129,10 @@ A colon separated list of directories where to look for include
 files for a
 .BI %\&sccs.include. filename \&%
 replacement.
+If the environment
+.B SCCS_INCLUDEPATH
+does not exist, the include files are looked for in
+.BR /usr/ccs/include/ .
 
 .br
 .ne 4
@@ -1229,6 +1278,16 @@ exists in the current directory and a fatal signal is received, a coredump
 is initiated via
 .BR abort (3).
 
+.br
+.ne 3
+.TP
+.B /usr/ccs/include/
+If the environment
+.B SCCS_INCLUDEPATH
+does not exist, include files for the
+.BI %\&sccs.include. filename \&%
+keyword directive are searched in this directory.
+
 .SH ATTRIBUTES
 
 .LP
@@ -1317,7 +1376,7 @@ does not, only one file may be named when using
 .SH AUTHORS
 The
 .B SCCS
-suite was origininally written by Marc J. Rochkind at Bell Labs in 1972.
+suite was originally written by Marc J. Rochkind at Bell Labs in 1972.
 Release 4.0 of
 .BR SCCS ,
 introducing new versions of the programs
@@ -1338,3 +1397,41 @@ was later maintained by various people at AT&T and Sun Microsystems.
 Since 2006, the
 .B SCCS
 suite is maintained by J\*org Schilling.
+
+.br
+.ne 7
+.SH "SOURCE DOWNLOAD"
+A frequently updated source code for the
+.B SCCS
+suite is included in the
+.B schilytools
+project and may be retrieved from the
+.B schilytools
+project at Sourceforge at:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/
+.LP
+The download directory is:
+.LP
+.B
+    http://sourceforge.net/projects/schilytools/files/
+.LP
+Check for the
+.B schily\-*.tar.bz2
+archives.
+.LP
+Less frequently updated source code for the
+.B SCCS
+suite is at:
+.LP
+.B
+    http://sourceforge.net/projects/sccs/files/
+.LP
+Separate project informations for the
+.B SCCS
+project may be retrieved from:
+.LP
+.B
+    http://sccs.sf.net
+.br

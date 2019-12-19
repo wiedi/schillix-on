@@ -37,12 +37,12 @@ _msg:=          TARGET= _msg
 
 .PARALLEL:	$(SUBDIRS)
 
+all clean clobber install lint _msg: $(SUBDIRS)
+
 sccs/cmd/src sccs/cmd/xpg4:			\
 			sccs/lib/cassi/src	\
 			sccs/lib/comobj/src	\
 			sccs/lib/mpwlib/src
-
-all clean clobber install lint _msg: $(SUBDIRS)
 
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)

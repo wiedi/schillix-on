@@ -21,9 +21,9 @@
 * Copyright 1991 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 *
-* Copyright 2006-2017 J. Schilling
+* Copyright 2006-2019 J. Schilling
 *
-* @(#)cmds	1.49 17/04/15 J. Schilling 
+* @(#)cmds	1.62 19/11/11 J. Schilling 
 *
 * @(#)cmds 1.3 06/12/12
 *
@@ -33,7 +33,7 @@
 -delta
 	delta [-r<SID>] [-s] [-n] [-o] [-g<list>] [-m<mrlist>] [-q[nsedelim]]
 		[-y<comment>] [-D diff-file] [-N[bulk-spec]]
-		[-d] [-f] [-h] [-p] [-z] [-Cdir] file ...
+		[-d] [-f] [-h] [-p] [-z] [-Cdir] [-Xopts] file ...
 
 	Make a delta to an SCCS file
 
@@ -54,7 +54,30 @@ options:
 	-Cdir	Working directory for g-file
 	-Ddfile	Provide a file with prepared diff output to delta
 	-Nspec	Process a bulk of SCCS history files
+	-Xopts	Specify extended options as comma separated list
 	-V	Print version number
+
+Use 'help Xopts' for help on the -X options.
+
+-Xopts
+X options may be specified as a comma separated list. The following
+options are available, they can be abbreviated as long as the abbreviation
+is still unique:
+
+mail=address	Set e-mail address for a delta (admin/delta).
+
+prepend		Prepend the current content of the g-file to the previous
+		content of that file (delta).
+
+unlink		Create an "unlink" delta in the SCCS history file (delta).
+
+Gp=initial_path	Set the initial path (admin).
+
+Gr=urand	Set the unified random (admin).
+
+help		print this help
+
+
 
 -get
 	get [-r<SID>] [-c<cutoff>] [-i<list>] [-x<list>] [-a<seq no.>] [-Cdir]
@@ -128,12 +151,15 @@ Keyword       Type
  %Z%          4-character string: `@(#)'
 
  %sccs.include.filename%	Lines are replaced by the content from filename
+				searched in the filename search path.
+
+ Lower case keywords need to be enabled, e.g. via "admin -fx" or "admin -fy"
 
 -admin
      admin [-n] [-i<name>] [-r<rel>] [-t<name>] [-f<add-flag<flag-val>>] ...
            [-d<del-flag>] ... [-a<add-login>] ... [-e<erase-login>] ...
            [-m<mrlist>] [-N[bulk-spec]] [-q[nsedelim]] [-w<%W%-replacement>]
-           [-y<comment>] [-b] [-h] [-k] [-o] [-z] file ...
+           [-y<comment>] [-b] [-h] [-k] [-o] [-z] [-Xopts] file ...
 
 	Create and administer SCCS history files
 
@@ -157,10 +183,12 @@ options:
 	-ycmt	Supply initial delta comment
 	-z	Recompute the checksum
 	-C	Working directory for g-file
+	-Xopts	Specify extended options as comma separated list
 	-V	Print version number
 	-V6	Create a SCCS v6 history file
 
-	(do 'help admin_flags' for a list of sccs flags)
+	Use 'help admin_flags' for a list of sccs flags.
+	Use 'help Xopts' for help on the -X options.
 -admin_flags
 
 	List of flags recognized by _a_d_m_i_n -f and _a_d_m_i_n -d
@@ -200,7 +228,7 @@ options:
 	-s	Stop after first occurrence of SCCS pattern
 	-V	Print version number
 -comb
-	comb [-o] [-s] [-p<SID>] [-c<list>] file ...
+	comb [-o] [-s] [-p<SID>] [-c<list>] [-N[bulk-spec]] file ...
 
 	Combine SCCS deltas
 
@@ -209,15 +237,17 @@ options:
 	-o	May decrease the size of the reconstructed history file
 	-pSID	The SID of the oldest delta to be preserved
 	-s	Generate scripts to gather statistics rather than combining deltas
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -cvt
-	cvt [-d] [-k] -V4/-V6 file ...
+	cvt [-d] [-k] -V4/-V6 [-N[bulk-spec]] file ...
 
 	Convert history files between SCCS v4 and SCCS v6
 
 options:
 	-d	Discard additional meta data when converting to SCCS v4
 	-k	Keep original history file as o.file
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 	-V4	Convert a SCCS v6 file to a SCCS v4 file
 	-V6	Convert a SCCS v4 file to a SCCS v6 file
@@ -229,7 +259,8 @@ options:
 options:
 	-s	Be silent
 -cdc
-	cdc -rSID [-m<mrlist>] [-q[nsedelim]] [-y<comment>] [-z] file ...
+	cdc -rSID [-m<mrlist>] [-q[nsedelim]] [-y<comment>] [-z]
+            [-N[bulk-spec]] file ...
 
 	Change the delta commentary of an SCCS delta
 
@@ -239,9 +270,10 @@ options:
 	-rSID	Supply SCCS ID
 	-ycmt	Supply delta comment
 	-z	Enable CMF extensions for MR numbers
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -rmdel
-	rmdel -rSID [-d] [-q[nsedelim]] [-z] file ...
+	rmdel -rSID [-d] [-q[nsedelim]] [-z] [-N[bulk-spec]] file ...
 
 	Remove a delta from an SCCS file
 
@@ -250,9 +282,10 @@ options:
 	-qnsed	Enable NSE mode. The parameter "nsed" is ignored.
 	-rSID	Supply SCCS ID
 	-z	Enable CMF extensions for MR numbers
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -log
-	log [-a|-aa] [-Cdir] [-p<subdir>] [-x] file...
+	log [-a|-aa] [-Cdir] [-p<subdir>] [-x] [-N[bulk-spec]] file...
 
 	Create a changelog from SCCS history files
 
@@ -262,9 +295,11 @@ options:
 	-Cdir	Use dir as base directory for printed names
 	-pdir	Use dir as subdirectory for SCCS files
 	-x	Print all comment (do not exclude comment that starts with ^Ac_)
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -sccsdiff
-	sccsdiff -rSID1 -rSID2 [-p] [-q] [<diff-flags>] sccsfile ...
+	sccsdiff -rSID1 -rSID2 [-p] [-q] [<diff-flags>]
+                 [-N[bulk-spec]] sccsfile ...
 
 	Compare two versions of an SCCS file
 
@@ -272,6 +307,7 @@ options:
 	-rSID1	Supply SCCS ID#1
 	-rSID2	Supply SCCS ID#2
 	-p	Pipe output through pr(1)
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -stuck
 
@@ -310,7 +346,8 @@ read-only.
 
 -val
 	val -
-	val [-T] [-h] [-s] [-r<SID>] [-m<name>] [-y<type>] file ...
+	val [-T] [-h] [-s] [-r<SID>] [-m<name>] [-y<type>]
+            [-N[bulk-spec]] file ...
 
 	Validate an SCCS file
 
@@ -321,6 +358,7 @@ options:
 	-s	Be silent
 	-T	Print extra debug (trace) messages)
 	-ytype	Compare type with %Y% keyword in s.file
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -vc
 	vc [-a] [-t] [-c<char>] [-s] [keyword=value ... keyword=value]
@@ -334,7 +372,7 @@ options:
 	-t	All characters from the beginning of a line up to a TAB are ignored
 -prs
 	prs [-d<dataspec>] [-r<SID>] [-c<cutoff>] [-e] [-l] [-a]
-		[-q[nsedelim]] file ...
+		[-q[nsedelim]] [-N[bulk-spec]] file ...
 
 	Display selected portions of an SCCS history
 
@@ -346,6 +384,7 @@ options:
 	-l	Include all deltas later than and including specified by -r or -c
 	-qnsed	Enable NSE mode. The parameter "nsed" is ignored.
 	-rSID	Supply SCCS ID
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 
 	(do 'help prs_kywds'  for a description of recognized data keywords)
@@ -415,12 +454,15 @@ Keyword       Data Item            Section           Type           Type
   :F:   File name                    N/A           file name         S
   :G:   G-File name                  N/A           file name         S
  :PN:   Pathname                     N/A           pathname          S
+ :Gp:   Pathname              Global metadata      initial pathname  S
+ :Gr:   Unified random nubmer         "            hex number        S
 
 Format type: S -> simple format, M -> multi line format
 
 -prt
 	prt [-y<SID>] [-c<cutoff>] [-r<cutoff>]
-	    [-a] [-b] [-d] [-e] [-f] [-i] [-s] [-t] [-u] file ...
+	    [-a] [-b] [-d] [-e] [-f] [-i] [-s] [-t] [-u]
+            [-N[bulk-spec]] file ...
 
 	Display delta table information from an SCCS file
 
@@ -437,17 +479,19 @@ options:
 	-t	Print descriptive text from s.file
 	-u	Print user names and/or numerical group ids
 	-ySID	Exclude delta table entries prior to specified SID
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -sact
-	sact [-s] file ...
+	sact [-s] [-N[bulk-spec]] file ...
 
 	Show editing activity status of an SCCS file
 
 options:
 	-s	Be silent
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 -unget
-	unget [-r<SID>] [-n] [-q[nsedelim]] [-s] file...
+	unget [-r<SID>] [-n] [-q[nsedelim]] [-s] [-N[bulk-spec]] file...
 
 	Undo a previous get of an SCCS file
 
@@ -456,6 +500,7 @@ options:
 	-qnsed	Enable NSE mode. The parameter "nsed" is ignored.
 	-rSID	When multiple versions are checked out, unget specified SID
 	-s	Suppress to display SID
+	-Nspec	Process a bulk of SCCS history files
 	-V	Print version number
 
 *
@@ -482,10 +527,12 @@ basic project oriented sub-commands:
 
 	(do 'help sccs'         for a full list of sccs options)
 	(do 'help sccs_subcmds' for a full list of sccs subcommands)
+	(do 'help project_subcmds' for a full list of project sccs subcommands)
 	(do 'help get_kywds'    for a description of recognized ID keywords)
 	(do 'help prs_kywds'    for a description of recognized data keywords)
 -intro
-      sccs [-R] [-T] [-r] [-d<rdir>] [-p<sdir>] subcommand [opt ...] [file ...]
+      sccs [-R] [-T] [-r] [-d<rdir>] [-p<sdir>]
+        subcommand [opt ...] [file ...]
 
 basic sub-commands:
 	sccs admin	create or administer SCCS history files
@@ -506,6 +553,7 @@ basic project oriented sub-commands:
 
 	(do 'help sccs'         for a full list of sccs options)
 	(do 'help sccs_subcmds' for a full list of sccs subcommands)
+	(do 'help project_subcmds' for a full list of project sccs subcommands)
 	(do 'help get_kywds'    for a description of recognized ID keywords)
 	(do 'help prs_kywds'    for a description of recognized data keywords)
 -sccs
@@ -559,6 +607,15 @@ options:
 	sccs val	validate an SCCS file
 	sccs what	extract SCCS version information from a file
 
+-project_subcmds
+	sccs add	add specified files on next commit
+	sccs commit	commit changes to project repository
+	sccs init	initialize empty project repository
+	sccs remove	remove specified files on next commit
+	sccs rename	rename specified files on next commit
+	sccs root	print project set home directory
+	sccs status	show changed files in the project
+
 -edit
 	edit [-r<SID>] [-c<cutoff>] [-i<list>] [-x<list>] [-a<seq no.>]
 	    [-s] [-b] [-g] [-t] file ...
@@ -584,22 +641,26 @@ options:
 	on all files not checked out for editing
 
 -delget
-	delget [-o] [-s] [-y<comment>] file...
+	delget [-o] [-s] [-f] [-q] [-y<comment>] file...
 
 	Sccs delta followed by sccs get
 
 options:
 	-o	Use original time of edited file to apply delta and get
 	-s	Be silent
+	-f	Enforce a delta in NSE mode, even when there is no p file
+	-q	Switch on NSE mode
 	-ycmt	Supply delta comment
 -deledit
-	deledit [-o] [-s] [-y<comment>] file...
+	deledit [-o] [-s] [-f] [-q] [-y<comment>] file...
 
 	Sccs delta followed by sccs edit
 
 options:
 	-o	Use original time of edited file to apply delta
 	-s	Be silent
+	-f	Enforce a delta in NSE mode, even when there is no p file
+	-q	Switch on NSE mode
 	-ycmt	Supply delta comment
 -fix
 	fix -r<SID> [-d] file...
@@ -747,6 +808,13 @@ options:
 	rename source destination
 
 	Rename files in the project list for the next commit
+-root
+	root [-v] [file]
+
+options:
+	-v	Show project root state in verbose.
+
+	Show the project root directory
 -status
 	status [file...]
 

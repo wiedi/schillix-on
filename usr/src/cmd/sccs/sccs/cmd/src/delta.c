@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2017 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)delta.c	1.72 17/06/13 J. Schilling
+ * @(#)delta.c	1.87 19/11/11 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)delta.c 1.72 17/06/13 J. Schilling"
+#pragma ident "@(#)delta.c 1.87 19/11/11 J. Schilling"
 #endif
 /*
  * @(#)delta.c 1.40 06/12/12
@@ -61,6 +61,7 @@
 
 static FILE	*Diffin, *Gin;
 static Nparms	N;			/* Keep -N parameters		*/
+static Xparms	X;			/* Keep -X parameters		*/
 static struct packet	gpkt;
 static struct utsname	un;
 static int	num_files;
@@ -69,7 +70,7 @@ static off_t	size_of_file;
 static off_t	Szqfile;
 static off_t	Checksum_offset;
 #if	defined(PROTOTYPES) && defined(INS_BASE)
-static char	BDiffpgmp[]  =   NOGETTEXT(INS_BASE "/ccs/bin/" "bdiff");
+static char	BDiffpgmp[]  =   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "bin/" "bdiff");
 #else
 /*
  * XXX If you are using a K&R compiler and like to install to a path
@@ -80,7 +81,7 @@ static char	BDiffpgmp[]  =   NOGETTEXT("/usr/ccs/bin/bdiff");
 static char	BDiffpgm[]  =   NOGETTEXT("/usr/bin/bdiff");
 static char	BDiffpgm2[]  =   NOGETTEXT("/bin/bdiff");
 #if	defined(PROTOTYPES) && defined(INS_BASE)
-static char	Diffpgmp[]  =   NOGETTEXT(INS_BASE "/ccs/bin/" "diff");
+static char	Diffpgmp[]  =   NOGETTEXT(INS_BASE  "/" SCCS_BIN_PRE "bin/" "diff");
 #else
 static char	Diffpgmp[]  =   NOGETTEXT("/usr/ccs/bin/diff");
 #endif
@@ -103,14 +104,15 @@ static	void	enter	__PR((struct packet *pkt, int ch, int n, struct sid *sidp));
 
 	int	main __PR((int argc, char **argv));
 static void	delta __PR((char *file));
-static int	mkdelt __PR((struct packet *pkt, struct sid *sp, struct sid *osp, int diffloop, int orig_nlines));
+static int	mkdelt __PR((struct packet *pkt, struct sid *sp, struct sid *osp,
+				int diffloop, int orig_nlines));
 static void	mkixg __PR((struct packet *pkt, int reason, int ch));
 static void	putmrs __PR((struct packet *pkt));
 static void	putcmrs __PR((struct packet *pkt));
 static struct pfile *rdpfile __PR((struct packet *pkt, struct sid *sp));
 static FILE *	dodiff __PR((char *newf, char *oldf, int difflim));
 static int	getdiff __PR((char *type, int *plinenum));
-static void	insert __PR((struct packet *pkt, int linenum, int n, int ser));
+static void	insert __PR((struct packet *pkt, int linenum, int n, int ser, int off));
 static void	delete __PR((struct packet *pkt, int linenum, int n, int ser));
 static void	after __PR((struct packet *pkt, int n));
 static void	before __PR((struct packet *pkt, int n));
@@ -148,7 +150,7 @@ register char *argv[];
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	   NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	   NOGETTEXT("/usr/ccs/lib/locale/"));
@@ -186,7 +188,7 @@ register char *argv[];
 			}
 			no_arg = 0;
 			i = current_optind;
-		        c = getopt(argc, argv, "-r:dpsnm:g:y:fhoqzC:D:N:V(version)");
+		        c = getopt(argc, argv, "()-r:dpsnm:g:y:fhoqkzC:D:N:X:V(version)");
 
 				/* this takes care of options given after
 				** file names.
@@ -243,6 +245,7 @@ register char *argv[];
 				}
 				break;
 			case 'h': /* allow diffh for large files (NSE only) */
+			case 'k': /* get(1) without keyword expand */
 			case 'o': /* use original file date */
                                 break;
                         case 'q': /* enable NSE mode */
@@ -272,8 +275,16 @@ register char *argv[];
 				N.n_parm = p;
 				break;
 
+			case 'X':
+				X.x_parm = optarg;
+				X.x_flags = XO_PREPEND_FILE|XO_MAIL;
+				if (!parseX(&X))
+					goto err;
+				break;
+
 			case 'V':		/* version */
-				printf("delta %s-SCCS version %s %s (%s-%s-%s)\n",
+				printf(gettext(
+				    "delta %s-SCCS version %s %s (%s-%s-%s)\n"),
 					PROVIDER,
 					VERSION,
 					VDATE,
@@ -281,7 +292,8 @@ register char *argv[];
 				exit(EX_OK);
 
 			default:
-				fatal(gettext("Usage: delta [ -dnops ][ -g sid-list ][ -m mr-list ][ -r SID ]\n\t[ -y[comment] ][ -D diff-file ][ -N[bulk-spec]] s.filename... "));
+			err:
+				fatal(gettext("Usage: delta [ -dknops ][ -g sid-list ][ -m mr-list ][ -r SID ]\n\t[ -y[comment] ][ -D diff-file ][ -N[bulk-spec]][ -Xxopts ] s.filename..."));
 			}
 
 			/*
@@ -311,13 +323,15 @@ register char *argv[];
  	   fatal(gettext("missing file arg (cm3)"));
  	   exit(2);
  	}
-	if (HADUCN) {					/* Parse -N args  */
-		parseN(&N);
-	}
+
 	setsig();
 	xsethome(NULL);
-	if (HADUCN && N.n_sdot && (sethomestat & SETHOME_OFFTREE))
-		fatal(gettext("-Ns. not supported in off-tree project mode"));
+	if (HADUCN) {					/* Parse -N args  */
+		parseN(&N);
+
+		if (N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+			fatal(gettext("-Ns. not supported in off-tree project mode"));
+	}
 
 	Fflags &= ~FTLEXIT;
 	Fflags |= FTLJMP;
@@ -328,6 +342,9 @@ register char *argv[];
 	return (Fcnt ? 1 : 0);
 }
 
+/*
+ * Create the delta for one file
+ */
 static void
 delta(file)
 char *file;
@@ -342,7 +359,7 @@ char *file;
 	char dfilename[FILESIZE];
 	char gfilename[FILESIZE];
 	char *ifile;
-	char line[BUFSIZ];
+	char line[BUFSIZ];		/* Buffer for uuencoded IO, see below */
 	struct stats stats;
 	struct pfile *pp = NULL;
 	struct stat sbuf;
@@ -459,7 +476,9 @@ char *file;
 	finduser(&gpkt);
 	doflags(&gpkt);
 	permiss(&gpkt);
-	flushto(&gpkt,EUSERTXT,1);
+	donamedflags(&gpkt);
+	dometa(&gpkt);
+	flushto(&gpkt, EUSERTXT, FLUSH_NOCOPY);
 	gpkt.p_chkeof = 1;
 	/* if encode flag is set, encode the g-file before diffing it
 	 * with the s.file
@@ -478,27 +497,39 @@ char *file;
 		setvbuf(Gin, NULL, _IOFBF, VBUF_SIZE);
 #endif
 	}
-	copy(auxf(gpkt.p_file,'d'),dfilename);
-	gpkt.p_gout = xfcreat(dfilename,(mode_t)0444);
+
+	dfilename[0] = '\0';
+	if ((X.x_opts & XO_PREPEND_FILE) == 0) {
+		copy(auxf(gpkt.p_file,'d'),dfilename);
+		gpkt.p_gout = xfcreat(dfilename,(mode_t)0444);
 #ifdef	USE_SETVBUF
-	setvbuf(gpkt.p_gout, NULL, _IOFBF, VBUF_SIZE);
+		setvbuf(gpkt.p_gout, NULL, _IOFBF, VBUF_SIZE);
 #endif
-	while(readmod(&gpkt)) {
-		if (gpkt.p_flags & PF_NONL)
-			gpkt.p_line[gpkt.p_line_length-1] = '\0';
-		if(fputs(gpkt.p_lineptr, gpkt.p_gout) == EOF)
+		while(readmod(&gpkt)) {
+			if (gpkt.p_flags & PF_NONL)
+				gpkt.p_line[gpkt.p_line_length-1] = '\0';
+			if(fputs(gpkt.p_lineptr, gpkt.p_gout) == EOF)
+				xmsg(dfilename, NOGETTEXT("delta"));
+		}
+		if (fflush(gpkt.p_gout) == EOF)
 			xmsg(dfilename, NOGETTEXT("delta"));
-	}
-	if (fflush(gpkt.p_gout) == EOF)
-		xmsg(dfilename, NOGETTEXT("delta"));
 #ifdef	HAVE_FSYNC
-	if (fsync(fileno(gpkt.p_gout)) < 0)
-		xmsg(dfilename, NOGETTEXT("delta"));
+		if (fsync(fileno(gpkt.p_gout)) < 0)
+			xmsg(dfilename, NOGETTEXT("delta"));
 #endif
-	if (fclose(gpkt.p_gout) == EOF)
-		xmsg(dfilename, NOGETTEXT("delta"));
-	gpkt.p_gout = NULL;
-	orig = gpkt.p_glnno;
+		if (fclose(gpkt.p_gout) == EOF)
+			xmsg(dfilename, NOGETTEXT("delta"));
+		gpkt.p_gout = NULL;
+		orig = gpkt.p_glnno;
+	} else {
+		/*
+		 * We don't count the previous version and we
+		 * do not have real diffs, so we need to use
+		 * an estimation.
+		 */
+		orig = stats.s_ins + stats.s_unc - stats.s_del;
+	}
+
 	gpkt.p_glnno = 0;
 	gpkt.p_verbose = (HADS) ? 0 : 1;
 	gpkt.p_did_id = 0;
@@ -511,9 +542,16 @@ char *file;
 		gpkt.p_did_id = 1;	/* No need to scan for keywds */
 	}
 	if ((gpkt.p_encoding & EF_UUENCODE) == 0) {
+		/*
+		 * Compute the checksum and scan for unsupported characters.
+		 * This method supports nul bytes.
+		 */
 		fgetchk(gfilename, &gpkt);
 		number_of_lines = gpkt.p_glines;
 	} else {
+		/*
+		 * This does not support nul bytes, but this is uuencoded text.
+		 */
 	 	while (fgets(line,sizeof(line),Gin) != NULL) {
 			register int	len = strlen(line);
 			register char	**sflags = gpkt.p_sflags;
@@ -533,9 +571,11 @@ char *file;
 	if (stat(gfilename, &Statbuf) == 0) {
 		size_of_file = Statbuf.st_size;
 	}
-	if (Gin)
-		fclose(Gin);
-	Gin = NULL;
+	if ((X.x_opts & XO_PREPEND_FILE) == 0) {
+		if (Gin)
+			fclose(Gin);
+		Gin = NULL;
+	}
 	if (gpkt.p_verbose && (num_files > 1 || had_dir || had_standinp))
  	   fprintf(gpkt.p_stdout,"\n%s:\n",gpkt.p_file);
  	if (HADD != 0) {
@@ -571,14 +611,37 @@ char *file;
 	*/
 	difflim = 24000;
 	diffloop = 0;
-	ghash = gpkt.p_ghash;		/* Save ghash value */
+	ghash = gpkt.p_ghash;			/* Save ghash value */
+
+	if (X.x_opts & XO_PREPEND_FILE) {
+		int	oihash = gpkt.p_ihash;	/* Remember hash from sinit() */
+
+		grewind(&gpkt);
+		gpkt.do_chksum = 1;		/* No old g-file, do it now */
+		gpkt.p_ihash = oihash;		/* Restore hash */
+		if (gpkt.p_flags & PF_V6) {
+			/*
+			 * We do not read the "current" file as it does not yet
+			 * exist, but we compute the sum of the hashes from the
+			 * old file and the new beginning that is a file with
+			 * the name of the g-file.
+			 */
+			if (gpkt.p_hash != NULL) {
+				ghash += gpkt.p_hash[ser];
+				ghash &= 0xFFFF;
+			}
+		}
+	}
+
 	/*CONSTCOND*/
 	while (1) {
 		inserted = deleted = 0;
 		gpkt.p_glnno = 0;
 		gpkt.p_upd = 1;
 		gpkt.p_wrttn = 1;
-		getline(&gpkt);
+		getline(&gpkt);		/* Read the magic line */
+		gpkt.p_chash = 0; 	/* Reset signed hash */
+		gpkt.p_uchash = 0; 	/* Reset unsigned hash */
 		gpkt.p_wrttn = 1;
 		gpkt.p_ghash = ghash;	/* ghash may be destroyed in loop */
 		if (glist && gpkt.p_flags & PF_V6) {
@@ -592,21 +655,34 @@ char *file;
 				diffloop, orig);
         	}
 		diffloop = 1;
-		flushto(&gpkt,EUSERTXT,0);
-		if (gpkt.p_encoding & EF_UUENCODE)
-			Diffin = dodiff(auxf(gpkt.p_file,'e'),dfilename,difflim);
-		else
-			Diffin = dodiff(gfilename, dfilename, difflim);
+		flushto(&gpkt, EUSERTXT, FLUSH_COPY);
 
-		type = 0;				/* Make GCC quiet */
-		while ((n = getdiff(&type,&linenum)) != 0) {
-			if (type == INS) {
-				inserted += n;
-				insert(&gpkt,linenum,n,newser);
+		if (X.x_opts & XO_PREPEND_FILE) {
+			/*
+			 * Since we do not call "diff", we come here only once.
+			 */
+			Diffin = Gin;
+			rewind(Diffin);
+			Gin = NULL;
+			inserted += number_of_lines;
+			insert(&gpkt, 0, number_of_lines, newser, 0);
+			status = 0;		/* Causes a break from while */
+		} else {
+			if (gpkt.p_encoding & EF_UUENCODE) {
+				Diffin = dodiff(auxf(gpkt.p_file,'e'),
+						dfilename, difflim);
+			} else {
+				Diffin = dodiff(gfilename, dfilename, difflim);
 			}
-			else {
-				deleted += n;
-				delete(&gpkt,linenum,n,newser);
+			type = 0;			/* Make GCC quiet */
+			while ((n = getdiff(&type,&linenum)) != 0) {
+				if (type == INS) {
+					inserted += n;
+					insert(&gpkt, linenum , n, newser, 1);
+				} else {
+					deleted += n;
+					delete(&gpkt,linenum,n,newser);
+				}
 			}
 		}
 		if (Diffin)
@@ -615,7 +691,8 @@ char *file;
 		if (gpkt.p_iop)
 			while (readmod(&gpkt))
 				;
-		wait(&status);
+		if ((X.x_opts & XO_PREPEND_FILE) == 0)
+			wait(&status);
  		/*
  		 Check top byte (exit code of child).
  		*/
@@ -637,13 +714,11 @@ char *file;
 					gettext("'%s' failed, re-trying, segmentation = %d (de13)\n"),
  					diffpgm,
 					difflim);
-				if (gpkt.p_xiop)
-					fclose(gpkt.p_xiop); /* set up */
-				gpkt.p_xiop = 0;	/* for new x-file */
-				gpkt.p_xcreate = 0;
+				xrm(&gpkt);		/* Close x-file */
 				/*
-				Re-open s-file.
-				*/
+				 * Re-open s-file.
+				 */
+				sclose(&gpkt);
 				gpkt.p_iop = xfopen(gpkt.p_file, O_RDONLY|O_BINARY);
 #ifdef	USE_SETVBUF
 				setvbuf(gpkt.p_iop, NULL, _IOFBF, VBUF_SIZE);
@@ -671,15 +746,17 @@ TRANSLATION_NOTE
 command, to check the differences found between two files.
 */
 				fatal(gettext("diff failed (de4)"));
-		}
-		else {		/* no need to try again, worked */
+		} else {		/* no need to try again, worked */
 			break;			/* exit while loop */
 		}
 	}
 	if (gpkt.p_encoding & EF_UUENCODE) {
 		unlink(auxf(gpkt.p_file,'e'));
 	}
-	unlink(dfilename);
+	if (dfilename[0]) {
+		unlink(dfilename);
+		dfilename[0] = '\0';
+	}
 	/*
 	 * If we had a glist, the checked out file will differ from the checked
 	 * in file. Check out the real new content and recompute + correct the
@@ -741,6 +818,7 @@ command, to check the differences found between two files.
 			xunlink(Pfilename);
 		}
 	}
+	sclose(&gpkt);
 	clean_up();
 	if (!HADN) {
 		fflush(gpkt.p_stdout);
@@ -749,11 +827,19 @@ command, to check the differences found between two files.
 		setuid(getuid());
 		setgid(getgid());
 		unlink(gfilename);
+		if (N.n_get) {
+			doget(gpkt.p_file, gfilename, newser);
+			if (HADO)
+				dogtime(&gpkt, gfilename, &gfile_mtime);
+		}
 		setuid(holduid);
 		setgid(holdgid);
 	}
 }
 
+/*
+ * Make the delta table for the current file
+ */
 static int
 mkdelt(pkt,sp,osp,diffloop,orig_nlines)
 struct packet *pkt;
@@ -763,7 +849,7 @@ int orig_nlines;
 {
 	extern dtime_t Timenow;
 	struct deltab dt;
-	char str[max(BUFSIZ, SID_STRSIZE)];
+	char str[max(BUFSIZ, SID_STRSIZE)];	/* Buffer for delta table IO */
 	int newser;
 	register char *p;
 	int ser_inc, opred, nulldel;
@@ -859,7 +945,9 @@ int orig_nlines;
 	}
 	if (pkt->p_flags & PF_V6) {
 		Checksum_offset = ftell(gpkt.p_xiop);
+		gpkt.p_mail = X.x_mail;
 		sidext_ba(pkt, &dt);
+		gpkt.p_mail = NULL;
 	}
 
 	sprintf(str, NOGETTEXT("%c%c "), CTLCHAR, COMMENTS);
@@ -895,6 +983,9 @@ int orig_nlines;
 	return(newser);
 }
 
+/*
+ * Write include/exclude/ignore table for delta table
+ */
 static void
 mkixg(pkt,reason,ch)
 struct packet *pkt;
@@ -902,7 +993,7 @@ int reason;
 char ch;
 {
 	int n;
- 	char str[BUFSIZ];
+ 	char str[BUFSIZ];	/* Only limits the size of a single entry */
 
 	sprintf(str, NOGETTEXT("%c%c"), CTLCHAR, ch);
 	putline(pkt,str);
@@ -950,6 +1041,9 @@ struct packet *pkt;
 
 static char ambig[] = NOGETTEXT("ambiguous `r' keyletter value (de15)");
 
+/*
+ * Read the p-file and write a new version as q-file.
+ */
 static struct pfile *
 rdpfile(pkt,sp)
 register struct packet *pkt;
@@ -958,7 +1052,7 @@ struct sid *sp;
 	char *user;
 	struct pfile pf;
 	static struct pfile goodpf;
-	char line[BUFSIZ];
+	char line[BUFSIZ];		/* Limits the line length of a p-file */
 	int cnt, uniq, fd;
 	FILE *in, *out;
 	char *outname;
@@ -1041,7 +1135,9 @@ struct sid *sp;
 	return(&goodpf);
 }
 
-
+/*
+ * Open a FILE * to the diff output.
+ */
 static FILE *
 dodiff(newf,oldf,difflim)
 char *newf, *oldf;
@@ -1128,7 +1224,10 @@ int difflim;
 	return (0);	/* fake for gcc */
 }
 
-
+/*
+ * Parse the part of the diff output that contains the line numbers and the
+ * delete/append/change instructions.
+ */
 static int
 getdiff(type,plinenum)
 register char *type;
@@ -1179,10 +1278,15 @@ register int *plinenum;
 	return(num_lines);
 }
 
+/*
+ * Skip the next chunk of kept lines from the old file and then
+ * insert the new lines from the diff output.
+ */
 static void
-insert(pkt, linenum, n, ser)
+insert(pkt, linenum, n, ser, off)
 struct	packet	*pkt;
 int	linenum, n, ser;
+	int	off;
 {
  	char	str[BUFSIZ];
  	int 	first;
@@ -1201,6 +1305,8 @@ int	linenum, n, ser;
 	after(pkt, linenum);
 	sprintf(str, NOGETTEXT("%c%c %d\n"), CTLCHAR, INS, ser);
 	putline(pkt, str);
+	if (off)
+		off = 2;			/* strlen("> ") from diff */
 	while (--n >= 0) {
  		first = 1;
  		for (;;) {			/* Loop over partial line */
@@ -1211,9 +1317,9 @@ int	linenum, n, ser;
 				first = 0;
 				if (n == 0 && nonl) {	/* No newline at end */
 					putctlnnl(pkt);	/* ^AN escape	    */
-				} else if (str[2] == CTLCHAR) /* ^A escape? */
+				} else if (str[off] == CTLCHAR) /* ^A escape? */
 					putctl(pkt);
-				putline(pkt, str+2);	/* Skip diff's "> " */
+				putline(pkt, str+off);	/* Skip diff's "> " */
 			} else {
 				putline(pkt, str);
 			}
@@ -1226,12 +1332,15 @@ int	linenum, n, ser;
 	putline(pkt, str);
 }
 
+/*
+ * Add delete markers in the weave data.
+ */
 static void
 delete(pkt, linenum, n, ser)
 struct	packet	*pkt;
 int	linenum, n, ser;
 {
-	char str[BUFSIZ];
+	char str[BUFSIZ];	/* Only used for ^A lines in the weave */
 
 	before(pkt, linenum);
 	sprintf(str, NOGETTEXT("%c%c %d\n"), CTLCHAR, DEL, ser);
@@ -1271,7 +1380,9 @@ int	n;
 	}
 }
 
-
+/*
+ * Parse the line range from the diff output
+ */
 static char *
 linerange(cp, low, high)
 char	*cp;
@@ -1286,6 +1397,9 @@ int	*low, *high;
 	return(cp);
 }
 
+/*
+ * Skip lines from the diff outout, e.g. lines that start with "< ".
+ */
 static void
 skipline(lp, num)
 char	*lp;
@@ -1298,6 +1412,10 @@ int	num;
  	}
 }
 
+/*
+ * This is the central read routine.
+ * As long as we use fgets() here, we cannot support nul bytes in the files.
+ */
 static char *
 rddiff(s, n)
 char	*s;
@@ -1361,10 +1479,8 @@ clean_up()
 	uname(&un);
 	uuname = un.nodename;
 	if (mylock(auxf(gpkt.p_file,'z'), getpid(),uuname)) {
-		if (gpkt.p_iop) {
-			fclose(gpkt.p_iop);
-			gpkt.p_iop = NULL;
-		}
+		sclose(&gpkt);
+		sfree(&gpkt);
 		if (gpkt.p_xiop) {
 			fclose(gpkt.p_xiop);
 			gpkt.p_xiop = NULL;
@@ -1384,6 +1500,22 @@ clean_up()
 	}
 }
 
+/*
+ * Compute the checksum for the new version and check for characters that
+ * are not allowed in the file.
+ *
+ * SCCSv4 disallows ^A (0x01) at the start of a line, nul bytes and requires a
+ *	newline at the end of the file.
+ *
+ * SCCSv6 currently disallows nul bytes in the file.
+ *	Since our diff(1) implementation supports to treat even files with
+ *	nul bytes as text files, we could support nul bytes in the future.
+ *
+ * Both versions allow an unlimited line length.
+ *
+ * Since fgets() does not report the amount of bytes read, we cannot support
+ * nul bytes on platforms with record oriented IO (VMS).
+ */
 /*ARGSUSED*/
 static void
 fgetchk(file, pkt)
@@ -1465,7 +1597,7 @@ struct	packet	*pkt;
 				sprintf(SccsError,
 				gettext(
 			  "file '%s' contains illegal data on line %jd (de14)"),
-				file, (intmax_t)++nline);
+				file, (Intmax_t)++nline);
 				fatal(SccsError);
 			}
 		}
@@ -1497,7 +1629,7 @@ struct	packet	*pkt;
 		    fclose(inptr);
 		    sprintf(SccsError,
 		      gettext("file '%s' contains illegal data on line %jd (de14)"),
-		      file, (intmax_t)nline);
+		      file, (Intmax_t)nline);
 		    fatal(SccsError);
 		 }
 	      } else {
@@ -1553,7 +1685,7 @@ warnctl(file, nline)
 	fprintf(stderr,
 		gettext(
 		"WARNING [%s]: line %jd begins with ^A\n"),
-		file, (intmax_t)nline);
+		file, (Intmax_t)nline);
 }
 
 static void 
