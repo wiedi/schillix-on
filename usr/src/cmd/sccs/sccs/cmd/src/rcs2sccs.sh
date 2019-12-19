@@ -1,11 +1,11 @@
 #! /bin/sh
-# @(#)rcs2sccs.sh	1.17 11/10/03 Copyright 2011 J. Schilling
+# @(#)rcs2sccs.sh	1.19 18/11/08 Copyright 2011-2018 J. Schilling
 #
 #
 # Id: rcs2sccs,v 1.12 90/10/04 20:52:23 kenc Exp Locker: kenc
 
 ############################################################
-PATH=INS_BASE/ccs/bin:$PATH:/usr/ccs/bin
+PATH=INS_BASE/SCCS_BIN_PREbin:$PATH:/usr/ccs/bin
 ############################################################
 ex_code=0
 do_v6=""
@@ -27,7 +27,7 @@ while [ $# -ge 1 ]; do
 		do_rm=TRUE
 		shift
 		continue;;
-	-V)
+	-V | -version | --version)
 		echo "$0 PROVIDER-SCCS version VERSION VDATE (HOST_SUB)"
 		exit 0
 		;;

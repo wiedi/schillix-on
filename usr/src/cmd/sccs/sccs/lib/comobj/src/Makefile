@@ -25,15 +25,18 @@ OBJECTS =	auxf.o \
 		cdata.o change_ab.o change_ba.o chkid.o chksid.o cmpdate.o \
 		date_ab.o date_ba.o date_bal.o \
 		del_ab.o \
-		del_ba.o dodelt.o dofile.o dohist.o doie.o dolist.o dometa.o \
+		del_ba.o dodelt.o dogtime.o dofile.o doget.o \
+		dohist.o doie.o dolist.o dometa.o \
 		dtime.o encode.o \
-		eqsid.o flushto.o fmterr.o getline.o getser.o \
-		help.o \
-		idsubst.o \
+		eqsid.o fdirsubs.o flushto.o fmterr.o getline.o getser.o \
+		help.o homesubs.o \
+		idsubst.o intree.o \
 		lhash.o logname.o newsid.o \
-		newstats.o permiss.o pf_ab.o putline.o putmeta.o \
+		namedflags.o newstats.o \
+		parsex.o permiss.o pf_ab.o putline.o putmeta.o \
 		rdmod.o \
-		sethome.o setinitpath.o setup.o sid_ab.o \
+		sclose.o \
+		sethome.o setinitpath.o setup.o sfree.o sid_ab.o \
 		sid_ba.o sidext_ab.o sidext_ba.o sidtoser.o sinit.o \
 		stats_ab.o strptim.o \
 		ssum.o \

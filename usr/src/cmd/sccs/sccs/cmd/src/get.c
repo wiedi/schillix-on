@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2017 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)get.c	1.74 17/04/15 J. Schilling
+ * @(#)get.c	1.85 19/11/12 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)get.c 1.74 17/04/15 J. Schilling"
+#pragma ident "@(#)get.c 1.85 19/11/12 J. Schilling"
 #endif
 /*
  * @(#)get.c 1.59 06/12/12
@@ -134,7 +134,7 @@ register char *argv[];
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	   NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	   NOGETTEXT("/usr/ccs/lib/locale/"));
@@ -173,7 +173,7 @@ register char *argv[];
 			}
 			no_arg = 0;
 			i = current_optind;
-		        c = getopt(argc, argv, "-r:c:ebi:x:kl:Lpsmnogta:G:w:zqdC:AFN:V(version)");
+		        c = getopt(argc, argv, "()-r:c:ebi:x:kl:Lpsmnogta:G:w:zqdC:AFN:V(version)");
 				/* this takes care of options given after
 				** file names.
 				*/
@@ -312,7 +312,8 @@ register char *argv[];
 				break;
 
 			case 'V':		/* version */
-				printf("get %s-SCCS version %s %s (%s-%s-%s)\n",
+				printf(gettext(
+				    "get %s-SCCS version %s %s (%s-%s-%s)\n"),
 					PROVIDER,
 					VERSION,
 					VDATE,
@@ -320,7 +321,7 @@ register char *argv[];
 				exit(EX_OK);
 
 			default:
-			   fatal(gettext("Usage: get [-AbeFgkmLopst] [-l[p]] [-asequence] [-cdate-time] [-Gg-file]\n\t[-isid-list] [-rsid] [-xsid-list][ -N[bulk-spec]] file ..."));
+			   fatal(gettext("Usage: get [-AbeFgkmLopst] [-l[p]] [-asequence] [-cdate-time] [-Gg-file]\n\t[-isid-list] [-rsid] [-xsid-list][ -N[bulk-spec]] s.filename ..."));
 			}
 
 			/*
@@ -344,13 +345,21 @@ register char *argv[];
 		HADK = 1;
 	if (HADE && !logname())
 		fatal(gettext("User ID not in password file (cm9)"));
-	if (HADUCN) {					/* Parse -N args  */
-		parseN(&N);
-	}
+
 	setsig();
 	xsethome(NULL);
-	if (HADUCN && N.n_sdot && (sethomestat & SETHOME_OFFTREE))
-		fatal(gettext("-Ns. not supported in off-tree project mode"));
+	if (HADUCN) {					/* Parse -N args  */
+		/*
+		 * initN() was already called while parsing options.
+		 */
+		if (!HADP && !HADG && !HADUCG)		/* Create g-file, so */
+			N.n_flags |= N_GETI;		/* create subdirs    */
+			
+		parseN(&N);
+
+		if (N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+			fatal(gettext("-Ns. not supported in off-tree project mode"));
+	}
 
 	Fflags &= ~FTLEXIT;
 	Fflags |= FTLJMP;
@@ -478,6 +487,8 @@ get(pkt, file)
 		fmterr(pkt);
 	finduser(pkt);
 	doflags(pkt);
+	donamedflags(pkt);
+	dometa(pkt);
 
 	if (!HADA) {
 		ser = getser(pkt);
@@ -525,7 +536,13 @@ get(pkt, file)
 			gen_lfile(pkt);
 		if (HADG)
 			goto unlock;
-		flushto(pkt, EUSERTXT, 1);
+
+		if (pkt->p_idel[ser].i_dtype == 'U') {	/* unlink delta */
+			unlink(gfile);
+			goto unlock;
+		}
+
+		flushto(pkt, EUSERTXT, FLUSH_NOCOPY);
 		idsetup(pkt, gfile);
 		pkt->p_chkeof = 1;
 		pkt->p_did_id = 0;
@@ -686,10 +703,6 @@ get(pkt, file)
 		setuid(holduid);
 		setgid(holdgid);
 	}
-	if (pkt->p_iop) {
-		fclose(pkt->p_iop);
-		pkt->p_iop = NULL;
-	}
 unlock:
 	if (HADE) {
 		struct utsname	un;
@@ -701,6 +714,8 @@ unlock:
 		uuname = un.nodename;
 		unlockit(auxf(pkt->p_file, 'z'), getpid(), uuname);
 	}
+	sclose(pkt);
+	sfree(pkt);
 	ffreeall();
 	if (HADUCA)				/* ffreeall() killed it	*/
 		lhash_destroy();		/* need to reset it	*/
@@ -777,7 +792,7 @@ register struct packet *pkt;
 	       line[0] == CTLCHAR && line[1] == STATS) {
 		fgets(line,sizeof(line),in);
 		del_ab(line,&dt,pkt);
-		if (dt.d_type == 'D') {
+		if (dt.d_type == 'D' || dt.d_type == 'U') {
 			reason = pkt->p_apply[dt.d_serial].a_reason;
 			if (pkt->p_apply[dt.d_serial].a_code == APPLY) {
 				OUTPUTC(' ');
@@ -838,7 +853,7 @@ register struct packet *pkt;
 					continue;
 				case MRNUM:
 				case COMMENTS:
-					if (dt.d_type == 'D') {
+					if (dt.d_type == 'D' || dt.d_type == 'U') {
 					   if (fprintf(out,"\t%s",&line[3]) == EOF)
 					      xmsg(outname,
 					         NOGETTEXT("gen_lfile"));

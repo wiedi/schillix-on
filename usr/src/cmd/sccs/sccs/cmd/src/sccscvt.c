@@ -1,8 +1,8 @@
-/* @(#)sccscvt.c	1.17 15/02/06 Copyright 2011-2015 J. Schilling */
+/* @(#)sccscvt.c	1.24 18/12/18 Copyright 2011-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)sccscvt.c	1.17 15/02/06 Copyright 2011-2015 J. Schilling";
+	"@(#)sccscvt.c	1.24 18/12/18 Copyright 2011-2018 J. Schilling";
 #endif
 /*
  *	Convert a SCCS v4 history file to a SCCS v6 file and vice versa.
@@ -10,7 +10,7 @@ static	UConst char sccsid[] =
  *	is kept in special degenerated comment at the beginning of the comment
  *	block.
  *
- *	Copyright (c) 2011-2015 J. Schilling
+ *	Copyright (c) 2011-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -39,10 +39,12 @@ LOCAL	void	cvtdelt2v6	__PR((struct packet *pkt));
 LOCAL	void	get_setup	__PR((char *file));
 LOCAL	int	get_hash	__PR((int ser));
 LOCAL	void	clean_up	__PR((void));
+LOCAL	int	getN		__PR((const char *, void *));
 
 LOCAL	struct utsname	un;
 LOCAL	char		*uuname;
 LOCAL	struct packet	gpkt;
+LOCAL	Nparms		N;			/* Keep -N parameters		*/
 
 LOCAL	BOOL	dov6	= -1;
 LOCAL	BOOL	keepold;
@@ -52,13 +54,14 @@ LOCAL void
 usage(exitcode)
 	int	exitcode;
 {
-	fprintf(stderr, _("Usage: sccscvt [options] file1..filen\n"));
+	fprintf(stderr, _("Usage: sccscvt [options] s.file1 .. s.filen\n"));
 	fprintf(stderr, _("	-help	Print this help.\n"));
 	fprintf(stderr, _("	-version Print version number.\n"));
 	fprintf(stderr, _("	-V4	Convert history files to SCCS v4.\n"));
 	fprintf(stderr, _("	-V6	Convert history files to SCCS v6.\n"));
 	fprintf(stderr, _("	-d	Discard SCCS v6 meta data.\n"));
 	fprintf(stderr, _("	-keep,-k Keep original history file as o.file.\n"));
+	fprintf(stderr, _("	-Nbulk-spec Processes a bulk of SCCS history files.\n"));
 	exit(exitcode);
 }
 
@@ -69,7 +72,7 @@ main(ac, av)
 {
 	int	cac;
 	char	* const *cav;
-	char	*opts = "help,V,version,V4%0,V6,d,k,keep";
+	char	*opts = "help,V,version,V4%0,V6,d,k,keep,N&_";
 	BOOL	help = FALSE;
 	BOOL	pversion = FALSE;
 	int	nargs = 0;
@@ -88,7 +91,7 @@ main(ac, av)
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	    NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	    NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	    NOGETTEXT("/usr/ccs/lib/locale/"));
@@ -112,7 +115,8 @@ main(ac, av)
 			&help, &pversion, &pversion,
 			&dov6, &dov6,
 			&discardv6,
-			&keepold, &keepold) < 0) {
+			&keepold, &keepold,
+			getN, &N) < 0) {
 		errmsgno(EX_BAD, _("Bad flag: %s.\n"), cav[0]);
 		usage(EX_BAD);
 	}
@@ -120,7 +124,7 @@ main(ac, av)
 		usage(0);
 	if (pversion) {
 		printf(
-	_("sccscvt %s-SCCS version %s %s (%s-%s-%s) Copyright (C) 2011-2015 %s\n"),
+	_("sccscvt %s-SCCS version %s %s (%s-%s-%s) Copyright (C) 2011-2018 %s\n"),
 			PROVIDER,
 			VERSION,
 			VDATE,
@@ -132,6 +136,15 @@ main(ac, av)
 		errmsgno(EX_BAD, _("Need to specify -V4 or -V6.\n"));
 		usage(EX_BAD);
 	}
+	if (N.n_parm) {					/* Parse -N args  */
+		parseN(&N);
+	}
+
+	xsethome(NULL);
+	if (N.n_parm && N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+		fatal(gettext("-Ns. not supported in off-tree project mode"));
+	Fflags &= ~FTLEXIT;
+	Fflags |= FTLJMP;
 
 	cac = ac;
 	cav = av;
@@ -175,13 +188,17 @@ dodir(name)
 	base++;
 	len = sizeof (fname) - strlen(fname);
 	while ((d = readdir(dp)) != NULL) {
+		char * oparm = N.n_parm;
+
 		np = d->d_name;
 
 		if (np[0] != 's' || np[1] != '.' || np[2] == '\0')
 			continue;
 
 		strlcpy(base, np, len);
+		N.n_parm = NULL;
 		convert(fname);
+		N.n_parm = oparm;
 	}
 	closedir(dp);
 }
@@ -193,12 +210,24 @@ convert(file)
 	struct stat sbuf;
 	char	hash[32];
 	char	*xf;
+	char	*dir_name = "";
 
 	/*
 	 * Set up exception handling for fatal().
 	 */
 	if (setjmp(Fjmp))
 		return;
+	if (N.n_parm) {
+		char	*ofile = file;
+
+		file = bulkprepare(&N, file);
+		if (file == NULL) {
+			if (N.n_ifile)
+				ofile = N.n_ifile;
+			fatal(gettext("directory specified as s-file (cm14)"));
+		}
+		dir_name = N.n_dir_name;
+	}
 
 	if (!sccsfile(file)) {
 		errmsgno(EX_BAD, _("%s: not an SCCS file (co1).\n"), file);
@@ -228,10 +257,8 @@ convert(file)
 		if (gpkt.p_flags & PF_V6) {
 			errmsgno(EX_BAD, _("%s: already in SCCS v6 format.\n"),
 				file);
-			if (gpkt.p_iop) {
-				fclose(gpkt.p_iop);
-				gpkt.p_iop = NULL;
-			}
+			sclose(&gpkt);
+			sfree(&gpkt);
 			return;
 		}
 		gpkt.p_flags |= PF_V6;
@@ -239,10 +266,8 @@ convert(file)
 		if ((gpkt.p_flags & PF_V6) == 0) {
 			errmsgno(EX_BAD, _("%s: already in SCCS v4 format.\n"),
 				file);
-			if (gpkt.p_iop) {
-				fclose(gpkt.p_iop);
-				gpkt.p_iop = NULL;
-			}
+			sclose(&gpkt);
+			sfree(&gpkt);
 			return;
 		}
 		gpkt.p_flags &= ~PF_V6;	/* Make sure initial chksum is V4 */
@@ -260,6 +285,7 @@ convert(file)
 	/*
 	 * The main conversion work happens here.
 	 * Convert the delta table.
+	 * The conversion stops at BUSERNAM (the beginning of the user names).
 	 */
 	if (dov6)
 		cvtdelt2v6(&gpkt);
@@ -267,9 +293,74 @@ convert(file)
 		cvtdelt2v4(&gpkt);
 
 	/*
-	 * Copy user permissions, flags,
-	 * v6 flags, v6 extensions and
-	 * descriptive user text.
+	 * The next sections in the history file are:
+	 *
+	 * -	usernames	mandatory BUSERNAM .. EUSERNAM
+	 * -	v4 flags	optional
+	 * -	v6 flags	optional
+	 * -	v6 meta data	optional
+	 * -	future extens.	optional
+	 * -	comments	mandatory BUSERTXT .. EUSERTXT
+	 *
+	 * First copy user names...
+	 */
+	flushto(&gpkt, EUSERNAM, FLUSH_COPY);
+
+	/*
+	 * gpkt.p_line now points to EUSERNAM and this line has been written.
+	 *
+	 * Now copy SCCS v4 flags in case they are present.
+	 * Using the flag parser is a bit slower, but warns about unknown flags.
+	 */
+	doflags(&gpkt);
+
+	/*
+	 * gpkt.p_line now points to the first line past the SCCS v4 flags and
+	 * this line has not yet been written.
+	 *
+	 * Now copy SCCS v6 flags in case they are present.
+	 * Using the flag parser is a bit slower, but warns about unknown flags.
+	 */
+	donamedflags(&gpkt);
+
+	/*
+	 * gpkt.p_line now points to the first line past the SCCS v6 flags and
+	 * this line has not yet been written.
+	 *
+	 * Now copy SCCS v6 meta data extensions in case they are present.
+	 * Using the meta data parser is needed since we need to know whether
+	 * we already have SCCS v6 initial path and SCCS v6 unified random.
+	 */
+	dometa(&gpkt);
+
+	/*
+	 * gpkt.p_line now points to the first line past the SCCS v6 meta data
+	 * and this line has not yet been written.
+	 *
+	 * Check whether we need to add SCCS v6 initial path and SCCS v6 urand.
+	 */
+	if (dov6) {
+		unsigned	mflags = 0;
+
+		if (gpkt.p_init_path == NULL && N.n_parm) {
+			set_init_path(&gpkt, N.n_ifile, dir_name);
+			mflags |= M_INIT_PATH;
+		}
+		if (!urand_valid(&gpkt.p_rand)) {
+			urandom(&gpkt.p_rand);
+			mflags |= M_URAND;
+		}
+		if (mflags) {
+			putmeta(&gpkt, mflags);
+		}
+	}
+
+	/*
+	 * gpkt.p_line still points to the first line past the SCCS v6 meta data
+	 * and this line has still not yet been written.
+	 *
+	 * Copy user names, extensions and descriptive user text.
+	 * Before doing that, the unwritten line is flushed.
 	 */
 	flushto(&gpkt, EUSERTXT, FLUSH_COPY);
 
@@ -279,7 +370,7 @@ convert(file)
 	gpkt.p_chkeof = 1;		/* set EOF is ok */
 	while (getline(&gpkt))
 		;
-	putline(&gpkt, (char *)0);
+	putline(&gpkt, (char *)0);	/* flush final line */
 
 	/*
 	 * Write checksum.
@@ -324,6 +415,7 @@ LOCAL char	xcomment[] = { CTLCHAR, COMMENTS, '_', '\0' };	/* "^Ac_" */
 
 /*
  * Convert the delta table from a SCCS v6 history file to SCCS v4
+ * The conversion stops at BUSERNAM (the beginning of the user names).
  */
 LOCAL void
 cvtdelt2v4(pkt)
@@ -410,6 +502,7 @@ cvtdelt2v4(pkt)
 
 /*
  * Convert the delta table from a SCCS v4 history file to SCCS v6
+ * The conversion stops at BUSERNAM (the beginning of the user names).
  */
 LOCAL void
 cvtdelt2v6(pkt)
@@ -639,21 +732,27 @@ clean_up()
 	uname(&un);
 	uuname = un.nodename;
 	if (mylock(auxf(gpkt.p_file, 'z'), getpid(), uuname)) {
-		if (gpkt.p_iop) {
-			fclose(gpkt.p_iop);
-			gpkt.p_iop = NULL;
-		}
+		sclose(&gpkt);
+		sfree(&gpkt);
 		if (gpkt.p_xiop) {
 			fclose(gpkt.p_xiop);
 			gpkt.p_xiop = NULL;
 			unlink(auxf(gpkt.p_file, 'x'));
 		}
-		if (pk2.p_iop) {
-			fclose(pk2.p_iop);
-			pk2.p_iop = NULL;
-		}
+		sclose(&pk2);
+		sfree(&pk2);
 		xrm(&gpkt);
 		ffreeall();
 		unlockit(auxf(gpkt.p_file, 'z'), getpid(), uuname);
 	}
+}
+
+LOCAL int
+getN(argp, valp)
+	const char	*argp;
+	void		*valp;
+{
+	initN(&N);
+	N.n_parm = (char *)argp;
+	return (TRUE);
 }

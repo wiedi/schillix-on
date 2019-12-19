@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2017 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)idsubst.c	1.71 17/02/04 J. Schilling
+ * @(#)idsubst.c	1.75 19/12/19 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)idsubst.c 1.71 17/02/04 J. Schilling"
+#pragma ident "@(#)idsubst.c 1.75 19/12/19 J. Schilling"
 #endif
 
 #if defined(sun)
@@ -392,7 +392,6 @@ char line[];
 			case 'Y':
 				tp = trans(tp, Type);
 				break;
-			/*FALLTHRU*/
 			case 'W':
 				if ((Whatstr != NULL) && (recursive == 0)) {
 					recursive = 1;
@@ -417,6 +416,7 @@ char line[];
 				tp = trans(tp, Zkeywd);
 				tp = trans(tp, Mod);
 				tp = trans(tp, "\t");
+				/* FALLTHRU */
 			case 'I':
 				tp = trans(tp, Sid);
 				break;
@@ -530,7 +530,8 @@ readcopy(name, tp)
 
 		if (p == NULL) {
 			strlcpy(ipath, sccs_insbase, sizeof (ipath));
-			strlcat(ipath, "/ccs/include", sizeof (ipath));
+			strlcat(ipath, "/" SCCS_HELP_PRE "include",
+				sizeof (ipath));
 			p = ipath;
 		}
 		do {

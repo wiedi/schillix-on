@@ -1,5 +1,5 @@
 #! /bin/sh
-# @(#)sccsdiff.sh	1.6 15/01/30 Copyright 2011-2015 J. Schilling
+# @(#)sccsdiff.sh	1.12 18/12/17 Copyright 2011-2018 J. Schilling
 #
 # CDDL HEADER START
 #
@@ -34,22 +34,23 @@
 #		SCCS files and optionally pipe through pr(1).
 #		Optionally specify diff segmentation size.
 # if running under control of the NSE (-q option given), will look for
-# get in the directtory from which it was run (if -q, $0 will be full pathname)
+# get in the directory from which it was run (if -q, $0 will be full pathname)
 #
-PATH=INS_BASE/ccs/bin:$PATH:/usr/ccs/bin
+PATH=INS_BASE/SCCS_BIN_PREbin:$PATH:/usr/ccs/bin
 
 trap "rm -f /tmp/get[abc]$$;exit 1" 1 2 3 15
 umask 077
 
-if [ $# -lt 3 -a ! "$1" = -V ]
+if [ $# -lt 3 ] && [ "$1" != -V ] && [ "$1" != -version ] && [ "$1" != --version ]
 then
-	echo "Usage: sccsdiff -r<sid1> -r<sid2> [-p] [-q] sccsfile ..." 1>&2
+	echo "Usage: sccsdiff -r<sid1> -r<sid2> [-p] [-q] [-N[bulk-spec]] sccsfile ..." 1>&2
 	exit 1
 fi
 
 nseflag=
 rflag=
 addflags=
+Nflag=
 get=get
 for i in $@
 do
@@ -59,10 +60,10 @@ do
 		addflags=
 		continue
 	fi
-	case $i in
+	case "$i" in
 
 	-*)
-		case $i in
+		case "$i" in
 
 		-r*)
 			if [ ! "$sid1" ]
@@ -119,7 +120,10 @@ do
 				flags="$flags $opt"
 			fi
 			;;
-		-V)
+		-N*)
+			Nflag="$i"
+			;;
+		-V | -version | --version)
 			echo "$0 PROVIDER-SCCS version VERSION VDATE (HOST_SUB)"
 			exit 0
 			;;
@@ -129,7 +133,7 @@ do
 			;;
 		esac
 		;;
-	*s.*)
+	s.*|*/s.*)
 		files="$files $i"
 		;;
 	[1-9]*)
@@ -163,9 +167,13 @@ do
 	rm -f /tmp/get[abc]$$
 	# Good place to check if tmp-files are not deleted
 	# if [ -f /tmp/geta$$ ] ...
-	if $get $nseflag -s -o -k -r$sid1 $i -G/tmp/geta$$
+
+	#
+	# $Nflag may contain spaces, so clear IFS for this command
+	#
+	if IFS= $get $nseflag $Nflag -s -o -k -r$sid1 $i -G/tmp/geta$$
 	then
-		if $get $nseflag -s -o -k -r$sid2 $i -G/tmp/getb$$
+		if IFS= $get $nseflag $Nflag -s -o -k -r$sid2 $i -G/tmp/getb$$
 		then
 			diff $flags /tmp/geta$$ /tmp/getb$$ > /tmp/getc$$
 		else

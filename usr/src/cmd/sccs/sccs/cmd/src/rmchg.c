@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2015 J. Schilling
+ * Copyright 2006-2018 J. Schilling
  *
- * @(#)rmchg.c	1.42 15/02/06 J. Schilling
+ * @(#)rmchg.c	1.50 18/12/17 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)rmchg.c 1.42 15/02/06 J. Schilling"
+#pragma ident "@(#)rmchg.c 1.50 18/12/17 J. Schilling"
 #endif
 /*
  * @(#)rmchg.c 1.19 06/12/12
@@ -82,6 +82,7 @@
 */
 
 static struct sid sid;
+static Nparms	N;			/* Keep -N parameters		*/
 static int num_files;
 static char D_type;
 static char 	*Sidhold;
@@ -131,7 +132,7 @@ char *argv[];
 	 */
 #ifdef	PROTOTYPES
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
-	   NOGETTEXT(INS_BASE "/ccs/lib/locale/"));
+	   NOGETTEXT(INS_BASE "/" SCCS_BIN_PRE "lib/locale/"));
 #else
 	(void) bindtextdomain(NOGETTEXT("SUNW_SPRO_SCCS"),
 	   NOGETTEXT("/usr/ccs/lib/locale/"));
@@ -172,7 +173,7 @@ char *argv[];
 			}
 			no_arg = 0;
 			i = current_optind;
-		        c = getopt(argc, argv, "-r:m:y:dzqV(version)");
+		        c = getopt(argc, argv, "()-r:m:y:dzqN:V(version)");
 
 				/* this takes care of options given after
 				** file names.
@@ -228,9 +229,19 @@ char *argv[];
 			case 'z':
 				break;
 
+			case 'N':	/* Bulk names */
+				initN(&N);
+				if (optarg == argv[i+1]) {
+				   no_arg = 1;
+				   break;
+				}
+				N.n_parm = p;
+				break;
+
 			case 'V':		/* version */
 				p = sname(argv[0]);
-				printf("%s %s-SCCS version %s %s (%s-%s-%s)\n",
+				printf(gettext(
+				    "%s %s-SCCS version %s %s (%s-%s-%s)\n"),
 					equal(p, "cdc") ? "cdc": "rmdel",
 					PROVIDER,
 					VERSION,
@@ -242,10 +253,10 @@ char *argv[];
 				p = sname(argv[0]);
 				if (equal(p,"cdc"))
 					fatal(gettext(
-					"Usage: cdc -r SID [-mmr-list] [-y [comment]] s.filename ..."));
+					"Usage: cdc -r SID [-mmr-list] [-y [comment]] [-N[bulk-spec]] s.filename ..."));
 				else
 					fatal(gettext(
-					"Usage: rmdel -r SID s.filename ..."));
+					"Usage: rmdel -r SID [-N[bulk-spec]] s.filename ..."));
 			}
 
 			/*
@@ -269,6 +280,15 @@ char *argv[];
 	if(num_files == 0)
 		fatal(gettext("missing file arg (cm3)"));
 
+	setsig();
+	xsethome(NULL);
+	if (HADUCN) {					/* Parse -N args  */
+		parseN(&N);
+
+		if (N.n_sdot && (sethomestat & SETHOME_OFFTREE))
+			fatal(gettext("-Ns. not supported in off-tree project mode"));
+	}
+
 	if (*(p = sname(argv[0])) == 'n')
 		p++;
 	if (equal(p,NOGETTEXT("rmdel"))) {
@@ -283,8 +303,6 @@ char *argv[];
 	if (! logname())
 		fatal(gettext("User ID not in password file (cm9)"));
 
-	setsig();
-
 	/*
 	Change flags for 'fatal' so that it will return to this
 	routine (main) instead of terminating processing.
@@ -297,7 +315,7 @@ char *argv[];
 	*/
 	for (i=1; i<argc; i++)
 		if ((p = argv[i]) != NULL)
-			do_file(p, rmchg, 1, 1);
+			do_file(p, rmchg, 1, N.n_sdot);
 
 	return (Fcnt ? 1 : 0);
 }
@@ -334,6 +352,22 @@ char *file;
 
 	if (setjmp(Fjmp))	/* set up to return here from 'fatal' */
 		return;		/* and return to caller of rmchg */
+	if (HADUCN) {
+		char	*ofile = file;
+
+		file = bulkprepare(&N, file);
+		if (file == NULL) {
+			if (N.n_ifile)
+				ofile = N.n_ifile;
+			fatal(gettext("directory specified as s-file (cm14)"));
+		}
+		if (sid.s_rel == 0 && N.n_sid.s_rel != 0) {
+			sid.s_rel = N.n_sid.s_rel;
+			sid.s_lev = N.n_sid.s_lev;
+			sid.s_br  = N.n_sid.s_br;
+			sid.s_seq = N.n_sid.s_seq;
+		}
+	}
 
 	/*
 	 * Initialize here to avoid setjmp() clobbering warnings
@@ -420,6 +454,9 @@ char *file;
 	finduser(&gpkt);
 	doflags(&gpkt);
 	permiss(&gpkt);
+
+	donamedflags(&gpkt);
+	dometa(&gpkt);
 
 	/*
 	Check that user is either owner of file or
@@ -920,10 +957,8 @@ struct packet *pkt;
 static void
 clean_up()
 {
-	if(gpkt.p_iop) {
-		fclose(gpkt.p_iop);
-		gpkt.p_iop = NULL;
-	}
+	sclose(&gpkt);
+	sfree(&gpkt);
 	xrm(&gpkt);
 	if (gpkt.p_file[0]) {
 		if (exists(auxf(gpkt.p_file,'x')))

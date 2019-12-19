@@ -14,10 +14,10 @@
  *
  *	Search for $SET_HOME/.sccs
  *
- * @(#)sethome.c	1.10 15/02/25 Copyright 2011-2015 J. Schilling
+ * @(#)sethome.c	1.12 18/12/10 Copyright 2011-2018 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)sethome.c	1.10 15/02/25 Copyright 2011-2015 J. Schilling"
+#pragma ident "@(#)sethome.c	1.12 18/12/10 Copyright 2011-2018 J. Schilling"
 #endif
 
 #if defined(sun)
@@ -30,23 +30,35 @@ LOCAL	int	shinit;	/* sethome was initialized */
 /*
  * If it is not possible to retrieve "setahome", it may be a NULL pointer.
  * The variables "setrhome" and "cwdprefix" are always set from sethome().
+ *
+ * Note that if we switch to shared libraries, these variables will not work
+ * on Mac OS since Mac OS only supports a broken linker.
  */
 char	*setphome;	/* Best path to the project set home directory */
 char	*setrhome;	/* Relative path to the project set home directory */
 char	*setahome;	/* Absolute path to the project set home directory */
 char	*cwdprefix;	/* Prefix from project set home directory to cwd */
 int	homedist;	/* The # of directories to the project set home dir */
+int	setphomelen;	/* strlen(setphome) */
 int	setrhomelen;	/* strlen(setrhome) */
 int	setahomelen;	/* strlen(setahome) */
 int	cwdprefixlen;	/* strlen(cwdprefix) */
 int	sethomestat;	/* sethome() status flags */
 
+EXPORT	void	unsethome	__PR((void));
+EXPORT	int	xsethome	__PR((char *path));
+EXPORT	int	sethome		__PR((char *path));
 LOCAL	int	searchabs	__PR((char *path));
 LOCAL	int	dorel		__PR((char *bp, size_t len));
 LOCAL	void	mkrelhome	__PR((char *bp, size_t len, int i));
 LOCAL	int	mkprefix	__PR((char *bp, size_t len, int i));
-LOCAL	int	searchdotsccs	__PR((char *path));
+LOCAL	int	checkdotsccs	__PR((char *path));
+EXPORT	int	checkhome	__PR((char *path));
 
+/*
+ * Undo the effect of a previous sethome() call.
+ * Free all data and change the state tu "uninitialized".
+ */
 EXPORT void
 unsethome()
 {
@@ -63,7 +75,8 @@ unsethome()
 		cwdprefix = NULL;
 	}
 	setphome = NULL;
-	homedist = setrhomelen = setahomelen = cwdprefixlen = sethomestat = 0;
+	homedist = setphomelen = setrhomelen = setahomelen =
+			cwdprefixlen = sethomestat = 0;
 	shinit = 0;
 }
 
@@ -149,11 +162,13 @@ sethome(path)
 	if (setahomelen > 0 && setahomelen < setrhomelen) {
 		sethomestat |= SETHOME_ABS;
 		setphome = setahome;
+		setphomelen = setahomelen;
 	} else {
 		setphome = setrhome;
+		setphomelen = setrhomelen;
 	}
 	sethomestat |= SETHOME_OK;
-	searchdotsccs(setrhome);
+	checkdotsccs(setrhome);
 	return (1);					/* $SET_HOME/.sccs OK */
 }
 
@@ -293,8 +308,9 @@ dorel(bp, len)
 	if (setrhome == NULL)				/* no mem */
 		return (-1);
 	setphome = setrhome;
+	setphomelen = setrhomelen;
 	sethomestat |= SETHOME_OK;
-	searchdotsccs(setrhome);
+	checkdotsccs(setrhome);
 	*p = '\0';					/* Cut off new text */
 	errno = 0;
 	if (!mkprefix(bp, len, i))			/* Not found */
@@ -418,8 +434,12 @@ mkprefix(bp, len, n)
 	return (1);				/* cwdprefix found */
 }
 
+/*
+ * Check $SET_HOME/.sccs for specific sub-directories and flag the
+ * search results.
+ */
 LOCAL int
-searchdotsccs(path)
+checkdotsccs(path)
 	char	*path;
 {
 	struct stat sb;
@@ -461,6 +481,10 @@ searchdotsccs(path)
 	return (0);
 }
 
+/*
+ * Check whether the change set home directory could be detected and
+ * abort in case it is missing.
+ */
 EXPORT int
 checkhome(path)
 	char	*path;

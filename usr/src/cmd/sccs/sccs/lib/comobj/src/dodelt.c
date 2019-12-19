@@ -3,7 +3,7 @@
  *
  * The contents of this file are subject to the terms of the
  * Common Development and Distribution License ("CDDL"), version 1.0.
- * You may only use this file in accordance with the terms of version
+ * You may use this file only in accordance with the terms of version
  * 1.0 of the CDDL.
  *
  * A full copy of the text of the CDDL should have accompanied this
@@ -27,12 +27,12 @@
  * Use is subject to license terms.
  */
 /*
- * Copyright 2006-2015 J. Schilling
+ * Copyright 2006-2019 J. Schilling
  *
- * @(#)dodelt.c	1.23 16/06/17 J. Schilling
+ * @(#)dodelt.c	1.27 19/11/08 J. Schilling
  */
 #if defined(sun)
-#pragma ident "@(#)dodelt.c 1.23 16/06/17 J. Schilling"
+#pragma ident "@(#)dodelt.c 1.27 19/11/08 J. Schilling"
 #endif
 /*
  * @(#)dodelt.c 1.8 06/12/12
@@ -66,12 +66,14 @@ char type;
 	int	lhash;
 	register char *p;
 	time_t	TN;
+	int	Tns;
 
 	pkt->p_idel = 0;
 	founddel = 0;
 
 	dtime(&Timenow);
 	TN = Timenow.dt_sec;
+	Tns = Timenow.dt_nsec;
 #if defined(BUG_1205145) || defined(GMT_TIME)
 	TN += Timenow.dt_zone;
 #else
@@ -82,15 +84,20 @@ char type;
 	lhash = pkt->p_clhash;
 	while (getadel(pkt,&dt) == BDELTAB) {
 		if (pkt->p_idel == 0) {
-			if (TN < dt.d_dtime.dt_sec)
-				fprintf(stderr,gettext("Time stamp later than current clock time (co10)\n"));
+			if ((TN < dt.d_dtime.dt_sec) ||
+			    ((TN == dt.d_dtime.dt_sec) &&
+			    (Tns < dt.d_dtime.dt_nsec))) {
+				fprintf(stderr,
+				    gettext(
+			"Time stamp later than current clock time (co10)\n"));
+			}
 			pkt->p_idel = (struct idel *)
 					fmalloc((unsigned) (n=((dt.d_serial+1)*
-					sizeof(*pkt->p_idel))));
+					sizeof (*pkt->p_idel))));
 			zero((char *) pkt->p_idel,n);
 			pkt->p_apply = (struct apply *)
 					fmalloc((unsigned) (n=((dt.d_serial+1)*
-					sizeof(*pkt->p_apply))));
+					sizeof (*pkt->p_apply))));
 			zero((char *) pkt->p_apply,n);
 			if (pkt->p_pgmrs != NULL) {
 				pkt->p_pgmrs = (char **)
@@ -100,23 +107,29 @@ char type;
 			}
 			pkt->p_idel->i_pred = dt.d_serial;
 		}
-		if (dt.d_type == 'D') {
+		if (dt.d_type == 'D' ||				/* Delta */
+		    dt.d_type == 'U') {				/* Unlink */
+			/*
+			 * sidp is != NULL only for rmchg
+			 */
 			if (sidp && eqsid(&dt.d_sid,sidp)) {
 				copy(dt.d_pgmr, pkt->p_pgmr);	/* for rmchg */
-				zero((char *) sidp,sizeof(*sidp));
+				zero((char *) sidp,sizeof (*sidp));
 				founddel = 1;
 				pkt->p_first_esc = 1;
 				pkt->p_first_cmt = 1;
 				pkt->p_cdid_mrs = 0;
-				for (p = pkt->p_line; *p && *p != 'D'; p++)
+				for (p = pkt->p_line;
+				    *p && *p != dt.d_type; p++) {
 					;
+				}
 				if (*p) {
 					/*
 					 * Also correct saved line hash, used
 					 * for putline() optimization.
 					 */
-					pkt->p_clhash -= 'D';
-					pkt->p_uclhash -= 'D';
+					pkt->p_clhash -= dt.d_type;   /* D/U */
+					pkt->p_uclhash -= dt.d_type;  /* D/U */
 					pkt->p_clhash += type;
 					pkt->p_uclhash += type;
 					*p = type;
@@ -155,6 +168,7 @@ char type;
 			rdp->i_sid.s_br = dt.d_sid.s_br;
 			rdp->i_sid.s_seq = dt.d_sid.s_seq;
 			rdp->i_pred = dt.d_pred;
+			rdp->i_dtype = dt.d_type;
 			rdp->i_datetime.tv_sec = dt.d_dtime.dt_sec;
 			rdp->i_datetime.tv_nsec = dt.d_dtime.dt_nsec;
 			if (founddel && type == 0)	/* Already skipped */
@@ -170,12 +184,12 @@ char type;
 				case COMMENTS:
 					if (pkt->p_line[2] == '_')
 						sidext_v4compat_ab(pkt, &dt);
+					/* FALLTHRU */
 				case MRNUM:
 					if (founddel)
 					{
 						(*pkt->p_escdodelt)(pkt);
-						if(type == 'R' && HADZ && pkt->p_line[1] == MRNUM )
-						{
+						if (type == 'R' && HADZ && pkt->p_line[1] == MRNUM) {
 							(*pkt->p_fredck)(pkt);
 						}
 					}
@@ -186,13 +200,18 @@ char type;
 						sidext_ab(pkt, &dt, &pkt->p_line[2]);
 						continue;
 					}
+					/* FALLTHRU */
 				default:
 					fmterr(pkt);
 				/*FALLTHRU*/
 				case INCLUDE:
 				case EXCLUDE:
 				case IGNORE:
-					if (dt.d_type == 'D') {
+					/*
+					 * Is this really needed for type 'U' as well?
+					 */
+					if (dt.d_type == 'D' ||
+					    dt.d_type == 'U') {
 						doixg(pkt->p_line,&rdp->i_ixg);
 					}
 					continue;
@@ -206,7 +225,7 @@ char type;
 			break;
 		lhash = pkt->p_clhash;
 	}
-	return(pkt->p_idel);
+	return (pkt->p_idel);
 }
 
 static char
@@ -216,7 +235,7 @@ register struct deltab *dt;
 {
 	if (getline(pkt) == NULL)
 		fmterr(pkt);
-	return(del_ab(pkt->p_line,dt,pkt));
+	return (del_ab(pkt->p_line,dt, pkt));
 }
 
 static void
@@ -240,10 +259,10 @@ struct ixg **ixgp;
 		NONBLANK(p);
 	}
 	cnt = ip - v;
-	for (prevp = curp = (*ixgp); curp; curp = (prevp = curp)->i_next ) 
+	for (prevp = curp = (*ixgp); curp; curp = (prevp = curp)->i_next)
 		;
-	curp = (struct ixg *) fmalloc((unsigned) 
-		(sizeof(struct ixg) + (cnt-1)*sizeof(curp->i_ser[0])));
+	curp = (struct ixg *) fmalloc((unsigned)
+		(sizeof (struct ixg) + (cnt-1)*sizeof (curp->i_ser[0])));
 	if (*ixgp == 0)
 		*ixgp = curp;
 	else
