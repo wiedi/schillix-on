@@ -74,10 +74,6 @@ install:	$(ISAEXEC) $(SUBDIRS)
 		ln "$(ROOTBIN)/$(PROG)" "$(ROOTBIN)/$$i" ; \
 	done \
 	)
-	$(RM) $(ROOTSBIN)/sh
-	$(SYMLINK) ../usr/bin/$(ARCH32)/ksh93 $(ROOTSBIN)/sh
-	$(RM) $(ROOTSBIN)/jsh
-	$(SYMLINK) ../usr/bin/ksh93 $(ROOTSBIN)/jsh
 	$(RM) $(ROOTBIN)/jsh
 	$(SYMLINK) ksh93 $(ROOTBIN)/jsh
 	$(RM) $(ROOTBIN)/sh
