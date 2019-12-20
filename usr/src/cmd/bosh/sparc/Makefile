@@ -20,10 +20,16 @@
 include ../Makefile.com
 
 install: all $(ROOTSBINPROG)
+	$(RM) $(ROOTSBIN)/sh
+	$(SYMLINK) bosh $(ROOTSBIN)/sh
 	$(RM) $(ROOTSBIN)/jbosh
 	$(SYMLINK) bosh $(ROOTSBIN)/jbosh
 	$(RM) $(ROOTSBIN)/pfbosh
 	$(SYMLINK) bosh $(ROOTSBIN)/pfbosh
+	$(RM) $(ROOTSBIN)/jsh
+	$(SYMLINK) sh $(ROOTSBIN)/jsh
+	$(RM) $(ROOTSBIN)/pfsh
+	$(SYMLINK) sh $(ROOTSBIN)/pfsh
 	$(RM) $(ROOTBIN32)/bosh
 	$(SYMLINK) ../../../sbin/bosh $(ROOTBIN32)/bosh
 	$(RM) $(ROOTBIN32)/jbosh
