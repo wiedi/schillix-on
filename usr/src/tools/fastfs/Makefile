@@ -18,19 +18,15 @@
 #
 # CDDL HEADER END
 #
-
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
-# Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
-#
+# fastfs also lives in cmd/backup, but it's copied here since the backup
+# hierarchy can still build some hsm packages, and the code doesn't change
 
-PROG=		protocmp cpiotranslate
-STD_OBJS=	proto_list.o protodir.o list.o stdusers.o \
-		exception_list.o arch.o depend.o
-CMP_OBJS=	protocmp.o $(STD_OBJS)
-CPIO_OBJS=	cpiotranslate.o $(STD_OBJS)
-CMP_SRCS=	$(CMP_OBJS:%.o=%.c)
-CPIO_SRCS=	$(CPIO_OBJS:%.o=%.c)
-CLEANFILES +=	$(CMP_OBJS) $(CPIO_OBJS)
+PROG=	fastfs
+OBJS=	$(PROG).o
+SRCS=	$(OBJS:%.o=%.c)
 
 include ../Makefile.tools
 
@@ -40,21 +36,9 @@ CFLAGS += $(CCVERBOSE)
 
 all:	$(PROG)
 
-protocmp: $(CMP_OBJS)
-	$(LINK.c) -o $@ $(CMP_OBJS) $(LDLIBS)
-	$(POST_PROCESS)
-
-cpiotranslate: $(CPIO_OBJS)
-	$(LINK.c) -o $@ $(CPIO_OBJS) $(LDLIBS)
-	$(POST_PROCESS)
-
 install: all .WAIT $(ROOTONBLDMACHPROG)
 
-lint:	FRC
-	$(LINT.c) $(CMP_SRCS)
-	$(LINT.c) $(CPIO_SRCS)
-
-FRC:
+lint:	lint_SRCS
 
 clean:
 	$(RM) $(CLEANFILES)

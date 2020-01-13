@@ -32,12 +32,14 @@ BOOT_SUBDIRS= \
 	cw
 
 COMMON_SUBDIRS= \
+	bfuld \
 	codereview \
 	codesign \
 	cscope-fast \
 	ctf \
 	depcheck \
 	env \
+	fastfs \
 	dmake \
 	findunref \
 	ndrgen \
