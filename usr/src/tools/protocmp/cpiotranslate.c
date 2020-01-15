@@ -71,7 +71,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char buffer[65536];
+	char buffer[65536];	/* Hold full CPIO header and make I/O fast */
 	elem elt;
 	elem *ep;
 	int hsize;
@@ -264,7 +264,7 @@ main(int argc, char **argv)
 		/*
 		 * No mode, user, group on symlinks in the packaging
 		 * information.  Leave mode alone and set user and
-		 * group to 'root' (0).  This is what a netinstall
+		 * group to 'root/sys' (0/3).  This is what a pkgadd
 		 * would do.
 		 */
 		if (ep == NULL) {
