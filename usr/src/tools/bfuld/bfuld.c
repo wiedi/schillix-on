@@ -73,17 +73,43 @@ char b64str2[I64STRLEN2 + 1] = "/tmp/bl/amd64/bf.1";
 
 #define	MINSIZE	12	/* MIN of ISTRLEN ISTRLEN2 I64STRLEN I64STRLEN2 */
 
+static void
+usage(void)
+{
+	(void) fprintf(stderr, "usage: bfuld file...\n");
+	exit(1);
+}
+
 int
 main(int argc, char **argv)
 {
 	int i, f, fd;
 	size_t size;
 	char *map;
+	int	ret = 0;
 
-	for (f = 1; f < argc; f++) {
+	while ((i = getopt(argc, argv, "h")) != EOF) {
+		switch (i) {
+
+		case 'h':
+			/*FALLTRHOUGH*/
+		default:
+			usage();
+			break;
+		}
+	}
+	if (argc <= optind)
+		usage();
+
+	for (f = optind; f < argc; f++) {
 		boolean_t found = B_FALSE;
 
 		fd = open(argv[f], O_RDWR);
+		if (fd == -1) {
+			perror(argv[f]);
+			ret = 1;
+			continue;
+		}
 		size = lseek(fd, 0, SEEK_END);
 		map = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 		for (i = 0; i < size - MINSIZE - 1; i++) {
@@ -118,5 +144,5 @@ main(int argc, char **argv)
 			fprintf(stderr, "bfuld: %s: no ld.so.1 found\n",
 			    argv[f]);
 	}
-	return (0);
+	return (ret);
 }
