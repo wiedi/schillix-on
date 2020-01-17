@@ -19,7 +19,8 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 1996, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 
 /*
@@ -28,6 +29,8 @@
 
 #ifndef	_NFS_TBIND_H
 #define	_NFS_TBIND_H
+
+#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 #include <netconfig.h>
 #include <netdir.h>
@@ -73,9 +76,11 @@ extern int	nfslib_bindit(struct netconfig *, struct netbuf **,
 			struct nd_hostserv *, int);
 extern void	nfslib_log_tli_error(char *, int, struct netconfig *);
 extern int	do_all(struct protob *,
-			int (*)(int, struct netbuf, struct netconfig *));
+			int (*)(int, struct netbuf, struct netconfig *),
+			int use_pmap);
 extern void	do_one(char *, char *, struct protob *,
-			int (*)(int, struct netbuf, struct netconfig *));
+			int (*)(int, struct netbuf, struct netconfig *),
+			int use_pmap);
 extern void	poll_for_action(void);
 
 #ifdef __cplusplus
