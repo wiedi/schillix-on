@@ -19,7 +19,8 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2003, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 
 /*	Copyright (c) 1983, 1984, 1985, 1986, 1987, 1988, 1989 AT&T	*/
@@ -29,6 +30,8 @@
  * Portions of this source code were derived from Berkeley 4.3 BSD
  * under license from the Regents of the University of California.
  */
+
+#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 /*
  * This module provides the user level support for the NFSv4
@@ -198,7 +201,7 @@ main(int argc, char *argv[])
 	protobp->program = NFS4_CALLBACK;
 	protobp->next = NULL;
 
-	if (do_all(protobp, NULL) == -1) {
+	if (do_all(protobp, NULL, 0) == -1) {
 		exit(1);
 	}
 

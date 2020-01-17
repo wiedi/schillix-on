@@ -19,7 +19,8 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 
 /*	Copyright (c) 1984, 1986, 1987, 1988, 1989 AT&T	*/
@@ -75,6 +76,9 @@
 #define	current1	"statmon/sm/"
 #define	backup1		"statmon/sm.bak/"
 #define	state1		"statmon/state"
+
+extern void __use_portmapper(int);
+extern bool_t __pmap_unset(const rpcprog_t program, const rpcvers_t version);
 
 /*
  * User and group IDs to run as.  These are hardwired, rather than looked
@@ -436,6 +440,7 @@ main(int argc, char *argv[])
 	int mode;
 	int sz;
 	int connmaxrec = RPC_MAXDATASIZE;
+	int use_pmap = 0;
 
 	addrix = 0;
 	pathix = 0;
@@ -444,7 +449,7 @@ main(int argc, char *argv[])
 	if (init_hostname() < 0)
 		exit(1);
 
-	while ((c = getopt(argc, argv, "Dd:a:G:p:rU:")) != EOF)
+	while ((c = getopt(argc, argv, "a:Dd:G:Pp:rU:")) != EOF)
 		switch (c) {
 		case 'd':
 			(void) sscanf(optarg, "%d", &debug);
@@ -472,6 +477,10 @@ main(int argc, char *argv[])
 			} else
 				(void) fprintf(stderr,
 				    "statd: -a exceeding maximum hostnames\n");
+			break;
+		case 'P':
+			__use_portmapper(1);
+			use_pmap = 1;
 			break;
 		case 'U':
 			(void) sscanf(optarg, "%d", &daemon_uid);
@@ -601,6 +610,11 @@ main(int argc, char *argv[])
 	 */
 	if (!rpc_control(RPC_SVC_CONNMAXREC_SET, &connmaxrec)) {
 		syslog(LOG_INFO, "unable to set maximum RPC record size");
+	}
+
+	if (use_pmap) {
+		(void) __pmap_unset(SM_PROG, SM_VERS);
+		(void) __pmap_unset(NSM_ADDR_PROGRAM, NSM_ADDR_V1);
 	}
 
 	if (!svc_create(sm_prog_1, SM_PROG, SM_VERS, "netpath")) {
