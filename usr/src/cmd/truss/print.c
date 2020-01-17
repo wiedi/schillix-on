@@ -2363,6 +2363,10 @@ prt_zga(private_t *pri, int raw, long val)
 		case ZONE_ATTR_BRAND:	s = "ZONE_ATTR_BRAND"; break;
 		case ZONE_ATTR_FLAGS:	s = "ZONE_ATTR_FLAGS"; break;
 		case ZONE_ATTR_PHYS_MCAP: s = "ZONE_ATTR_PHYS_MCAP"; break;
+		case ZONE_ATTR_SCHED_CLASS: s = "ZONE_ATTR_SCHED_CLASS"; break;
+		case ZONE_ATTR_HOSTID:	s = "ZONE_ATTR_HOSTID"; break;
+		case ZONE_ATTR_FS_ALLOWED: s = "ZONE_ATTR_FS_ALLOWED"; break;
+		case ZONE_ATTR_NETWORK:	s = "ZONE_ATTR_NETWORK"; break;
 		}
 	}
 
