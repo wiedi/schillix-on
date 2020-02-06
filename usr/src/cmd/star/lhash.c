@@ -1,11 +1,11 @@
-/* @(#)lhash.c	1.20 09/07/11 Copyright 1988, 1993-2009 J. Schilling */
+/* @(#)lhash.c	1.22 18/07/17 Copyright 1988, 1993-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)lhash.c	1.20 09/07/11 Copyright 1988, 1993-2009 J. Schilling";
+	"@(#)lhash.c	1.22 18/07/17 Copyright 1988, 1993-2018 J. Schilling";
 #endif
 /*
- *	Copyright (c) 1988, 1993-2009 J. Schilling
+ *	Copyright (c) 1988, 1993-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -14,6 +14,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -48,6 +50,8 @@ static	UConst char sccsid[] =
 #include <schily/standard.h>
 #include "star.h"
 #include <schily/string.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "starsubs.h"
 
@@ -117,18 +121,20 @@ _hash_build(fp, htab)
 	register struct h_elem	*hp;
 	register	int	len;
 	register	int	hv;
-			char	buf[PATH_MAX+1];
+			char	*buf = NULL;
+			size_t	bufsize = 0;
 	register	size_t	size;
 
 	size = hash_size(HASH_DFLT_SIZE);
-	while ((len = readnull ? ngetline(fp, buf, sizeof (buf)) :
-				fgetline(fp, buf, sizeof (buf))) >= 0) {
+	while ((len = getdelim(&buf, &bufsize,
+				readnull ? '\0' : '\n', fp)) >= 0) {
 		if (len == 0)
 			continue;
-		if (len >= PATH_MAX) {
-			errmsgno(EX_BAD, "%s: Name too long (%d > %d).\n",
-							buf, len, PATH_MAX);
-			continue;
+		if (!readnull) {
+			if (buf[len-1] == '\n')
+				buf[--len] = '\0';
+			if (len == 0)
+				continue;
 		}
 		hp = ___malloc((size_t)len + 1 + sizeof (struct h_elem *), "list option");
 		strcpy(hp->h_data, buf);
@@ -136,6 +142,8 @@ _hash_build(fp, htab)
 		hp->h_next = htab[hv];
 		htab[hv] = hp;
 	}
+	if (buf)
+		free(buf);
 }
 
 /*

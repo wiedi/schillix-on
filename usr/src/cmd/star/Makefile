@@ -19,14 +19,15 @@ ROOTFS_PROG =	$(PROG)
 OBJS=		star.o header.o cpiohdr.o xheader.o xattr.o \
 		list.o extract.o create.o append.o diff.o restore.o \
 		remove.o star_unix.o acl_unix.o acltext.o fflags.o \
-		buffer.o dirtime.o lhash.o \
+		buffer.o dirtime.o lhash.o lpath_unix.o \
 		hole.o longnames.o \
-		movearch.o table.o props.o \
+		movearch.o table.o paxopts.o props.o \
 		unicode.o \
 		subst.o volhdr.o \
 		chdir.o match.o defaults.o dumpdate.o \
 		fifo.o device.o checkerr.o \
-		findinfo.o pathname.o
+		findinfo.o pathname.o \
+		version.o
 
 SRCS=	$(OBJS:%.o=%.c)
 
@@ -42,6 +43,7 @@ XGETFLAGS += -a -x star.xcl
 #CFLAGS +=	
 CPPFLAGS +=	-D__STAR__
 CPPFLAGS +=	-DSET_CTIME -DFIFO -DUSE_MMAP -DUSE_REMOTE -DUSE_RCMD_RSH
+CPPFLAGS +=	-DUSE_SSH
 CPPFLAGS +=	-DUSE_LARGEFILES
 CPPFLAGS +=	-DUSE_FIND
 CPPFLAGS +=	-DUSE_ACL
@@ -55,7 +57,7 @@ CPPFLAGS +=	-DNO_PRINTFLIKE=1
 
 #MAPFILES = $(MAPFILE.INT) $(MAPFILE.NGB)
 #LDFLAGS += $(MAPFILES:%=-M%)
-LDLIBS += -ldeflt -lrmt -lfind -lschily -lsec -lsocket -lnsl
+LDLIBS += -ldeflt -lrmt -lfind -lschily -lsec
 
 .KEEP_STATE:
 

@@ -1,13 +1,13 @@
-/* @(#)suntar.c	1.35 11/04/16 Copyright 1989, 2003-2011 J. Schilling */
+/* @(#)suntar.c	1.44 19/09/27 Copyright 1989, 2003-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	const char _s_sccsid[] =
-	"@(#)suntar.c	1.35 11/04/16 Copyright 1989, 2003-2011 J. Schilling";
+	"@(#)suntar.c	1.44 19/09/27 Copyright 1989, 2003-2019 J. Schilling";
 #endif
 /*
  *	Solaris TAR specific routines for star main program.
  *
- *	Copyright (c) 1989, 2003-2011 J. Schilling
+ *	Copyright (c) 1989, 2003-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	const char _s_sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -67,9 +69,12 @@ LOCAL	void	suntar_setopts	__PR((char *o));
  * Solaris TAR related options
  */
 /* BEGIN CSTYLED */
-char	_opts[] = "C*,help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,sattr,bs&,fs&,/,..,secure-links,acl,xfflags,copy,diff,artype&,O,z,bz,lzo,7z,xz,lzip,c,r,t,u,x,b&,B,D,e,E,f&,F,h,I*,i,k&,l,m,n,o,p,P,q,v+,w,X&,@,T,?";
+char	_opts[] = "C*,help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,sattr,bs&,fs&,/,..,secure-links,no-secure-links%0,acl,xfflags,copy,diff,artype&,O,z,bz,lzo,7z,xz,lzip,zstd,c,r,t,u,x,b&,B,D,e,E,f&,F,h,I*,i,k&,l,m,n,o,p,P,q,v+,w,X&,@,T,?";
 /* END CSTYLED */
 char	*opts = _opts;
+#ifdef	NO_STAR_MAIN
+struct ga_props	gaprops;
+#endif
 
 LOCAL	void	suntar_info	__PR((void));
 
@@ -104,6 +109,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 #ifdef	STAR_MAIN
 	suntar_setopts(opts);
 #endif
+	getarginit(&gaprops, GAF_DEFAULT);	/* Set default behavior	  */
 
 	iftype		= I_TAR;		/* command line interface */
 	ptype		= P_SUNTAR;		/* program interface type */
@@ -124,24 +130,28 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 	 *	One problem with -remove-first is that it slows down extraction
 	 */
 
+	if (pname) {				/* cli=xxx seen as argv[1] */
+		--ac, av++;
+	}
 	--ac, ++av;
 	files = getfilecount(ac, av, opts);
-	if (getallargs(&ac, &av, opts,
+	if (getlallargs(&ac, &av, &gaprops, opts,
 				&dir_flags,
 				&help, &xhelp, &prvers, &debug, &xdebug, &xdebug,
 #ifndef	__old__lint
 				&showtime, &no_stats, &do_stats, &do_fifostats,
 				&numeric,  &no_fifo, &no_fsync, &no_fsync,
 				&do_sattr,		/* --sattr */
-				getnum, &bs,
-				getnum, &fs,
-				&abs_path, &allow_dotdot, &secure_links,
+				getenum, &bs,
+				getenum, &fs,
+				&abs_path, &allow_dotdot,
+				&secure_links, &secure_links,
 				&doacl, &dofflags,
 				&copyflag, &diff_flag,
 				gethdr, &chdrtype,
 				&oldtar,
 				&zflag, &bzflag, &lzoflag,
-				&p7zflag, &xzflag, &lzipflag,
+				&p7zflag, &xzflag, &lzipflag, &zstdflag,
 
 				&cflag,
 				&rflag,
@@ -149,7 +159,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 				&uflag,
 				&xflag,
 
-				getnum, &bs,		/* -b blocks */
+				getenum, &bs,		/* -b blocks */
 				&multblk,		/* -B */
 				&sunDflag,		/* -D */
 				&errflag,		/* -e */
@@ -236,17 +246,24 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 		no_stats = FALSE;
 
 	star_checkopts(oldtar, /* dodesc */ FALSE, /* usetape */ TRUE,
-					archive, no_fifo, /* llbs */ 0);
+					archive, no_fifo,
+					/* paxopts */ NULL,
+					/* llbs */ 0);
 	star_nfiles(files, minfiles);
 
-	star_defaults(&fs, DFLT_FILE);	/* Also check for Sun defaults */
+	/*
+	 * Also check for Sun defaults
+	 */
+	star_defaults(&fs, &no_fsync, &secure_links, DFLT_FILE);
 }
 
 LOCAL void
 suntar_info()
 {
+	const	char	*n = pname ? pname : get_progname();
+
 	error("\nFor a more complete user interface use the tar type command interface.\n");
-	error("See 'man star'. The %s command is more or less limited to the\n", get_progname());
+	error("See 'man star'. The %s command is more or less limited to the\n", n);
 	error("Solaris tar command line interface.\n");
 }
 
@@ -257,9 +274,11 @@ LOCAL void
 susage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
-	error("\nUse\t%s --help\n", get_progname());
-	error("and\t%s --xhelp\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
+	error("\nUse\t%s --help\n", n);
+	error("and\t%s --xhelp\n", n);
 	error("to get a list of valid cmds and options.\n");
 	suntar_info();
 	exit(ret);
@@ -270,7 +289,9 @@ LOCAL void
 usage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Cmd:\n");
 	error("\t-c/-u/-r\tcreate/update/replace archive with named files to tape\n");
 	error("\t-x/-t\t\textract/list named files from tape\n");
@@ -313,6 +334,7 @@ usage(ret)
 	error("\t--7z\t\t(*) pipe input/output through p7zip, does not work on tapes\n");
 	error("\t--xz\t\t(*) pipe input/output through xz, does not work on tapes\n");
 	error("\t--lzip\t\t(*) pipe input/output through lzip, does not work on tapes\n");
+	error("\t--zstd\t\t(*) pipe input/output through zstd, does not work on tapes\n");
 #ifdef	FIFO
 	error("\t--no-fifo\t(*) don't use a fifo to optimize data flow from/to tape\n");
 #endif
@@ -326,13 +348,15 @@ LOCAL void
 xusage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Extended options:\n");
 	error("\t--debug\t\tprint additional debug messages\n");
 	error("\txdebug=#,xd=#\tset extended debug level\n");
 	error("\t-/\t\tdon't strip leading '/'s from file names\n");
 	error("\t--..\t\tdon't skip filenames that contain '..' in non-interactive extract\n");
-	error("\t--secure-links\tdon't extract links that start with '/' or contain '..'\n");
+	error("\t--no-secure-links\textract links that start with '/' or contain '..'\n");
 	error("\t--acl\t\thandle access control lists\n");
 	error("\t--xfflags\thandle extended file flags\n");
 	error("\tbs=#\t\tset (output) block size to #\n");

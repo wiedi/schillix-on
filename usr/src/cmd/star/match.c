@@ -1,13 +1,13 @@
-/* @(#)match.c	1.14 10/08/23 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2010 J. Schilling */
+/* @(#)match.c	1.15 18/06/16 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)match.c	1.14 10/08/23 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2010 J. Schilling";
+	"@(#)match.c	1.15 18/06/16 Copyright 1985, 88-90, 92-96, 98, 99, 2000-2018 J. Schilling";
 #endif
 /*
  *	Pattern matching routines for star
  *
- *	Copyright (c) 1985, 88-90, 92-96, 98, 99, 2000-2010 J. Schilling
+ *	Copyright (c) 1985, 88-90, 92-96, 98, 99, 2000-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -26,6 +28,8 @@ static	UConst char sccsid[] =
 #include <schily/unistd.h>
 #include <schily/string.h>
 #include <schily/standard.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include <schily/patmatch.h>
 #include "starsubs.h"

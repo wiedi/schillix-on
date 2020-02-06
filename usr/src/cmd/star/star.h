@@ -1,6 +1,6 @@
-/* @(#)star.h	1.127 13/11/05 Copyright 1985, 1995-2013 J. Schilling */
+/* @(#)star.h	1.149 19/11/29 Copyright 1985, 1995-2019 J. Schilling */
 /*
- *	Copyright (c) 1985, 1995-2013 J. Schilling
+ *	Copyright (c) 1985, 1995-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -22,6 +22,8 @@
 #include <schily/utypes.h>
 #include <schily/time.h>
 #include <schily/types.h>
+#include <schily/limits.h>
+#include "pathname.h"
 
 #ifdef	__cplusplus
 extern "C" {
@@ -52,9 +54,9 @@ extern "C" {
 #define	H_XUSTAR	8	/* ext 1003.1-1988 fmt w/o "tar" sign. (1998) */
 #define	H_EXUSTAR	9	/* ext 1003.1-2001 fmt w/o "tar" sign. (2001) */
 #define	H_PAX		10	/* ieee 1003.1-2001 ext. ustar format (PAX) */
-#define	H_SUNTAR	11	/* Sun's tar implementaion from Solaris 7/8/9 */
-#define	H_TARMAX	11	/* Highest TAR type # */
-#define	H_RES12		12	/* Reserved */
+#define	H_EPAX		11 	/* ieee 1003.1-2001 ext. ustar format + xhdr */
+#define	H_SUNTAR	12	/* Sun's tar implementaion from Solaris 7/8/9 */
+#define	H_TARMAX	12	/* Highest TAR type # */
 #define	H_RES13		13	/* Reserved */
 #define	H_RES14		14	/* Reserved */
 #define	H_BAR		15	/* SUN bar format */
@@ -100,7 +102,16 @@ extern "C" {
 #define	C_7Z		9	/* Compr. with 'p7zip', unpack with 'p7zip' */
 #define	C_XZ		10	/* Compr. with 'xz', unpack with 'xz'	    */
 #define	C_LZIP		11	/* Compr. with 'lzip', unpack with 'lzip'   */
-#define	C_MAX		11
+#define	C_ZSTD		12	/* Compr. with 'zstd', unpack with 'zstd'   */
+#define	C_LZMA		13	/* Compr. with 'lzma', unpack with 'lzma'   */
+#define	C_FREEZE2	14	/* Compr. with 'freeze2', unpack w. 'freeze' */
+#define	C_MAX		14
+
+/*
+ * Transfer direction types for utf8_init()
+ */
+#define	S_CREATE	1
+#define	S_EXTRACT	2
 
 /*
  * Header size values
@@ -241,6 +252,7 @@ extern "C" {
 
 #define	TALLMODES	07777	/* The low 12 bits mentioned in the standard */
 
+#define	S_IRWALL	(S_IRUSR|S_IWUSR | S_IRGRP|S_IWGRP | S_IROTH|S_IWOTH)
 
 /*
  * This is the ustar (Posix 1003.1) header.
@@ -594,12 +606,15 @@ typedef	struct	{
 	Ulong	f_gmaxlen;	/* Maximale Länge des Gruppennamens	  */
 	char	*f_dir;		/* Directory Inhalt			  */
 	ino_t	*f_dirinos;	/* Inode Liste fuer Directory Inhalt	  */
-	int	f_dirlen;	/* Extended strlen(f_dir)+1		  */
-	int	f_dirents;	/* # der Directory Eintraege		  */
+	size_t	f_dirlen;	/* Extended strlen(f_dir)+1		  */
+	size_t	f_dirents;	/* # der Directory Eintraege		  */
 	dev_t	f_dev;		/* Geraet auf dem sich d. Datei befindet  */
+	major_t	f_devmaj;	/* Major von f_dev			  */
+	minor_t	f_devmin;	/* Minor bei f_dev			  */
+	int	f_devminorbits;	/* Anzahl d. Minor Bits in f_dev	  */
 	ino_t	f_ino;		/* Dateinummer				  */
 	nlink_t	f_nlink;	/* Anzahl der Links			  */
-	mode_t	f_mode;		/* Zugriffsrechte			  */
+	mode_t	f_mode;		/* Zugriffsrechte (TAR Bit Werte)	  */
 	uid_t	f_uid;		/* Benutzernummer			  */
 	gid_t	f_gid;		/* Benutzergruppe			  */
 	off_t	f_size;		/* Dateigroesze				  */
@@ -628,6 +643,7 @@ typedef	struct	{
 	long	f_mnsec;	/* nsec Teil "				  */
 	time_t	f_ctime;	/* Zeit d. letzten Statusaend.		  */
 	long	f_cnsec;	/* nsec Teil "				  */
+	long	f_timeres;	/* Time stamp resolution		  */
 	Ulong	f_fflags;	/* File flags				  */
 #ifdef	USE_ACL
 #ifdef	HAVE_ST_ACLCNT
@@ -640,7 +656,23 @@ typedef	struct	{
 #ifdef USE_XATTR
 	star_xattr_t *f_xattr;	/* Extended File Attributes		  */
 #endif
+	/*
+	 * These two members must be last, so we are able to copy everything
+	 * before, e.g. for the options -newest and -newest-file.
+	 */
+	pathstore_t f_pname;	/* Verwaltung für f_name		  */
+	pathstore_t f_plname;	/* Verwaltung für f_lname		  */
+
 } FINFO;
+
+/*
+ * We use offsetof(FINFO, f_pname) to compute the size of the first part
+ * of FINFO that may be copied without breaking things. This is needed for
+ * e.g. the options -newest and -newest-file.
+ */
+#ifndef	offsetof
+#define	offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
+#endif
 
 #define	init_finfo(fip)	(fip)->f_flags = 0, (fip)->f_xflags = 0
 
@@ -689,6 +721,8 @@ typedef	struct	{
 
 #define	XF_DEVMAJOR	0x1000	/* Major bei Geräten			  */
 #define	XF_DEVMINOR	0x2000	/* Major bei Geräten			  */
+#define	XF_FSDEVMAJOR	0x4000	/* Major Filesys			  */
+#define	XF_FSDEVMINOR	0x8000	/* Major Filesys			  */
 
 #define	XF_ACL_ACCESS	0x04000	/* POSIX Draft Access Control List	  */
 #define	XF_ACL_DEFAULT	0x08000	/* POSIX Draft Default ACL		  */
@@ -701,6 +735,7 @@ typedef	struct	{
 #define	XF_XATTR	0x100000 /* Extended Attributes			  */
 
 #define	XF_NOTIME    0x10000000	/* Keine extended Zeiten		  */
+#define	XF_BINARY    0x20000000	/* Binary path/usr/group in x-header	  */
 
 /*
  * All Extended header tags that are covered by POSIX.1-2001
@@ -842,6 +877,9 @@ struct star_stats {
 	int	s_getxattr;	/* get xattr for file failed		  */
 #endif
 	int	s_chdir;	/* chdir() failed			  */
+	int	s_iconv;	/* iconv() failed			  */
+	int	s_id;		/* uid/gid range error			  */
+	int	s_time;		/* time range error			  */
 	/*
 	 * Extract only....
 	 */
@@ -858,6 +896,10 @@ struct star_stats {
 	int	s_setxattr;	/* set xattr for file failed		  */
 #endif
 	int	s_restore;	/* other incremental restore specific	  */
+	int	s_compress;	/* compress specific failures		  */
+	int	s_hardeof;	/* Hard EOF on input			  */
+	int	s_substerrs;	/* Problems while executing -s/from/to/   */
+	int	s_selinuxerrs;	/* Problems setting SEL security context  */
 };
 
 extern	struct	star_stats	xstats;
@@ -882,6 +924,14 @@ extern	struct	star_stats	xstats;
 #define	PATH_MAX	1024
 #endif
 
+/*
+ * Hack to do debugging with larger values of PATH_MAX.
+ */
+#if	MY_PATH_MAX > PATH_MAX
+#undef	PATH_MAX
+#define	PATH_MAX	MY_PATH_MAX
+#endif
+
 #ifdef	HAVE_LARGEFILES
 /*
  * XXX Hack until fseeko()/ftello() are available everywhere or until
@@ -891,6 +941,18 @@ extern	struct	star_stats	xstats;
 #define	fseek	fseeko
 #define	ftell	ftello
 #endif
+
+#if	!(defined(USE_XATTR) && \
+	defined(HAVE_LISTXATTR) && defined(HAVE_GETXATTR))
+#undef	USE_SELINUX
+#endif
+#if	!defined(HAVE_SELINUX_SELINUX_H) || !defined(HAVE_IS_SELINUX_ENABLED)
+#undef	USE_SELINUX
+#endif
+#ifdef	USE_SELINUX
+#include <selinux/selinux.h>
+#endif
+
 
 #ifdef	__cplusplus
 }

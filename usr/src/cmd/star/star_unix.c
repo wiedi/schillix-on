@@ -1,14 +1,14 @@
-/* @(#)star_unix.c	1.105 15/08/23 Copyright 1985, 1995, 2001-2015 J. Schilling */
+/* @(#)star_unix.c	1.120 19/11/24 Copyright 1985, 1995, 2001-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)star_unix.c	1.105 15/08/23 Copyright 1985, 1995, 2001-2015 J. Schilling";
+	"@(#)star_unix.c	1.120 19/11/24 Copyright 1985, 1995, 2001-2019 J. Schilling";
 #endif
 /*
  *	Stat / mode / owner routines for unix like
  *	operating systems
  *
- *	Copyright (c) 1985, 1995, 2001-2015 J. Schilling
+ *	Copyright (c) 1985, 1995, 2001-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -40,6 +40,9 @@ static	UConst char sccsid[] =
 #include <schily/stat.h>
 #include <schily/param.h>	/* For DEV_BSIZE */
 #include <schily/device.h>
+#include <schily/string.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "dirtime.h"
 #include "xutimes.h"
@@ -51,6 +54,8 @@ static	UConst char sccsid[] =
 
 #ifndef	HAVE_LSTAT
 #define	lstat	stat
+#undef	AT_SYMLINK_NOFOLLOW
+#define	AT_SYMLINK_NOFOLLOW	0
 #endif
 #ifndef	HAVE_LCHOWN
 #define	lchown	chown
@@ -77,37 +82,44 @@ extern	BOOL	paxfollow;
 extern	BOOL	nodump;
 extern	BOOL	doacl;
 extern	BOOL	doxattr;
+extern	BOOL	dolxattr;
 extern	BOOL	dofflags;
 
 EXPORT	BOOL	_getinfo	__PR((char *name, FINFO *info));
+EXPORT	BOOL	_lgetinfo	__PR((char *name, FINFO *info));
 EXPORT	BOOL	getinfo		__PR((char *name, FINFO *info));
-EXPORT	BOOL	stat_to_info	__PR((struct stat *sp, FINFO *info));
+#ifdef	HAVE_FSTATAT
+EXPORT	BOOL	getinfoat	__PR((int fd, char *name, FINFO *info));
+#endif
+EXPORT	BOOL	getstat		__PR((char *name, struct stat *sp));
+EXPORT	BOOL	stat_to_info	__PR((int fd, struct stat *sp, FINFO *info));
 LOCAL	void	print_badnsec	__PR((FINFO *info, char *name, long val));
 EXPORT	void	checkarch	__PR((FILE *f));
 EXPORT	BOOL	archisnull	__PR((const char *name));
 EXPORT	BOOL	samefile	__PR((FILE *fp1, FILE *fp2));
 EXPORT	void	setmodes	__PR((FINFO *info));
-LOCAL	int	sutimes		__PR((char *name, FINFO *info));
+LOCAL	int	sutimes		__PR((char *name, FINFO *info, BOOL asymlink));
 EXPORT	int	snulltimes	__PR((char *name, FINFO *info));
 EXPORT	int	sxsymlink	__PR((char *name, FINFO *info));
 EXPORT	int	rs_acctime	__PR((int fd, FINFO *info));
-#ifndef	HAVE_UTIMES
-EXPORT	int	utimes		__PR((char *name, struct timeval *tp));
-#endif
 EXPORT	void	setdirmodes	__PR((char *name, mode_t mode));
+EXPORT	mode_t	osmode		__PR((mode_t tarmode));
 #ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
 #else
-EXPORT	mode_t	osmode		__PR((mode_t tarmode));
-LOCAL	int	dochmod		__PR((const char *name, mode_t tarmode));
-#define	chmod	dochmod
+LOCAL	int	dolchmodat	__PR((char *name, mode_t tarmode, int flag));
+#endif
+
+#ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
+#else
+#define	lchmodat dolchmodat
 #endif
 
 #ifdef	USE_ACL
 
 #ifdef	OWN_ACLTEXT
 #if	defined(UNIXWARE) && defined(HAVE_ACL)
-#	define	HAVE_SUN_ACL
-#	define	HAVE_ANY_ACL
+#define	HAVE_SUN_ACL
+#define	HAVE_ANY_ACL
 #endif
 #endif
 /*
@@ -118,9 +130,9 @@ LOCAL	int	dochmod		__PR((const char *name, mode_t tarmode));
  * star.h at all.
  * HAVE_HP_ACL is currently not included in HAVE_ANY_ACL.
  */
-#	ifndef	HAVE_ANY_ACL
-#	undef	USE_ACL		/* Do not try to get or set ACLs */
-#	endif
+#ifndef	HAVE_ANY_ACL
+#undef	USE_ACL		/* Do not try to get or set ACLs */
+#endif
 #endif
 
 /*
@@ -134,12 +146,38 @@ _getinfo(name, info)
 	BOOL	ret;
 	BOOL	odoacl = doacl;
 	BOOL	odoxattr = doxattr;
+	BOOL	odolxattr = dolxattr;
 
 	doacl	= FALSE;
 	doxattr	= FALSE;
 	ret = getinfo(name, info);
 	doacl	= odoacl;
 	doxattr	= odoxattr;
+	dolxattr = odolxattr;
+
+	return (ret);
+}
+
+/*
+ * Simple getinfo() variant using lstat()
+ */
+EXPORT BOOL
+_lgetinfo(name, info)
+	char	*name;
+	register FINFO	*info;
+{
+	BOOL	ret;
+	BOOL	ofollow = follow;
+	BOOL	opaxfollow = paxfollow;
+
+	/*
+	 * Always use lstat()
+	 */
+	follow = FALSE;
+	paxfollow = FALSE;
+	ret = _getinfo(name, info);
+	follow = ofollow;
+	paxfollow = opaxfollow;
 
 	return (ret);
 }
@@ -151,31 +189,91 @@ getinfo(name, info)
 {
 	struct stat	stbuf;
 
-	info->f_filetype = -1;	/* Will be overwritten of stat() works */
+	info->f_filetype = -1;	/* Will be overwritten if stat() works */
 newstat:
 	if (paxfollow) {
-		if (stat(name, &stbuf) < 0) {
+		if (lstatat(name, &stbuf, 0 /* stat */) < 0) {
 			if (geterrno() == EINTR)
 				goto newstat;
 			if (geterrno() != ENOENT)
 				return (FALSE);
 
-			while (lstat(name, &stbuf) < 0) {
+			while (lstatat(name, &stbuf, AT_SYMLINK_NOFOLLOW) < 0) {
 				if (geterrno() != EINTR)
 					return (FALSE);
 			}
 		}
-	} else if (follow?stat(name, &stbuf):lstat(name, &stbuf) < 0) {
+	} else if (lstatat(name, &stbuf, follow?0:AT_SYMLINK_NOFOLLOW) < 0) {
 		if (geterrno() == EINTR)
 			goto newstat;
 		return (FALSE);
 	}
 	info->f_sname = info->f_name = name;
-	return (stat_to_info(&stbuf, info));
+	return (stat_to_info(AT_FDCWD, &stbuf, info));
+}
+
+#ifdef	HAVE_FSTATAT
+EXPORT BOOL
+getinfoat(fd, name, info)
+	int	fd;
+	char	*name;
+	register FINFO	*info;
+{
+	struct stat	stbuf;
+
+	info->f_filetype = -1;	/* Will be overwritten if stat() works */
+newstat:
+	if (paxfollow) {
+		if (fstatat(fd, name, &stbuf, 0 /* stat */) < 0) {
+			if (geterrno() == EINTR)
+				goto newstat;
+			if (geterrno() != ENOENT)
+				return (FALSE);
+
+			while (fstatat(fd, name, &stbuf, AT_SYMLINK_NOFOLLOW) < 0) {
+				if (geterrno() != EINTR)
+					return (FALSE);
+			}
+		}
+	} else if (fstatat(fd, name, &stbuf, follow?0:AT_SYMLINK_NOFOLLOW) < 0) {
+		if (geterrno() == EINTR)
+			goto newstat;
+		return (FALSE);
+	}
+	info->f_sname = info->f_name = name;
+	return (stat_to_info(fd, &stbuf, info));
+}
+#endif
+
+EXPORT BOOL
+getstat(name, sp)
+	char		*name;
+	struct stat	*sp;
+{
+newstat:
+	if (paxfollow) {
+		if (lstatat(name, sp, 0 /* stat */) < 0) {
+			if (geterrno() == EINTR)
+				goto newstat;
+			if (geterrno() != ENOENT)
+				return (FALSE);
+
+			while (lstatat(name, sp, AT_SYMLINK_NOFOLLOW) < 0) {
+				if (geterrno() != EINTR)
+					return (FALSE);
+			}
+		}
+	} else if (lstatat(name, sp, follow?0:AT_SYMLINK_NOFOLLOW) < 0) {
+		if (geterrno() == EINTR)
+			goto newstat;
+		return (FALSE);
+	}
+	return (TRUE);
 }
 
 EXPORT BOOL
-stat_to_info(sp, info)
+stat_to_info(fd, sp, info)
+	int	fd;
 	struct stat *sp;
 	FINFO	*info;
 {
@@ -238,6 +336,20 @@ again:
 	info->f_ansec	= stat_ansecs(sp);
 	info->f_mnsec	= stat_mnsecs(sp);
 	info->f_cnsec	= stat_cnsecs(sp);
+
+	info->f_timeres	= 1;
+
+#if	defined(_FOUND_STAT_NSECS_)
+	info->f_flags	|= F_NSECS;
+#ifdef	HAVE_ST_FSTYPE
+	if (sp->st_fstype[0] == 'p' && streql(sp->st_fstype, "pcfs"))
+		info->f_flags &= ~F_NSECS;
+	if (sp->st_fstype[0] == 'u' &&
+	    sp->st_fstype[1] == 'f' &&
+	    sp->st_fstype[2] == 's')
+		info->f_timeres = 1000;
+#endif
+#endif
 
 	if (info->f_ansec < 0 || info->f_ansec >= 1000000000L) {
 		print_badnsec(info, "atime", info->f_ansec);
@@ -429,8 +541,17 @@ again:
 
 	if (first && pr_unsuptype(info)) {
 		first = FALSE;
-		if (lstat(info->f_name, sp) < 0)
-			return (FALSE);
+		if (fd == AT_FDCWD) {
+			/*
+			 * Cannot use fstatat() as this may be a very long
+			 * path name.
+			 */
+			if (lstatat(info->f_sname, sp, AT_SYMLINK_NOFOLLOW) < 0)
+				return (FALSE);
+		} else {
+			if (fstatat(fd, info->f_sname, sp, AT_SYMLINK_NOFOLLOW) < 0)
+				return (FALSE);
+		}
 		goto again;
 	}
 
@@ -445,6 +566,7 @@ again:
 #endif
 		info->f_flags |= F_SPARSE;
 
+#ifdef	__no_longer__
 		/*
 		 * Some filesystems do not allocate disk space for files that
 		 * consist of one hole and no written data.
@@ -458,9 +580,18 @@ again:
 		 * if the file size is > DEV_BSIZE in hope that noone will
 		 * implement a filesystem that hides larger amount of data
 		 * without supporting SEEK_HOLE.
+		 *
+		 * Update: There seems to be a major problem in btrfs:
+		 * There was a report that btrfs reports sp->st_blocks == 0
+		 * for a file with an 8 GB hole followed by 512 bytes of 'A'.
+		 * While this is most likely a btrfs bug, in theory a
+		 * filesystem could compress the data past the hole and hold
+		 * the compressed data inside the inode. As a result, we needed
+		 * to disable the F_ALL_HOLE check.
 		 */
 		if ((info->f_size > 0) && (sp->st_blocks == 0))
 			info->f_flags |= F_ALL_HOLE;
+#endif
 	}
 #endif
 
@@ -486,8 +617,10 @@ again:
 #endif  /* USE_ACL */
 
 #ifdef	USE_XATTR
-	if (doxattr)
-		(void) get_xattr(info);
+	/*
+	 * Note: Linux xattr check/fetch has been moved to create.c::take_file()
+	 * for performance reasons.
+	 */
 #endif
 
 	return (TRUE);
@@ -617,7 +750,7 @@ setmodes(info)
 		 */
 		if (!is_dir(info)) {
 			didutimes = TRUE;
-			if (sutimes(info->f_name, info) < 0) {
+			if (sutimes(info->f_name, info, asymlink) < 0) {
 				if (!errhidden(E_SETTIME, info->f_name)) {
 					if (!errwarnonly(E_SETTIME, info->f_name))
 						xstats.s_settime++;
@@ -633,7 +766,7 @@ setmodes(info)
 
 		if (is_dir(info))
 			mode |= TUWRITE;
-		if (chmod(info->f_name, mode) < 0) {
+		if (lchmodat(info->f_name, mode, 0 /* chmod */) < 0) {
 			if (!errhidden(E_SETMODE, info->f_name)) {
 				if (!errwarnonly(E_SETMODE, info->f_name))
 					xstats.s_setmodes++;
@@ -649,10 +782,6 @@ setmodes(info)
 			set_acls(info);
 #endif
 	}
-#ifdef	USE_XATTR
-	if (doxattr)
-		set_xattr(info);
-#endif
 #ifdef	USE_FFLAGS
 	if (dofflags && !asymlink)
 		set_fflags(info);
@@ -664,7 +793,8 @@ setmodes(info)
 		/*
 		 * Star will not allow non root users to give away files.
 		 */
-		lchown(info->f_name, (int)info->f_uid, (int)info->f_gid);
+		lchownat(info->f_name, (int)info->f_uid, (int)info->f_gid,
+			AT_SYMLINK_NOFOLLOW);
 #endif
 
 		if (pflag && !asymlink &&
@@ -678,7 +808,7 @@ setmodes(info)
 			 * destroys the suid and sgid bits.
 			 * We repeat the chmod() in this case.
 			 */
-			if (chmod(info->f_name, mode) < 0) {
+			if (lchmodat(info->f_name, mode, 0 /* chmod */) < 0) {
 				/*
 				 * Do not increment chmod() errors here,
 				 * it did already fail above.
@@ -688,17 +818,19 @@ setmodes(info)
 			}
 		}
 	}
-#ifdef	HAVE_UTIMENSAT
+
+#ifdef	USE_XATTR
+	if (dolxattr)
+		set_xattr(info);
+#endif
+
 	/*
 	 * utimensat() is able to set the time stamps on symlinks, if called
 	 * with the AT_SYMLINK_NOFOLLOW flag, so we include symlinks in the
 	 * list of file types that cause sutimes() to be called.
 	 */
 	if (!nomtime && !is_dir(info)) {
-#else
-	if (!nomtime && !is_dir(info) && !asymlink) {
-#endif
-		if (sutimes(info->f_name, info) < 0 && !didutimes)
+		if (sutimes(info->f_name, info, asymlink) < 0 && !didutimes)
 			if (!errhidden(E_SETTIME, info->f_name)) {
 				if (!errwarnonly(E_SETTIME, info->f_name))
 					xstats.s_settime++;
@@ -710,12 +842,14 @@ setmodes(info)
 	}
 }
 
-EXPORT	int	xutimes		__PR((char *name, struct timespec *tp));
+EXPORT	int	xutimes		__PR((char *name, struct timespec *tp,
+					BOOL asymlink));
 
 LOCAL int
-sutimes(name, info)
+sutimes(name, info, asymlink)
 	char	*name;
 	FINFO	*info;
+	BOOL	asymlink;
 {
 	struct  timespec curtime;
 	struct	timespec tp[3];
@@ -738,7 +872,7 @@ sutimes(name, info)
 	tp[2].tv_sec = 0;
 	tp[2].tv_nsec = 0;
 #endif
-	return (xutimes(name, tp));
+	return (xutimes(name, tp, asymlink));
 }
 
 EXPORT int
@@ -749,7 +883,7 @@ snulltimes(name, info)
 	struct	timespec tp[3];
 
 	fillbytes((char *)tp, sizeof (tp), '\0');
-	return (xutimes(name, tp));
+	return (xutimes(name, tp, is_symlink(info)));
 }
 
 /*
@@ -757,14 +891,15 @@ snulltimes(name, info)
  * This is what we use in star as the default.
  */
 EXPORT int
-xutimes(name, tp)
+xutimes(name, tp, asymlink)
 	char	*name;
 	struct	timespec tp[3];
+	BOOL	asymlink;
 {
 	struct  timespec curtime;
 	struct  timespec pasttime;
 	extern int Ctime;
-	int	ret;
+	int	ret = 0;
 	int	errsav;
 
 #ifndef	HAVE_SETTIMEOFDAY
@@ -777,18 +912,15 @@ xutimes(name, tp)
 		setnstimeofday(&tp[2]);
 	}
 #endif
-#ifdef	HAVE_UTIMENSAT
-	ret = utimensat(AT_FDCWD, name, tp, AT_SYMLINK_NOFOLLOW);
-#else
-	{ struct timeval tv[2];
-
-		tv[0].tv_sec  = tp[0].tv_sec;
-		tv[0].tv_usec = tp[0].tv_nsec/1000;
-		tv[1].tv_sec  = tp[1].tv_sec;
-		tv[1].tv_usec = tp[1].tv_nsec/1000;
-		ret = utimes(name, tv);
-	}
+#if	!defined(HAVE_UTIMENSAT) && \
+	!defined(HAVE_LUTIMENS) && \
+	!defined(HAVE_LUTIMES)
+	/*
+	 * AT_SYMLINK_NOFOLLOW not in emulation
+	 */
+	if (!asymlink)
 #endif
+		ret = lutimensat(name, tp, AT_SYMLINK_NOFOLLOW);
 	errsav = geterrno();
 
 #ifdef	SET_CTIME
@@ -852,7 +984,7 @@ sxsymlink(name, info)
 	umask(info->f_mode ^ 07777);
 #endif
 
-	ret = symlink(linkname, name);
+	ret = lsymlink(linkname, name);
 	errsav = geterrno();
 
 #ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
@@ -904,33 +1036,8 @@ rs_acctime(fd, info)
 		return (ioctl(fd, _FIOSATIME, &atv));
 	}
 #endif
-	return (sutimes(info->f_name, info));
+	return (sutimes(info->f_name, info, FALSE));
 }
-
-#ifndef	HAVE_UTIMES
-
-#define	utimes	__nothing__	/* BeOS has no utimes() but wrong prototype */
-#include <schily/utime.h>
-#undef	utimes
-
-/*
- * This is an attempt to emulate utimes() using the historic utime() call.
- * As utimes() only supports microseconds, we use struct timeval as parameter.
- */
-EXPORT int
-utimes(name, tp)
-	char		*name;
-	struct timeval	*tp;
-{
-	struct utimbuf	ut;
-
-	ut.actime = tp->tv_sec;
-	tp++;
-	ut.modtime = tp->tv_sec;
-
-	return (utime(name, &ut));
-}
-#endif
 
 #ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
 #define	OSMODE(tarmode)	    (tarmode)
@@ -961,7 +1068,7 @@ setdirmodes(name, tarmode)
 	register mode_t		_osmode;
 
 	_osmode = OSMODE(tarmode);
-	if (chmod(name, _osmode) < 0) {
+	if (lchmodat(name, _osmode, 0 /* chmod */) < 0) {	/* OK for dir */
 		if (!errhidden(E_SETMODE, name)) {
 			if (!errwarnonly(E_SETMODE, name))
 				xstats.s_setmodes++;
@@ -988,19 +1095,20 @@ osmode(tarmode)
 
 #ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
 #else
-#undef	chmod
+#undef	lchmodat
 LOCAL int
 #ifdef	PROTOTYPES
-dochmod(register const char *name, register mode_t tarmode)
+dolchmodat(register char *name, register mode_t tarmode, int flag)
 #else
-dochmod(name, tarmode)
-	register const char	*name;
+dolchmodat(name, tarmode, flag)
+	register char		*name;
 	register mode_t		tarmode;
+		int		flag;
 #endif
 {
 	register mode_t		_osmode;
 
 	_osmode = OSMODE(tarmode);
-	return (chmod(name, _osmode));
+	return (lchmodat(name, _osmode, flag));
 }
 #endif

@@ -14,7 +14,7 @@
 #
 
 LIBRARY=	libfind.a
-VERS=		.3
+VERS=		.4
 OBJECTS=	find.o walk.o fetchdir.o cmpdir.o find_misc.o find_list.o \
 		find_main.o idcache.o ptime.o
 

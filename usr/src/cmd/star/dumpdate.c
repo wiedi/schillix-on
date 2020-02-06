@@ -1,11 +1,11 @@
-/* @(#)dumpdate.c	1.25 13/10/05 Copyright 2003-2013 J. Schilling */
+/* @(#)dumpdate.c	1.32 19/01/19 Copyright 2003-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)dumpdate.c	1.25 13/10/05 Copyright 2003-2013 J. Schilling";
+	"@(#)dumpdate.c	1.32 19/01/19 Copyright 2003-2019 J. Schilling";
 #endif
 /*
- *	Copyright (c) 2003-2013 J. Schilling
+ *	Copyright (c) 2003-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -29,8 +29,11 @@ static	UConst char sccsid[] =
 #include <schily/utypes.h>
 #include <schily/standard.h>
 #include <schily/fcntl.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 
+#include "star.h"
 #include "dumpdate.h"
 #include "starsubs.h"
 
@@ -40,12 +43,12 @@ static	UConst char sccsid[] =
  * XXX we know a secure way to let autoconf ckeck for fseeko()/ftello()
  * XXX without defining FILE_OFFSETBITS to 64 in confdefs.h
  */
-#	define	fseek	fseeko
-#	define	ftell	ftello
+#define	fseek	fseeko
+#define	ftell	ftello
 #endif
 
 #if	defined(HAVE_FLOCK) || defined(HAVE_LOCKF) || defined(HAVE_FCNTL_LOCKF)
-#	define	HAVE_LOCKING
+#define	HAVE_LOCKING
 #endif
 
 #ifndef	HAVE_FLOCK
@@ -104,15 +107,16 @@ initdumpdates(fname, doupdate)
 {
 	FILE	*f;
 
-	f = fileopen(fname, "r");
+	f = lfilemopen(fname, "r", S_IRWALL);
 	if (f == NULL) {
 		if (geterrno() == ENOENT) {
 			errmsg("Warning no %s.\n", fname);
 			return;
 		}
 		comerr("Cannot open %s.\n", fname);
+		/* NOTREACHED */
 	}
-	if (doupdate && access(fname, W_OK) < 0)
+	if (doupdate && laccess(fname, W_OK) < 0)
 		comerr("Cannot access '%s' for update\n", fname);
 
 	(void) flock(fdown(f), LOCK_SH);
@@ -156,7 +160,7 @@ writedumpdates(fname, filesys, level, dflags, date)
 	off_t	fsize;
 	off_t	fpos;
 
-	f = fileopen(fname, "rwc");
+	f = lfilemopen(fname, "rwc", S_IRWALL);
 	if (f == NULL) {
 		errmsg("Cannot open '%s'.\n", fname);
 		return;
@@ -173,8 +177,9 @@ writedumpdates(fname, filesys, level, dflags, date)
 	fseek(f, 0L, SEEK_SET);
 
 	fsize = filesize(f);
-	for (dp = dumpdates; dp; dp = dp->next) {
-		outentry(f, dp->name, dp->level, dp->flags, &dp->date);
+	for (dp = dumpdates; dp; dp = dp->dd_next) {
+		outentry(f, dp->dd_name, dp->dd_level,
+				dp->dd_flags, &dp->dd_date);
 	}
 	fflush(f);
 	fpos = filepos(f);
@@ -342,7 +347,7 @@ checkdumpdates(name, level, dflags)
 	rp = _checkdumpdates(name, level, dflags & ~DD_CUMULATIVE);
 	rp2 = _checkdumpdates(name, level, dflags);
 
-	if (rp && rp2 && (rp2->date.tv_sec > rp->date.tv_sec))
+	if (rp && rp2 && (rp2->dd_date.tv_sec > rp->dd_date.tv_sec))
 		return (rp2);
 	return (rp);
 }
@@ -356,12 +361,12 @@ _checkdumpdates(name, level, dflags)
 	dumpd_t	*dp = dumpdates;
 	dumpd_t	*rp = NULL;
 
-	for (; dp; dp = dp->next) {
-		if (!streql(name, dp->name))
+	for (; dp; dp = dp->dd_next) {
+		if (!streql(name, dp->dd_name))
 			continue;
-		if ((dp->flags & DD_PARTIAL) != (dflags & DD_PARTIAL))
+		if ((dp->dd_flags & DD_PARTIAL) != (dflags & DD_PARTIAL))
 			continue;
-		if ((dflags & DD_CUMULATIVE) && level == dp->level) {
+		if ((dflags & DD_CUMULATIVE) && level == dp->dd_level) {
 			rp = dp;
 			break;
 		}
@@ -369,20 +374,20 @@ _checkdumpdates(name, level, dflags)
 		 * We are not interested in tardump entries for
 		 * this level or higher, so skip them.
 		 */
-		if (level <= dp->level)
+		if (level <= dp->dd_level)
 			continue;
 
 		/*
 		 * If we did already find a more recent entry in tardumps
 		 * we consider this one outdated.
 		 */
-		if (rp && rp->date.tv_sec > dp->date.tv_sec)
+		if (rp && rp->dd_date.tv_sec > dp->dd_date.tv_sec)
 			continue;
 		rp = dp;
 	}
 #ifdef	DEBUG
 	if (rp)
-		outentry(stderr, rp->name, rp->level, rp->flags, &rp->date);
+		outentry(stderr, rp->dd_name, rp->dd_level, rp->dd_flags, &rp->dd_date);
 #endif
 	return (rp);
 }
@@ -397,27 +402,27 @@ adddumpdates(name, level, dflags, date, useold)
 {
 	dumpd_t	*dp = dumpdates;
 
-	for (; dp; dp = dp->next) {
-		if (streql(name, dp->name) && level == dp->level &&
-		    (dp->flags & DD_PARTIAL) == (dflags & DD_PARTIAL)) {
+	for (; dp; dp = dp->dd_next) {
+		if (streql(name, dp->dd_name) && level == dp->dd_level &&
+		    (dp->dd_flags & DD_PARTIAL) == (dflags & DD_PARTIAL)) {
 			if (useold) {
-				dp->date = *date;
+				dp->dd_date = *date;
 				return;
 			}
 			errmsgno(EX_BAD,
 				"Duplicate tardumps entry '%s %d%s %lld'.\n",
-				dp->name, dp->level,
+				dp->dd_name, dp->dd_level,
 				(dflags & DD_PARTIAL) ? "P":"",
-				(Llong)dp->date.tv_sec);
+				(Llong)dp->dd_date.tv_sec);
 
-			if (date->tv_sec == dp->date.tv_sec)
+			if (date->tv_sec == dp->dd_date.tv_sec)
 				return;
 			comerrno(EX_BAD, "Timestamps differs - aborting.\n");
 		}
 	}
 	dp = newdumpdates(name, level, dflags, date);
 	*dumptail = dp;
-	dumptail = &dp->next;
+	dumptail = &dp->dd_next;
 }
 
 LOCAL dumpd_t *
@@ -429,12 +434,12 @@ newdumpdates(name, level, dflags, date)
 {
 	dumpd_t	*dp;
 
-	dp	  = ___malloc(sizeof (*dp), "tardumps entry");
-	dp->next  = NULL;
-	dp->name  = ___savestr(name);
-	dp->level = level;
-	dp->flags = dflags;
-	dp->date  = *date;
+	dp		= ___malloc(sizeof (*dp), "tardumps entry");
+	dp->dd_next	= NULL;
+	dp->dd_name	= ___savestr(name);
+	dp->dd_level	= level;
+	dp->dd_flags	= dflags;
+	dp->dd_date	= *date;
 
 	return (dp);
 }
@@ -443,9 +448,9 @@ LOCAL dumpd_t *
 freedumpdates(dp)
 	dumpd_t	*dp;
 {
-	dumpd_t	*next = dp->next;
+	dumpd_t	*next = dp->dd_next;
 
-	free(dp->name);
+	free(dp->dd_name);
 	free(dp);
 
 	return (next);

@@ -1,8 +1,8 @@
-/* @(#)starsubs.h	1.114 12/01/01 Copyright 1996-2012 J. Schilling */
+/* @(#)starsubs.h	1.141 19/12/03 Copyright 1996-2019 J. Schilling */
 /*
  *	Prototypes for star subroutines
  *
- *	Copyright (c) 1996-2012 J. Schilling
+ *	Copyright (c) 1996-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -33,13 +35,17 @@ extern	int	main		__PR((int ac, char **av));
 extern	int	getnum		__PR((char *arg, long *valp));
 extern	int	getbnum		__PR((char *arg, Llong *valp));
 extern	int	getknum		__PR((char *arg, Llong *valp));
+extern	void	set_signal	__PR((int sig, RETSIGTYPE (*handler)(int)));
 extern	void	copy_create	__PR((int ac, char *const *av));
 extern	void	star_verifyopts	__PR((void));
+#ifdef	EOF
+extern	BOOL	ttyerr		__PR((FILE *f));
+#endif
 
 /*
  * chdir.c
  */
-extern	char	*dogetwdir	__PR((void));
+extern	char	*dogetwdir	__PR((BOOL doexit));
 extern	BOOL	dochdir		__PR((const char *dir, BOOL doexit));
 
 /*
@@ -60,6 +66,7 @@ extern	BOOL	openremote	__PR((void));
 extern	void	opentape	__PR((void));
 extern	void	closetape	__PR((void));
 extern	void	changetape	__PR((BOOL donext));
+extern	void	runnewvolscript	__PR((int volno, int nindex));
 extern	void	nextitape	__PR((void));
 extern	void	nextotape	__PR((void));
 extern	int	startvol	__PR((char *buf, int amount));
@@ -95,8 +102,8 @@ extern	Llong	tblocks		__PR((void));
 extern	void	prstats		__PR((void));
 extern	BOOL	checkerrs	__PR((void));
 extern	void	exprstats	__PR((int ret));
-extern	void	excomerrno	__PR((int err, char *fmt, ...))
-						__printflike__(2, 3);
+extern	void	excomerrno	__PR((int err,
+					char *fmt, ...)) __printflike__(2, 3);
 extern	void	excomerr	__PR((char *fmt, ...)) __printflike__(1, 2);
 extern	void	die		__PR((int err));
 
@@ -112,10 +119,11 @@ extern	BOOL	update_newer	__PR((FINFO *info));
  * create.c
  */
 extern	void	checklinks	__PR((void));
-extern	int	_fileopen	__PR((char *name, char *smode));
 extern	int	_fileread	__PR((int *fp, void *buf, int len));
 extern	void	create		__PR((char *name, BOOL Hflag, BOOL forceadd));
-extern	void	createlist	__PR((void));
+#if	defined(_SCHILY_WALK_H)
+extern	void	createlist	__PR((struct WALK *state));
+#endif
 #ifdef _STAR_H
 extern	BOOL	read_symlink	__PR((char *sname, char *name,
 					FINFO *info, TCB *ptb));
@@ -163,11 +171,7 @@ extern	void	sym_open	__PR((char *name));
 extern	void	sym_init	__PR((GINFO *gp));
 #endif
 extern	void	sym_close	__PR((void));
-/*
- * ngetline XXX should be moved to libschily
- */
 #ifdef	EOF
-extern	int	ngetline	__PR((FILE *f, char *buf, int len));
 extern	void	printLsym	__PR((FILE *f));
 #endif
 
@@ -203,11 +207,13 @@ extern	void	skip_slash	__PR((FINFO *info));
 extern	void	initfifo	__PR((void));
 extern	void	fifo_ibs_shrink	__PR((int newsize));
 extern	void	runfifo		__PR((int ac, char *const *av));
+extern	void	fifo_prmp	__PR((int sig));
 extern	void	fifo_stats	__PR((void));
 extern	int	fifo_amount	__PR((void));
 extern	int	fifo_iwait	__PR((int amount));
 extern	void	fifo_owake	__PR((int amount));
 extern	void	fifo_oflush	__PR((void));
+extern	void	fifo_oclose	__PR((void));
 extern	int	fifo_owait	__PR((int amount));
 extern	void	fifo_iwake	__PR((int amt));
 extern	void	fifo_reelwake	__PR((void));
@@ -284,20 +290,20 @@ extern	void	cpio_resync	__PR((void));
 extern	void	xbinit		__PR((void));
 extern	void	xbbackup	__PR((void));
 extern	void	xbrestore	__PR((void));
-extern	int	xhsize		__PR((void));
+extern	size_t	xhsize		__PR((void));
 extern	void	info_to_xhdr	__PR((FINFO *info, TCB *ptb));
 extern	BOOL	xhparse		__PR((FINFO *info, char	*p, char *ep));
-extern	void	xh_rangeerr	__PR((char *keyword, char *arg, int len));
+extern	void	xh_rangeerr	__PR((char *keyword, char *arg, size_t len));
 extern	void	gen_xtime	__PR((char *keyword, time_t sec, Ulong nsec));
 extern	void	gen_unumber	__PR((char *keyword, Ullong arg));
 extern	void	gen_number	__PR((char *keyword, Llong arg));
-extern	void	gen_text	__PR((char *keyword, char *arg, int alen,
+extern	void	gen_text	__PR((char *keyword, char *arg, size_t alen,
 								Uint flags));
 
 extern	void	tcb_to_xhdr_reset __PR((void));
 extern	int	tcb_to_xhdr	__PR((TCB *ptb, FINFO *info));
 
-extern	BOOL	get_xtime	__PR((char *keyword, char *arg, int len,
+extern	BOOL	get_xtime	__PR((char *keyword, char *arg, size_t len,
 						time_t *secp, long *nsecp));
 #ifdef	__needed_
 extern	BOOL	get_number	__PR((char *keyword, char *arg, Llong *llp));
@@ -314,8 +320,12 @@ extern	BOOL	get_snumber	__PR((char *keyword, char *arg, Ullong *ullp,
  */
 #ifdef _STAR_H
 extern	void	opt_xattr	__PR((void));
+extern	void	opt_selinux	__PR((void));
 extern	BOOL	get_xattr	__PR((register FINFO *info));
 extern	BOOL	set_xattr	__PR((register FINFO *info));
+#ifdef	USE_SELINUX
+extern	BOOL	setselinux	__PR((register FINFO *info));
+#endif
 extern	void	free_xattr	__PR((star_xattr_t **xattr));
 #endif
 
@@ -381,9 +391,14 @@ extern	BOOL	remove_file	__PR((char *name, BOOL isfirst));
  */
 #ifdef _STAR_H
 extern	BOOL	_getinfo	__PR((char *name, FINFO *info));
+extern	BOOL	_lgetinfo	__PR((char *name, FINFO *info));
 extern	BOOL	getinfo		__PR((char *name, FINFO *info));
+#ifdef	HAVE_FSTATAT
+extern	BOOL	getinfoat	__PR((int fd, char *name, FINFO *info));
+#endif
 #ifdef	_SCHILY_STAT_H
-extern	BOOL	stat_to_info	__PR((struct stat *sp, FINFO *info));
+extern	BOOL	getstat		__PR((char *name, struct stat *sp));
+extern	BOOL	stat_to_info	__PR((int fd, struct stat *sp, FINFO *info));
 #endif
 #ifdef	EOF
 extern	void	checkarch	__PR((FILE *f));
@@ -396,7 +411,41 @@ extern	int	sxsymlink	__PR((char *name, FINFO *info));
 extern	int	rs_acctime	__PR((int fd, FINFO *info));
 extern	void	setdirmodes	__PR((char *name, mode_t mode));
 extern	mode_t	osmode		__PR((mode_t tarmode));
+
+/*
+ * lpath_unix.c
+ */
+extern	int	lchdir		__PR((char *name));
+extern	char	*lgetcwd	__PR((void));
+extern	int	lmkdir		__PR((char *name, mode_t mode));
+extern	int	laccess		__PR((char *name, int amode));
+#ifdef	_SCHILY_STAT_H
+extern	int	lstatat		__PR((char *name, struct stat *buf, int flag));
 #endif
+extern	int	lchmodat	__PR((char *name, mode_t mode, int flag));
+#ifdef	_SCHILY_TIME_H
+extern	int	lutimensat	__PR((char *name, struct timespec *ts,
+					int flag));
+#endif
+extern	int	lreadlink	__PR((char *name, char *buf, size_t bufsize));
+extern	int	lsymlink	__PR((char *name, char *name2));
+extern	int	llink		__PR((char *name, char *name2));
+extern	int	lrename		__PR((char *name, char *name2));
+extern	int	lmknod		__PR((char *name, mode_t mode, dev_t dev));
+extern	int	lmkfifo		__PR((char *name, mode_t mode));
+extern	int	lchownat	__PR((char *name, uid_t uid, gid_t gid,
+					int flag));
+extern	int	lunlinkat	__PR((char *name, int flag));
+extern	char	*lmktemp	__PR((char *name));
+#ifdef	EOF
+extern	FILE	*lfilemopen	__PR((char *name, char *mode, mode_t cmode));
+#endif
+extern	int	_lfileopen	__PR((char *name, char *mode));
+#ifdef	_SCHILY_DIRENT_H
+EXPORT	DIR	*lopendir	__PR((char *name));
+#endif
+#endif	/* _STAR_H */
+EXPORT	int	hop_dirs	__PR((char *name, char **np));
 
 /*
  * acl_unix.c
@@ -410,10 +459,12 @@ extern	void	set_acls	__PR((FINFO *info));
 /*
  * unicode.c
  */
-extern	int	to_utf8		__PR((Uchar *to, Uchar *from));
-extern	int	to_utf8l	__PR((Uchar *to, Uchar *from, int len));
-extern	BOOL	from_utf8	__PR((Uchar *to, Uchar *from));
-extern	BOOL	from_utf8l	__PR((Uchar *to, Uchar *from, int *len));
+extern	void	utf8_init	__PR((int type));
+extern	void	utf8_fini	__PR((void));
+extern	size_t	to_utf8		__PR((Uchar *to, size_t tolen,
+					Uchar *from, size_t len));
+extern	BOOL	from_utf8	__PR((Uchar *to, size_t tolen,
+					Uchar *from, size_t *len));
 
 /*
  * fflags.c
@@ -430,7 +481,9 @@ extern	int	texttoflags	__PR((FINFO *info, char *buf));
  * defaults.c
  */
 extern	char	*get_stardefaults __PR((char *name));
-extern	void	star_defaults	__PR((long *fsp, char *dfltname));
+extern	void	star_defaults	__PR((long *fsp, BOOL *no_fsyncp,
+						BOOL *secure_linkp,
+						char *dfltname));
 extern	BOOL	star_darchive	__PR((char *arname, char *dfltname));
 
 /*
@@ -448,3 +501,8 @@ extern	BOOL	ia_change	__PR((TCB *ptb, FINFO *info));
 #ifdef _STAR_H
 EXPORT	BOOL	findinfo	__PR((FINFO *info));
 #endif
+
+/*
+ * paxopts.c
+ */
+extern	int	ppaxopts	__PR((const char *opts));
