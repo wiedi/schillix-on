@@ -1,13 +1,13 @@
-/* @(#)cpio.c	1.27 11/04/16 Copyright 1989, 2005-2011 J. Schilling */
+/* @(#)cpio.c	1.34 19/03/27 Copyright 1989, 2005-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	const char _c_sccsid[] =
-	"@(#)cpio.c	1.27 11/04/16 Copyright 1989, 2005-2011 J. Schilling";
+	"@(#)cpio.c	1.34 19/03/27 Copyright 1989, 2005-2019 J. Schilling";
 #endif
 /*
  *	CPIO specific routines for star main program.
  *
- *	Copyright (c) 1989, 2005-2011 J. Schilling
+ *	Copyright (c) 1989, 2005-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	const char _c_sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -95,12 +97,15 @@ LOCAL	void	cpio_setopts	__PR((char *o));
 /*
  * CPIO related options
  *
- * The official POSIX options start after the -bz/-lzop/-7z/-xz/-lzip option.
+ * The official POSIX options start after the -bz/-lzop/-7z/-xz/-lzip/zstd option.
  */
 /* BEGIN CSTYLED */
-char	_opts[] = "help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,bs&,fs&,/,..,secure-links,acl,xfflags,z,bz,lzo,7z,xz,lzip,i,o,p,a,A,b,B,c,C&,d,E*,f,H&,artype&,I&,O&,k,l,L,m,M*,P,r,R,s,S,t,u,6,@,V,v";
+char	_opts[] = "help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,bs&,fs&,/,..,secure-links,no-secure-links%0,acl,xfflags,z,bz,lzo,7z,xz,lzip,zstd,i,o,p,a,A,b,B,c,C&,d,E*,f,H&,artype&,I&,O&,k,l,L,m,M*,P,r,R,s,S,t,u,6,@,V,v";
 /* END CSTYLED */
 char	*opts = _opts;
+#ifdef	NO_STAR_MAIN
+struct ga_props	gaprops;
+#endif
 
 LOCAL	void	cpio_info	__PR((void));
 
@@ -151,6 +156,7 @@ gargs(ac, av)
 #ifdef	STAR_MAIN
 	cpio_setopts(opts);			/* set up opts for getfiles */
 #endif
+	getarginit(&gaprops, GAF_DEFAULT);	/* Set default behavior	  */
 
 	iftype		= I_CPIO;		/* command line interface */
 	ptype		= P_CPIO;		/* program interface type */
@@ -177,20 +183,24 @@ gargs(ac, av)
 	 *	system without the risk of problems with old binaries.
 	 */
 
+	if (pname) {				/* cli=xxx seen as argv[1] */
+		--ac, av++;
+	}
 	--ac, ++av;
 	files = getfilecount(ac, av, opts);
-	if (getallargs(&ac, &av, opts,
+	if (getlallargs(&ac, &av, &gaprops, opts,
 				&help, &xhelp, &prvers, &debug,
 				&xdebug, &xdebug,
 #ifndef	__old__lint
 				&showtime, &no_stats, &do_fifostats,
 				&numeric,  &no_fifo, &no_fsync, &no_fsync,
-				getnum, &bs,
-				getnum, &fs,
-				&abs_path, &allow_dotdot, &secure_links,
+				getenum, &bs,
+				getenum, &fs,
+				&abs_path, &allow_dotdot,
+				&secure_links, &secure_links,
 				&doacl, &dofflags,
 				&zflag, &bzflag, &lzoflag,
-				&p7zflag, &xzflag, &lzipflag,
+				&p7zflag, &xzflag, &lzipflag, &zstdflag,
 
 				&cpioiflag,		/* -i */
 				&cpiooflag,		/* -o */
@@ -341,7 +351,9 @@ gargs(ac, av)
 
 	star_checkopts(/* oldtar */ FALSE, /* dodesc */ FALSE,
 				/* usetape */ FALSE,
-				/* archive */ -1, no_fifo, llbs);
+				/* archive */ -1, no_fifo,
+				/* paxopts */ NULL,
+				llbs);
 
 	nolinkerr = FALSE;
 }
@@ -349,8 +361,10 @@ gargs(ac, av)
 LOCAL void
 cpio_info()
 {
+	const	char	*n = pname ? pname : get_progname();
+
 	error("\nFor a more complete user interface use the tar type command interface.\n");
-	error("See 'man star'. The %s command is more or less limited to the\n", get_progname());
+	error("See 'man star'. The %s command is more or less limited to the\n", n);
 	error("SUSv2 standard cpio command line interface.\n");
 }
 
@@ -361,11 +375,13 @@ LOCAL void
 susage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
-	error("\nUse\t%s -help\n", get_progname());
-	error("and\t%s -xhelp\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
+	error("\nUse\t%s -help\n", n);
+	error("and\t%s -xhelp\n", n);
 	error("to get a list of valid cmds and options.\n");
-	error("\nUse\t%s -H help\n", get_progname());
+	error("\nUse\t%s -H help\n", n);
 	error("to get a list of valid archive header formats.\n");
 	cpio_info();
 	exit(ret);
@@ -376,7 +392,9 @@ LOCAL void
 usage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Cmd:\n");
 	error("\t-o\t\tCopy out (write files to an archive)\n");
 	error("\t-i\t\tCopy in (extract files from archive)\n");
@@ -421,6 +439,7 @@ usage(ret)
 	error("\t-7z\t\t(*) pipe input/output through p7zip, does not work on tapes\n");
 	error("\t-xz\t\t(*) pipe input/output through xp, does not work on tapes\n");
 	error("\t-lzip\t\t(*) pipe input/output through lzip, does not work on tapes\n");
+	error("\t-zstd\t\t(*) pipe input/output through zstd, does not work on tapes\n");
 #ifdef	FIFO
 	error("\t-no-fifo\t(*) don't use a fifo to optimize data flow from/to tape\n");
 #endif
@@ -437,13 +456,16 @@ LOCAL void
 xusage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Extended options:\n");
 	error("\t-debug\t\tprint additional debug messages\n");
 	error("\txdebug=#,xd=#\tset extended debug level\n");
 	error("\t-/\t\tdon't strip leading '/'s from file names\n");
 	error("\t-..\t\tdon't skip filenames that contain '..' in non-interactive extract\n");
-	error("\t-secure-links\tdon't extract links that start with '/' or contain '..'\n");
+	error("\t-secure-links\tdon't extract links that start with '/' or contain '..' (default)\n");
+	error("\t-no-secure-links\textract links that start with '/' or contain '..'\n");
 	error("\t-acl\t\thandle access control lists\n");
 	error("\t-xfflags\thandle extended file flags\n");
 	error("\tbs=#\t\tset (output) block size to #\n");

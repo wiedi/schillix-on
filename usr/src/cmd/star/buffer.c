@@ -1,13 +1,13 @@
-/* @(#)buffer.c	1.167 15/11/30 Copyright 1985, 1995, 2001-2015 J. Schilling */
+/* @(#)buffer.c	1.197 19/11/13 Copyright 1985, 1995, 2001-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)buffer.c	1.167 15/11/30 Copyright 1985, 1995, 2001-2015 J. Schilling";
+	"@(#)buffer.c	1.197 19/11/13 Copyright 1985, 1995, 2001-2019 J. Schilling";
 #endif
 /*
  *	Buffer handling routines
  *
- *	Copyright (c) 1985, 1995, 2001-2015 J. Schilling
+ *	Copyright (c) 1985, 1995, 2001-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -54,11 +54,33 @@ static	UConst char sccsid[] =
 #include <schily/wait.h>
 #include <schily/mtio.h>
 #include <schily/librmt.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "starsubs.h"
 
 #include <schily/io.h>		/* for setmode() prototype */
 #include <schily/libport.h>	/* getpagesize() */
+
+#include <schily/nlsdefs.h>
+
+/*
+ * Warning: we need the siginfo_t feature that has been introduced in 1989
+ * with SVr4 and in 1995 with SUSv1. You need a platform that is maintained
+ * since 1995.
+ *
+ * defined(HAVE_SIGPROCMASK) && defined(SA_RESTART) identifies a system that
+ * supports sigaction().
+ *
+ * defined(HAVE_SIGINFO_T) && defined(HAVE_WAITID) is needed in order to get
+ * useful values in siginfo_t. Note that Mac OS X before approx. 2018 e.g.
+ * neither fills in sip->si_pid nor sip->si_code, making siginfo_t useless.
+ */
+#if	defined(HAVE_SIGPROCMASK) && defined(SA_RESTART) && \
+	defined(SA_SIGINFO) && \
+	defined(HAVE_SIGINFO_T) && defined(HAVE_WAITID)
+#define	USE_SIGCLD
+#endif
 
 long	bigcnt	= 0;
 int	bigsize	= 0;		/* Tape block size (may shrink < bigbsize) */
@@ -95,6 +117,8 @@ extern	char	*tarfiles[];
 extern	int	ntarfiles;
 extern	int	tarfindex;
 extern	BOOL	force_noremote;
+extern	char	*rsh;
+extern	char	*rmt;
 LOCAL	int	lastremote = -1;
 extern	BOOL	multivol;
 extern	char	*newvol_script;
@@ -119,6 +143,9 @@ extern	BOOL	lzoflag;
 extern	BOOL	p7zflag;
 extern	BOOL	xzflag;
 extern	BOOL	lzipflag;
+extern	BOOL	zstdflag;
+extern	BOOL	lzmaflag;
+extern	BOOL	freezeflag;
 extern	char	*compress_prg;
 extern	BOOL	multblk;
 extern	BOOL	partial;
@@ -137,6 +164,7 @@ EXPORT	BOOL	openremote	__PR((void));
 EXPORT	void	opentape	__PR((void));
 EXPORT	void	closetape	__PR((void));
 EXPORT	void	changetape	__PR((BOOL donext));
+EXPORT	void	runnewvolscript	__PR((int volno, int nindex));
 EXPORT	void	nextitape	__PR((void));
 EXPORT	void	nextotape	__PR((void));
 EXPORT	int	startvol	__PR((char *buf, int amount));
@@ -181,6 +209,10 @@ EXPORT	void	exprstats	__PR((int ret));
 EXPORT	void	excomerrno	__PR((int err, char *fmt, ...)) __printflike__(2, 3);
 EXPORT	void	excomerr	__PR((char *fmt, ...)) __printflike__(1, 2);
 EXPORT	void	die		__PR((int err));
+#ifdef	USE_SIGCLD
+LOCAL	void	cldhandler	__PR((int sig, siginfo_t *sip, void *context));
+LOCAL	void	handlecld	__PR((void));
+#endif
 LOCAL	void	compressopen	__PR((void));
 LOCAL	void	compressclose	__PR((void));
 
@@ -209,6 +241,14 @@ openremote()
 #ifdef	USE_REMOTE
 		isremote = TRUE;
 		rmtdebug(debug);
+		if (rsh)
+			rmtrsh(rsh);
+#ifdef	USE_SSH
+		else
+			rmtrsh("ssh");
+#endif
+		if (rmt)
+			rmtrmt(rmt);
 		rmthostname(host, sizeof (host), tarfiles[tarfindex]);
 		if (debug)
 			errmsgno(EX_BAD, "Remote: %s Host: %s file: %s\n",
@@ -316,8 +356,9 @@ opentape()
 		/*
 		 * XXX Should we add an option that allows to specify O_TRUNC?
 		 */
-		while ((tarf = fileopen(tarfiles[tarfindex],
-						cflag?"rwcub":"rub")) ==
+		while ((tarf = lfilemopen(tarfiles[tarfindex],
+						cflag?"rwcub":"rub",
+						S_IRWALL)) ==
 								(FILE *)NULL) {
 			if (!wready || n++ > 12 ||
 			    (geterrno() != EIO && geterrno() != EBUSY)) {
@@ -347,7 +388,9 @@ opentape()
 	 */
 	if (stats->volno == 1 &&
 	    tape_isreg && !cflag && (!Zflag && !zflag && !bzflag && !lzoflag &&
-	    !p7zflag && !xzflag && !compress_prg)) {
+	    !p7zflag && !xzflag && !lzipflag && !zstdflag && !lzmaflag &&
+	    !freezeflag &&
+	    !compress_prg)) {
 		long	htype;
 		TCB	*ptb;
 
@@ -377,24 +420,39 @@ opentape()
 				bzflag = TRUE;
 				break;
 			case C_LZO:
-				if (!silent) errmsgno(EX_BAD,
+				if (!silent && !print_artype) errmsgno(EX_BAD,
 					"WARNING: Archive is 'lzop' compressed, trying to use the -lzo option.\n");
 				lzoflag = TRUE;
 				break;
 			case C_7Z:
-				if (!silent) errmsgno(EX_BAD,
+				if (!silent && !print_artype) errmsgno(EX_BAD,
 					"WARNING: Archive is '7z' compressed, trying to use the -7z option.\n");
 				p7zflag = TRUE;
 				break;
 			case C_XZ:
-				if (!silent) errmsgno(EX_BAD,
+				if (!silent && !print_artype) errmsgno(EX_BAD,
 					"WARNING: Archive is 'xz' compressed, trying to use the -xz option.\n");
 				xzflag = TRUE;
 				break;
 			case C_LZIP:
-				if (!silent) errmsgno(EX_BAD,
+				if (!silent && !print_artype) errmsgno(EX_BAD,
 					"WARNING: Archive is 'lzip' compressed, trying to use the -lzip option.\n");
 				lzipflag = TRUE;
+				break;
+			case C_ZSTD:
+				if (!silent && !print_artype) errmsgno(EX_BAD,
+					"WARNING: Archive is 'zstd' compressed, trying to use the -zstd option.\n");
+				zstdflag = TRUE;
+				break;
+			case C_LZMA:
+				if (!silent && !print_artype) errmsgno(EX_BAD,
+					"WARNING: Archive is 'lzma' compressed, trying to use the -lzma option.\n");
+				lzmaflag = TRUE;
+				break;
+			case C_FREEZE2:
+				if (!silent && !print_artype) errmsgno(EX_BAD,
+					"WARNING: Archive is 'freeze2' compressed, trying to use the -freeze option.\n");
+				freezeflag = TRUE;
 				break;
 			default:
 				if (!silent) errmsgno(EX_BAD,
@@ -405,7 +463,7 @@ opentape()
 		mtseek((off_t)0, SEEK_SET);
 	}
 	if (Zflag || zflag || bzflag || lzoflag ||
-	    p7zflag || xzflag || lzipflag ||
+	    p7zflag || xzflag || lzipflag || zstdflag || lzmaflag || freezeflag ||
 	    compress_prg) {
 		if (isremote)
 			comerrno(EX_BAD, "Cannot compress remote archives (yet).\n");
@@ -455,7 +513,7 @@ EXPORT void
 changetape(donext)
 	BOOL	donext;
 {
-	char	ans[2];
+	char	ans[3];
 	int	nextindex;
 
 	if (donext) {
@@ -500,8 +558,6 @@ changetape(donext)
 	 * XXX ufsdump.
 	 */
 	if (newvol_script) {
-		char	scrbuf[PATH_MAX];
-
 		fflush(vpr);
 		if (!donext) {
 			errmsgno(EX_BAD,
@@ -509,24 +565,49 @@ changetape(donext)
 				tarfiles[nextindex]);
 			comerrno(EX_BAD, "Aborting.\n");
 		}
-		/*
-		 * The script is called with the next volume # and volume name
-		 * as argument.
-		 */
-		js_snprintf(scrbuf, sizeof (scrbuf), "%s '%d' '%s'",
-				newvol_script,
-				stats->volno, tarfiles[nextindex]);
-		system(scrbuf);
+		runnewvolscript(stats->volno, nextindex);
 	} else {
+		int	len;
+
 		errmsgno(EX_BAD, "Mount volume #%d on '%s' and hit <RETURN>",
 			stats->volno, tarfiles[nextindex]);
-		fgetline(tty, ans, sizeof (ans));
-		if (feof(tty))
+		ans[0] = '\n';
+		len = fgetstr(tty, ans, sizeof (ans));
+		if (len > 0 && ans[len-1] != '\n') {
+			while (getc(tty) != '\n') {
+				if (feof(tty) || ferror(tty))
+					break;
+			}
+		}
+
+		if (ttyerr(tty))
 			exit(1);
 	}
 	tarfindex = nextindex;
 	openremote();
 	opentape();
+}
+
+EXPORT void
+runnewvolscript(volno, nindex)
+	int	volno;
+	int	nindex;
+{
+	char	scrbuf[PATH_MAX];
+
+	if (!newvol_script)
+		return;
+
+	if (nindex >= ntarfiles)
+		nindex = 0;
+	/*
+	 * The script is called with the next volume # and volume name
+	 * as argument.
+	 */
+	js_snprintf(scrbuf, sizeof (scrbuf), "%s '%d' '%s'",
+			newvol_script,
+			volno, tarfiles[nindex]);
+	system(scrbuf);
 }
 
 /*
@@ -604,15 +685,17 @@ extern	m_head	*mp;
 		"Panic: trying to write more than bs (%d > %d)!\n",
 		amount, bigsize);
 	}
-	mp->chreel = TRUE;
 #ifdef	FIFO
 	if (use_fifo) {
+		mp->chreel = TRUE;
+
 		/*
 		 * Make sure the put side of the FIFO is waiting either on
 		 * mp->iblocked (because the FIFO is full) or on mp->reelwait
 		 * before temporary disabling the FIFO during media change.
 		 */
-		while (mp->iblocked == FALSE && mp->reelwait == FALSE) {
+		while ((mp->eflags & FIFO_EXIT) == 0 &&
+		    mp->iblocked == FALSE && mp->reelwait == FALSE) {
 			usleep(100000);
 		}
 	}
@@ -652,9 +735,9 @@ extern	m_head	*mp;
 	bigcnt = ocnt;
 	use_fifo = ofifo;
 	active = FALSE;
-	mp->chreel = FALSE;
 #ifdef	FIFO
 	if (use_fifo) {
+		mp->chreel = FALSE;
 		fifo_reelwake();
 	}
 #endif
@@ -823,8 +906,11 @@ initbuf(nblocks)
 	 * the shared memory in the FIFO while trying to detect the archive
 	 * format and byte swapping in read/extract modes.
 	 * Note that -r and -u currently disable the FIFO.
+	 * In case that we enable the FIFO for -r and -u, we need to add
+	 * another exception here in order to have space to remember the last
+	 * block of significant data that needs to be modified to append.
 	 */
-	if (!use_fifo || cvolhdr) {
+	if (!use_fifo || cvolhdr || rflag || uflag) {
 		int	pagesize = getpagesize();
 
 		/*
@@ -836,8 +922,12 @@ initbuf(nblocks)
 		 * "bufsize" may be modified by initfifo() in the FIFO case,
 		 * so we use "bigsize" for the extra multivol buffer to
 		 * avoid allocating an unneeded huge amount of data here.
+		 * In "replace" or "update" mode, we also may need to
+		 * save/restore * the buffer for the tape record when doing
+		 * EOF detection. As this space is needed at a different
+		 * time, it may be shared with the extra multivol buffer.
 		 */
-		if (cvolhdr)
+		if (cvolhdr || rflag || uflag)
 			bigsize *= 2;
 
 		/*
@@ -852,7 +942,7 @@ initbuf(nblocks)
 		fillbytes(bigbuf, bigsize, '\0');
 		fillbytes(&bigbuf[bigsize], 10, 'U');
 
-		if (cvolhdr) {
+		if (cvolhdr || rflag || uflag) {
 			bigsize /= 2;
 			bigbase = bigbuf;
 			bigbuf = bigptr = &bigbase[bigsize];
@@ -883,7 +973,8 @@ markeof()
 
 	if (debug) {
 		error("Blocks: %lld\n", tblocks());
-		error("bigptr - bigbuff: %lld %p %p %p lastsize: %ld\n",
+		error(
+		"bigptr - bigbuff: %lld bigbuf: %p bigptr: %p eofptr: %p lastsize: %ld\n",
 			(Llong)(bigptr - bigbuf),
 			(void *)bigbuf, (void *)bigptr, (void *)eofptr,
 			stats->lastsize);
@@ -907,10 +998,10 @@ marktcb(addr)
 #ifdef	FIFO
 	bit = addr - mp->base;
 	if (bit % TBLOCK)		/* Remove this paranoia test in future. */
-		error("TCB offset not mudulo 512.\n");
+		errmsgno(EX_BAD, "TCB offset not mudulo 512.\n");
 	bit /= TBLOCK;
 	if (bit_test(mp->bmap, bit))	/* Remove this paranoia test in future. */
-		error("Bit %d is already set.\n", bit);
+		errmsgno(EX_BAD, "Bit %d is already set.\n", bit);
 	bit_set(mp->bmap, bit);
 #endif
 }
@@ -1390,7 +1481,8 @@ buf_drain()
 {
 #ifdef	FIFO
 	if (use_fifo) {
-		fifo_oflush();
+		fifo_oflush();	/* Set FIFO_MEOF flag and wake other side */
+		fifo_oclose();	/* Close sync pipe to finally wake other side */
 		wait(0);
 	}
 #endif
@@ -1513,7 +1605,7 @@ extern	long	hdrtype;
 /*
  * Backspace tape or medium to prepare it for appending to an archive.
  * Note that this currently only handles TAR archives and that even then it
- * will not work if the TAPE recordr size is < 2*TBLOCK (1024 bytes).
+ * will not work if the TAPE record size is < 2*TBLOCK (1024 bytes).
  */
 EXPORT void
 backtape()
@@ -1719,6 +1811,9 @@ prstats()
 				sec, nsec/1000000, kbs);
 	}
 #endif
+#ifdef	DBG_MALLOC
+	aprintlist(stdout, 1);
+#endif
 }
 
 EXPORT BOOL
@@ -1736,6 +1831,9 @@ checkerrs()
 	    xstats.s_isspecial	||
 	    xstats.s_sizeerrs	||
 	    xstats.s_chdir	||
+	    xstats.s_iconv	||
+	    xstats.s_id		||
+	    xstats.s_time	||
 
 	    xstats.s_settime	||
 	    xstats.s_security	||
@@ -1750,16 +1848,25 @@ checkerrs()
 	    xstats.s_setxattr	||
 #endif
 	    xstats.s_setmodes	||
-	    xstats.s_restore) {
+	    xstats.s_restore	||
+	    xstats.s_compress	||
+	    xstats.s_hardeof	||
+	    xstats.s_substerrs	||
+	    xstats.s_selinuxerrs) {
 		if (nowarn || no_stats || (pid == 0) /* child */)
 			return (TRUE);
 
 		errmsgno(EX_BAD, "The following problems occurred during archive processing:\n");
-		errmsgno(EX_BAD, "Cannot: stat %d, open %d, read/write %d, chdir %d. Size changed %d.\n",
+		errmsgno(EX_BAD, "Cannot: stat %d, open %d, read/write %d, chdir %d, iconv %d.\n",
 				xstats.s_staterrs,
 				xstats.s_openerrs,
 				xstats.s_rwerrs,
 				xstats.s_chdir,
+				xstats.s_iconv);
+		if (xstats.s_id || xstats.s_time)
+			errmsgno(EX_BAD, "Range errors: uid/gid %d, time: %d.\n",
+				xstats.s_id, xstats.s_time);
+		errmsgno(EX_BAD, "Size changed %d.\n",
 				xstats.s_sizeerrs);
 		errmsgno(EX_BAD, "Missing links %d, Name too long %d, File too big %d, Not dumped %d.\n",
 				xstats.s_misslinks,
@@ -1789,8 +1896,26 @@ checkerrs()
 				xstats.s_getxattr,
 				xstats.s_setxattr);
 #endif
+#ifdef USE_SELINUX
+		if (xstats.s_selinuxerrs)
+			errmsgno(EX_BAD, "Cannot set SELinux security context: %d.\n",
+				xstats.s_selinuxerrs);
+#endif
 		if (xstats.s_restore)
 			errmsgno(EX_BAD, "Problems with restore database.\n");
+		if (xstats.s_compress)
+			errmsgno(EX_BAD, "Problems with compress program.\n");
+		if (xstats.s_substerrs)
+			errmsgno(EX_BAD,
+				"%d Problem(s) with path substitution.\n",
+				xstats.s_substerrs);
+		if (xstats.s_hardeof)
+			errmsgno(EX_BAD, "Hard EOF on input.\n");
+
+		if (xstats.s_security)
+			errmsgno(EX_BAD, "See option -.. on why some files have been skipped.\n");
+		if (xstats.s_lsecurity)
+			errmsgno(EX_BAD, "See option -secure-links on why some links have been skipped.\n");
 		return (TRUE);
 	}
 	return (FALSE);
@@ -1802,6 +1927,8 @@ exprstats(ret)
 {
 	prstats();
 	checkerrs();
+	if (use_fifo)
+		fifo_exit(ret);
 	exit(ret);
 }
 
@@ -1824,7 +1951,7 @@ excomerrno(err, fmt, va_alist)
 #else
 	va_start(args);
 #endif
-	errmsgno(err, "%r", fmt, args);
+	errmsgno(err, "%r", _(fmt), args);
 	va_end(args);
 #ifdef	FIFO
 	fifo_exit(err);
@@ -1852,7 +1979,7 @@ excomerr(fmt, va_alist)
 #else
 	va_start(args);
 #endif
-	errmsgno(err, "%r", fmt, args);
+	errmsgno(err, "%r", _(fmt), args);
 	va_end(args);
 #ifdef	FIFO
 	fifo_exit(err);
@@ -1875,6 +2002,45 @@ die(err)
 #if	defined(SIGDEFER) || defined(SVR4)
 #define	signal	sigset
 #endif
+
+LOCAL	pid_t	compresspid;
+
+#ifdef	USE_SIGCLD
+LOCAL void
+cldhandler(sig, sip, context)
+	int		sig;
+	siginfo_t	*sip;
+	void		*context;
+{
+	if (sip->si_pid != compresspid)
+		return;
+
+	if (sip->si_status != 0 || sip->si_code != CLD_EXITED)
+		xstats.s_compress++;
+
+	if (sip->si_status != 0 && sip->si_code == CLD_EXITED)
+		errmsgno(EX_BAD,
+		"Compress program exited with status %d.\n",
+			sip->si_status);
+	else if (sip->si_status != 0)
+		errmsgno(EX_BAD,
+		"Compress program died with signal %d.\n",
+			sip->si_status);
+}
+
+LOCAL void
+handlecld()
+{
+	struct sigaction sa;
+
+	sa.sa_sigaction = cldhandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART|SA_SIGINFO;
+
+	sigaction(SIGCHLD, &sa, NULL);
+}
+#endif	/* USE_SIGCLD */
+
 LOCAL void
 compressopen()
 {
@@ -1897,6 +2063,12 @@ compressopen()
 		zip_prog = "xz";
 	else if (lzipflag)
 		zip_prog = "lzip";
+	else if (zstdflag)
+		zip_prog = "zstd";
+	else if (lzmaflag)
+		zip_prog = "lzma";
+	else if (freezeflag)
+		zip_prog = "freeze";
 
 	multblk = TRUE;
 
@@ -1946,6 +2118,9 @@ compressopen()
 #else
 	if (fpipe(pp) == 0)
 		comerr("Compress pipe failed\n");
+#ifdef	USE_SIGCLD
+	handlecld();
+#endif
 	mypid = fork();
 	if (mypid < 0)
 		comerr("Compress fork failed\n");
@@ -1967,14 +2142,21 @@ compressopen()
 #endif
 
 		/* We don't want to see errors */
-		null = fileopen("/dev/null", "rw");
+		null = lfilemopen("/dev/null", "rw", S_IRWALL);
+		if (null == NULL) {
+			errmsg("Cannot open '%s'.\n", "/dev/null");
+			goto err;
+		}
 
 		if (cflag)
 			fexecl(zip_prog, pp[0], tarf, null, zip_prog, flg, (char *)NULL);
 		else
 			fexecl(zip_prog, tarf, pp[1], null, zip_prog, "-d", (char *)NULL);
+err:
 		errmsg("Compress: exec of '%s' failed\n", zip_prog);
 		_exit(-1);
+	} else {
+		compresspid = mypid;
 	}
 	fclose(tarf);
 	if (cflag) {
@@ -2018,6 +2200,12 @@ compressclose()
 				zip_prog = "xz";
 			else if (lzipflag)
 				zip_prog = "lzip";
+			else if (zstdflag)
+				zip_prog = "zstd";
+			else if (lzmaflag)
+				zip_prog = "lzma";
+			else if (freezeflag)
+				zip_prog = "freeze";
 
 			js_snprintf(zip_cmd, sizeof (zip_cmd), "%s.exe", zip_prog);
 

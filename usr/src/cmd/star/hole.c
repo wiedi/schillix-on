@@ -1,13 +1,13 @@
-/* @(#)hole.c	1.63 14/01/16 Copyright 1993-2014 J. Schilling */
+/* @(#)hole.c	1.67 18/11/28 Copyright 1993-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)hole.c	1.63 14/01/16 Copyright 1993-2014 J. Schilling";
+	"@(#)hole.c	1.67 18/11/28 Copyright 1993-2018 J. Schilling";
 #endif
 /*
  *	Handle files with holes (sparse files)
  *
- *	Copyright (c) 1993-2014 J. Schilling
+ *	Copyright (c) 1993-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -29,19 +29,21 @@ static	UConst char sccsid[] =
 #include <schily/errno.h>
 #include <schily/standard.h>
 #include "star.h"
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "props.h"
 #include "table.h"
 #include "starsubs.h"
 #include "checkerr.h"
 #ifdef	sun
-#	include <sys/filio.h>
-#	if	_FIOAI == _FIOOBSOLETE67
-#	undef	_FIOAI
-#	endif
-#	ifdef	_FIOAI
-#	include <sys/fs/ufs_filio.h>
-#	endif
+#include <sys/filio.h>
+#if	_FIOAI == _FIOOBSOLETE67
+#undef	_FIOAI
+#endif
+#ifdef	_FIOAI
+#include <sys/fs/ufs_filio.h>
+#endif
 #endif	/* sun */
 
 #ifdef	SEEK_DEBUG
@@ -744,7 +746,7 @@ mk_sp_list(fp, info, spp)
 		int	fai_idx;
 	struct fioai	fai;
 	struct fioai	*faip;
-#	define	NFAI	1024
+#define	NFAI	1024
 	daddr_t		fai_arr[NFAI];
 #endif	/* _FIOAI */
 #endif	/* SEEK_HOLE */
@@ -797,6 +799,13 @@ mk_sp_list(fp, info, spp)
 	 * past the check for a working SEEK_HOLE in hope that noone will
 	 * implement a filesystem that hides more than DEV_BSIZE without
 	 * supporting SEEK_HOLE.
+	 *
+	 * Update: There seems to be a major problem in btrfs:
+	 * There was a report that btrfs reports sp->st_blocks == 0 for a file
+	 * with an 8 GB hole followed by 512 bytes of 'A'. While this is most
+	 * likely a btrfs bug, in theory a filesystem could compress the data
+	 * past the hole and hold the compressed data inside the inode. As a
+	 * result, we needed to disable the F_ALL_HOLE check.
 	 */
 	if (info->f_flags & F_ALL_HOLE) {
 		pos = info->f_size;
@@ -1187,6 +1196,7 @@ put_sparse(fp, info)
 			 * region of at least TBLOCK size.
 			 */
 			put_file(fp, info);
+			free(sparse);
 			return;
 		} else if (!silent) {
 			error("Treating '%s' as sparse\n", info->f_name);

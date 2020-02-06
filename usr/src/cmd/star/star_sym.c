@@ -1,14 +1,14 @@
-/* @(#)star_sym.c	1.15 11/10/19 Copyright 2005-2011 J. Schilling */
+/* @(#)star_sym.c	1.21 18/07/23 Copyright 2005-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)star_sym.c	1.15 11/10/19 Copyright 2005-2011 J. Schilling";
+	"@(#)star_sym.c	1.21 18/07/23 Copyright 2005-2018 J. Schilling";
 #endif
 /*
  *	Read in the star inode data base and write a human
  *	readable version.
  *
- *	Copyright (c) 2005-2011 J. Schilling
+ *	Copyright (c) 2005-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -17,6 +17,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -31,6 +33,8 @@ static	UConst char sccsid[] =
 #include "dumpdate.h"
 #include <schily/jmpdefs.h>	/* To include __jmalloc() */
 #include <schily/fcntl.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include <schily/maxpath.h>
 #include "starsubs.h"
@@ -39,12 +43,21 @@ static	UConst char sccsid[] =
 #define	lstat	stat
 #endif
 
+#if	S_ISUID == TSUID && S_ISGID == TSGID && S_ISVTX == TSVTX && \
+	S_IRUSR == TUREAD && S_IWUSR == TUWRITE && S_IXUSR == TUEXEC && \
+	S_IRGRP == TGREAD && S_IWGRP == TGWRITE && S_IXGRP == TGEXEC && \
+	S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC
+
+#define	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
+#endif
+
 struct star_stats	xstats;		/* for printing statistics	*/
 
 dev_t	curfs = NODEV;			/* Current st_dev for -M option	*/
 char	*vers;				/* the full version string	*/
 BOOL	force_remove = FALSE;		/* -force-remove on extraction	*/
 BOOL	remove_recursive = FALSE;	/* -remove-recursive on extract	*/
+BOOL	dopartial = FALSE;		/* -partial in incremental mode	*/
 BOOL	forcerestore = FALSE;		/* -force-restore in incremental mode	*/
 BOOL	uncond	  = FALSE;		/* -U unconditional extract	*/
 BOOL	nowarn	  = FALSE;		/* -nowarn has been specified	*/
@@ -80,7 +93,6 @@ make_adir(info)
 	return (FALSE);
 }
 
-
 #include <schily/stat.h>
 EXPORT BOOL
 _getinfo(name, info)
@@ -89,7 +101,7 @@ _getinfo(name, info)
 {
 	struct stat sb;
 
-	if (lstat(name, &sb) < 0)
+	if (lstatat(name, &sb, AT_SYMLINK_NOFOLLOW) < 0)
 		return (FALSE);
 
 	info->f_name = name;
@@ -105,6 +117,37 @@ _getinfo(name, info)
 	default:		info->f_filetype = F_SPEC;
 	}
 	return (TRUE);
+}
+
+#ifdef	HAVE_POSIX_MODE_BITS	/* st_mode bits are equal to TAR mode bits */
+#define	OSMODE(tarmode)	    (tarmode)
+#else
+#define	OSMODE(tarmode)	    ((tarmode & TSUID   ? S_ISUID : 0)  \
+			    | (tarmode & TSGID   ? S_ISGID : 0) \
+			    | (tarmode & TSVTX   ? S_ISVTX : 0) \
+			    | (tarmode & TUREAD  ? S_IRUSR : 0) \
+			    | (tarmode & TUWRITE ? S_IWUSR : 0) \
+			    | (tarmode & TUEXEC  ? S_IXUSR : 0) \
+			    | (tarmode & TGREAD  ? S_IRGRP : 0) \
+			    | (tarmode & TGWRITE ? S_IWGRP : 0) \
+			    | (tarmode & TGEXEC  ? S_IXGRP : 0) \
+			    | (tarmode & TOREAD  ? S_IROTH : 0) \
+			    | (tarmode & TOWRITE ? S_IWOTH : 0) \
+			    | (tarmode & TOEXEC  ? S_IXOTH : 0))
+#endif
+
+EXPORT mode_t
+#ifdef	PROTOTYPES
+osmode(register mode_t tarmode)
+#else
+osmode(tarmode)
+	register mode_t		tarmode;
+#endif
+{
+	register mode_t		_osmode;
+
+	_osmode = OSMODE(tarmode);
+	return (_osmode);
 }
 
 
@@ -204,9 +247,9 @@ extern	BOOL		is_star;
 		usage(0);
 	if (prvers) {
 		printf("%s: %s\n\n", get_progname(), vers);
-		printf("Copyright (C) 2005-2009 Jörg Schilling\n");
-		printf("This is free software; see the source for copying conditions.  There is NO\n");
-		printf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+		gtprintf("Copyright (C) 2005-2018 Jörg Schilling\n");
+		gtprintf("This is free software; see the source for copying conditions.  There is NO\n");
+		gtprintf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 		exit(0);
 	}
 
@@ -314,10 +357,14 @@ walkfunc(nm, fs, type, state)
 		cwd[0] = '\0';
 		getcwd(cwd, sizeof (cwd));
 #else
-		f = open(".", O_SEARCH);
+		/*
+		 * Note that we do not need O_RDONLY as we do not like to
+		 * run readdir() on that directory but just fchdir().
+		 */
+		f = open(".", O_SEARCH|O_DIRECTORY);
 #endif
 		walkhome(state);
-		lstat(name, &sb);
+		lstatat(name, &sb, AT_SYMLINK_NOFOLLOW);
 #ifndef	HAVE_FCHDIR
 		chdir(cwd);
 #else

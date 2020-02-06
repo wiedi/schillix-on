@@ -1,13 +1,13 @@
-/* @(#)extract.c	1.144 13/10/07 Copyright 1985-2013 J. Schilling */
+/* @(#)extract.c	1.168 20/02/05 Copyright 1985-2020 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)extract.c	1.144 13/10/07 Copyright 1985-2013 J. Schilling";
+	"@(#)extract.c	1.168 20/02/05 Copyright 1985-2020 J. Schilling";
 #endif
 /*
  *	extract files from archive
  *
- *	Copyright (c) 1985-2013 J. Schilling
+ *	Copyright (c) 1985-2020 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -32,6 +32,9 @@ static	UConst char sccsid[] =
 #include <schily/unistd.h>
 #include <schily/fcntl.h>
 #include <schily/string.h>
+#include <schily/jmpdefs.h>	/* For __fjmalloc() */
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include <schily/stdlib.h>
 #include <schily/errno.h>
@@ -40,7 +43,7 @@ static	UConst char sccsid[] =
 #endif
 
 #ifdef	JOS
-#	define	mkdir	makedir
+#define	mkdir	makedir
 #endif
 #include "dirtime.h"
 #include "restore.h"
@@ -59,6 +62,11 @@ static	UConst char sccsid[] =
 #define	is_enoent(err)	((err) == ENOENT || (err) == EMISSDIR)
 #else
 #define	is_enoent(err)	((err) == ENOENT)
+#endif
+#if defined(ELOOP)
+#define	is_eloop(err)	((err) == ELOOP)
+#else
+#define	is_eloop(err)	(FALSE)
 #endif
 
 /*
@@ -92,6 +100,7 @@ extern	BOOL	nflag;
 extern	BOOL	interactive;
 extern	BOOL	noxdir;
 extern	BOOL	follow;
+extern	BOOL	paxfollow;
 extern	BOOL	nospec;
 extern	BOOL	xdir;
 extern	BOOL	xdot;
@@ -119,6 +128,9 @@ extern	BOOL	dometa;
 extern	BOOL	xmeta;
 extern	BOOL	lowmem;
 extern	BOOL	do_subst;
+#ifdef	USE_SELINUX
+extern	BOOL	selinux_enabled;
+#endif
 
 #ifdef	USE_FIND
 extern	BOOL	dofind;
@@ -149,7 +161,7 @@ LOCAL	BOOL	_make_copy	__PR((FINFO *info, BOOL do_symlink, int eflags));
 LOCAL	int	copy_file	__PR((char *from, char *to, BOOL do_symlink, int eflags));
 LOCAL	BOOL	make_fifo	__PR((FINFO *info));
 LOCAL	BOOL	make_special	__PR((FINFO *info));
-LOCAL	BOOL	file_tmpname	__PR((FINFO *info, char *xname));
+LOCAL	BOOL	file_tmpname	__PR((FINFO *info, pathstore_t *path));
 LOCAL	FILE	*file_open	__PR((FINFO *info, char *name));
 LOCAL	BOOL	get_file	__PR((FINFO *info));
 LOCAL	BOOL	install_rename	__PR((FINFO *info, char *xname));
@@ -164,6 +176,7 @@ EXPORT	int	xt_file		__PR((FINFO * info,
 					void *arg, int amt, char *text));
 EXPORT	void	skip_slash	__PR((FINFO * info));
 LOCAL	BOOL	has_dotdot	__PR((char *name));
+LOCAL	BOOL	inside_tree	__PR((FINFO * info));
 
 #ifdef COPY_LINKS_DELAYED
 typedef	struct _mcq {
@@ -209,8 +222,6 @@ extern	struct WALK walkstate;
 #endif
 		FINFO	finfo;
 		TCB	tb;
-		char	name[PATH_MAX+1];
-		char	lname[PATH_MAX+1];
 	register TCB 	*ptb = &tb;
 		BOOL	restore_init = FALSE;
 		imap_t	*imp = NULL;
@@ -222,6 +233,11 @@ extern	struct WALK walkstate;
 
 	fillbytes((char *)&finfo, sizeof (finfo), '\0');
 
+	if (init_pspace(PS_STDERR, &finfo.f_pname) < 0)
+		return;
+	if (init_pspace(PS_STDERR, &finfo.f_plname) < 0)
+		return;
+
 #ifdef	USE_FIND
 	if (dofind) {
 		walkopen(&walkstate);
@@ -232,8 +248,8 @@ extern	struct WALK walkstate;
 	for (;;) {
 		if (get_tcb(ptb) == EOF)
 			break;
-		finfo.f_name = name;
-		finfo.f_lname = lname;
+		finfo.f_name = finfo.f_pname.ps_path;
+		finfo.f_lname = finfo.f_plname.ps_path;
 		if (tcb_to_info(ptb, &finfo) == EOF)
 			break;
 		if (xdebug > 0)
@@ -280,6 +296,15 @@ extern	struct WALK walkstate;
 				imp = sym_dirprepare(&finfo, imp);
 		}
 
+#ifdef	USE_SELINUX
+		if (!to_stdout && selinux_enabled) {
+			/*
+			 * Set up security context for next file.
+			 */
+			if (!setselinux(&finfo))
+				xstats.s_selinuxerrs++;
+		}
+#endif
 		/*
 		 * Special treatment for the idiosyncratic way of dealing with
 		 * hard links in the SVr4 CRC cpio archive format.
@@ -308,7 +333,7 @@ extern	struct WALK walkstate;
 	if (copyhardlinks || copysymlinks)
 		make_copies();
 #endif
-	dirtimes("", (struct timespec *)0, (mode_t)0);
+	flushdirtimes();	/* Flush directory stack */
 	if (dorestore)
 		sym_close();
 }
@@ -383,7 +408,7 @@ extracti(info, imp)
 			 * Changed to empty name: skip...
 			 */
 			if (verbose)
-				fprintf(vpr,
+				fgtprintf(vpr,
 				"'%s' substitutes to null string, skipping ...\n",
 							name);
 			void_file(info);
@@ -404,7 +429,7 @@ extracti(info, imp)
 	}
 	if (interactive && !ia_change(ptb, info)) {
 		if (!nflag)
-			fprintf(vpr, "Skipping ...\n");
+			fgtprintf(vpr, "Skipping ...\n");
 		void_file(info);
 		return (FALSE);
 	}
@@ -442,6 +467,15 @@ extracti(info, imp)
 	}
 	if (secure_links && (is_link(info) || is_symlink(info)) &&
 	    (info->f_lname[0] == '/' || has_dotdot(info->f_lname))) {
+		if (info->f_lname[0] != '/') {
+			/*
+			 * Absolute paths are always a problem, but symlinks
+			 * should be allowed as long as they do not point
+			 * outside the current tree.
+			 */
+			if (inside_tree(info))
+				goto link_ok;
+		}
 		if (!errhidden(E_LSECURITY, info->f_lname)) {
 			if (!errwarnonly(E_LSECURITY, info->f_lname))
 				xstats.s_lsecurity++;
@@ -452,6 +486,7 @@ extracti(info, imp)
 		void_file(info);
 		return (FALSE);
 	}
+link_ok:
 	vprint(info);
 	if (dorestore) {
 		/*
@@ -573,9 +608,10 @@ error("-->setmode(%s, %llo)\n", info->f_name, (Ullong)info->f_mode);
  */
 EXPORT BOOL
 newer(info, cinfo)
-	FINFO	*info;
-	FINFO	*cinfo;
+	FINFO	*info;	/* The FINFO for the file in the archive */
+	FINFO	*cinfo;	/* The FINFO for the file in the file system */
 {
+	BOOL	havenano;
 
 	if (uncond && !keep_old && !refresh_old)
 		return (FALSE);
@@ -605,9 +641,11 @@ newer(info, cinfo)
 	}
 
 	/*
-	 * XXX nsec beachten wenn im Archiv!
+	 * Honor nsecs if part of the archive.
 	 */
-	if (cinfo->f_mtime >= info->f_mtime) {
+	havenano = (info->f_xflags & XF_MTIME) && (cinfo->f_flags & F_NSECS);
+	if ((cinfo->f_mtime > info->f_mtime) ||
+	    (!havenano && cinfo->f_mtime == info->f_mtime)) {
 
 	isnewer:
 		if (xdir && is_dir(info))	/* Be silent, we handle it later */
@@ -615,6 +653,37 @@ newer(info, cinfo)
 		if (!nowarn)
 			errmsgno(EX_BAD, "current '%s' newer.\n", info->f_name);
 		return (TRUE);
+	} else if ((cinfo->f_mtime == info->f_mtime) && havenano) {
+		/*
+		 * If we have nanoseconds != 0, this cannot be a DOS file and
+		 * for this reason, the f_mtime resolution is one second.
+		 * An archive with nanosecond resolution and a filesystem with
+		 * microsecond resolution could result in a file in the archive
+		 * that is always newer than the file in the filesystem because
+		 * the timestamp in the filesystem was rounded down. If the
+		 * nanoseconds in the local file are greater than in the
+		 * archive, this is the easy case.
+		 */
+		if (cinfo->f_mnsec >= info->f_mnsec)
+			goto isnewer;
+		/*
+		 * If the local filesystem resolution is only microseconds and
+		 * the resolution in the archive is nanoseconds, we need to
+		 * check based on microseconds to prevent extracting the
+		 * file from the archive again and again.
+		 * This is the UFS variant.
+		 */
+		if ((cinfo->f_mnsec % 1000 == 0) &&
+		    ((cinfo->f_mnsec / 1000) >= (info->f_mnsec / 1000)))
+			goto isnewer;
+
+		/*
+		 * This is the NTFS (Win-DOS) variant that is based on
+		 * 1/10 microseconds since 1601.
+		 */
+		if ((cinfo->f_mnsec % 100 == 0) &&
+		    ((cinfo->f_mnsec / 100) >= (info->f_mnsec / 100)))
+			goto isnewer;
 	} else if ((cinfo->f_mtime % 2) == 0 && (cinfo->f_mtime + 1) == info->f_mtime) {
 		/*
 		 * The DOS FAT filestem does only support a time granularity
@@ -631,7 +700,7 @@ same_symlink(info)
 	FINFO	*info;
 {
 	FINFO	finfo;
-	char	lname[PATH_MAX+1];
+	char	lname[PATH_MAX+1];	/* This limit cannot be overruled */
 	TCB	tb;
 
 	finfo.f_lname = lname;
@@ -712,9 +781,9 @@ _create_dirs(name)
 	if (my_uid != ROOT_UID)
 		mode |= S_IRWXU;	/* Make sure we will be able write */
 
-	if (mkdir(name, mode) < 0) {
+	if (lmkdir(name, mode) < 0) {
 		if (create_dirs(name) &&
-		    mkdir(name, mode) >= 0) {
+		    lmkdir(name, mode) >= 0) {
 			_dir_setownwer(name);
 			if (mode != mode_mask)
 				sdirmode(name, mode_mask); /* Push umask */
@@ -752,7 +821,7 @@ _dir_setownwer(name)
 	if (dir_gid != _BAD_GID)
 		dinfo.f_gid = dir_gid;
 
-	chown(name, dinfo.f_uid, dinfo.f_gid);
+	lchownat(name, dinfo.f_uid, dinfo.f_gid, 0);
 }
 
 EXPORT BOOL
@@ -780,13 +849,13 @@ create_dirs(name)
 		return (TRUE);
 	}
 	*dp = '\0';
-	if (access(name, F_OK) < 0) {
+	if (laccess(name, F_OK) < 0) {
 		if (_create_dirs(name)) {
 			*dp = '/';
 			return (TRUE);
 		}
 		err = geterrno();
-		if ((err == EACCES || is_eexist(err))) {
+		if ((err == EACCES || is_eexist(err) || is_eloop(err))) {
 			olderr = err;
 			goto exists;
 		}
@@ -861,12 +930,12 @@ make_dir(info)
 	if (create_dirs(info->f_name)) {
 		if (_getinfo(info->f_name, &dinfo) && is_dir(&dinfo))
 			return (TRUE);
-		if (mkdir(info->f_name, mode) >= 0)
+		if (lmkdir(info->f_name, mode) >= 0)
 			return (TRUE);
 		err = geterrno();
-		if ((err == EACCES || is_eexist(err)) &&
+		if ((err == EACCES || is_eexist(err) || is_eloop(err)) &&
 				remove_file(info->f_name, FALSE)) {
-			if (mkdir(info->f_name, mode) >= 0)
+			if (lmkdir(info->f_name, mode) >= 0)
 				return (TRUE);
 		}
 	}
@@ -891,8 +960,10 @@ make_link(info)
 	FINFO	linfo;
 	Ulong	oldflags = 0L;
 #endif
+	pathstore_t	path;
 	char	xname[PATH_MAX+1];
 	char	*name = info->f_name;
+	BOOL	ret = TRUE;
 
 	/*
 	 * void_file() is needed for CPIO and done by our callers.
@@ -900,6 +971,8 @@ make_link(info)
 
 	if (dometa)
 		return (TRUE);
+
+	path.ps_path = xname;
 
 #ifdef	HAVE_LINK_NOFOLLOW
 	/*
@@ -933,15 +1006,19 @@ make_link(info)
 #ifdef	HAVE_LINK
 	xname[0] = '\0';
 	if (do_install && name_exists(name)) {
-		if (!file_tmpname(info, xname))
-			return (FALSE);
-		name = xname;
+		if (!file_tmpname(info, &path)) {
+			ret = FALSE;
+			goto out;
+		}
+		name = path.ps_path;
 	}
-	if (link(info->f_lname, name) >= 0)
+	if (llink(info->f_lname, name) >= 0)
 		goto ok;
 	err = geterrno();
-	if (info->f_rsize > 0 && is_enoent(err))
-		return (get_file(info));
+	if (info->f_rsize > 0 && is_enoent(err)) {
+		ret = get_file(info);
+		goto out;
+	}
 #ifdef	USE_FFLAGS
 	/*
 	 * SF_IMMUTABLE might be set on the source-file. Clear the flags
@@ -951,19 +1028,19 @@ make_link(info)
 		oldflags = linfo.f_fflags;
 		linfo.f_fflags = 0L;
 		set_fflags(&linfo);
-		if (link(info->f_lname, name) >= 0)
+		if (llink(info->f_lname, name) >= 0)
 			goto restore_flags;
 		err = geterrno();
 	}
 #endif
 	if (create_dirs(info->f_name)) {
-		if (link(info->f_lname, name) >= 0)
+		if (llink(info->f_lname, name) >= 0)
 			goto restore_flags;
 		err = geterrno();
 	}
-	if ((err == EACCES || is_eexist(err)) &&
+	if ((err == EACCES || is_eexist(err) || is_eloop(err)) &&
 			remove_file(name, FALSE)) {
-		if (link(info->f_lname, name) >= 0)
+		if (llink(info->f_lname, name) >= 0)
 			goto restore_flags;
 	}
 	if (!errhidden(E_OPEN, info->f_name)) {
@@ -974,8 +1051,9 @@ make_link(info)
 		(void) errabort(E_OPEN, info->f_name, TRUE);
 	}
 	if (do_install)
-		remove_tmpname(xname);
-	return (FALSE);
+		remove_tmpname(path.ps_path);
+	ret = FALSE;
+	goto out;
 
 restore_flags:
 #ifdef	USE_FFLAGS
@@ -986,8 +1064,11 @@ restore_flags:
 #endif
 ok:
 	if (do_install)
-		return (install_rename(info, xname));
-	return (TRUE);
+		ret = install_rename(info, path.ps_path);
+out:
+	if (path.ps_path != xname)
+		free_pspace(&path);
+	return (ret);
 
 #else	/* HAVE_LINK */
 	if (!errhidden(E_SPECIALFILE, info->f_name)) {
@@ -1007,11 +1088,15 @@ make_symlink(info)
 	FINFO	*info;
 {
 	int	err;
+	pathstore_t	path;
 	char	xname[PATH_MAX+1];
 	char	*name = info->f_name;
+	BOOL	ret = TRUE;
 
 	if (dometa)
 		return (TRUE);
+
+	path.ps_path = xname;
 
 	if (copysymlinks)
 		return (make_copy(info, TRUE, 0));
@@ -1021,9 +1106,11 @@ make_symlink(info)
 #ifdef	S_IFLNK
 	xname[0] = '\0';
 	if (do_install && name_exists(name)) {
-		if (!file_tmpname(info, xname))
-			return (FALSE);
-		name = xname;
+		if (!file_tmpname(info, &path)) {
+			ret = FALSE;
+			goto out;
+		}
+		name = path.ps_path;
 	}
 	if (sxsymlink(name, info) >= 0)
 		goto ok;
@@ -1036,7 +1123,7 @@ make_symlink(info)
 	/*
 	 * XXX at least with same symlinks we should return success
 	 */
-	if ((err == EACCES || is_eexist(err)) &&
+	if ((err == EACCES || is_eexist(err) || is_eloop(err)) &&
 			remove_file(name, FALSE)) {
 		if (sxsymlink(name, info) >= 0)
 			goto ok;
@@ -1049,12 +1136,16 @@ make_symlink(info)
 		(void) errabort(E_OPEN, info->f_name, TRUE);
 	}
 	if (do_install)
-		remove_tmpname(xname);
-	return (FALSE);
+		remove_tmpname(path.ps_path);
+	ret = FALSE;
+	goto out;
 ok:
 	if (do_install)
-		return (install_rename(info, xname));
-	return (TRUE);
+		ret = install_rename(info, path.ps_path);
+out:
+	if (path.ps_path != xname)
+		free_pspace(&path);
+	return (ret);
 #else	/* S_IFLNK */
 	if (!errhidden(E_SPECIALFILE, info->f_name)) {
 		if (!errwarnonly(E_SPECIALFILE, info->f_name))
@@ -1186,7 +1277,7 @@ _make_copy(info, do_symlink, eflags)
 			return (TRUE);
 		err = geterrno();
 	}
-	if ((err == EACCES || is_eexist(err) || err == EISDIR) &&
+	if ((err == EACCES || is_eexist(err) || err == EISDIR || is_eloop(err)) &&
 			remove_file(info->f_name, FALSE)) {
 		if (copy_file(info->f_lname, info->f_name, do_symlink, eflags) >= 0)
 			return (TRUE);
@@ -1239,7 +1330,9 @@ make_copies()
 
 		while (mcqp) {
 			MCQ	*mcqp_save	= mcqp;
-			BOOL	ret		= _make_copy(&mcqp->info, mcqp->do_symlink, eflags);
+			BOOL	ret		= _make_copy(&mcqp->info,
+							mcqp->do_symlink,
+							eflags);
 
 			if (ret) {
 				if (!to_stdout)
@@ -1282,21 +1375,28 @@ _make_dcopy(info, do_symlink, retp, eflags)
 	int	eflags;
 {
 	char	nbuf[PATH_MAX+1];
+	char	*nbufp = nbuf;
 	char	*dir = info->f_lname;
+	DIR	*dirp;
 	char	*dp;
-	int	nents;
+	size_t	nents;
 	int	ret = TRUE;
 	FINFO	ninfo;
 
 	if (do_symlink && info->f_lname[0] != '/') {
 
 		char	*p = strrchr(info->f_name, '/');
-		int	len;
+		size_t	len;
 
 		if (p) {
+			size_t	llen;
+
 			len = p - info->f_name + 1;
-			strncpy(nbuf, info->f_name, len);
-			if ((len + strlen(info->f_lname)) > PATH_MAX) {
+			if ((len + (llen = strlen(info->f_lname))) > PATH_MAX) {
+				nbufp = __fjmalloc(stderr, len+llen,
+						"link dir name", JM_RETURN);
+			}
+			if (nbufp == NULL) {
 				if (!errhidden(E_NAMETOOLONG, info->f_lname)) {
 					if (!errwarnonly(E_NAMETOOLONG, info->f_lname))
 						xstats.s_toolong++;
@@ -1310,23 +1410,32 @@ _make_dcopy(info, do_symlink, retp, eflags)
 					*retp = FALSE;
 				return (TRUE);
 			}
-			strcpy(&nbuf[len], info->f_lname);
-			dir = nbuf;
+			strncpy(nbufp, info->f_name, len);
+			strcpy(&nbufp[len], info->f_lname);
+			dir = nbufp;
 		}
 	}
 
-	if ((dp = fetchdir(dir, &nents, NULL, NULL)) == NULL)
+	dirp = lopendir(dir);
+	if (dirp == NULL)
 		return (FALSE);
+	if ((dp = dfetchdir(dirp, dir, &nents, NULL, NULL)) == NULL) {
+		closedir(dirp);
+		return (FALSE);
+	}
+	closedir(dirp);
 
 	if (!_getinfo(info->f_name, &ninfo)) {
 		_getinfo(dir, &ninfo);
 		ninfo.f_name = info->f_name;
 		make_dir(&ninfo);
 	}
+	if (nbufp != nbuf)
+		free(nbufp);
 
 	while (nents > 0) {
 		char	*name;
-		int	nlen;
+		size_t	nlen;
 
 		name = &dp[1];
 		nlen = strlen(name);
@@ -1379,6 +1488,7 @@ copy_file(from, to, do_symlink, eflags)
 	int	cnt = -1;
 	char	buf[8192];
 	char	nbuf[PATH_MAX+1];
+	char	*nbufp = nbuf;
 
 	/*
 	 * When tar archives hard links, both names (from/to) are relative to
@@ -1393,12 +1503,18 @@ copy_file(from, to, do_symlink, eflags)
 	 */
 	if (do_symlink && from[0] != '/') {
 		char	*p = strrchr(to, '/');
-		int	len;
+		size_t	len;
 
 		if (p) {
+			int	llen;
+
 			len = p - to + 1;
-			strncpy(nbuf, to, len);
-			if ((len + strlen(from)) > PATH_MAX) {
+
+			if ((len + (llen = strlen(from))) > PATH_MAX) {
+				nbufp = __fjmalloc(stderr, len+llen,
+						"link name", JM_RETURN);
+			}
+			if (nbufp == NULL) {
 				if (!errhidden(E_NAMETOOLONG, from)) {
 					if (!errwarnonly(E_NAMETOOLONG, from))
 						xstats.s_toolong++;
@@ -1408,8 +1524,10 @@ copy_file(from, to, do_symlink, eflags)
 					(void) errabort(E_NAMETOOLONG, from,
 									TRUE);
 				}
-				return (-2);
+				cnt = -2;
+				goto out;
 			}
+			strncpy(nbuf, to, len);
 			strcpy(&nbuf[len], from);
 			from = nbuf;
 		}
@@ -1423,28 +1541,31 @@ copy_file(from, to, do_symlink, eflags)
 			errmsg("Cannot stat '%s'.\n", from);
 			(void) errabort(E_STAT, from, TRUE);
 		}
-		return (-2);
+		cnt = -2;
+		goto out;
 	}
 	if (!is_file(&finfo)) {
 		errmsgno(EX_BAD, "Not a file. Cannot copy from '%s'.\n", from);
 		seterrno(EINVAL);
-		return (-2);
+		cnt = -2;
+		goto out;
 	}
 
 rretry:
-	if ((fin = fileopen(from, "rub")) == 0) {
+	if ((fin = lfilemopen(from, "rub", S_IREAD|S_IWRITE)) == 0) {
 		if (geterrno() == EINTR)
 			goto rretry;
 		errmsg("Cannot open '%s'.\n", from);
 	} else {
 wretry:
-		if ((fout = fileopen(to, "wtcub")) == 0) {
+		if ((fout = lfilemopen(to, "wtcub", S_IREAD|S_IWRITE)) == 0) {
 			if (geterrno() == EINTR)
 				goto wretry;
 #ifdef	__really__
 			errmsg("Cannot create '%s'.\n", to);
 #endif
-			return (-1);
+			cnt = -1;
+			goto out;
 		} else {
 			while ((cnt = ffileread(fin, buf, sizeof (buf))) > 0)
 				ffilewrite(fout, buf, cnt);
@@ -1452,6 +1573,9 @@ wretry:
 		}
 		fclose(fin);
 	}
+out:
+	if (nbufp != nbuf)
+		free(nbufp);
 	return (cnt);
 }
 
@@ -1461,32 +1585,38 @@ make_fifo(info)
 {
 	mode_t	mode;
 	int	err;
+	pathstore_t	path;
 	char	xname[PATH_MAX+1];
 	char	*name = info->f_name;
+	BOOL	ret = TRUE;
 
 	if (dometa)
 		return (TRUE);
 
+	path.ps_path = xname;
+
 #ifdef	HAVE_MKFIFO
 	xname[0] = '\0';
 	if (do_install && name_exists(name)) {
-		if (!file_tmpname(info, xname))
-			return (FALSE);
-		name = xname;
+		if (!file_tmpname(info, &path)) {
+			ret = FALSE;
+			goto out;
+		}
+		name = path.ps_path;
 	}
 	mode = osmode(info->f_mode);
 	mode &= mode_mask;
-	if (mkfifo(name, mode) >= 0)
+	if (lmkfifo(name, mode) >= 0)
 		goto ok;
 	err = geterrno();
 	if (create_dirs(info->f_name)) {
-		if (mkfifo(name, mode) >= 0)
+		if (lmkfifo(name, mode) >= 0)
 			goto ok;
 		err = geterrno();
 	}
-	if ((err == EACCES || is_eexist(err)) &&
+	if ((err == EACCES || is_eexist(err) || is_eloop(err)) &&
 			remove_file(name, FALSE)) {
-		if (mkfifo(name, mode) >= 0)
+		if (lmkfifo(name, mode) >= 0)
 			goto ok;
 	}
 	if (!errhidden(E_OPEN, info->f_name)) {
@@ -1496,12 +1626,16 @@ make_fifo(info)
 		(void) errabort(E_OPEN, info->f_name, TRUE);
 	}
 	if (do_install)
-		remove_tmpname(xname);
-	return (FALSE);
+		remove_tmpname(path.ps_path);
+	ret = FALSE;
+	goto out;
 ok:
 	if (do_install)
-		return (install_rename(info, xname));
-	return (TRUE);
+		ret = install_rename(info, path.ps_path);
+out:
+	if (path.ps_path != xname)
+		free_pspace(&path);
+	return (ret);
 #else
 #ifdef	HAVE_MKNOD
 	return (make_special(info));
@@ -1525,34 +1659,40 @@ make_special(info)
 	mode_t	mode;
 	dev_t	dev;
 	int	err;
+	pathstore_t	path;
 	char	xname[PATH_MAX+1];
 	char	*name = info->f_name;
+	BOOL	ret = TRUE;
 
 	if (dometa)
 		return (TRUE);
 
+	path.ps_path = xname;
+
 #ifdef	HAVE_MKNOD
 	xname[0] = '\0';
 	if (do_install && name_exists(name)) {
-		if (!file_tmpname(info, xname))
-			return (FALSE);
-		name = xname;
+		if (!file_tmpname(info, &path)) {
+			ret = FALSE;
+			goto out;
+		}
+		name = path.ps_path;
 	}
 	mode = osmode(info->f_mode);
 	mode &= mode_mask;
 	mode |= info->f_type;	/* Add file type bits */
 	dev = info->f_rdev;
-	if (mknod(name, mode, dev) >= 0)
+	if (lmknod(name, mode, dev) >= 0)
 		goto ok;
 	err = geterrno();
 	if (create_dirs(info->f_name)) {
-		if (mknod(name, mode, dev) >= 0)
+		if (lmknod(name, mode, dev) >= 0)
 			goto ok;
 		err = geterrno();
 	}
-	if ((err == EACCES || is_eexist(err)) &&
+	if ((err == EACCES || is_eexist(err) || is_eloop(err)) &&
 			remove_file(name, FALSE)) {
-		if (mknod(name, mode, dev) >= 0)
+		if (lmknod(name, mode, dev) >= 0)
 			goto ok;
 	}
 	if (!errhidden(E_OPEN, info->f_name)) {
@@ -1564,12 +1704,16 @@ make_special(info)
 		(void) errabort(E_OPEN, info->f_name, TRUE);
 	}
 	if (do_install)
-		remove_tmpname(xname);
-	return (FALSE);
+		remove_tmpname(path.ps_path);
+	ret = FALSE;
+	goto out;
 ok:
 	if (do_install)
-		return (install_rename(info, xname));
-	return (TRUE);
+		ret = install_rename(info, path.ps_path);
+out:
+	if (path.ps_path != xname)
+		free_pspace(&path);
+	return (ret);
 #else
 	if (!errhidden(E_SPECIALFILE, info->f_name)) {
 		if (!errwarnonly(E_SPECIALFILE, info->f_name))
@@ -1587,30 +1731,37 @@ ok:
  * Create a temporary path name for the extraction in -install mode.
  */
 LOCAL BOOL
-file_tmpname(info, xname)
+file_tmpname(info, path)
 	FINFO	*info;
-	char	*xname;
+	pathstore_t	*path;
 {
-	register char	*xp = xname;
+	register char	*xp;
 	register char	*np;
 	register char	*dp;
+		size_t	nlen;
 
 	np = info->f_name;
+	nlen = info->f_namelen;
+	if (nlen == 0)				/* 0 in case name is in TCB */
+		nlen = NAMSIZ + 1 + PFXSIZ;	/* 256 chars fit into TCB   */
+	if (nlen >= (PATH_MAX-6)) {
+		path->ps_path = NULL;		/* initialize so we don't   */
+		path->ps_size = 0;		/* need to call init_pspace() */
+		path->ps_tail = 0;
+		if (set_pspace(PS_STDERR, path, nlen+6) < 0)
+			return (FALSE);
+	}
+	xp = path->ps_path;
 	dp = xp;
 	do {
 		if ((*xp++ = *np) == '/')
 			dp = xp;
 	} while (*np++);
-	if ((dp - xname) >= (PATH_MAX-6)) {
-		errmsgno(ENAMETOOLONG,
-				"Cannot make temporary name for '%s'.\n",
-				info->f_name);
-		return (FALSE);
-	}
+
 	strcpy(dp, "XXXXXX");
 	seterrno(0);
-	mktemp(xname);
-	if (xname[0] == '\0') {
+	lmktemp(path->ps_path);
+	if (path->ps_path[0] == '\0') {
 		errmsg("Cannot make temporary name for '%s'.\n",
 				info->f_name);
 		return (FALSE);
@@ -1625,7 +1776,7 @@ file_open(info, name)
 {
 	FILE	*f;
 
-	while ((f = filemopen(name, "wctub",
+	while ((f = lfilemopen(name, "wctub",
 				osmode(info->f_mode) & mode_mask)) == NULL &&
 				geterrno() == EINTR)
 		;
@@ -1650,7 +1801,7 @@ install_rename(info, xname)
 	if (xname[0] == '\0')
 		return (TRUE);
 
-	if (rename(xname, info->f_name) >= 0)
+	if (lrename(xname, info->f_name) >= 0)
 		return (TRUE);
 	err = geterrno();
 	/*
@@ -1660,9 +1811,9 @@ install_rename(info, xname)
 	 */
 	if (err == EISDIR)
 		force_remove = TRUE;
-	if ((err == EACCES || is_eexist(err) || err == EISDIR) &&
+	if ((err == EACCES || is_eexist(err) || err == EISDIR || is_eloop(err)) &&
 					remove_file(info->f_name, FALSE)) {
-		if (rename(xname, info->f_name) >= 0) {
+		if (lrename(xname, info->f_name) >= 0) {
 			force_remove = oforce_remove;
 			return (TRUE);
 		}
@@ -1680,14 +1831,10 @@ name_exists(name)
 	char	*name;
 {
 	FINFO	finfo;
-	BOOL	ofollow = follow;
 
-	follow = FALSE;
-	if (!_getinfo(name, &finfo)) {
-		follow = ofollow;
+	if (!_lgetinfo(name, &finfo))
 		return (FALSE);
-	}
-	follow = ofollow;
+
 	return (TRUE);
 }
 
@@ -1728,23 +1875,29 @@ get_file(info)
 {
 		FILE	*f;
 		int	err;
+	pathstore_t	path;
 		char	xname[PATH_MAX+1];
 		char	*name = info->f_name;
+		BOOL	ret = TRUE;
 
 	if (dometa) {
 		void_file(info);
 		return (TRUE);
 	}
 
+	path.ps_path = xname;
+	xname[0] = '\0';
+
 	if (to_stdout) {
 		f = stdout;
 		goto ofile;
 	}
-	xname[0] = '\0';
 	if (do_install && name_exists(name)) {
-		if (!file_tmpname(info, xname))
-			return (FALSE);
-		name = xname;
+		if (!file_tmpname(info, &path)) {
+			ret = FALSE;
+			goto out;
+		}
+		name = path.ps_path;
 	}
 	if ((f = file_open(info, name)) == (FILE *)NULL) {
 		err = geterrno();
@@ -1754,8 +1907,9 @@ get_file(info)
 			}
 			err = geterrno();
 		}
-		if ((err == EACCES || is_eexist(err) || err == EISDIR) &&
-					remove_file(name, FALSE)) {
+		if ((err == EACCES || is_eexist(err) || err == EISDIR ||
+		    is_eloop(err)) &&
+		    remove_file(name, FALSE)) {
 			if ((f = file_open(info, name)) != (FILE *)NULL) {
 				goto ofile;
 			}
@@ -1768,17 +1922,22 @@ get_file(info)
 			(void) errabort(E_OPEN, info->f_name, TRUE);
 		}
 		void_file(info);
-		return (FALSE);
+		ret = FALSE;
+		goto out;
 	}
 ofile:
 	if (!get_ofile(f, info)) {
 		if (!to_stdout && do_install)
-			remove_tmpname(xname);
-		return (FALSE);
+			remove_tmpname(path.ps_path);
+		ret = FALSE;
+		goto out;
 	}
 	if (!to_stdout && do_install)
-		return (install_rename(info, xname));
-	return (TRUE);
+		ret = install_rename(info, path.ps_path);
+out:
+	if (path.ps_path != xname)
+		free_pspace(&path);
+	return (ret);
 }
 
 LOCAL BOOL
@@ -1817,7 +1976,8 @@ get_ofile(f, info)
 						f, 0, "writing");
 	}
 	if (ret < 0) {
-		snulltimes(info->f_name, info);
+		if (!to_stdout)
+			snulltimes(info->f_name, info);
 		die(EX_BAD);
 	}
 	if (!to_stdout) {
@@ -1846,7 +2006,8 @@ get_ofile(f, info)
 			ret = FALSE;
 		if (ret == FALSE) {
 			xstats.s_rwerrs++;
-			snulltimes(info->f_name, info);
+			if (!to_stdout)
+				snulltimes(info->f_name, info);
 		}
 	}
 	return (ret);
@@ -2036,6 +2197,10 @@ skip_slash(info)
 		info->f_lname++;
 }
 
+#if PATH_DELIM == '\\' || defined(IS_CYGWIN)
+#define	NEED_BACKSLASH
+#endif
+
 LOCAL BOOL
 has_dotdot(name)
 	char	*name;
@@ -2044,16 +2209,108 @@ has_dotdot(name)
 
 	while (*p) {
 		if ((p[0] == '.' && p[1] == '.') &&
-		    (p[2] == '/' || p[2] == '\0')) {
+		    (p[2] == '/' ||
+#ifdef	NEED_BACKSLASH
+		    p[2] == '\\' ||
+#endif
+		    p[2] == '\0')) {
 			return (TRUE);
 		}
 		do {
 			if (*p++ == '\0')
 				return (FALSE);
+#ifdef	NEED_BACKSLASH
+		} while (*p != '/' && *p != '\\');
+#else
 		} while (*p != '/');
+#endif
 		p++;
+#ifdef	NEED_BACKSLASH
+		while (*p == '/' || *p == '\\')
+			p++;
+#else
 		while (*p == '/')	/* Skip multiple slashes */
 			p++;
+#endif
 	}
 	return (FALSE);
+}
+
+LOCAL BOOL
+inside_tree(info)
+	FINFO	*info;
+{
+	char	_rpath[PATH_MAX+1];
+	char	_npath[PATH_MAX+1];
+	char	*rpath = _rpath;
+	char	*npath = _npath;
+	char	*p;
+	size_t	len;
+	int	nlen;			/* Solaris resolvepath() returns int */
+	BOOL	ret = FALSE;
+extern	const	char	*wdir;
+
+	/*
+	 * If we are in the root directory, any unusual pathname is critical.
+	 */
+	if (wdir != NULL && wdir[0] == '/' && wdir[1] == '\0')
+		return (FALSE);
+
+	if (info->f_namelen > 0)
+		len = info->f_namelen;
+	else
+		len = strlen(info->f_name);
+
+	if (info->f_lnamelen > 0)
+		len += info->f_lnamelen;
+	else
+		len += strlen(info->f_lname);
+
+	if (++len > sizeof (_rpath)) {
+		rpath = __jmalloc(len, "name buffer", JM_RETURN);
+		if (rpath == NULL)
+			return (FALSE);
+	}
+	if (len > sizeof (_npath)) {
+		npath = __jmalloc(len, "name buffer", JM_RETURN);
+		if (npath == NULL)
+			goto out;
+	}
+
+	/*
+	 * Create combined path name.
+	 */
+	if (info->f_lname[0] != '/') {
+		strcpy(rpath, info->f_name);
+		p = strrchr(rpath, '/');
+		if (p == NULL)
+			rpath[0] = '\0';
+		else
+			*++p = '\0';
+	} else {
+		rpath[0] = '\0';
+	}
+	strcat(rpath, info->f_lname);
+
+	/*
+	 * Normalize combined path name.
+	 */
+	nlen = resolvenpath(rpath, npath, len);
+	if (nlen < 0)
+		goto out;
+	npath[nlen] = '\0';
+
+	/*
+	 * Check if it points outside our working directory.
+	 */
+	if (npath[0] != '/' && !has_dotdot(npath))
+		ret = TRUE;
+
+out:
+	if (rpath != _rpath)
+		free(rpath);
+	if (npath != _npath)
+		free(npath);
+
+	return (ret);
 }

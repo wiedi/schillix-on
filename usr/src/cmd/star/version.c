@@ -1,8 +1,11 @@
-/* @(#)xutimes.h	1.5 18/10/21 Copyright 1996, 2013-2018 J. Schilling */
+/* @(#)version.c	1.16 20/02/05 Copyright 2018-2020 J. Schilling */
+#include <schily/mconfig.h>
+#ifndef lint
+static	UConst char sccsid[] =
+	"@(#)version.c	1.16 20/02/05 Copyright 2018-2020 J. Schilling";
+#endif
 /*
- *	Prototypes for xutimes users
- *
- *	Copyright (c) 1996, 2013-2018 J. Schilling
+ *	Copyright (c) 2018-2020 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -18,8 +21,5 @@
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
 
-/*
- * star_unix.c
- */
-extern	int	xutimes		__PR((char *name, struct timespec *tp,
-					BOOL asymlink));
+char	strvers[] = "1.6.1";		/* The pure version string	*/
+char	dvers[]	  = "2020/02/05";	/* Version date			*/

@@ -1,13 +1,13 @@
-/* @(#)pax.c	1.31 14/12/17 Copyright 1989, 2003-2014 J. Schilling */
+/* @(#)pax.c	1.42 19/12/04 Copyright 1989, 2003-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	const char _p_sccsid[] =
-	"@(#)pax.c	1.31 14/12/17 Copyright 1989, 2003-2014 J. Schilling";
+	"@(#)pax.c	1.42 19/12/04 Copyright 1989, 2003-2019 J. Schilling";
 #endif
 /*
  *	PAX specific routines for star main program.
  *
- *	Copyright (c) 1989, 2003-2014 J. Schilling
+ *	Copyright (c) 1989, 2003-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -84,12 +84,15 @@ LOCAL	void	pax_setopts	__PR((char *o));
 /*
  * PAX related options
  *
- * The official POSIX options start after the -bz/-lzo/-7z/-xz/-lzip option.
+ * The official POSIX options start after the -bz/-lzo/-7z/-xz/-lzip/-zstd option.
  */
 /* BEGIN CSTYLED */
-char	_opts[] = "help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,bs&,fs&,/,..,secure-links,acl,xfflags,z,bz,lzo,7z,xz,lzip,r,w,a,b&,c,d,f&,H,i,k,L,l,n,o*,p&,s&,t,u,v+,x&,artype&,X";
+char	_opts[] = "help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,bs&,fs&,/,..,secure-links,no-secure-links%0,acl,xfflags,z,bz,lzo,7z,xz,lzip,zstd,r,w,a,b&,c,d,f&,H,i,k,L,l,n,o*,p&,s&,t,u,v+,x&,artype&,X";
 /* END CSTYLED */
 char	*opts = _opts;
+#ifdef	NO_STAR_MAIN
+struct ga_props	gaprops;
+#endif
 
 LOCAL	void	pax_info	__PR((void));
 
@@ -122,32 +125,38 @@ gargs(ac, av)
 #ifdef	STAR_MAIN
 	pax_setopts(opts);			/* set up opts for getfiles */
 #endif
+	getarginit(&gaprops, GAF_SINGLEARG);	/* POSIX combined args	  */
 
 	iftype		= I_PAX;		/* command line interface */
 	ptype		= P_PAX;		/* program interface type */
 	paxls		= TRUE;
 	paxmatch	= TRUE;
 	nopflag		= TRUE;			/* pax default */
+	no_fsync	= TRUE;			/* -no-fsync		   */
 	no_stats	= TRUE;			/* -no-statitstics	   */
 	nochown		= TRUE;			/* chown only with -po / -pe */
 
+	if (pname) {				/* cli=xxx seen as argv[1] */
+		--ac, av++;
+	}
 	--ac, ++av;
 	files = getfilecount(ac, av, opts);
-	if (getallargs(&ac, &av, opts,
+	if (getlallargs(&ac, &av, &gaprops, opts,
 				&help, &xhelp, &prvers, &debug, &xdebug, &xdebug,
 #ifndef	__old__lint
 				&showtime, &no_stats, & do_stats, &do_fifostats,
-				&numeric,  &no_fifo, &no_fsync,
-				getnum, &bs,
-				getnum, &fs,
-				&abs_path, &allow_dotdot, &secure_links,
+				&numeric,  &no_fifo, &no_fsync, &no_fsync,
+				getenum, &bs,
+				getenum, &fs,
+				&abs_path, &allow_dotdot,
+				&secure_links, &secure_links,
 				&doacl, &dofflags,
 				&zflag, &bzflag, &lzoflag,
-				&p7zflag, &xzflag, &lzipflag,
+				&p7zflag, &xzflag, &lzipflag, &zstdflag,
 				&paxrflag,
 				&paxwflag,
 				&paxaflag,
-				getnum, &bs,
+				getenum, &bs,
 				&notarg,		/* -c */
 				&paxdflag,		/* -d */
 				addtarfile, NULL,	/* -f */
@@ -158,7 +167,7 @@ gargs(ac, av)
 				&paxlflag,		/* -l */
 				&paxnflag,		/* -n */
 				&paxopts,		/* -o */
-				getpriv, NULL,		/* -p */
+				getpaxpriv, NULL,	/* -p */
 				parsesubst, &do_subst,	/* -s */
 				&paxtflag,		/* -t */
 				&paxuflag,		/* -u */
@@ -207,11 +216,6 @@ gargs(ac, av)
 		errmsgno(EX_BAD, "Unsupported option -l.\n");
 		susage(EX_BAD);
 	}
-	if (paxopts) {
-		/* Unsupported in UNIX-98 */
-		errmsgno(EX_BAD, "SUSv2 / UNIX-98 does not specify any option for -o.\n");
-		susage(EX_BAD);
-	}
 	uncond = !paxuflag;
 
 	if (do_stats)
@@ -219,7 +223,9 @@ gargs(ac, av)
 
 	star_checkopts(/* oldtar */ FALSE, /* dodesc */ TRUE,
 				/* usetape */ FALSE,
-				/* archive */ -1, no_fifo, /* llbs */ 0);
+				/* archive */ -1, no_fifo,
+				paxopts,
+				/* llbs */ 0);
 
 	nolinkerr = FALSE;
 }
@@ -227,8 +233,10 @@ gargs(ac, av)
 LOCAL void
 pax_info()
 {
+	const	char	*n = pname ? pname : get_progname();
+
 	error("\nFor a more complete user interface use the tar type command interface.\n");
-	error("See 'man star'. The %s command is more or less limited to the\n", get_progname());
+	error("See 'man star'. The %s command is more or less limited to the\n", n);
 	error("POSIX standard pax command line interface.\n");
 }
 
@@ -239,11 +247,13 @@ LOCAL void
 susage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
-	error("\nUse\t%s -help\n", get_progname());
-	error("and\t%s -xhelp\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
+	error("\nUse\t%s -help\n", n);
+	error("and\t%s -xhelp\n", n);
 	error("to get a list of valid cmds and options.\n");
-	error("\nUse\t%s -x help\n", get_progname());
+	error("\nUse\t%s -x help\n", n);
 	error("to get a list of valid archive header formats.\n");
 	pax_info();
 	exit(ret);
@@ -254,7 +264,9 @@ LOCAL void
 usage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Cmd:\n");
 	error("\t<none>\t\tlist named files from tape\n");
 	error("\t-r\t\textract named files from tape\n");
@@ -278,7 +290,7 @@ usage(ret)
 	error("\t-o\t\toptions (none specified with SUSv2 / UNIX-98)\n");
 	error("\t-p string\tset privileges\n");
 	error("\t-s replstr\tApply ed like pattern substitution -s /old/new/gp on filenames\n");
-	error("\t-t\t\tTIME\n");
+	error("\t-t\t\trestore atime after reading files\n");
 	error("\t-u\t\treplace/restore files only if they are newer\n");
 	error("\t-v\t\tincrement verbose level\n");
 	error("\t-x header\tgenerate 'header' type archive (see -x help)\n");
@@ -290,6 +302,7 @@ usage(ret)
 	error("\t-7z\t\t(*) pipe input/output through p7zip, does not work on tapes\n");
 	error("\t-xz\t\t(*) pipe input/output through xz, does not work on tapes\n");
 	error("\t-lzip\t\t(*) pipe input/output through lzip, does not work on tapes\n");
+	error("\t-zstd\t\t(*) pipe input/output through zstd, does not work on tapes\n");
 #ifdef	FIFO
 	error("\t-no-fifo\t(*) don't use a fifo to optimize data flow from/to tape\n");
 #endif
@@ -303,13 +316,16 @@ LOCAL void
 xusage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Extended options:\n");
 	error("\t-debug\t\tprint additional debug messages\n");
 	error("\txdebug=#,xd=#\tset extended debug level\n");
 	error("\t-/\t\tdon't strip leading '/'s from file names\n");
 	error("\t-..\t\tdon't skip filenames that contain '..' in non-interactive extract\n");
-	error("\t-secure-links\tdon't extract links that start with '/' or contain '..'\n");
+	error("\t-secure-links\tdon't extract links that start with '/' or contain '..' (default)\n");
+	error("\t-no-secure-links\textract links that start with '/' or contain '..'\n");
 	error("\t-acl\t\thandle access control lists\n");
 	error("\t-xfflags\thandle extended file flags\n");
 	error("\tbs=#\t\tset (output) block size to #\n");
@@ -317,6 +333,7 @@ xusage(ret)
 	error("\tfs=#\t\tset fifo size to #\n");
 #endif
 	error("\t-no-fsync\tdo not call fsync() for each extracted file (may be dangerous)\n");
+	error("\t-do-fsync\tcall fsync() for each extracted file\n");
 	error("\t-time\t\tprint timing info\n");
 	error("\t-no-statistics\tdo not print statistics\n");
 	error("\t-do-statistics\tprint statistics\n");

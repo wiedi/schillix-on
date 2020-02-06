@@ -1,8 +1,8 @@
-/* @(#)props.c	1.57 13/11/03 Copyright 1994-2013 J. Schilling */
+/* @(#)props.c	1.65 19/01/07 Copyright 1994-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)props.c	1.57 13/11/03 Copyright 1994-2013 J. Schilling";
+	"@(#)props.c	1.65 19/01/07 Copyright 1994-2019 J. Schilling";
 #endif
 /*
  *	Set up properties for different archive types
@@ -17,7 +17,7 @@ static	UConst char sccsid[] =
  *	pr_flags/pr_nflags or the fields pr_xftypetab[]/pr_typeflagtab[]
  *	take care of possible problems due to this fact.
  *
- *	Copyright (c) 1994-2013 J. Schilling
+ *	Copyright (c) 1994-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -39,6 +39,8 @@ static	UConst char sccsid[] =
 #include "table.h"
 #include "diff.h"
 #include <schily/standard.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "starsubs.h"
 
@@ -71,8 +73,13 @@ setprops(htype)
 		props.pr_diffmask = 0L;
 		props.pr_nflags =
 			PR_POSIX_SPLIT|PR_PREFIX_REUSED|PR_LONG_NAMES;
+#ifdef	HAVE_FCHDIR
+		props.pr_maxnamelen =  INT_MAX;
+		props.pr_maxlnamelen = INT_MAX;
+#else
 		props.pr_maxnamelen =  PATH_MAX;
 		props.pr_maxlnamelen = PATH_MAX;
+#endif
 		props.pr_maxsname =    NAMSIZ;
 		props.pr_maxslname =   NAMSIZ;
 		props.pr_maxprefix =   PFXSIZ;
@@ -114,8 +121,13 @@ setprops(htype)
 		props.pr_diffmask = 0L;
 		props.pr_nflags =
 			PR_POSIX_SPLIT|PR_PREFIX_REUSED|PR_LONG_NAMES;
+#ifdef	HAVE_FCHDIR
+		props.pr_maxnamelen =  INT_MAX;
+		props.pr_maxlnamelen = INT_MAX;
+#else
 		props.pr_maxnamelen =  PATH_MAX;
 		props.pr_maxlnamelen = PATH_MAX;
+#endif
 		props.pr_maxsname =    NAMSIZ;
 		props.pr_maxslname =   NAMSIZ;
 		props.pr_maxprefix =   130;
@@ -148,19 +160,26 @@ setprops(htype)
 		break;
 
 	case H_PAX:				/* ieee 1003.1-2001 ext ustar */
+	case H_EPAX:				/* ieee 1003.1-2001 ext ustar + xheader */
 	case H_USTAR:				/* ieee 1003.1-1988 ustar    */
 	case H_SUNTAR:				/* Sun's tar from Solaris 7-9 */
 		props.pr_maxsize = MAXOCTAL11;
 		props.pr_hdrsize = TAR_HDRSZ;
 		props.pr_flags = PR_POSIX_OCTAL;
-		if (H_TYPE(htype) == H_PAX || H_TYPE(htype) == H_SUNTAR) {
+		if (H_TYPE(htype) == H_PAX ||
+		    H_TYPE(htype) == H_EPAX ||
+		    H_TYPE(htype) == H_SUNTAR) {
 			props.pr_maxsize = 0;
 			props.pr_flags |= PR_XHDR;
 		}
 		props.pr_xhdflags = 0;
 		props.pr_xhmask = 0;
-		if (H_TYPE(htype) == H_PAX)
+		if (H_TYPE(htype) == H_PAX ||
+		    H_TYPE(htype) == H_EPAX)
 			props.pr_xhmask = XF_POSIX;
+		if (H_TYPE(htype) == H_EPAX) {
+			props.pr_xhdflags |= (XF_ATIME|XF_CTIME|XF_MTIME);
+		}
 		props.pr_fillc = '0';		/* Use ustar octal format    */
 		props.pr_xc    = 'x';		/* Use POSIX.1-2001 x-hdr    */
 		props.pr_pad   = 0;
@@ -174,14 +193,26 @@ setprops(htype)
 			props.pr_xc    = 'X';	/* Use Sun Solaris  X-hdr    */
 		}
 		props.pr_diffmask = (D_SPARS|D_ATIME|D_CTIME);
-		if (H_TYPE(htype) == H_PAX) {
+		if (H_TYPE(htype) == H_PAX ||
+		    H_TYPE(htype) == H_EPAX) {
 			props.pr_diffmask = 0L;
 		}
 		props.pr_nflags = PR_POSIX_SPLIT;
 		props.pr_maxnamelen =  NAMSIZ + 1 + PFXSIZ;	/* 256 */
 		props.pr_maxlnamelen = NAMSIZ;
-		if (H_TYPE(htype) == H_PAX || H_TYPE(htype) == H_SUNTAR) {
+		if (H_TYPE(htype) == H_PAX ||
+		    H_TYPE(htype) == H_EPAX ||
+		    H_TYPE(htype) == H_SUNTAR) {
 			props.pr_nflags |= PR_LONG_NAMES;
+#ifdef	HAVE_FCHDIR
+			props.pr_maxnamelen =  INT_MAX;
+			props.pr_maxlnamelen = INT_MAX;
+#else
+			props.pr_maxnamelen =  PATH_MAX;
+			props.pr_maxlnamelen = PATH_MAX;
+#endif
+		}
+		if (H_TYPE(htype) == H_SUNTAR) {
 			props.pr_maxnamelen =  PATH_MAX;
 			props.pr_maxlnamelen = PATH_MAX;
 		}
@@ -217,8 +248,19 @@ setprops(htype)
 		props.pr_pad   = 0;
 		props.pr_diffmask = 0L;
 		props.pr_nflags = PR_LONG_NAMES;
+#ifdef	HAVE_FCHDIR
+		/*
+		 * GNU tar cannot extract archives with long path names but
+		 * under some conditions creates them. For this reason, it
+		 * does not seem to be a problem if we do not prevent to
+		 * create "gnutar" archives with long path names.
+		 */
+		props.pr_maxnamelen =  INT_MAX;
+		props.pr_maxlnamelen = INT_MAX;
+#else
 		props.pr_maxnamelen =  PATH_MAX;
 		props.pr_maxlnamelen = PATH_MAX;
+#endif
 		props.pr_maxsname =    NAMSIZ-1;
 		props.pr_maxslname =   NAMSIZ-1;
 		props.pr_maxprefix =   0;
@@ -241,7 +283,7 @@ setprops(htype)
 		errmsgno(EX_BAD, "setprops: defaulting to '%s' (%s).\n",
 						hdr_name(H_OTAR),
 						hdr_text(H_OTAR));
-
+		/* FALLTHRU */
 	case H_UNDEF:				/* from star main read mode  */
 	case H_TAR:				/* tar with unknown format   */
 	case H_V7TAR:				/* tar old UNIX V7 format    */

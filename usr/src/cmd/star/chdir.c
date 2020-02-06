@@ -1,11 +1,11 @@
-/* @(#)chdir.c	1.7 09/07/11 Copyright 1997-2009 J. Schilling */
+/* @(#)chdir.c	1.10 18/10/24 Copyright 1997-2018 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)chdir.c	1.7 09/07/11 Copyright 1997-2009 J. Schilling";
+	"@(#)chdir.c	1.10 18/10/24 Copyright 1997-2018 J. Schilling";
 #endif
 /*
- *	Copyright (c) 1997-2009 J. Schilling
+ *	Copyright (c) 1997-2018 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -14,6 +14,8 @@ static	UConst char sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -24,6 +26,8 @@ static	UConst char sccsid[] =
 #include <schily/unistd.h>
 #include <schily/string.h>
 #include <schily/standard.h>
+#define	GT_COMERR		/* #define comerr gtcomerr */
+#define	GT_ERROR		/* #define error gterror   */
 #include <schily/schily.h>
 #include "star.h"
 #include "starsubs.h"
@@ -33,35 +37,44 @@ static	UConst char sccsid[] =
 #include <schily/maxpath.h>
 #include <schily/getcwd.h>
 
-EXPORT	char	*dogetwdir	__PR((void));
+EXPORT	char	*dogetwdir	__PR((BOOL doexit));
 EXPORT	BOOL	dochdir		__PR((const char *dir, BOOL doexit));
 
 extern	BOOL	debug;		/* -debug has been specified	*/
 
 EXPORT char *
-dogetwdir()
+dogetwdir(doexit)
+	BOOL	doexit;
 {
-	char	dir[PATH_MAX+1];
+	char	*dir;
 	char	*ndir;
 
-/* XXX MAXPATHNAME vs. PATH_MAX ??? */
+	if ((dir = lgetcwd()) == NULL) {
+		int	err = geterrno();
 
-	if (getcwd(dir, PATH_MAX) == NULL)
-		comerr("Cannot get working directory\n");
+		errmsg("Cannot get working directory\n");
+		if (doexit)
+			comexit(err);
+		return (dir);
+	}
 	ndir = ___malloc(strlen(dir)+1, "working dir");
 	strcpy(ndir, dir);
+	free(dir);
 	return (ndir);
 }
 
 EXPORT BOOL
 dochdir(dir, doexit)
-	const char	*dir;
+	const	char	*dir;
 	BOOL		doexit;
 {
+	char	*d;
+
 	if (debug) /* temporary */
 		error("dochdir(%s) = ", dir);
 
-	if (chdir(dir) < 0) {
+	d = strdup(dir);
+	if (d == NULL || lchdir(d) < 0) {
 		int	ex = geterrno();
 
 		if (debug) /* temporary */
@@ -75,10 +88,14 @@ dochdir(dir, doexit)
 		}
 		if (doexit)
 			exit(ex);
+		if (d)
+			free(d);
 		return (FALSE);
 	}
 	if (debug) /* temporary */
 		error("%d\n", 0);
 
+	if (d)
+		free(d);
 	return (TRUE);
 }

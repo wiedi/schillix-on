@@ -1,9 +1,9 @@
-/* @(#)table.h	1.14 15/08/23 Copyright 1994, 1996, 2000-2015 J. Schilling */
+/* @(#)table.h	1.18 17/02/12 Copyright 1994, 1996, 2000-2017 J. Schilling */
 /*
  *	Conversion table definitions for efficient conversion
  *	of different file type representations
  *
- *	Copyright (c) 1994, 1996, 2000-2015 J. Schilling
+ *	Copyright (c) 1994, 1996, 2000-2017 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -18,6 +18,16 @@
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
  */
+
+#ifndef	_TABLE_H
+#define	_TABLE_H
+
+#ifndef _SCHILY_MCONFIG_H
+#include <schily/mconfig.h>
+#endif
+#ifndef _SCHILY_UTYPES_H
+#include <schily/utypes.h>
+#endif
 
 /*
  * Unix uses the following file types
@@ -79,24 +89,25 @@ S_IFEVC		0170000		/* UNOS event count		*/
 #define	XT_META		27	/* Inode meta data only			    */
 #define	XT_BAD		31	/* illegal file type			    */
 
-extern char	iftoxt_tab[];
-extern char	ustoxt_tab[];
-extern char	vttoxt_tab[];
+extern UInt8_t	iftoxt_tab[];
+extern UInt8_t	ustoxt_tab[];
+extern UInt8_t	vttoxt_tab[];
 
 extern mode_t	xttoif_tab[];
-extern char	xttost_tab[];
-extern char	xttous_tab[];
+extern UInt8_t	xttost_tab[];
+extern UInt8_t	xttous_tab[];
 
-extern char	xtv7tar_tab[];
-extern char	xttar_tab[];
-extern char	xtstar_tab[];
-extern char	xtustar_tab[];
-extern char	xtexustar_tab[];
+extern UInt8_t	xtv7tar_tab[];
+extern UInt8_t	xttar_tab[];
+extern UInt8_t	xtstar_tab[];
+extern UInt8_t	xtustar_tab[];
+extern UInt8_t	xtexustar_tab[];
 
-extern char	xtcpio_tab[];
+extern UInt8_t	xtcpio_tab[];
 
 extern char	*xttostr_tab[];
 extern char	*xttoname_tab[];
+extern UInt8_t	xtnamelen_tab[];
 
 #define	IFTOXT(t)	(iftoxt_tab[((t)&S_IFMT)>>12])	/* UNIX to XT	*/
 #define	USTOXT(t)	(ustoxt(t))			/* ustar to XT	*/
@@ -108,3 +119,5 @@ extern char	*xttoname_tab[];
 #define	XTTOUS(t)	(xttous_tab[(t)])		/* XT to ustar	*/
 #define	XTTOSTR(t)	(xttostr_tab[(t)])		/* XT to string	*/
 #define	XTTONAME(t)	(xttoname_tab[(t)])		/* XT to name	*/
+
+#endif	/* _TABLE_H */

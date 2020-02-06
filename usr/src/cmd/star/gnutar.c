@@ -1,13 +1,13 @@
-/* @(#)gnutar.c	1.27 10/08/23 Copyright 1989, 2003-2010 J. Schilling */
+/* @(#)gnutar.c	1.37 19/03/31 Copyright 1989, 2003-2019 J. Schilling */
 #include <schily/mconfig.h>
 #ifndef lint
 static	const char _g_sccsid[] =
-	"@(#)gnutar.c	1.27 10/08/23 Copyright 1989, 2003-2010 J. Schilling";
+	"@(#)gnutar.c	1.37 19/03/31 Copyright 1989, 2003-2019 J. Schilling";
 #endif
 /*
  *	GNU TAR specific routines for star main program.
  *
- *	Copyright (c) 1989, 2003-2010 J. Schilling
+ *	Copyright (c) 1989, 2003-2019 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -16,6 +16,8 @@ static	const char _g_sccsid[] =
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -164,9 +166,12 @@ LOCAL	void	gnutar_setopts	__PR((char *o));
  * GNU TAR related options
  */
 /* BEGIN CSTYLED */
-char	_opts[] = "C*,help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,bs&,fs&,/,..,secure-links,acl,xfflags,copy,diff,H&,format&,z,bz,create,c,append,r,list,t,update,u,extract,get,x,compare,d,catenate,concatenate,A,delete,verify,W,remove-files,keep-old-files,k,unlink-first,U,recursive-unlink,sparse,S,to-stdout,O,incremental,G,listed-incremental*,g*,ignore-failed-read,owner*,group*,mode*,atime-preserve,modification-time,m,same-owner,no-same-owner,numeric-owner,same-permissions,preserve-permissions,p,no-same-permissions,same-order,preserve,preserve-order,s,force-local,file&,f&,rsh-command*,multi-volume,M,tape-length&,L&,new-volume-script*,info-script*,F*,volno-file*,blocking-factor&,b&,record-size&,ignore-zeros,i,read-full-records,B,label*,V*,old-archive,portability,o,posix,bzip2,j,gzip,ungzip,compress,uncompress,Z,use-compress-program*,files-from*,T*,null,exclude&,exclude-from&,X&,anchored,no-anchored,ignore-case,no-ignore-case,wildcards,no-wildcards,wildcards-match-slash,no-wildcards-match-slash,absolute-names,P,dereference,h,no-recursion,one-file-system,l,starting-file*,K*,newer*,after-date*,N*,newer-mtime*,backup*,suffix*,v+,verbose+,checkpoint,totals,block-number,R,interactive,confirmation,w,?";
+char	_opts[] = "C*,help,xhelp,version,debug,xdebug#,xd#,time,no-statistics,do-statistics,fifostats,numeric,no-fifo,no-fsync,do-fsync%0,bs&,fs&,/,..,secure-links,no-secure-links%0,acl,xfflags,copy,diff,H&,format&,z,bz,create,c,append,r,list,t,update,u,extract,get,x,compare,d,catenate,concatenate,A,delete,verify,W,remove-files,keep-old-files,k,unlink-first,U,recursive-unlink,sparse,S,to-stdout,O,incremental,G,listed-incremental*,g*,ignore-failed-read,owner*,group*,mode*,atime-preserve,modification-time,m,same-owner,no-same-owner,numeric-owner,same-permissions,preserve-permissions,p,no-same-permissions,same-order,preserve,preserve-order,s,force-local,file&,f&,rsh-command*,multi-volume,M,tape-length&,L&,new-volume-script*,info-script*,F*,volno-file*,blocking-factor&,b&,record-size&,ignore-zeros,i,read-full-records,B,label*,V*,old-archive,portability,o,posix,bzip2,j,gzip,ungzip,compress,uncompress,Z,lzo,7z,xz,lzip,zstd,use-compress-program*,files-from*,T*,null,exclude&,exclude-from&,X&,anchored,no-anchored,ignore-case,no-ignore-case,wildcards,no-wildcards,wildcards-match-slash,no-wildcards-match-slash,absolute-names,P,dereference,h,no-recursion,one-file-system,l,starting-file*,K*,newer*,after-date*,N*,newer-mtime*,backup*,suffix*,v+,verbose+,checkpoint,totals,block-number,R,interactive,confirmation,w,?";
 /* END CSTYLED */
 char	*opts = _opts;
+#ifdef	NO_STAR_MAIN
+struct ga_props	gaprops;
+#endif
 
 LOCAL	void	gnutar_info	__PR((void));
 
@@ -224,6 +229,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 #ifdef	STAR_MAIN
 	gnutar_setopts(opts);			/* set up opts for getfiles */
 #endif
+	getarginit(&gaprops, GAF_DEFAULT);	/* Set default behavior	  */
 
 	iftype		= I_TAR;		/* command line interface */
 	ptype		= P_GNUTAR;		/* program interface type */
@@ -231,17 +237,21 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 	no_dirslash	= FALSE;
 	no_stats	= TRUE;			/* and -no-statitstics	   */
 
+	if (pname) {				/* cli=xxx seen as argv[1] */
+		--ac, av++;
+	}
 	--ac, ++av;
 	files = getfilecount(ac, av, opts);
-	if (getallargs(&ac, &av, opts,
+	if (getlallargs(&ac, &av, &gaprops, opts,
 				&dir_flags,
 				&help, &xhelp, &prvers, &debug, &xdebug, &xdebug,
 #ifndef	__old__lint
 				&showtime, &no_stats, &do_stats, &do_fifostats,
-				&numeric,  &no_fifo, &no_fsync,
-				getnum, &bs,
-				getnum, &fs,
-				&abs_path, &allow_dotdot, &secure_links,
+				&numeric,  &no_fifo, &no_fsync, &no_fsync,
+				getenum, &bs,
+				getenum, &fs,
+				&abs_path, &allow_dotdot,
+				&secure_links, &secure_links,
 				&doacl, &dofflags,
 				&copyflag, &diff_flag,
 				gethdr, &chdrtype, gethdr, &chdrtype,
@@ -289,8 +299,8 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 				&newvol_script, &newvol_script, &newvol_script,
 				&gnuvolno_file,
 
-				getnum, &bs,		/* -b blocks */
-				getnum, &bs,		/* -b blocks */
+				getenum, &bs,		/* -b blocks */
+				getenum, &bs,		/* -b blocks */
 				getllnum, &llbs,
 				&ignoreerr, &ignoreerr,
 				&multblk, &multblk,
@@ -300,6 +310,8 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 				&bzflag, &bzflag,
 				&zflag, &zflag,
 				&Zflag, &Zflag, &Zflag,
+				&lzoflag,
+				&p7zflag, &xzflag, &lzipflag, &zstdflag,
 				&compress_prg,
 				&listfile, &listfile,
 				&readnull,
@@ -340,7 +352,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 	}
 	star_helpvers("gnutar", help, xhelp, prvers);
 
-	if (gnuconcat) {
+	if (gnuconcat) {	/* -A */
 		errmsgno(EX_BAD, "The --concatenate option is not yet implemented.\n");
 		susage(EX_BAD);
 	}
@@ -348,7 +360,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 		errmsgno(EX_BAD, "The --delete option is not yet implemented.\n");
 		susage(EX_BAD);
 	}
-	if (gnuveri) {
+	if (gnuveri) {		/* -W */
 		errmsgno(EX_BAD, "The --verify option is not implemented.\n");
 		errmsgno(EX_BAD, "Use the rewind and -diff from star instead.\n");
 		susage(EX_BAD);
@@ -357,12 +369,12 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 		errmsgno(EX_BAD, "The --remove-files option is not yet implemented.\n");
 		susage(EX_BAD);
 	}
-	if (gnuincrem) {
+	if (gnuincrem) {	/* -G */
 		errmsgno(EX_BAD, "The --incremental option is not implemented.\n");
 		errmsgno(EX_BAD, "Use the true incremental dump feature from star instead.\n");
 		susage(EX_BAD);
 	}
-	if (gnulinc) {
+	if (gnulinc) {		/* -g */
 		errmsgno(EX_BAD, "The --listed-incremental option is not implemented.\n");
 		errmsgno(EX_BAD, "Use the true incremental dump feature from star instead.\n");
 		susage(EX_BAD);
@@ -385,7 +397,7 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 	}
 	if (gnuchown)
 		nochown = FALSE;
-	if (gnuorder) {
+	if (gnuorder) {		/* -s */
 		errmsgno(EX_BAD, "The --same-order option is completely useless.\n");
 		errmsgno(EX_BAD, "It is not needed as star uses hash tables.\n");
 		susage(EX_BAD);
@@ -443,11 +455,11 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 		errmsgno(EX_BAD, "The --no-wildcards-match-slash option is not yet implemented.\n");
 		susage(EX_BAD);
 	}
-	if (gnustartf) {
+	if (gnustartf) {	/* -K */
 		errmsgno(EX_BAD, "The --starting-file option is not yet implemented.\n");
 		susage(EX_BAD);
 	}
-	if (gnunewer) {
+	if (gnunewer) {		/* -N */
 		errmsgno(EX_BAD, "The --newer option is not implemented.\n");
 		errmsgno(EX_BAD, "Use the -newer option from star with -ctime instead.\n");
 		susage(EX_BAD);
@@ -477,7 +489,9 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 	notpat = TRUE;	/* GNU tar only supports exclude patterns */
 
 	star_checkopts(oldtar, /* dodesc */ FALSE, /* usetape */ TRUE,
-					archive, no_fifo, llbs);
+					archive, no_fifo,
+					/* paxopts */ NULL,
+					llbs);
 	star_nfiles(files, minfiles);
 
 	if ((cflag || xflag) && verbose == 1)
@@ -493,8 +507,10 @@ signed	char	archive	 = -1;		/* On IRIX, we have unsigned chars by default */
 LOCAL void
 gnutar_info()
 {
+	const	char	*n = pname ? pname : get_progname();
+
 	error("\nFor a more complete user interface use the star type command interface.\n");
-	error("See 'man star'. The %s command is more or less limited to the\n", get_progname());
+	error("See 'man star'. The %s command is more or less limited to the\n", n);
 	error("GNU tar command line interface.\n");
 }
 
@@ -505,11 +521,13 @@ LOCAL void
 susage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
-	error("\nUse\t%s --help\n", get_progname());
-	error("and\t%s --xhelp\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
+	error("\nUse\t%s --help\n", n);
+	error("and\t%s --xhelp\n", n);
 	error("to get a list of valid cmds and options.\n");
-	error("\nUse\t%s -H help\n", get_progname());
+	error("\nUse\t%s -H help\n", n);
 	error("to get a list of valid archive header formats.\n");
 	gnutar_info();
 	exit(ret);
@@ -520,27 +538,29 @@ LOCAL void
 usage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
-	error("Cmd:\n");
-	error("\t-c/-u/-r\tcreate/update/replace archive with named files to tape\n");
-	error("\t-x/-t\t\textract/list named files from tape\n");
-	error("\t--copy\t\t(*) copy named files to destination directory\n");
-	error("\t--diff\t\tdiff archive against file system (see -xhelp)\n");
-	error("Options:\n");
-	error("\t--help\t\t(*) print this help\n");
-	error("\t--xhelp\t\tprint extended help\n");
-	error("\t--version\tprint version information and exit\n");
+	const	char	*n = pname ? pname : get_progname();
 
-	error("\tH=header\tgenerate 'header' type archive (see H=help)\n");
-	error("\t-z\t\tpipe input/output through gzip, does not work on tapes\n");
-	error("\t--bz\t\t(*) pipe input/output through bzip2, does not work on tapes\n");
+	gtprintf("Usage:\t%s cmd [options] file1 ... filen\n", n);
+	gtprintf("Cmd:\n");
+	gtprintf("\t-c/-u/-r\tcreate/update/replace archive with named files to tape\n");
+	gtprintf("\t-x/-t\t\textract/list named files from tape\n");
+	gtprintf("\t--copy\t\t(*) copy named files to destination directory\n");
+	gtprintf("\t--diff\t\tdiff archive against file system (see -xhelp)\n");
+	gtprintf("Options:\n");
+	gtprintf("\t--help\t\t(*) print this help\n");
+	gtprintf("\t--xhelp\t\tprint extended help\n");
+	gtprintf("\t--version\tprint version information and exit\n");
+
+	gtprintf("\tH=header\tgenerate 'header' type archive (see H=help)\n");
+	gtprintf("\t-z\t\tpipe input/output through gzip, does not work on tapes\n");
+	gtprintf("\t--bz\t\t(*) pipe input/output through bzip2, does not work on tapes\n");
 #ifdef	FIFO
-	error("\t--no-fifo\t(*) don't use a fifo to optimize data flow from/to tape\n");
+	gtprintf("\t--no-fifo\t(*) don't use a fifo to optimize data flow from/to tape\n");
 #endif
-	error("\nAll options marked with (*) are not defined by GNU tar.\n");
+	gtprintf("\nAll options marked with (*) are not defined by GNU tar.\n");
 
 	/* BEGIN CSTYLED */
-	error("\n\
+	gtprintf("\n\
 GNU tar help:\n\
 Main operation mode:\n\
   -t, --list              list the contents of an archive\n\
@@ -553,7 +573,7 @@ Main operation mode:\n\
       --concatenate       same as -A\n\
       --delete            delete from the archive (not on mag tapes!)\n");
 
-	error("\n\
+	gtprintf("\n\
 Operation modifiers:\n\
   -W, --verify               attempt to verify the archive after writing it\n\
       --remove-files         remove files after adding them to the archive\n\
@@ -569,7 +589,7 @@ Operation modifiers:\n\
                              handle new GNU-format incremental backup\n\
       --ignore-failed-read   do not exit with nonzero on unreadable files\n");
 
-	error("\n\
+	gtprintf("\n\
 Handling of file attributes:\n\
       --owner=NAME             force NAME as owner for added files\n\
       --group=NAME             force NAME as group for added files\n\
@@ -586,7 +606,7 @@ Handling of file attributes:\n\
       --preserve-order         same as -s\n\
       --preserve               same as both -p and -s\n");
 
-	error("\n\
+	gtprintf("\n\
 Device selection and switching:\n\
   -f, --file=ARCHIVE             use archive file or device ARCHIVE\n\
       --force-local              archive file is local even if has a colon\n\
@@ -598,14 +618,14 @@ Device selection and switching:\n\
       --new-volume-script=FILE   same as -F FILE\n\
       --volno-file=FILE          use/update the volume number in FILE\n");
 
-	error("\n\
+	gtprintf("\n\
 Device blocking:\n\
   -b, --blocking-factor=BLOCKS   BLOCKS x 512 bytes per record\n\
       --record-size=SIZE         SIZE bytes per record, multiple of 512\n\
   -i, --ignore-zeros             ignore zeroed blocks in archive (means EOF)\n\
   -B, --read-full-records        reblock as we read (for 4.2BSD pipes)\n");
 
-	error("\n\
+	gtprintf("\n\
 Archive format selection:\n\
   -H, --format=FORMAT                create archive of the given format\n\
   -V, --label=NAME                   create archive with volume name NAME\n\
@@ -617,7 +637,7 @@ Archive format selection:\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n");
 
-	error("\n\
+	gtprintf("\n\
 Local file selection:\n\
   -C, --directory=DIR          change to directory DIR\n\
   -T, --files-from=NAME        get names to extract or create from file NAME\n\
@@ -638,16 +658,16 @@ Local file selection:\n\
   -l, --one-file-system        stay in local file system when creating archive\n\
   -K, --starting-file=NAME     begin at file NAME in the archive\n");
 
-	error("\
+	gtprintf("\
   -N, --newer=DATE             only store files newer than DATE\n\
       --newer-mtime=DATE       compare date and time when data changed only\n\
       --after-date=DATE        same as -N\n");
 
-	error("\
+	gtprintf("\
       --backup[=CONTROL]       backup before removal, choose version control\n\
       --suffix=SUFFIX          backup before removal, override usual suffix\n");
 
-	error("\n\
+	gtprintf("\n\
 Informative output:\n\
       --help            print this help, then exit\n\
       --version         print tar program version number, then exit\n\
@@ -668,13 +688,16 @@ LOCAL void
 xusage(ret)
 	int	ret;
 {
-	error("Usage:\t%s cmd [options] file1 ... filen\n", get_progname());
+	const	char	*n = pname ? pname : get_progname();
+
+	error("Usage:\t%s cmd [options] file1 ... filen\n", n);
 	error("Extended options:\n");
 	error("\t--debug\t\tprint additional debug messages\n");
 	error("\txdebug=#,xd=#\tset extended debug level\n");
 	error("\t-/\t\tdon't strip leading '/'s from file names\n");
 	error("\t-..\t\tdon't skip filenames that contain '..' in non-interactive extract\n");
-	error("\t--secure-links\tdon't extract links that start with '/' or contain '..'\n");
+	error("\t--secure-links\tdon't extract links that start with '/' or contain '..' (default)\n");
+	error("\t--no-secure-links\textract links that start with '/' or contain '..'\n");
 	error("\t--acl\t\thandle access control lists\n");
 	error("\t--xfflags\thandle extended file flags\n");
 	error("\tbs=#\t\tset (output) block size to #\n");
@@ -682,6 +705,7 @@ xusage(ret)
 	error("\tfs=#\t\tset fifo size to #\n");
 #endif
 	error("\t--no-fsync\tdo not call fsync() for each extracted file (may be dangerous)\n");
+	error("\t--do-fsync\tcall fsync() for each extracted file\n");
 	error("\t--time\t\tprint timing info\n");
 	error("\t--no-statistics\tdo not print statistics\n");
 	error("\t--do-statistics\tprint statistics\n");
