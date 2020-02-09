@@ -1022,7 +1022,8 @@ main(int argc, char *argv[])
 			v_flag = 0;
 			hba_sectors	= MAX_SECT;
 			hba_heads	= MAX_HEAD + 1;
-			hba_Numcyl	= (Numcyl * heads * sectors) /
+			hba_Numcyl	= ((long long)Numcyl *
+			    heads * sectors) /
 			    (hba_sectors * hba_heads);
 		}
 
@@ -1030,23 +1031,23 @@ main(int argc, char *argv[])
 			(void) fprintf(stderr, "Physical Geometry:\n");
 			(void) fprintf(stderr,
 			    "  cylinders[%d] heads[%d] sectors[%d]\n"
-			    "  sector size[%d] blocks[%d] mbytes[%d]\n",
+			    "  sector size[%d] blocks[%lld] mbytes[%d]\n",
 			    Numcyl,
 			    heads,
 			    sectors,
 			    sectsiz,
-			    Numcyl * heads * sectors,
+			    (long long)Numcyl * heads * sectors,
 			    (int)(((long long)Numcyl *
 			    heads * sectors * sectsiz) / 1048576LL));
 			(void) fprintf(stderr, "Virtual (HBA) Geometry:\n");
 			(void) fprintf(stderr,
 			    "  cylinders[%d] heads[%d] sectors[%d]\n"
-			    "  sector size[%d] blocks[%d] mbytes[%d]\n",
+			    "  sector size[%d] blocks[%lld] mbytes[%d]\n",
 			    hba_Numcyl,
 			    hba_heads,
 			    hba_sectors,
 			    sectsiz,
-			    hba_Numcyl * hba_heads * hba_sectors,
+			    (long long)hba_Numcyl * hba_heads * hba_sectors,
 			    (int)(((long long)hba_Numcyl *
 			    hba_heads * hba_sectors * sectsiz) / 1048576LL));
 		}
