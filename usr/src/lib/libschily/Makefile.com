@@ -86,12 +86,14 @@ OBJECTS_REST=	abspath.o \
 		timegm.o \
 		uid.o unlinkat.o uname.o unsetenv.o \
 		usleep.o utimens.o utimensat.o \
+		vsnprintf.o \
 		waitid.o \
 		wcscat.o wcscatl.o wcschr.o wcscmp.o wcscpy.o wcscspn.o \
 		wcsdup.o wcseql.o wcslen.o \
 		wcslcat.o wcslcatl.o wcslcpy.o wcsncat.o wcsncmp.o \
 		wcsncpy.o wcsndup.o wcsnlen.o wcsrchr.o wcsspn.o wcsstr.o \
 		wctype.o \
+		wcastoi.o \
 		wdabort.o \
 		zerobytes.o
 
