@@ -77,6 +77,7 @@ COMMON_SUBDIRS=		\
 	man3rsm		\
 	man3sasl	\
 	man3scf		\
+	man3schily	\
 	man3sec		\
 	man3secdb	\
 	man3sip		\
