@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2020, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" CDDL HEADER START
 .\"
@@ -20,7 +20,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH bootadm 1M "25 Apr 2008" "SunOS 5.11" "System Administration Commands"
+.TH bootadm 1M "24 Jan 2020" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 bootadm \- manage bootability of GRUB-enabled operating system
 .SH SYNOPSIS
@@ -47,6 +47,11 @@ bootadm \- manage bootability of GRUB-enabled operating system
 .LP
 .nf
 \fB/sbin/bootadm\fR list-menu [\fB-R\fR \fIaltroot\fR [\fB-p\fR \fIplatform\fR]]
+.fi
+
+.LP
+.nf
+\fB/sbin/bootadm\fR update-menu [\fB-Z\fR] [\fB-vn\fR] [\fB-R\fR \fIaltroot\fR [\fB-p\fR \fIplatform\fR]] \fB-o\fR \fIosdev\fR
 .fi
 
 .SH DESCRIPTION
@@ -102,54 +107,57 @@ The
 command has the following subcommands:
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B update-archive
-.ad
 .sp .6
-.RS 4n
 Updates current boot archive if required. Applies to both SPARC and x86
 platforms.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B list-archive
-.ad
 .sp .6
-.RS 4n
 Lists the files and directories to be included in the boot archive. Applies
 to both SPARC and x86 platforms.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B set-menu
-.ad
 .sp .6
-.RS 4n
-Maintain the GRUB menu. The current GRUB menu is
+Maintain GRUB menu parameters such as
+.B default=
+or
+.BR timeout= .
+The current GRUB menu is
 .BR boot/grub/menu.lst ,
 relative to root. Do not depend on this location, because it is subject to
 change. Applies to x86 platforms only.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B list-menu
-.ad
 .sp .6
-.RS 4n
 Lists the location of the active GRUB menu, as well as the current GRUB
 menu entries. This includes the autoboot-timeout, the default entry number,
 and the title of each entry. Applies to x86 platforms only.
-.RE
+
+.sp
+.ne 2
+.TP
+.B update-menu
+.sp .6
+Update the GRUB menu for a boot partition.
+The raw device name for the related boot partition needs to be specified
+as parameter to the
+.B \-o
+option.
+The current GRUB menu is
+.BR boot/grub/menu.lst ,
+relative to root. Do not depend on this location, because it is subject to
+change. Applies to x86 platforms only.
 
 .SH OPTIONS
 .sp
@@ -159,44 +167,49 @@ The
 command has the following options:
 .sp
 .ne 2
-.mk
-.na
-.B -v
-.ad
-.sp .6
-.RS 4n
+.TP
+.B \-v
 In an
 .B update-archive
 operation, stale files are displayed on
 stderr.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -n
-.ad
-.sp .6
-.RS 4n
+.TP
+.B \-n
 In an
 .B update-archive
 operation, archive content is checked but not
 updated.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
-.B -p
-.I platform
-.ad
-.sp .6
-.RS 4n
+.PD 0
+.TP
+.BI \-o " osdev
+.TP
+.BI \-o " osdev,rootprefix
+.PD
+Supply the raw device name as
+.I osdev
+to specify the boot partition that is going to be used for the
+.B update-menu
+subcommand.
+.sp
+If the last pathname component of the
+.BI \-R " altroot
+option parameter is a mountpoint in a sub-directory,
+.I rootprefix
+needs to be specified as the prefix path to that mountpoint.
+
+.sp
+.ne 2
+.TP
+.BI \-p " platform
 The platform, or machine hardware class, of the client. The platform type
 can only be specified together with
-.BR -R ,
+.BR \-R ,
 and is generally useful only
 for managing a diskless client where the client is of a different platform
 class than the server. Platform must be one of
@@ -204,17 +217,14 @@ class than the server. Platform must be one of
 .BR sun4u ,
 or
 .BR sun4v .
-.RE
 
 .sp
 .ne 2
-.mk
+.TP
 .na
-\fB-R\fR\ \fIaltroot\fR
-.ad
-.sp .6
-.RS 4n
+.BI \-R " altroot
 Operation is applied to an alternate root path.
+.RS
 .LP
 Note -
 .sp
@@ -231,37 +241,31 @@ non-global zone's file system. See
 
 .sp
 .ne 2
-.mk
+.TP
 .na
-\fIkey\fR=\fIvalue\fR
-.ad
-.sp .6
-.RS 4n
-Possible values are:
+.B \-Z
+Handle a ZFS-root environment.
+
 .sp
 .ne 2
-.mk
+.TP
 .na
+.BI key= value
+Possible values are:
+.RS
+.sp
+.ne 2
+.TP
 .BI default= entrynum
-.ad
-.sp .6
-.RS 4n
 The item number (for example, 0, 1, or 2) in the GRUB menu designating the
 operating system to boot when the timer expires.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .BI timeout= seconds
-.ad
-.sp .6
-.RS 4n
 The number of seconds before the operating system designated by the default
 item number is booted. If the value is -1, auto boot is disabled.
-.RE
-
 .RE
 
 .SH EXAMPLES
@@ -380,31 +384,61 @@ mounted. To access the GRUB menu, mount the device and access the
 GRUB menu at
 .IR <mountpoint> /boot/grub/menu.lst\fR.
 
+.LP
+.B Example 7
+Set the GRUB Menu entries for a
+.B ZFS-root
+installation
+.sp
+.LP
+The following command creates the ZFS boot entries in the GRUB menu:
+
+.sp
+.in +2
+.nf
+# bootadm update-menu -Z -R /a -o /dev/rdsk/c0t1d0s0
+.fi
+.in -2
+.LP
+In this example, the new
+.B ZFS-root
+pool on the raw device
+.BR /dev/rdsk/c0t1d0s0 ,
+that is mounted under
+.B /a
+gets the needed menu entries for the kernel and the bootsign is created.
+The location of the managed
+.B menu.lst
+file is
+.BI /a/ rpool /boot/grub/menu.lst\c
+\&.
+
 .SH EXIT STATUS
 .sp
 .LP
 The following exit values are returned:
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B 0
-.ad
-.sp .6
-.RS 4n
 The command completed successfully.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B 1
-.ad
-.sp .6
-.RS 4n
 The command exited due to an error.
-.RE
+
+.SH FILES
+.sp
+.LP
+The location of the files depend on the current active boot partition.
+.TP
+.B /boot/grub/menu.lst
+the default location of the GRUB menu.
+.TP
+.BI / rpool /boot/grub/menu.lst
+the location of the GRUB menu file with a ZFS-root installation.
 
 .SH ATTRIBUTES
 .sp
