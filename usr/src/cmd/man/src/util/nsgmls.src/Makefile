@@ -1,6 +1,7 @@
 # Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2020 J. Schilling
 #
 #
 # Copyright 1994, 1995 James Clark
@@ -45,7 +46,7 @@ DEFINES=$(XDEFINES)
 #CXXFLAGS=-ansi $(DEBUG) $(WARN)
 CXXFLAGS=
 # Flag to pass to CXX to make it output list of dependencies as a Makefile.
-LDFLAGS += -norunpath -nolib
+LDFLAGS += $(NORUNPATH)
 OPT=
 CFLAGS += $(OPT) $(DEBUG) 
 CCFLAGS += -noex
