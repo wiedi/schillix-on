@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2001, Sun Microsystems, Inc.  All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2019, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" CDDL HEADER START
 .\"
@@ -20,20 +20,31 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH gettext 1 "17 Sep 2001" "SunOS 5.11" "User Commands"
+.TH gettext 1 "1 Sep 2019" "SunOS 5.11" "User Commands"
 .SH NAME
 gettext \- retrieve text string from message database
 .SH SYNOPSIS
 .LP
 .nf
-\fBgettext\fR [\fB-d\fR \fItextdomain\fR | \fB-\(midomain\fR=\fItextdomain\fR]
-     [\fItextdomain\fR] \fImsgid\fR
+.BR gettext " [" "-d\c
+.I " textdomain\c"
+ | \c
+.BR -\(midomain =\c
+.I textdomain\c
+]
+.RI "     [" textdomain ] " msgid
 .fi
 
 .LP
 .nf
-\fBgettext\fR \fB-s\fR [\fB-e\fR] [\fB-n\fR]
-     [\fB-d\fR \fItextdomain\fR | \fB-\(midomain\fR=\fItextdomain\fR] \fImsgid\fR...
+.B gettext -s \c
+.RB [ -e "] [" -n ]
+.RB "     [" "-d \c"
+.I textdomain\c
+ | \c
+.BR -\(midomain =\c
+.IR textdomain "] \c"
+.IR msgid ...
 .fi
 
 .SH DESCRIPTION
@@ -72,12 +83,23 @@ pathname component up to
 .IR lang .
 .sp
 .LP
-This command interprets C escape sequences such as
+This command interprets the C escape sequences 
+.BR \eb ,
+.BR \ef ,
+.BR \en ,
+.BR \er ,
+.BR \et ,
+.BR \ev ,
+.BR \e\e .
+Use
 .B \et
-for tab. Use
-.B
-\e\e \c
-to print a backslash. To produce a message on a line of its own,
+to print a
+.BR tab ,
+use
+.B \e\e
+to print a
+.BR backslash .
+To produce a message on a line of its own,
 either enter
 .B \en
 at the end of
@@ -88,12 +110,15 @@ conjunction with
 .sp
 .LP
 When used with the
-.B -s
+.B \-s
 option,
 .B gettext
 behaves like
-.BR echo (1).
-But it does not simply copy its arguments to standard output.
+.BR echo (1),
+except that escape sequences are not expanded unless the
+.B \-e
+option is specified as well.
+It however does not simply copy its arguments to standard output.
 Instead, those messages found in the selected catalog are translated.
 .SH OPTIONS
 .sp
@@ -101,58 +126,46 @@ Instead, those messages found in the selected catalog are translated.
 The following options are supported:
 .sp
 .ne 2
-.mk
-.na
-.B -d
-.I textdomain
-.ad
-.br
-.na
-\fB-\(midomain\fR=\fItextdomain\fR
-.ad
-.RS 26n
-.rt
+.TP 26n
+.PD 0
+.BI -d " textdomain
+.TP
+.BI -\(midomain\fR= textdomain
+.PD
 Retrieves translated messages from the domain
 .IR textdomain ,
 if
 .I textdomain
 is not specified as an operand.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B -e
-.ad
-.RS 26n
-.rt
-Enables expansion of some escape sequences if used with the
+Enables expansion of the escape sequences
+.BR \eb ,
+.BR \ef ,
+.BR \en ,
+.BR \er ,
+.BR \et ,
+.BR \ev ,
+.B \e\e
+in the untranslated text if used with the
 .BR -s
 option.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B -n
-.ad
-.RS 26n
-.rt
 Suppresses trailing newline if used with the
 .B -s
 option.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B -s
-.ad
-.RS 26n
-.rt
 Behaves like
 .BR echo (1)
 (see DESCRIPTION above). If the
@@ -160,7 +173,6 @@ Behaves like
 option
 is specified, no expansion of C escape sequences is performed and a newline
 character is appended to the output, by default.
-.RE
 
 .SH OPERANDS
 .sp
@@ -168,78 +180,52 @@ character is appended to the output, by default.
 The following operands are supported:
 .sp
 .ne 2
-.mk
-.na
+.TP 14n
 .I textdomain
-.ad
-.RS 14n
-.rt
 A domain name used to retrieve the messages. This overrides the
 specification by the
 .B -d
-or \fB-\(midomain\fR options, if present.
-.RE
+or
+.B -\(midomain
+options, if present.
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .I msgid
-.ad
-.RS 14n
-.rt
 A key to retrieve the localized message.
-.RE
 
 .SH ENVIRONMENT VARIABLES
 .sp
 .ne 2
-.mk
-.na
+.TP 17n
 .B LANG
-.ad
-.RS 17n
-.rt
 Specifies locale name.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B LC_MESSAGES
-.ad
-.RS 17n
-.rt
 Specifies messaging locale, and if present overrides
 .B LANG
 for
 messages.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B TEXTDOMAIN
-.ad
-.RS 17n
-.rt
 Specifies the text domain name, which is identical to the message object
-filename without \fB\&.mo\fR suffix.
-.RE
+filename without
+.B \&.mo
+suffix.
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .B TEXTDOMAINDIR
-.ad
-.RS 17n
-.rt
 Specifies the pathname to the message database. If present, replaces
 .BR /usr/lib/locale .
-.RE
 
 .SH ATTRIBUTES
 .sp
