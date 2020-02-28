@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved
-.\" Copyright (c) 2012-2013, J. Schilling
+.\" Copyright (c) 2012-2019, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" CDDL HEADER START
 .\"
@@ -20,13 +20,15 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH installgrub 1M "2 Jul 2009" "SunOS 5.11" "System Administration Commands"
+.TH installgrub 1M "16 Sep 2019" "SunOS 5.11" "System Administration Commands"
 .SH NAME
 installgrub \- install GRUB in a disk partition or a floppy
 .SH SYNOPSIS
 .LP
 .nf
-\fB/sbin/installgrub\fR [\fB-fm\fR] \fIstage1\fR \fIstage2\fR \fIraw-device\fR
+\fB/sbin/installgrub\fR [\fB-dfFmn\fR] [\fB-u \fIupd-str\fR] \fIstage1\fR \fIstage2\fR \fIraw-device\fR
+\fB/sbin/installgrub\fR \fB-M\fR [\fB-n\fR] \fIdevice1 device2\fR
+\fB/sbin/installgrub\fR \fB-i\fR [\fB-deV\fR] \fIraw-device\fR
 .fi
 
 .SH DESCRIPTION
@@ -51,29 +53,90 @@ The
 .B installgrub
 command accepts the following options:
 .sp
-.ne 2
-.mk
-.na
-.B -f
-.ad
-.RS 6n
-.rt
-Suppresses interaction when overwriting the master boot sector.
-.RE
+.ne 3
+.TP 6n
+.B -d
+Print debug information.
 
 .sp
-.ne 2
-.mk
-.na
+.ne 3
+.TP
+.B -e
+Print easy to parse exteded information.
+
+.sp
+.ne 3
+.TP
+.B -f
+Suppresses interaction when overwriting the master boot sector.
+
+.sp
+.ne 3
+.TP
+.B -F
+Force to update the boot.
+
+.sp
+.ne 3
+.TP
+.B -i
+Retrieves the extended information (einfo) from a device, associated to the
+installed
+.IR stage2 .
+Expects one parameter, the device path, in the form:
+.B /dev/rdsk/c\c
+.IR ? [\c
+.BI t ?\c
+.RB ] d\c
+.IB ? s0\c
+\&.
+.sp
+This option disables the options
+.BR \-m ,
+.BR \-f ,
+.B \-u
+and
+.BR \-F .
+
+.sp
+.ne 3
+.TP
 .B -m
-.ad
-.RS 6n
-.rt
 Installs GRUB
 .I stage1
 on the master boot sector interactively. You
 must use this option if Solaris is installed on an extended partition.
-.RE
+
+.sp
+.ne 3
+.TP
+.B -M
+Attempt to mirror (propagate) the current
+.I stage2
+over the attaching disk. 
+
+.sp
+.ne 3
+.TP
+.B -n
+Do not write to the
+.I raw-device
+and open 
+.I raw-device
+read-only for safety reasons.
+
+.sp
+.ne 3
+.TP
+.BI -u " update-string
+Handle versioning in
+.IR stage2 .
+
+.sp
+.ne 3
+.TP
+.B -V
+Print extended information.
 
 .SH OPERANDS
 .sp
@@ -83,40 +146,25 @@ The
 command accepts the following operands:
 .sp
 .ne 2
-.mk
-.na
+.TP 14n
 .I stage1
-.ad
-.RS 14n
-.rt
 The name of the GRUB stage 1 file.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .I stage2
-.ad
-.RS 14n
-.rt
 The name of the GRUB stage 2 file.
-.RE
 
 .sp
 .ne 2
-.mk
-.na
+.TP
 .I raw-device
-.ad
-.RS 14n
-.rt
 The name of the device onto which GRUB code is to be installed. It must be
 a character device that is readable and writable. For disk devices, specify
 the slice where the GRUB menu file is located. (For Solaris it is the root
 slice.) For a floppy disk, it is
 .BR /dev/rdiskette .
-.RE
 
 .SH EXAMPLES
 .LP
@@ -157,14 +205,9 @@ example# mount -F pcfs /dev/diskette /mnt
 .SH FILES
 .sp
 .ne 2
-.mk
-.na
+.TP 14n
 .B /boot/grub
-.ad
-.RS 14n
-.rt
 Directory where GRUB files reside.
-.RE
 
 .SH ATTRIBUTES
 .sp
