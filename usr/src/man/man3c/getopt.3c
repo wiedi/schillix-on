@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2007, Sun Microsystems, Inc.  All Rights Reserved.
-.\" Copyright (c) 2012-2016, J. Schilling
+.\" Copyright (c) 2012-2019, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" Copyright 1989 AT&T
 .\" Portions Copyright (c) 2001, the Institute of Electrical and Electronics Engineers, Inc. and The Open Group. All Rights Reserved.
@@ -34,7 +34,7 @@
 .\"
 .\" The contents of this file are subject to the terms of the
 .\" Common Development and Distribution License ("CDDL"), version 1.0.
-.\" You may only use this file in accordance with the terms of version
+.\" You may use this file only in accordance with the terms of version
 .\" 1.0 of the CDDL.
 .\"
 .\" A full copy of the text of the CDDL should have accompanied this
@@ -48,7 +48,19 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH getopt 3C "26 Apr 2016" "SunOS 5.11" "Standard C Library Functions"
+.if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
+.if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
+.if t .ds u \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'u
+.if t .ds A \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'A
+.if t .ds O \v'-0.77m'\h'0.25n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.70n'O
+.if t .ds U \v'-0.77m'\h'0.30n'\z.\h'0.45n'\z.\v'0.77m'\h'-0.75n'U
+.if t .ds s \\(*b
+.if t .ds S SS
+.if n .ds a ae
+.if n .ds o oe
+.if n .ds u ue
+.if n .ds s sz
+.TH getopt 3C "28 Oct 2019" "SunOS 5.11" "Standard C Library Functions"
 .SH NAME
 getopt \- command option parsing
 .SH SYNOPSIS
@@ -68,6 +80,16 @@ getopt \- command option parsing
 .LP
 .nf
 \fBextern int\fR \fIoptind\fR, \fIopterr\fR, \fIoptopt\fR;
+.fi
+
+.SS "Schily"
+.nf
+\fBextern int\fR \fIoptflags\fR;
+.fi
+
+.SS "AT&T"
+.nf
+\fBextern int\fR \fIopt_sp\fR;
 .fi
 
 .SS "POSIX.2, XPG4, SUS, SUSv2, SUSv3"
@@ -144,18 +166,52 @@ and that is used as the return value for
 .BR getopt ()
 when the related long option is seen.
 .LP
-Utilities that like to support the traditional UNIX form of long options
+Utilities that like to support the traditional
+.B UNIX form
+of long options
+derived from
+.B Multics
 .RB "(using " \-long\-name )
-can specify the string
-.B
-"()"
-at the beginning of
+can specify the string "\c
+.B ()\c
+\%" at the beginning of
 .I optstring
 or directly after the initial
 .B
 ":"
 in
 .IR optstring .
+.sp
+.LP
+If a utility likes to support options in the form
+.B +o
+or
+.BR ++long\-name ,
+.I optstring
+should start with a
+.RB `` + ''.
+In case an option in the form
+.B +o
+or
+.BR ++long\-name
+has been detected,
+.B getopt()
+sets the
+.B GETOPT_PLUS_FL
+bit in the external variable
+.IR optflags .
+.sp
+.LP
+A utility that likes to specify more than one flag character from
+.RB `` : '',
+.RB `` + '',
+or "\c
+.B ()\c
+\&" in
+.IR optstring ,
+needs to place "\c
+.B ()\c
+\&" last.
 .sp
 .LP
 The
@@ -178,6 +234,25 @@ the next argument to be processed. The
 variable is external and
 is initialized to 1 before the first call to
 .BR getopt() .
+.LP
+The
+.B getopt()
+function places in
+.I opt_sp
+the index of the option letter currently processed to identify
+the right option letter in combined options. The
+.I opt_sp
+variable is external and
+is initialized to 1 before the first call to
+.BR getopt() .
+This permits to manage
+.I opt_sp
+in order to deal with multiple
+.B getopt()
+calls, which is needed for the
+.B getopts
+shell builtin.
+.LP
 The
 .B getopt()
 function sets the variable
@@ -246,8 +321,7 @@ returns an error indication.
 .sp
 .LP
 When all options have been processed (that is, up to the first operand),
-.B
-getopt() \c
+.B getopt()
 returns -1. The special option "--"(two hyphens) can be used
 to delimit the end of the options; when it is encountered, -1 is returned
 and "--" is skipped. This is useful in delimiting non-option arguments that
@@ -525,7 +599,7 @@ aliases can also be assigned as shown in the following example:
 .sp
 .in +2
 .nf
-:a(ascii)b(binary):(in-file)(input)o:(outfile)(output)V(version)?(help)
+:a(ascii)b(binary)f:(in-file)(input)o:(out-file)(output)V(version)?(help)
 .fi
 .in -2
 
@@ -641,3 +715,26 @@ For the Basic Utility Command syntax is Standard, see
 .BR attributes (5),
 .BR environ (5),
 .BR standards (5)
+.br
+.ne 5
+.SH NOTES
+.LP
+The 
+.RB `` + ''
+flag to enable
+.B +o
+type options has been taken from
+.BR ksh93 .
+Future enhancement flags will be letters inside "\c
+.B ()\c
+\&".
+.br
+.ne 5
+.SH AUTHORS
+The
+.B getopt()
+function was initially written by authors at AT&T in 1980.
+.B getopt()
+was later maintained by various people at AT&T and Sun Microsystems.
+Since 2006,
+is maintained by J\*org Schilling.

@@ -39,13 +39,13 @@
 #include "version.h"
 
 /*
- * Copyright 2008-2019 J. Schilling
+ * Copyright 2008-2020 J. Schilling
  *
- * @(#)args.c	1.92 19/06/10 2008-2019 J. Schilling
+ * @(#)args.c	1.94 20/02/18 2008-2020 J. Schilling
  */
 #ifndef lint
 static	UConst char sccsid[] =
-	"@(#)args.c	1.92 19/06/10 2008-2019 J. Schilling";
+	"@(#)args.c	1.94 20/02/18 2008-2020 J. Schilling";
 #endif
 
 /*
@@ -347,9 +347,9 @@ prversion()
 		prs(UC "Copyright (C) 1984-1989 AT&T\n");
 		prs(UC "Copyright (C) 1989-2009 Sun Microsystems\n");
 #ifdef	INTERACTIVE
-		prs(UC "Copyright (C) 1982-2019 Joerg Schilling\n");
+		prs(UC "Copyright (C) 1982-2020 Joerg Schilling\n");
 #else
-		prs(UC "Copyright (C) 1985-2019 Joerg Schilling\n");
+		prs(UC "Copyright (C) 1985-2020 Joerg Schilling\n");
 #endif
 		exitsh(0);
 	}
@@ -531,7 +531,15 @@ again:
 #endif
 					if (fv == errflg)
 						eflag = errflg;
-#ifdef	EXECATTR_FILENAME
+
+#ifdef	DO_MONITOR_SCRIPT
+					if (fv == monitorflg &&
+					    (flags & jcflg) == 0) {
+						startjobs();
+					}
+#endif
+
+#ifdef	EXECATTR_FILENAME		/* from <exec_attr.h> */
 					if (fv == pfshflg)
 						secpolicy_init();
 #endif
