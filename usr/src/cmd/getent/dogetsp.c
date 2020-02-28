@@ -19,43 +19,44 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2020 J. Schilling.  All rights reserved.
- * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
-#ifndef	_GETENT_H
-#define	_GETENT_H
+#include <stdio.h>
+#include <shadow.h>
+#include <stdlib.h>
+#include <errno.h>
+#include "getent.h"
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
+/*
+ * getspnam - get entries from shadow database
+ */
+int
+dogetsp(const char **list)
+{
+	struct spwd *spp;
+	int rc = EXC_SUCCESS;
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
-#define	TRUE	1
-#define	FALSE	0
+	if (list == NULL || *list == NULL) {
+		while ((spp = getspent()) != NULL)
+			(void) putspent(spp, stdout);
+	} else {
+		for (; *list != NULL; list++) {
+			errno = 0;
 
-#define	EXC_SUCCESS		0
-#define	EXC_SYNTAX		1
-#define	EXC_NAME_NOT_FOUND	2
-#define	EXC_ENUM_NOT_SUPPORTED	3
+			spp = getspnam(*list);
 
-extern int dogetpw(const char **);
-extern int dogetsp(const char **);
-extern int dogetgr(const char **);
-extern int dogethost(const char **);
-extern int dogetipnodes(const char **);
-extern int dogetserv(const char **);
-extern int dogetnet(const char **);
-extern int dogetproto(const char **);
-extern int dogetethers(const char **);
-extern int dogetnetmask(const char **);
-extern int dogetproject(const char **);
+			if (spp == NULL)
+				rc = EXC_NAME_NOT_FOUND;
+			else
+				(void) putspent(spp, stdout);
+		}
+	}
 
-#ifdef	__cplusplus
+	return (rc);
 }
-#endif
-
-#endif	/* _GETENT_H */

@@ -43,6 +43,7 @@ struct table {
 static struct table t[] = {
 	{ "passwd",	dogetpw },
 	{ "group",	dogetgr },
+	{ "shadow",	dogetsp },
 	{ "hosts",	dogethost },
 	{ "ipnodes",	dogetipnodes },
 	{ "services",	dogetserv },

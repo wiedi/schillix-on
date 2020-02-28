@@ -20,6 +20,7 @@
 #
 
 #
+# Copyright 2020 J. Schilling.  All rights reserved.
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -40,6 +41,7 @@ OBJECTS= \
 	dogetproject.o	\
 	dogetproto.o	\
 	dogetpw.o	\
+	dogetsp.o	\
 	dogetserv.o	\
 	getent.o
 
