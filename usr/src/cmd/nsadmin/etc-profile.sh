@@ -26,6 +26,10 @@
 
 trap ""  2 3
 export LOGNAME PATH
+SUNW_NO_UPDATE_NOTIFY=1
+export SUNW_NO_UPDATE_NOTIFY
+SUNW_NO_REGISTRATION_NOTIFICATION=1
+export SUNW_NO_REGISTRATION_NOTIFICATION
 
 if [ "$TERM" = "" ]
 then
@@ -42,7 +46,7 @@ fi
 #	-rsh is given its environment in its .profile.
 
 case "$0" in
--sh | -ksh | -ksh93 | -jsh | -bash | -zsh)
+-sh | -ksh | -ksh93 | -jsh | -bosh | -bash | -zsh)
 
 	if [ ! -f .hushlogin ]
 	then
