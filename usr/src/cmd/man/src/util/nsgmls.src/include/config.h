@@ -1,6 +1,8 @@
 /*
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2020 J. Schilling
  */
 
 /*
@@ -40,6 +42,11 @@
 #if defined(sun) || defined(__sun)
 // struct stat has st_blksize member
 #define	SP_STAT_BLKSIZE
+#if __SUNPRO_CC_COMPAT == 5
+#ifndef SP_HAVE_BOOL
+#define SP_HAVE_BOOL
+#endif
+#endif
 #endif
 
 #ifdef __MACH__
