@@ -1,5 +1,5 @@
 '\" te
-.\" @(#)sh.1	1.245 19/09/28 Copyright 2012-2019 J. Schilling
+.\" @(#)sh.1	1.249 20/01/24 Copyright 2012-2020 J. Schilling
 .\" Copyright 1989 AT&T
 .\" Copyright (c) 2008, Sun Microsystems, Inc. All Rights Reserved.
 .\" Portions Copyright (c) 1992, X/Open Company Limited All Rights Reserved
@@ -59,7 +59,7 @@
 .if n .ds o oe
 .if n .ds u ue
 .if n .ds s sz
-.TH sh 1 "2019/09/28" "Schily Bourne Shell" "User Commands"
+.TH sh 1 "2020/01/24" "Schily Bourne Shell" "User Commands"
 .SH NAME
 sh, bosh, jsh \- standard and job control shell and command interpreter
 .SH SYNOPSIS
@@ -739,7 +739,9 @@ characters up to a newline to be ignored.
 .LP
 If the hash character
 .B #
-is the first character in a command line and hash commands
+is the
+.B first character
+in a command line and hash commands
 have been enabled via
 .BR "set\ \-o\ hashcmds" ,
 the whole line is processed by the hash command interpreter.
@@ -891,13 +893,29 @@ otherwise the new default is set.
 .TP
 .B #
 In interactive mode,
-when entered on the command line, this prints the shell version.
+when entered as
+.B first character
+on the command line, this prints the shell version.
+.sp
 After the command
-.B set -o hashcmds
-in a shell script, if a
+.B set\ \-o\ hashcmds
+has been issued in a shell script, a
 .B #
-is seen inside that shell script and a space follows, the rest of
-the line is interpreted as comment.
+as
+.B first character
+of a command line inside that shell script,
+if followed by a non-space character is no longer
+interpreted as a comment. This may be a problem in the file
+.B $HOME/.shrc
+as this file is typically used to enable
+.B hashcmds
+via
+.B set\ \-o\ hashcmds
+for an interactive shell.
+It is thus recommended to have
+.B set\ \-o\ hashcmds
+close to the bottom of the file
+.BR $HOME/.shrc .
 
 .SS "Alias Substitution"
 .LP
@@ -1749,46 +1767,50 @@ the signal number.
 .ne 3
 .TP
 .B /
-A decimal number or a text indicating the exit status 
+A
+.B decimal number
+or
+.B text
+indicating the
+.B exit status 
 returned by the last synchronously executed command.
 .sp
 If
 .B $/
-returns a decimal number, this is (on a POSIX system) the 32 bit
+returns a
+.BR "decimal number" ,
+this is (on a POSIX system) the 32 bit
 exit code from the last command that did normally exit. Older non-POSIX
 systems like Linux return only the low 8 bits from the exit code.
 .sp
 If
 .B $/
-returns text, this is either a signal name like
+returns
+.BR text ,
+this is either a signal name with the leading
+.RB `` SIG ''
+stripped off, like
 .RB `` INT ''
 (see kill -l) for the signal
 that terminated the program or one of the strings
 .RB `` NOEXEC ''
 or
-.RB `` NOTFOUND ''
+.RB `` NOTFOUND '',
 in case the program could not be run at all.
-Note that currently, the strings
+The strings
 .RB `` NOEXEC ''
 and
 .RB `` NOTFOUND ''
-are only returned from
+are returned reliably from
 .BR vfork (2)
-childs or when the related state is already known by the cache, in other cases
-.B $/
-returns
-.B 126
-or
-.B 127
-as with
-.BR $? .
-The string values currently cannot be passed back from a subshell.
+childs or when the related state is already known by the cache.
+This is true for all simple commands.
 .sp
 Note that unless
 .RB `` "set\ \-o\ fullexitcode" ''
 is in effect,
 .B $/
-may have a
+may have a non-zero value where
 .IB value " mod 256 == 0" 
 and the shell in such a case evaluates conditional execution as if the
 exit code was zero.
@@ -1897,6 +1919,11 @@ need shared memory (e.g. from
 .BR vfork (2))
 to allow a reliable reporting.
 .RE
+.br
+.ne 3
+.TP
+.B .sh.path
+The absolute path name for the current shell binary, if available.
 .br
 .ne 3
 .TP
@@ -2057,9 +2084,9 @@ is:
 .br
 .B set -o fdpipe
 .br
-.B set -o hashcmds
-.br
 .B set -o hostprompt
+.br
+.B set -o hashcmds
 .br
 .B set -o time
 .sp
@@ -4635,6 +4662,41 @@ starts with a colon,
 .B getopts
 prints an error message on the standard error when
 it encounters an option letter not included in optstring.
+.LP
+If
+.I optstring
+starts with a
+.RB `` + '',
+options in the form
+.BR +o ,
+.B +long\-option
+or
+.B ++long\-option
+are recognised and the
+.B name
+shell variable gets a value with a leading
+.RB `` + ''
+in case an option in the form
+.BR +o ,
+.B +long\-option
+or
+.B ++long\-option
+is used.
+.LP
+If more than one flag character from
+.B
+":"\c
+,
+.B
+"+"
+or
+.B
+"()"
+is used in
+.IR optstring ,
+.B
+"()"
+needs to be last.
 .LP
 .B getopts
 supports one or more long options as an alias to a short option.

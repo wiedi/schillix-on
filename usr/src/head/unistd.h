@@ -351,7 +351,13 @@ extern char *getlogin(void);
 #if defined(_XPG4) || defined(__EXTENSIONS__)
 extern int  getopt(int, char *const *, const char *);
 extern char *optarg;
-extern int  opterr, optind, optopt;
+extern int  opterr, optind, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 /* Marked as LEGACY in SUSv2 and removed in SUSv3 */
 #if !defined(_XPG6) || defined(__EXTENSIONS__)
 extern char *getpass(const char *);
@@ -672,7 +678,13 @@ extern char *getlogin();
 #if defined(_XPG4) || defined(__EXTENSIONS__)
 extern int  getopt();
 extern char *optarg;
-extern int  opterr, optind, optopt;
+extern int  opterr, optind, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 #if !defined(_XPG6) || defined(__EXTENSIONS__)
 extern char *getpass();
 #endif

@@ -92,10 +92,12 @@ CPPFLAGS +=	-DDO_EXEC_AC		# Include support for exec -c -a
 CPPFLAGS +=	-DDO_READ_R		# Include support for read -r
 CPPFLAGS +=	-DDO_SET_O		# Include support for set -o
 CPPFLAGS +=	-DDO_MULTI_OPT		# Include support for sh -v -x / set -v -x
+CPPFLAGS +=	-DDO_MONITOR_SCRIPT	# Allow to set jobconrol in shell scripts
 CPPFLAGS +=	-DDO_UMASK_S		# Include support for umask -S
 CPPFLAGS +=	-DDO_CHECKBINARY	# Check scripts for binary (\0 before \n)
 CPPFLAGS +=	-DDO_GETOPT_LONGONLY	# Include support for getopts "?900?(lo)"
 CPPFLAGS +=	-DDO_GETOPT_POSIX	# Fail: $OPTARG has optopt for optstr[0] = ':'
+CPPFLAGS +=	-DDO_GETOPT_PLUS	# Support +o if optstr[0] = '+'
 CPPFLAGS +=	-DDO_GETOPT_UTILS	# Include support for -- in all builtins
 CPPFLAGS +=	-DDO_POSIX_FOR		# Support for i; do .... with semicolon
 CPPFLAGS +=	-DDO_POSIX_CASE		# Support for POSIX case with _(_ pat )

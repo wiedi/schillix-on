@@ -341,7 +341,13 @@ extern int	getsubopt(char **, char *const *, char **);
 extern char	*cuserid(char *);
 extern int	getopt(int, char *const *, const char *);
 extern char	*optarg;
-extern int	optind, opterr, optopt;
+extern int	optind, opterr, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 extern int	getw(FILE *);
 extern int	putw(int, FILE *);
 #endif /* !defined(_XPG6) || defined(__EXTENSIONS__) */
@@ -428,7 +434,13 @@ extern int	getsubopt();
 extern char	*cuserid();
 extern int	getopt();
 extern char	*optarg;
-extern int	optind, opterr, optopt;
+extern int	optind, opterr, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 extern int	getw();
 extern int	putw();
 #endif /* !defined(_XPG6) || defined(__EXTENSIONS__) */

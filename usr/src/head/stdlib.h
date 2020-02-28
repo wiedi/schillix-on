@@ -225,7 +225,13 @@ extern const char *getexecname(void);
 extern char *getlogin(void);
 extern int getopt(int, char *const *, const char *);
 extern char *optarg;
-extern int optind, opterr, optopt;
+extern int optind, opterr, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 extern char *getpass(const char *);
 extern char *getpassphrase(const char *);
 extern int getpw(uid_t, char *);
@@ -332,7 +338,13 @@ extern char *getexecname();
 extern char *getlogin();
 extern int getopt();
 extern char *optarg;
-extern int optind, opterr, optopt;
+extern int optind, opterr, optopt, optflg;
+/*
+ * Definitions for optflg...
+ */
+#ifndef	GETOPT_PLUS_FL
+#define	GETOPT_PLUS_FL	1	/* The current option is of type +o, not -o */
+#endif
 extern char *getpass();
 extern char *getpassphrase();
 extern int getpw();
