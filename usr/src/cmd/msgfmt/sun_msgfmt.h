@@ -20,6 +20,7 @@
  * CDDL HEADER END
  */
 /*
+ * Copyright 2020 J. Schilling
  * Copyright (c) 2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -94,7 +95,7 @@ struct  domain_struct {
 #define	ERR_USAGE \
 	"Usage: msgfmt [-D dir | --directory=dir] [-f | --use-fuzzy]\n" \
 	"               [-g] [-o outfile | --output-file=outfile]\n" \
-	"               [-s] [--strict] [-v] [--verbose] files ...\n"
+	"               [-s | --solaris] [-S | --strict] [-v] [--verbose] files ...\n"
 
 #define	ERR_GNU_ON_SUN \
 	"-g and -s are mutually exclusive.\n"

@@ -6,10 +6,9 @@
  * (the "License").  You may not use this file except in compliance
  * with the License.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
- * See the License for the specific language governing permissions
- * and limitations under the License.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -20,6 +19,7 @@
  * CDDL HEADER END
  */
 /*
+ * Copyright 2020 J. Schilling
  * Copyright (c) 1996-2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -37,7 +37,7 @@ parse_option(int *pargc, char ***pargv, struct flags *flag)
 	char	**argv = *pargv;
 
 	argv++;
-	while (--argc > 1) {
+	while (--argc > 0) {
 		arg = *argv;
 		if (*arg == '-') {
 			if (!*(arg + 1)) {
@@ -116,6 +116,12 @@ loop:
 					 */
 					flag->sun_p = 1;
 					goto loop;
+				case 'S':
+					/*
+					 * Strict mode
+					 */
+					flag->strict = 1;
+					goto loop;
 				case 'v':
 					/*
 					 * verbose mode
@@ -177,6 +183,14 @@ loop:
 					return (-1);
 				}
 				flag->ofile = arg;
+				argv++;
+				continue;
+			}
+			if (strcmp(arg, "solaris") == 0) {
+				/*
+				 * Sun mode
+				 */
+				flag->sun_p = 1;
 				argv++;
 				continue;
 			}

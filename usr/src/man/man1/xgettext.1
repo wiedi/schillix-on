@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 1999, Sun Microsystems, Inc.  All Rights Reserved
-.\" Copyright (c) 2012-2019, J. Schilling
+.\" Copyright (c) 2012-2020, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" CDDL HEADER START
 .\"
@@ -20,14 +20,14 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH xgettext 1 "1 Sep 2019" "SunOS 5.11" "User Commands"
+.TH xgettext 1 "27 Feb 2020" "SunOS 5.11" "User Commands"
 .SH NAME
 xgettext \- extract gettext call strings from C programs
 .SH SYNOPSIS
 .LP
 .nf
 .B xgettext \c
-.RB [ -ns "] [" "-a \c
+.RB [ -HnPsSt "] [" "-a \c
 .RB [ "-x \c
 .IR exclude-file "]] [\c
 .BI -c " comment-tag\c
@@ -40,6 +40,7 @@ xgettext \- extract gettext call strings from C programs
 .IR suffix ]
 .RB "     [" "-p \c
 .IR pathname "] \c
+.RB [ --solaris "] \c
 .B -| \c
 .IR filename ...
 .fi
@@ -76,7 +77,10 @@ during run-time.
 writes
 .I msgid
 strings from
-.BR gettext "(3C) calls in"
+.BR gettext (3C)
+or
+.BR ngettext (3C)
+calls in
 .I filename
 to the default output file
 .BR messages.po .
@@ -86,7 +90,9 @@ output file name can be changed by
 option.
 .I msgid
 strings in
-.B dgettext()
+.BR dgettext (3C)
+or
+.BR dngettext (3C)
 calls are written to the output file
 .B
 domainname\&.po \c
@@ -94,7 +100,9 @@ where
 .B domainname
 is the first parameter to
 the
-.B dgettext()
+.BR dgettext (3C)
+or
+.BR dngettext (3C)
 call.
 .sp
 .LP
@@ -158,12 +166,24 @@ in the following format:
 .sp
 .in +2
 .nf
-# # File: \c
+# File: \c
 .IR filename ", \c
 .RI line: " line-number
 .fi
 .in -2
 .sp
+
+.sp
+.ne 2
+.PD 0
+.TP
+.B -H
+.TP
+.B --omit-header
+.PD
+Do not output the mime header to the
+.B \&.po
+file.
 
 .sp
 .ne 2
@@ -174,6 +194,30 @@ Generate output sorted by
 with all duplicate
 .IR msgid s
 removed.
+
+.sp
+.ne 2
+.TP
+.B --solaris
+Fall back to the Solaris features from 1992.
+Do not output a mime header and do not recognize the
+functions
+.BR ngettext (),
+.BR dngettext ()
+and
+.BR dcngettext ()
+while scanning the input for strings.
+
+.sp
+.ne 2
+.PD 0
+.TP
+.B -S
+.TP
+.B --strict
+.PD
+Implement strict uniforum support.
+This is currently a no-op.
 
 .sp
 .ne 2
@@ -189,8 +233,12 @@ file is created.
 
 .sp
 .ne 2
+.PD 0
 .TP
 .BI -c " comment-tag
+.TP
+.BI --add-comments " comment-tag
+.PD
 The comment block beginning with
 .I comment-tag
 as the first token of the
@@ -231,8 +279,64 @@ are commented out in the resulting
 file.  Domain directives in the existing
 .B \&.po
 file are
-ignored. Results not guaranteed if the existing message file has been
+ignored. Results are not guaranteed if the existing message file has been
 edited.
+If used together with the
+.B -m
+or
+.B -M
+option, existing translations will be lost. 
+
+.de ..
+.sp
+.ne 2
+.TP
+.BI -k " keyword
+Specify
+.I keyword
+as an additional keyword to be looked for. If
+.I keyword
+is an empty string, this disabled use default keywords.
+.sp
+If keyword is a C identifier,
+.B xgettext
+looks for strings in the first argument of each call to the
+function or macro keyword.
+If keyword is of the form
+.RI ` id : argnum ',
+.B xgettext
+looks for strings in the
+.IB argnum th
+argument of the call. If
+.I keyword
+is of the form
+.RI ` id :\c
+.IR argnum1 ,\c
+.IR argnum2 ',
+.B xgettext
+looks for strings in the
+.IB argnum1 st
+argument and in the
+.IB argnum2 nd
+argument of the call, and treats them as singular/plural variants for a
+message with plural handling.
+.sp
+If
+.I keyword
+is of the form
+.BI ` id : domainargnum\c
+.B d\c
+.RI , argnum1 [, argum2 ]'
+or
+.RI ` id\c
+.RI : argnum1 [, argnum2 ]\c
+.RI , domainargnum\c
+.BR d ',
+.B xgettext
+treats strings in the
+.IB domainargnum th
+argument as a domain specifier.
+..
 
 .sp
 .ne 2
@@ -241,7 +345,9 @@ edited.
 Fill in the
 .I msgstr
 with
-.IR prefix .
+.I prefix
+followed by the corresponding
+.IR msgid .
 This is useful for debugging
 purposes. To make
 .I msgstr
@@ -259,7 +365,9 @@ use an empty string (\c
 .BI -M " suffix
 Fill in the
 .I msgstr
-with
+with the corresponding
+.I msgid
+followed by 
 .IR suffix .
 This is useful for debugging
 purposes.
@@ -270,6 +378,28 @@ purposes.
 .BI -p " pathname
 Specify the directory where the output files will be placed. This option
 overrides the current working directory.
+
+.sp
+.ne 2
+.TP
+.B -P
+Undo the effects of the option
+.B \-\-solaris
+and implement support for the POSIX draft.
+
+.sp
+.ne 2
+.TP
+.B -t
+Do not look for strings in calls to
+.BR gettext (),
+.BR dgettext (),
+.BR ngettext (),
+.BR dngettext ()
+but rather for strings that appear in calls to
+.BR dcgettext ()
+and
+.BR dcngettext ().
 
 .sp
 .ne 2
@@ -326,6 +456,8 @@ AvailabilitySUNWloc
 .sp
 .LP
 .BR msgfmt (1),
+.BR gettext (1),
+.BR ngettext (1),
 .BR gettext (3C),
 .BR attributes (5)
 .SH NOTES

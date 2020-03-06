@@ -30,13 +30,15 @@ include ../Makefile.master
 
 BOOT_SUBDIRS= \
 	cw
-
+#
+# We need to wait after ctf since the dmake compilation uses ctfconvert
+#
 COMMON_SUBDIRS= \
 	bfuld \
 	codereview \
 	codesign \
 	cscope-fast \
-	ctf \
+	ctf .WAIT \
 	depcheck \
 	env \
 	fastfs \

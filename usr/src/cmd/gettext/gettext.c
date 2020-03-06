@@ -6,10 +6,9 @@
  * (the "License").  You may not use this file except in compliance
  * with the License.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
- * See the License for the specific language governing permissions
- * and limitations under the License.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -20,6 +19,7 @@
  * CDDL HEADER END
  */
 /*
+ * Copyright 2020 J. Schilling
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
+#include <libgen.h>	/* basename() */
 
 /*
  * TEXTDOMAIN should be defined in Makefile
@@ -91,9 +92,16 @@ expand_metas(char *in)	/* walk thru string interpreting \n etc. */
 	"       gettext -s [-d domainname | --domain=domainname] [-e] [-n] "\
 		"\"msgid\" ...\n"
 
+#define	ERR_NUSAGE \
+	"Usage: ngettext [-d domainname | --domain=domainname ]  " \
+		"[domain] \"msgid\" \"msgid-plural\" count\n"
+
 static void
-usage(void) {
-	(void) fprintf(stderr, gettext(ERR_USAGE));
+usage(int is_ngettext) {
+	if (is_ngettext)
+		(void) fprintf(stderr, gettext(ERR_NUSAGE));
+	else
+		(void) fprintf(stderr, gettext(ERR_USAGE));
 	exit(-1);
 }
 
@@ -106,10 +114,14 @@ main(int argc, char *argv[])	/* shell script equivalent of gettext(3) */
 	int	exp_flag = 0;
 	int	no_newline = 0;
 	int	echo_flag = 0;
+	int	is_ngettext = 0;
 
 	(void) setlocale(LC_ALL, "");
 	(void) textdomain(TEXT_DOMAIN);
 
+	arg = basename(argv[0]);
+	if (*arg == 'n')
+		is_ngettext = 1;
 	argv++;
 	while (--argc > 1) {
 		arg = *argv;
@@ -142,7 +154,7 @@ loop:
 						continue;
 					}
 					/* not enough args */
-					usage();
+					usage(is_ngettext);
 					/* NOTREACHED */
 					break;
 				case 'e':
@@ -153,15 +165,17 @@ loop:
 				case 'n':
 					/* suppress tailing newline */
 					no_newline = 1;
-					goto loop;
-					/* NOTREACHED */
+					if (is_ngettext == 0)
+						goto loop;
+					/* FALLTHROUGH */
 				case 's':
 					echo_flag = 1;
-					goto loop;
-					/* NOTREACHED */
+					if (is_ngettext == 0)
+						goto loop;
+					/* FALLTHROUGH */
 				default:
 					/* illegal option */
-					usage();
+					usage(is_ngettext);
 					/* NOTREACHED */
 					break;
 				}
@@ -182,7 +196,7 @@ loop:
 				arg += 7;
 				if (*arg == '\0') {
 					/* illegal option */
-					usage();
+					usage(is_ngettext);
 					/* NOTREACHED */
 				}
 				domain = arg;
@@ -190,20 +204,23 @@ loop:
 				continue;
 			}
 			/* illegal option */
-			usage();
+			usage(is_ngettext);
 			/* NOTREACHED */
 		}
 		break;
 	}
-	if (argc == 0) {
-		usage();
+	if ((argc == 0) ||
+	    (is_ngettext && argc < 3) ||
+	    (!is_ngettext && argc > 2)) {
+		usage(is_ngettext);
 		/* NOTREACHED */
 	}
 
 	domainpath = getenv("TEXTDOMAINDIR");
 	if (!echo_flag) {
 		/* traditional mode */
-		if (argc == 2) {
+		if ((!is_ngettext && argc == 2) ||
+		   (is_ngettext && argc == 4)) {
 			/*
 			 * textdomain is specified by the argument.
 			 */
@@ -219,6 +236,11 @@ loop:
 				 * no domain specified
 				 * Just print the argument given.
 				 */
+				if (is_ngettext && atol(argv[2]) != 1) {
+					(void) printf("%s",
+							expand_metas(argv[1]));
+					exit(1);
+				}
 				(void) printf("%s", expand_metas(*argv));
 				exit(1);
 			}
@@ -227,7 +249,15 @@ loop:
 			(void) bindtextdomain(domain, domainpath);
 		}
 		msgid = expand_metas(*argv);
-		(void) fputs(dgettext(domain, msgid), stdout);
+		if (is_ngettext) {
+			char		*msgid2 = expand_metas(argv[1]);
+			unsigned long	n = atol(argv[2]);
+
+			(void) fputs(dngettext(domain, msgid, msgid2, n),
+					stdout);
+		} else {
+			(void) fputs(dgettext(domain, msgid), stdout);
+		}
 		exit(*domain == NULL);
 	}
 	/* echo mode */

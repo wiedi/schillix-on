@@ -20,6 +20,7 @@
  * CDDL HEADER END
  */
 /*
+ * Copyright 2020 J. Schilling
  * Copyright (c) 2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -36,7 +37,7 @@ extern "C" {
 #define	ERR_USAGE \
 	"Usage: %s [-D dir | --directory=dir] [-f | --use-fuzzy]\n" \
 	"               [-g] [-o outfile | --output-file=outfile]\n" \
-	"               [--strict] [-v | --verbose] files ...\n"
+	"               [-S | --strict] [-v | --verbose] files ...\n"
 #define	ERR_SUN_ON_GNU \
 	"-s option cannot be specified to %s.\n"
 

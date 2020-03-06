@@ -21,6 +21,7 @@
 # CDDL HEADER END
 #
 #
+# Copyright 2020 J. Schilling
 # Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
@@ -43,12 +44,12 @@ FILES=`grep gettext *.c | sed "s/:.*//" | sort | sed "s/\.c//" | uniq`
 
 #
 #	Create po files
-#		No need for options for xgettext
+#	The option -H is for xgettext is provided in XGETTEXT_NO_HDR from env
 #
 for	i in ${FILES}
 do
 	cat ${i}.c | sed "s/_libc_gettext/gettext/" > ${i}.i
-	${XGETTEXT} ${i}.i
+	${XGETTEXT} ${XGETTEXT_NO_HDR} ${i}.i
 	cat messages.po | sed "/^domain/d" > ${i}.po
 	rm -f ${i}.i messages.po
 done
@@ -70,7 +71,7 @@ fi
 for	i in siglist errlst
 do
 	cat ${i}.c | sed "s/_libc_gettext/gettext/" > ${i}.i
-	${XGETTEXT} -a  ${i}.i
+	${XGETTEXT} ${XGETTEXT_NO_HDR} -a  ${i}.i
 	cat messages.po | sed "/^domain/d" > ${i}.po
 	rm -f ${i}.i messages.po
 done
@@ -96,7 +97,7 @@ done
 #
 
 sed "s/_MSG/gettext/" regerror_msg.h > regerror_msg.i
-${XGETTEXT} regerror_msg.i
+${XGETTEXT} ${XGETTEXT_NO_HDR} regerror_msg.i
 cat messages.po | sed "/^domain/d" > regerror_msg.po
 rm -f regerror_msg.i messages.po
 	
