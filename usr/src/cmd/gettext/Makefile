@@ -22,6 +22,7 @@
 #
 #ident	"%Z%%M%	%I%	%E% SMI"
 #
+# Copyright 2020 J. Schilling
 # Copyright (c) 1989 by Sun Microsystems, Inc.
 #
 
@@ -34,6 +35,7 @@ include ../Makefile.cmd
 all: $(PROG) 
 
 install: all $(ROOTPROG)
+	$(RM) $(ROOTBIN)/ngettext; $(LN) $(ROOTPROG) $(ROOTBIN)/ngettext
 
 clean:
 

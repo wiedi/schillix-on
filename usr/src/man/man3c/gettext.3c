@@ -1,6 +1,6 @@
 '\" te
 .\" Copyright (c) 2008, Sun Microsystems, Inc.  All Rights Reserved
-.\" Copyright (c) 2012-2019, J. Schilling
+.\" Copyright (c) 2012-2020, J. Schilling
 .\" Copyright (c) 2013, Andreas Roehler
 .\" CDDL HEADER START
 .\"
@@ -20,7 +20,7 @@
 .\" information: Portions Copyright [yyyy] [name of copyright owner]
 .\"
 .\" CDDL HEADER END
-.TH gettext 3C "1 Sep 2019" "SunOS 5.11" "Standard C Library Functions"
+.TH gettext 3C "27 Feb 2020" "SunOS 5.11" "Standard C Library Functions"
 .SH NAME
 gettext, dgettext, dcgettext, ngettext, dngettext, dcngettext, textdomain,
 bindtextdomain, bind_textdomain_codeset \- message handling functions
@@ -146,6 +146,7 @@ functions
 attempt to retrieve a target string based on the specified
 .IR msgid
 argument within the context of a specific domain and the current locale. The
+.\" active locale of the current thread (hereafter current locale).
 length of strings returned by
 .BR gettext (),
 .BR dgettext (),
@@ -236,7 +237,7 @@ GNU-compatible message catalogue is found but failed to find a corresponding
 .IR msgid ,
 the
 .I msgid
-string is return. If
+string is returned. If
 .B LANGUAGE
 is not
 defined or if a Solaris message catalogue is found or no GNU-compatible
@@ -270,6 +271,18 @@ argument to
 .BR dcgettext ()
 or
 .BR dcngettext ().
+.sp
+.LP
+The
+.BR dcgettext ()
+and
+.BR dcngettext ()
+functions require an additional argument
+.I category
+that specifies the message category to be used. The argument
+.I category
+cannot be
+.BR LC_ALL .
 .sp
 .LP
 For
@@ -310,6 +323,26 @@ of the domain is valid only for the duration of the
 or
 .BR dcngettext ()
 function call.
+.de ..
+.sp
+.LP
+The functions
+.BR gettext_l (),
+.BR dgettext_l (),
+.BR dcgettext_l (),
+.BR ngettext_l (),
+.B dngettext_l ()
+and 
+.B dcngettext_l ()
+behave like the respective functions without the
+.B _l
+suffix, but they accept an additional
+.B locale_t
+parameter that overrides the currently set locale for this call.
+If the locale argument is not a valid locale or
+.BR LC_GLOBAL_LOCALE ,
+the results are unspecified. 
+..
 .sp
 .LP
 The
@@ -408,6 +441,12 @@ The
 function can be used to specify the
 output codeset for message catalogues for domain
 .IR domainname .
+If
+.I domainname
+is a null pointer or an empty string,
+.BR bind_textdomain_codeset ()
+returns
+.I NULL.
 The
 .I codeset
 argument must be a valid codeset name that can be used for the
@@ -419,8 +458,7 @@ argument is the null pointer,
 returns the
 currently selected codeset for the domain with the name
 .IR domainname .
-It
-returns a null pointer if a codeset has not yet been selected. The
+It returns a null pointer if a codeset has not yet been selected. The
 .BR bind_textdomain_codeset ()
 function can be used multiple times.  If used
 multiple times with the same
@@ -547,6 +585,47 @@ takes no action and returns
 a null pointer. The string returned must not be modified by the caller. If
 .BR bindtextdomain ()
 fails, a null pointer is returned.
+.sp
+.LP
+The
+.BR bind_textdomain_codeset ()
+function returns the currently selected
+.I codeset
+name. It returns a null pointer if no
+.I codeset
+has yet been selected. 
+If
+.BR bind_textdomain_codeset ()
+fails, a null pointer is returned.
+.SH ERRORS
+.sp
+.LP
+The
+.BR gettext (),
+.BR dgettext (),
+.BR dcgettext (),
+.BR ngettext (),
+.BR dngettext ()
+and
+.BR dcngettext ()
+functions will not modify
+the external variable
+.IR errno .
+In case an error happens these functions return the
+.I msgid
+parameter.
+.LP
+The
+.BR textdomain (),
+.BR bindtextdomain ()
+and
+.BR bind_textdomain_codeset ()
+functions may fail if:
+.sp
+.TP 12
+.B ENOMEM
+Insufficient memory available.
+
 .SH USAGE
 .sp
 .LP
@@ -705,6 +784,8 @@ are Uncommitted.
 .LP
 .BR msgfmt (1),
 .BR xgettext (1),
+.BR gettext (1),
+.BR ngettext (1),
 .BR iconv_open (3C),
 .BR libintl.h (3HEAD),
 .BR setlocale (3C),

@@ -7,10 +7,9 @@
  * (the "License").  You may not use this file except in compliance
  * with the License.
  *
- * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
- * or http://www.opensolaris.org/os/licensing.
- * See the License for the specific language governing permissions
- * and limitations under the License.
+ * A full copy of the text of the CDDL should have accompanied this
+ * source.  A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -20,6 +19,7 @@
  *
  * CDDL HEADER END
  *
+ * Copyright 2020 J. Schilling
  * Copyright (c) 1991, 2001 by Sun Microsystems, Inc.
  * All rights reserved.
  */
@@ -58,6 +58,36 @@ extern void	handle_spaces(void);
 extern void	handle_spaces(void);
 extern void	handle_character(void);
 
+static void
+handle_dcgettext_l(void)
+{
+}
+
+static void
+handle_dgettext_l(void)
+{
+}
+
+static void
+handle_gettext_l(void)
+{
+}
+
+static void
+handle_ngettext_l(void)
+{
+}
+
+static void
+handle_dngettext_l(void)
+{
+}
+
+static void
+handle_dcngettext_l(void)
+{
+}
+
 /*
  * The following lex rule basically wants to recognize tokens
  * that can change the current state of scanning source code.
@@ -93,6 +123,24 @@ dgettext	{ handle_dgettext(); }
 gettext		{ handle_gettext(); }
 
 textdomain	{ handle_textdomain(); }
+
+ngettext	{ handle_ngettext(); }
+
+dngettext	{ handle_dngettext(); }
+
+dcngettext	{ handle_dcngettext(); }
+
+dcgettext_l	{ handle_dcgettext_l(); }
+
+dgettext_l	{ handle_dgettext_l(); }
+
+gettext_l	{ handle_gettext_l(); }
+
+ngettext_l	{ handle_ngettext_l(); }
+
+dngettext_l	{ handle_dngettext_l(); }
+
+dcngettext_l	{ handle_dcngettext_l(); }
 
 {IDCHARS}+	|
 \'\"\'		|
