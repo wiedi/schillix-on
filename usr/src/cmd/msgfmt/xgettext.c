@@ -41,7 +41,7 @@
 #define	USAGE	"Usage:	xgettext [-a [-x exclude-file]] [-HjnPsSt]\
 [-c comment-tag]\n	[-d default-domain] [-m prefix] \
 [-M suffix] [-p pathname] \n\
-	[--solaris] files ...\n\
+	[--solaris] [-k keyword] files ...\n\
 	xgettext -h\n"
 
 #define	DEFAULT_DOMAIN	"messages"
@@ -118,7 +118,7 @@ struct domain_st {
 /*
  * There are two domain linked lists.
  * def_dom contains default domain linked list and
- * dom_head contains all other deomain linked lists to be created by
+ * dom_head contains all other domain linked lists to be created by
  * dgettext() calls.
  */
 static struct domain_st	*def_dom = NULL;
@@ -135,15 +135,32 @@ static struct exclude_st {
 } *excl_head;
 
 /*
+ * This is the hash element that is used to manage the keywords
+ */
+#define	HASH_DFLT_SIZE	16
+
+static struct h_elem {
+	struct h_elem	*h_next;
+	int		h_domainparam;
+	int		h_id1param;
+	int		h_id2param;
+	char		h_str[1];			/* Variable size. */
+} **h_tab;
+
+static size_t	h_size;
+
+/*
  * All option flags and values for each option if any.
  */
 static int	aflg = FALSE;
 static int	cflg = FALSE;
 static char	*comment_tag = NULL;
 static char	*default_domain = NULL;
+static char	*output_file = NULL;
 static int	hflg = FALSE;
 static int	Hflg = FALSE;
 static int	jflg = FALSE;
+static int	knullflg = FALSE;
 static int	mflg = FALSE;
 static int	Mflg = FALSE;
 static char	*suffix = NULL;
@@ -158,19 +175,15 @@ static int	Solarisflg = FALSE;
 static int	tflg = FALSE;	/* Option to extract dcgettext */
 static int	xflg = FALSE;
 static char	*exclude_file = NULL;
+static int	foreign_user = FALSE;
 
 /*
  * Each variable shows the current state of parsing input file.
  *
  * in_comment    : Means inside comment block (C or C++).
  * in_cplus_comment    : Means inside C++ comment block.
- * in_gettext    : Means inside gettext call.
- * in_dgettext   : Means inside dgettext call.
- * in_dcgettext  : Means inside dcgettext call.
  * in_textdomain : Means inside textdomain call.
- * in_ngettext   : Means inside ngettext call.
- * in_dngettext  : Means inside dngettext call.
- * in_dcngettext : Means inside dcngettext call.
+ * in_keyword    : Means inside a keyword call like gettext.
  * in_str	 : Means currently processing ANSI style string.
  * in_quote	 : Means currently processing double quoted string.
  * in_skippable_string	: Means currently processing double quoted string,
@@ -187,19 +200,28 @@ static char	*exclude_file = NULL;
  */
 static int	in_comment		= FALSE;
 static int	in_cplus_comment	= FALSE;
-static int	in_gettext		= FALSE;
-static int	in_dgettext		= FALSE;
-static int	in_dcgettext		= FALSE;
 static int	in_textdomain		= FALSE;
-static int	in_ngettext		= FALSE;
-static int	in_dngettext		= FALSE;
-static int	in_dcngettext		= FALSE;
+static int	in_keyword		= FALSE;
 static int	in_str			= FALSE;
 static int	in_quote		= FALSE;
 static int	is_last_comment_line	= FALSE;
 static int	num_commas_found	= 0;
 static int	in_skippable_string	= FALSE;
 static int	num_nested_open_paren	= 0;
+
+/*
+ * The following values are used to identify the relevant arguments.
+ *
+ * Note that we reset each value to -1 in handle_comma() if there was a related
+ * match in handle_comma() in order to avoid a second call to
+ * add_str_to_element_list() in handle_close_paren().
+ */
+static int	domainparam	= -1;
+static int	id1param	= -1;
+static int	id2param	= -1;
+static char	*keyword	= NULL;		/* Only for debugging */
+static struct element_st *last_elem = NULL;	/* add_str_to_element_list() */
+
 
 /*
  * This variable contains the first line of gettext(), dgettext(), or
@@ -283,6 +305,12 @@ static struct strvec_st *new_strvec(char *name);
 static struct element_st *new_element(void);
 static struct exclude_st *new_exclude(void);
 
+static size_t		hash_init(size_t size);
+static void		hash_build(char *str);
+static struct h_elem	*hash_lookup(char *str);
+static int		hashval(unsigned char *str, unsigned int maxsize);
+
+
 /*
  * Main program of xgettext.
  */
@@ -294,9 +322,15 @@ main(int argc, char **argv)
 
 	initialize_globals();
 
+	/*
+	 * Some of the options are implemented as dummys to permit to use
+	 * xgettext(1) where people expect to use gxgettext(1).
+	 */
 	while ((c = getopt(argc, argv,
-	    "jhH(omit-header)ax:nPsS(strict)?1000?(solaris)"
-	    "c(add-comments):d:m:M:p:t"))
+	    "jhH(omit-header)k:(keyword)ax:nPsS(strict)?1000?(solaris)"
+	    "c:(add-comments)d:m:M:p:t?1001?(no-location)"
+	    "?1002?(foreign-user)?1003?(force-po)"
+	    "E(escape)e(no-escape)L:(language)o:(output)w:(width)"))
 				!= EOF) {
 		switch (c) {
 		case 'a':
@@ -318,6 +352,12 @@ main(int argc, char **argv)
 		case 'j':
 			jflg = TRUE;
 			break;
+		case 'k':
+			if (*optarg == '\0')
+				knullflg = TRUE;
+			else
+				hash_build(optarg);
+			break;
 		case 'M':
 			Mflg = TRUE;
 			suffix = optarg;
@@ -328,6 +368,9 @@ main(int argc, char **argv)
 			break;
 		case 'n':
 			nflg = TRUE;
+			break;
+		case 'o':
+			output_file = optarg;
 			break;
 		case 'p':
 			pflg = TRUE;
@@ -350,9 +393,24 @@ main(int argc, char **argv)
 			xflg = TRUE;
 			exclude_file = optarg;
 			break;
-		case 1000:
+		case 1000:		/* --solaris */
 			Pflg = FALSE;
 			Solarisflg = TRUE;
+			break;
+		case 1001:		/* --no-location is a dummy */
+			break;
+		case 1002:		/* --foreign-user */
+			foreign_user = TRUE;
+			break;
+		case 1003:		/* --force-po is a dummy */
+			break;
+		case 'w':		/* -w # is a dummy */
+			break;
+		case 'E':		/* -E # is a dummy */
+			break;
+		case 'e':		/* -e # is a dummy */
+			break;
+		case 'L':		/* -L # is a dummy */
 			break;
 		case '?':
 			opterr = TRUE;
@@ -394,6 +452,29 @@ main(int argc, char **argv)
 	if (optind == argc) {
 		(void) fprintf(stderr, USAGE);
 		exit(2);
+	}
+
+	if (!knullflg) {
+		if (tflg) {
+			/*
+			 * If -t option is specified to extract dcgettext,
+			 * don't do anything for gettext().
+			 */
+			hash_build("dcgettext:1d,2");
+			hash_build("dcgettext_l:1d,2");
+			hash_build("dcngettext:1d,2,3");
+			hash_build("dcngettext_l:1d,2,3");
+		} else {
+			hash_build("gettext");
+			hash_build("gettext_l");
+			hash_build("dgettext:1d,2");
+			hash_build("dgettext_l:1d,2");
+			hash_build("ngettext:1,2");
+			hash_build("ngettext_l:1,2");
+			hash_build("dngettext:1d,2,3");
+			hash_build("dngettext_l:1d,2,3");
+		}
+		hash_build("textdomain:1d");
 	}
 
 	if (xflg == TRUE) {
@@ -472,6 +553,8 @@ print_help(void)
 	(void) fprintf(stderr,
 		"-j\t\t\tupdate existing file with the current result\n");
 	(void) fprintf(stderr,
+		"-k <keyword>\t\tlook for additional keyword\n");
+	(void) fprintf(stderr,
 		"-M <suffix>\t\tfill in msgstr with msgid<suffix>\n");
 	(void) fprintf(stderr,
 		"-m <prefix>\t\tfill in msgstr with <prefix>msgid\n");
@@ -484,7 +567,11 @@ print_help(void)
 	(void) fprintf(stderr,
 		"-s\t\t\tgenerate sorted output files\n");
 	(void) fprintf(stderr,
-		"-S\t\t\trun in old Solaris mode\n");
+		"-S\t\t\trun in strict uniforum mode\n");
+	(void) fprintf(stderr,
+		"--solaris\t\trun in old Solaris mode\n");
+	(void) fprintf(stderr,
+		"-t\t\t\tlook for dcgettext and dcngettext\n");
 	(void) fprintf(stderr,
 "-x <exclude-file>\texclude strings in file <exclude-file> from output\n");
 	(void) fprintf(stderr,
@@ -499,9 +586,16 @@ print_hdr(FILE *fp)
 
 	cftime(now, "%F %R%z", &t);
 	(void) fprintf(fp, "# DESCRIPTIVE TITLE.\n");
-	(void) fprintf(fp, "# Copyright (C) YEAR PKG COPYR. HOLDER\n");
-	(void) fprintf(fp, "# This file is distributed under the same "
+	if (foreign_user) {
+		(void) fprintf(fp,
+			"# This file is put in the public domain.\n");
+	} else {
+		(void) fprintf(fp,
+			"# Copyright (C) YEAR PKG COPYR. HOLDER\n");
+		(void) fprintf(fp,
+			"# This file is distributed under the same "
 			"license as the PKG package.\n");
+	}
 	(void) fprintf(fp, "# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.\n");
 	(void) fprintf(fp, "#\n");
 	(void) fprintf(fp, "msgid \"\"\n");
@@ -666,222 +760,6 @@ handle_close_comment(void)
 }
 
 /*
- * Handler for "gettext" in input file.
- */
-void
-handle_gettext(void)
-{
-	/*
-	 * If -t option is specified to extract dcgettext,
-	 * don't do anything for gettext().
-	 */
-	if (tflg == TRUE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_gettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * gettext will be put into default domain .po file
-		 * curr_domain does not change for gettext.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_gettext */
-
-/*
- * Handler for "dgettext" in input file.
- */
-void
-handle_dgettext(void)
-{
-	/*
-	 * If -t option is specified to extract dcgettext,
-	 * don't do anything for dgettext().
-	 */
-	if (tflg == TRUE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_dgettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * dgettext will be put into domain file specified.
-		 * curr_domain will follow.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_dgettext */
-
-/*
- * Handler for "dcgettext" in input file.
- */
-void
-handle_dcgettext(void)
-{
-	/*
-	 * dcgettext will be extracted only when -t flag is specified.
-	 */
-	if (tflg == FALSE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_dcgettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * dcgettext will be put into domain file specified.
-		 * curr_domain will follow.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_dcgettext */
-
-/*
- * Handler for "textdomain" in input file.
- */
-void
-handle_textdomain(void)
-{
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_textdomain = TRUE;
-		linenum_saved = curr_linenum;
-		curr_domain[0] = NULL;
-	}
-} /* handle_textdomain */
-
-void
-handle_ngettext(void)
-{
-	if (Solarisflg) {
-		return;
-	}
-	/*
-	 * If -t option is specified to extract dcgettext,
-	 * don't do anything for ngettext().
-	 */
-	if (tflg == TRUE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_ngettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * gettext will be put into default domain .po file
-		 * curr_domain does not change for gettext.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_ngettext */
-
-void
-handle_dngettext(void)
-{
-	if (Solarisflg) {
-		return;
-	}
-	/*
-	 * If -t option is specified to extract dcgettext,
-	 * don't do anything for dngettext().
-	 */
-	if (tflg == TRUE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_dngettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * gettext will be put into default domain .po file
-		 * curr_domain does not change for gettext.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_dngettext */
-
-void
-handle_dcngettext(void)
-{
-	if (Solarisflg) {
-		return;
-	}
-	/*
-	 * dcngettext will be extracted only when -t flag is specified.
-	 */
-	if (tflg == FALSE) {
-		return;
-	}
-
-	num_nested_open_paren = 0;
-	num_commas_found = 0;
-
-	if (cflg == TRUE)
-		lstrcat(curr_line, yytext);
-
-
-	if (in_quote == TRUE) {
-		lstrcat(qstring_buf, yytext);
-	} else if (in_comment == FALSE) {
-		in_dngettext = TRUE;
-		linenum_saved = curr_linenum;
-		/*
-		 * gettext will be put into default domain .po file
-		 * curr_domain does not change for gettext.
-		 */
-		curr_domain[0] = NULL;
-	}
-} /* handle_dcngettext */
-
-/*
  * Handler for '(' in input file.
  */
 void
@@ -893,12 +771,7 @@ handle_open_paren(void)
 	if (in_quote == TRUE) {
 		lstrcat(qstring_buf, yytext);
 	} else if (in_comment == FALSE) {
-		if ((in_gettext == TRUE) ||
-		    (in_dgettext == TRUE) ||
-		    (in_dcgettext == TRUE) ||
-		    (in_ngettext == TRUE) ||
-		    (in_dngettext == TRUE) ||
-		    (in_dcngettext == TRUE) ||
+		if ((in_keyword == TRUE) ||
 		    (in_textdomain == TRUE)) {
 			in_str = TRUE;
 			num_nested_open_paren++;
@@ -918,12 +791,7 @@ handle_close_paren(void)
 	if (in_quote == TRUE) {
 		lstrcat(qstring_buf, yytext);
 	} else if (in_comment == FALSE) {
-		if ((in_gettext == TRUE) ||
-		    (in_dgettext == TRUE) ||
-		    (in_dcgettext == TRUE) ||
-		    (in_ngettext == TRUE) ||
-		    (in_dngettext == TRUE) ||
-		    (in_dcngettext == TRUE) ||
+		if ((in_keyword == TRUE) ||
 		    (in_textdomain == TRUE)) {
 			/*
 			 * If this is not the matching close paren with
@@ -932,21 +800,36 @@ handle_close_paren(void)
 			if (--num_nested_open_paren > 0)
 				return;
 
-			if ((in_gettext == TRUE) ||
-			    (in_dgettext == TRUE) ||
-			    (in_dcgettext == TRUE) ||
-			    (in_textdomain == TRUE)) {
+			/*
+			 * Increment for easier check for a match.
+			 */
+			num_commas_found++;
+			if ((num_commas_found == domainparam && \
+			    in_textdomain) ||
+			    (num_commas_found == id1param)) {
 				add_str_to_element_list(in_textdomain,
-					FALSE, curr_domain);
+						FALSE, curr_domain);
+			} else if (num_commas_found == id2param) {
+				add_str_to_element_list(in_textdomain,
+						TRUE, curr_domain);
 			}
+
 			in_str = FALSE;
-			in_gettext = FALSE;
-			in_dgettext = FALSE;
-			in_dcgettext = FALSE;
-			in_ngettext = FALSE;
-			in_dngettext = FALSE;
-			in_dcngettext = FALSE;
+			in_keyword = FALSE;
 			in_textdomain = FALSE;
+			domainparam = -1;
+			id1param = -1;
+			id2param = -1;
+			keyword	= NULL;
+			last_elem = NULL;
+			num_commas_found = 0;
+
+			/*
+			 * free out of scope string argument
+			 */
+			free_strlist(strhead);
+			strhead = strtail = NULL;
+
 		} else if (aflg == TRUE) {
 			end_ansi_string();
 		}
@@ -994,12 +877,7 @@ handle_quote(void)
 
 	if (in_comment == TRUE) {
 		/*EMPTY*/
-	} else if ((in_gettext == TRUE) ||
-			(in_dgettext == TRUE) ||
-			(in_dcgettext == TRUE) ||
-			(in_ngettext == TRUE) ||
-			(in_dngettext == TRUE) ||
-			(in_dcngettext == TRUE) ||
+	} else if ((in_keyword == TRUE) ||
 			(in_textdomain == TRUE)) {
 		if (in_str == TRUE) {
 			if (in_quote == FALSE) {
@@ -1081,49 +959,35 @@ handle_comma(void)
 	if (in_quote == TRUE) {
 		lstrcat(qstring_buf, yytext);
 	} else if (in_comment == FALSE) {
+		num_commas_found++;
+
 		if (in_str == TRUE) {
-			if (in_ngettext == TRUE) {
-				if (num_commas_found == 0) {
-					add_str_to_element_list(in_textdomain,
-							FALSE, curr_domain);
-					num_commas_found++;
-				} else if (num_commas_found == 1) {
-					add_str_to_element_list(in_textdomain,
-							TRUE, curr_domain);
-					num_commas_found++;
-				}
-			} else if (in_dngettext == TRUE ||
-				    in_dcngettext == TRUE) {
-				if (num_commas_found == 0) {
-					copy_strlist_to_str(curr_domain,
-								strhead);
-					free_strlist(strhead);
-					strhead = strtail = NULL;
-					num_commas_found++;
-				} else if (num_commas_found == 1) {
-					add_str_to_element_list(in_textdomain,
-							FALSE, curr_domain);
-					num_commas_found++;
-				} else if (num_commas_found == 2) {
-					add_str_to_element_list(in_textdomain,
-							TRUE, curr_domain);
-					num_commas_found++;
-				}
-			} else if (in_dgettext == TRUE) {
-				copy_strlist_to_str(curr_domain, strhead);
-				free_strlist(strhead);
-				strhead = strtail = NULL;
-			} else if (in_dcgettext == TRUE ||
-				    in_dcngettext == TRUE) {
+			if (in_keyword) {
 				/*
-				 * Ignore the second comma.
+				 * In order to avoid to handle the same state
+				 * a second time in handle_close_paren(), we
+				 * clear the matching *param variable.
 				 */
-				if (num_commas_found == 0) {
+				if (num_commas_found == domainparam) {
 					copy_strlist_to_str(curr_domain,
 								strhead);
 					free_strlist(strhead);
 					strhead = strtail = NULL;
-					num_commas_found++;
+					domainparam = -1;
+				} else if (num_commas_found == id1param) {
+					add_str_to_element_list(in_textdomain,
+							FALSE, curr_domain);
+					id1param = -1;
+				} else if (num_commas_found == id2param) {
+					add_str_to_element_list(in_textdomain,
+							TRUE, curr_domain);
+					id2param = -1;
+				} else {
+					/*
+					 * free out of scope string argument
+					 */
+					free_strlist(strhead);
+					strhead = strtail = NULL;
 				}
 			} else if (aflg == TRUE) {
 				end_ansi_string();
@@ -1151,6 +1015,51 @@ handle_character(void)
 		}
 	}
 } /* handle_character */
+
+/*
+ * Handler for any word.
+ */
+void
+handle_word(void)
+{
+	struct h_elem *hp = hash_lookup(yytext);
+
+	if (hp &&
+	    in_comment == FALSE &&
+	    in_skippable_string == FALSE &&
+	    in_quote == FALSE) {
+		domainparam = hp->h_domainparam;
+		id1param = hp->h_id1param;
+		id2param = hp->h_id2param;
+		keyword = hp->h_str;
+		if (domainparam > 0 && id1param < 0)
+			in_textdomain = TRUE;
+		else
+			in_keyword = TRUE;
+
+		num_nested_open_paren = 0;
+		num_commas_found = 0;
+
+		if (cflg == TRUE)
+			lstrcat(curr_line, yytext);
+
+		if (in_quote == TRUE) {
+			lstrcat(qstring_buf, yytext);
+		} else {
+			linenum_saved = curr_linenum;
+			/*
+			 * *gettext() will be put into default domain .po file
+			 * or into domain file specified.
+			 *
+			 * curr_domain does not change for gettext.
+			 * curr_domain will follow for d*gettext() calls.
+			 */
+			curr_domain[0] = NULL;
+		}
+	} else {
+		handle_character();
+	}
+} /* handle_word */
 
 /*
  * Handler for new line in input file.
@@ -1181,18 +1090,14 @@ handle_newline(void)
 
 /*
  * Process ANSI string.
+ * Only called with -a option.
  */
 static void
 end_ansi_string(void)
 {
 	if ((aflg == TRUE) &&
 	    (in_str == TRUE) &&
-	    (in_gettext == FALSE) &&
-	    (in_dgettext == FALSE) &&
-	    (in_dcgettext == FALSE) &&
-	    (in_ngettext == FALSE) &&
-	    (in_dngettext == FALSE) &&
-	    (in_dcngettext == FALSE) &&
+	    (in_keyword == FALSE) &&
 	    (in_textdomain == FALSE)) {
 		add_str_to_element_list(FALSE, FALSE, curr_domain);
 		in_str = FALSE;
@@ -1784,7 +1689,6 @@ static void
 add_str_to_element_list(int istextdomain, int isplural, char *domain_list)
 {
 	struct element_st	*tmp_elem;
-static	struct element_st	*last_elem = NULL;	/* Last for plural */
 	struct element_st	*p, *q;
 	struct domain_st	*tmp_dom;
 	int			result;
@@ -1816,19 +1720,18 @@ static	struct element_st	*last_elem = NULL;	/* Last for plural */
 		return;
 	}
 
-	if (!isplural) {
+	if (last_elem == NULL || aflg == TRUE) {
 		last_elem = tmp_elem = new_element();
+	} else {
+		tmp_elem = last_elem;
+	}
+	if (!isplural) {
 		tmp_elem->msgid = strhead;
 	} else {
-		if (sflg && last_elem)
-			tmp_elem = last_elem;
-		else
-			tmp_elem = tmp_dom->gettext_tail;
 		tmp_elem->msgid_plural = strhead;
 		strhead = strtail = NULL;
 		return;
 	}
-
 
 	tmp_elem->istextdomain = istextdomain;
 	/*
@@ -2023,7 +1926,9 @@ read_po(char *fname)
 				add_node_to_polist(&ehead, &etail, tmp_elem);
 			}
 
-			if ((state == INIT_STATE) || (state == IN_MSGSTR)) {
+			if ((state == INIT_STATE) ||
+			    (state == IN_MSGSTR) ||
+			    (state == IN_MSGSTR_PLUR)) {
 				state = IN_COMMENT;
 				tmp_elem = new_element();
 				tmp_elem->comment = comment_tail =
@@ -2058,7 +1963,8 @@ read_po(char *fname)
 			msgid_plural_tail->str = strdup(line);
 		} else if (strncmp(line, "msgid", 5) == 0) {
 			if (state == IN_MSGSTR ||
-			    state == IN_MSGSTR_PLUR) {
+			    state == IN_MSGSTR_PLUR ||
+			    state == IN_COMMENT) {
 				add_node_to_polist(&ehead, &etail, tmp_elem);
 				tmp_elem = new_element();
 				msgvec_tail = NULL;
@@ -2221,7 +2127,10 @@ write_one_file(struct domain_st *head)
 	    (head->dname != NULL)) {
 		(void) strcpy(dname, head->dname);
 	} else {
-		(void) strcpy(dname, default_domain);
+		if (output_file)
+			(void) strcpy(dname, output_file);
+		else
+			(void) strcpy(dname, default_domain);
 	}
 
 	/*
@@ -2233,7 +2142,8 @@ write_one_file(struct domain_st *head)
 		(void) strcat(fname, "/");
 	}
 	(void) strcat(fname, dname);
-	(void) strcat(fname, ".po");
+	if (!output_file)
+		(void) strcat(fname, ".po");
 
 	/*
 	 * If -j flag is specified, read exsiting .po file and
@@ -2269,9 +2179,15 @@ write_one_file(struct domain_st *head)
 		exit(2);
 	}
 
-	(void) fprintf(fp, "domain \"%s\"\n", dname);
+	/*
+	 * -o is a gxgettext(1) option and gxgettext users expect the
+	 * non-conforming .po file format without a domain line.
+	 */
+	if (output_file == NULL)
+		(void) fprintf(fp, "domain \"%s\"\n", dname);
 	if (!Solarisflg && !Hflg && !jflg) {
-		(void) fprintf(fp, "%s\n", Sflg?"#":"");
+		if (output_file == NULL)
+			(void) fprintf(fp, "%s\n", Sflg?"#":"");
 		print_hdr(fp);
 	}
 
@@ -2282,7 +2198,7 @@ write_one_file(struct domain_st *head)
 	/*
 	 * There are separate storage for textdomain() calls if
 	 * -s option is used (textdomain_head linked list).
-	 * Otherwise, textdomain() is mixed with gettext(0 and dgettext().
+	 * Otherwise, textdomain() is mixed with gettext() and dgettext().
 	 * If mixed, the boolean varaible istextdomain is used to see
 	 * if the current node contains textdomain() or [d]gettext().
 	 */
@@ -2741,3 +2657,164 @@ print_all_domain(struct domain_st *dom_list)
 	} /* while */
 } /* print_all_domain */
 #endif
+
+/*
+ * Hash table name lookup.
+ */
+
+static size_t
+hash_init(size)
+	size_t	size;
+{
+	if (h_size == 0)
+		h_size = size;
+
+	if (h_tab == NULL) {
+		register	int	i;
+		register	size_t	size = h_size;
+
+		h_tab = malloc(size * sizeof (struct h_elem *));
+		for (i = 0; i < size; i++) h_tab[i] = 0;
+	}
+	return (h_size);
+}
+
+/*
+ * Hash enter
+ */
+static void
+hash_build(str)
+	char			*str;
+{
+	register struct h_elem	*hp;
+	register	size_t	len;
+	register	int	hv;
+	register	size_t	size;
+			char	*p;
+			char	*ep;
+			int	dparam = -1;
+			int	i1param = -1;
+			int	i2param = -1;
+
+	size = hash_init(HASH_DFLT_SIZE);
+
+	/*
+	 * If the keyword contains a ':', then the right side holds the
+	 * parameter specification for the function.
+	 */
+	p = strchr(str, ':');
+	if (p) {
+		long	l;
+		char	c;
+
+		*p++ = '\0';
+		l = strtol(p, &ep, 10);
+		c = *ep;
+		if (c == 'd') {
+			/*
+			 * If the first argument ends in 'd', then it refers to
+			 * the parameter index of a domainname.
+			 */
+			dparam = l;
+			p = ++ep;
+			if (*p == ',')
+				p++;
+		} else if (c == ',') {	/* id1param followed by something */
+			i1param = l;
+			p = ++ep;
+		} else if (c == '\0') {	/* id1param */
+			i1param = l;
+			p = ep;
+		}
+		if (*p) {		/* Second parameter */
+			l = strtol(p, &ep, 10);
+			c = *ep;
+			if (i1param > 0)
+				i2param = l;
+			else
+				i1param = l;
+			if (c == ',')
+				ep++;
+			p = ep;
+		}
+		if (*p) {		/* Thirs parameter */
+			l = strtol(p, &ep, 10);
+			c = *ep;
+			i2param = l;
+		}
+	} else {
+		i1param = 1;
+	}
+
+	if (dparam == 0 || i1param == 0 || i2param == 0) {
+		fprintf(stderr,
+		    "%s: Argument indices must be > 0.\n",
+		    str);
+		exit(2);
+	}
+	if (i1param > 0 && i1param == i2param) {
+		fprintf(stderr,
+		    "%s: Argument indices for msgid/msgid_plural "
+		    "must differ.\n",
+		    str);
+		exit(2);
+	}
+	if (dparam > 0 &&
+	    ((i1param > 0 && dparam >= i1param) ||
+	    (i2param > 0 && dparam >= i2param))) {
+		fprintf(stderr,
+		    "%s: Domain parameter must be before msgid.\n",
+		    str);
+		exit(2);
+	}
+
+	len = strlen(str);
+	hp = malloc((size_t)len + sizeof (struct h_elem));
+	hp->h_domainparam = dparam;
+	hp->h_id1param = i1param;
+	hp->h_id2param = i2param;
+	strcpy(hp->h_str, str);
+	hv = hashval((unsigned char *)str, size);
+	hp->h_next = h_tab[hv];
+	h_tab[hv] = hp;
+}
+
+/*
+ * Hash lookup
+ */
+static struct h_elem *
+hash_lookup(str)
+	char	*str;
+{
+	register struct h_elem *hp;
+	register int		hv;
+
+	/*
+	 * If no include list exists, all files are included.
+	 */
+	if (h_tab == NULL)
+		return (NULL);
+
+	hv = hashval((unsigned char *)str, h_size);
+	for (hp = h_tab[hv]; hp; hp = hp->h_next)
+	    if (strcmp(str, hp->h_str) == 0)
+		return (hp);
+	return (NULL);
+}
+
+/*
+ * Hash key function
+ */
+static int
+hashval(str, maxsize)
+	register unsigned char *str;
+		unsigned	maxsize;
+{
+	register int	sum = 0;
+	register int	i;
+	register int	c;
+
+	for (i = 0; (c = *str++) != '\0'; i++)
+		sum ^= (c << (i&7));
+	return (sum % maxsize);
+}
