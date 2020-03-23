@@ -287,7 +287,6 @@ or
 .B -M
 option, existing translations will be lost. 
 
-.de ..
 .sp
 .ne 2
 .TP
@@ -296,7 +295,7 @@ Specify
 .I keyword
 as an additional keyword to be looked for. If
 .I keyword
-is an empty string, this disabled use default keywords.
+is an empty string, this disables the use of default keywords.
 .sp
 If keyword is a C identifier,
 .B xgettext
@@ -327,17 +326,47 @@ is of the form
 .BI ` id : domainargnum\c
 .B d\c
 .RI , argnum1 [, argum2 ]'
-or
-.RI ` id\c
-.RI : argnum1 [, argnum2 ]\c
-.RI , domainargnum\c
-.BR d ',
 .B xgettext
 treats strings in the
 .IB domainargnum th
-argument as a domain specifier.
-..
-
+argument as a domain specifier for
+.BR dgettext ()-like
+functions.
+.sp
+If
+.I keyword
+is of the form
+.BI ` id : domainargnum d\c
+\&',
+.B xgettext
+looks for a
+.BR textdomain ()-like
+function.
+.sp
+The argument numbers start at 1,
+.B msgid
+and
+.BR msgid_plural
+must have different values and
+the domain argument number must be lower
+than the numbers for
+.B msgid
+and
+.BR msgid_plural ;
+in other words, the domain argument must be before the message arguments.
+.sp
+The default keywords, which are always looked for if not explicitly disabled,
+are
+.BR gettext ,
+.BR gettext_l ,
+.BR dgettext:1d,2 ,
+.BR dgettext_l:1d,2 ,
+.BR ngettext:1,2 ,
+.BR ngettext_l:1,2 ,
+.BR dngettext:1d,2,3 ,
+.BR dngettext_l:1d,2,3
+and
+.BR textdomain:1d .
 .sp
 .ne 2
 .TP
@@ -393,13 +422,19 @@ and implement support for the POSIX draft.
 .B -t
 Do not look for strings in calls to
 .BR gettext (),
+.BR gettext_l (),
 .BR dgettext (),
+.BR dgettext_l (),
 .BR ngettext (),
-.BR dngettext ()
+.BR ngettext_l (),
+.BR dngettext (),
+.BR dngettext_ ()
 but rather for strings that appear in calls to
-.BR dcgettext ()
+.BR dcgettext (),
+.BR dcgettext_l (),
+.BR dcngettext ()
 and
-.BR dcngettext ().
+.BR dcngettext_l ().
 
 .sp
 .ne 2

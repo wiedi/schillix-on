@@ -43,9 +43,6 @@ extern void	handle_macro_line(void);
 extern void	handle_cplus_comment_line(void);
 extern void	handle_open_comment(void);
 extern void	handle_close_comment(void);
-extern void	handle_gettext(void);
-extern void	handle_dgettext(void);
-extern void	handle_dcgettext(void);
 extern void	handle_textdomain(void);
 extern void	handle_character(void);
 extern void	handle_open_paren(void);
@@ -57,36 +54,7 @@ extern void	handle_quote(void);
 extern void	handle_spaces(void);
 extern void	handle_spaces(void);
 extern void	handle_character(void);
-
-static void
-handle_dcgettext_l(void)
-{
-}
-
-static void
-handle_dgettext_l(void)
-{
-}
-
-static void
-handle_gettext_l(void)
-{
-}
-
-static void
-handle_ngettext_l(void)
-{
-}
-
-static void
-handle_dngettext_l(void)
-{
-}
-
-static void
-handle_dcngettext_l(void)
-{
-}
+extern void	handle_word(void);
 
 /*
  * The following lex rule basically wants to recognize tokens
@@ -116,33 +84,8 @@ IDCHARS		[a-zA-Z0-9_]
 
 \*\/ 		{ handle_close_comment(); }
 
-dcgettext	{ handle_dcgettext(); }
+{IDCHARS}+	{ handle_word(); }
 
-dgettext	{ handle_dgettext(); }
-
-gettext		{ handle_gettext(); }
-
-textdomain	{ handle_textdomain(); }
-
-ngettext	{ handle_ngettext(); }
-
-dngettext	{ handle_dngettext(); }
-
-dcngettext	{ handle_dcngettext(); }
-
-dcgettext_l	{ handle_dcgettext_l(); }
-
-dgettext_l	{ handle_dgettext_l(); }
-
-gettext_l	{ handle_gettext_l(); }
-
-ngettext_l	{ handle_ngettext_l(); }
-
-dngettext_l	{ handle_dngettext_l(); }
-
-dcngettext_l	{ handle_dcngettext_l(); }
-
-{IDCHARS}+	|
 \'\"\'		|
 \'\\\"\'	|
 \\\\		|
