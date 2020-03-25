@@ -101,6 +101,7 @@ CPPFLAGS +=	-DDO_GETOPT_PLUS	# Support +o if optstr[0] = '+'
 CPPFLAGS +=	-DDO_GETOPT_UTILS	# Include support for -- in all builtins
 CPPFLAGS +=	-DDO_POSIX_FOR		# Support for i; do .... with semicolon
 CPPFLAGS +=	-DDO_POSIX_CASE		# Support for POSIX case with _(_ pat )
+CPPFLAGS +=	-DDO_FALLTHR_CASE	# Support for fallthrough case with ;&
 CPPFLAGS +=	-DDO_POSIX_GMATCH	# Support for POSIX [:alpha:] ...
 #CPPFLAGS +=	-DGMATCH_CLERR_NORM	# Handle glob class error as normal char
 CPPFLAGS +=	-DDO_POSIX_TYPE		# Report keywords as well
