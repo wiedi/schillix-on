@@ -24,7 +24,7 @@ include ../../Makefile.lib
 #include ../../Makefile.rootfs
 
 LIBS =		$(DYNLIB) $(LINTLIB)
-LDLIBS +=	-lschily -lsocket -lc
+LDLIBS +=	-lsocket -lc
 $(LINTLIB) :=	SRCS = $(SRCDIR)/$(LINTSRC)
 
 CFLAGS +=	$(CCVERBOSE)
@@ -33,6 +33,7 @@ CPPFLAGS +=	-D_REENTRANT
 CPPFLAGS +=      -DUSE_REMOTE
 CPPFLAGS +=      -DUSE_RCMD_RSH
 CPPFLAGS +=      -DUSE_LARGEFILES
+CPPFLAGS +=      -DNO_LIBSCHILY
 
 
 all: $(LIBS)

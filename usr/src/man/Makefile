@@ -73,6 +73,7 @@ COMMON_SUBDIRS=		\
 	man3proc	\
 	man3project	\
 	man3resolv	\
+	man3rmt		\
 	man3rpc		\
 	man3rsm		\
 	man3sasl	\
