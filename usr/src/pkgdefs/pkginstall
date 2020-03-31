@@ -120,5 +120,21 @@ INSROOT=`pwd`
 #
 cd "$cwd" || edit
 
-pkgadd -a $owd/admin-fullauto  -R "$INSROOT" -d . ` cat $pkglist `
+#
+# Remove comment from package list file
+#
+PKGLIST=
+while read PN __rest__
+do
+	case "$PN" in
+	\#*|'')
+		;;
+	*)
+		PKGLIST="$PKGLIST $PN"
+		;;
+	esac
+done < $pkglist
+unset __rest__
+
+pkgadd -a $owd/admin-fullauto  -R "$INSROOT" -d . $PKGLIST
 pkgadm sync -R "$INSROOT" -q
