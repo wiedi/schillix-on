@@ -39,6 +39,7 @@ OBJS=	ar.o		\
 	read2.o		\
 	rep.o		\
 	state.o		\
+	archconf.o	\
 	version.o
 
 .KEEP_STATE:
