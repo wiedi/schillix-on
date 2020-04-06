@@ -38,6 +38,27 @@
 #
 NIGHTLY_OPTIONS="-FnCDlmprt";		export NIGHTLY_OPTIONS
 
+#	-N	Do not run protocmp or checkpaths
+#	-n	Suppress the bringover
+#	-C	Check for cstyle/hdrchk errors
+#	-D	do a build with DEBUG on
+#	-F	do _not_ do a non-DEBUG build
+#	-l	Do "make lint" in $LINTDIRS
+#	-m	Send mail to $MAILTO at end of build
+#	-p	Create packages for regular install
+#	-r	Check the ELF runtime attributes
+#	-t	Build and use the tools in $SRC/tools
+
+#
+# On incomplete installations that otherwise are sufficient to compile
+# OpenSolaris-ON, automated IPS dependency creation may still fail.
+# Since we support IPS packages only as deprecated and only provided for
+# backwards compatibility, we by default do not run IPS dependency creation.
+# If you like to create IPS packages, comment out the following two lines.
+#
+SUPPRESSPKGDEP=true
+export SUPPRESSPKGDEP
+
 # This is a variable for the rest of the script - GATE doesn't matter to
 # nightly itself
 GATE=testws;			export GATE
@@ -56,8 +77,10 @@ ON_CLOSED_BINS="$CODEMGR_WS/closed";		export ON_CLOSED_BINS
 
 # Maximum number of dmake jobs.  The recommended number is 2 + (2 *
 # NCPUS), where NCPUS is the number of CPUs on your build system.
+# In former times, we used the number of physical processors (computed
+# via /usr/sbin/psrinfo -p), now we use the number of logical CPUs.
 maxjobs() {
-	ncpu=`/usr/sbin/psrinfo -p`
+	ncpu=`/usr/sbin/psrinfo | wc -l`
 	expr $ncpu \* 2 + 2
 }
 DMAKE_MAX_JOBS=`maxjobs`;			export DMAKE_MAX_JOBS
@@ -112,6 +135,11 @@ REF_PROTO_LIST=$PARENT_WS/usr/src/proto_list_${MACH}; export REF_PROTO_LIST
 ROOT="$CODEMGR_WS/proto/root_${MACH}";	export ROOT
 SRC="$CODEMGR_WS/usr/src";         	export SRC
 VERSION="$GATE";			export VERSION
+#
+# Uncomment and edit if you like to overwrite "uname -v" that defaults to
+# VERSION="$GATE" by something else:
+#
+#VERSION_STRING="\$(ECHO) $GATE-b03";	export VERSION_STRING
 
 #
 # the RELEASE and RELEASE_DATE variables are set in Makefile.master;
