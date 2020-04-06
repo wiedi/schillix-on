@@ -1385,6 +1385,7 @@ unset LD_NOVERSION	LD_NOVERSION_32		LD_NOVERSION_64
 unset LD_ORIGIN		LD_ORIGIN_32		LD_ORIGIN_64
 unset LD_PRELOAD	LD_PRELOAD_32		LD_PRELOAD_64
 unset LD_PROFILE	LD_PROFILE_32		LD_PROFILE_64
+unset LD_RUN_PATH
 
 unset CONFIG
 unset GROUP
@@ -1668,7 +1669,9 @@ DMAKE_MAJOR=${DMAKE_MAJOR%%.*}
 CHECK_DMAKE=${CHECK_DMAKE:-y}
 if [ "$CHECK_DMAKE" = "y" -a \
      "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2019/12/01" -o \
-     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/12/01" ]; then
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2019/12/01" -o \
+     "$DMAKE_VERSION" = "SchilliX-ON Parallel Make 1.1 2020/03/28" -o \
+     "$DMAKE_VERSION" = "Schily-Tools Parallel Make 1.1 2020/03/28" ]; then
 	:
 # x86 was built on the 12th, sparc on the 13th.
 elif [ "$CHECK_DMAKE" = "y" -a \
@@ -1980,7 +1983,12 @@ function logshuffle {
 	cat $build_time_file $build_environ_file $mail_msg_file \
 	    > ${LLOG}/mail_msg
 	if [ "$m_FLAG" = "y" ]; then
-	    	cat ${LLOG}/mail_msg | /usr/bin/mailx -s \
+		#
+		# $HOME of the caller may contain s-nail extensions that are
+		# not understood by mailx, so set it to a directory that
+		# does not contain a .mailrc file.
+		#
+	    	cat ${LLOG}/mail_msg | HOME=/etc /usr/bin/mailx -s \
 	"Nightly ${MACH} Build of `basename ${CODEMGR_WS}` ${state}." \
 			${MAILTO}
 	fi
