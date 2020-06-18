@@ -79,7 +79,7 @@ APICLASSPATH=$(CLASSES):$(APIJAVASRC)
 
 # javac flags
 JFLAGS= -g -d $(CLASSES) -sourcepath $(APICLASSPATH) -deprecation
-JFLAGS += -target 1.5
+JFLAGS += -target 1.5 -source 1.5
 JFLAGS += -Xlint
 
 # The default make rule for Java files

@@ -73,8 +73,14 @@ ROOTUSRLIBDRP = $(ROOTLIB)/pool
 INCS =		-I../common \
 		-I$(JAVA_ROOT)/include \
 		-I$(JAVA_ROOT)/include/solaris
-LDLIBS +=	-lpool -L$(JAVA_ROOT)/jre/lib/$(MACH)/client -ljvm
-LDFLAGS +=	-R$(JAVA_ROOT)/jre/lib/$(MACH)/client
+
+# The Java Development Kit originally shipped with SchilliX, packages
+# its libraries in a jre/lib subdirectory. Both Oracle JDK and self-
+# compiled more recent OpenJDKs package them in a lib subdirectory.
+# For backwards compatibility, both paths are searched. In the future,
+# the jre/lib option should be removed. 
+LDLIBS +=	-lpool -L$(JAVA_ROOT)/lib/$(MACH)/client -L$(JAVA_ROOT)/jre/lib/$(MACH)/client -ljvm
+LDFLAGS +=	-R$(JAVA_ROOT)/lib/$(MACH)/client -R$(JAVA_ROOT)/jre/lib/$(MACH)client
 LINTFLAGS +=	-erroff=E_NAME_USED_NOT_DEF2
 LINTLIBS +=	-L$(ROOTLIB) -lpool
 
