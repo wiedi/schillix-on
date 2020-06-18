@@ -61,7 +61,7 @@ lint:
 install: all $(PROTO_TEST_JAR)
 
 JFLAGS= -g -cp $(CLASSPATH) -d $(CLASSDIR) -deprecation
-JFLAGS += -target 1.5
+JFLAGS += -target 1.5 -source 1.5
 JFLAGS += -Xlint
 COMPILE.java=$(JAVAC) $(JFLAGS)
 
